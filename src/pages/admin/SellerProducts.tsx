@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { Check, X, Eye, Package, Trash2, AlertTriangle, ShieldAlert, Clock, Lock, ImageMinus } from "lucide-react";
+import { Check, X, Eye, Package, Trash2, AlertTriangle, ShieldAlert, Clock, Lock, ImageMinus, FileCheck, FileX, ChevronDown, ScanSearch } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -366,6 +367,67 @@ export default function SellerProducts() {
                       <span>Seller consented {new Date(product.file_review_consented_at).toLocaleDateString()}</span>
                     </div>
                   )}
+
+                  {/* File & Scan Info - Collapsible */}
+                  <Collapsible>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded bg-muted/30 hover:bg-muted/50 transition-colors text-xs">
+                      <div className="flex items-center gap-1.5">
+                        {product.asset_file_url ? (
+                          <FileCheck className="h-3.5 w-3.5 text-green-500" />
+                        ) : (
+                          <FileX className="h-3.5 w-3.5 text-destructive" />
+                        )}
+                        <span className="font-medium">
+                          {product.asset_file_url ? 'File Attached' : 'No File'}
+                        </span>
+                        {product.moderation_flags && (
+                          <Badge variant="outline" className="text-[10px] h-4 px-1 ml-1">
+                            <ScanSearch className="h-2.5 w-2.5 mr-0.5" />
+                            Scanned
+                          </Badge>
+                        )}
+                      </div>
+                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pt-2 space-y-1.5">
+                      {product.asset_file_url ? (
+                        <p className="text-[11px] text-muted-foreground break-all px-1">
+                          {product.asset_file_url.split('/').pop()}
+                        </p>
+                      ) : (
+                        <p className="text-[11px] text-destructive/80 px-1">
+                          No asset file uploaded — product is hidden from marketplace
+                        </p>
+                      )}
+                      {product.moderation_flags ? (
+                        <div className="space-y-1 px-1">
+                          {product.moderation_flags.nsfw_flags?.length > 0 && (
+                            <div className="flex items-start gap-1 text-[11px] text-destructive">
+                              <ShieldAlert className="h-3 w-3 mt-0.5 shrink-0" />
+                              <span>NSFW: {product.moderation_flags.nsfw_flags.join(', ')}</span>
+                            </div>
+                          )}
+                          {product.moderation_flags.lua_concerns?.length > 0 && (
+                            <div className="flex items-start gap-1 text-[11px] text-amber-500">
+                              <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
+                              <span>Lua ({product.moderation_flags.lua_risk_level}): {product.moderation_flags.lua_concerns.join(', ')}</span>
+                            </div>
+                          )}
+                          {product.moderation_flags.scan_timestamp && (
+                            <p className="text-[10px] text-muted-foreground">
+                              Scanned {new Date(product.moderation_flags.scan_timestamp).toLocaleDateString()}
+                            </p>
+                          )}
+                          {!product.moderation_flags.nsfw_flags?.length && !product.moderation_flags.lua_concerns?.length && (
+                            <p className="text-[11px] text-green-500">✓ Clean — no issues detected</p>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-muted-foreground px-1">No scan results available</p>
+                      )}
+                    </CollapsibleContent>
+                  </Collapsible>
+
                   {/* Show moderation flags for pending products */}
                   {product.moderation_status === "pending" && renderModerationFlags(product.moderation_flags)}
                   <div className="flex gap-2">
