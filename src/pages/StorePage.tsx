@@ -447,26 +447,6 @@ export default function StorePage() {
         );
       })()}
 
-      {/* Stripe Onboarding Incomplete Banner - Owner Only */}
-      {isStoreOwner && stripeOnboardingIncomplete && (
-        <div className="container px-4 mt-2">
-          <div className="flex items-center gap-3 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-200">
-            <AlertTriangle className="h-5 w-5 text-amber-400 flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-amber-300">Complete your Stripe onboarding</p>
-              <p className="text-xs text-amber-400/80">Your payouts are paused until you finish setting up your Stripe account. Go to your seller settings to continue.</p>
-            </div>
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-amber-500/40 text-amber-300 hover:bg-amber-500/20 shrink-0"
-              asChild
-            >
-              <Link to="/seller/settings/payments">Complete Setup</Link>
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* Store Header - Transparent overlay on banner */}
       <div className="container px-4 -mt-16 relative z-10">
