@@ -64,8 +64,8 @@ serve(async (req) => {
     if (!description || typeof description !== 'string' || description.trim().length === 0) {
       throw new Error("Description is required");
     }
-    if (description.length > 500) {
-      throw new Error("Description must be 500 characters or less");
+    if (description.length > 2000) {
+      throw new Error("Description must be 2000 characters or less");
     }
 
     // Validate imageUrls array (up to 3)
@@ -159,7 +159,7 @@ serve(async (req) => {
       // Mark the slot as booked
       const { error: slotError } = await supabaseAdmin
         .from("ad_schedule_slots")
-        .update({ user_id: userId, booked_at: new Date().toISOString() })
+        .update({ user_id: user.id, booked_at: new Date().toISOString() })
         .eq("id", slotId)
         .is("user_id", null); // Only book if not already taken
       if (slotError) {
