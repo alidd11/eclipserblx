@@ -469,7 +469,7 @@ export default function SellerProducts() {
                           variant="destructive"
                           onClick={() => {
                             setSelectedProduct(product);
-                            setModerationNotes("");
+                            setModerationNotes("Your product has been rejected as it does not meet our marketplace guidelines. Please review the requirements and resubmit.");
                           }}
                         >
                           <X className="h-4 w-4" />
@@ -611,8 +611,26 @@ export default function SellerProducts() {
                 </div>
               )}
               {selectedProduct?.moderation_status === "pending" && (
-                <div>
-                  <label className="text-sm text-muted-foreground">Moderation Notes (optional)</label>
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">Moderation Notes</label>
+                  <div className="flex flex-wrap gap-1.5 mb-1">
+                    {[
+                      "Does not meet marketplace guidelines",
+                      "Missing or incomplete product files",
+                      "Inappropriate content detected",
+                      "Price does not match product quality",
+                      "Duplicate or copied product",
+                    ].map((reason) => (
+                      <Badge
+                        key={reason}
+                        variant="outline"
+                        className="cursor-pointer hover:bg-accent text-[11px]"
+                        onClick={() => setModerationNotes(reason)}
+                      >
+                        {reason}
+                      </Badge>
+                    ))}
+                  </div>
                   <Textarea
                     value={moderationNotes}
                     onChange={(e) => setModerationNotes(e.target.value)}
