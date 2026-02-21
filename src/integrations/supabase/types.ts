@@ -3886,6 +3886,92 @@ export type Database = {
           },
         ]
       }
+      product_promotions: {
+        Row: {
+          category_id: string | null
+          clicks: number
+          created_at: string
+          current_bid: number
+          expires_at: string | null
+          id: string
+          impressions: number
+          max_bid: number
+          paused_at: string | null
+          product_id: string
+          slot_type: string
+          started_at: string | null
+          status: string
+          store_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category_id?: string | null
+          clicks?: number
+          created_at?: string
+          current_bid?: number
+          expires_at?: string | null
+          id?: string
+          impressions?: number
+          max_bid?: number
+          paused_at?: string | null
+          product_id: string
+          slot_type: string
+          started_at?: string | null
+          status?: string
+          store_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string | null
+          clicks?: number
+          created_at?: string
+          current_bid?: number
+          expires_at?: string | null
+          id?: string
+          impressions?: number
+          max_bid?: number
+          paused_at?: string | null
+          product_id?: string
+          slot_type?: string
+          started_at?: string | null
+          status?: string
+          store_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_promotions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_promotions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_promotions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_promotions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_translations: {
         Row: {
           created_at: string
@@ -4169,6 +4255,79 @@ export type Database = {
           username?: string
         }
         Relationships: []
+      }
+      promotion_analytics: {
+        Row: {
+          clicks: number
+          created_at: string
+          date: string
+          id: string
+          impressions: number
+          promotion_id: string
+        }
+        Insert: {
+          clicks?: number
+          created_at?: string
+          date: string
+          id?: string
+          impressions?: number
+          promotion_id: string
+        }
+        Update: {
+          clicks?: number
+          created_at?: string
+          date?: string
+          id?: string
+          impressions?: number
+          promotion_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotion_analytics_promotion_id_fkey"
+            columns: ["promotion_id"]
+            isOneToOne: false
+            referencedRelation: "product_promotions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promotion_auctions: {
+        Row: {
+          auction_date: string
+          category_id: string | null
+          created_at: string
+          id: string
+          slot_type: string
+          total_bids: number
+          winners: Json
+        }
+        Insert: {
+          auction_date: string
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          slot_type: string
+          total_bids?: number
+          winners?: Json
+        }
+        Update: {
+          auction_date?: string
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          slot_type?: string
+          total_bids?: number
+          winners?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotion_auctions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       promotion_claims: {
         Row: {
