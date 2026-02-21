@@ -43,7 +43,7 @@ export function LandingHero() {
               {t('landing.description')}
             </p>
 
-            <div className="flex justify-start items-center gap-2 mb-5">
+            <div className="flex justify-center items-center gap-2 mb-5">
               <Link to="/products">
                 <Button size="sm" variant="outline" className="h-8 px-3 text-xs">
                   <ShoppingBag className="h-3.5 w-3.5 sm:mr-1.5" />
