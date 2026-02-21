@@ -679,10 +679,9 @@ export default function Advertise() {
                           placeholder="Describe what you're advertising..."
                           value={adFormData.description}
                           onChange={(e) => setAdFormData({ description: e.target.value })}
-                          maxLength={500}
                           rows={4}
                         />
-                        <p className="text-xs text-muted-foreground">{adFormData.description.length}/500 characters</p>
+                        <p className="text-xs text-muted-foreground">{adFormData.description.length} characters</p>
                       </div>
 
                       <div className="space-y-2">
