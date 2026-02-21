@@ -413,12 +413,35 @@ export default function SellerProducts() {
                               <span>Lua ({product.moderation_flags.lua_risk_level}): {product.moderation_flags.lua_concerns.join(', ')}</span>
                             </div>
                           )}
+                          {product.moderation_flags.has_roblox_files === false && (
+                            <div className="flex items-start gap-1 text-[11px] text-amber-500">
+                              <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
+                              <span>No Roblox files detected (.rbxm/.rbxl)</span>
+                            </div>
+                          )}
+                          {(() => {
+                            const fileNames: string[] = product.moderation_flags.file_names_sample || [];
+                            const suspiciousExts = fileNames.filter((f: string) => /\.(rtf|exe|bat|cmd|ps1|vbs|dll|msi|scr)$/i.test(f));
+                            if (suspiciousExts.length === 0) return null;
+                            return (
+                              <div className="flex items-start gap-1 text-[11px] text-destructive">
+                                <ShieldAlert className="h-3 w-3 mt-0.5 shrink-0" />
+                                <span>Suspicious files: {suspiciousExts.map((f: string) => f.split('/').pop()).join(', ')}</span>
+                              </div>
+                            );
+                          })()}
+                          {product.moderation_flags.file_names_sample?.length > 0 && (
+                            <div className="text-[10px] text-muted-foreground">
+                              <span className="font-medium">{product.moderation_flags.total_files || '?'} files:</span>{' '}
+                              {product.moderation_flags.file_names_sample.map((f: string) => f.split('/').pop()).join(', ')}
+                            </div>
+                          )}
                           {product.moderation_flags.scan_timestamp && (
                             <p className="text-[10px] text-muted-foreground">
                               Scanned {new Date(product.moderation_flags.scan_timestamp).toLocaleDateString()}
                             </p>
                           )}
-                          {!product.moderation_flags.nsfw_flags?.length && !product.moderation_flags.lua_concerns?.length && (
+                          {!product.moderation_flags.nsfw_flags?.length && !product.moderation_flags.lua_concerns?.length && product.moderation_flags.has_roblox_files !== false && !(product.moderation_flags.file_names_sample || []).some((f: string) => /\.(rtf|exe|bat|cmd|ps1|vbs|dll|msi|scr)$/i.test(f)) && (
                             <p className="text-[11px] text-green-500">✓ Clean — no issues detected</p>
                           )}
                         </div>
