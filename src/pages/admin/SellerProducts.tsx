@@ -432,8 +432,12 @@ export default function SellerProducts() {
                           })()}
                           {product.moderation_flags.file_names_sample?.length > 0 && (
                             <div className="text-[10px] text-muted-foreground">
-                              <span className="font-medium">{product.moderation_flags.total_files || '?'} files:</span>{' '}
-                              {product.moderation_flags.file_names_sample.map((f: string) => f.split('/').pop()).join(', ')}
+                              <span className="font-medium">{product.moderation_flags.total_files || '?'} files:</span>
+                              <ul className="list-disc list-inside mt-0.5 space-y-0.5">
+                                {product.moderation_flags.file_names_sample.map((f: string, i: number) => (
+                                  <li key={i} className="break-all">{f}</li>
+                                ))}
+                              </ul>
                             </div>
                           )}
                           {product.moderation_flags.scan_timestamp && (
@@ -481,6 +485,27 @@ export default function SellerProducts() {
                               <Check className="h-4 w-4" />
                             </Button>
                           </>
+                        ) : !product.file_review_requested_at ? (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="gap-1 text-xs"
+                            onClick={async () => {
+                              const { error } = await supabase
+                                .from('products')
+                                .update({ file_review_requested_at: new Date().toISOString() })
+                                .eq('id', product.id);
+                              if (error) {
+                                toast.error("Failed to request file access");
+                              } else {
+                                toast.success("File access requested — seller will be prompted to consent");
+                                queryClient.invalidateQueries({ queryKey: ["seller-products-moderation"] });
+                              }
+                            }}
+                          >
+                            <Eye className="h-3 w-3" />
+                            Request Access
+                          </Button>
                         ) : (
                           <Button size="sm" variant="secondary" disabled className="gap-1">
                             <Lock className="h-3 w-3" />
