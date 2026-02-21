@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Store, ArrowRight, Percent } from 'lucide-react';
+import { Store, ArrowRight, Percent, Coins } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { useCallback, useEffect, useState } from 'react';
@@ -34,6 +34,16 @@ export function PromotionCarousel() {
       cta: t('landing.sellerCta'),
       link: '/account',
       accentClass: 'bg-amber-500',
+    },
+    {
+      id: 'credits',
+      icon: Coins,
+      label: 'CREDITS',
+      title: 'Save on Fees with Eclipse Credits',
+      description: 'Pay with credits to skip transaction fees and check out instantly.',
+      cta: 'Top Up',
+      link: '/wallet',
+      accentClass: 'bg-emerald-500',
     },
   ];
 
@@ -70,7 +80,7 @@ export function PromotionCarousel() {
           <promo.icon className="h-5 w-5 text-muted-foreground" />
         </div>
         <div className="min-w-0">
-          <span className={`text-[10px] font-bold tracking-widest uppercase ${promo.id === 'seller' ? 'text-amber-500' : 'text-primary'} block mb-0.5`}>{promo.label}</span>
+          <span className={`text-[10px] font-bold tracking-widest uppercase ${promo.id === 'seller' ? 'text-amber-500' : promo.id === 'credits' ? 'text-emerald-500' : 'text-primary'} block mb-0.5`}>{promo.label}</span>
           <h3 className="font-semibold text-sm text-foreground truncate">{promo.title}</h3>
           <p className="text-xs text-muted-foreground line-clamp-1 max-w-xs mt-0.5">{promo.description}</p>
         </div>
