@@ -93,7 +93,7 @@ const emptyForm: ProductForm = {
   robux_enabled: false,
   robux_product_id: '',
   robux_price: '',
-  marketplace_store: 'eclipse', // Default to Eclipse Store
+  marketplace_store: 'eclipse', // Default to Quantis Store
 };
 
 interface MassEditForm {
@@ -1304,7 +1304,7 @@ export default function AdminProducts() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="eclipse">Eclipse Store</SelectItem>
+                  <SelectItem value="eclipse">Quantis</SelectItem>
                   <SelectItem value="vino">Vino</SelectItem>
                 </SelectContent>
               </Select>

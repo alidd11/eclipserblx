@@ -422,7 +422,7 @@ serve(async (req) => {
                         { name: "Your Earnings", value: `£${sellerEarnings.toFixed(2)}`, inline: true },
                         { name: "Order ID", value: orderId.slice(0, 8) + "...", inline: true },
                       ],
-                      footer: { text: `${storeName || 'Your Store'} • Eclipse Store` },
+                      footer: { text: `${storeName || 'Your Store'} • Quantis` },
                       timestamp: new Date().toISOString(),
                     }],
                   };

@@ -10,6 +10,8 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { cn } from '@/lib/utils';
 import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 import { WishlistButton } from '@/components/wishlist/WishlistButton';
+import quantisOverlay from '@/assets/quantis-product-overlay.png';
+import { QUANTIS_STORE_ID } from '@/lib/constants';
 
 // Region flag images
 import ukFlag from '@/assets/regions/uk-flag.jpg';
@@ -164,6 +166,15 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 {name.charAt(0)}
               </span>
             </div>
+          )}
+          
+          {/* Quantis store product overlay */}
+          {storeSlug === 'quantis' && (
+            <img
+              src={quantisOverlay}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none z-[1]"
+            />
           )}
           
           
