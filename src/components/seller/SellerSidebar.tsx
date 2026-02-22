@@ -190,7 +190,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
     const content = (
       <>
         <item.icon className={cn(
-          "h-4 w-4 shrink-0 transition-colors",
+          "h-3.5 w-3.5 shrink-0 transition-colors",
           isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
         )} />
         {!isCollapsed && (
@@ -208,11 +208,11 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
     );
 
     const linkClass = cn(
-      "group rounded-md text-[13px] font-medium select-none transition-all duration-150 relative",
+      "group rounded-md text-[12px] font-medium select-none transition-all duration-150 relative",
       "active:scale-[0.98] active:opacity-90",
       isCollapsed
-        ? "flex items-center justify-center p-2.5"
-        : "flex items-center gap-2.5 px-2.5 py-[7px]",
+        ? "flex items-center justify-center p-2"
+        : "flex items-center gap-2 px-2 py-[5px]",
       isActive
         ? "bg-primary text-primary-foreground shadow-sm"
         : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -302,7 +302,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
         <CollapsibleTrigger asChild>
           <button
             className={cn(
-              "w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-md text-[11px] font-semibold uppercase tracking-wide select-none",
+              "w-full flex items-center gap-2 px-2 py-[4px] rounded-md text-[10px] font-semibold uppercase tracking-wide select-none",
               "transition-all duration-150 active:scale-[0.98]",
               "focus:outline-none",
               hasActiveItem
@@ -310,17 +310,17 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
                 : "text-muted-foreground/50 hover:text-muted-foreground"
             )}
           >
-            <group.icon className="h-3.5 w-3.5 shrink-0" />
+            <group.icon className="h-3 w-3 shrink-0" />
             <span className="flex-1 text-left truncate">{group.title}</span>
             <ChevronDown 
               className={cn(
-                "h-3 w-3 shrink-0 transition-transform duration-200",
+                "h-2.5 w-2.5 shrink-0 transition-transform duration-200",
                 isOpen ? "rotate-0" : "-rotate-90"
               )} 
             />
           </button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="ml-[13px] border-l border-border/40 pl-2 space-y-0.5 pt-0.5 pb-1">
+        <CollapsibleContent className="ml-[11px] border-l border-border/40 pl-1.5 space-y-px pt-0.5 pb-0.5">
           {group.items.map(item => renderNavLink(item))}
         </CollapsibleContent>
       </Collapsible>
@@ -334,7 +334,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
       isMobileDrawer 
         ? "h-full w-full border-0 max-h-[100dvh]" 
         : "h-[100dvh] sticky top-0 border-r border-border",
-      !isMobileDrawer && (isCollapsed ? "w-14" : "w-60"),
+      !isMobileDrawer && (isCollapsed ? "w-14" : "w-56"),
       className
     )}>
       {/* Header with banner + logo */}
@@ -432,23 +432,23 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
+      <nav className="flex-1 p-1.5 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
         {/* Top-level links */}
-        <div className="space-y-0.5 mb-1.5">
+        <div className="space-y-px mb-1">
           {topLevelItems.map(item => renderNavLink(item, item.href === '/seller'))}
         </div>
 
         {/* Separator */}
-        <div className="h-px bg-border/40 mx-1 mb-1.5" />
+        <div className="h-px bg-border/40 mx-1 mb-1" />
 
         {/* Grouped sections */}
-        <div className="space-y-1.5">
+        <div className="space-y-0.5">
           {navGroups.map(renderGroup)}
         </div>
       </nav>
       
       {/* Footer */}
-      <div className="border-t border-border/50 p-2 space-y-0.5">
+      <div className="border-t border-border/50 p-1.5 space-y-px">
         {storeUrl && (
           isCollapsed ? (
             <Tooltip>
