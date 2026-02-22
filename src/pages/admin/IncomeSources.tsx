@@ -417,78 +417,137 @@ export default function AdminIncomeSources() {
           </CardHeader>
           <CardContent className="p-0">
             <ScrollArea className="h-[500px]">
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="text-[11px] w-[140px]">Date</TableHead>
-                    <TableHead className="text-[11px] w-[110px]">Source</TableHead>
-                    <TableHead className="text-[11px]">Description</TableHead>
-                    <TableHead className="text-[11px] text-right w-[90px]">Amount</TableHead>
-                    <TableHead className="text-[11px] w-[80px]">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {isLoading ? (
-                    Array.from({ length: 8 }).map((_, i) => (
-                      <TableRow key={i}>
-                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-14" /></TableCell>
-                      </TableRow>
-                    ))
-                  ) : filteredTransactions.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-12">
-                        No transactions found for the selected filters.
-                      </TableCell>
+              {/* Desktop table view */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="text-[11px] w-[140px]">Date</TableHead>
+                      <TableHead className="text-[11px] w-[110px]">Source</TableHead>
+                      <TableHead className="text-[11px]">Description</TableHead>
+                      <TableHead className="text-[11px] text-right w-[90px]">Amount</TableHead>
+                      <TableHead className="text-[11px] w-[80px]">Status</TableHead>
                     </TableRow>
-                  ) : (
-                    filteredTransactions.slice(0, 200).map(txn => {
-                      const config = sourceConfig[txn.source as Exclude<IncomeSource, 'all'>];
-                      const Icon = config?.icon ?? DollarSign;
-                      return (
-                        <TableRow key={`${txn.source}-${txn.id}`} className="group">
-                          <TableCell className="text-[11px] text-muted-foreground">
-                            {format(new Date(txn.date), 'dd MMM yyyy HH:mm')}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={cn("text-[10px] gap-1 border", config?.badgeVariant)}>
-                              <Icon className="h-2.5 w-2.5" />
-                              {config?.label?.split(' ')[0]}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <p className="text-xs truncate max-w-[250px]">{txn.description}</p>
-                            {txn.metadata && (
-                              <p className="text-[10px] text-muted-foreground/60 truncate max-w-[250px]">{txn.metadata}</p>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right text-xs font-medium tabular-nums">
-                            {txn.currency}{txn.amount.toFixed(2)}
-                          </TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant="outline" 
-                              className={cn(
-                                "text-[10px]",
-                                txn.status === 'active' || txn.status === 'paid' || txn.status === 'completed' || txn.status === 'fulfilled'
-                                  ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                                  : txn.status === 'cancelled' || txn.status === 'expired'
-                                  ? "bg-red-500/10 text-red-500 border-red-500/20"
-                                  : "bg-muted text-muted-foreground"
-                              )}
-                            >
-                              {txn.status}
-                            </Badge>
-                          </TableCell>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading ? (
+                      Array.from({ length: 8 }).map((_, i) => (
+                        <TableRow key={i}>
+                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-14" /></TableCell>
                         </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
+                      ))
+                    ) : filteredTransactions.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-12">
+                          No transactions found for the selected filters.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredTransactions.slice(0, 200).map(txn => {
+                        const config = sourceConfig[txn.source as Exclude<IncomeSource, 'all'>];
+                        const Icon = config?.icon ?? DollarSign;
+                        return (
+                          <TableRow key={`${txn.source}-${txn.id}`} className="group">
+                            <TableCell className="text-[11px] text-muted-foreground">
+                              {format(new Date(txn.date), 'dd MMM yyyy HH:mm')}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={cn("text-[10px] gap-1 border", config?.badgeVariant)}>
+                                <Icon className="h-2.5 w-2.5" />
+                                {config?.label?.split(' ')[0]}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <p className="text-xs truncate max-w-[250px]">{txn.description}</p>
+                              {txn.metadata && (
+                                <p className="text-[10px] text-muted-foreground/60 truncate max-w-[250px]">{txn.metadata}</p>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right text-xs font-medium tabular-nums">
+                              {txn.currency}{txn.amount.toFixed(2)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant="outline" 
+                                className={cn(
+                                  "text-[10px]",
+                                  txn.status === 'active' || txn.status === 'paid' || txn.status === 'completed' || txn.status === 'fulfilled'
+                                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                    : txn.status === 'cancelled' || txn.status === 'expired'
+                                    ? "bg-red-500/10 text-red-500 border-red-500/20"
+                                    : "bg-muted text-muted-foreground"
+                                )}
+                              >
+                                {txn.status}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile card view */}
+              <div className="md:hidden divide-y divide-border">
+                {isLoading ? (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="p-4 space-y-2">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-48" />
+                    </div>
+                  ))
+                ) : filteredTransactions.length === 0 ? (
+                  <div className="text-center text-sm text-muted-foreground py-12">
+                    No transactions found for the selected filters.
+                  </div>
+                ) : (
+                  filteredTransactions.slice(0, 200).map(txn => {
+                    const config = sourceConfig[txn.source as Exclude<IncomeSource, 'all'>];
+                    const Icon = config?.icon ?? DollarSign;
+                    return (
+                      <div key={`${txn.source}-${txn.id}`} className="p-3 space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <Badge variant="outline" className={cn("text-[10px] gap-1 border shrink-0", config?.badgeVariant)}>
+                            <Icon className="h-2.5 w-2.5" />
+                            {config?.label?.split(' ')[0]}
+                          </Badge>
+                          <span className="text-sm font-medium tabular-nums">
+                            {txn.currency}{txn.amount.toFixed(2)}
+                          </span>
+                        </div>
+                        <p className="text-xs truncate">{txn.description}</p>
+                        {txn.metadata && (
+                          <p className="text-[10px] text-muted-foreground/60 truncate">{txn.metadata}</p>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-muted-foreground">
+                            {format(new Date(txn.date), 'dd MMM yyyy HH:mm')}
+                          </span>
+                          <Badge 
+                            variant="outline" 
+                            className={cn(
+                              "text-[10px]",
+                              txn.status === 'active' || txn.status === 'paid' || txn.status === 'completed' || txn.status === 'fulfilled'
+                                ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                : txn.status === 'cancelled' || txn.status === 'expired'
+                                ? "bg-red-500/10 text-red-500 border-red-500/20"
+                                : "bg-muted text-muted-foreground"
+                            )}
+                          >
+                            {txn.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </ScrollArea>
           </CardContent>
         </Card>
