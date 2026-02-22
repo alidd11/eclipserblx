@@ -57,6 +57,7 @@ const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
 const AdminLogin = lazy(() => import("@/pages/admin/Login"));
 const AdminAnalytics = lazy(() => import("@/pages/admin/Analytics"));
 const AdminIncome = lazy(() => import("@/pages/admin/Income"));
+const AdminIncomeSources = lazy(() => import("@/pages/admin/IncomeSources"));
 const AdminStaffActivity = lazy(() => import("@/pages/admin/StaffActivity"));
 const AdminStaffMessages = lazy(() => import("@/pages/admin/StaffMessages"));
 const AdminChat = lazy(() => import("@/pages/admin/AdminChat"));
@@ -304,6 +305,7 @@ export function AppRoutes() {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
         <Route path="/admin/income" element={<AdminIncome />} />
+        <Route path="/admin/income-sources" element={<AdminIncomeSources />} />
         <Route path="/admin/staff-activity" element={<AdminStaffActivity />} />
         <Route path="/admin/staff-messages" element={<AdminStaffMessages />} />
         <Route path="/admin/admin-chat" element={<AdminChat />} />

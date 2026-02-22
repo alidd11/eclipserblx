@@ -3,7 +3,7 @@
    LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
    ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
    TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
-   AlertTriangle, Tags, Ban, Gift, Inbox, LucideIcon, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Ticket, Bot, RotateCcw, Upload, Wallet
+   AlertTriangle, Tags, Ban, Gift, Inbox, LucideIcon, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Ticket, Bot, RotateCcw, Upload, Wallet, DollarSign
  } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -64,6 +64,7 @@ const navGroups: NavGroup[] = [
     icon: Wallet,
     items: [
       { title: 'Seller Payouts', icon: TrendingUp, href: '/admin/seller-payouts', permissions: ['view_seller_payouts'] },
+      { title: 'Income Sources', icon: DollarSign, href: '/admin/income-sources', permissions: ['view_income'] },
       { title: 'Developer Payments', icon: Wallet, href: '/admin/developer-payments', permissions: [], roles: ['admin', 'developer'] },
       { title: 'Manual Payouts', icon: TrendingUp, href: '/admin/manual-payouts', permissions: ['manage_affiliates'], dividerAfter: true },
       { title: 'Affiliates', icon: Gift, href: '/admin/affiliates', permissions: ['view_affiliates'] },
