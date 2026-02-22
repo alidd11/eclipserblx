@@ -18,7 +18,6 @@ import {
   CheckCircle,
   Save,
   Link as LinkIcon,
-  Globe,
   Info
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -34,7 +33,6 @@ const INITIAL_FORM_DATA = {
   twitter_url: '',
   youtube_url: '',
   tiktok_url: '',
-  website_url: '',
 };
 
 export default function SellerSettingsProfile() {
@@ -59,7 +57,6 @@ export default function SellerSettingsProfile() {
         twitter_url: store.twitter_url || '',
         youtube_url: store.youtube_url || '',
         tiktok_url: store.tiktok_url || '',
-        website_url: store.website_url || '',
       });
     }
   }, [store]);
@@ -80,7 +77,6 @@ export default function SellerSettingsProfile() {
           twitter_url: data.twitter_url || null,
           youtube_url: data.youtube_url || null,
           tiktok_url: data.tiktok_url || null,
-          website_url: data.website_url || null,
           updated_at: new Date().toISOString(),
         } as any)
         .eq('id', store.id);
@@ -300,18 +296,6 @@ export default function SellerSettingsProfile() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="website_url" className="flex items-center gap-2">
-                  <Globe className="h-4 w-4" />
-                  Website
-                </Label>
-                <Input
-                  id="website_url"
-                  value={formData.website_url}
-                  onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
-                  placeholder="https://yourwebsite.com"
-                />
-              </div>
 
               <Button onClick={handleSubmit} disabled={updateStore.isPending}>
                 <Save className="h-4 w-4 mr-2" />

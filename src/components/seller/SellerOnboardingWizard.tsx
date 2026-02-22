@@ -73,7 +73,6 @@ export function SellerOnboardingWizard() {
         store.discord_url ||
         store.twitter_url ||
         store.youtube_url ||
-        store.website_url ||
         store.roblox_url
       );
 
@@ -127,7 +126,7 @@ export function SellerOnboardingWizard() {
       title: 'Add Roblox Marketplace Link',
       description: 'Link your Roblox creator store so customers can find your marketplace.',
       icon: Gamepad2,
-      href: '/seller/settings/profile',
+      href: '/seller/roblox',
       completed: !!store.roblox_url,
     },
     {
