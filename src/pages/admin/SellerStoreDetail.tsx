@@ -67,6 +67,39 @@ export default function SellerStoreDetail() {
     enabled: !!storeId,
   });
 
+  // Fetch store payment details (Stripe Connect)
+  const { data: paymentDetails } = useQuery({
+    queryKey: ['store-payment-details', storeId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('store_payment_details')
+        .select('stripe_account_id, payouts_enabled, details_submitted')
+        .eq('store_id', storeId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!storeId,
+  });
+
+  // Toggle verified mutation
+  const toggleVerifiedMutation = useMutation({
+    mutationFn: async (isVerified: boolean) => {
+      const { error } = await supabase
+        .from('stores')
+        .update({ is_verified: isVerified })
+        .eq('id', storeId);
+      if (error) throw error;
+    },
+    onSuccess: (_, isVerified) => {
+      queryClient.invalidateQueries({ queryKey: ['seller-store-detail', storeId] });
+      toast.success(isVerified ? 'Verified badge granted' : 'Verified badge removed');
+    },
+    onError: (error) => {
+      toast.error('Failed to update: ' + error.message);
+    },
+  });
+
   // Fetch store statistics
   const { data: stats } = useQuery({
     queryKey: ['seller-store-stats', storeId],
@@ -723,6 +756,58 @@ export default function SellerStoreDetail() {
                   disabled={toggleActiveMutation.isPending}
                 />
               </div>
+              
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Verified Seller</p>
+                  <p className="text-sm text-muted-foreground">
+                    {paymentDetails?.details_submitted 
+                      ? 'Linked via Stripe Connect (can be overridden)' 
+                      : 'Stripe Connect not completed — can be manually granted'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {paymentDetails?.stripe_account_id && (
+                    <a
+                      href={`https://dashboard.stripe.com/connect/accounts/${paymentDetails.stripe_account_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Stripe
+                    </a>
+                  )}
+                  <Switch
+                    checked={store.is_verified}
+                    onCheckedChange={(checked) => toggleVerifiedMutation.mutate(checked)}
+                    disabled={toggleVerifiedMutation.isPending}
+                  />
+                </div>
+              </div>
+
+              {paymentDetails?.stripe_account_id && (
+                <div className="rounded-md border p-3 text-sm space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Stripe Account</span>
+                    <span className="font-mono text-xs">{paymentDetails.stripe_account_id}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Onboarding</span>
+                    <Badge variant={paymentDetails.details_submitted ? "default" : "secondary"} className={paymentDetails.details_submitted ? "bg-green-600 text-white border-0" : ""}>
+                      {paymentDetails.details_submitted ? 'Complete' : 'Incomplete'}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Payouts</span>
+                    <Badge variant={paymentDetails.payouts_enabled ? "default" : "secondary"} className={paymentDetails.payouts_enabled ? "bg-green-600 text-white border-0" : ""}>
+                      {paymentDetails.payouts_enabled ? 'Enabled' : 'Disabled'}
+                    </Badge>
+                  </div>
+                </div>
+              )}
               
               <Separator />
               
