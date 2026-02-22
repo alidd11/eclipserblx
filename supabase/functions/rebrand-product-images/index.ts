@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { decodeBase64 } from "https://deno.land/std@0.224.0/encoding/base64.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -130,9 +131,9 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Convert base64 to blob
+        // Convert base64 to bytes using Deno's standard library
         const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
-        const imageBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+        const imageBytes = decodeBase64(base64Data);
 
         // Upload to storage with new filename - always use PNG since AI returns PNG
         const timestamp = Date.now();
