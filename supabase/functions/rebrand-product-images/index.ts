@@ -131,8 +131,14 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Convert base64 to bytes using Deno's standard library
-        const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
+        // Convert base64 to bytes - clean the string thoroughly first
+        let base64Data = generatedImage.trim();
+        // Remove data URI prefix if present
+        if (base64Data.includes(",") && base64Data.startsWith("data:")) {
+          base64Data = base64Data.split(",")[1];
+        }
+        // Remove any whitespace/newlines that could corrupt the decode
+        base64Data = base64Data.replace(/\s/g, "");
         const imageBytes = decodeBase64(base64Data);
 
         // Upload to storage with new filename - always use PNG since AI returns PNG
