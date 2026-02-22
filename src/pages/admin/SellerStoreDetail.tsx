@@ -11,9 +11,10 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
-import { ArrowLeft, Store, User, Calendar, Percent, Shield, Power, Trash2, ExternalLink, Package, TrendingUp, DollarSign, Mail, MessageCircle, Gamepad2, Lock, Unlock, Link2, Sparkles, PowerOff } from 'lucide-react';
+import { ArrowLeft, Store, User, Calendar, Percent, Shield, Power, Trash2, ExternalLink, Package, TrendingUp, DollarSign, Mail, MessageCircle, Gamepad2, Lock, Unlock, Link2, Sparkles, PowerOff, ChevronDown, CheckCircle2, XCircle, BadgeCheck } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GenerateStoreBranding } from '@/components/admin/GenerateStoreBranding';
@@ -80,24 +81,6 @@ export default function SellerStoreDetail() {
       return data;
     },
     enabled: !!storeId,
-  });
-
-  // Toggle verified mutation
-  const toggleVerifiedMutation = useMutation({
-    mutationFn: async (isVerified: boolean) => {
-      const { error } = await supabase
-        .from('stores')
-        .update({ is_verified: isVerified })
-        .eq('id', storeId);
-      if (error) throw error;
-    },
-    onSuccess: (_, isVerified) => {
-      queryClient.invalidateQueries({ queryKey: ['seller-store-detail', storeId] });
-      toast.success(isVerified ? 'Verified badge granted' : 'Verified badge removed');
-    },
-    onError: (error) => {
-      toast.error('Failed to update: ' + error.message);
-    },
   });
 
   // Fetch store statistics
@@ -760,54 +743,83 @@ export default function SellerStoreDetail() {
               <Separator />
 
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Verified Seller</p>
-                  <p className="text-sm text-muted-foreground">
-                    {paymentDetails?.details_submitted 
-                      ? 'Linked via Stripe Connect (can be overridden)' 
-                      : 'Stripe Connect not completed — can be manually granted'}
-                  </p>
+                <div className="flex items-center gap-2">
+                  <BadgeCheck className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Verified Seller</p>
+                    <p className="text-sm text-muted-foreground">
+                      Automatically granted when Stripe Connect onboarding is completed
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <Badge 
+                  variant={store.is_verified ? "default" : "secondary"} 
+                  className={store.is_verified ? "bg-green-600 text-white border-0" : ""}
+                >
+                  {store.is_verified ? "Verified" : "Not Verified"}
+                </Badge>
+              </div>
+
+              <Collapsible>
+                <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full">
+                  <ChevronDown className="h-4 w-4 transition-transform duration-200 [&[data-state=open]]:rotate-180" />
+                  Stripe Connect Details
                   {paymentDetails?.stripe_account_id && (
                     <a
                       href={`https://dashboard.stripe.com/connect/accounts/${paymentDetails.stripe_account_id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                      className="ml-auto text-xs hover:text-foreground flex items-center gap-1"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <ExternalLink className="h-3 w-3" />
-                      Stripe
+                      Open in Stripe
                     </a>
                   )}
-                  <Switch
-                    checked={store.is_verified}
-                    onCheckedChange={(checked) => toggleVerifiedMutation.mutate(checked)}
-                    disabled={toggleVerifiedMutation.isPending}
-                  />
-                </div>
-              </div>
-
-              {paymentDetails?.stripe_account_id && (
-                <div className="rounded-md border p-3 text-sm space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Stripe Account</span>
-                    <span className="font-mono text-xs">{paymentDetails.stripe_account_id}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Onboarding</span>
-                    <Badge variant={paymentDetails.details_submitted ? "default" : "secondary"} className={paymentDetails.details_submitted ? "bg-green-600 text-white border-0" : ""}>
-                      {paymentDetails.details_submitted ? 'Complete' : 'Incomplete'}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Payouts</span>
-                    <Badge variant={paymentDetails.payouts_enabled ? "default" : "secondary"} className={paymentDetails.payouts_enabled ? "bg-green-600 text-white border-0" : ""}>
-                      {paymentDetails.payouts_enabled ? 'Enabled' : 'Disabled'}
-                    </Badge>
-                  </div>
-                </div>
-              )}
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-3">
+                  {!paymentDetails?.stripe_account_id ? (
+                    <div className="rounded-md border border-dashed p-4 text-center text-sm text-muted-foreground">
+                      No Stripe Connect account linked yet
+                    </div>
+                  ) : (
+                    <div className="rounded-md border p-3 text-sm space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Account ID</span>
+                        <span className="font-mono text-xs">{paymentDetails.stripe_account_id}</span>
+                      </div>
+                      <Separator />
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Onboarding Steps</p>
+                        <div className="flex items-center gap-2">
+                          {paymentDetails.stripe_account_id ? (
+                            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+                          )}
+                          <span>Account Created</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {paymentDetails.details_submitted ? (
+                            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+                          )}
+                          <span>Details Submitted (KYC / Identity)</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {paymentDetails.payouts_enabled ? (
+                            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+                          )}
+                          <span>Payouts Enabled</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
               
               <Separator />
               
