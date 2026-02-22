@@ -67,7 +67,6 @@ export function StoreSetupChecklist() {
         store.discord_url ||
         store.twitter_url ||
         store.youtube_url ||
-        store.website_url ||
         store.roblox_url
       );
 
@@ -122,7 +121,7 @@ export function StoreSetupChecklist() {
       label: 'Add Roblox marketplace link',
       description: 'Link your Roblox creator store',
       completed: !!store.roblox_url,
-      href: '/seller/settings/profile',
+      href: '/seller/roblox',
       icon: Gamepad2,
     },
     {
