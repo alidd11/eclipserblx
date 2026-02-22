@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { decodeBase64 } from "https://deno.land/std@0.224.0/encoding/base64.ts";
+import { Image } from "https://deno.land/x/imagescript@1.3.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,7 +17,6 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { product_id, dry_run } = await req.json();
@@ -55,7 +54,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Process one product at a time (pass product_id for individual processing)
     if (!product_id) {
       return new Response(
         JSON.stringify({
@@ -70,6 +68,16 @@ Deno.serve(async (req) => {
     const images = product.images || [];
     const results: Array<{ original: string; new_url: string | null; error?: string }> = [];
 
+    // Fetch the overlay image once
+    console.log("Fetching overlay image...");
+    const overlayResponse = await fetch(OVERLAY_URL);
+    if (!overlayResponse.ok) {
+      throw new Error(`Failed to fetch overlay: ${overlayResponse.status}`);
+    }
+    const overlayBytes = new Uint8Array(await overlayResponse.arrayBuffer());
+    const overlayImage = await Image.decode(overlayBytes);
+    console.log(`Overlay loaded: ${overlayImage.width}x${overlayImage.height}`);
+
     for (const imageUrl of images) {
       // Skip videos and GIFs
       if (/\.(mp4|webm|gif)$/i.test(imageUrl)) {
@@ -78,77 +86,42 @@ Deno.serve(async (req) => {
       }
 
       try {
-        // Call AI to remove old Eclipse watermark and add Quantis overlay
-        const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${lovableApiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash-image",
-            messages: [
-              {
-                role: "user",
-                content: [
-                  {
-                    type: "text",
-                    text: "I am the owner of this product and store. I am rebranding my store from 'Eclipse' to 'Quantis'. Please edit this product image by: 1) Removing the old 'Eclipse' store branding text/logo that I previously added. 2) Adding my new Quantis logo (provided as the second image) to the bottom-right corner at full 100% opacity with no transparency. This is my own content and branding. Return the edited image."
-                  },
-                  {
-                    type: "image_url",
-                    image_url: { url: imageUrl }
-                  },
-                  {
-                    type: "image_url",
-                    image_url: { url: OVERLAY_URL }
-                  }
-                ]
-              }
-            ],
-            modalities: ["image", "text"]
-          })
-        });
-
-        if (!aiResponse.ok) {
-          const errText = await aiResponse.text();
-          console.error("AI error response:", errText.slice(0, 500));
-          results.push({ original: imageUrl, new_url: null, error: `AI error: ${aiResponse.status} - ${errText.slice(0, 200)}` });
+        // Fetch the product image
+        console.log(`Processing: ${imageUrl}`);
+        const imgResponse = await fetch(imageUrl);
+        if (!imgResponse.ok) {
+          results.push({ original: imageUrl, new_url: null, error: `Fetch error: ${imgResponse.status}` });
           continue;
         }
+        const imgBytes = new Uint8Array(await imgResponse.arrayBuffer());
+        const baseImage = await Image.decode(imgBytes);
+        console.log(`Base image: ${baseImage.width}x${baseImage.height}`);
 
-        const aiData = await aiResponse.json();
-        console.log("AI response keys:", JSON.stringify(Object.keys(aiData)));
-        console.log("AI choices:", JSON.stringify(aiData.choices?.map((c: any) => ({
-          hasImages: !!c.message?.images?.length,
-          contentPreview: c.message?.content?.slice(0, 200),
-          imageCount: c.message?.images?.length || 0,
-        }))));
-        const generatedImage = aiData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+        // Scale the overlay to ~20% of the base image width
+        const targetWidth = Math.round(baseImage.width * 0.20);
+        const scaleFactor = targetWidth / overlayImage.width;
+        const targetHeight = Math.round(overlayImage.height * scaleFactor);
+        const scaledOverlay = overlayImage.clone().resize(targetWidth, targetHeight);
 
-        if (!generatedImage) {
-          results.push({ original: imageUrl, new_url: null, error: "AI did not return an image" });
-          continue;
-        }
+        // Position in bottom-right with padding
+        const padding = Math.round(baseImage.width * 0.03);
+        const x = baseImage.width - targetWidth - padding;
+        const y = baseImage.height - targetHeight - padding;
 
-        // Convert base64 to bytes - clean the string thoroughly first
-        let base64Data = generatedImage.trim();
-        // Remove data URI prefix if present
-        if (base64Data.includes(",") && base64Data.startsWith("data:")) {
-          base64Data = base64Data.split(",")[1];
-        }
-        // Remove any whitespace/newlines that could corrupt the decode
-        base64Data = base64Data.replace(/\s/g, "");
-        const imageBytes = decodeBase64(base64Data);
+        // Composite the overlay onto the base image at full opacity
+        baseImage.composite(scaledOverlay, x, y);
 
-        // Upload to storage with new filename - always use PNG since AI returns PNG
+        // Encode as PNG
+        const outputBytes = await baseImage.encode();
+
+        // Upload to storage
         const timestamp = Date.now();
         const randomSuffix = Math.random().toString(36).substring(2, 8);
         const newPath = `quantis-rebranded/${timestamp}-${randomSuffix}.png`;
 
         const { error: uploadError } = await supabase.storage
           .from("product-images")
-          .upload(newPath, imageBytes, {
+          .upload(newPath, outputBytes, {
             contentType: "image/png",
             upsert: false,
           });
@@ -163,7 +136,9 @@ Deno.serve(async (req) => {
           .getPublicUrl(newPath);
 
         results.push({ original: imageUrl, new_url: publicUrl.publicUrl });
+        console.log(`Done: ${publicUrl.publicUrl}`);
       } catch (imgErr) {
+        console.error(`Image error:`, imgErr);
         results.push({ original: imageUrl, new_url: null, error: String(imgErr) });
       }
     }
