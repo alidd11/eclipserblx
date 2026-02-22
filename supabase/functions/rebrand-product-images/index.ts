@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
         console.log(`Base image: ${baseImage.width}x${baseImage.height}`);
 
         // Scale the overlay to ~20% of the base image width
-        const targetWidth = Math.round(baseImage.width * 0.20);
+        const targetWidth = Math.round(baseImage.width * 0.35);
         const scaleFactor = targetWidth / overlayImage.width;
         const targetHeight = Math.round(overlayImage.height * scaleFactor);
         const scaledOverlay = overlayImage.clone().resize(targetWidth, targetHeight);
