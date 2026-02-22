@@ -9,7 +9,7 @@ const corsHeaders = {
 const QUANTIS_STORE_ID = "83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a";
 
 // Google Fonts CDN for a clean sans-serif font (Inter Bold)
-const FONT_URL = "https://unpkg.com/inter-font@3.19.0/ttf/Inter-Bold.ttf";
+const FONT_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/Inter-Bold.ttf";
 
 // Cache the font globally
 let cachedFont: Uint8Array | null = null;
