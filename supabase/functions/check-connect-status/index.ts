@@ -40,14 +40,15 @@ serve(async (req) => {
     if (!user?.id) throw new Error("User not authenticated");
     logStep("User authenticated", { userId: user.id });
 
-    // Get seller's store ID first
-    const { data: store, error: storeError } = await supabaseClient
+    // Get seller's store ID first (pick first store if user owns multiple)
+    const { data: stores, error: storeError } = await supabaseClient
       .from('stores')
       .select('id')
       .eq('owner_id', user.id)
-      .maybeSingle();
+      .limit(1);
 
     if (storeError) throw new Error(`Store lookup error: ${storeError.message}`);
+    const store = stores?.[0];
     if (!store) {
       logStep("No store found");
       return new Response(JSON.stringify({

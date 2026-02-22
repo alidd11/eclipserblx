@@ -40,16 +40,25 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Get the store for this user
-    const { data: store, error: storeError } = await supabaseClient
+    // Get the store for this user - support optional store_id param
+    let body: { store_id?: string } = {};
+    try { body = await req.json(); } catch { /* no body */ }
+
+    let storeQuery = supabaseClient
       .from('stores')
       .select('id, name')
-      .eq('owner_id', user.id)
-      .single();
+      .eq('owner_id', user.id);
 
-    if (storeError || !store) {
+    if (body.store_id) {
+      storeQuery = storeQuery.eq('id', body.store_id);
+    }
+
+    const { data: stores, error: storeError } = await storeQuery.limit(1);
+
+    if (storeError || !stores || stores.length === 0) {
       throw new Error("No store found for this user");
     }
+    const store = stores[0];
     logStep("Found store", { storeId: store.id, storeName: store.name });
 
     // Get existing payment details
