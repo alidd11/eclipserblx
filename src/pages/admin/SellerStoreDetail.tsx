@@ -729,11 +729,13 @@ export default function SellerStoreDetail() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Trusted Seller</p>
-                  <p className="text-sm text-muted-foreground">Automatically granted when Stripe Connect is linked</p>
+                  <p className="text-sm text-muted-foreground">Manually granted by administrators for proven sellers</p>
                 </div>
-                <Badge variant={store.is_trusted ? "default" : "secondary"} className={store.is_trusted ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0" : ""}>
-                  {store.is_trusted ? "Active" : "Not Connected"}
-                </Badge>
+                <Switch
+                  checked={store.is_trusted}
+                  onCheckedChange={(checked) => toggleTrustedMutation.mutate(checked)}
+                  disabled={toggleTrustedMutation.isPending}
+                />
               </div>
               
               <Separator />
