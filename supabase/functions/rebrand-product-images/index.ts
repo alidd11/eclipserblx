@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
                 content: [
                   {
                     type: "text",
-                    text: "Edit this product image: Remove any text or logo that says 'Eclipse' from the image. Then place the watermark from the second image (Quantis logo) in the bottom-right corner at about 15% opacity. Return the edited image."
+                    text: "Edit this product image: Remove any text or logo that says 'Eclipse' from the image. Then place the watermark from the second image (Quantis logo) in the bottom-right corner at about 30% opacity, making it clearly visible. Return the edited image."
                   },
                   {
                     type: "image_url",
