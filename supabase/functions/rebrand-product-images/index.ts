@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { Image } from "https://deno.land/x/imagescript@1.3.0/mod.ts";
+import { Image, TextLayout } from "https://deno.land/x/imagescript@1.3.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,7 +7,20 @@ const corsHeaders = {
 };
 
 const QUANTIS_STORE_ID = "83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a";
-const OVERLAY_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/quantis-overlay.png";
+
+// Google Fonts CDN for a clean sans-serif font (Inter Bold)
+const FONT_URL = "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYAZJhiJ-Ys-wL.woff2";
+
+// Cache the font globally
+let cachedFont: Uint8Array | null = null;
+
+async function getFont(): Promise<Uint8Array> {
+  if (cachedFont) return cachedFont;
+  const response = await fetch(FONT_URL);
+  if (!response.ok) throw new Error(`Failed to fetch font: ${response.status}`);
+  cachedFont = new Uint8Array(await response.arrayBuffer());
+  return cachedFont;
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -68,15 +81,10 @@ Deno.serve(async (req) => {
     const images = product.images || [];
     const results: Array<{ original: string; new_url: string | null; error?: string }> = [];
 
-    // Fetch the overlay image once
-    console.log("Fetching overlay image...");
-    const overlayResponse = await fetch(OVERLAY_URL);
-    if (!overlayResponse.ok) {
-      throw new Error(`Failed to fetch overlay: ${overlayResponse.status}`);
-    }
-    const overlayBytes = new Uint8Array(await overlayResponse.arrayBuffer());
-    const overlayImage = await Image.decode(overlayBytes);
-    console.log(`Overlay loaded: ${overlayImage.width}x${overlayImage.height}`);
+    // Load font
+    console.log("Loading font...");
+    const font = await getFont();
+    console.log(`Font loaded: ${font.length} bytes`);
 
     for (const imageUrl of images) {
       // Skip videos and GIFs
@@ -97,19 +105,35 @@ Deno.serve(async (req) => {
         const baseImage = await Image.decode(imgBytes);
         console.log(`Base image: ${baseImage.width}x${baseImage.height}`);
 
-        // Scale the overlay to ~20% of the base image width
-        const targetWidth = Math.round(baseImage.width * 0.35);
-        const scaleFactor = targetWidth / overlayImage.width;
-        const targetHeight = Math.round(overlayImage.height * scaleFactor);
-        const scaledOverlay = overlayImage.clone().resize(targetWidth, targetHeight);
+        // Calculate font size relative to image (about 5% of image width)
+        const fontSize = Math.max(24, Math.round(baseImage.width * 0.05));
+
+        // Render "Quantis" text in white
+        const textImage = Image.renderText(
+          font,
+          fontSize,
+          "Quantis",
+          0xFFFFFFFF, // White, full opacity
+          new TextLayout({ maxWidth: baseImage.width })
+        );
+
+        // Also render a shadow version for contrast
+        const shadowImage = Image.renderText(
+          font,
+          fontSize,
+          "Quantis",
+          0x00000088, // Black, ~53% opacity for shadow
+          new TextLayout({ maxWidth: baseImage.width })
+        );
 
         // Position in bottom-right with padding
         const padding = Math.round(baseImage.width * 0.03);
-        const x = baseImage.width - targetWidth - padding;
-        const y = baseImage.height - targetHeight - padding;
+        const x = baseImage.width - textImage.width - padding;
+        const y = baseImage.height - textImage.height - padding;
 
-        // Composite the overlay onto the base image at full opacity
-        baseImage.composite(scaledOverlay, x, y);
+        // Composite shadow first (offset by 2px), then white text on top
+        baseImage.composite(shadowImage, x + 2, y + 2);
+        baseImage.composite(textImage, x, y);
 
         // Encode as PNG
         const outputBytes = await baseImage.encode();
