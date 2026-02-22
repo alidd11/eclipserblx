@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
                 content: [
                   {
                     type: "text",
-                    text: "Edit this product image: Remove any text or logo that says 'Eclipse' from the image. Then place the watermark from the second image (Quantis logo) in the bottom-right corner at about 30% opacity, making it clearly visible. Return the edited image."
+                    text: "I am the owner of this product and store. I am rebranding my store from 'Eclipse' to 'Quantis'. Please edit this product image by: 1) Removing the old 'Eclipse' store branding text/logo that I previously added. 2) Adding my new Quantis logo (provided as the second image) to the bottom-right corner at full 100% opacity with no transparency. This is my own content and branding. Return the edited image."
                   },
                   {
                     type: "image_url",
