@@ -135,11 +135,11 @@ serve(async (req) => {
       sellerWebhook: { sent: false, skipped: false, error: null as string | null },
     };
 
-    // Send to main Eclipse channel/webhook
+    // Send to main Quantis channel/webhook
     if (mainChannelId) {
       // Use bot API
       const result = await sendBotMessage(mainChannelId, {
-        embeds: [buildEmbed("Eclipse Store • Reviews")],
+        embeds: [buildEmbed("Quantis • Reviews")],
       });
 
       if (result.success) {
@@ -164,7 +164,7 @@ serve(async (req) => {
         const discordResponse = await fetch(webhookUrlWithWait, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ embeds: [buildEmbed("Eclipse Store • Reviews")] }),
+          body: JSON.stringify({ embeds: [buildEmbed("Quantis • Reviews")] }),
         });
 
         if (discordResponse.ok) {
@@ -203,7 +203,7 @@ serve(async (req) => {
         const sellerResponse = await fetch(sellerWebhookWithWait, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ embeds: [buildEmbed(`${storeName || 'Your Store'} • Eclipse Store`)] }),
+          body: JSON.stringify({ embeds: [buildEmbed(`${storeName || 'Your Store'} • Quantis`)] }),
         });
 
         if (sellerResponse.ok) {

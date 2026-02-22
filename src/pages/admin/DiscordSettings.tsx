@@ -310,12 +310,12 @@ export default function DiscordSettings() {
             description: '**Test Product**\nThis is a test notification for the product drops webhook.',
             color: 0x00CED1, // Cyan
             fields: [
-              { name: '🏪 Store', value: 'Eclipse Store', inline: true },
+              { name: '🏪 Store', value: 'Quantis', inline: true },
               { name: '💰 Price', value: '£9.99', inline: true },
               { name: '🔗 Link', value: `[${productLink}](https://${productLink})`, inline: false },
             ],
             thumbnail: { url: 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-B2C64A0E72EE2F26F0FCEC7D4FAD9E00-Png/150/150/AvatarHeadshot/Webp/noFilter' },
-            footer: { text: 'Eclipse Marketplace • Product Drop' },
+            footer: { text: 'Quantis • Product Drop' },
             timestamp: new Date().toISOString(),
           },
           {
@@ -347,13 +347,13 @@ export default function DiscordSettings() {
             description: '**Test Product**\nThis is a test notification for the early product drops webhook.\n\n*Eclipse+ members get early access!*',
             color: 0x8B5CF6, // Violet
             fields: [
-              { name: '🏪 Store', value: 'Eclipse Store', inline: true },
+              { name: '🏪 Store', value: 'Quantis', inline: true },
               { name: '💰 Price', value: '£9.99', inline: true },
               { name: '⏰ Early Access', value: '24 hours', inline: true },
               { name: '🔗 Link', value: `[${productLink}](https://${productLink})`, inline: false },
             ],
             thumbnail: { url: 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-B2C64A0E72EE2F26F0FCEC7D4FAD9E00-Png/150/150/AvatarHeadshot/Webp/noFilter' },
-            footer: { text: 'Eclipse Marketplace • Eclipse+ Early Access' },
+            footer: { text: 'Quantis • Eclipse+ Early Access' },
             timestamp: new Date().toISOString(),
           },
           {

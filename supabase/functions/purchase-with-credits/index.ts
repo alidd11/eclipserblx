@@ -300,7 +300,7 @@ serve(async (req) => {
                     { name: "Your Earnings", value: `£${sellerEarnings.toFixed(2)}`, inline: true },
                     { name: "Payment Method", value: "Store Credits", inline: true },
                   ],
-                  footer: { text: `${item.store_name || 'Your Store'} • Eclipse Store` },
+                  footer: { text: `${item.store_name || 'Your Store'} • Quantis` },
                   timestamp: new Date().toISOString(),
                 }],
               };

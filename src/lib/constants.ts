@@ -3,15 +3,17 @@ export const SITE_DESCRIPTION = "Premium Roblox assets for your roleplay servers
 export const DISCORD_URL = "https://discord.gg/EmQnXwv6VZ";
 export const ROBLOX_GAME_URL = "https://www.roblox.com/games/YOUR_GAME_ID";
 
-// Eclipse Store - the main marketplace store managed by admins only
+// Quantis Store - the main marketplace store managed by admins only
 // Products linked to this store are READ-ONLY in the seller dashboard
-export const ECLIPSE_STORE_ID = '83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a';
+export const QUANTIS_STORE_ID = '83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a';
+/** @deprecated Use QUANTIS_STORE_ID instead */
+export const ECLIPSE_STORE_ID = QUANTIS_STORE_ID;
 
 // Vino Store - second admin-controlled marketplace store
 export const VINO_STORE_ID = '9b842052-e1fd-4dfe-99bf-c7625df3e17d';
 
 // All admin-managed stores (read-only in seller dashboard)
-export const ADMIN_MANAGED_STORES = [ECLIPSE_STORE_ID, VINO_STORE_ID] as const;
+export const ADMIN_MANAGED_STORES = [QUANTIS_STORE_ID, VINO_STORE_ID] as const;
 
 export const CATEGORIES = [
   { name: "Vehicle Liveries", slug: "vehicle-liveries", icon: "Car" },

@@ -834,7 +834,7 @@ async function processSellerEarnings(
                 { name: "Sale Price", value: `£${grossAmount.toFixed(2)}`, inline: true },
                 { name: "Your Earnings", value: `£${sellerEarnings.toFixed(2)}`, inline: true },
               ],
-              footer: { text: `${storeName || 'Your Store'} • Eclipse Store` },
+              footer: { text: `${storeName || 'Your Store'} • Quantis` },
               timestamp: new Date().toISOString(),
             }],
           }),
