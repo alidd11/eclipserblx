@@ -355,9 +355,9 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
           </div>
         )}
 
-        {/* Store info overlaid at bottom of banner */}
+        {/* Store info below banner */}
         {!isCollapsed ? (
-          <div className={cn("relative px-3 pb-3 flex items-end gap-2.5", isMobileDrawer ? "pt-3" : "-mt-5")}>
+          <div className={cn("relative px-3 pb-2.5 flex items-center gap-2.5", isMobileDrawer ? "pt-3" : "pt-2")}>
             <div className="h-10 w-10 rounded-lg border-2 border-card bg-card shrink-0 overflow-hidden shadow-sm">
               {store?.logo_url ? (
                 <img src={store.logo_url} alt={store?.name || 'Store'} className="h-full w-full object-cover" />
@@ -399,7 +399,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
             )}
           </div>
         ) : (
-          <div className="relative px-1 pb-2 -mt-4 flex flex-col items-center gap-2">
+          <div className="relative px-1 pb-2 pt-2 flex flex-col items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="h-8 w-8 rounded-lg border-2 border-card bg-card overflow-hidden shadow-sm">
