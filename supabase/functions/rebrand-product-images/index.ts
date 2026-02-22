@@ -134,16 +134,15 @@ Deno.serve(async (req) => {
         const base64Data = generatedImage.replace(/^data:image\/\w+;base64,/, "");
         const imageBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
 
-        // Upload to storage with new filename
+        // Upload to storage with new filename - always use PNG since AI returns PNG
         const timestamp = Date.now();
         const randomSuffix = Math.random().toString(36).substring(2, 8);
-        const ext = imageUrl.match(/\.(jpe?g|png|webp)/i)?.[1] || "png";
-        const newPath = `quantis-rebranded/${timestamp}-${randomSuffix}.${ext}`;
+        const newPath = `quantis-rebranded/${timestamp}-${randomSuffix}.png`;
 
         const { error: uploadError } = await supabase.storage
           .from("product-images")
           .upload(newPath, imageBytes, {
-            contentType: `image/${ext === "jpg" ? "jpeg" : ext}`,
+            contentType: "image/png",
             upsert: false,
           });
 
