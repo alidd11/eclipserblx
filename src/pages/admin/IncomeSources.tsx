@@ -65,7 +65,7 @@ export default function AdminIncomeSources() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('orders')
-        .select('id, total, status, created_at, customer_email')
+        .select('id, total, status, created_at, user_id')
         .in('status', ['paid', 'fulfilled', 'completed'])
         .order('created_at', { ascending: false })
         .limit(500);
@@ -145,7 +145,7 @@ export default function AdminIncomeSources() {
         currency: '£',
         status: o.status,
         date: o.created_at,
-        metadata: o.customer_email ?? undefined,
+        metadata: o.user_id ? o.user_id.slice(0, 8) : undefined,
       });
     });
 
