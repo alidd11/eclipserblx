@@ -636,8 +636,9 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                 })}
                 {renderNavItem({
                   title: 'Community',
-                  icon: MessageSquare,
-                  href: '/community',
+                  icon: MessageSquare as LucideIcon,
+                  href: discordUrl,
+                  external: true,
                 })}
               </CollapsibleContent>
             </Collapsible>
