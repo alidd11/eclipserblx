@@ -54,6 +54,10 @@ Deno.serve(async (req) => {
           },
         ],
       },
+      {
+        color: 0x5865f2,
+        image: { url: "https://roleplay-hub-shop.lovable.app/images/eclipse-banner.png" },
+      },
     ];
 
     const response = await fetch(`${DISCORD_API_BASE}/channels/${CHANNEL_ID}/threads`, {
