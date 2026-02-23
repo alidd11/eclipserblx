@@ -190,8 +190,8 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
     const content = (
       <>
         <item.icon className={cn(
-          "h-3.5 w-3.5 shrink-0 transition-colors",
-          isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
+          "h-4 w-4 shrink-0 transition-colors",
+          isActive ? "stroke-[2.25]" : "stroke-[1.75] text-muted-foreground group-hover:text-foreground"
         )} />
         {!isCollapsed && (
           <span className="min-w-0 truncate flex-1">{item.title}</span>
@@ -208,13 +208,13 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
     );
 
     const linkClass = cn(
-      "group rounded-md text-[12px] font-medium select-none transition-all duration-150 relative",
+      "group rounded-md text-[13px] font-medium select-none transition-all duration-150 relative",
       "active:scale-[0.98] active:opacity-90",
       isCollapsed
         ? "flex items-center justify-center p-2"
-        : "flex items-center gap-2 px-2 py-[5px]",
+        : "flex items-center gap-2.5 px-2.5 py-1.5",
       isActive
-        ? "bg-primary text-primary-foreground shadow-sm"
+        ? "border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none pl-[calc(0.625rem-2px)]"
         : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
     );
 
@@ -279,7 +279,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
                     onClick={handleNavClick}
                     className={({ isActive }) => cn(
                       "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
-                      isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                      isActive ? "bg-muted/60 text-foreground border-l-2 border-primary pl-[calc(0.75rem-2px)]" : "hover:bg-muted"
                     )}
                   >
                     <item.icon className="h-3.5 w-3.5" />
@@ -302,7 +302,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
         <CollapsibleTrigger asChild>
           <button
             className={cn(
-              "w-full flex items-center gap-2 px-2 py-[4px] rounded-md text-[10px] font-semibold uppercase tracking-wide select-none",
+              "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider select-none",
               "transition-all duration-150 active:scale-[0.98]",
               "focus:outline-none",
               hasActiveItem
@@ -310,17 +310,16 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
                 : "text-muted-foreground/50 hover:text-muted-foreground"
             )}
           >
-            <group.icon className="h-3 w-3 shrink-0" />
             <span className="flex-1 text-left truncate">{group.title}</span>
-            <ChevronDown 
+            <ChevronDown
               className={cn(
-                "h-2.5 w-2.5 shrink-0 transition-transform duration-200",
+                "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
                 isOpen ? "rotate-0" : "-rotate-90"
               )} 
             />
           </button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="ml-[11px] border-l border-border/40 pl-1.5 space-y-px pt-0.5 pb-0.5">
+        <CollapsibleContent className="ml-3 space-y-px pt-px pb-0.5">
           {group.items.map(item => renderNavLink(item))}
         </CollapsibleContent>
       </Collapsible>

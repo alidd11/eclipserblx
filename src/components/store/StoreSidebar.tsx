@@ -212,7 +212,7 @@ export function StoreSidebar({
         ? "flex items-center justify-center py-1.5"
         : "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3",
       isActive
-        ? "bg-muted text-foreground"
+        ? "border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none pl-[calc(0.625rem-2px)]"
         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
     );
 
@@ -467,17 +467,17 @@ export function StoreSidebar({
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-px pt-px">
           {/* All Products */}
-          <button
-            onClick={() => handleTabClick(null)}
-            className={cn(
-              "w-full rounded-md text-[13px] font-medium select-none",
-              "transition-colors duration-100",
-              "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3",
-              isAllProductsActive
-                ? "bg-muted text-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-            )}
-          >
+            <button
+              onClick={() => handleTabClick(null)}
+              className={cn(
+                "w-full rounded-md text-[13px] font-medium select-none",
+                "transition-colors duration-100",
+                "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3",
+                isAllProductsActive
+                  ? "border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none pl-[calc(0.625rem-2px)]"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              )}
+            >
             <LayoutGrid className={cn(ICON_SIZE, ICON_STROKE_DEFAULT, "shrink-0")} />
             <span className="leading-none flex-1 text-left">All Products</span>
             <span className="text-xs opacity-70">{productCount}</span>
@@ -493,7 +493,7 @@ export function StoreSidebar({
                 "transition-colors duration-100",
                 "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3",
                 activeTab === tab.slug
-                  ? "bg-muted text-foreground"
+                  ? "border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none pl-[calc(0.625rem-2px)]"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               )}
             >
