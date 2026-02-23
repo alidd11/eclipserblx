@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Megaphone, Plus, Trash2, AlertCircle, AlertTriangle, Info, Shield, TrendingUp, TrendingDown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import quantisBanner from '@/assets/quantis-banner.jpeg';
-import quantisLogo from '@/assets/quantis-logo.png';
+import eclipseBanner from '@/assets/eclipse-banner.jpeg';
+import eclipseLogo from '@/assets/eclipse-logo.png';
 import { motion } from 'framer-motion';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -405,7 +405,7 @@ export default function AdminDashboard() {
           {/* Banner area with branding */}
           <div className="relative h-28 sm:h-32 bg-gradient-to-br from-muted via-muted/80 to-card overflow-hidden">
             <img
-              src={quantisBanner}
+              src={eclipseBanner}
               alt=""
               className="absolute inset-0 w-full h-full object-cover opacity-40"
             />
@@ -416,8 +416,8 @@ export default function AdminDashboard() {
             {/* Avatar + Name row */}
             <div className="flex items-end gap-4 mb-4">
               <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-4 border-card shadow-lg">
-                <AvatarImage src={quantisLogo} alt="Quantis Store" />
-                <AvatarFallback className="bg-muted text-2xl font-bold">Q</AvatarFallback>
+                <AvatarImage src={eclipseLogo} alt="Eclipse" />
+                <AvatarFallback className="bg-muted text-2xl font-bold">E</AvatarFallback>
               </Avatar>
 
               <div className="flex-1 min-w-0 pb-1">
