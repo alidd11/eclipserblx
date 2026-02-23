@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
 
     // Position bottom-right, flush with edges
     const padX = Math.round(img.width * 0.02);
-    const padY = 2; // Nearly flush
+    const padY = 10; // Small gap from bottom
     const x = img.width - targetW - padX;
     const y = img.height - targetH - padY;
     img.composite(scaledWm, x, y);
