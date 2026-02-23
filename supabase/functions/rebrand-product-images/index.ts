@@ -221,9 +221,10 @@ Deno.serve(async (req) => {
 
         const scaledWatermark = watermarkImage.clone().resize(targetWidth, targetHeight);
 
-        // Center the watermark
-        const x = Math.round((cleanedImage.width - targetWidth) / 2);
-        const y = Math.round((cleanedImage.height - targetHeight) / 2);
+        // Position watermark at bottom-right with padding
+        const padding = Math.round(cleanedImage.width * 0.03);
+        const x = cleanedImage.width - targetWidth - padding;
+        const y = cleanedImage.height - targetHeight - padding;
 
         cleanedImage.composite(scaledWatermark, x, y);
 
