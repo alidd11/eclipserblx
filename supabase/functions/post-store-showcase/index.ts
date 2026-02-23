@@ -128,7 +128,22 @@ Deno.serve(async (req) => {
         embeds[0].thumbnail = { url: store.logo_url };
       }
 
-      // Add banner as image embed
+      // Add product images as separate image embeds (Discord max 10 embeds per message)
+      // Use first image from each product, up to 8 (leaving room for main + banner embeds)
+      const maxImageEmbeds = Math.min(8, 10 - embeds.length - (store.banner_url ? 1 : 0));
+      if (products && products.length > 0) {
+        for (let i = 0; i < Math.min(products.length, maxImageEmbeds); i++) {
+          const p = products[i] as any;
+          if (Array.isArray(p.images) && p.images.length > 0) {
+            embeds.push({
+              color: 0x5865f2,
+              image: { url: p.images[0] },
+            });
+          }
+        }
+      }
+
+      // Add banner as final image embed
       if (store.banner_url) {
         embeds.push({ color: 0x5865f2, image: { url: store.banner_url } });
       }
