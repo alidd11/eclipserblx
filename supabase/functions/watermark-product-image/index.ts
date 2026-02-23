@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
 
     // Position bottom-right, very close to bottom edge
     const padX = Math.round(img.width * 0.02);
-    const padY = 5; // Fixed 5px from bottom
+    const padY = 0; // Flush with bottom edge
     const x = img.width - targetW - padX;
     const y = img.height - targetH - padY;
     img.composite(scaledWm, x, y);
