@@ -24,18 +24,15 @@ export function LandingHero() {
   const { t } = useTranslation();
   const { isSeller } = useSellerStatus();
 
-  const highlights = [
-    t('landing.headlineHighlight'),
-    'Discord Experience.',
-  ];
-  const [highlightIndex, setHighlightIndex] = useState(0);
+  const rotatingWords = ['Roblox', 'Discord'];
+  const [wordIndex, setWordIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setHighlightIndex((prev) => (prev + 1) % highlights.length);
+      setWordIndex((prev) => (prev + 1) % rotatingWords.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, [highlights.length]);
+  }, [rotatingWords.length]);
 
   const handleSearchClick = (term: string) => {
     navigate(`/products?q=${encodeURIComponent(term)}`);
@@ -55,14 +52,14 @@ export function LandingHero() {
               <span className="text-primary inline-block overflow-hidden align-bottom" style={{ height: '1.2em' }}>
                 <AnimatePresence mode="wait">
                   <motion.span
-                    key={highlightIndex}
+                    key={wordIndex}
                     initial={{ y: '100%', opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: '-100%', opacity: 0 }}
                     transition={{ duration: 0.4, ease: 'easeInOut' }}
                     className="block"
                   >
-                    {highlights[highlightIndex]}
+                    {rotatingWords[wordIndex]} Experience.
                   </motion.span>
                 </AnimatePresence>
               </span>
