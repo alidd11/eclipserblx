@@ -56,6 +56,23 @@ const DiscordIcon = forwardRef<SVGSVGElement, { className?: string }>(
 );
 DiscordIcon.displayName = 'DiscordIcon';
 
+// Roblox icon component (forwardRef to satisfy Radix asChild/TooltipTrigger)
+const RobloxIcon = forwardRef<SVGSVGElement, { className?: string }>(
+  ({ className, ...props }, ref) => (
+    <svg
+      ref={ref}
+      className={className}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path d="M5.164 0L0 18.627 18.836 24 24 5.373 5.164 0zm10.291 14.931l-6.404-1.733 1.72-6.467 6.404 1.733-1.72 6.467z" />
+    </svg>
+  )
+);
+RobloxIcon.displayName = 'RobloxIcon';
+
 const STORAGE_KEY = 'customer-sidebar-groups';
 
 // Unified icon styling constants — compact Discord-style
@@ -560,7 +577,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                     "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   )}
                 >
-                  <LayoutGrid className={cn(ICON_SIZE, ICON_STROKE_DEFAULT)} />
+                  <RobloxIcon className={cn(ICON_SIZE)} />
                   <span className="flex-1 text-left truncate">Roblox</span>
                   <ChevronDown className={cn(
                     ICON_SIZE_SMALL, "shrink-0 transition-transform duration-200",
