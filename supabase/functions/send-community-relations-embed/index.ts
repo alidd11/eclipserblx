@@ -55,9 +55,10 @@ Deno.serve(async (req) => {
           title: "🎫 Support",
           description:
             "Need help? Our support team is here for you.\n\n" +
-            `📩 **DM <@1394765283729735720>** to open a modmail ticket\n` +
+            `📩 **<@1394765283729735720>** to open a modmail ticket\n` +
             `🎟️ [**Submit a Ticket →**](${SITE_URL}/support/tickets)\n` +
-            `❓ [**Browse FAQ →**](${SITE_URL}/faq)\n\n` +
+            `❓ [**Browse FAQ →**](${SITE_URL}/faq)\n` +
+            `🚀 [**Support Page →**](${SITE_URL}/support)\n\n` +
             "Our staff aim to respond within **24 hours**.",
           color: ECLIPSE_COLOR,
         },
