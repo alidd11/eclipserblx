@@ -63,10 +63,9 @@ Deno.serve(async (req) => {
     const targetH = Math.round(wm.height * scale);
     const scaledWm = wm.clone().resize(targetW, targetH);
 
-    // Position bottom-right, ~1.5cm above bottom edge
-    // Use fixed pixel value: ~15px from bottom for typical images
+    // Position bottom-right, very close to bottom edge
     const padX = Math.round(img.width * 0.02);
-    const padY = Math.round(Math.min(img.height * 0.015, 20));
+    const padY = 5; // Fixed 5px from bottom
     const x = img.width - targetW - padX;
     const y = img.height - targetH - padY;
     img.composite(scaledWm, x, y);
