@@ -49,7 +49,9 @@ export function LandingHero() {
 
             <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold leading-[1.15] tracking-tight mb-3">
               {t('landing.headline')}{' '}
-              <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em', width: 'auto' }}>
+              <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em' }}>
+                {/* Invisible spacer for widest word */}
+                <span className="invisible">{rotatingWords.reduce((a, b) => a.length > b.length ? a : b)}</span>
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={wordIndex}
@@ -57,6 +59,7 @@ export function LandingHero() {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: '-100%', opacity: 0 }}
                     transition={{ duration: 0.4, ease: 'easeInOut' }}
+                    className="absolute left-0"
                   >
                     {rotatingWords[wordIndex]}
                   </motion.span>
