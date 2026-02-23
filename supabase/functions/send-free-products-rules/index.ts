@@ -48,6 +48,11 @@ Deno.serve(async (req) => {
             inline: false,
           },
           {
+            name: "6️⃣ Ownership & Licensing",
+            value: "You must own the content you share or have the legal right to distribute it freely. This includes open-source, Creative Commons, or other permissive licences. Sharing copyrighted material without permission is prohibited.",
+            inline: false,
+          },
+          {
             name: "⚠️ Violations",
             value: "Breaking these rules may result in your posts being removed, a warning, or loss of access to this channel.",
             inline: false,
