@@ -426,8 +426,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       )
     );
 
-    // Single-item groups render directly
-    if (group.items.length === 1) {
+    // Single-item groups render directly (skip for resources which has nested content)
+    if (group.items.length === 1 && group.id !== 'resources') {
       return (
         <div key={group.id} className="mb-1">
           {renderNavItem(group.items[0])}
