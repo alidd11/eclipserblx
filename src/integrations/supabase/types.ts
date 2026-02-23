@@ -4057,6 +4057,7 @@ export type Database = {
           download_count: number | null
           early_access_hours: number | null
           eclipse_free_eligible: boolean
+          feed_notified_at: string | null
           file_review_consented_at: string | null
           file_review_requested_at: string | null
           id: string
@@ -4092,6 +4093,7 @@ export type Database = {
           download_count?: number | null
           early_access_hours?: number | null
           eclipse_free_eligible?: boolean
+          feed_notified_at?: string | null
           file_review_consented_at?: string | null
           file_review_requested_at?: string | null
           id?: string
@@ -4127,6 +4129,7 @@ export type Database = {
           download_count?: number | null
           early_access_hours?: number | null
           eclipse_free_eligible?: boolean
+          feed_notified_at?: string | null
           file_review_consented_at?: string | null
           file_review_requested_at?: string | null
           id?: string
