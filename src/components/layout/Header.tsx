@@ -294,7 +294,7 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
                   {parentCategories.map((cat) => (
                     <NavLink
                       key={cat.id}
-                      to={`/categories?category=${cat.slug}`}
+                      to={`/products?category=${cat.slug}`}
                       onClick={() => setMobileMenuOpen(false)}
                       className={({ isActive }) =>
                         cn(

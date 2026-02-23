@@ -592,7 +592,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                   return renderNavItem({
                     title: cat.name,
                     icon: CatIcon as unknown as LucideIcon,
-                    href: `/categories?category=${cat.slug}`,
+                    href: `/products?category=${cat.slug}`,
                   });
                 })}
               </CollapsibleContent>
