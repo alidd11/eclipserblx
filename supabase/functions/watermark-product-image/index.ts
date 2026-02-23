@@ -76,14 +76,14 @@ Deno.serve(async (req) => {
     const cropHeight = bottomContent + 1;
     const croppedWm = wm.clone().crop(0, 0, wm.width, cropHeight);
     
-    const targetW = Math.round(img.width * 0.40);
+    const targetW = Math.round(img.width * 0.45);
     const scale = targetW / croppedWm.width;
     const targetH = Math.round(croppedWm.height * scale);
     const scaledWm = croppedWm.resize(targetW, targetH);
 
     // Position bottom-right, flush with edges
     const padX = Math.round(img.width * 0.02);
-    const padY = 10; // Small gap from bottom
+    const padY = 20; // A bit more gap from bottom
     const x = img.width - targetW - padX;
     const y = img.height - targetH - padY;
     img.composite(scaledWm, x, y);
