@@ -63,9 +63,9 @@ Deno.serve(async (req) => {
     const targetH = Math.round(wm.height * scale);
     const scaledWm = wm.clone().resize(targetW, targetH);
 
-    // Position bottom-right with minimal padding (hugging the bottom)
-    const padX = Math.round(img.width * 0.015);
-    const padY = Math.round(img.height * 0.005);
+    // Position bottom-right with comfortable bottom margin (~1.5cm visual gap)
+    const padX = Math.round(img.width * 0.02);
+    const padY = Math.round(img.height * 0.03);
     const x = img.width - targetW - padX;
     const y = img.height - targetH - padY;
     img.composite(scaledWm, x, y);
