@@ -28,6 +28,8 @@ const CATEGORY_CHANNEL_MAP: Record<string, string> = {
   "852838dc-adb6-4154-93fe-d1814fe46263": "1475316486594887751",
   // Roblox Bots
   "40c65de2-baab-4b9d-b695-f562dafff19b": "1475316541665972306",
+  // Uniforms
+  "1ce201f8-e223-480c-a945-89da58455858": "1475335646540337324",
 };
 
 Deno.serve(async (req) => {
