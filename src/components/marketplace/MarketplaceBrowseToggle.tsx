@@ -16,7 +16,7 @@ const tabs: { mode: BrowseMode; label: string; icon: typeof Store }[] = [
 
 export function MarketplaceBrowseToggle({ mode, onChange }: MarketplaceBrowseToggleProps) {
   return (
-    <div className="flex items-center border-b border-border">
+    <div className="flex items-center justify-center border-b border-border">
       {tabs.map(({ mode: m, label, icon: Icon }) => (
         <button
           key={m}
