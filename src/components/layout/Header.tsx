@@ -290,8 +290,8 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
                 )} />
               </button>
               {resourcesOpen && parentCategories && (
-                <div className="flex flex-col">
-                  {parentCategories.map((cat) => (
+              <div className="flex flex-col">
+                  {parentCategories.filter(cat => cat.slug !== 'bots').map((cat) => (
                     <NavLink
                       key={cat.id}
                       to={`/products?category=${cat.slug}`}
