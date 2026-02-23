@@ -19,7 +19,7 @@ const CATEGORY_CHANNEL_MAP: Record<string, string> = {
   "348942a6-210d-4f93-88a7-6d34256f3868": "1475335169245184191", // Military Vehicles
   "aea69afd-770e-4124-a4fd-195ac54c524c": "1475335169245184191", // Aircraft
   "6408b466-5ab9-46b5-a610-b3e68563e9cd": "1475331048177930343", // Maps
-  "d469818e-ab54-43e1-8bb2-6dfd4a4eee83": "1475335169245184191", // Buildings
+  "d469818e-ab54-43e1-8bb2-6dfd4a4eee83": "1475312997365973126", // Buildings
   // Scripts & Systems (Roblox Systems)
   "d9e7a997-d23e-418a-a11a-fe3e99977d34": "1475320443333509261",
   // Roblox UI
