@@ -38,23 +38,13 @@ Deno.serve(async (req) => {
             inline: false,
           },
           {
-            name: "4️⃣ Credit the Creator",
-            value: "If sharing something you didn't make, always credit the original creator and ensure you have permission to share it.",
-            inline: false,
-          },
-          {
-            name: "5️⃣ No Malicious Content",
+            name: "4️⃣ No Malicious Content",
             value: "Sharing files containing malware, viruses, or any harmful content will result in an immediate ban.",
             inline: false,
           },
           {
-            name: "6️⃣ Be Respectful",
+            name: "5️⃣ Be Respectful",
             value: "Constructive feedback is welcome. Harassment, negativity, or disrespect towards creators will not be tolerated.",
-            inline: false,
-          },
-          {
-            name: "7️⃣ No Excessive Self-Promotion",
-            value: "You may mention your store or socials, but the focus should be on the free item — not advertising paid products.",
             inline: false,
           },
           {
