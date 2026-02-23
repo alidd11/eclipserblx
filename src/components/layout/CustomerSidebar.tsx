@@ -207,9 +207,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       id: 'resources',
       title: t('sidebar.resources', 'Resources'),
       icon: LayoutGrid,
-      items: [
-        { title: t('sidebar.viewAllCategories', 'View All Categories'), icon: Grid3X3, href: '/categories' },
-      ],
+      items: [],
     },
     {
       id: 'community',
