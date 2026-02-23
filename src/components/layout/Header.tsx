@@ -1,6 +1,7 @@
 import { memo, useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Sparkles } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Sparkles, ChevronDown, LayoutGrid } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -51,6 +52,21 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking');
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
+
+  // Fetch parent categories for mobile Resources section
+  const { data: parentCategories } = useQuery({
+    queryKey: ['mobile-nav-categories'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('categories')
+        .select('id, name, slug, icon')
+        .is('parent_id', null)
+        .order('display_order', { ascending: true });
+      return data ?? [];
+    },
+    enabled: mobileMenuOpen,
+  });
 
   const navLinks = navLinkDefs.map(l => ({ ...l, label: t(l.labelKey) }));
   const legalLinks = legalLinkDefs.map(l => ({ ...l, label: t(l.labelKey) }));
@@ -257,7 +273,52 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
                 <span>{link.label}</span>
               </NavLink>
             ))}
-            
+
+            {/* Resources / Categories - BuiltByBit style */}
+            <div className="border-t border-border/40 mt-1 pt-1">
+              <button
+                onClick={() => setResourcesOpen(!resourcesOpen)}
+                className="flex items-center justify-between w-full px-3 py-2.5 text-sm font-semibold text-primary transition-colors touch-manipulation"
+              >
+                <span className="flex items-center gap-3">
+                  <LayoutGrid className="h-4 w-4 shrink-0" />
+                  Resources
+                </span>
+                <ChevronDown className={cn(
+                  "h-4 w-4 transition-transform duration-200",
+                  resourcesOpen ? "rotate-180" : ""
+                )} />
+              </button>
+              {resourcesOpen && parentCategories && (
+                <div className="flex flex-col">
+                  {parentCategories.map((cat) => (
+                    <NavLink
+                      key={cat.id}
+                      to={`/categories?category=${cat.slug}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) =>
+                        cn(
+                          "flex items-center justify-between pl-10 pr-3 py-2 text-sm font-medium transition-colors touch-manipulation",
+                          isActive
+                            ? "text-foreground bg-muted/60"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        )
+                      }
+                    >
+                      <span>{cat.name}</span>
+                    </NavLink>
+                  ))}
+                  <NavLink
+                    to="/categories"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="pl-10 pr-3 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors touch-manipulation"
+                  >
+                    View All Categories
+                  </NavLink>
+                </div>
+              )}
+            </div>
+
             {/* Discord Link */}
             <a
               href={discordUrl}
