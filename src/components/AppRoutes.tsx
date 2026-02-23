@@ -108,8 +108,6 @@ const AdminCommunityAnnouncements = lazy(() => import("@/pages/admin/CommunityAn
 const AdminDiscordPolls = lazy(() => import("@/pages/admin/DiscordPolls"));
 const AdminDiscordQOTD = lazy(() => import("@/pages/admin/DiscordQOTD"));
 const AdminTranscripts = lazy(() => import("@/pages/admin/Transcripts"));
-const AdminDiscordOutreach = lazy(() => import("@/pages/admin/DiscordOutreach"));
-const AdminDiscordOutreachDetail = lazy(() => import("@/pages/admin/DiscordOutreachDetail"));
 const AdminEmailTemplates = lazy(() => import("@/pages/admin/EmailTemplates"));
 const AdminRefunds = lazy(() => import("@/pages/admin/Refunds"));
 const AdminDisputes = lazy(() => import("@/pages/admin/Disputes"));
@@ -358,8 +356,6 @@ export function AppRoutes() {
         <Route path="/admin/discord-polls" element={<AdminDiscordPolls />} />
         <Route path="/admin/discord-qotd" element={<AdminDiscordQOTD />} />
         <Route path="/admin/transcripts" element={<AdminTranscripts />} />
-        <Route path="/admin/discord-outreach" element={<AdminDiscordOutreach />} />
-        <Route path="/admin/discord-outreach/:id" element={<AdminDiscordOutreachDetail />} />
         <Route path="/admin/email-templates" element={<AdminEmailTemplates />} />
         <Route path="/admin/advertisement-analytics" element={<AdminAdvertisementAnalytics />} />
         <Route path="/admin/gift-credits" element={<AdminGiftCredits />} />

@@ -54,7 +54,6 @@ const navGroups: NavGroup[] = [
       { title: 'Discord Polls', icon: BarChart3, href: '/admin/discord-polls', permissions: ['manage_discord_engagement'] },
       { title: 'QOTD', icon: MessageCircle, href: '/admin/discord-qotd', permissions: ['manage_discord_engagement'] },
       { title: 'Promotions', icon: Tags, href: '/admin/promotions', permissions: ['manage_discounts'], dividerAfter: true },
-      { title: 'Discord Outreach', icon: Megaphone, href: '/admin/discord-outreach', permissions: ['view_discord_outreach'] },
       { title: 'Bot Servers', icon: Bell, href: '/admin/bot-servers', permissions: ['view_bot_codes'] },
     ],
   },
