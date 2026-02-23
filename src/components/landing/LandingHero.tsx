@@ -49,7 +49,7 @@ export function LandingHero() {
 
             <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold leading-[1.15] tracking-tight mb-3">
               {t('landing.headline')}{' '}
-              <span className="text-primary inline-block overflow-hidden align-baseline" style={{ height: '1.15em', verticalAlign: 'baseline' }}>
+              <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em', width: 'auto' }}>
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={wordIndex}
@@ -57,7 +57,6 @@ export function LandingHero() {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: '-100%', opacity: 0 }}
                     transition={{ duration: 0.4, ease: 'easeInOut' }}
-                    className="block"
                   >
                     {rotatingWords[wordIndex]}
                   </motion.span>
