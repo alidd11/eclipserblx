@@ -6,6 +6,8 @@ import { ActiveOffersCard } from '@/components/home/ActiveOffersCard';
 import { HeroBanner } from './HeroBanner';
 import { useTranslation } from 'react-i18next';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
+import { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const POPULAR_SEARCHES = [
   'scripts',
@@ -22,6 +24,19 @@ export function LandingHero() {
   const { t } = useTranslation();
   const { isSeller } = useSellerStatus();
 
+  const highlights = [
+    t('landing.headlineHighlight'),
+    'Discord Experience.',
+  ];
+  const [highlightIndex, setHighlightIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHighlightIndex((prev) => (prev + 1) % highlights.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [highlights.length]);
+
   const handleSearchClick = (term: string) => {
     navigate(`/products?q=${encodeURIComponent(term)}`);
   };
@@ -37,7 +52,20 @@ export function LandingHero() {
 
             <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold leading-[1.15] tracking-tight mb-3">
               {t('landing.headline')}{' '}
-              <span className="text-primary">{t('landing.headlineHighlight')}</span>
+              <span className="text-primary inline-block overflow-hidden align-bottom" style={{ height: '1.2em' }}>
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={highlightIndex}
+                    initial={{ y: '100%', opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: '-100%', opacity: 0 }}
+                    transition={{ duration: 0.4, ease: 'easeInOut' }}
+                    className="block"
+                  >
+                    {highlights[highlightIndex]}
+                  </motion.span>
+                </AnimatePresence>
+              </span>
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground max-w-md mb-5 leading-relaxed">
               {t('landing.description')}
