@@ -7,7 +7,7 @@ import {
   MessageSquareText, Megaphone, FileQuestion, LayoutGrid
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { categoryIconMap, PackageIcon } from '@/components/icons/CategoryIcons';
+import { categoryIconMap, PackageIcon, BotIcon } from '@/components/icons/CategoryIcons';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -587,7 +587,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                 </button>
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-px pt-px">
-                {parentCategories.map((cat) => {
+                {parentCategories.filter(cat => cat.slug !== 'bots').map((cat) => {
                   const CatIcon = categoryIconMap[cat.slug] || PackageIcon;
                   return renderNavItem({
                     title: cat.name,
@@ -624,21 +624,9 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-px pt-px">
                 {renderNavItem({
-                  title: 'Join Server',
-                  icon: DiscordIcon as unknown as LucideIcon,
-                  href: discordUrl,
-                  external: true,
-                })}
-                {renderNavItem({
-                  title: 'Advertise',
-                  icon: Megaphone,
-                  href: '/advertise',
-                })}
-                {renderNavItem({
-                  title: 'Community',
-                  icon: MessageSquare as LucideIcon,
-                  href: discordUrl,
-                  external: true,
+                  title: 'Discord Bots',
+                  icon: BotIcon as unknown as LucideIcon,
+                  href: '/products?category=bots',
                 })}
               </CollapsibleContent>
             </Collapsible>
