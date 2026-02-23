@@ -55,17 +55,35 @@ Deno.serve(async (req) => {
     // Decode image
     const img = await Image.decode(imgBytes);
 
-    // Load and scale watermark to 45% of image width
+    // Load and scale watermark to 40% of image width
     const wmBytes = await getWatermark();
     const wm = await Image.decode(wmBytes);
+    
+    // Auto-trim transparent padding from watermark
+    // Find the actual content bounds by scanning rows from bottom
+    let bottomContent = wm.height - 1;
+    for (let row = wm.height - 1; row >= 0; row--) {
+      let hasContent = false;
+      for (let col = 0; col < wm.width; col++) {
+        const pixel = wm.getPixelAt(col + 1, row + 1); // 1-indexed
+        const alpha = (pixel >> 0) & 0xFF; // Alpha is lowest byte in imagescript
+        if (alpha > 10) { hasContent = true; break; }
+      }
+      if (hasContent) { bottomContent = row; break; }
+    }
+    
+    // Crop off bottom transparent padding
+    const cropHeight = bottomContent + 1;
+    const croppedWm = wm.clone().crop(0, 0, wm.width, cropHeight);
+    
     const targetW = Math.round(img.width * 0.40);
-    const scale = targetW / wm.width;
-    const targetH = Math.round(wm.height * scale);
-    const scaledWm = wm.clone().resize(targetW, targetH);
+    const scale = targetW / croppedWm.width;
+    const targetH = Math.round(croppedWm.height * scale);
+    const scaledWm = croppedWm.resize(targetW, targetH);
 
-    // Position bottom-right, very close to bottom edge
+    // Position bottom-right, flush with edges
     const padX = Math.round(img.width * 0.02);
-    const padY = 0; // Flush with bottom edge
+    const padY = 2; // Nearly flush
     const x = img.width - targetW - padX;
     const y = img.height - targetH - padY;
     img.composite(scaledWm, x, y);
