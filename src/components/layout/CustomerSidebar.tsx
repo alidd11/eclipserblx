@@ -18,7 +18,7 @@ import { safeStorage } from '@/lib/safeStorage';
 import { hapticTap } from '@/lib/haptics';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { supabase } from '@/integrations/supabase/client';
-import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
+
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useTranslation } from 'react-i18next';
 
@@ -77,7 +77,7 @@ interface CustomerSidebarProps {
 export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer = false, className }: CustomerSidebarProps) {
   const { user, signOut } = useAuth();
   const { discordUrl } = useDiscordUrl();
-  const { settings: affiliateSettings } = useAffiliateSettings();
+  
   const { isSeller } = useSellerStatus();
   
   const navigate = useNavigate();
@@ -97,6 +97,23 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         .order('display_order', { ascending: true });
       return data ?? [];
     },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Check if user is an approved affiliate
+  const { data: isApprovedAffiliate } = useQuery({
+    queryKey: ['sidebar-affiliate-status', user?.id],
+    queryFn: async () => {
+      if (!user) return false;
+      const { data } = await supabase
+        .from('affiliate_applications')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('status', 'approved')
+        .limit(1);
+      return (data?.length ?? 0) > 0;
+    },
+    enabled: !!user,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -170,7 +187,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: t('sidebar.notifications'), icon: Bell, href: '/messages', showNotificationDot: true },
         { title: t('sidebar.following'), icon: Heart, href: '/account/following' },
         ...(isSeller ? [{ title: t('sidebar.storeMessages'), icon: MessageSquareText, href: '/store-messages' }] : []),
-        ...(affiliateSettings.isEnabled ? [{ title: t('sidebar.affiliate'), icon: TrendingUp, href: '/affiliate' }] : []),
+        ...(isApprovedAffiliate ? [{ title: t('sidebar.affiliate'), icon: TrendingUp, href: '/affiliate' }] : []),
       ],
     },
     {
