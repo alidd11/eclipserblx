@@ -191,23 +191,16 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       ],
     },
     {
-      id: 'explore',
-      title: t('sidebar.explore', 'Explore'),
-      icon: Sparkles,
-      items: [
-        { title: t('sidebar.advertise'), icon: Megaphone, href: '/advertise' },
-        { title: t('sidebar.featured'), icon: Star, href: '/featured' },
-        { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
-        { title: t('sidebar.allProducts'), icon: Grid3X3, href: '/products' },
-      ],
-    },
-    {
       id: 'resources',
       title: t('sidebar.resources', 'Resources'),
       icon: LayoutGrid,
       items: [
         { title: t('sidebar.allStores'), icon: Store, href: '/stores' },
         { title: t('sidebar.viewAllCategories', 'Categories'), icon: Grid3X3, href: '/categories' },
+        { title: t('sidebar.advertise'), icon: Megaphone, href: '/advertise' },
+        { title: t('sidebar.featured'), icon: Star, href: '/featured' },
+        { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
+        { title: t('sidebar.allProducts'), icon: Grid3X3, href: '/products' },
       ],
     },
     {
