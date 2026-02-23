@@ -111,12 +111,12 @@ Deno.serve(async (req) => {
         },
       ];
 
-      // Attach up to 2 images as separate embeds
-      if (images[0] && images[1]) {
-        embeds.push({ color: 0x5865f2, image: { url: images[0] }, url: productUrl });
-        embeds.push({ color: 0x5865f2, image: { url: images[1] }, url: productUrl });
-      } else if (images[0]) {
-        embeds.push({ color: 0x5865f2, image: { url: images[0] }, url: productUrl });
+      // Attach up to 2 images as separate embeds (no url so they appear on separate lines)
+      if (images[0]) {
+        embeds.push({ color: 0x5865f2, image: { url: images[0] } });
+      }
+      if (images[1]) {
+        embeds.push({ color: 0x5865f2, image: { url: images[1] } });
       }
 
       const result = await sendBotMessage(channelId, { embeds });
