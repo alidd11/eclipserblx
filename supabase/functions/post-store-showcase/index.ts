@@ -148,13 +148,8 @@ Deno.serve(async (req) => {
         embeds[0].thumbnail = { url: store.logo_url };
       }
 
-      // Also add logo as a prominent image embed before product images
-      if (store.logo_url) {
-        embeds.push({ color: 0x5865f2, image: { url: store.logo_url } });
-      }
-
       // Add product images as separate image embeds (Discord max 10 embeds per message)
-      const maxImageEmbeds = Math.min(8, 10 - embeds.length - (store.banner_url ? 1 : 0));
+      const maxImageEmbeds = Math.min(9, 10 - embeds.length - (store.banner_url ? 1 : 0));
       let addedImages = 0;
       if (products && products.length > 0) {
         for (let i = 0; i < products.length && addedImages < maxImageEmbeds; i++) {
@@ -167,11 +162,6 @@ Deno.serve(async (req) => {
             addedImages++;
           }
         }
-      }
-
-      // If no product images were found, use the store logo as a full image
-      if (addedImages === 0 && store.logo_url) {
-        embeds.push({ color: 0x5865f2, image: { url: store.logo_url } });
       }
 
       // Add banner as final image embed
