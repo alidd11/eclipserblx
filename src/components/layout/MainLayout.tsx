@@ -1,13 +1,11 @@
-import { ReactNode, forwardRef, useState, useEffect, useCallback, useRef } from 'react';
+import { ReactNode, forwardRef, useEffect } from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { CustomerSidebar } from './CustomerSidebar';
 import { UniversalBreadcrumb } from './UniversalBreadcrumb';
-import { safeStorage } from '@/lib/safeStorage';
+
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
 import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { hapticTap } from '@/lib/haptics';
 import { useScheduledReleaseCheck } from '@/hooks/useScheduledReleaseCheck';
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
 import { FloatingActionButtons } from '@/components/ui/FloatingActionButtons';
@@ -17,56 +15,12 @@ interface MainLayoutProps {
   children: ReactNode;
 }
 
-const EDGE_THRESHOLD = 30; // pixels from left edge to trigger swipe
-const MIN_SWIPE_DISTANCE = 50;
-
 function MainLayoutContent({ children }: MainLayoutProps) {
   const location = useLocation();
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
 
   // Check for scheduled product releases periodically
   useScheduledReleaseCheck();
-
-  // Touch tracking for edge swipe
-  const touchStartRef = useRef<{ x: number; y: number; isEdge: boolean } | null>(null);
-
-  // Handle edge swipe to open drawer
-  const handleTouchStart = useCallback((e: TouchEvent) => {
-    const touch = e.touches[0];
-    const isEdge = touch.clientX <= EDGE_THRESHOLD;
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY, isEdge };
-  }, []);
-
-  const handleTouchEnd = useCallback((e: TouchEvent) => {
-    if (!touchStartRef.current?.isEdge) return;
-    
-    const touch = e.changedTouches[0];
-    const deltaX = touch.clientX - touchStartRef.current.x;
-    const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
-    
-    // Only trigger if horizontal swipe is dominant
-    if (deltaX > MIN_SWIPE_DISTANCE && deltaY < deltaX) {
-      hapticTap();
-      setMobileDrawerOpen(true);
-    }
-    
-    touchStartRef.current = null;
-  }, []);
-
-  // Add touch listeners for edge swipe (mobile only)
-  useEffect(() => {
-    const isMobile = window.matchMedia('(max-width: 767px)').matches;
-    if (!isMobile) return;
-
-    document.addEventListener('touchstart', handleTouchStart, { passive: true });
-    document.addEventListener('touchend', handleTouchEnd, { passive: true });
-
-    return () => {
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [handleTouchStart, handleTouchEnd]);
 
   // Detect if we're on a chat-like page that needs iOS keyboard handling
   const isChatPage = location.pathname.includes('/forum/general');
@@ -156,34 +110,23 @@ function MainLayoutContent({ children }: MainLayoutProps) {
     <>
       <ScrollProgressIndicator />
       <div className="min-h-[100dvh] flex w-full overflow-x-hidden relative">
-        {/* Desktop Sidebar */}
+        {/* Desktop Sidebar - expanded */}
         <CustomerSidebar
           collapsed={false}
           onToggle={() => {}}
           className="hidden md:flex"
         />
         
-        {/* Mobile Sidebar Drawer */}
-        <Sheet open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
-          <SheetContent 
-            side="left" 
-            className="p-0 w-64 border-r-0 !h-[100dvh] !max-h-[100dvh] bg-card overflow-hidden"
-            style={{ height: '100dvh', maxHeight: '100dvh' }}
-            data-gesture-exempt="true"
-            hideCloseButton
-          >
-            <CustomerSidebar 
-              collapsed={false}
-              onToggle={() => setMobileDrawerOpen(false)}
-              onNavigate={() => setMobileDrawerOpen(false)}
-              isMobileDrawer
-            />
-          </SheetContent>
-        </Sheet>
+        {/* Mobile Sidebar - always visible, collapsed */}
+        <CustomerSidebar
+          collapsed={true}
+          onToggle={() => {}}
+          className="flex md:hidden"
+        />
         
         {/* Main Content - Fixed header with scrollable content */}
         <div className="flex-1 flex flex-col min-w-0 h-[100dvh]">
-          <Header showDesktopNav={false} onMenuClick={() => setMobileDrawerOpen(true)} />
+          <Header showDesktopNav={false} />
           <UniversalBreadcrumb />
           <main className="flex-1 overflow-y-auto overflow-x-hidden" style={{ paddingBottom: 'var(--chat-safe-bottom, env(safe-area-inset-bottom))' }}>
             {children}
