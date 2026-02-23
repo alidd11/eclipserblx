@@ -598,6 +598,50 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               </CollapsibleContent>
             </Collapsible>
           )}
+          {/* Nested Discord sub-section inside Resources */}
+          {group.id === 'resources' && !isCollapsed && (
+            <Collapsible
+              open={openGroups['discord'] ?? false}
+              onOpenChange={() => toggleGroup('discord')}
+              className="mt-0.5"
+            >
+              <CollapsibleTrigger asChild>
+                <button
+                  className={cn(
+                    "w-full flex items-center gap-2.5 px-2.5 py-1.5 ml-3 rounded-md text-[13px] font-medium select-none",
+                    "transition-colors duration-100",
+                    "focus:outline-none focus-visible:outline-none",
+                    "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  )}
+                >
+                  <DiscordIcon className={cn(ICON_SIZE)} />
+                  <span className="flex-1 text-left truncate">Discord</span>
+                  <ChevronDown className={cn(
+                    ICON_SIZE_SMALL, "shrink-0 transition-transform duration-200",
+                    (openGroups['discord'] ?? false) ? "rotate-0" : "-rotate-90"
+                  )} />
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-px pt-px">
+                {renderNavItem({
+                  title: 'Join Server',
+                  icon: DiscordIcon as unknown as LucideIcon,
+                  href: discordUrl,
+                  external: true,
+                })}
+                {renderNavItem({
+                  title: 'Advertise',
+                  icon: Megaphone,
+                  href: '/advertise',
+                })}
+                {renderNavItem({
+                  title: 'Community',
+                  icon: MessageSquare,
+                  href: '/community',
+                })}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
         </CollapsibleContent>
       </Collapsible>
     );
