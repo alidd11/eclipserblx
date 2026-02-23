@@ -15,6 +15,8 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const BANNER_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/9b70ccd6-da02-4d53-8180-e884e1d18b3f/banner-1768958747633.png";
+
     const result = await sendBotMessage(CHANNEL_ID, {
       embeds: [
         {
@@ -39,9 +41,29 @@ Deno.serve(async (req) => {
             `**[ECLIPSE JOBS](${SITE_URL}/careers)**\n\n` +
             `**[ECLIPSE FAQ](${SITE_URL}/faq)**`,
           color: ECLIPSE_COLOR,
-          image: {
-            url: "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/9b70ccd6-da02-4d53-8180-e884e1d18b3f/banner-1768958747633.png",
-          },
+        },
+        {
+          title: "🛍️ For Buyers",
+          description:
+            "Discover amazing products from talented creators in our community marketplace.\n\n" +
+            "Browse a curated selection of **scripts, models, GFX, and more** from community sellers.\n\n" +
+            `[**Browse the Marketplace →**](${SITE_URL}/marketplace)\n\n` +
+            "🔒 Every purchase is protected with **secure payment processing** via Stripe.",
+          color: ECLIPSE_COLOR,
+        },
+        {
+          title: "💰 For Sellers",
+          description:
+            "Turn your skills into income! Join our seller programme and reach **thousands of potential buyers**.\n\n" +
+            `[**Apply to Sell →**](${SITE_URL}/become-seller)\n\n` +
+            "⭐ **Seller Benefits**\n" +
+            "• Keep **85% of sales** (15% platform fee)\n" +
+            "• Build your own **branded storefront**\n" +
+            "• Direct **Discord notifications** for orders\n" +
+            "• Detailed **analytics dashboard**\n\n" +
+            `🚀 Questions? Visit our [**Support Page →**](${SITE_URL}/support)`,
+          color: ECLIPSE_COLOR,
+          image: { url: BANNER_URL },
         },
       ],
     });
