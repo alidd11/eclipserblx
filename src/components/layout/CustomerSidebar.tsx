@@ -7,6 +7,7 @@ import {
   MessageSquareText, Megaphone, FileQuestion, LayoutGrid
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { categoryIconMap, PackageIcon } from '@/components/icons/CategoryIcons';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -586,13 +587,14 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                 </button>
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-px pt-px">
-                {parentCategories.map((cat) => 
-                  renderNavItem({
+                {parentCategories.map((cat) => {
+                  const CatIcon = categoryIconMap[cat.slug] || PackageIcon;
+                  return renderNavItem({
                     title: cat.name,
-                    icon: FolderOpen as LucideIcon,
+                    icon: CatIcon as unknown as LucideIcon,
                     href: `/categories?category=${cat.slug}`,
-                  })
-                )}
+                  });
+                })}
               </CollapsibleContent>
             </Collapsible>
           )}
