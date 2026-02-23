@@ -53,8 +53,18 @@ Deno.serve(async (req) => {
     let posted = 0;
 
     for (const store of stores) {
-      // Fetch top products for this store
-      const { data: products } = await supabase
+      // Fetch products with images first, then others
+      const { data: productsWithImages } = await supabase
+        .from("products")
+        .select("id, name, slug, price, images")
+        .eq("store_id", store.id)
+        .eq("is_active", true)
+        .eq("moderation_status", "approved")
+        .not("images", "eq", "[]")
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      const { data: productsAll } = await supabase
         .from("products")
         .select("id, name, slug, price, images")
         .eq("store_id", store.id)
@@ -62,6 +72,16 @@ Deno.serve(async (req) => {
         .eq("moderation_status", "approved")
         .order("created_at", { ascending: false })
         .limit(5);
+
+      // Merge: prioritize products with images, fill remaining from all
+      const seenIds = new Set<string>();
+      const products: any[] = [];
+      for (const p of [...(productsWithImages || []), ...(productsAll || [])]) {
+        if (!seenIds.has(p.id) && products.length < 5) {
+          seenIds.add(p.id);
+          products.push(p);
+        }
+      }
 
       const storeUrl = `https://eclipserblx.com/store/${encodeURIComponent(store.slug)}`;
       
@@ -129,18 +149,24 @@ Deno.serve(async (req) => {
       }
 
       // Add product images as separate image embeds (Discord max 10 embeds per message)
-      // Use first image from each product, up to 8 (leaving room for main + banner embeds)
       const maxImageEmbeds = Math.min(8, 10 - embeds.length - (store.banner_url ? 1 : 0));
+      let addedImages = 0;
       if (products && products.length > 0) {
-        for (let i = 0; i < Math.min(products.length, maxImageEmbeds); i++) {
+        for (let i = 0; i < products.length && addedImages < maxImageEmbeds; i++) {
           const p = products[i] as any;
           if (Array.isArray(p.images) && p.images.length > 0) {
             embeds.push({
               color: 0x5865f2,
               image: { url: p.images[0] },
             });
+            addedImages++;
           }
         }
+      }
+
+      // If no product images were found, use the store logo as a full image
+      if (addedImages === 0 && store.logo_url) {
+        embeds.push({ color: 0x5865f2, image: { url: store.logo_url } });
       }
 
       // Add banner as final image embed
