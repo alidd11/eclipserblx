@@ -1,0 +1,1 @@
+ALTER TABLE public.stores ADD COLUMN IF NOT EXISTS discord_showcase_thread_id text DEFAULT NULL;
