@@ -49,7 +49,7 @@ export function LandingHero() {
 
             <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold leading-[1.15] tracking-tight mb-3">
               {t('landing.headline')}{' '}
-              <span className="text-primary inline-block overflow-hidden align-bottom" style={{ height: '1.2em' }}>
+              <span className="text-primary inline-block overflow-hidden align-baseline" style={{ height: '1.15em', verticalAlign: 'baseline' }}>
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={wordIndex}
