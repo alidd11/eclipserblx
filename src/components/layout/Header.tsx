@@ -157,13 +157,9 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
 
         {/* Desktop header row */}
         <div className="hidden md:flex h-16 items-center gap-4">
-          {/* Left side - Back button */}
+          {/* Left side - Back button + Logo */}
           <div className="flex items-center gap-3 shrink-0">
             <BackButton showLabel={true} />
-          </div>
-
-          {/* Center: Branding + Search Bar */}
-          <div className="flex items-center gap-4 flex-1">
             <Link to="/" className="flex items-center gap-3 shrink-0">
               <EclipseLogo size="sm" />
               {!hideBrandName && (
@@ -172,6 +168,10 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
                 </span>
               )}
             </Link>
+          </div>
+
+          {/* Center: Search + Currency + Language */}
+          <div className="flex items-center gap-3 flex-1 justify-center">
             <HeaderSearchBar className="flex-1 max-w-xl" />
             <CurrencySelector />
             <LanguageSwitcher />
