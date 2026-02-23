@@ -143,9 +143,14 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Add store logo as the main image on the first embed (large display)
+      // Add store logo as thumbnail on main embed
       if (store.logo_url) {
-        embeds[0].image = { url: store.logo_url };
+        embeds[0].thumbnail = { url: store.logo_url };
+      }
+
+      // Also add logo as a prominent image embed before product images
+      if (store.logo_url) {
+        embeds.push({ color: 0x5865f2, image: { url: store.logo_url } });
       }
 
       // Add product images as separate image embeds (Discord max 10 embeds per message)
