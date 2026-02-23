@@ -41,14 +41,14 @@ async function removeWatermarkWithAI(imageUrl: string, apiKey: string): Promise<
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-3-pro-image-preview",
+      model: "google/gemini-2.5-flash-image",
       messages: [
         {
           role: "user",
           content: [
             {
               type: "text",
-              text: "I own this product image and am rebranding my business from 'Eclipse' to 'Quantis'. Please edit this image I created to replace my old branding. Remove the semi-transparent text overlay that reads 'Eclipse' and 'Selling You An Experience' by inpainting those areas to match the surrounding image content. Also remove any semi-transparent circular logo mark. The helicopter, background, and all other elements must remain identical. Output the cleaned image only.",
+              text: "This is my own product render that I created in Roblox Studio. I need to update it for my rebranding. There is semi-transparent text in the center of the image that says 'Eclipse' and below it 'Selling You An Experience', plus a circular logo watermark in the bottom right. Please completely erase and inpaint over ALL of this text and the logo so the underlying helicopter scene shows through cleanly. The background behind the text is a dark gradient - fill it in to match. Output just the cleaned image.",
             },
             {
               type: "image_url",
