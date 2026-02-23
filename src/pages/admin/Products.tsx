@@ -72,8 +72,8 @@ interface ProductForm {
   robux_enabled: boolean;
   robux_product_id: string;
   robux_price: string;
-  // Marketplace store selection (null = no store, 'eclipse' or 'vino')
-  marketplace_store: 'eclipse' | 'vino' | null;
+  // Marketplace store selection (null = no store, 'quantis' or 'vino')
+  marketplace_store: 'quantis' | 'vino' | null;
 }
 
 const emptyForm: ProductForm = {
@@ -94,7 +94,7 @@ const emptyForm: ProductForm = {
   robux_enabled: false,
   robux_product_id: '',
   robux_price: '',
-  marketplace_store: 'eclipse', // Default to Quantis Store
+  marketplace_store: 'quantis', // Default to Quantis Store
 };
 
 interface MassEditForm {
@@ -285,7 +285,7 @@ export default function AdminProducts() {
         .getPublicUrl(fileName);
 
       // Apply Quantis watermark only for Quantis store products
-      const isQuantisStore = form.marketplace_store === 'eclipse';
+      const isQuantisStore = form.marketplace_store === 'quantis';
       const watermarkedUrl = isQuantisStore
         ? await applyProductWatermark(publicUrl, fileName)
         : publicUrl;
@@ -368,7 +368,7 @@ export default function AdminProducts() {
       // Only set store/seller fields for non-seller products or new products
       // This prevents overwriting seller product metadata when admins edit them
       if (!isSellerProduct) {
-        payload.store_id = data.marketplace_store === 'eclipse' 
+        payload.store_id = data.marketplace_store === 'quantis' 
           ? ECLIPSE_STORE_ID 
           : data.marketplace_store === 'vino' 
             ? VINO_STORE_ID 
@@ -582,7 +582,7 @@ export default function AdminProducts() {
       robux_product_id: product.robux_product_id || '',
       robux_price: product.robux_price ? String(product.robux_price) : '',
       marketplace_store: product.store_id === ECLIPSE_STORE_ID 
-        ? 'eclipse' 
+        ? 'quantis' 
         : product.store_id === VINO_STORE_ID 
           ? 'vino' 
           : null,
@@ -1304,14 +1304,14 @@ export default function AdminProducts() {
               </Label>
               <Select 
                 value={form.marketplace_store || 'none'} 
-                onValueChange={(v) => setForm({ ...form, marketplace_store: v === 'none' ? null : v as 'eclipse' | 'vino' })}
+                onValueChange={(v) => setForm({ ...form, marketplace_store: v === 'none' ? null : v as 'quantis' | 'vino' })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select store" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="eclipse">Quantis</SelectItem>
+                  <SelectItem value="quantis">Quantis</SelectItem>
                   <SelectItem value="vino">Vino</SelectItem>
                 </SelectContent>
               </Select>
