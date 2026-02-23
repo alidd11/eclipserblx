@@ -7101,6 +7101,7 @@ export type Database = {
           deleted_at: string | null
           description: string | null
           discord_guild_id: string | null
+          discord_showcase_thread_id: string | null
           discord_url: string | null
           eclipse_plus_discount_enabled: boolean
           featured_product_ids: string[] | null
@@ -7171,6 +7172,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           discord_guild_id?: string | null
+          discord_showcase_thread_id?: string | null
           discord_url?: string | null
           eclipse_plus_discount_enabled?: boolean
           featured_product_ids?: string[] | null
@@ -7241,6 +7243,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           discord_guild_id?: string | null
+          discord_showcase_thread_id?: string | null
           discord_url?: string | null
           eclipse_plus_discount_enabled?: boolean
           featured_product_ids?: string[] | null
