@@ -1,26 +1,11 @@
 import { Link } from 'react-router-dom';
-import { Car, Code, Bot, Layout, Box, Palette, Wrench, Gamepad2, ArrowRight, Package, Map, Shirt, Plane } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { useCategoryTranslations } from '@/hooks/useCategoryTranslations';
-
-const iconMap: Record<string, typeof Car> = {
-  'Car': Car,
-  'FileCode': Code,
-  'Bot': Bot,
-  'Layout': Layout,
-  'Box': Box,
-  'Palette': Palette,
-  'Wrench': Wrench,
-  'Gamepad2': Gamepad2,
-  'Package': Package,
-  'Map': Map,
-  'Shirt': Shirt,
-  'Plane': Plane,
-  'Sparkles': Palette,
-};
+import { categoryIconByName, PackageIcon } from '@/components/icons/CategoryIcons';
 
 const MAX_CATEGORIES = 6;
 
@@ -69,7 +54,7 @@ export function LandingCategories() {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {parentCategories.map((category, index) => {
-            const IconComponent = iconMap[category.icon || ''] || Package;
+            const IconComponent = categoryIconByName[category.icon || ''] || PackageIcon;
             return (
               <motion.div
                 key={category.id}
