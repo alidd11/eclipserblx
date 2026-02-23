@@ -284,8 +284,11 @@ export default function AdminProducts() {
         .from('product-images')
         .getPublicUrl(fileName);
 
-      // Apply Quantis watermark
-      const watermarkedUrl = await applyProductWatermark(publicUrl, fileName);
+      // Apply Quantis watermark only for Quantis store products
+      const isQuantisStore = form.marketplace_store === 'eclipse';
+      const watermarkedUrl = isQuantisStore
+        ? await applyProductWatermark(publicUrl, fileName)
+        : publicUrl;
 
       // Add to media list
       const currentMedia = form.images ? form.images.split(',').map(s => s.trim()).filter(Boolean) : [];
