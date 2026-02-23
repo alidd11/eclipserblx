@@ -207,24 +207,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       title: t('sidebar.resources', 'Resources'),
       icon: LayoutGrid,
       items: [
-        ...(parentCategories?.slice(0, 5).map((cat) => ({
-          title: cat.name,
-          icon: FolderOpen as LucideIcon,
-          href: `/categories?category=${cat.slug}`,
-        })) ?? []),
         { title: t('sidebar.viewAllCategories', 'View All Categories'), icon: Grid3X3, href: '/categories' },
-      ],
-    },
-    {
-      id: 'roblox',
-      title: 'Roblox',
-      icon: LayoutGrid,
-      items: [
-        ...(parentCategories?.slice(0, 5).map((cat) => ({
-          title: cat.name,
-          icon: FolderOpen as LucideIcon,
-          href: `/categories?category=${cat.slug}`,
-        })) ?? []),
       ],
     },
     {
@@ -562,6 +545,41 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-px pt-px">
           {group.items.map(renderNavItem)}
+          {/* Nested Roblox sub-section inside Resources */}
+          {group.id === 'resources' && !isCollapsed && parentCategories && parentCategories.length > 0 && (
+            <Collapsible
+              open={openGroups['roblox'] ?? false}
+              onOpenChange={() => toggleGroup('roblox')}
+              className="mt-0.5"
+            >
+              <CollapsibleTrigger asChild>
+                <button
+                  className={cn(
+                    "w-full flex items-center gap-2.5 px-2.5 py-1.5 ml-3 rounded-md text-[13px] font-medium select-none",
+                    "transition-colors duration-100",
+                    "focus:outline-none focus-visible:outline-none",
+                    "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  )}
+                >
+                  <LayoutGrid className={cn(ICON_SIZE, ICON_STROKE_DEFAULT)} />
+                  <span className="flex-1 text-left truncate">Roblox</span>
+                  <ChevronDown className={cn(
+                    ICON_SIZE_SMALL, "shrink-0 transition-transform duration-200",
+                    (openGroups['roblox'] ?? false) ? "rotate-0" : "-rotate-90"
+                  )} />
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-px pt-px">
+                {parentCategories.map((cat) => 
+                  renderNavItem({
+                    title: cat.name,
+                    icon: FolderOpen as LucideIcon,
+                    href: `/categories?category=${cat.slug}`,
+                  })
+                )}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
         </CollapsibleContent>
       </Collapsible>
     );
