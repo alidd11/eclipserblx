@@ -59,10 +59,11 @@ export function LandingHero() {
                     transition={{ duration: 0.4, ease: 'easeInOut' }}
                     className="block"
                   >
-                    {rotatingWords[wordIndex]} Experience.
+                    {rotatingWords[wordIndex]}
                   </motion.span>
                 </AnimatePresence>
-              </span>
+              </span>{' '}
+              Experience.
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground max-w-md mb-5 leading-relaxed">
               {t('landing.description')}
