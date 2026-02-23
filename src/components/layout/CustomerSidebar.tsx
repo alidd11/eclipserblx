@@ -195,8 +195,9 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       title: t('sidebar.explore', 'Explore'),
       icon: Sparkles,
       items: [
-        { title: t('sidebar.allProducts'), icon: Grid3X3, href: '/products' },
         { title: t('sidebar.allStores'), icon: Store, href: '/stores' },
+        { title: t('sidebar.viewAllCategories', 'All Categories'), icon: Grid3X3, href: '/categories' },
+        { title: t('sidebar.allProducts'), icon: Grid3X3, href: '/products' },
         { title: t('sidebar.featured'), icon: Star, href: '/featured' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
         { title: t('sidebar.advertise'), icon: Megaphone, href: '/advertise' },
