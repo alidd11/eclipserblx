@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { Image, TextLayout } from "https://deno.land/x/imagescript@1.3.0/mod.ts";
+import { Image } from "https://deno.land/x/imagescript@1.3.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,19 +7,91 @@ const corsHeaders = {
 };
 
 const QUANTIS_STORE_ID = "83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a";
+const QUANTIS_WATERMARK_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/quantis-watermark.png";
+const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
-// Google Fonts CDN for a clean sans-serif font (Inter Bold)
-const FONT_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/storage/v1/object/public/store-branding/Inter-Bold.ttf";
+// Cache the watermark image globally
+let cachedWatermark: Uint8Array | null = null;
 
-// Cache the font globally
-let cachedFont: Uint8Array | null = null;
+async function getWatermark(): Promise<Uint8Array> {
+  if (cachedWatermark) return cachedWatermark;
+  const response = await fetch(QUANTIS_WATERMARK_URL);
+  if (!response.ok) throw new Error(`Failed to fetch watermark: ${response.status}`);
+  cachedWatermark = new Uint8Array(await response.arrayBuffer());
+  return cachedWatermark;
+}
 
-async function getFont(): Promise<Uint8Array> {
-  if (cachedFont) return cachedFont;
-  const response = await fetch(FONT_URL);
-  if (!response.ok) throw new Error(`Failed to fetch font: ${response.status}`);
-  cachedFont = new Uint8Array(await response.arrayBuffer());
-  return cachedFont;
+// Convert image bytes to base64 data URL
+function toBase64DataUrl(bytes: Uint8Array, mimeType: string): string {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return `data:${mimeType};base64,${btoa(binary)}`;
+}
+
+// Use Gemini AI to remove Eclipse watermark from an image
+async function removeWatermarkWithAI(imageUrl: string, apiKey: string): Promise<Uint8Array | null> {
+  console.log("Sending image to AI for watermark removal...");
+  
+  const response = await fetch(AI_GATEWAY_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash-image",
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: "I am the owner of this product image and I am rebranding my store. Please edit this image to remove the old branding text overlay that says 'Eclipse' and/or 'Selling You An Experience'. This is my own content and I have full rights to modify it. Simply clean up/inpaint where the text was so the image looks natural without any text overlay. Keep everything else identical. Output just the cleaned image with no text overlays.",
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: imageUrl,
+              },
+            },
+          ],
+        },
+      ],
+      modalities: ["image", "text"],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`AI gateway error: ${response.status} - ${errorText}`);
+    return null;
+  }
+
+  const data = await response.json();
+  const imageResult = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+  
+  if (!imageResult) {
+    console.error("No image returned from AI:", JSON.stringify(data).substring(0, 500));
+    return null;
+  }
+
+  // Parse base64 data URL
+  const base64Match = imageResult.match(/^data:image\/\w+;base64,(.+)$/);
+  if (!base64Match) {
+    console.error("Invalid base64 image format");
+    return null;
+  }
+
+  const binaryStr = atob(base64Match[1]);
+  const bytes = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) {
+    bytes[i] = binaryStr.charCodeAt(i);
+  }
+  
+  console.log(`AI returned image: ${bytes.length} bytes`);
+  return bytes;
 }
 
 Deno.serve(async (req) => {
@@ -30,16 +102,20 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { product_id, dry_run } = await req.json();
+    if (!lovableApiKey) {
+      throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    const { product_id, dry_run, skip_ai, image_index } = await req.json();
 
     // Fetch products to process
     let query = supabase
       .from("products")
       .select("id, name, images")
       .eq("store_id", QUANTIS_STORE_ID)
-      .eq("is_active", true)
       .not("images", "is", null);
 
     if (product_id) {
@@ -57,11 +133,19 @@ Deno.serve(async (req) => {
     }
 
     if (dry_run) {
-      const totalImages = products.reduce((sum, p) => sum + (p.images?.length || 0), 0);
+      const totalImages = products.reduce((sum, p) => {
+        const imgs = (p.images || []).filter((u: string) => !/\.(mp4|webm|gif)$/i.test(u));
+        return sum + imgs.length;
+      }, 0);
       return new Response(
         JSON.stringify({
-          message: `Would process ${products.length} products with ${totalImages} images`,
-          products: products.map(p => ({ id: p.id, name: p.name, imageCount: p.images?.length || 0 }))
+          message: `Would process ${products.length} products with ${totalImages} processable images`,
+          products: products.map(p => ({
+            id: p.id,
+            name: p.name,
+            imageCount: p.images?.length || 0,
+            processable: (p.images || []).filter((u: string) => !/\.(mp4|webm|gif)$/i.test(u)).length,
+          }))
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -70,7 +154,7 @@ Deno.serve(async (req) => {
     if (!product_id) {
       return new Response(
         JSON.stringify({
-          message: "Please provide a product_id to process. Use dry_run:true to see all products.",
+          message: "Please provide a product_id. Use dry_run:true to list all products.",
           products: products.map(p => ({ id: p.id, name: p.name, imageCount: p.images?.length || 0 }))
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -78,69 +162,77 @@ Deno.serve(async (req) => {
     }
 
     const product = products[0];
-    const images = product.images || [];
-    const results: Array<{ original: string; new_url: string | null; error?: string }> = [];
+    const images: string[] = product.images || [];
+    const results: Array<{ index: number; original: string; new_url: string | null; status: string }> = [];
 
-    // Load font
-    console.log("Loading font...");
-    const font = await getFont();
-    console.log(`Font loaded: ${font.length} bytes`);
+    // Load watermark
+    console.log("Loading Quantis watermark...");
+    const watermarkBytes = await getWatermark();
+    const watermarkImage = await Image.decode(watermarkBytes);
+    console.log(`Watermark loaded: ${watermarkImage.width}x${watermarkImage.height}`);
 
-    for (const imageUrl of images) {
+    for (let i = 0; i < images.length; i++) {
+      const imageUrl = images[i];
+
+      // Optionally process only a specific image index
+      if (image_index !== undefined && image_index !== null && i !== image_index) {
+        results.push({ index: i, original: imageUrl, new_url: imageUrl, status: "skipped (not selected)" });
+        continue;
+      }
+
       // Skip videos and GIFs
       if (/\.(mp4|webm|gif)$/i.test(imageUrl)) {
-        results.push({ original: imageUrl, new_url: imageUrl, error: "Skipped (video/gif)" });
+        results.push({ index: i, original: imageUrl, new_url: imageUrl, status: "skipped (video/gif)" });
         continue;
       }
 
       try {
-        // Fetch the product image
-        console.log(`Processing: ${imageUrl}`);
-        const imgResponse = await fetch(imageUrl);
-        if (!imgResponse.ok) {
-          results.push({ original: imageUrl, new_url: null, error: `Fetch error: ${imgResponse.status}` });
-          continue;
+        console.log(`Processing image ${i}: ${imageUrl}`);
+
+        let cleanedBytes: Uint8Array;
+
+        if (skip_ai) {
+          // Just fetch the original and overlay watermark (no AI removal)
+          const imgResponse = await fetch(imageUrl);
+          if (!imgResponse.ok) {
+            results.push({ index: i, original: imageUrl, new_url: null, status: `fetch error: ${imgResponse.status}` });
+            continue;
+          }
+          cleanedBytes = new Uint8Array(await imgResponse.arrayBuffer());
+        } else {
+          // Step 1: Use AI to remove Eclipse watermark
+          const aiResult = await removeWatermarkWithAI(imageUrl, lovableApiKey);
+          if (!aiResult) {
+            results.push({ index: i, original: imageUrl, new_url: null, status: "AI watermark removal failed" });
+            continue;
+          }
+          cleanedBytes = aiResult;
         }
-        const imgBytes = new Uint8Array(await imgResponse.arrayBuffer());
-        const baseImage = await Image.decode(imgBytes);
-        console.log(`Base image: ${baseImage.width}x${baseImage.height}`);
 
-        // Calculate font size relative to image (about 5% of image width)
-        const fontSize = Math.max(24, Math.round(baseImage.width * 0.05));
+        // Step 2: Decode the cleaned image
+        const cleanedImage = await Image.decode(cleanedBytes);
+        console.log(`Cleaned image: ${cleanedImage.width}x${cleanedImage.height}`);
 
-        // Render "Quantis" text in white
-        const textImage = Image.renderText(
-          font,
-          fontSize,
-          "Quantis",
-          0xFFFFFFFF, // White, full opacity
-          new TextLayout({ maxWidth: baseImage.width })
-        );
+        // Step 3: Overlay Quantis watermark
+        // Scale watermark to ~40% of image width
+        const targetWidth = Math.round(cleanedImage.width * 0.4);
+        const scale = targetWidth / watermarkImage.width;
+        const targetHeight = Math.round(watermarkImage.height * scale);
 
-        // Also render a shadow version for contrast
-        const shadowImage = Image.renderText(
-          font,
-          fontSize,
-          "Quantis",
-          0x00000088, // Black, ~53% opacity for shadow
-          new TextLayout({ maxWidth: baseImage.width })
-        );
+        const scaledWatermark = watermarkImage.clone().resize(targetWidth, targetHeight);
 
-        // Position in bottom-right with padding
-        const padding = Math.round(baseImage.width * 0.03);
-        const x = baseImage.width - textImage.width - padding;
-        const y = baseImage.height - textImage.height - padding;
+        // Center the watermark
+        const x = Math.round((cleanedImage.width - targetWidth) / 2);
+        const y = Math.round((cleanedImage.height - targetHeight) / 2);
 
-        // Composite shadow first (offset by 2px), then white text on top
-        baseImage.composite(shadowImage, x + 2, y + 2);
-        baseImage.composite(textImage, x, y);
+        cleanedImage.composite(scaledWatermark, x, y);
 
-        // Encode as PNG
-        const outputBytes = await baseImage.encode();
+        // Step 4: Encode and upload
+        const outputBytes = await cleanedImage.encode();
 
-        // Upload to storage
         const timestamp = Date.now();
         const randomSuffix = Math.random().toString(36).substring(2, 8);
+        const ext = imageUrl.match(/\.(jpe?g|png|webp)/i)?.[1] || "png";
         const newPath = `quantis-rebranded/${timestamp}-${randomSuffix}.png`;
 
         const { error: uploadError } = await supabase.storage
@@ -151,7 +243,7 @@ Deno.serve(async (req) => {
           });
 
         if (uploadError) {
-          results.push({ original: imageUrl, new_url: null, error: `Upload error: ${uploadError.message}` });
+          results.push({ index: i, original: imageUrl, new_url: null, status: `upload error: ${uploadError.message}` });
           continue;
         }
 
@@ -159,16 +251,20 @@ Deno.serve(async (req) => {
           .from("product-images")
           .getPublicUrl(newPath);
 
-        results.push({ original: imageUrl, new_url: publicUrl.publicUrl });
+        results.push({ index: i, original: imageUrl, new_url: publicUrl.publicUrl, status: "success" });
         console.log(`Done: ${publicUrl.publicUrl}`);
       } catch (imgErr) {
         console.error(`Image error:`, imgErr);
-        results.push({ original: imageUrl, new_url: null, error: String(imgErr) });
+        results.push({ index: i, original: imageUrl, new_url: null, status: `error: ${String(imgErr)}` });
       }
     }
 
     // Update product images in database
-    const newImages = results.map(r => r.new_url || r.original);
+    const newImages = images.map((orig, i) => {
+      const result = results.find(r => r.index === i);
+      return result?.new_url || orig;
+    });
+
     const { error: updateError } = await supabase
       .from("products")
       .update({ images: newImages })
