@@ -109,11 +109,19 @@ serve(async (req) => {
         throw new Error(`Product not found: ${item.id}`);
       }
 
+      // Supabase returns stores as a single object (not array) for belongsTo relations
       const storesData = product.stores as unknown as { 
         owner_id: string; 
         commission_rate?: number; 
         name?: string; 
+      } | { 
+        owner_id: string; 
+        commission_rate?: number; 
+        name?: string; 
       }[] | null;
+
+      // Handle both array and object formats for safety
+      const storeInfo = Array.isArray(storesData) ? storesData[0] : storesData;
 
       validatedItems.push({
         id: product.id,
@@ -121,9 +129,9 @@ serve(async (req) => {
         price: product.price,
         is_seller_product: product.is_seller_product || false,
         store_id: product.store_id,
-        seller_id: storesData?.[0]?.owner_id,
-        commission_rate: storesData?.[0]?.commission_rate ?? 15,
-        store_name: storesData?.[0]?.name,
+        seller_id: storeInfo?.owner_id,
+        commission_rate: storeInfo?.commission_rate ?? 15,
+        store_name: storeInfo?.name,
       });
 
       totalPrice += product.price;
