@@ -63,10 +63,11 @@ Deno.serve(async (req) => {
     const targetH = Math.round(wm.height * scale);
     const scaledWm = wm.clone().resize(targetW, targetH);
 
-    // Position bottom-right with 1.5% padding (lower placement)
-    const pad = Math.round(img.width * 0.015);
-    const x = img.width - targetW - pad;
-    const y = img.height - targetH - pad;
+    // Position bottom-right with minimal padding (hugging the bottom)
+    const padX = Math.round(img.width * 0.015);
+    const padY = Math.round(img.height * 0.005);
+    const x = img.width - targetW - padX;
+    const y = img.height - targetH - padY;
     img.composite(scaledWm, x, y);
 
     // Encode and overwrite the original file in storage
