@@ -6,6 +6,7 @@ import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
+import { applyProductWatermark } from '@/lib/watermark';
 import { EarlyAccessCard } from '@/components/seller/EarlyAccessCard';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -240,7 +241,9 @@ export default function SellerProductEditor() {
           .from('product-images')
           .getPublicUrl(fileName);
 
-        newImages.push(publicUrl);
+        // Apply Quantis watermark
+        const watermarkedUrl = await applyProductWatermark(publicUrl, fileName);
+        newImages.push(watermarkedUrl);
       }
 
       setFormData(prev => ({

@@ -47,6 +47,7 @@ import {
 } from '@/components/ui/select';
 import { SortableMediaItem } from '@/components/admin/SortableMediaItem';
 import { supabase } from '@/integrations/supabase/client';
+import { applyProductWatermark } from '@/lib/watermark';
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
 import { ECLIPSE_STORE_ID, VINO_STORE_ID } from '@/lib/constants';
@@ -283,9 +284,12 @@ export default function AdminProducts() {
         .from('product-images')
         .getPublicUrl(fileName);
 
+      // Apply Quantis watermark
+      const watermarkedUrl = await applyProductWatermark(publicUrl, fileName);
+
       // Add to media list
       const currentMedia = form.images ? form.images.split(',').map(s => s.trim()).filter(Boolean) : [];
-      currentMedia.push(publicUrl);
+      currentMedia.push(watermarkedUrl);
       setForm({ ...form, images: currentMedia.join(', ') });
       toast.success(`${type === 'image' ? 'Image' : 'Video'} uploaded successfully`);
     } catch (error: any) {
