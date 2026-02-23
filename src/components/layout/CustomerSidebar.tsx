@@ -168,6 +168,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: t('sidebar.purchases'), icon: Download, href: '/purchases' },
         { title: t('sidebar.wallet'), icon: Wallet, href: '/credits' },
         { title: t('sidebar.notifications'), icon: Bell, href: '/messages', showNotificationDot: true },
+        { title: t('sidebar.following'), icon: Heart, href: '/account/following' },
         ...(isSeller ? [{ title: t('sidebar.storeMessages'), icon: MessageSquareText, href: '/store-messages' }] : []),
         ...(affiliateSettings.isEnabled ? [{ title: t('sidebar.affiliate'), icon: TrendingUp, href: '/affiliate' }] : []),
       ],
@@ -178,9 +179,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       icon: Sparkles,
       items: [
         { title: t('sidebar.allProducts'), icon: Grid3X3, href: '/products' },
-        { title: t('sidebar.categories'), icon: FolderOpen, href: '/categories' },
         { title: t('sidebar.allStores'), icon: Store, href: '/stores' },
-        { title: t('sidebar.following'), icon: Heart, href: '/account/following' },
         { title: t('sidebar.featured'), icon: Star, href: '/featured' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
         { title: t('sidebar.advertise'), icon: Megaphone, href: '/advertise' },
@@ -191,7 +190,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       title: t('sidebar.resources', 'Resources'),
       icon: LayoutGrid,
       items: [
-        ...(parentCategories?.map((cat) => ({
+        ...(parentCategories?.slice(0, 5).map((cat) => ({
           title: cat.name,
           icon: FolderOpen as LucideIcon,
           href: `/categories?category=${cat.slug}`,
