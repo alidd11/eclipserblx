@@ -4,8 +4,9 @@ import {
   HelpCircle, Mail, Activity, ChevronDown, ShoppingCart, 
   User, LucideIcon, Home, TrendingUp, Store, Bell, FolderOpen,
   Sparkles, Download, Heart, Wallet, LogOut, ChevronLeft, ChevronRight,
-  MessageSquareText, Megaphone, FileQuestion
+  MessageSquareText, Megaphone, FileQuestion, LayoutGrid
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -85,6 +86,20 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking');
+  // Fetch parent categories for Resources section
+  const { data: parentCategories } = useQuery({
+    queryKey: ['sidebar-categories'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('categories')
+        .select('id, name, slug, icon')
+        .is('parent_id', null)
+        .order('display_order', { ascending: true });
+      return data ?? [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   // Fetch unread notification count
@@ -169,6 +184,19 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: t('sidebar.featured'), icon: Star, href: '/featured' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
         { title: t('sidebar.advertise'), icon: Megaphone, href: '/advertise' },
+      ],
+    },
+    {
+      id: 'resources',
+      title: t('sidebar.resources', 'Resources'),
+      icon: LayoutGrid,
+      items: [
+        ...(parentCategories?.map((cat) => ({
+          title: cat.name,
+          icon: FolderOpen as LucideIcon,
+          href: `/categories?category=${cat.slug}`,
+        })) ?? []),
+        { title: t('sidebar.viewAllCategories', 'View All Categories'), icon: Grid3X3, href: '/categories' },
       ],
     },
     {
