@@ -30,19 +30,6 @@ Deno.serve(async (req) => {
           color: ECLIPSE_COLOR,
         },
         {
-          title: "✉ COMMUNITY RELATIONS ✉",
-          description:
-            `**[ECLIPSE TERMS OF SERVICE](${SITE_URL}/terms)**\n\n` +
-            `**[ECLIPSE REFUND POLICY](${SITE_URL}/refund-policy)**\n\n` +
-            `**[ECLIPSE PRIVACY POLICY](${SITE_URL}/privacy)**\n\n` +
-            `**[ECLIPSE DMCA / IP POLICY](${SITE_URL}/dmca)**\n\n` +
-            `**[ECLIPSE MARKETPLACE](${SITE_URL})**\n\n` +
-            `**[PARTNERSHIP REQUIREMENTS](https://docs.google.com/document/d/1Xtpx8FAVvj1SkwruuiP0o656hlxLpCqnSEQUj92uzcM/edit?usp=sharing)**\n\n` +
-            `**[ECLIPSE JOBS](${SITE_URL}/careers)**\n\n` +
-            `**[ECLIPSE FAQ](${SITE_URL}/faq)**`,
-          color: ECLIPSE_COLOR,
-        },
-        {
           title: "🛍️ For Buyers",
           description:
             "Discover amazing products from talented creators in our community marketplace.\n\n" +
@@ -62,6 +49,19 @@ Deno.serve(async (req) => {
             "• Direct **Discord notifications** for orders\n" +
             "• Detailed **analytics dashboard**\n\n" +
             `🚀 Questions? Visit our [**Support Page →**](${SITE_URL}/support)`,
+          color: ECLIPSE_COLOR,
+        },
+        {
+          title: "✉ COMMUNITY RELATIONS ✉",
+          description:
+            `**[ECLIPSE TERMS OF SERVICE](${SITE_URL}/terms)**\n\n` +
+            `**[ECLIPSE REFUND POLICY](${SITE_URL}/refund-policy)**\n\n` +
+            `**[ECLIPSE PRIVACY POLICY](${SITE_URL}/privacy)**\n\n` +
+            `**[ECLIPSE DMCA / IP POLICY](${SITE_URL}/dmca)**\n\n` +
+            `**[ECLIPSE MARKETPLACE](${SITE_URL})**\n\n` +
+            `**[PARTNERSHIP REQUIREMENTS](https://docs.google.com/document/d/1Xtpx8FAVvj1SkwruuiP0o656hlxLpCqnSEQUj92uzcM/edit?usp=sharing)**\n\n` +
+            `**[ECLIPSE JOBS](${SITE_URL}/careers)**\n\n` +
+            `**[ECLIPSE FAQ](${SITE_URL}/faq)**`,
           color: ECLIPSE_COLOR,
           image: { url: BANNER_URL },
         },
