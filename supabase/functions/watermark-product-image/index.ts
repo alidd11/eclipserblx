@@ -58,13 +58,13 @@ Deno.serve(async (req) => {
     // Load and scale watermark to 45% of image width
     const wmBytes = await getWatermark();
     const wm = await Image.decode(wmBytes);
-    const targetW = Math.round(img.width * 0.30);
+    const targetW = Math.round(img.width * 0.40);
     const scale = targetW / wm.width;
     const targetH = Math.round(wm.height * scale);
     const scaledWm = wm.clone().resize(targetW, targetH);
 
-    // Position bottom-right with 3% padding
-    const pad = Math.round(img.width * 0.03);
+    // Position bottom-right with 1.5% padding (lower placement)
+    const pad = Math.round(img.width * 0.015);
     const x = img.width - targetW - pad;
     const y = img.height - targetH - pad;
     img.composite(scaledWm, x, y);
