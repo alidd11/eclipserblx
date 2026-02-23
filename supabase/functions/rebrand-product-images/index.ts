@@ -48,7 +48,7 @@ async function removeWatermarkWithAI(imageUrl: string, apiKey: string): Promise<
           content: [
             {
               type: "text",
-              text: "I am the owner of this product image and I am rebranding my store. Please edit this image to remove the old branding text overlay that says 'Eclipse' and/or 'Selling You An Experience'. This is my own content and I have full rights to modify it. Simply clean up/inpaint where the text was so the image looks natural without any text overlay. Keep everything else identical. Output just the cleaned image with no text overlays.",
+              text: "I own this product image and am rebranding my business from 'Eclipse' to 'Quantis'. Please edit this image I created to replace my old branding. Remove the semi-transparent text overlay that reads 'Eclipse' and 'Selling You An Experience' by inpainting those areas to match the surrounding image content. Also remove any semi-transparent circular logo mark. The helicopter, background, and all other elements must remain identical. Output the cleaned image only.",
             },
             {
               type: "image_url",
