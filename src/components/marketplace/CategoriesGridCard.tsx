@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Grid3X3, ChevronRight, Package } from 'lucide-react';
+import { Grid3X3, ChevronRight } from 'lucide-react';
+import { categoryIconMap, PackageIcon } from '@/components/icons/CategoryIcons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,44 +14,6 @@ interface Category {
   product_count: number;
 }
 
-// Icon mapping for common categories
-const categoryIcons: Record<string, string> = {
-  'scripts': '📜',
-  'vehicles': '🚗',
-  'liveries': '🎨',
-  'ui-kits': '🖼️',
-  'models': '🏗️',
-  'bots': '🤖',
-  'plugins': '🔌',
-  'animations': '🎬',
-  'sounds': '🔊',
-  'textures': '🖌️',
-  // Regional flags for sub-categories
-  'uk-civilian-vehicles': '🇬🇧',
-  'us-civilian-vehicles': '🇺🇸',
-  'eu-civilian-vehicles': '🇪🇺',
-  'uk-police-vehicles': '🇬🇧',
-  'us-police-vehicles': '🇺🇸',
-  'eu-police-vehicles': '🇪🇺',
-  'uk-unmarked-police': '🇬🇧',
-  'us-unmarked-police': '🇺🇸',
-  'eu-unmarked-police': '🇪🇺',
-  'uk-fire-vehicles': '🇬🇧',
-  'us-fire-vehicles': '🇺🇸',
-  'eu-fire-vehicles': '🇪🇺',
-  'uk-ambulance-vehicles': '🇬🇧',
-  'us-ambulance-vehicles': '🇺🇸',
-  'eu-ambulance-vehicles': '🇪🇺',
-  'uk-military-vehicles': '🇬🇧',
-  'us-military-vehicles': '🇺🇸',
-  'eu-military-vehicles': '🇪🇺',
-  'uk-aircraft': '🇬🇧',
-  'us-aircraft': '🇺🇸',
-  'eu-aircraft': '🇪🇺',
-  'uk-uniforms': '🇬🇧',
-  'us-uniforms': '🇺🇸',
-  'eu-uniforms': '🇪🇺',
-};
 
 export function CategoriesGridCard() {
   const { data: categories, isLoading } = useQuery({
@@ -77,7 +40,7 @@ export function CategoriesGridCard() {
           
           return {
             ...category,
-            icon: categoryIcons[category.slug] || null,
+            icon: null,
             product_count: count || 0,
           };
         })
@@ -121,9 +84,10 @@ export function CategoriesGridCard() {
                 to={`/products?category=${category.slug}&source=marketplace`}
                 className="group flex flex-col items-center justify-center gap-1.5 p-3 rounded-lg bg-muted/30 hover:bg-muted/60 border border-transparent hover:border-primary/20 transition-all"
               >
-                <span className="text-2xl">
-                  {category.icon || <Package className="h-6 w-6 text-muted-foreground" />}
-                </span>
+                {(() => {
+                  const IconComp = categoryIconMap[category.slug] || PackageIcon;
+                  return <IconComp className="h-6 w-6 text-muted-foreground" />;
+                })()}
                 <span className="font-medium text-sm text-center group-hover:text-primary transition-colors">
                   {category.name}
                 </span>

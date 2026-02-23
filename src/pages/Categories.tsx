@@ -1,9 +1,7 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  Car, Shield, ShieldOff, Flame, Ambulance, Plane, Shirt, Swords,
-  Map, Package, Bot, Building2, ChevronRight, ArrowRight
-} from 'lucide-react';
+import { ChevronRight, ArrowRight } from 'lucide-react';
+import { categoryIconMap, PackageIcon } from '@/components/icons/CategoryIcons';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,20 +26,6 @@ const CATEGORY_SORT_ORDER: Record<string, number> = {
   'uniforms': 11,
 };
 
-const categoryIcons: Record<string, React.ElementType> = {
-  'civilian-vehicles': Car,
-  'marked-police-vehicles': Shield,
-  'unmarked-police-vehicles': ShieldOff,
-  'fire-vehicles': Flame,
-  'ambulance-vehicles': Ambulance,
-  'aircraft': Plane,
-  'uniforms': Shirt,
-  'military-vehicles': Swords,
-  'maps': Map,
-  'bundle-deals': Package,
-  'bots': Bot,
-  'buildings': Building2,
-};
 
 
 interface TopProduct {
@@ -150,7 +134,7 @@ function getProductThumb(product: TopProduct): string | null {
 }
 
 function CategoryCard({ category, sourceParam }: { category: CategoryData; sourceParam: string }) {
-  const Icon = categoryIcons[category.slug] || Package;
+  const Icon = categoryIconMap[category.slug] || PackageIcon;
   const isCustomBanner = CUSTOM_BANNER_CATEGORIES.has(category.slug);
   const bgImage = isCustomBanner
     ? null
@@ -230,7 +214,7 @@ function CategoryCard({ category, sourceParam }: { category: CategoryData; sourc
                     />
                   ) : (
                     <div className="w-full h-full bg-muted flex items-center justify-center">
-                      <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                      <PackageIcon className="h-3.5 w-3.5 text-muted-foreground" />
                     </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity" />
