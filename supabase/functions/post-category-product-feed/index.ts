@@ -11,15 +11,15 @@ const CATEGORY_CHANNEL_MAP: Record<string, string> = {
   // Bundle Deals
   "1f038600-9391-4dbd-8020-60caa96a5358": "1475326670347964517",
   // Vehicles (all vehicle sub-categories), Maps, Buildings
-  "b86599a0-3349-49d2-89e8-4a6700df095d": "1475312997365973126", // Civilian Vehicles
-  "90e1a457-8b47-4ae4-8508-e7a9ae965128": "1475312997365973126", // Fire Vehicles
-  "e8f1980b-73fd-450e-adfd-18c410a7159a": "1475312997365973126", // Marked Police Vehicles
-  "93d1b09e-531b-4442-b7d8-0c32a0eaa59e": "1475312997365973126", // Unmarked Police Vehicles
-  "b0e4c031-7431-4057-be55-3d8a7c2e2143": "1475312997365973126", // Ambulance Vehicles
-  "348942a6-210d-4f93-88a7-6d34256f3868": "1475312997365973126", // Military Vehicles
-  "aea69afd-770e-4124-a4fd-195ac54c524c": "1475312997365973126", // Aircraft
+  "b86599a0-3349-49d2-89e8-4a6700df095d": "1475335169245184191", // Civilian Vehicles
+  "90e1a457-8b47-4ae4-8508-e7a9ae965128": "1475335169245184191", // Fire Vehicles
+  "e8f1980b-73fd-450e-adfd-18c410a7159a": "1475335169245184191", // Marked Police Vehicles
+  "93d1b09e-531b-4442-b7d8-0c32a0eaa59e": "1475335169245184191", // Unmarked Police Vehicles
+  "b0e4c031-7431-4057-be55-3d8a7c2e2143": "1475335169245184191", // Ambulance Vehicles
+  "348942a6-210d-4f93-88a7-6d34256f3868": "1475335169245184191", // Military Vehicles
+  "aea69afd-770e-4124-a4fd-195ac54c524c": "1475335169245184191", // Aircraft
   "6408b466-5ab9-46b5-a610-b3e68563e9cd": "1475331048177930343", // Maps
-  "d469818e-ab54-43e1-8bb2-6dfd4a4eee83": "1475312997365973126", // Buildings
+  "d469818e-ab54-43e1-8bb2-6dfd4a4eee83": "1475335169245184191", // Buildings
   // Scripts & Systems (Roblox Systems)
   "d9e7a997-d23e-418a-a11a-fe3e99977d34": "1475320443333509261",
   // Roblox UI
