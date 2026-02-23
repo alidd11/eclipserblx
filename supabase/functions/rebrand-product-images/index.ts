@@ -214,8 +214,8 @@ Deno.serve(async (req) => {
         console.log(`Cleaned image: ${cleanedImage.width}x${cleanedImage.height}`);
 
         // Step 3: Overlay Quantis watermark
-        // Scale watermark to ~40% of image width
-        const targetWidth = Math.round(cleanedImage.width * 0.4);
+        // Scale watermark to ~15% of image width (small, bottom-right)
+        const targetWidth = Math.round(cleanedImage.width * 0.15);
         const scale = targetWidth / watermarkImage.width;
         const targetHeight = Math.round(watermarkImage.height * scale);
 
