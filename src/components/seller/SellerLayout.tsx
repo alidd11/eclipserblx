@@ -274,6 +274,7 @@ function SellerLayoutContent({ children }: SellerLayoutProps) {
           {/* Shared Header from MainLayout */}
           <Header 
             showDesktopNav={false} 
+            hideBrandName
             onMenuClick={() => setMobileOpen(true)} 
           />
 

@@ -231,6 +231,7 @@ function StoreLayoutContent({
           {/* Unified Header */}
           <Header 
             showDesktopNav={false} 
+            hideBrandName
             onMenuClick={() => setMobileOpen(true)}
           />
 

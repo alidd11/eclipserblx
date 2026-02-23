@@ -37,11 +37,12 @@ type SystemStatus = 'online' | 'degraded' | 'offline' | 'checking';
 
 interface HeaderProps {
   showDesktopNav?: boolean;
+  hideBrandName?: boolean;
   onMenuClick?: () => void;
   onSidebarToggle?: () => void;
 }
 
-export const Header = memo(function Header({ showDesktopNav = true, onMenuClick, onSidebarToggle }: HeaderProps) {
+export const Header = memo(function Header({ showDesktopNav = true, hideBrandName = false, onMenuClick, onSidebarToggle }: HeaderProps) {
   const { user, signOut } = useAuth();
   const { itemCount } = useCart();
   const { discordUrl } = useDiscordUrl();
@@ -163,8 +164,13 @@ export const Header = memo(function Header({ showDesktopNav = true, onMenuClick,
 
           {/* Center: Branding + Search Bar */}
           <div className="flex items-center gap-4 flex-1">
-            <Link to="/" className="flex items-center shrink-0">
+            <Link to="/" className="flex items-center gap-3 shrink-0">
               <EclipseLogo size="sm" />
+              {!hideBrandName && (
+                <span className="brand-text text-lg gradient-text whitespace-nowrap tracking-[0.25em]">
+                  {SITE_NAME}
+                </span>
+              )}
             </Link>
             <HeaderSearchBar className="flex-1 max-w-xl" />
             <CurrencySelector />
