@@ -19,42 +19,42 @@ Deno.serve(async (req) => {
       {
         title: "📜 Free Products Channel Rules",
         description:
-          "Welcome to the **Free Products** channel! This is a space for verified sellers to share free resources with the community. Please follow these rules to keep things fair and useful for everyone.",
+          "Welcome to **Free Products**! This is a community space where members can share and discover free resources. Please follow these rules to keep things organised and enjoyable for everyone.",
         color: 0x5865f2,
         fields: [
           {
-            name: "1️⃣ Verified Sellers Only",
-            value: "Only verified store owners may post free products here. All items must be listed on your store with a £0.00 price.",
+            name: "1️⃣ Keep It Free",
+            value: "Everything shared here must be genuinely free — no paywalls, required purchases, sign-up walls, or bait-and-switch tactics.",
             inline: false,
           },
           {
-            name: "2️⃣ No Spam or Repeat Posts",
-            value: "Do not repost the same product more than once per week. Excessive posting will result in removal from the channel.",
+            name: "2️⃣ No Spam or Duplicate Posts",
+            value: "Do not repost the same item more than once per week. Flooding the channel will result in your posts being removed.",
             inline: false,
           },
           {
-            name: "3️⃣ Quality Standards Apply",
-            value: "Free products must still meet our marketplace quality and moderation standards. Low-effort or placeholder items will be removed.",
+            name: "3️⃣ Provide a Clear Description",
+            value: "Include what the product is, what's included, and how to use it. Help others understand what they're downloading.",
             inline: false,
           },
           {
-            name: "4️⃣ No Bait & Switch",
-            value: "Products posted here must be genuinely free — no hidden paywalls, required purchases, or misleading descriptions.",
+            name: "4️⃣ Credit the Creator",
+            value: "If sharing something you didn't make, always credit the original creator and ensure you have permission to share it.",
             inline: false,
           },
           {
-            name: "5️⃣ Include a Description",
-            value: "Provide a clear description of what the product is and what's included. Help the community understand what they're downloading.",
+            name: "5️⃣ No Malicious Content",
+            value: "Sharing files containing malware, viruses, or any harmful content will result in an immediate ban.",
             inline: false,
           },
           {
-            name: "6️⃣ No Self-Promotion Spam",
-            value: "You may link to your store, but do not use this channel purely to advertise paid products. The focus should be on the free item.",
+            name: "6️⃣ Be Respectful",
+            value: "Constructive feedback is welcome. Harassment, negativity, or disrespect towards creators will not be tolerated.",
             inline: false,
           },
           {
-            name: "7️⃣ Be Respectful",
-            value: "Constructive feedback is welcome. Harassment, negativity, or disrespectful comments towards creators will not be tolerated.",
+            name: "7️⃣ No Excessive Self-Promotion",
+            value: "You may mention your store or socials, but the focus should be on the free item — not advertising paid products.",
             inline: false,
           },
           {
