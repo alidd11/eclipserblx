@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { SITE_NAME } from '@/lib/constants';
-import eclipseLogo from '@/assets/eclipse-logo.png';
+import marketplaceLogo from '@/assets/marketplace-logo-icon.png';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -462,7 +462,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
         {!isCollapsed && (
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg border-2 border-card bg-card shrink-0 overflow-hidden shadow-sm">
-              <img src={eclipseLogo} alt="Eclipse" className="h-full w-full object-cover" />
+              <img src={marketplaceLogo} alt="Eclipse" className="h-full w-full object-contain" />
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="font-display font-bold text-sm text-foreground truncate">{SITE_NAME}</h1>
@@ -475,7 +475,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
             <TooltipTrigger asChild>
               <div className="flex items-center justify-center">
                 <div className="h-8 w-8 rounded-lg border-2 border-card bg-card overflow-hidden shadow-sm">
-                  <img src={eclipseLogo} alt="Eclipse" className="h-full w-full object-cover" />
+                  <img src={marketplaceLogo} alt="Eclipse" className="h-full w-full object-contain" />
                 </div>
               </div>
             </TooltipTrigger>

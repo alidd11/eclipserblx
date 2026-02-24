@@ -1,8 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Megaphone, Plus, Trash2, AlertCircle, AlertTriangle, Info, Shield, TrendingUp, TrendingDown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import eclipseBanner from '@/assets/eclipse-banner.jpeg';
-import eclipseLogo from '@/assets/eclipse-logo.png';
+import marketplaceLogo from '@/assets/marketplace-logo-icon.png';
 import { motion } from 'framer-motion';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -403,12 +402,7 @@ export default function AdminDashboard() {
         {/* Hero Banner */}
         <Card className="overflow-hidden border-border bg-card">
           {/* Banner area with branding */}
-          <div className="relative h-28 sm:h-32 bg-gradient-to-br from-muted via-muted/80 to-card overflow-hidden">
-            <img
-              src={eclipseBanner}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover opacity-40"
-            />
+          <div className="relative h-28 sm:h-32 bg-gradient-to-br from-primary/20 via-muted/80 to-card overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
           </div>
 
@@ -416,7 +410,7 @@ export default function AdminDashboard() {
             {/* Avatar + Name row */}
             <div className="flex items-end gap-4 mb-4">
               <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-4 border-card shadow-lg">
-                <AvatarImage src={eclipseLogo} alt="Eclipse" />
+                <AvatarImage src={marketplaceLogo} alt="Eclipse" className="object-contain" />
                 <AvatarFallback className="bg-muted text-2xl font-bold">E</AvatarFallback>
               </Avatar>
 
