@@ -80,6 +80,10 @@ const routeLabels: Record<string, string> = {
 // Routes that should NOT show breadcrumbs
 const excludedRoutes = ['/', '/auth'];
 
+// Segments that are route prefixes only (not navigable on their own)
+// These will show as text labels, not clickable links
+const nonNavigableSegments = new Set(['store']);
+
 function formatSegmentLabel(segment: string): string {
   if (routeLabels[segment]) return routeLabels[segment];
   return segment
@@ -103,7 +107,8 @@ export function UniversalBreadcrumb() {
     const path = '/' + pathSegments.slice(0, index + 1).join('/');
     const label = formatSegmentLabel(segment);
     const isLast = index === pathSegments.length - 1;
-    return { path, label, isLast };
+    const isNavigable = !nonNavigableSegments.has(segment);
+    return { path, label, isLast, isNavigable };
   });
 
   // Append query-param context (e.g. ?category=buildings → "Buildings")
@@ -117,6 +122,7 @@ export function UniversalBreadcrumb() {
       path: location.pathname + '?category=' + category,
       label: formatSegmentLabel(category),
       isLast: true,
+      isNavigable: true,
     });
   }
 
@@ -205,7 +211,7 @@ export function UniversalBreadcrumb() {
                     <BreadcrumbPage className="truncate max-w-[180px] text-xs font-semibold text-foreground">
                       {item.label}
                     </BreadcrumbPage>
-                  ) : (
+                  ) : item.isNavigable ? (
                     <BreadcrumbLink asChild>
                       <Link 
                         to={item.path} 
@@ -214,6 +220,10 @@ export function UniversalBreadcrumb() {
                         {item.label}
                       </Link>
                     </BreadcrumbLink>
+                  ) : (
+                    <span className="text-xs text-muted-foreground truncate max-w-[140px]">
+                      {item.label}
+                    </span>
                   )}
                 </BreadcrumbItem>
               </span>
