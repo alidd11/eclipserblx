@@ -298,6 +298,124 @@ async function fetchGameThumbnail(universeId: string): Promise<string | null> {
   }
 }
 
+// ─── FETCH GAME SCREENSHOTS (Multiple Thumbnails) ───
+async function fetchGameScreenshots(universeId: string): Promise<string[]> {
+  try {
+    const res = await fetch(
+      `https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=${universeId}&countPerUniverse=5&defaults=true&size=768x432&format=Png&isCircular=false`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    const thumbs = data.data?.[0]?.thumbnails || [];
+    return thumbs
+      .filter((t: any) => t.state === "Completed" && t.imageUrl)
+      .map((t: any) => t.imageUrl);
+  } catch {
+    return [];
+  }
+}
+
+// ─── FETCH GAME STATS (visits, favorites, genre) ───
+async function fetchGameStats(universeId: string): Promise<{
+  visits: number | null;
+  favorites: number | null;
+  genre: string | null;
+  maxPlayers: number | null;
+  created: string | null;
+  updated: string | null;
+}> {
+  try {
+    const res = await fetch(
+      `https://games.roblox.com/v1/games?universeIds=${universeId}`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) return { visits: null, favorites: null, genre: null, maxPlayers: null, created: null, updated: null };
+    const data = await res.json();
+    const game = data.data?.[0];
+    if (!game) return { visits: null, favorites: null, genre: null, maxPlayers: null, created: null, updated: null };
+    return {
+      visits: game.visits || null,
+      favorites: game.favoritedCount || null,
+      genre: game.genre || null,
+      maxPlayers: game.maxPlayers || null,
+      created: game.created || null,
+      updated: game.updated || null,
+    };
+  } catch {
+    return { visits: null, favorites: null, genre: null, maxPlayers: null, created: null, updated: null };
+  }
+}
+
+// ─── FETCH GAME PASSES COUNT ───
+async function fetchGamePassesCount(universeId: string): Promise<number | null> {
+  try {
+    const res = await fetch(
+      `https://games.roblox.com/v1/games/${universeId}/game-passes?limit=100&sortOrder=Asc`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.data?.length || 0;
+  } catch {
+    return null;
+  }
+}
+
+// ─── FETCH GAME BADGES COUNT ───
+async function fetchGameBadgesCount(universeId: string): Promise<number | null> {
+  try {
+    const res = await fetch(
+      `https://badges.roblox.com/v1/universes/${universeId}/badges?limit=100&sortOrder=Asc`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.data?.length || 0;
+  } catch {
+    return null;
+  }
+}
+
+// ─── COLLECT COMPREHENSIVE EVIDENCE ───
+async function collectEvidence(universeId: string, result: SearchResult, originalTitle: string): Promise<{
+  screenshots: string[];
+  stats: { visits: number | null; favorites: number | null; genre: string | null; maxPlayers: number | null; created: string | null; updated: string | null };
+  passesCount: number | null;
+  badgesCount: number | null;
+  evidenceData: Record<string, unknown>;
+}> {
+  // Fetch all evidence in parallel
+  const [screenshots, stats, passesCount, badgesCount] = await Promise.all([
+    fetchGameScreenshots(universeId),
+    fetchGameStats(universeId),
+    fetchGamePassesCount(universeId),
+    fetchGameBadgesCount(universeId),
+  ]);
+
+  const evidenceData = {
+    captured_at: new Date().toISOString(),
+    game_url: `https://www.roblox.com/games/${result.placeId || universeId}`,
+    game_name_at_capture: result.name,
+    game_description_at_capture: result.description?.substring(0, 1000) || null,
+    creator_name_at_capture: result.creatorName,
+    creator_id_at_capture: result.creatorId,
+    creator_type: result.creatorType,
+    player_count_at_capture: result.playerCount,
+    visits_at_capture: stats.visits,
+    favorites_at_capture: stats.favorites,
+    genre: stats.genre,
+    max_players: stats.maxPlayers,
+    game_passes_count: passesCount,
+    badges_count: badgesCount,
+    screenshots_captured: screenshots.length,
+    screenshot_urls: screenshots,
+    original_work_title: originalTitle,
+  };
+
+  return { screenshots, stats, passesCount, badgesCount, evidenceData };
+}
+
 // ─── FETCH CREATOR GROUP INFO ───
 async function fetchCreatorGroupInfo(creatorId: string, creatorType: string): Promise<{ groupId: string; groupName: string } | null> {
   if (creatorType !== 'Group') return null;
@@ -313,7 +431,6 @@ async function fetchCreatorGroupInfo(creatorId: string, creatorType: string): Pr
     return null;
   }
 }
-
 // ─── CHECK IF CREATOR OWNS GROUP ───
 async function isUserInGroup(robloxUserId: string, groupId: string): Promise<boolean> {
   try {
@@ -564,6 +681,7 @@ serve(async (req) => {
     let thumbnailsAnalyzed = 0;
     let groupsVerified = 0;
     let snapshotsCreated = 0;
+    let evidenceCollected = 0;
 
     for (const entry of registryEntries) {
       const creatorProfile = profileMap.get(entry.creator_id);
@@ -715,6 +833,37 @@ serve(async (req) => {
         // Only store if there's at least some signal
         if (score < 15 && matchReasons.length === 0) continue;
 
+        // 5. AUTO-EVIDENCE COLLECTION for medium+ threats
+        let evidenceData: Record<string, unknown> = {};
+        let evidenceScreenshots: string[] = [];
+        let gameBadgesCount: number | null = null;
+        let gamePassesCount: number | null = null;
+        let gameFavorites: number | null = null;
+        let gameVisits: number | null = null;
+        let gameGenre: string | null = null;
+        let gameUpdatedAt: string | null = null;
+        let evidenceCapturedAt: string | null = null;
+
+        if (score >= 30 && !creatorVerified) {
+          logStep("Collecting evidence", { universeId, score });
+          try {
+            const evidence = await collectEvidence(universeId, result, entry.title);
+            evidenceData = evidence.evidenceData;
+            evidenceScreenshots = evidence.screenshots;
+            gameBadgesCount = evidence.badgesCount;
+            gamePassesCount = evidence.passesCount;
+            gameFavorites = evidence.stats.favorites;
+            gameVisits = evidence.stats.visits;
+            gameGenre = evidence.stats.genre;
+            gameUpdatedAt = evidence.stats.updated;
+            evidenceCapturedAt = new Date().toISOString();
+            evidenceCollected++;
+            await new Promise(r => setTimeout(r, 300));
+          } catch (err) {
+            logStep("Evidence collection error", { universeId, error: String(err) });
+          }
+        }
+
         // Determine player count trend
         const existing = existingMap.get(universeId);
         let playerCountTrend = 'stable';
@@ -751,8 +900,18 @@ serve(async (req) => {
             player_count_trend: playerCountTrend,
             detection_count: detectionCount,
             game_created_at: result.created || null,
+            game_updated_at: gameUpdatedAt,
             last_seen_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
+            // Evidence fields
+            evidence_data: Object.keys(evidenceData).length > 0 ? evidenceData : undefined,
+            evidence_screenshots: evidenceScreenshots.length > 0 ? evidenceScreenshots : undefined,
+            game_badges_count: gameBadgesCount,
+            game_passes_count: gamePassesCount,
+            game_favorites: gameFavorites,
+            game_visits: gameVisits,
+            game_genre: gameGenre,
+            evidence_captured_at: evidenceCapturedAt,
           }, {
             onConflict: "registry_entry_id,detected_universe_id",
             ignoreDuplicates: false,
@@ -765,7 +924,7 @@ serve(async (req) => {
         } else {
           totalDetected++;
 
-          // Create a historical snapshot
+          // Create a historical snapshot with evidence
           if (upsertData?.id) {
             await supabaseClient
               .from("ip_detection_snapshots")
@@ -780,7 +939,7 @@ serve(async (req) => {
       }
     }
 
-    logStep("Enhanced scan complete (v2)", { totalSearches, totalDetected, thumbnailsAnalyzed, groupsVerified, snapshotsCreated });
+    logStep("Enhanced scan complete (v3)", { totalSearches, totalDetected, thumbnailsAnalyzed, groupsVerified, snapshotsCreated, evidenceCollected });
 
     return new Response(
       JSON.stringify({
@@ -790,6 +949,7 @@ serve(async (req) => {
         thumbnails_analyzed: thumbnailsAnalyzed,
         groups_verified: groupsVerified,
         snapshots_created: snapshotsCreated,
+        evidence_collected: evidenceCollected,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
