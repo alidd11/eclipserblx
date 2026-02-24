@@ -27,35 +27,28 @@ function generateKeywordVariants(keyword: string): string[] {
   const variants = new Set<string>();
   variants.add(keyword);
 
-  // Remove special chars: "UK:RP Westbridge" → "UKRP Westbridge"
   const noSpecial = keyword.replace(/[^a-zA-Z0-9\s]/g, '');
   if (noSpecial !== keyword) variants.add(noSpecial);
 
-  // Split on special chars and rejoin: "UK:RP" → "UK RP"  
   const spaced = keyword.replace(/[^a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
   if (spaced !== keyword) variants.add(spaced);
 
-  // Individual significant words (3+ chars)
   const words = spaced.split(' ').filter(w => w.length >= 3);
   if (words.length >= 2) {
-    // First + last word combo
     variants.add(`${words[0]} ${words[words.length - 1]}`);
-    // Each significant word alone (only if distinctive enough - 5+ chars)
     for (const w of words) {
       if (w.length >= 5) variants.add(w);
     }
   }
 
-  // Remove "RP" suffix/prefix patterns: "UK:RP Westbridge" → "Westbridge"
   const withoutRP = spaced.replace(/\b(RP|Roleplay|Role Play)\b/gi, '').trim();
   if (withoutRP.length >= 3 && withoutRP !== spaced) variants.add(withoutRP);
 
-  // Add "RP" if not present: "Westbridge" → "Westbridge RP"
   if (!/\bRP\b/i.test(keyword) && words.length <= 3) {
     variants.add(`${keyword} RP`);
   }
 
-  return [...variants].slice(0, 8); // Cap at 8 variants
+  return [...variants].slice(0, 8);
 }
 
 // ─── ROBLOX SEARCH: GAMES LIST API (with pagination) ───
@@ -88,7 +81,6 @@ async function searchGamesListAPI(keyword: string, maxResults = 50): Promise<Sea
         });
       }
 
-      // Rate limit between pages
       if (games.length === 25 && startRow + 25 < maxResults) {
         await new Promise(r => setTimeout(r, 300));
       } else {
@@ -132,7 +124,7 @@ async function searchOmniAPI(keyword: string): Promise<SearchResult[]> {
   return results;
 }
 
-// ─── COMBINED SEARCH (both APIs, deduplicated) ───
+// ─── COMBINED SEARCH ───
 async function searchRobloxCombined(keyword: string): Promise<SearchResult[]> {
   const [listResults, omniResults] = await Promise.all([
     searchGamesListAPI(keyword),
@@ -141,18 +133,16 @@ async function searchRobloxCombined(keyword: string): Promise<SearchResult[]> {
 
   const seen = new Set<string>();
   const combined: SearchResult[] = [];
-
   for (const r of [...listResults, ...omniResults]) {
     if (!seen.has(r.universeId)) {
       seen.add(r.universeId);
       combined.push(r);
     }
   }
-
   return combined;
 }
 
-// ─── FETCH GAME DESCRIPTION (if not in search results) ───
+// ─── FETCH GAME DESCRIPTION ───
 async function fetchGameDescription(universeId: string): Promise<string | null> {
   try {
     const res = await fetch(
@@ -182,17 +172,45 @@ async function fetchGameThumbnail(universeId: string): Promise<string | null> {
   }
 }
 
+// ─── FETCH CREATOR GROUP INFO ───
+async function fetchCreatorGroupInfo(creatorId: string, creatorType: string): Promise<{ groupId: string; groupName: string } | null> {
+  if (creatorType !== 'Group') return null;
+  try {
+    const res = await fetch(
+      `https://groups.roblox.com/v1/groups/${creatorId}`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return { groupId: String(data.id), groupName: data.name || "Unknown Group" };
+  } catch {
+    return null;
+  }
+}
+
+// ─── CHECK IF CREATOR OWNS GROUP ───
+async function isUserInGroup(robloxUserId: string, groupId: string): Promise<boolean> {
+  try {
+    const res = await fetch(
+      `https://groups.roblox.com/v1/users/${robloxUserId}/groups/roles`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) return false;
+    const data = await res.json();
+    return (data.data || []).some((g: any) => String(g.group?.id) === groupId);
+  } catch {
+    return false;
+  }
+}
+
 // ─── SIMILARITY SCORING ───
 function computeNameSimilarity(original: string, candidate: string): number {
   const a = original.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
   const b = candidate.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
 
   if (a === b) return 100;
-
-  // Check containment
   if (b.includes(a) || a.includes(b)) return 85;
 
-  // Word overlap
   const wordsA = new Set(a.split(/\s+/).filter(w => w.length >= 2));
   const wordsB = new Set(b.split(/\s+/).filter(w => w.length >= 2));
   const intersection = [...wordsA].filter(w => wordsB.has(w));
@@ -209,13 +227,11 @@ function checkDescriptionMatch(description: string, keywords: string[]): boolean
     'based on', 'like', 'similar to', 'copy of', 'clone of',
   ];
 
-  // Check if description mentions any of our keywords
   for (const kw of keywords) {
     const kwLower = kw.toLowerCase();
     if (kwLower.length >= 4 && descLower.includes(kwLower)) return true;
   }
 
-  // Check suspicious phrases
   for (const phrase of suspiciousPhrases) {
     if (descLower.includes(phrase)) return true;
   }
@@ -280,7 +296,6 @@ Respond with ONLY a JSON object (no markdown):
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "";
     
-    // Parse JSON from response
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
@@ -338,6 +353,8 @@ serve(async (req) => {
     let totalSearches = 0;
     let totalDetected = 0;
     let thumbnailsAnalyzed = 0;
+    let groupsVerified = 0;
+    let snapshotsCreated = 0;
 
     for (const entry of registryEntries) {
       const creatorProfile = profileMap.get(entry.creator_id);
@@ -353,7 +370,7 @@ serve(async (req) => {
       }
       if (baseKeywords.length === 0) continue;
 
-      // Generate variants for all keywords
+      // Generate variants
       const allVariants = new Set<string>();
       for (const kw of baseKeywords) {
         for (const v of generateKeywordVariants(kw)) {
@@ -364,12 +381,11 @@ serve(async (req) => {
       const keywords = [...allVariants];
       logStep("Scanning entry with variants", { entryId: entry.id, baseKeywords, totalVariants: keywords.length });
 
-      // Known universe IDs to exclude (creator's own games)
       const ownUniverseIds = new Set(
         (entry.roblox_universe_ids || []).map(String)
       );
 
-      // Fetch original game thumbnail for AI comparison (if creator has registered universe)
+      // Fetch original game thumbnail for AI comparison
       let originalThumbUrl: string | null = null;
       if (ownUniverseIds.size > 0) {
         const firstUniverse = [...ownUniverseIds][0];
@@ -387,7 +403,6 @@ serve(async (req) => {
         logStep("Search results", { keyword, count: searchResults.length });
 
         for (const result of searchResults) {
-          // Skip own games
           if (creatorRobloxId && result.creatorId === creatorRobloxId) continue;
           if (ownUniverseIds.has(result.universeId)) continue;
 
@@ -398,6 +413,16 @@ serve(async (req) => {
       }
 
       logStep("Unique results to process", { count: allResults.size });
+
+      // Fetch existing detections for this entry to track history
+      const { data: existingDetections } = await supabaseClient
+        .from("ip_copy_detections")
+        .select("id, detected_universe_id, player_count, similarity_score")
+        .eq("registry_entry_id", entry.id);
+
+      const existingMap = new Map(
+        (existingDetections || []).map((d: any) => [d.detected_universe_id, d])
+      );
 
       // Process each unique result
       for (const [universeId, { result, matchedKeyword }] of allResults) {
@@ -426,9 +451,35 @@ serve(async (req) => {
           score += 30;
         }
 
-        // 3. AI Thumbnail comparison (only for high-potential matches or if we have original thumbnail)
+        // 3. Creator group/owner verification
+        let creatorVerified = false;
+        let creatorGroupId: string | null = null;
+        let creatorGroupName: string | null = null;
+
+        if (result.creatorType === 'Group' && creatorRobloxId && groupsVerified < 20) {
+          const groupInfo = await fetchCreatorGroupInfo(result.creatorId, result.creatorType);
+          if (groupInfo) {
+            creatorGroupId = groupInfo.groupId;
+            creatorGroupName = groupInfo.groupName;
+            
+            // Check if original creator is a member of this group
+            const isMember = await isUserInGroup(creatorRobloxId, groupInfo.groupId);
+            if (isMember) {
+              // This is likely the creator's own group - skip or reduce score
+              creatorVerified = true;
+              matchReasons.push("creator_owns_group");
+              score = Math.max(0, score - 50); // Significantly reduce score
+            }
+            groupsVerified++;
+            await new Promise(r => setTimeout(r, 300));
+          }
+        } else if (creatorRobloxId && result.creatorId === creatorRobloxId) {
+          creatorVerified = true;
+        }
+
+        // 4. AI Thumbnail comparison
         let thumbnailAnalyzed = false;
-        if (originalThumbUrl && score >= 20 && thumbnailsAnalyzed < 10) {
+        if (originalThumbUrl && score >= 20 && thumbnailsAnalyzed < 10 && !creatorVerified) {
           const candidateThumb = await fetchGameThumbnail(universeId);
           if (candidateThumb) {
             await new Promise(r => setTimeout(r, 500));
@@ -449,7 +500,18 @@ serve(async (req) => {
         // Only store if there's at least some signal
         if (score < 15 && matchReasons.length === 0) continue;
 
-        const { error: insertError } = await supabaseClient
+        // Determine player count trend
+        const existing = existingMap.get(universeId);
+        let playerCountTrend = 'stable';
+        const previousPlayerCount = existing?.player_count || null;
+        if (existing && previousPlayerCount !== null) {
+          if (result.playerCount > previousPlayerCount * 1.2) playerCountTrend = 'rising';
+          else if (result.playerCount < previousPlayerCount * 0.8) playerCountTrend = 'falling';
+        }
+
+        const detectionCount = existing ? (existing.detection_count || 1) + 1 : 1;
+
+        const { data: upsertData, error: insertError } = await supabaseClient
           .from("ip_copy_detections")
           .upsert({
             registry_entry_id: entry.id,
@@ -466,21 +528,42 @@ serve(async (req) => {
             similarity_score: Math.min(Math.round(score), 100),
             match_reasons: matchReasons,
             thumbnail_analyzed: thumbnailAnalyzed,
+            creator_verified: creatorVerified,
+            creator_group_id: creatorGroupId,
+            creator_group_name: creatorGroupName,
+            previous_player_count: previousPlayerCount,
+            player_count_trend: playerCountTrend,
+            detection_count: detectionCount,
+            last_seen_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           }, {
             onConflict: "registry_entry_id,detected_universe_id",
             ignoreDuplicates: false,
-          });
+          })
+          .select("id")
+          .single();
 
         if (insertError) {
           logStep("Insert error", { error: insertError.message });
         } else {
           totalDetected++;
+
+          // Create a historical snapshot
+          if (upsertData?.id) {
+            await supabaseClient
+              .from("ip_detection_snapshots")
+              .insert({
+                detection_id: upsertData.id,
+                player_count: result.playerCount,
+                similarity_score: Math.min(Math.round(score), 100),
+              });
+            snapshotsCreated++;
+          }
         }
       }
     }
 
-    logStep("Enhanced scan complete", { totalSearches, totalDetected, thumbnailsAnalyzed });
+    logStep("Enhanced scan complete", { totalSearches, totalDetected, thumbnailsAnalyzed, groupsVerified, snapshotsCreated });
 
     return new Response(
       JSON.stringify({
@@ -488,6 +571,8 @@ serve(async (req) => {
         total_searches: totalSearches,
         total_detected: totalDetected,
         thumbnails_analyzed: thumbnailsAnalyzed,
+        groups_verified: groupsVerified,
+        snapshots_created: snapshotsCreated,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
