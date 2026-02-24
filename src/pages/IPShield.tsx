@@ -62,7 +62,7 @@ function CopyDetectionTab({ userId }: { userId?: string }) {
         .select('*')
         .eq('creator_id', userId!)
         .is('dismissed_at', null)
-        .order('player_count', { ascending: false });
+        .order('similarity_score', { ascending: false });
       if (error) throw error;
       return data as any[];
     },
@@ -126,50 +126,68 @@ function CopyDetectionTab({ userId }: { userId?: string }) {
         </Card>
       ) : (
         <div className="grid gap-3">
-          {detections.map((d: any) => (
-            <Card key={d.id} className="hover:border-destructive/30 transition-colors">
-              <CardContent className="py-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium">{d.game_name}</span>
-                      <Badge variant="destructive" className="text-xs">Potential Copy</Badge>
-                      {d.player_count > 0 && (
-                        <Badge variant="outline" className="text-xs gap-1">
-                          <Users className="h-3 w-3" />
-                          {d.player_count.toLocaleString()} playing
+          {detections.map((d: any) => {
+            const score = d.similarity_score || 0;
+            const reasons: string[] = d.match_reasons || [];
+            const hasThumbMatch = reasons.some((r: string) => r.startsWith('thumbnail_similar'));
+            const hasDescMatch = reasons.includes('description_match');
+            const threatLevel = score >= 70 ? 'destructive' : score >= 40 ? 'default' : 'secondary';
+
+            return (
+              <Card key={d.id} className={`transition-colors ${score >= 70 ? 'border-destructive/40' : 'hover:border-destructive/20'}`}>
+                <CardContent className="py-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium">{d.game_name}</span>
+                        <Badge variant={threatLevel as any} className="text-xs">
+                          {score >= 70 ? '🔴 High Match' : score >= 40 ? '🟡 Moderate' : '🟢 Low'}
+                          {score > 0 && ` · ${score}%`}
                         </Badge>
-                      )}
+                        {d.player_count > 0 && (
+                          <Badge variant="outline" className="text-xs gap-1">
+                            <Users className="h-3 w-3" />
+                            {d.player_count.toLocaleString()} playing
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Created by <span className="font-medium text-foreground">{d.game_creator_name}</span>
+                        {d.game_creator_type === 'Group' && ' (Group)'}
+                        {' · '}Keyword: "{d.search_keyword}"
+                      </p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        {hasThumbMatch && <Badge variant="outline" className="text-xs">🖼️ Thumbnail Match</Badge>}
+                        {hasDescMatch && <Badge variant="outline" className="text-xs">📝 Description Match</Badge>}
+                        {d.thumbnail_analyzed && !hasThumbMatch && (
+                          <Badge variant="outline" className="text-xs text-muted-foreground">✓ Thumbnail Clear</Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Universe ID: {d.detected_universe_id}
+                        {' · '}Detected {format(new Date(d.created_at), 'MMM d, yyyy')}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Created by <span className="font-medium text-foreground">{d.game_creator_name}</span>
-                      {d.game_creator_type === 'Group' && ' (Group)'}
-                      {' · '}Keyword: "{d.search_keyword}"
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Universe ID: {d.detected_universe_id}
-                      {' · '}Detected {format(new Date(d.created_at), 'MMM d, yyyy')}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <a
-                      href={`https://www.roblox.com/games/${d.detected_place_id || d.detected_universe_id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Button variant="outline" size="sm" className="gap-1">
-                        <ExternalLink className="h-3.5 w-3.5" />
-                        View
+                    <div className="flex items-center gap-2 shrink-0">
+                      <a
+                        href={`https://www.roblox.com/games/${d.detected_place_id || d.detected_universe_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button variant="outline" size="sm" className="gap-1">
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          View
+                        </Button>
+                      </a>
+                      <Button variant="ghost" size="sm" onClick={() => dismissDetection(d.id)}>
+                        Dismiss
                       </Button>
-                    </a>
-                    <Button variant="ghost" size="sm" onClick={() => dismissDetection(d.id)}>
-                      Dismiss
-                    </Button>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </TabsContent>
