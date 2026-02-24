@@ -282,19 +282,150 @@ export default function IPShield() {
   const activeCases = cases?.filter(c => !['resolved', 'rejected'].includes(c.status)) || [];
   const closedCases = cases?.filter(c => ['resolved', 'rejected'].includes(c.status)) || [];
 
-  // Not logged in
+  // Plan data used for both logged-out and logged-in views
+  const tiers = [
+    {
+      id: 'starter',
+      name: 'Starter',
+      price: '19.99',
+      description: 'Essential protection for individual creators',
+      features: [
+        '3 takedown requests/month',
+        '15 registered works',
+        'Case tracking & updates',
+        'Cross-platform enforcement',
+      ],
+      disabledFeatures: ['Priority handling', 'Monitoring & alerts', 'Dedicated agent'],
+      popular: false,
+    },
+    {
+      id: 'pro',
+      name: 'Pro',
+      price: '29.99',
+      description: 'Advanced protection for serious creators',
+      features: [
+        '15 takedown requests/month',
+        'Unlimited registered works',
+        'Case tracking & updates',
+        'Cross-platform enforcement',
+        'Priority handling',
+        'Monitoring & alerts',
+      ],
+      disabledFeatures: ['Dedicated agent'],
+      popular: true,
+    },
+    {
+      id: 'enterprise',
+      name: 'Enterprise',
+      price: '79.99',
+      description: 'Complete protection with dedicated support',
+      features: [
+        'Unlimited takedown requests',
+        'Unlimited registered works',
+        'Case tracking & updates',
+        'Cross-platform enforcement',
+        'Priority handling',
+        'Monitoring & alerts',
+        'Dedicated DMCA agent',
+      ],
+      disabledFeatures: [],
+      popular: false,
+    },
+  ];
+
+  // Not logged in — show full landing with benefits + plans
   if (!user) {
+    const highlights = [
+      { icon: Shield, title: 'DMCA Takedown Service', description: 'We file professional DMCA takedown notices on your behalf across Roblox, Discord, YouTube and more.' },
+      { icon: FileText, title: 'IP Registry', description: 'Register your original works with timestamps and proof to strengthen your ownership claims.' },
+      { icon: Eye, title: 'Automated Monitoring', description: 'Weekly scans detect if your Roblox assets or games appear under a different owner.' },
+      { icon: UserCheck, title: 'Verified Identity', description: 'Identity verification ensures full legal standing when acting as your DMCA agent.' },
+    ];
+
     return (
       <MainLayout>
-        <div className="container py-16 max-w-lg text-center">
-          <Shield className="h-16 w-16 mx-auto text-primary mb-6" />
-          <h1 className="text-3xl font-display font-bold mb-3">IP Shield</h1>
-          <p className="text-muted-foreground mb-6">
-            Protect your intellectual property — we'll file takedown notices on your behalf. Sign in to get started.
-          </p>
-          <Button asChild>
-            <Link to="/auth"><LogIn className="h-4 w-4 mr-2" /> Sign In</Link>
-          </Button>
+        <div className="container py-16 max-w-5xl">
+          {/* Hero */}
+          <div className="text-center mb-14">
+            <Shield className="h-16 w-16 mx-auto text-primary mb-5" />
+            <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">IP Shield</h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+              Professional intellectual property protection for Roblox creators. We handle DMCA takedowns, monitor your assets, and protect your work — so you can focus on creating.
+            </p>
+            <Button size="lg" asChild>
+              <Link to="/auth"><LogIn className="h-4 w-4 mr-2" /> Sign In to Get Started</Link>
+            </Button>
+          </div>
+
+          {/* Highlights */}
+          <div className="grid sm:grid-cols-2 gap-5 mb-16">
+            {highlights.map((h) => (
+              <Card key={h.title}>
+                <CardContent className="flex gap-4 pt-6">
+                  <div className="shrink-0 h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <h.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-1">{h.title}</h3>
+                    <p className="text-sm text-muted-foreground">{h.description}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Pricing */}
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-display font-bold mb-2">Choose Your Plan</h2>
+            <p className="text-muted-foreground">All plans include cross-platform enforcement and case tracking.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            {tiers.map((tier) => (
+              <Card
+                key={tier.id}
+                className={`relative flex flex-col ${tier.popular ? 'border-primary shadow-lg shadow-primary/10 scale-[1.02]' : ''}`}
+              >
+                {tier.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-primary text-primary-foreground px-3">Most Popular</Badge>
+                  </div>
+                )}
+                <CardContent className="pt-6 flex flex-col flex-1">
+                  <div className="mb-4">
+                    <h3 className="text-lg font-bold">{tier.name}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">{tier.description}</p>
+                  </div>
+                  <div className="mb-5">
+                    <span className="text-3xl font-bold">£{tier.price}</span>
+                    <span className="text-muted-foreground text-sm">/mo</span>
+                  </div>
+                  <ul className="space-y-2 text-sm flex-1 mb-6">
+                    {tier.features.map((f) => (
+                      <li key={f} className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                    {tier.disabledFeatures.map((f) => (
+                      <li key={f} className="flex items-center gap-2 text-muted-foreground/50">
+                        <XCircle className="h-4 w-4 shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button className="w-full gap-2" variant={tier.popular ? 'default' : 'outline'} asChild>
+                    <Link to="/auth"><LogIn className="h-4 w-4" /> Sign In to Subscribe</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="text-center text-sm text-muted-foreground">
+            <p>Already have an account? <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to manage your IP Shield subscription.</p>
+          </div>
         </div>
       </MainLayout>
     );
@@ -315,56 +446,6 @@ export default function IPShield() {
 
   // Not subscribed — show 3-tier pricing (first gate)
   if (!isSubscribed) {
-    const tiers = [
-      {
-        id: 'starter',
-        name: 'Starter',
-        price: '19.99',
-        description: 'Essential protection for individual creators',
-        features: [
-          '3 takedown requests/month',
-          '15 registered works',
-          'Case tracking & updates',
-          'Cross-platform enforcement',
-        ],
-        disabledFeatures: ['Priority handling', 'Monitoring & alerts', 'Dedicated agent'],
-        popular: false,
-      },
-      {
-        id: 'pro',
-        name: 'Pro',
-        price: '29.99',
-        description: 'Advanced protection for serious creators',
-        features: [
-          '15 takedown requests/month',
-          'Unlimited registered works',
-          'Case tracking & updates',
-          'Cross-platform enforcement',
-          'Priority handling',
-          'Monitoring & alerts',
-        ],
-        disabledFeatures: ['Dedicated agent'],
-        popular: true,
-      },
-      {
-        id: 'enterprise',
-        name: 'Enterprise',
-        price: '79.99',
-        description: 'Complete protection with dedicated support',
-        features: [
-          'Unlimited takedown requests',
-          'Unlimited registered works',
-          'Case tracking & updates',
-          'Cross-platform enforcement',
-          'Priority handling',
-          'Monitoring & alerts',
-          'Dedicated DMCA agent',
-        ],
-        disabledFeatures: [],
-        popular: false,
-      },
-    ];
-
     return (
       <MainLayout>
         <div className="container py-16 max-w-5xl">
