@@ -408,22 +408,22 @@ export default function AdminDashboard() {
 
           <CardContent className="relative -mt-10 px-4 sm:px-6 pb-5">
             {/* Avatar + Name row */}
-            <div className="flex items-end gap-4 mb-4">
-              <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-4 border-card shadow-lg">
-                <AvatarImage src={marketplaceLogo} alt="Eclipse" className="object-contain" />
-                <AvatarFallback className="bg-muted text-2xl font-bold">E</AvatarFallback>
-              </Avatar>
+            <div className="flex items-start gap-4 mb-4">
+              <div className="flex flex-col items-center gap-1.5">
+                <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-4 border-card shadow-lg">
+                  <AvatarImage src={marketplaceLogo} alt="Eclipse" className="object-contain" />
+                  <AvatarFallback className="bg-muted text-2xl font-bold">E</AvatarFallback>
+                </Avatar>
+                <Badge variant="default" className="gap-1">
+                  <Shield className="h-3 w-3" />
+                  Admin
+                </Badge>
+              </div>
 
-              <div className="flex-1 min-w-0 pb-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl sm:text-2xl font-bold">
-                    {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
-                  </h1>
-                  <Badge variant="default" className="gap-1 shrink-0">
-                    <Shield className="h-3 w-3" />
-                    Admin
-                  </Badge>
-                </div>
+              <div className="flex-1 min-w-0 pt-2">
+                <h1 className="text-xl sm:text-2xl font-bold">
+                  {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
+                </h1>
                 <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                   <span>🕐 Local: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   <span>🇬🇧 UK: {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })}</span>
