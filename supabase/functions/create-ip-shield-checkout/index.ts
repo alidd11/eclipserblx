@@ -12,7 +12,13 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[CREATE-IP-SHIELD-CHECKOUT] ${step}${detailsStr}`);
 };
 
-const IP_SHIELD_PRICE_ID = "price_1T4OTVCjEHxHwNl9fNIFX8kG";
+const IP_SHIELD_PRICES: Record<string, string> = {
+  starter: "price_1T4OkOCjEHxHwNl9i1TPwCLk",
+  pro: "price_1T4OTVCjEHxHwNl9fNIFX8kG",
+  enterprise: "price_1T4OmYCjEHxHwNl9vLYAuHni",
+};
+
+const ALL_PRICE_IDS = Object.values(IP_SHIELD_PRICES);
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -42,6 +48,12 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    const body = await req.json().catch(() => ({}));
+    const tier = body.tier || "starter";
+    const priceId = IP_SHIELD_PRICES[tier];
+    if (!priceId) throw new Error(`Invalid tier: ${tier}`);
+    logStep("Selected tier", { tier, priceId });
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
     // Check for existing Stripe customer
@@ -51,17 +63,17 @@ serve(async (req) => {
       customerId = customers.data[0].id;
       logStep("Found existing Stripe customer", { customerId });
 
-      // Check if already has an active IP Shield subscription
+      // Check if already has any active IP Shield subscription
       const subs = await stripe.subscriptions.list({
         customer: customerId,
         status: "active",
         limit: 100,
       });
-      const hasIpShield = subs.data.some(sub =>
-        sub.items.data.some(item => item.price.id === IP_SHIELD_PRICE_ID)
+      const existingSub = subs.data.find(sub =>
+        sub.items.data.some(item => ALL_PRICE_IDS.includes(item.price.id))
       );
-      if (hasIpShield) {
-        return new Response(JSON.stringify({ error: "You already have an active IP Shield subscription" }), {
+      if (existingSub) {
+        return new Response(JSON.stringify({ error: "You already have an active IP Shield subscription. Manage it from your account settings." }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 400,
         });
@@ -73,11 +85,11 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
-      line_items: [{ price: IP_SHIELD_PRICE_ID, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       success_url: `${origin}/ip-shield?subscription=success`,
       cancel_url: `${origin}/ip-shield?subscription=cancelled`,
-      metadata: { user_id: user.id, product: "ip_shield" },
+      metadata: { user_id: user.id, product: "ip_shield", tier },
     });
 
     logStep("Checkout session created", { sessionId: session.id });
