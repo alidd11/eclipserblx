@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
-  DollarSign, ShoppingCart, CreditCard, Megaphone, Crown, Gamepad2,
+  DollarSign, ShoppingCart, CreditCard, Megaphone, Crown, Gamepad2, Percent,
   ArrowUpRight, ArrowDownRight, Minus, Search, Filter, Download,
   TrendingUp, Calendar
 } from 'lucide-react';
@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils';
 
 const ROBUX_TO_GBP_RATE = 0.00275;
 
-type IncomeSource = 'all' | 'orders' | 'subscriptions' | 'ads' | 'credits' | 'robux';
+type IncomeSource = 'all' | 'orders' | 'subscriptions' | 'ads' | 'credits' | 'robux' | 'commission';
 type TimePeriod = '7d' | '30d' | 'month' | 'year' | 'all';
 
 interface UnifiedTransaction {
@@ -41,6 +41,7 @@ const sourceConfig: Record<Exclude<IncomeSource, 'all'>, { label: string; icon: 
   ads: { label: 'Advertising', icon: Megaphone, color: 'text-blue-500', badgeVariant: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
   credits: { label: 'Credit Purchases', icon: CreditCard, color: 'text-purple-500', badgeVariant: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
   robux: { label: 'Robux', icon: Gamepad2, color: 'text-red-500', badgeVariant: 'bg-red-500/10 text-red-500 border-red-500/20' },
+  commission: { label: 'Commission', icon: Percent, color: 'text-orange-500', badgeVariant: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
 };
 
 export default function AdminIncomeSources() {
@@ -127,6 +128,20 @@ export default function AdminIncomeSources() {
     },
   });
 
+  const { data: commissionData, isLoading: commissionLoading } = useQuery({
+    queryKey: ['income-sources-commission'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('seller_transactions')
+        .select('id, order_id, seller_id, store_id, gross_amount, platform_fee, net_amount, stripe_fee, type, status, description, created_at')
+        .eq('type', 'sale')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   // Ad tier pricing (approximate monthly GBP values)
   const adTierPricing: Record<string, number> = { basic: 4.99, pro: 9.99, premium: 19.99 };
   // Eclipse+ pricing
@@ -203,8 +218,23 @@ export default function AdminIncomeSources() {
       });
     });
 
+    (commissionData ?? []).forEach(c => {
+      const platformFee = c.platform_fee ?? 0;
+      if (platformFee <= 0) return;
+      txns.push({
+        id: `comm-${c.id}`,
+        source: 'commission',
+        description: `Commission on £${(c.gross_amount ?? 0).toFixed(2)} sale`,
+        amount: platformFee,
+        currency: '£',
+        status: c.status ?? 'completed',
+        date: c.created_at,
+        metadata: `Seller earned £${(c.net_amount ?? 0).toFixed(2)} · Stripe fee £${(c.stripe_fee ?? 0).toFixed(2)}`,
+      });
+    });
+
     return txns.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [ordersData, subsData, adsData, creditsData, robuxData]);
+  }, [ordersData, subsData, adsData, creditsData, robuxData, commissionData]);
 
   // Filter by period, source, and search
   const filteredTransactions = useMemo(() => {
@@ -229,6 +259,7 @@ export default function AdminIncomeSources() {
       ads: { total: 0, count: 0, prev: 0 },
       credits: { total: 0, count: 0, prev: 0 },
       robux: { total: 0, count: 0, prev: 0 },
+      commission: { total: 0, count: 0, prev: 0 },
     };
 
     const periodMs = new Date().getTime() - periodStart.getTime();
@@ -250,7 +281,7 @@ export default function AdminIncomeSources() {
 
   const grandTotal = Object.values(summaryBySource).reduce((sum, s) => sum + s.total, 0);
 
-  const isLoading = ordersLoading || subsLoading || adsLoading || creditsLoading || robuxLoading;
+  const isLoading = ordersLoading || subsLoading || adsLoading || creditsLoading || robuxLoading || commissionLoading;
 
   const exportCSV = () => {
     const headers = ['Date', 'Source', 'Description', 'Amount (£)', 'Status', 'ID'];
@@ -337,7 +368,7 @@ export default function AdminIncomeSources() {
         </Card>
 
         {/* Source breakdown cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {(Object.entries(sourceConfig) as [Exclude<IncomeSource, 'all'>, typeof sourceConfig[keyof typeof sourceConfig]][]).map(([key, config]) => {
             const data = summaryBySource[key];
             const change = data.prev > 0 ? ((data.total - data.prev) / data.prev) * 100 : 0;
