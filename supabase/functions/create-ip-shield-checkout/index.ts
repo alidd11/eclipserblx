@@ -13,7 +13,7 @@ const logStep = (step: string, details?: unknown) => {
 };
 
 const IP_SHIELD_PRICES: Record<string, string> = {
-  starter: "price_1T4OkOCjEHxHwNl9i1TPwCLk",
+  starter: "price_1T4QCOCjEHxHwNl9Hr9uHeWe",
   pro: "price_1T4OTVCjEHxHwNl9fNIFX8kG",
   enterprise: "price_1T4OmYCjEHxHwNl9vLYAuHni",
 };
