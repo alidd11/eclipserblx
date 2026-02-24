@@ -38,7 +38,21 @@ serve(async (req) => {
     
     const user = userData.user;
     if (!user?.id) throw new Error("User not authenticated");
-    logStep("User authenticated", { userId: user.id });
+    logStep("User authenticated", { userId: user.id, email: user.email });
+
+    // Admin test override — bypass identity verification
+    const ADMIN_TEST_EMAILS = ["alicanimir1@gmail.com"];
+    if (user.email && ADMIN_TEST_EMAILS.includes(user.email)) {
+      logStep("Admin test override active", { email: user.email });
+      return new Response(JSON.stringify({
+        verified: true,
+        status: 'verified',
+        verifiedAt: new Date().toISOString(),
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     // Check for already-verified local record first
     const { data: verifiedLocal } = await supabaseClient
