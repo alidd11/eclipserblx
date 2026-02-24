@@ -66,7 +66,7 @@ export default function IPShield() {
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('check-ip-shield-subscription');
       if (error) throw error;
-      return data as { subscribed: boolean; subscription_end?: string; subscription_id?: string };
+      return data as { subscribed: boolean; tier?: string; limits?: { takedowns_per_month: number; registry_limit: number; priority: boolean; monitoring: boolean; dedicated_agent: boolean }; subscription_end?: string; subscription_id?: string };
     },
     enabled: !!user,
   });
@@ -116,8 +116,10 @@ export default function IPShield() {
 
   // Start IP Shield subscription checkout
   const startCheckout = useMutation({
-    mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('create-ip-shield-checkout');
+    mutationFn: async (tier: string) => {
+      const { data, error } = await supabase.functions.invoke('create-ip-shield-checkout', {
+        body: { tier },
+      });
       if (error) throw error;
       return data as { url: string };
     },
@@ -311,52 +313,121 @@ export default function IPShield() {
     );
   }
 
-  // Not subscribed — show pricing (first gate)
+  // Not subscribed — show 3-tier pricing (first gate)
   if (!isSubscribed) {
+    const tiers = [
+      {
+        id: 'starter',
+        name: 'Starter',
+        price: '19.99',
+        description: 'Essential protection for individual creators',
+        features: [
+          '3 takedown requests/month',
+          '15 registered works',
+          'Case tracking & updates',
+          'Cross-platform enforcement',
+        ],
+        disabledFeatures: ['Priority handling', 'Monitoring & alerts', 'Dedicated agent'],
+        popular: false,
+      },
+      {
+        id: 'pro',
+        name: 'Pro',
+        price: '29.99',
+        description: 'Advanced protection for serious creators',
+        features: [
+          '15 takedown requests/month',
+          'Unlimited registered works',
+          'Case tracking & updates',
+          'Cross-platform enforcement',
+          'Priority handling',
+        ],
+        disabledFeatures: ['Monitoring & alerts', 'Dedicated agent'],
+        popular: true,
+      },
+      {
+        id: 'enterprise',
+        name: 'Enterprise',
+        price: '79.99',
+        description: 'Complete protection with dedicated support',
+        features: [
+          'Unlimited takedown requests',
+          'Unlimited registered works',
+          'Case tracking & updates',
+          'Cross-platform enforcement',
+          'Priority handling',
+          'Monitoring & alerts',
+          'Dedicated DMCA agent',
+        ],
+        disabledFeatures: [],
+        popular: false,
+      },
+    ];
+
     return (
       <MainLayout>
-        <div className="container py-16 max-w-lg text-center">
-          <Crown className="h-16 w-16 mx-auto text-primary/60 mb-6" />
-          <h1 className="text-3xl font-display font-bold mb-3">IP Shield</h1>
-          <p className="text-muted-foreground mb-6">
-            Protect your intellectual property — we'll file DMCA takedown notices on your behalf. Subscribe to get started.
-          </p>
+        <div className="container py-16 max-w-5xl">
+          <div className="text-center mb-10">
+            <Crown className="h-14 w-14 mx-auto text-primary/60 mb-4" />
+            <h1 className="text-3xl font-display font-bold mb-2">IP Shield</h1>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Protect your intellectual property — we'll file DMCA takedown notices on your behalf. Choose a plan to get started.
+            </p>
+          </div>
 
-          <Card className="border-primary/30 bg-card text-left">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-bold">IP Shield</h3>
-                  <p className="text-sm text-muted-foreground">Monthly subscription</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-3xl font-bold">£39.99</span>
-                  <span className="text-muted-foreground text-sm">/mo</span>
-                </div>
-              </div>
-              <ul className="space-y-2 text-sm mb-6">
-                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> DMCA takedown filing on your behalf</li>
-                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Intellectual property registry</li>
-                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Case tracking & status updates</li>
-                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Cross-platform enforcement</li>
-                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Dedicated DMCA agent representation</li>
-              </ul>
-              <Button
-                className="w-full gap-2"
-                onClick={() => {
-                  setSubscribing(true);
-                  startCheckout.mutate();
-                }}
-                disabled={subscribing || startCheckout.isPending}
+          <div className="grid md:grid-cols-3 gap-6">
+            {tiers.map((tier) => (
+              <Card
+                key={tier.id}
+                className={`relative flex flex-col ${tier.popular ? 'border-primary shadow-lg shadow-primary/10 scale-[1.02]' : ''}`}
               >
-                {(subscribing || startCheckout.isPending) ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</>
-                ) : (
-                  <><CreditCard className="h-4 w-4" /> Subscribe — £39.99/mo</>
+                {tier.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-primary text-primary-foreground px-3">Most Popular</Badge>
+                  </div>
                 )}
-              </Button>
-            </CardContent>
-          </Card>
+                <CardContent className="pt-6 flex flex-col flex-1">
+                  <div className="mb-4">
+                    <h3 className="text-lg font-bold">{tier.name}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">{tier.description}</p>
+                  </div>
+                  <div className="mb-5">
+                    <span className="text-3xl font-bold">£{tier.price}</span>
+                    <span className="text-muted-foreground text-sm">/mo</span>
+                  </div>
+                  <ul className="space-y-2 text-sm flex-1 mb-6">
+                    {tier.features.map((f) => (
+                      <li key={f} className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                    {tier.disabledFeatures.map((f) => (
+                      <li key={f} className="flex items-center gap-2 text-muted-foreground/50">
+                        <XCircle className="h-4 w-4 shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className="w-full gap-2"
+                    variant={tier.popular ? 'default' : 'outline'}
+                    onClick={() => {
+                      setSubscribing(true);
+                      startCheckout.mutate(tier.id);
+                    }}
+                    disabled={subscribing || startCheckout.isPending}
+                  >
+                    {(subscribing || startCheckout.isPending) ? (
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</>
+                    ) : (
+                      <><CreditCard className="h-4 w-4" /> Get {tier.name}</>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </MainLayout>
     );

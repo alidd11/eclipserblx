@@ -12,7 +12,19 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[CHECK-IP-SHIELD-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
-const IP_SHIELD_PRICE_ID = "price_1T4OTVCjEHxHwNl9fNIFX8kG";
+const PRICE_TO_TIER: Record<string, string> = {
+  "price_1T4OkOCjEHxHwNl9i1TPwCLk": "starter",
+  "price_1T4OTVCjEHxHwNl9fNIFX8kG": "pro",
+  "price_1T4OmYCjEHxHwNl9vLYAuHni": "enterprise",
+};
+
+const ALL_PRICE_IDS = Object.keys(PRICE_TO_TIER);
+
+const TIER_LIMITS: Record<string, { takedowns_per_month: number; registry_limit: number; priority: boolean; monitoring: boolean; dedicated_agent: boolean }> = {
+  starter: { takedowns_per_month: 3, registry_limit: 15, priority: false, monitoring: false, dedicated_agent: false },
+  pro: { takedowns_per_month: 15, registry_limit: -1, priority: true, monitoring: false, dedicated_agent: false },
+  enterprise: { takedowns_per_month: -1, registry_limit: -1, priority: true, monitoring: true, dedicated_agent: true },
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -62,21 +74,26 @@ serve(async (req) => {
       limit: 100,
     });
 
-    const ipShieldSub = subscriptions.data.find(sub =>
-      sub.items.data.some(item => item.price.id === IP_SHIELD_PRICE_ID)
-    );
-
-    if (ipShieldSub) {
-      const subscriptionEnd = new Date(ipShieldSub.current_period_end * 1000).toISOString();
-      logStep("Active IP Shield subscription found", { subscriptionId: ipShieldSub.id, endDate: subscriptionEnd });
-      return new Response(JSON.stringify({
-        subscribed: true,
-        subscription_end: subscriptionEnd,
-        subscription_id: ipShieldSub.id,
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+    // Find an IP Shield subscription
+    for (const sub of subscriptions.data) {
+      for (const item of sub.items.data) {
+        if (ALL_PRICE_IDS.includes(item.price.id)) {
+          const tier = PRICE_TO_TIER[item.price.id] || "starter";
+          const limits = TIER_LIMITS[tier];
+          const subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
+          logStep("Active IP Shield subscription found", { subscriptionId: sub.id, tier, endDate: subscriptionEnd });
+          return new Response(JSON.stringify({
+            subscribed: true,
+            tier,
+            limits,
+            subscription_end: subscriptionEnd,
+            subscription_id: sub.id,
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
+      }
     }
 
     logStep("No active IP Shield subscription");
