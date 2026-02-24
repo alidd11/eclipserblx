@@ -34,74 +34,55 @@ function generateKeywordVariants(keyword: string): string[] {
   if (spaced !== keyword) variants.add(spaced);
 
   const words = spaced.split(' ').filter(w => w.length >= 3);
-  if (words.length >= 2) {
-    variants.add(`${words[0]} ${words[words.length - 1]}`);
-    for (const w of words) {
-      if (w.length >= 5) variants.add(w);
-    }
+  
+  // Always add individual significant words as standalone searches
+  for (const w of words) {
+    if (w.length >= 4) variants.add(w);
   }
 
-  const withoutRP = spaced.replace(/\b(RP|Roleplay|Role Play)\b/gi, '').trim();
+  if (words.length >= 2) {
+    variants.add(`${words[0]} ${words[words.length - 1]}`);
+  }
+
+  const withoutRP = spaced.replace(/\b(RP|Roleplay|Role Play)\b/gi, '').replace(/\s+/g, ' ').trim();
   if (withoutRP.length >= 3 && withoutRP !== spaced) variants.add(withoutRP);
 
   if (!/\bRP\b/i.test(keyword) && words.length <= 3) {
     variants.add(`${keyword} RP`);
   }
 
-  return [...variants].slice(0, 8);
-}
-
-// ─── ROBLOX SEARCH: GAMES LIST API (with pagination) ───
-async function searchGamesListAPI(keyword: string, maxResults = 50): Promise<SearchResult[]> {
-  const results: SearchResult[] = [];
-  const seenIds = new Set<string>();
-
-  for (let startRow = 0; startRow < maxResults; startRow += 25) {
-    try {
-      const url = `https://games.roblox.com/v1/games/list?model.keyword=${encodeURIComponent(keyword)}&model.startRows=${startRow}&model.maxRows=25&model.sortToken=`;
-      const res = await fetch(url, { headers: { Accept: "application/json" } });
-      if (!res.ok) break;
-      const data = await res.json();
-      const games = data.games || [];
-      if (games.length === 0) break;
-
-      for (const g of games) {
-        const uid = String(g.universeId);
-        if (seenIds.has(uid)) continue;
-        seenIds.add(uid);
-        results.push({
-          universeId: uid,
-          placeId: g.placeId ? String(g.placeId) : undefined,
-          name: g.name || "Unknown",
-          description: g.gameDescription || undefined,
-          creatorName: g.creatorName || "Unknown",
-          creatorId: String(g.creatorId || ""),
-          creatorType: g.creatorType || "User",
-          playerCount: g.playerCount || 0,
-        });
-      }
-
-      if (games.length === 25 && startRow + 25 < maxResults) {
-        await new Promise(r => setTimeout(r, 300));
-      } else {
-        break;
-      }
-    } catch {
-      break;
-    }
+  // Also add the keyword without short words (articles, prepositions)
+  const significantWords = words.filter(w => w.length >= 4);
+  if (significantWords.length >= 1 && significantWords.join(' ') !== spaced) {
+    variants.add(significantWords.join(' '));
   }
-  return results;
+
+  return [...variants].slice(0, 12);
 }
 
 // ─── ROBLOX SEARCH: OMNI-SEARCH API ───
 async function searchOmniAPI(keyword: string): Promise<SearchResult[]> {
   const results: SearchResult[] = [];
+  const sessionId = crypto.randomUUID().replace(/-/g, '');
+  
   try {
-    const url = `https://apis.roblox.com/search-api/omni-search?searchQuery=${encodeURIComponent(keyword)}&pageType=games`;
-    const res = await fetch(url, { headers: { Accept: "application/json" } });
-    if (!res.ok) return results;
+    const url = `https://apis.roblox.com/search-api/omni-search?searchQuery=${encodeURIComponent(keyword)}&sessionId=${sessionId}&pageType=all`;
+    logStep("Omni-search request", { url: url.substring(0, 120) });
+    const res = await fetch(url, { 
+      headers: { 
+        Accept: "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      } 
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      logStep("Omni-search failed", { status: res.status, body: body.substring(0, 200) });
+      return results;
+    }
 
     const data = await res.json();
+    logStep("Omni-search raw response keys", { keys: Object.keys(data), resultsCount: data?.searchResults?.length });
+    
     for (const section of (data?.searchResults || [])) {
       for (const item of (section?.contents || [])) {
         if (item.contentType === "Game" && item.universeId) {
@@ -118,28 +99,98 @@ async function searchOmniAPI(keyword: string): Promise<SearchResult[]> {
         }
       }
     }
+    
+    // If pageType=all didn't work, try pageType=experiences
+    if (results.length === 0) {
+      const url2 = `https://apis.roblox.com/search-api/omni-search?searchQuery=${encodeURIComponent(keyword)}&sessionId=${sessionId}&pageType=experiences`;
+      const res2 = await fetch(url2, { 
+        headers: { 
+          Accept: "application/json",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        } 
+      });
+      if (res2.ok) {
+        const data2 = await res2.json();
+        for (const section of (data2?.searchResults || [])) {
+          for (const item of (section?.contents || [])) {
+            if (item.contentType === "Game" && item.universeId) {
+              results.push({
+                universeId: String(item.universeId),
+                placeId: item.rootPlaceId ? String(item.rootPlaceId) : undefined,
+                name: item.name || "Unknown",
+                description: item.description || undefined,
+                creatorName: item.creatorName || "Unknown",
+                creatorId: String(item.creatorId || ""),
+                creatorType: item.creatorType || "User",
+                playerCount: item.playerCount || 0,
+              });
+            }
+          }
+        }
+      }
+    }
   } catch (err) {
     logStep("Omni-search error", { error: String(err) });
   }
   return results;
 }
 
-// ─── COMBINED SEARCH ───
-async function searchRobloxCombined(keyword: string): Promise<SearchResult[]> {
-  const [listResults, omniResults] = await Promise.all([
-    searchGamesListAPI(keyword),
-    searchOmniAPI(keyword),
-  ]);
-
-  const seen = new Set<string>();
-  const combined: SearchResult[] = [];
-  for (const r of [...listResults, ...omniResults]) {
-    if (!seen.has(r.universeId)) {
-      seen.add(r.universeId);
-      combined.push(r);
+// ─── FETCH GAME DETAILS (for creator info & player count) ───
+async function fetchGameDetails(universeIds: string[]): Promise<Map<string, { creatorName: string; creatorId: string; creatorType: string; playerCount: number; description: string | null }>> {
+  const details = new Map<string, { creatorName: string; creatorId: string; creatorType: string; playerCount: number; description: string | null }>();
+  
+  // Batch fetch in groups of 50
+  for (let i = 0; i < universeIds.length; i += 50) {
+    const batch = universeIds.slice(i, i + 50);
+    try {
+      const res = await fetch(
+        `https://games.roblox.com/v1/games?universeIds=${batch.join(',')}`,
+        { headers: { Accept: "application/json" } }
+      );
+      if (!res.ok) continue;
+      const data = await res.json();
+      for (const game of (data.data || [])) {
+        details.set(String(game.id), {
+          creatorName: game.creator?.name || "Unknown",
+          creatorId: String(game.creator?.id || ""),
+          creatorType: game.creator?.type || "Unknown",
+          playerCount: game.playing || 0,
+          description: game.description || null,
+        });
+      }
+      if (i + 50 < universeIds.length) await new Promise(r => setTimeout(r, 300));
+    } catch (err) {
+      logStep("Game details fetch error", { error: String(err) });
     }
   }
-  return combined;
+  return details;
+}
+
+// ─── COMBINED SEARCH ───
+async function searchRobloxCombined(keyword: string): Promise<SearchResult[]> {
+  const results = await searchOmniAPI(keyword);
+  
+  // If omni-search returned results without full creator info, enrich them
+  const needsEnrichment = results.filter(r => r.creatorId === "" || r.creatorName === "Unknown");
+  if (needsEnrichment.length > 0) {
+    const universeIds = needsEnrichment.map(r => r.universeId);
+    const details = await fetchGameDetails(universeIds);
+    
+    for (const result of needsEnrichment) {
+      const detail = details.get(result.universeId);
+      if (detail) {
+        result.creatorName = detail.creatorName;
+        result.creatorId = detail.creatorId;
+        result.creatorType = detail.creatorType;
+        result.playerCount = detail.playerCount;
+        if (!result.description && detail.description) {
+          result.description = detail.description;
+        }
+      }
+    }
+  }
+  
+  return results;
 }
 
 // ─── FETCH GAME DESCRIPTION ───
