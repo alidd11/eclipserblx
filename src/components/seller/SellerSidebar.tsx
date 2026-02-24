@@ -5,7 +5,7 @@ import {
   LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, Users,
   Tag, BarChart3, FileText, HelpCircle, MessageCircle, Star, Bot, Import,
   Gamepad2, Layers, TrendingUp, Receipt, LineChart, Heart, Megaphone,
-  RotateCcw, Zap, PackagePlus
+  RotateCcw, Zap, PackagePlus, Shield
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -70,6 +70,7 @@ const navGroups: NavGroup[] = [
       { title: 'Customer Messages', icon: MessageCircle, href: '/seller/messages' },
       { title: 'Disputes', icon: RotateCcw, href: '/seller/refunds' },
       { title: 'Support Tickets', icon: HelpCircle, href: '/seller/support' },
+      { title: 'IP Shield', icon: Shield, href: '/seller/ip-shield' },
     ],
   },
   {
