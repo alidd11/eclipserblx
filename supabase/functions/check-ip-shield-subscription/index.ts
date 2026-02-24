@@ -22,7 +22,7 @@ const ALL_PRICE_IDS = Object.keys(PRICE_TO_TIER);
 
 const TIER_LIMITS: Record<string, { takedowns_per_month: number; registry_limit: number; priority: boolean; monitoring: boolean; dedicated_agent: boolean }> = {
   starter: { takedowns_per_month: 3, registry_limit: 15, priority: false, monitoring: false, dedicated_agent: false },
-  pro: { takedowns_per_month: 15, registry_limit: -1, priority: true, monitoring: false, dedicated_agent: false },
+  pro: { takedowns_per_month: 15, registry_limit: -1, priority: true, monitoring: true, dedicated_agent: false },
   enterprise: { takedowns_per_month: -1, registry_limit: -1, priority: true, monitoring: true, dedicated_agent: true },
 };
 

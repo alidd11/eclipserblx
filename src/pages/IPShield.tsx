@@ -341,8 +341,9 @@ export default function IPShield() {
           'Case tracking & updates',
           'Cross-platform enforcement',
           'Priority handling',
+          'Monitoring & alerts',
         ],
-        disabledFeatures: ['Monitoring & alerts', 'Dedicated agent'],
+        disabledFeatures: ['Dedicated agent'],
         popular: true,
       },
       {
