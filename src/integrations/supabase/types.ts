@@ -3351,6 +3351,89 @@ export type Database = {
         }
         Relationships: []
       }
+      ip_monitor_alerts: {
+        Row: {
+          alert_type: string
+          asset_name: string | null
+          created_at: string
+          creator_id: string
+          current_owner_id: string | null
+          current_owner_name: string | null
+          details: Json | null
+          dismissed_at: string | null
+          emailed_at: string | null
+          id: string
+          registry_entry_id: string
+          roblox_asset_id: string
+        }
+        Insert: {
+          alert_type?: string
+          asset_name?: string | null
+          created_at?: string
+          creator_id: string
+          current_owner_id?: string | null
+          current_owner_name?: string | null
+          details?: Json | null
+          dismissed_at?: string | null
+          emailed_at?: string | null
+          id?: string
+          registry_entry_id: string
+          roblox_asset_id: string
+        }
+        Update: {
+          alert_type?: string
+          asset_name?: string | null
+          created_at?: string
+          creator_id?: string
+          current_owner_id?: string | null
+          current_owner_name?: string | null
+          details?: Json | null
+          dismissed_at?: string | null
+          emailed_at?: string | null
+          id?: string
+          registry_entry_id?: string
+          roblox_asset_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ip_monitor_alerts_registry_entry_id_fkey"
+            columns: ["registry_entry_id"]
+            isOneToOne: false
+            referencedRelation: "creator_ip_registry"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ip_monitor_scan_runs: {
+        Row: {
+          completed_at: string | null
+          error_message: string | null
+          id: string
+          started_at: string
+          status: string
+          total_alerts_generated: number | null
+          total_assets_scanned: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          total_alerts_generated?: number | null
+          total_assets_scanned?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          total_alerts_generated?: number | null
+          total_assets_scanned?: number | null
+        }
+        Relationships: []
+      }
       ip_violation_reports: {
         Row: {
           admin_notes: string | null
