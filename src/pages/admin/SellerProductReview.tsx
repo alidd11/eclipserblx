@@ -283,7 +283,7 @@ export default function SellerProducts() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Seller Products</h1>
+            <h1 className="text-3xl font-bold">Product Review</h1>
             <p className="text-muted-foreground">Review and moderate seller product submissions</p>
           </div>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
