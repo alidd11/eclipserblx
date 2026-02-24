@@ -4051,12 +4051,14 @@ export type Database = {
           category_id: string | null
           created_at: string
           deleted_at: string | null
+          delivery_type: string
           description: string | null
           discord_message_id: string | null
           discord_thread_id: string | null
           download_count: number | null
           early_access_hours: number | null
           eclipse_free_eligible: boolean
+          external_link: string | null
           feed_notified_at: string | null
           file_review_consented_at: string | null
           file_review_requested_at: string | null
@@ -4087,12 +4089,14 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           deleted_at?: string | null
+          delivery_type?: string
           description?: string | null
           discord_message_id?: string | null
           discord_thread_id?: string | null
           download_count?: number | null
           early_access_hours?: number | null
           eclipse_free_eligible?: boolean
+          external_link?: string | null
           feed_notified_at?: string | null
           file_review_consented_at?: string | null
           file_review_requested_at?: string | null
@@ -4123,12 +4127,14 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           deleted_at?: string | null
+          delivery_type?: string
           description?: string | null
           discord_message_id?: string | null
           discord_thread_id?: string | null
           download_count?: number | null
           early_access_hours?: number | null
           eclipse_free_eligible?: boolean
+          external_link?: string | null
           feed_notified_at?: string | null
           file_review_consented_at?: string | null
           file_review_requested_at?: string | null
