@@ -224,7 +224,7 @@ serve(async (req) => {
       if (storeCreatorRoleId) {
         const { data: store } = await supabase
           .from("stores")
-          .select("id, name")
+          .select("id, name, is_verified")
           .eq("owner_id", user_id)
           .eq("is_active", true)
           .maybeSingle();
@@ -234,6 +234,17 @@ serve(async (req) => {
           const result = await assignDiscordRole(botToken, guildId, storeCreatorRoleId, discordUser.id, "Store Creator");
           if (result.success) {
             rolesAssigned.push("Store Creator");
+          }
+
+          // Assign Verified Seller role if store is verified
+          if (store.is_verified) {
+            const verifiedSellerRoleId = Deno.env.get("DISCORD_VERIFIED_SELLER_ROLE_ID");
+            if (verifiedSellerRoleId) {
+              const vResult = await assignDiscordRole(botToken, guildId, verifiedSellerRoleId, discordUser.id, "Verified Seller");
+              if (vResult.success) {
+                rolesAssigned.push("Verified Seller");
+              }
+            }
           }
         }
       }
