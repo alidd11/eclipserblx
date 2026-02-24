@@ -4,7 +4,7 @@ import {
   HelpCircle, Mail, Activity, ChevronDown, ShoppingCart, 
   User, LucideIcon, Home, TrendingUp, Store, Bell, FolderOpen,
   Sparkles, Download, Heart, Wallet, LogOut, ChevronLeft, ChevronRight,
-  MessageSquareText, Megaphone, FileQuestion, LayoutGrid
+  MessageSquareText, Megaphone, FileQuestion, LayoutGrid, Shield
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { categoryIconMap, PackageIcon, BotIcon } from '@/components/icons/CategoryIcons';
@@ -21,6 +21,7 @@ import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { supabase } from '@/integrations/supabase/client';
 
 import { useSellerStatus } from '@/hooks/useSellerStatus';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useTranslation } from 'react-i18next';
 
 
@@ -97,6 +98,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const { discordUrl } = useDiscordUrl();
   
   const { isSeller } = useSellerStatus();
+  const { isStaff } = useAdminAuth();
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -189,6 +191,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       icon: Home,
       items: [
         { title: t('sidebar.home'), icon: Home, href: '/' },
+        ...(isStaff ? [{ title: 'Admin Dashboard', icon: Shield, href: '/admin' }] : []),
         ...(isSeller ? [{ title: t('sidebar.sellerDashboard'), icon: Store, href: '/seller' }] : []),
       ],
     },
