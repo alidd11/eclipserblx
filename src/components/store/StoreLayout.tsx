@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ChatWidget } from '@/components/chat/ChatWidget';
 import { StoreSidebar } from './StoreSidebar';
-import { MarketplaceBreadcrumb } from './MarketplaceBreadcrumb';
+import { UniversalBreadcrumb } from '@/components/layout/UniversalBreadcrumb';
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
 import { FloatingActionButtons } from '@/components/ui/FloatingActionButtons';
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
@@ -236,18 +236,7 @@ function StoreLayoutContent({
           />
 
           {/* Breadcrumb Bar */}
-          <div 
-            className="border-b px-4 py-2"
-            style={{ borderColor: `${accentColor}20` }}
-          >
-            <MarketplaceBreadcrumb
-              storeName={store.name}
-              storeSlug={store.slug || store.id}
-              categoryName={activeTabName}
-              accentColor={accentColor}
-              compact
-            />
-          </div>
+          <UniversalBreadcrumb />
 
           {/* Main Content */}
           <main className="flex-1 overflow-y-auto overflow-x-hidden pb-[env(safe-area-inset-bottom)]">
