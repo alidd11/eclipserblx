@@ -1142,6 +1142,60 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_ip_registry: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string | null
+          id: string
+          proof_urls: string[] | null
+          roblox_asset_ids: string[] | null
+          store_id: string | null
+          title: string
+          updated_at: string
+          work_type: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          id?: string
+          proof_urls?: string[] | null
+          roblox_asset_ids?: string[] | null
+          store_id?: string | null
+          title: string
+          updated_at?: string
+          work_type: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          id?: string
+          proof_urls?: string[] | null
+          roblox_asset_ids?: string[] | null
+          store_id?: string | null
+          title?: string
+          updated_at?: string
+          work_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_ip_registry_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_ip_registry_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credit_balances: {
         Row: {
           balance: number
@@ -7505,6 +7559,149 @@ export type Database = {
         }
         Relationships: []
       }
+      takedown_activity_log: {
+        Row: {
+          action: string
+          created_at: string
+          details: string | null
+          id: string
+          performed_by: string | null
+          takedown_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          performed_by?: string | null
+          takedown_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          performed_by?: string | null
+          takedown_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "takedown_activity_log_takedown_id_fkey"
+            columns: ["takedown_id"]
+            isOneToOne: false
+            referencedRelation: "takedown_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      takedown_requests: {
+        Row: {
+          accuracy_statement: boolean
+          case_number: string
+          counter_notice_deadline: string | null
+          counter_notice_details: string | null
+          counter_notice_received_at: string | null
+          created_at: string
+          creator_id: string
+          evidence_notes: string | null
+          evidence_urls: string[] | null
+          good_faith_statement: boolean
+          id: string
+          infringement_type: string
+          infringing_url: string
+          notice_sent_at: string | null
+          notice_sent_to: string | null
+          original_work_description: string
+          original_work_url: string | null
+          ownership_confirmed: boolean
+          priority: string
+          rejection_reason: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          store_id: string | null
+          target_platform: string
+          target_platform_other: string | null
+          updated_at: string
+        }
+        Insert: {
+          accuracy_statement?: boolean
+          case_number: string
+          counter_notice_deadline?: string | null
+          counter_notice_details?: string | null
+          counter_notice_received_at?: string | null
+          created_at?: string
+          creator_id: string
+          evidence_notes?: string | null
+          evidence_urls?: string[] | null
+          good_faith_statement?: boolean
+          id?: string
+          infringement_type: string
+          infringing_url: string
+          notice_sent_at?: string | null
+          notice_sent_to?: string | null
+          original_work_description: string
+          original_work_url?: string | null
+          ownership_confirmed?: boolean
+          priority?: string
+          rejection_reason?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          store_id?: string | null
+          target_platform: string
+          target_platform_other?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accuracy_statement?: boolean
+          case_number?: string
+          counter_notice_deadline?: string | null
+          counter_notice_details?: string | null
+          counter_notice_received_at?: string | null
+          created_at?: string
+          creator_id?: string
+          evidence_notes?: string | null
+          evidence_urls?: string[] | null
+          good_faith_statement?: boolean
+          id?: string
+          infringement_type?: string
+          infringing_url?: string
+          notice_sent_at?: string | null
+          notice_sent_to?: string | null
+          original_work_description?: string
+          original_work_url?: string | null
+          ownership_confirmed?: boolean
+          priority?: string
+          rejection_reason?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          store_id?: string | null
+          target_platform?: string
+          target_platform_other?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "takedown_requests_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "takedown_requests_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket_messages: {
         Row: {
           created_at: string
@@ -7998,6 +8195,7 @@ export type Database = {
       generate_referral_code: { Args: never; Returns: string }
       generate_staff_id: { Args: never; Returns: string }
       generate_store_id: { Args: never; Returns: string }
+      generate_takedown_case_number: { Args: never; Returns: string }
       generate_ticket_number: { Args: never; Returns: string }
       get_global_guard_limits: {
         Args: { _user_id: string }
