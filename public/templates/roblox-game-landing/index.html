@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS CITY — Roblox Game</title>
+    <meta name="description" content="Explore Nexus City — an open-world Roblox experience with immersive roleplay, custom vehicles, and a thriving community.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============================================
+           ROBLOX GAME LANDING PAGE TEMPLATE
+           Customizable variables below
+           ============================================ */
+        :root {
+            /* 🎨 PRIMARY COLORS — Change these to match your game */
+            --primary: #00d4ff;
+            --primary-glow: #00d4ff40;
+            --primary-dark: #0099cc;
+            --secondary: #7c3aed;
+            --secondary-glow: #7c3aed40;
+            --accent: #ff3d71;
+            
+            /* 🌑 BACKGROUND */
+            --bg-deep: #030712;
+            --bg-dark: #0a0f1e;
+            --bg-card: #111827;
+            --bg-card-hover: #1a2332;
+            
+            /* 📝 TEXT */
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            /* 🔲 BORDERS */
+            --border: #1e293b;
+            --border-glow: #00d4ff30;
+            
+            /* 📐 SPACING */
+            --section-gap: 6rem;
+            --container-max: 1200px;
+        }
+
+        /* ============================================
+           RESET & BASE
+           ============================================ */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ============================================
+           ANIMATED BACKGROUND
+           ============================================ */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 60px 60px;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .bg-gradient-orbs {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .bg-gradient-orbs::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            animation: float-orb 20s ease-in-out infinite;
+        }
+
+        .bg-gradient-orbs::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--secondary-glow) 0%, transparent 70%);
+            animation: float-orb 15s ease-in-out infinite reverse;
+        }
+
+        @keyframes float-orb {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(100px, -50px) scale(1.1); }
+            66% { transform: translate(-50px, 80px) scale(0.9); }
+        }
+
+        /* ============================================
+           LAYOUT
+           ============================================ */
+        .container {
+            max-width: var(--container-max);
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        section {
+            padding: var(--section-gap) 0;
+        }
+
+        /* ============================================
+           NAVIGATION
+           ============================================ */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(20px);
+            background: rgba(3, 7, 18, 0.8);
+            border-bottom: 1px solid transparent;
+        }
+
+        .navbar.scrolled {
+            border-bottom-color: var(--border);
+        }
+
+        .navbar .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-cta {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white !important;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600 !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--primary-glow);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* ============================================
+           HERO SECTION
+           ============================================ */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            padding-top: 5rem;
+        }
+
+        .hero-content {
+            max-width: 800px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 100px;
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 500;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hero-badge .pulse {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2.5rem, 7vw, 5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary) 50%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.9rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 20px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 40px var(--primary-glow);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 4rem;
+            padding-top: 3rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat .number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .hero-stat .label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0.25rem;
+        }
+
+        /* ============================================
+           FEATURES SECTION
+           ============================================ */
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .section-desc {
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.05rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--border-glow);
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+            background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
+        }
+
+        .feature-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* ============================================
+           GALLERY / SCREENSHOTS
+           ============================================ */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 240px);
+            gap: 1rem;
+        }
+
+        .gallery-item {
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gallery-item:hover {
+            border-color: var(--border-glow);
+            transform: scale(1.02);
+        }
+
+        .gallery-item:first-child {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .gallery-placeholder .icon {
+            font-size: 2rem;
+            opacity: 0.5;
+        }
+
+        /* ============================================
+           UPDATE LOG
+           ============================================ */
+        .updates-list {
+            max-width: 700px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .update-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .update-item:hover {
+            border-color: var(--border-glow);
+        }
+
+        .update-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .update-version {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            background: var(--primary-glow);
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+        }
+
+        .update-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .update-item h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .update-item p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .update-tags {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .update-tag {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 100px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .update-tag.new { background: #22c55e20; color: #22c55e; }
+        .update-tag.fix { background: #f59e0b20; color: #f59e0b; }
+        .update-tag.improve { background: #3b82f620; color: #3b82f6; }
+
+        /* ============================================
+           COMMUNITY / SOCIAL
+           ============================================ */
+        .social-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .social-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .social-card:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-4px);
+        }
+
+        .social-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .social-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .social-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .social-members {
+            display: inline-block;
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* ============================================
+           CTA SECTION
+           ============================================ */
+        .cta-section {
+            text-align: center;
+            padding: 5rem 0;
+        }
+
+        .cta-box {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-dark));
+            border: 1px solid var(--border-glow);
+            border-radius: 24px;
+            padding: 4rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);
+        }
+
+        .cta-box h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .cta-box p {
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto 2rem;
+            font-size: 1.05rem;
+        }
+
+        /* ============================================
+           FOOTER
+           ============================================ */
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 3rem 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .footer-copy {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .mobile-menu-btn { display: block; }
+            
+            .hero-stats {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            
+            .gallery-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+            
+            .gallery-item:first-child {
+                grid-column: span 1;
+                grid-row: span 1;
+            }
+
+            .gallery-item {
+                height: 200px;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            :root {
+                --section-gap: 4rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Effects -->
+    <div class="bg-grid"></div>
+    <div class="bg-gradient-orbs"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <!-- 🎮 CHANGE: Your game name -->
+            <a href="#" class="nav-logo">NEXUS CITY</a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#gallery">Gallery</a></li>
+                <li><a href="#updates">Updates</a></li>
+                <li><a href="#community">Community</a></li>
+                <!-- 🎮 CHANGE: Your Roblox game link -->
+                <li><a href="https://www.roblox.com/games/YOUR_GAME_ID" target="_blank" class="nav-cta">Play Now</a></li>
+            </ul>
+            <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content fade-in">
+                <div class="hero-badge">
+                    <span class="pulse"></span>
+                    <!-- 🎮 CHANGE: Your game status -->
+                    Live Now — Season 3
+                </div>
+
+                <!-- 🎮 CHANGE: Your game title -->
+                <h1>NEXUS CITY</h1>
+                
+                <!-- 🎮 CHANGE: Your game description -->
+                <p>Explore a sprawling open-world metropolis. Roleplay, race custom vehicles, build your empire, and join a thriving community of thousands.</p>
+
+                <div class="hero-buttons">
+                    <!-- 🎮 CHANGE: Your Roblox game link -->
+                    <a href="https://www.roblox.com/games/YOUR_GAME_ID" target="_blank" class="btn btn-primary">
+                        ▶ Play Now — It's Free
+                    </a>
+                    <a href="#features" class="btn btn-outline">
+                        Learn More ↓
+                    </a>
+                </div>
+
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <!-- 🎮 CHANGE: Your stats -->
+                        <div class="number">50K+</div>
+                        <div class="label">Active Players</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="number">4.8★</div>
+                        <div class="label">Player Rating</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="number">200+</div>
+                        <div class="label">Vehicles</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="number">15M+</div>
+                        <div class="label">Total Visits</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-label">What Awaits You</div>
+                <h2 class="section-title">Game Features</h2>
+                <p class="section-desc">Everything you need for the ultimate Roblox experience, all in one place.</p>
+            </div>
+
+            <div class="features-grid">
+                <!-- 🎮 CHANGE: Your game features -->
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">🏙️</div>
+                    <h3>Open World City</h3>
+                    <p>Explore a massive, detailed city with multiple districts, hidden locations, and dynamic weather systems.</p>
+                </div>
+
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">🚗</div>
+                    <h3>200+ Custom Vehicles</h3>
+                    <p>From supercars to emergency vehicles — collect, customize, and race across the city streets.</p>
+                </div>
+
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">👔</div>
+                    <h3>Deep Roleplay</h3>
+                    <p>Join the police force, run a business, become a criminal mastermind, or live a peaceful civilian life.</p>
+                </div>
+
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">🏠</div>
+                    <h3>Property System</h3>
+                    <p>Buy apartments, houses, and mansions. Furnish and decorate your space to make it truly yours.</p>
+                </div>
+
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Weekly Updates</h3>
+                    <p>New content every week — vehicles, features, events, and seasonal content to keep things fresh.</p>
+                </div>
+
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">🏆</div>
+                    <h3>Competitive Events</h3>
+                    <p>Tournaments, races, and seasonal competitions with exclusive rewards and leaderboard rankings.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-label">Screenshots</div>
+                <h2 class="section-title">See It In Action</h2>
+                <p class="section-desc">Take a look at what Nexus City has to offer.</p>
+            </div>
+
+            <div class="gallery-grid fade-in">
+                <!-- 🎮 CHANGE: Replace placeholders with your screenshots -->
+                <!-- Use: <img src="your-screenshot.jpg" alt="Description"> -->
+                <div class="gallery-item">
+                    <div class="gallery-placeholder">
+                        <span class="icon">🖼️</span>
+                        <span>Main Screenshot (1200×800)</span>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-placeholder">
+                        <span class="icon">🖼️</span>
+                        <span>Screenshot 2</span>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-placeholder">
+                        <span class="icon">🖼️</span>
+                        <span>Screenshot 3</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Update Log Section -->
+    <section id="updates">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-label">Changelog</div>
+                <h2 class="section-title">Latest Updates</h2>
+                <p class="section-desc">Stay up to date with the latest changes and improvements.</p>
+            </div>
+
+            <div class="updates-list">
+                <!-- 🎮 CHANGE: Your update history -->
+                <div class="update-item fade-in">
+                    <div class="update-meta">
+                        <span class="update-version">v3.2.0</span>
+                        <span class="update-date">February 20, 2026</span>
+                    </div>
+                    <h3>Season 3: Neon Nights</h3>
+                    <p>Introducing the brand new nightclub district, 12 new vehicles, and a complete lighting overhaul with dynamic neon effects.</p>
+                    <div class="update-tags">
+                        <span class="update-tag new">New Content</span>
+                        <span class="update-tag improve">Visual Upgrade</span>
+                    </div>
+                </div>
+
+                <div class="update-item fade-in">
+                    <div class="update-meta">
+                        <span class="update-version">v3.1.5</span>
+                        <span class="update-date">February 10, 2026</span>
+                    </div>
+                    <h3>Performance & Bug Fixes</h3>
+                    <p>Major performance improvements reducing lag by 40%. Fixed vehicle spawning issues and UI glitches.</p>
+                    <div class="update-tags">
+                        <span class="update-tag fix">Bug Fix</span>
+                        <span class="update-tag improve">Performance</span>
+                    </div>
+                </div>
+
+                <div class="update-item fade-in">
+                    <div class="update-meta">
+                        <span class="update-version">v3.1.0</span>
+                        <span class="update-date">January 28, 2026</span>
+                    </div>
+                    <h3>Property System Revamp</h3>
+                    <p>Completely redesigned housing system with 50+ new furniture items, apartment complexes, and a real estate market.</p>
+                    <div class="update-tags">
+                        <span class="update-tag new">New Feature</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community Section -->
+    <section id="community">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-label">Join Us</div>
+                <h2 class="section-title">Community</h2>
+                <p class="section-desc">Connect with thousands of players and stay in the loop.</p>
+            </div>
+
+            <div class="social-grid fade-in">
+                <!-- 🎮 CHANGE: Your social links -->
+                <a href="https://discord.gg/YOUR_INVITE" target="_blank" class="social-card">
+                    <div class="social-icon">💬</div>
+                    <h3>Discord Server</h3>
+                    <p>Chat, find groups, get support, and join exclusive events.</p>
+                    <span class="social-members">12,000+ Members</span>
+                </a>
+
+                <a href="https://www.roblox.com/communities/YOUR_GROUP_ID" target="_blank" class="social-card">
+                    <div class="social-icon">🎮</div>
+                    <h3>Roblox Group</h3>
+                    <p>Join the official group for in-game perks and exclusive items.</p>
+                    <span class="social-members">25,000+ Members</span>
+                </a>
+
+                <a href="https://twitter.com/YOUR_HANDLE" target="_blank" class="social-card">
+                    <div class="social-icon">🐦</div>
+                    <h3>Twitter / X</h3>
+                    <p>Follow for sneak peeks, announcements, and giveaways.</p>
+                    <span class="social-members">@NexusCity</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-box fade-in">
+                <h2>Ready to Explore?</h2>
+                <p>Jump into Nexus City today and discover why thousands of players call it home.</p>
+                <!-- 🎮 CHANGE: Your Roblox game link -->
+                <a href="https://www.roblox.com/games/YOUR_GAME_ID" target="_blank" class="btn btn-primary">
+                    ▶ Play Nexus City Now
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <!-- 🎮 CHANGE: Your game name -->
+                <div class="footer-logo">NEXUS CITY</div>
+                <ul class="footer-links">
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="https://discord.gg/YOUR_INVITE" target="_blank">Support</a></li>
+                </ul>
+                <!-- 🎮 CHANGE: Your copyright -->
+                <div class="footer-copy">© 2026 Nexus City. Not affiliated with Roblox Corporation.</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('scrolled', window.scrollY > 50);
+        });
+
+        // Fade-in animation on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el));
+
+        // Mobile menu toggle
+        function toggleMenu() {
+            const links = document.querySelector('.nav-links');
+            links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
+            if (links.style.display === 'flex') {
+                links.style.flexDirection = 'column';
+                links.style.position = 'absolute';
+                links.style.top = '100%';
+                links.style.left = '0';
+                links.style.right = '0';
+                links.style.background = 'rgba(3, 7, 18, 0.95)';
+                links.style.padding = '1rem';
+                links.style.borderBottom = '1px solid var(--border)';
+                links.style.backdropFilter = 'blur(20px)';
+            }
+        }
+    </script>
+
+</body>
+</html>
