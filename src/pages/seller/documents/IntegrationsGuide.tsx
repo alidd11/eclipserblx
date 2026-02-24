@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   MessageSquare, Bell, Bot, Shield, Settings, Webhook,
-  CheckCircle2, AlertTriangle, Gamepad2, Users
+  CheckCircle2, AlertTriangle, Gamepad2, Users, Layout,
+  Copy, Link, RefreshCw, Lock
 } from "lucide-react";
 
 const discordFeatures = [
@@ -63,6 +64,37 @@ const robloxFeatures = [
     title: "Asset Delivery",
     description: "Automated delivery settings for Roblox-specific assets like models, decals, and scripts.",
   },
+];
+
+const discordTemplates = [
+  {
+    title: "What Are Server Templates?",
+    icon: Layout,
+    description: "Discord Server Templates are shareable URLs that let anyone clone your server's structure — channels, roles, permissions, and categories — into a new server instantly.",
+  },
+  {
+    title: "How They Work",
+    icon: Copy,
+    description: "Create a template from Server Settings → Server Template. Discord generates a public URL (discord.new/...) that anyone can use to replicate your setup.",
+  },
+  {
+    title: "Selling Templates",
+    icon: Link,
+    description: "List your template as a product on Eclipse. After purchase, the buyer receives the template link to create their own server with your pre-built layout.",
+  },
+  {
+    title: "Security Considerations",
+    icon: Lock,
+    description: "Template URLs are public and cannot be revoked or limited. Once shared, anyone with the link can use it. Consider a link-rotation strategy or bot-driven setup service for premium templates.",
+  },
+];
+
+const templateTips = [
+  "Discord templates copy structure only — messages, members, and bots are not included",
+  "Update your template regularly to keep the shared version current with your latest changes",
+  "Use a bot-driven setup service for premium templates to maintain control over distribution",
+  "Consider rotating template links periodically to limit unauthorized sharing",
+  "Include setup instructions with your product so buyers know how to customize after cloning",
 ];
 
 const webhookTips = [
@@ -155,6 +187,47 @@ export default function IntegrationsGuide() {
               </Card>
             ))}
           </div>
+        </section>
+
+        {/* Discord Server Templates */}
+        <section className="space-y-4">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <Layout className="h-6 w-6 text-primary" />
+            Discord Server Templates
+          </h2>
+          <p className="text-muted-foreground">
+            Sell pre-built Discord server layouts that buyers can clone instantly.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {discordTemplates.map((item, i) => (
+              <Card key={i} className="border-border/50">
+                <CardContent className="pt-6">
+                  <div className="flex gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10 h-fit shrink-0">
+                      <item.icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-1">{item.title}</h4>
+                      <p className="text-sm text-muted-foreground">{item.description}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <Card className="border-border/50">
+            <CardContent className="pt-6">
+              <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Best Practices</p>
+              <ul className="space-y-3">
+                {templateTips.map((tip, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm">
+                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <span>{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
         </section>
 
         {/* Roblox Integration */}
