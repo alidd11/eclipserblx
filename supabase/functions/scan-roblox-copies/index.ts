@@ -79,7 +79,63 @@ function ngramSimilarity(a: string, b: string, n = 2): number {
   return union === 0 ? 0 : Math.round((intersection / union) * 100);
 }
 
-// ─── KEYWORD VARIANT GENERATION (Enhanced) ───
+// ─── TOKEN SET RATIO (Fuzzy Token Matching) ───
+function tokenSetRatio(a: string, b: string): number {
+  const tokensA = new Set(a.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean));
+  const tokensB = new Set(b.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean));
+  
+  const intersection = [...tokensA].filter(t => tokensB.has(t));
+  const onlyA = [...tokensA].filter(t => !tokensB.has(t));
+  const onlyB = [...tokensB].filter(t => !tokensA.has(t));
+  
+  const sorted_intersection = intersection.sort().join(' ');
+  const combined_a = [...intersection.sort(), ...onlyA.sort()].join(' ');
+  const combined_b = [...intersection.sort(), ...onlyB.sort()].join(' ');
+  
+  if (!sorted_intersection && !combined_a && !combined_b) return 0;
+  
+  const ratio = (s1: string, s2: string) => {
+    const maxLen = Math.max(s1.length, s2.length);
+    if (maxLen === 0) return 100;
+    return Math.round(((maxLen - levenshtein(s1, s2)) / maxLen) * 100);
+  };
+  
+  return Math.max(
+    ratio(sorted_intersection, combined_a),
+    ratio(sorted_intersection, combined_b),
+    ratio(combined_a, combined_b)
+  );
+}
+
+// ─── KEYWORD EXTRACTION FROM DESCRIPTION ───
+function extractDescriptionKeywords(description: string): string[] {
+  const stopWords = new Set([
+    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with',
+    'by', 'from', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had',
+    'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'shall',
+    'this', 'that', 'these', 'those', 'it', 'its', 'you', 'your', 'we', 'our', 'they', 'their',
+    'not', 'no', 'all', 'any', 'each', 'every', 'some', 'more', 'most', 'other', 'than',
+    'also', 'just', 'very', 'even', 'only', 'game', 'play', 'roblox', 'join', 'like', 'new',
+    'get', 'make', 'now', 'come', 'here', 'there', 'where', 'when', 'how', 'what', 'who',
+  ]);
+  
+  const words = description.toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length >= 3 && !stopWords.has(w));
+  
+  // Count frequency
+  const freq = new Map<string, number>();
+  for (const w of words) freq.set(w, (freq.get(w) || 0) + 1);
+  
+  // Return top keywords by frequency
+  return [...freq.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([word]) => word);
+}
+
+// ─── KEYWORD VARIANT GENERATION (Enhanced v2) ───
 function generateKeywordVariants(keyword: string): string[] {
   const variants = new Set<string>();
   variants.add(keyword);
@@ -92,14 +148,12 @@ function generateKeywordVariants(keyword: string): string[] {
 
   const words = spaced.split(' ').filter(w => w.length >= 3);
 
-  // Always add individual significant words
   for (const w of words) {
     if (w.length >= 4) variants.add(w);
   }
 
   if (words.length >= 2) {
     variants.add(`${words[0]} ${words[words.length - 1]}`);
-    // Pair combinations for multi-word titles
     for (let i = 0; i < words.length - 1; i++) {
       variants.add(`${words[i]} ${words[i + 1]}`);
     }
@@ -113,7 +167,6 @@ function generateKeywordVariants(keyword: string): string[] {
     variants.add(`${keyword} Roleplay`);
   }
 
-  // Common copy naming patterns
   const baseTitle = spaced.replace(/\b(RP|Roleplay|Role Play)\b/gi, '').trim();
   if (baseTitle.length >= 3) {
     variants.add(`${baseTitle} 2`);
@@ -121,15 +174,21 @@ function generateKeywordVariants(keyword: string): string[] {
     variants.add(`New ${baseTitle}`);
     variants.add(`${baseTitle} Remake`);
     variants.add(`${baseTitle} Remastered`);
+    // New copy patterns
+    variants.add(`${baseTitle} Free`);
+    variants.add(`${baseTitle} Simulator`);
+    variants.add(`${baseTitle} Tycoon`);
+    variants.add(`${baseTitle} Obby`);
+    variants.add(`Fake ${baseTitle}`);
+    variants.add(`${baseTitle} Story`);
   }
 
-  // Phonetic-aware: add soundex-based search hints (don't actually search these, but helps matching)
   const significantWords = words.filter(w => w.length >= 4);
   if (significantWords.length >= 1 && significantWords.join(' ') !== spaced) {
     variants.add(significantWords.join(' '));
   }
 
-  return [...variants].slice(0, 20);
+  return [...variants].slice(0, 25);
 }
 
 // ─── ROBLOX SEARCH: OMNI-SEARCH API ───
@@ -138,7 +197,6 @@ async function searchOmniAPI(keyword: string): Promise<SearchResult[]> {
   const sessionId = crypto.randomUUID().replace(/-/g, '');
 
   try {
-    // Try both "all" and "experiences" page types for coverage
     for (const pageType of ['all', 'experiences']) {
       const url = `https://apis.roblox.com/search-api/omni-search?searchQuery=${encodeURIComponent(keyword)}&sessionId=${sessionId}&pageType=${pageType}`;
       const res = await fetch(url, {
@@ -210,6 +268,94 @@ async function searchGamesAPI(keyword: string): Promise<SearchResult[]> {
   return results;
 }
 
+// ─── NEW: SEARCH USER CREATIONS (Find copies by suspicious creators) ───
+async function searchUserCreations(userId: string): Promise<SearchResult[]> {
+  const results: SearchResult[] = [];
+  try {
+    const res = await fetch(
+      `https://games.roblox.com/v2/users/${userId}/games?limit=50&sortOrder=Desc&accessFilter=Public`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) return results;
+    const data = await res.json();
+    for (const game of (data?.data || [])) {
+      if (game.id) {
+        results.push({
+          universeId: String(game.id),
+          placeId: game.rootPlace?.id ? String(game.rootPlace.id) : undefined,
+          name: game.name || "Unknown",
+          description: undefined,
+          creatorName: "Unknown",
+          creatorId: userId,
+          creatorType: "User",
+          playerCount: game.playing || 0,
+          created: game.created || undefined,
+          updated: game.updated || undefined,
+        });
+      }
+    }
+  } catch (err) {
+    logStep("User creations search error", { error: String(err) });
+  }
+  return results;
+}
+
+// ─── NEW: SEARCH GROUP GAMES ───
+async function searchGroupGames(groupId: string): Promise<SearchResult[]> {
+  const results: SearchResult[] = [];
+  try {
+    const res = await fetch(
+      `https://games.roblox.com/v2/groups/${groupId}/games?limit=50&sortOrder=Desc&accessFilter=Public`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) return results;
+    const data = await res.json();
+    for (const game of (data?.data || [])) {
+      if (game.id) {
+        results.push({
+          universeId: String(game.id),
+          placeId: game.rootPlace?.id ? String(game.rootPlace.id) : undefined,
+          name: game.name || "Unknown",
+          description: undefined,
+          creatorName: "Unknown",
+          creatorId: groupId,
+          creatorType: "Group",
+          playerCount: game.playing || 0,
+          created: game.created || undefined,
+          updated: game.updated || undefined,
+        });
+      }
+    }
+  } catch (err) {
+    logStep("Group games search error", { error: String(err) });
+  }
+  return results;
+}
+
+// ─── NEW: CATALOG ASSET SEARCH (for models/decals/audio theft) ───
+async function searchCatalogAssets(keyword: string, category: string = "DeveloperModels"): Promise<{ assetId: string; name: string; creatorName: string; creatorId: string }[]> {
+  const results: { assetId: string; name: string; creatorName: string; creatorId: string }[] = [];
+  try {
+    const res = await fetch(
+      `https://catalog.roblox.com/v1/search/items?keyword=${encodeURIComponent(keyword)}&category=${category}&limit=25&sortType=Relevance`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) return results;
+    const data = await res.json();
+    for (const item of (data?.data || [])) {
+      results.push({
+        assetId: String(item.id),
+        name: item.name || "Unknown",
+        creatorName: item.creatorName || "Unknown",
+        creatorId: String(item.creatorTargetId || ""),
+      });
+    }
+  } catch (err) {
+    logStep("Catalog search error", { error: String(err) });
+  }
+  return results;
+}
+
 // ─── FETCH GAME DETAILS ───
 async function fetchGameDetails(universeIds: string[]): Promise<Map<string, { creatorName: string; creatorId: string; creatorType: string; playerCount: number; description: string | null; created: string | null; updated: string | null }>> {
   const details = new Map<string, { creatorName: string; creatorId: string; creatorType: string; playerCount: number; description: string | null; created: string | null; updated: string | null }>();
@@ -242,15 +388,13 @@ async function fetchGameDetails(universeIds: string[]): Promise<Map<string, { cr
   return details;
 }
 
-// ─── COMBINED SEARCH (Multi-Source) ───
+// ─── COMBINED SEARCH (Multi-Source v2) ───
 async function searchRobloxCombined(keyword: string): Promise<SearchResult[]> {
-  // Run both search APIs concurrently
   const [omniResults, gamesResults] = await Promise.all([
     searchOmniAPI(keyword),
     searchGamesAPI(keyword),
   ]);
 
-  // Merge and deduplicate
   const seen = new Map<string, SearchResult>();
   for (const r of [...omniResults, ...gamesResults]) {
     if (!seen.has(r.universeId)) {
@@ -260,7 +404,6 @@ async function searchRobloxCombined(keyword: string): Promise<SearchResult[]> {
 
   const results = [...seen.values()];
 
-  // Enrich any that lack creator info
   const needsEnrichment = results.filter(r => r.creatorId === "" || r.creatorName === "Unknown");
   if (needsEnrichment.length > 0) {
     const universeIds = needsEnrichment.map(r => r.universeId);
@@ -298,7 +441,7 @@ async function fetchGameThumbnail(universeId: string): Promise<string | null> {
   }
 }
 
-// ─── FETCH GAME SCREENSHOTS (Multiple Thumbnails) ───
+// ─── FETCH GAME SCREENSHOTS ───
 async function fetchGameScreenshots(universeId: string): Promise<string[]> {
   try {
     const res = await fetch(
@@ -316,7 +459,7 @@ async function fetchGameScreenshots(universeId: string): Promise<string[]> {
   }
 }
 
-// ─── FETCH GAME STATS (visits, favorites, genre) ───
+// ─── FETCH GAME STATS ───
 async function fetchGameStats(universeId: string): Promise<{
   visits: number | null;
   favorites: number | null;
@@ -377,21 +520,91 @@ async function fetchGameBadgesCount(universeId: string): Promise<number | null> 
   }
 }
 
-// ─── COLLECT COMPREHENSIVE EVIDENCE ───
-async function collectEvidence(universeId: string, result: SearchResult, originalTitle: string): Promise<{
+// ─── NEW: FETCH GAME SOCIAL LINKS ───
+async function fetchGameSocialLinks(universeId: string): Promise<{ title: string; url: string; type: string }[]> {
+  try {
+    const res = await fetch(
+      `https://games.roblox.com/v1/games/${universeId}/social-links/list`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.data || []).map((link: any) => ({
+      title: link.title || "",
+      url: link.url || "",
+      type: link.type || "Unknown",
+    }));
+  } catch {
+    return [];
+  }
+}
+
+// ─── NEW: FETCH GAME VOTES ───
+async function fetchGameVotes(universeId: string): Promise<{ upVotes: number; downVotes: number } | null> {
+  try {
+    const res = await fetch(
+      `https://games.roblox.com/v1/games/votes?universeIds=${universeId}`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const game = data.data?.[0];
+    if (!game) return null;
+    return { upVotes: game.upVotes || 0, downVotes: game.downVotes || 0 };
+  } catch {
+    return null;
+  }
+}
+
+// ─── COLLECT COMPREHENSIVE EVIDENCE (Enhanced v2) ───
+async function collectEvidence(universeId: string, result: SearchResult, originalTitle: string, originalCreated?: string | null): Promise<{
   screenshots: string[];
   stats: { visits: number | null; favorites: number | null; genre: string | null; maxPlayers: number | null; created: string | null; updated: string | null };
   passesCount: number | null;
   badgesCount: number | null;
+  socialLinks: { title: string; url: string; type: string }[];
+  votes: { upVotes: number; downVotes: number } | null;
+  creationDateSuspicious: boolean;
   evidenceData: Record<string, unknown>;
 }> {
-  // Fetch all evidence in parallel
-  const [screenshots, stats, passesCount, badgesCount] = await Promise.all([
+  const [screenshots, stats, passesCount, badgesCount, socialLinks, votes] = await Promise.all([
     fetchGameScreenshots(universeId),
     fetchGameStats(universeId),
     fetchGamePassesCount(universeId),
     fetchGameBadgesCount(universeId),
+    fetchGameSocialLinks(universeId),
+    fetchGameVotes(universeId),
   ]);
+
+  // Creation date analysis: if copy was created AFTER original, it's more suspicious
+  let creationDateSuspicious = false;
+  if (originalCreated && stats.created) {
+    const origDate = new Date(originalCreated);
+    const copyDate = new Date(stats.created);
+    if (copyDate > origDate) {
+      creationDateSuspicious = true;
+    }
+  }
+
+  // Vote ratio analysis (many downvotes = potentially stolen content players are angry about)
+  let voteRatio: number | null = null;
+  if (votes && (votes.upVotes + votes.downVotes) > 10) {
+    voteRatio = Math.round((votes.downVotes / (votes.upVotes + votes.downVotes)) * 100);
+  }
+
+  // Update frequency: games updated very recently after long inactivity may be rebranded copies
+  let updateFrequency: string | null = null;
+  if (stats.created && stats.updated) {
+    const created = new Date(stats.created);
+    const updated = new Date(stats.updated);
+    const ageDays = (Date.now() - created.getTime()) / (1000 * 60 * 60 * 24);
+    const daysSinceUpdate = (Date.now() - updated.getTime()) / (1000 * 60 * 60 * 24);
+    
+    if (ageDays > 365 && daysSinceUpdate < 7) updateFrequency = 'recently_revived';
+    else if (daysSinceUpdate < 30) updateFrequency = 'active';
+    else if (daysSinceUpdate < 180) updateFrequency = 'semi_active';
+    else updateFrequency = 'abandoned';
+  }
 
   const evidenceData = {
     captured_at: new Date().toISOString(),
@@ -411,9 +624,17 @@ async function collectEvidence(universeId: string, result: SearchResult, origina
     screenshots_captured: screenshots.length,
     screenshot_urls: screenshots,
     original_work_title: originalTitle,
+    // New evidence fields
+    social_links: socialLinks,
+    votes: votes,
+    vote_downvote_ratio: voteRatio,
+    creation_date_suspicious: creationDateSuspicious,
+    update_frequency: updateFrequency,
+    original_created_at: originalCreated || null,
+    copy_created_at: stats.created || null,
   };
 
-  return { screenshots, stats, passesCount, badgesCount, evidenceData };
+  return { screenshots, stats, passesCount, badgesCount, socialLinks, votes, creationDateSuspicious, evidenceData };
 }
 
 // ─── FETCH CREATOR GROUP INFO ───
@@ -431,6 +652,7 @@ async function fetchCreatorGroupInfo(creatorId: string, creatorType: string): Pr
     return null;
   }
 }
+
 // ─── CHECK IF CREATOR OWNS GROUP ───
 async function isUserInGroup(robloxUserId: string, groupId: string): Promise<boolean> {
   try {
@@ -446,7 +668,7 @@ async function isUserInGroup(robloxUserId: string, groupId: string): Promise<boo
   }
 }
 
-// ─── ENHANCED SIMILARITY SCORING ───
+// ─── ENHANCED SIMILARITY SCORING (v2 with Token Set Ratio) ───
 function computeNameSimilarity(original: string, candidate: string): number {
   const a = original.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
   const b = candidate.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
@@ -461,14 +683,17 @@ function computeNameSimilarity(original: string, candidate: string): number {
   const union = new Set([...wordsA, ...wordsB]);
   const jaccard = union.size === 0 ? 0 : Math.round((intersection.length / union.size) * 100);
 
-  // Levenshtein-based edit distance similarity
+  // Levenshtein-based edit distance
   const maxLen = Math.max(a.length, b.length);
   const editSim = maxLen === 0 ? 0 : Math.round(((maxLen - levenshtein(a, b)) / maxLen) * 100);
 
   // N-gram similarity
   const ngram = ngramSimilarity(a, b, 3);
 
-  // Phonetic match bonus (for main words)
+  // Token set ratio (handles word reordering, extra words)
+  const tokenSet = tokenSetRatio(a, b);
+
+  // Phonetic match bonus
   let phoneticBonus = 0;
   const mainWordA = [...wordsA].sort((x, y) => y.length - x.length)[0];
   const mainWordB = [...wordsB].sort((x, y) => y.length - x.length)[0];
@@ -476,12 +701,14 @@ function computeNameSimilarity(original: string, candidate: string): number {
     phoneticBonus = 15;
   }
 
-  // Weighted combination
-  const combined = Math.round(jaccard * 0.35 + editSim * 0.35 + ngram * 0.2 + phoneticBonus * 0.1);
+  // Weighted combination (v2 includes token set ratio)
+  const combined = Math.round(
+    jaccard * 0.25 + editSim * 0.25 + ngram * 0.15 + tokenSet * 0.25 + phoneticBonus * 0.1
+  );
   return Math.min(combined, 100);
 }
 
-// ─── ENHANCED DESCRIPTION PLAGIARISM DETECTION ───
+// ─── ENHANCED DESCRIPTION PLAGIARISM DETECTION (v2) ───
 function checkDescriptionMatch(description: string, keywords: string[], originalDesc?: string | null): { isMatch: boolean; score: number; reasons: string[] } {
   const descLower = description.toLowerCase();
   const reasons: string[] = [];
@@ -497,23 +724,32 @@ function checkDescriptionMatch(description: string, keywords: string[], original
     }
   }
 
-  // Suspicious clone/copy phrases
+  // Suspicious clone/copy phrases (expanded)
   const suspiciousPhrases = [
     'better version', 'improved version', 'remake of', 'inspired by',
     'based on', 'similar to', 'copy of', 'clone of', 'original by',
     'recreated', 'fan made', 'fan-made', 'unofficial', 'not affiliated',
     'tribute to', 'parody of', 'ripoff', 'rip-off', 'rip off',
+    'remastered', 'revamped', 'we are not', 'no affiliation',
+    'before it was deleted', 'original was deleted', 'bringing back',
+    'stolen from', 'taken from', 'credits to', 'all credit',
   ];
 
+  let suspiciousCount = 0;
   for (const phrase of suspiciousPhrases) {
     if (descLower.includes(phrase)) {
-      reasons.push(`suspicious_phrase:${phrase}`);
-      score += 25;
-      break; // only count once
+      if (suspiciousCount === 0) {
+        reasons.push(`suspicious_phrase:${phrase}`);
+        score += 25;
+      } else {
+        score += 10; // Additional suspicious phrases add less
+      }
+      suspiciousCount++;
+      if (suspiciousCount >= 3) break;
     }
   }
 
-  // If we have the original description, compare them for plagiarism
+  // If we have the original description, compare for plagiarism
   if (originalDesc && originalDesc.length > 30) {
     const origLower = originalDesc.toLowerCase();
     
@@ -524,19 +760,31 @@ function checkDescriptionMatch(description: string, keywords: string[], original
       score += Math.min(descNgram, 40);
     }
 
-    // Check if significant sentences from original appear in candidate
+    // Sentence-level copying
     const origSentences = origLower.split(/[.!?\n]+/).filter(s => s.trim().length > 20);
-    for (const sentence of origSentences.slice(0, 5)) {
+    let sentencesCopied = 0;
+    for (const sentence of origSentences.slice(0, 8)) {
       const trimmed = sentence.trim();
       if (trimmed.length > 25 && descLower.includes(trimmed)) {
-        reasons.push('sentence_copied');
-        score += 30;
-        break;
+        sentencesCopied++;
       }
+    }
+    if (sentencesCopied > 0) {
+      reasons.push(`sentences_copied:${sentencesCopied}`);
+      score += Math.min(sentencesCopied * 15, 40);
+    }
+
+    // Keyword extraction overlap: extract keywords from original and check if candidate reuses them
+    const origKeywords = extractDescriptionKeywords(originalDesc);
+    const candidateKeywords = extractDescriptionKeywords(description);
+    const keywordOverlap = origKeywords.filter(k => candidateKeywords.includes(k));
+    if (keywordOverlap.length >= 3) {
+      reasons.push(`keyword_overlap:${keywordOverlap.length}/${origKeywords.length}`);
+      score += Math.min(keywordOverlap.length * 5, 20);
     }
   }
 
-  return { isMatch: score > 0, score: Math.min(score, 50), reasons };
+  return { isMatch: score > 0, score: Math.min(score, 60), reasons };
 }
 
 // ─── AI THUMBNAIL COMPARISON ───
@@ -629,6 +877,21 @@ async function fetchGameDescription(universeId: string): Promise<string | null> 
   }
 }
 
+// ─── FETCH ORIGINAL GAME CREATED DATE ───
+async function fetchGameCreatedDate(universeId: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://games.roblox.com/v1/games?universeIds=${universeId}`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.data?.[0]?.created || null;
+  } catch {
+    return null;
+  }
+}
+
 // ─── MAIN HANDLER ───
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -641,10 +904,9 @@ serve(async (req) => {
     { auth: { persistSession: false } }
   );
 
-  logStep("Enhanced copy detection scan started (v2)");
+  logStep("Enhanced copy detection scan started (v4)");
 
   try {
-    // Check if specific entry requested (for auto-scan on registry add)
     let body: { registry_entry_id?: string } = {};
     try { body = await req.json(); } catch { /* no body = scan all */ }
 
@@ -682,6 +944,10 @@ serve(async (req) => {
     let groupsVerified = 0;
     let snapshotsCreated = 0;
     let evidenceCollected = 0;
+    let suspiciousCreatorsScanned = 0;
+
+    // Track suspicious creators found across all entries for deep scanning
+    const suspiciousCreators = new Map<string, { creatorType: string; matchCount: number }>();
 
     for (const entry of registryEntries) {
       const creatorProfile = profileMap.get(entry.creator_id);
@@ -695,9 +961,20 @@ serve(async (req) => {
           if (kw && !baseKeywords.includes(kw)) baseKeywords.push(kw);
         }
       }
+      
+      // Extract keywords from description for additional search coverage
+      if (entry.description && entry.description.length > 20) {
+        const descKeywords = extractDescriptionKeywords(entry.description);
+        for (const dk of descKeywords.slice(0, 3)) {
+          if (!baseKeywords.some(bk => bk.toLowerCase().includes(dk))) {
+            baseKeywords.push(dk);
+          }
+        }
+      }
+      
       if (baseKeywords.length === 0) continue;
 
-      // Generate variants
+      // Generate variants (now up to 25)
       const allVariants = new Set<string>();
       for (const kw of baseKeywords) {
         for (const v of generateKeywordVariants(kw)) {
@@ -712,15 +989,20 @@ serve(async (req) => {
         (entry.roblox_universe_ids || []).map(String)
       );
 
-      // Fetch original game thumbnail and description for comparison
+      // Fetch original game thumbnail, description, and creation date
       let originalThumbUrl: string | null = null;
       let originalDescription: string | null = entry.description || null;
+      let originalCreatedDate: string | null = null;
       if (ownUniverseIds.size > 0) {
         const firstUniverse = [...ownUniverseIds][0];
-        originalThumbUrl = await fetchGameThumbnail(firstUniverse);
-        if (!originalDescription) {
-          originalDescription = await fetchGameDescription(firstUniverse);
-        }
+        const [thumb, desc, created] = await Promise.all([
+          fetchGameThumbnail(firstUniverse),
+          originalDescription ? Promise.resolve(null) : fetchGameDescription(firstUniverse),
+          fetchGameCreatedDate(firstUniverse),
+        ]);
+        originalThumbUrl = thumb;
+        if (!originalDescription && desc) originalDescription = desc;
+        originalCreatedDate = created;
       }
 
       // Deduplicate results across all keyword variants
@@ -760,7 +1042,7 @@ serve(async (req) => {
         const matchReasons: string[] = [];
         let score = 0;
 
-        // 1. Enhanced name similarity (Levenshtein + Jaccard + N-gram + Phonetic)
+        // 1. Enhanced name similarity (Levenshtein + Jaccard + N-gram + Token Set + Phonetic)
         const nameSim = computeNameSimilarity(entry.title, result.name);
         if (nameSim >= 50) {
           matchReasons.push(`name_match_${nameSim}%`);
@@ -770,7 +1052,7 @@ serve(async (req) => {
           score += nameSim / 2;
         }
 
-        // 2. Enhanced description plagiarism detection
+        // 2. Enhanced description plagiarism detection (v2)
         let description = result.description || null;
         if (!description) {
           description = await fetchGameDescription(universeId);
@@ -785,12 +1067,28 @@ serve(async (req) => {
           }
         }
 
-        // 3. Creator group/owner verification
+        // 3. Creation date comparison: copy created AFTER original = more suspicious
+        if (originalCreatedDate && result.created) {
+          const origDate = new Date(originalCreatedDate);
+          const copyDate = new Date(result.created);
+          if (copyDate > origDate) {
+            const daysDiff = Math.round((copyDate.getTime() - origDate.getTime()) / (1000 * 60 * 60 * 24));
+            if (daysDiff < 30) {
+              matchReasons.push(`created_${daysDiff}d_after_original`);
+              score += 15; // Created very soon after original - very suspicious
+            } else if (daysDiff < 180) {
+              matchReasons.push(`created_${daysDiff}d_after_original`);
+              score += 8;
+            }
+          }
+        }
+
+        // 4. Creator group/owner verification
         let creatorVerified = false;
         let creatorGroupId: string | null = null;
         let creatorGroupName: string | null = null;
 
-        if (result.creatorType === 'Group' && creatorRobloxId && groupsVerified < 25) {
+        if (result.creatorType === 'Group' && creatorRobloxId && groupsVerified < 30) {
           const groupInfo = await fetchCreatorGroupInfo(result.creatorId, result.creatorType);
           if (groupInfo) {
             creatorGroupId = groupInfo.groupId;
@@ -809,10 +1107,10 @@ serve(async (req) => {
           creatorVerified = true;
         }
 
-        // 4. AI Thumbnail comparison (with higher limit)
+        // 5. AI Thumbnail comparison
         let thumbnailAnalyzed = false;
         let thumbnailUrl: string | null = null;
-        if (originalThumbUrl && score >= 15 && thumbnailsAnalyzed < 15 && !creatorVerified) {
+        if (originalThumbUrl && score >= 15 && thumbnailsAnalyzed < 20 && !creatorVerified) {
           thumbnailUrl = await fetchGameThumbnail(universeId);
           if (thumbnailUrl) {
             await new Promise(r => setTimeout(r, 500));
@@ -833,7 +1131,18 @@ serve(async (req) => {
         // Only store if there's at least some signal
         if (score < 15 && matchReasons.length === 0) continue;
 
-        // 5. AUTO-EVIDENCE COLLECTION for medium+ threats
+        // Track suspicious creators for deep scanning later
+        if (score >= 40 && !creatorVerified) {
+          const key = `${result.creatorType}:${result.creatorId}`;
+          const existing = suspiciousCreators.get(key);
+          if (existing) {
+            existing.matchCount++;
+          } else {
+            suspiciousCreators.set(key, { creatorType: result.creatorType, matchCount: 1 });
+          }
+        }
+
+        // 6. AUTO-EVIDENCE COLLECTION for medium+ threats (enhanced)
         let evidenceData: Record<string, unknown> = {};
         let evidenceScreenshots: string[] = [];
         let gameBadgesCount: number | null = null;
@@ -847,7 +1156,7 @@ serve(async (req) => {
         if (score >= 30 && !creatorVerified) {
           logStep("Collecting evidence", { universeId, score });
           try {
-            const evidence = await collectEvidence(universeId, result, entry.title);
+            const evidence = await collectEvidence(universeId, result, entry.title, originalCreatedDate);
             evidenceData = evidence.evidenceData;
             evidenceScreenshots = evidence.screenshots;
             gameBadgesCount = evidence.badgesCount;
@@ -858,6 +1167,13 @@ serve(async (req) => {
             gameUpdatedAt = evidence.stats.updated;
             evidenceCapturedAt = new Date().toISOString();
             evidenceCollected++;
+
+            // Boost score based on evidence signals
+            if (evidence.creationDateSuspicious) {
+              score += 5;
+              matchReasons.push('created_after_original');
+            }
+
             await new Promise(r => setTimeout(r, 300));
           } catch (err) {
             logStep("Evidence collection error", { universeId, error: String(err) });
@@ -865,15 +1181,15 @@ serve(async (req) => {
         }
 
         // Determine player count trend
-        const existing = existingMap.get(universeId);
+        const existingDet = existingMap.get(universeId);
         let playerCountTrend = 'stable';
-        const previousPlayerCount = existing?.player_count || null;
-        if (existing && previousPlayerCount !== null) {
+        const previousPlayerCount = existingDet?.player_count || null;
+        if (existingDet && previousPlayerCount !== null) {
           if (result.playerCount > previousPlayerCount * 1.2) playerCountTrend = 'rising';
           else if (result.playerCount < previousPlayerCount * 0.8) playerCountTrend = 'falling';
         }
 
-        const detectionCount = existing ? (existing.detection_count || 1) + 1 : 1;
+        const detectionCount = existingDet ? (existingDet.detection_count || 1) + 1 : 1;
 
         const { data: upsertData, error: insertError } = await supabaseClient
           .from("ip_copy_detections")
@@ -903,7 +1219,6 @@ serve(async (req) => {
             game_updated_at: gameUpdatedAt,
             last_seen_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-            // Evidence fields
             evidence_data: Object.keys(evidenceData).length > 0 ? evidenceData : undefined,
             evidence_screenshots: evidenceScreenshots.length > 0 ? evidenceScreenshots : undefined,
             game_badges_count: gameBadgesCount,
@@ -924,7 +1239,6 @@ serve(async (req) => {
         } else {
           totalDetected++;
 
-          // Create a historical snapshot with evidence
           if (upsertData?.id) {
             await supabaseClient
               .from("ip_detection_snapshots")
@@ -937,9 +1251,72 @@ serve(async (req) => {
           }
         }
       }
+
+      // ─── DEEP SCAN: Scan suspicious creators' other games ───
+      if (suspiciousCreators.size > 0 && suspiciousCreatorsScanned < 10) {
+        for (const [key, info] of suspiciousCreators) {
+          if (suspiciousCreatorsScanned >= 10) break;
+          if (info.matchCount < 2) continue; // Only deep-scan repeat offenders
+
+          const [creatorType, creatorId] = key.split(':');
+          logStep("Deep scanning suspicious creator", { creatorType, creatorId, matchCount: info.matchCount });
+
+          await new Promise(r => setTimeout(r, 500));
+          
+          let creatorGames: SearchResult[] = [];
+          if (creatorType === 'User') {
+            creatorGames = await searchUserCreations(creatorId);
+          } else if (creatorType === 'Group') {
+            creatorGames = await searchGroupGames(creatorId);
+          }
+
+          suspiciousCreatorsScanned++;
+
+          for (const game of creatorGames) {
+            if (ownUniverseIds.has(game.universeId)) continue;
+            if (allResults.has(game.universeId)) continue;
+
+            const nameSim = computeNameSimilarity(entry.title, game.name);
+            if (nameSim >= 25) {
+              logStep("Suspicious creator has similar game", { universeId: game.universeId, name: game.name, similarity: nameSim });
+              
+              // Insert as detection with "suspicious_creator_game" reason
+              await supabaseClient
+                .from("ip_copy_detections")
+                .upsert({
+                  registry_entry_id: entry.id,
+                  creator_id: entry.creator_id,
+                  search_keyword: `deep_scan:${creatorId}`,
+                  detected_universe_id: game.universeId,
+                  detected_place_id: game.placeId || null,
+                  game_name: game.name,
+                  game_creator_name: game.creatorName,
+                  game_creator_id: game.creatorId,
+                  game_creator_type: game.creatorType,
+                  player_count: game.playerCount,
+                  similarity_score: Math.min(Math.round(nameSim), 100),
+                  match_reasons: [`suspicious_creator_game`, `name_match_${nameSim}%`],
+                  thumbnail_analyzed: false,
+                  creator_verified: false,
+                  detection_count: 1,
+                  game_created_at: game.created || null,
+                  last_seen_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                }, {
+                  onConflict: "registry_entry_id,detected_universe_id",
+                  ignoreDuplicates: false,
+                });
+              totalDetected++;
+            }
+          }
+        }
+      }
     }
 
-    logStep("Enhanced scan complete (v3)", { totalSearches, totalDetected, thumbnailsAnalyzed, groupsVerified, snapshotsCreated, evidenceCollected });
+    logStep("Enhanced scan complete (v4)", { 
+      totalSearches, totalDetected, thumbnailsAnalyzed, groupsVerified, 
+      snapshotsCreated, evidenceCollected, suspiciousCreatorsScanned 
+    });
 
     return new Response(
       JSON.stringify({
@@ -950,6 +1327,7 @@ serve(async (req) => {
         groups_verified: groupsVerified,
         snapshots_created: snapshotsCreated,
         evidence_collected: evidenceCollected,
+        suspicious_creators_scanned: suspiciousCreatorsScanned,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
