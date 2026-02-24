@@ -1150,6 +1150,7 @@ export type Database = {
           id: string
           proof_urls: string[] | null
           roblox_asset_ids: string[] | null
+          roblox_universe_ids: string[] | null
           store_id: string | null
           title: string
           updated_at: string
@@ -1162,6 +1163,7 @@ export type Database = {
           id?: string
           proof_urls?: string[] | null
           roblox_asset_ids?: string[] | null
+          roblox_universe_ids?: string[] | null
           store_id?: string | null
           title: string
           updated_at?: string
@@ -1174,6 +1176,7 @@ export type Database = {
           id?: string
           proof_urls?: string[] | null
           roblox_asset_ids?: string[] | null
+          roblox_universe_ids?: string[] | null
           store_id?: string | null
           title?: string
           updated_at?: string

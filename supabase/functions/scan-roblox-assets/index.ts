@@ -12,38 +12,77 @@ const logStep = (step: string, details?: unknown) => {
 };
 
 // Roblox API: get asset details including creator info
-async function getRobloxAssetDetails(assetId: string): Promise<{
-  success: boolean;
-  assetName?: string;
-  creatorId?: string;
-  creatorName?: string;
-  creatorType?: string;
-  error?: string;
-}> {
+async function getRobloxAssetDetails(assetId: string) {
   try {
     const res = await fetch(
       `https://economy.roblox.com/v2/assets/${assetId}/details`,
       { headers: { Accept: "application/json" } }
     );
-
     if (!res.ok) {
-      if (res.status === 404) {
-        return { success: false, error: "Asset not found" };
-      }
-      return { success: false, error: `Roblox API error: ${res.status}` };
+      return { success: false as const, error: res.status === 404 ? "Asset not found" : `Roblox API error: ${res.status}` };
     }
-
     const data = await res.json();
     return {
-      success: true,
-      assetName: data.Name,
+      success: true as const,
+      assetName: data.Name as string,
       creatorId: String(data.Creator?.Id),
-      creatorName: data.Creator?.Name,
-      creatorType: data.Creator?.CreatorType,
+      creatorName: data.Creator?.Name as string,
+      creatorType: data.Creator?.CreatorType as string,
     };
   } catch (err) {
-    return { success: false, error: String(err) };
+    return { success: false as const, error: String(err) };
   }
+}
+
+// Roblox API: get game/universe details including creator info
+async function getRobloxUniverseDetails(universeId: string) {
+  try {
+    const res = await fetch(
+      `https://games.roblox.com/v1/games?universeIds=${universeId}`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) {
+      return { success: false as const, error: `Roblox Games API error: ${res.status}` };
+    }
+    const data = await res.json();
+    const game = data.data?.[0];
+    if (!game) {
+      return { success: false as const, error: "Universe not found" };
+    }
+    return {
+      success: true as const,
+      gameName: game.name as string,
+      creatorId: String(game.creator?.id),
+      creatorName: game.creator?.name as string,
+      creatorType: game.creator?.type as string,
+    };
+  } catch (err) {
+    return { success: false as const, error: String(err) };
+  }
+}
+
+// Resolve a Roblox place ID to a universe ID
+async function resolvePlaceToUniverse(placeId: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://apis.roblox.com/universes/v1/places/${placeId}/universe`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.universeId ? String(data.universeId) : null;
+  } catch {
+    return null;
+  }
+}
+
+interface AlertInfo {
+  assetId: string;
+  assetName: string;
+  registryTitle: string;
+  currentOwnerName: string;
+  currentOwnerId: string;
+  type: "asset" | "game";
 }
 
 serve(async (req) => {
@@ -76,20 +115,18 @@ serve(async (req) => {
   logStep("Scan run started", { scanRunId });
 
   try {
-    // Get all IP Shield subscribers with monitoring enabled (pro + enterprise)
-    // We need to check which creators have active subscriptions with monitoring
-    // For now, fetch all registry entries that have roblox_asset_ids
+    // Get all registry entries that have roblox_asset_ids OR roblox_universe_ids
     const { data: registryEntries, error: registryError } = await supabaseClient
       .from("creator_ip_registry")
-      .select("id, creator_id, title, roblox_asset_ids")
-      .not("roblox_asset_ids", "is", null);
+      .select("id, creator_id, title, roblox_asset_ids, roblox_universe_ids")
+      .or("roblox_asset_ids.not.is.null,roblox_universe_ids.not.is.null");
 
     if (registryError) {
       throw new Error(`Failed to fetch registry: ${registryError.message}`);
     }
 
     if (!registryEntries || registryEntries.length === 0) {
-      logStep("No registry entries with Roblox asset IDs found");
+      logStep("No registry entries with Roblox IDs found");
       await supabaseClient.from("ip_monitor_scan_runs").update({
         status: "completed",
         completed_at: new Date().toISOString(),
@@ -102,10 +139,8 @@ serve(async (req) => {
       });
     }
 
-    // Collect unique creator IDs to check subscription status
     const creatorIds = [...new Set(registryEntries.map(e => e.creator_id))];
 
-    // Get Roblox user IDs linked to each creator (from profiles)
     const { data: profiles } = await supabaseClient
       .from("profiles")
       .select("user_id, roblox_user_id, email, display_name")
@@ -117,18 +152,67 @@ serve(async (req) => {
 
     let totalScanned = 0;
     let totalAlerts = 0;
-    const alertsByCreator: Map<string, Array<{
-      assetId: string;
-      assetName: string;
-      registryTitle: string;
-      currentOwnerName: string;
-      currentOwnerId: string;
-    }>> = new Map();
+    const alertsByCreator: Map<string, AlertInfo[]> = new Map();
 
-    // Scan each registry entry's asset IDs
+    // Helper: check for existing alert and insert new one
+    async function processMatch(
+      entry: typeof registryEntries[0],
+      idValue: string,
+      alertType: "ownership_mismatch",
+      actualCreatorId: string,
+      actualCreatorName: string,
+      itemName: string,
+      creatorType: string,
+      creatorRobloxId: string,
+      scanType: "asset" | "game"
+    ) {
+      const { data: existingAlert } = await supabaseClient
+        .from("ip_monitor_alerts")
+        .select("id")
+        .eq("registry_entry_id", entry.id)
+        .eq("roblox_asset_id", idValue)
+        .eq("current_owner_id", actualCreatorId)
+        .is("dismissed_at", null)
+        .limit(1);
+
+      if (existingAlert && existingAlert.length > 0) {
+        logStep("Alert already exists, skipping", { id: idValue });
+        return;
+      }
+
+      await supabaseClient.from("ip_monitor_alerts").insert({
+        registry_entry_id: entry.id,
+        creator_id: entry.creator_id,
+        roblox_asset_id: idValue,
+        alert_type: alertType,
+        current_owner_id: actualCreatorId,
+        current_owner_name: actualCreatorName,
+        asset_name: itemName,
+        details: {
+          creator_type: creatorType,
+          expected_roblox_id: creatorRobloxId,
+          registry_title: entry.title,
+          scan_type: scanType,
+        },
+      });
+
+      totalAlerts++;
+
+      if (!alertsByCreator.has(entry.creator_id)) {
+        alertsByCreator.set(entry.creator_id, []);
+      }
+      alertsByCreator.get(entry.creator_id)!.push({
+        assetId: idValue,
+        assetName: itemName || idValue,
+        registryTitle: entry.title,
+        currentOwnerName: actualCreatorName || "Unknown",
+        currentOwnerId: actualCreatorId || "Unknown",
+        type: scanType,
+      });
+    }
+
+    // Scan each registry entry
     for (const entry of registryEntries) {
-      if (!entry.roblox_asset_ids || entry.roblox_asset_ids.length === 0) continue;
-
       const creatorProfile = profileMap.get(entry.creator_id);
       const creatorRobloxId = creatorProfile?.roblox_user_id;
 
@@ -137,74 +221,41 @@ serve(async (req) => {
         continue;
       }
 
-      for (const assetId of entry.roblox_asset_ids) {
-        totalScanned++;
+      // --- Scan catalog assets ---
+      if (entry.roblox_asset_ids && entry.roblox_asset_ids.length > 0) {
+        for (const assetId of entry.roblox_asset_ids) {
+          totalScanned++;
+          if (totalScanned > 1) await new Promise(r => setTimeout(r, 500));
 
-        // Rate limit: small delay between API calls
-        if (totalScanned > 1) {
-          await new Promise(r => setTimeout(r, 500));
-        }
-
-        const assetDetails = await getRobloxAssetDetails(assetId);
-
-        if (!assetDetails.success) {
-          logStep("Failed to fetch asset", { assetId, error: assetDetails.error });
-          continue;
-        }
-
-        // Compare creator - check if the asset's creator matches the registered creator's Roblox ID
-        if (assetDetails.creatorId && assetDetails.creatorId !== creatorRobloxId) {
-          logStep("MISMATCH DETECTED", {
-            assetId,
-            expectedRobloxId: creatorRobloxId,
-            actualCreatorId: assetDetails.creatorId,
-            actualCreatorName: assetDetails.creatorName,
-          });
-
-          // Check if we already have an alert for this exact asset + creator combo (avoid duplicates)
-          const { data: existingAlert } = await supabaseClient
-            .from("ip_monitor_alerts")
-            .select("id")
-            .eq("registry_entry_id", entry.id)
-            .eq("roblox_asset_id", assetId)
-            .eq("current_owner_id", assetDetails.creatorId)
-            .is("dismissed_at", null)
-            .limit(1);
-
-          if (existingAlert && existingAlert.length > 0) {
-            logStep("Alert already exists, skipping", { assetId });
+          const details = await getRobloxAssetDetails(assetId);
+          if (!details.success) {
+            logStep("Failed to fetch asset", { assetId, error: details.error });
             continue;
           }
 
-          // Insert alert
-          await supabaseClient.from("ip_monitor_alerts").insert({
-            registry_entry_id: entry.id,
-            creator_id: entry.creator_id,
-            roblox_asset_id: assetId,
-            alert_type: "ownership_mismatch",
-            current_owner_id: assetDetails.creatorId,
-            current_owner_name: assetDetails.creatorName,
-            asset_name: assetDetails.assetName,
-            details: {
-              creator_type: assetDetails.creatorType,
-              expected_roblox_id: creatorRobloxId,
-              registry_title: entry.title,
-            },
-          });
-
-          totalAlerts++;
-
-          // Group alerts by creator for email batching
-          if (!alertsByCreator.has(entry.creator_id)) {
-            alertsByCreator.set(entry.creator_id, []);
+          if (details.creatorId && details.creatorId !== creatorRobloxId) {
+            logStep("ASSET MISMATCH", { assetId, expected: creatorRobloxId, actual: details.creatorId });
+            await processMatch(entry, assetId, "ownership_mismatch", details.creatorId, details.creatorName, details.assetName, details.creatorType, creatorRobloxId, "asset");
           }
-          alertsByCreator.get(entry.creator_id)!.push({
-            assetId,
-            assetName: assetDetails.assetName || assetId,
-            registryTitle: entry.title,
-            currentOwnerName: assetDetails.creatorName || "Unknown",
-            currentOwnerId: assetDetails.creatorId || "Unknown",
-          });
+        }
+      }
+
+      // --- Scan game universes ---
+      if (entry.roblox_universe_ids && entry.roblox_universe_ids.length > 0) {
+        for (const universeId of entry.roblox_universe_ids) {
+          totalScanned++;
+          if (totalScanned > 1) await new Promise(r => setTimeout(r, 500));
+
+          const details = await getRobloxUniverseDetails(universeId);
+          if (!details.success) {
+            logStep("Failed to fetch universe", { universeId, error: details.error });
+            continue;
+          }
+
+          if (details.creatorId && details.creatorId !== creatorRobloxId) {
+            logStep("GAME MISMATCH", { universeId, expected: creatorRobloxId, actual: details.creatorId });
+            await processMatch(entry, universeId, "ownership_mismatch", details.creatorId, details.creatorName, details.gameName, details.creatorType, creatorRobloxId, "game");
+          }
         }
       }
     }
@@ -227,10 +278,18 @@ serve(async (req) => {
               `<tr>
                 <td style="padding: 10px 12px; border-bottom: 1px solid #1a1a2e; color: #e4e4e7; font-size: 14px;">${a.assetName}</td>
                 <td style="padding: 10px 12px; border-bottom: 1px solid #1a1a2e; color: #a3a3a3; font-size: 14px;">${a.assetId}</td>
+                <td style="padding: 10px 12px; border-bottom: 1px solid #1a1a2e; color: #a3a3a3; font-size: 14px; text-transform: capitalize;">${a.type}</td>
                 <td style="padding: 10px 12px; border-bottom: 1px solid #1a1a2e; color: #ef4444; font-size: 14px;">${a.currentOwnerName}</td>
               </tr>`
           )
           .join("");
+
+        const assetCount = alerts.filter(a => a.type === "asset").length;
+        const gameCount = alerts.filter(a => a.type === "game").length;
+        const summaryParts: string[] = [];
+        if (assetCount > 0) summaryParts.push(`${assetCount} asset(s)`);
+        if (gameCount > 0) summaryParts.push(`${gameCount} game(s)`);
+        const summaryText = summaryParts.join(" and ");
 
         const emailHtml = `
 <!DOCTYPE html>
@@ -257,13 +316,14 @@ serve(async (req) => {
                 Hi ${profile.display_name || "there"},
               </p>
               <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
-                Our weekly scan detected <strong style="color: #ef4444;">${alerts.length} Roblox asset(s)</strong> registered in your IP Registry that appear to be owned by a different account. This could indicate unauthorized re-uploads of your work.
+                Our weekly scan detected <strong style="color: #ef4444;">${summaryText}</strong> registered in your IP Registry that appear to be owned by a different account. This could indicate unauthorized re-uploads of your work.
               </p>
               <table width="100%" cellspacing="0" cellpadding="0" style="background: #111118; border-radius: 8px; overflow: hidden; margin: 20px 0;">
                 <thead>
                   <tr style="background: #1a1a2e;">
-                    <th style="padding: 10px 12px; text-align: left; color: #737373; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Asset</th>
+                    <th style="padding: 10px 12px; text-align: left; color: #737373; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Name</th>
                     <th style="padding: 10px 12px; text-align: left; color: #737373; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">ID</th>
+                    <th style="padding: 10px 12px; text-align: left; color: #737373; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Type</th>
                     <th style="padding: 10px 12px; text-align: left; color: #737373; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Current Owner</th>
                   </tr>
                 </thead>
@@ -302,14 +362,13 @@ serve(async (req) => {
             body: JSON.stringify({
               from: "Eclipse IP Shield <noreply@eclipserblx.com>",
               to: [profile.email],
-              subject: `⚠️ IP Alert: ${alerts.length} asset(s) flagged in your registry`,
+              subject: `⚠️ IP Alert: ${alerts.length} item(s) flagged in your registry`,
               html: emailHtml,
             }),
           });
 
           if (emailRes.ok) {
             logStep("Email sent", { creatorId, email: profile.email });
-            // Mark alerts as emailed
             const alertIds = alerts.map(a => a.assetId);
             await supabaseClient
               .from("ip_monitor_alerts")
