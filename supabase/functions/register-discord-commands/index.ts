@@ -100,6 +100,12 @@ const commands = [
     contexts: [0], // Guild only
     integration_types: [0],
   },
+  {
+    name: "walletbalance",
+    description: "Check your Eclipse credit wallet balance (sent via DM)",
+    contexts: [0], // Guild only
+    integration_types: [0],
+  },
 ];
 
 // NOTE: Global Guard commands (/globalban, /globalunban, /globalbans) are registered 
