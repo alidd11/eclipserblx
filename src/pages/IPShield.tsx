@@ -18,7 +18,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { 
   Shield, Plus, Clock, CheckCircle, XCircle, AlertTriangle,
-  FileText, Send, Eye, LogIn, UserCheck, Loader2, ExternalLink
+  FileText, Send, Eye, LogIn, UserCheck, Loader2, ExternalLink,
+  CreditCard, Crown
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -57,6 +58,7 @@ export default function IPShield() {
 
   const [searchParams] = useSearchParams();
   const [verifying, setVerifying] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
 
   // Check identity verification status
   const { data: verificationStatus, isLoading: verifyLoading, refetch: refetchVerification } = useQuery({
@@ -71,12 +73,28 @@ export default function IPShield() {
 
   const isVerified = verificationStatus?.verified === true;
 
+  // Check IP Shield subscription status
+  const { data: subscriptionStatus, isLoading: subLoading, refetch: refetchSubscription } = useQuery({
+    queryKey: ['ip-shield-subscription', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('check-ip-shield-subscription');
+      if (error) throw error;
+      return data as { subscribed: boolean; subscription_end?: string; subscription_id?: string };
+    },
+    enabled: !!user && isVerified,
+  });
+
+  const isSubscribed = subscriptionStatus?.subscribed === true;
+
   // Re-check verification when returning from Stripe
   useEffect(() => {
     if (searchParams.get('verification') === 'complete' && user) {
       refetchVerification();
     }
-  }, [searchParams, user, refetchVerification]);
+    if (searchParams.get('subscription') === 'success' && user) {
+      refetchSubscription();
+    }
+  }, [searchParams, user, refetchVerification, refetchSubscription]);
 
   // Start identity verification
   const startVerification = useMutation({
@@ -96,6 +114,24 @@ export default function IPShield() {
     },
   });
 
+  // Start IP Shield subscription checkout
+  const startCheckout = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('create-ip-shield-checkout');
+      if (error) throw error;
+      return data as { url: string };
+    },
+    onSuccess: (data) => {
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    },
+    onError: (error) => {
+      toast({ title: 'Checkout failed', description: error.message, variant: 'destructive' });
+      setSubscribing(false);
+    },
+  });
+
   // Get user's store for linking
   const { data: userStore } = useQuery({
     queryKey: ['ip-shield-store', user?.id],
@@ -107,7 +143,7 @@ export default function IPShield() {
         .limit(1);
       return data?.[0] || null;
     },
-    enabled: !!user && !!isVerified,
+    enabled: !!user && isSubscribed,
   });
 
   // Form state
@@ -136,7 +172,7 @@ export default function IPShield() {
       if (error) throw error;
       return data;
     },
-    enabled: !!user && !!isVerified,
+    enabled: !!user && isSubscribed,
   });
 
   // Fetch IP registry
@@ -151,7 +187,7 @@ export default function IPShield() {
       if (error) throw error;
       return data;
     },
-    enabled: !!user && !!isVerified,
+    enabled: !!user && isSubscribed,
   });
 
   // Submit takedown request
@@ -326,6 +362,70 @@ export default function IPShield() {
               A previous verification session was started but not completed. Click above to start again.
             </p>
           )}
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Loading subscription status
+  if (subLoading) {
+    return (
+      <MainLayout>
+        <div className="container py-16 max-w-lg text-center">
+          <Skeleton className="h-16 w-16 mx-auto rounded-full mb-6" />
+          <Skeleton className="h-8 w-48 mx-auto mb-3" />
+          <Skeleton className="h-4 w-64 mx-auto" />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Not subscribed — show pricing
+  if (!isSubscribed) {
+    return (
+      <MainLayout>
+        <div className="container py-16 max-w-lg text-center">
+          <Crown className="h-16 w-16 mx-auto text-primary/60 mb-6" />
+          <h1 className="text-3xl font-display font-bold mb-3">IP Shield</h1>
+          <p className="text-muted-foreground mb-6">
+            Your identity has been verified. Subscribe to IP Shield to access DMCA takedown filing and IP registry services.
+          </p>
+
+          <Card className="border-primary/30 bg-card text-left">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-xl font-bold">IP Shield</h3>
+                  <p className="text-sm text-muted-foreground">Monthly subscription</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-3xl font-bold">£39.99</span>
+                  <span className="text-muted-foreground text-sm">/mo</span>
+                </div>
+              </div>
+              <ul className="space-y-2 text-sm mb-6">
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> DMCA takedown filing on your behalf</li>
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Intellectual property registry</li>
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Case tracking & status updates</li>
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Cross-platform enforcement</li>
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Dedicated DMCA agent representation</li>
+              </ul>
+              <Button
+                className="w-full gap-2"
+                onClick={() => {
+                  setSubscribing(true);
+                  startCheckout.mutate();
+                }}
+                disabled={subscribing || startCheckout.isPending}
+              >
+                {(subscribing || startCheckout.isPending) ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</>
+                ) : (
+                  <><CreditCard className="h-4 w-4" /> Subscribe — £39.99/mo</>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </MainLayout>
     );
