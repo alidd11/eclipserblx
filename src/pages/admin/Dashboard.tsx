@@ -416,13 +416,17 @@ export default function AdminDashboard() {
 
               <div className="flex-1 min-w-0 pb-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl sm:text-2xl font-bold truncate">
+                  <h1 className="text-xl sm:text-2xl font-bold">
                     {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
                   </h1>
                   <Badge variant="default" className="gap-1 shrink-0">
                     <Shield className="h-3 w-3" />
                     Admin
                   </Badge>
+                </div>
+                <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                  <span>🕐 Local: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span>🇬🇧 UK: {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })}</span>
                 </div>
               </div>
             </div>
