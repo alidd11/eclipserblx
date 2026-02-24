@@ -661,14 +661,9 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-px pt-px">
                 {renderNavItem({
-                  title: 'Blueprint Store',
-                  icon: Store as unknown as LucideIcon,
-                  href: '/store/blueprint',
-                })}
-                {renderNavItem({
-                  title: 'Website Templates',
+                  title: 'Roblox Templates',
                   icon: Globe as unknown as LucideIcon,
-                  href: '/products?category=website-templates',
+                  href: '/store/blueprint',
                 })}
               </CollapsibleContent>
             </Collapsible>
