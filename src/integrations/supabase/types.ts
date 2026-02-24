@@ -3368,7 +3368,9 @@ export type Database = {
           detected_universe_id: string
           detection_count: number | null
           dismissed_at: string | null
+          evidence_captured_at: string | null
           first_detected_at: string | null
+          game_created_at: string | null
           game_creator_id: string | null
           game_creator_name: string | null
           game_creator_type: string | null
@@ -3387,6 +3389,7 @@ export type Database = {
           status: string
           takedown_request_id: string | null
           thumbnail_analyzed: boolean | null
+          thumbnail_url: string | null
           updated_at: string
         }
         Insert: {
@@ -3399,7 +3402,9 @@ export type Database = {
           detected_universe_id: string
           detection_count?: number | null
           dismissed_at?: string | null
+          evidence_captured_at?: string | null
           first_detected_at?: string | null
+          game_created_at?: string | null
           game_creator_id?: string | null
           game_creator_name?: string | null
           game_creator_type?: string | null
@@ -3418,6 +3423,7 @@ export type Database = {
           status?: string
           takedown_request_id?: string | null
           thumbnail_analyzed?: boolean | null
+          thumbnail_url?: string | null
           updated_at?: string
         }
         Update: {
@@ -3430,7 +3436,9 @@ export type Database = {
           detected_universe_id?: string
           detection_count?: number | null
           dismissed_at?: string | null
+          evidence_captured_at?: string | null
           first_detected_at?: string | null
+          game_created_at?: string | null
           game_creator_id?: string | null
           game_creator_name?: string | null
           game_creator_type?: string | null
@@ -3449,6 +3457,7 @@ export type Database = {
           status?: string
           takedown_request_id?: string | null
           thumbnail_analyzed?: boolean | null
+          thumbnail_url?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -8175,6 +8184,22 @@ export type Database = {
       }
     }
     Views: {
+      ip_shield_stats: {
+        Row: {
+          active_detections: number | null
+          avg_similarity: number | null
+          creator_id: string | null
+          dismissed_count: number | null
+          high_threat_count: number | null
+          last_scan_at: string | null
+          low_threat_count: number | null
+          medium_threat_count: number | null
+          takedowns_filed: number | null
+          thumbnails_scanned: number | null
+          unique_copies_found: number | null
+        }
+        Relationships: []
+      }
       stores_public: {
         Row: {
           about_content: string | null
