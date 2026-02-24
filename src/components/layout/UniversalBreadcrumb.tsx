@@ -196,7 +196,7 @@ export function UniversalBreadcrumb() {
               <BreadcrumbLink asChild>
                 <Link to="/" className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors">
                   <Home className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline text-xs font-medium">Eclipse</span>
+                  <span className="hidden sm:inline text-xs font-medium">Home</span>
                 </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
