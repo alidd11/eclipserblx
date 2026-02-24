@@ -7859,14 +7859,18 @@ export type Database = {
       takedown_requests: {
         Row: {
           accuracy_statement: boolean
+          agent_authorization: boolean | null
           case_number: string
           counter_notice_deadline: string | null
           counter_notice_details: string | null
           counter_notice_received_at: string | null
           created_at: string
           creator_id: string
+          dmca_sent_at: string | null
+          dmca_sent_to_email: string | null
           evidence_notes: string | null
           evidence_urls: string[] | null
+          filing_method: string | null
           good_faith_statement: boolean
           id: string
           infringement_type: string
@@ -7889,14 +7893,18 @@ export type Database = {
         }
         Insert: {
           accuracy_statement?: boolean
+          agent_authorization?: boolean | null
           case_number: string
           counter_notice_deadline?: string | null
           counter_notice_details?: string | null
           counter_notice_received_at?: string | null
           created_at?: string
           creator_id: string
+          dmca_sent_at?: string | null
+          dmca_sent_to_email?: string | null
           evidence_notes?: string | null
           evidence_urls?: string[] | null
+          filing_method?: string | null
           good_faith_statement?: boolean
           id?: string
           infringement_type: string
@@ -7919,14 +7927,18 @@ export type Database = {
         }
         Update: {
           accuracy_statement?: boolean
+          agent_authorization?: boolean | null
           case_number?: string
           counter_notice_deadline?: string | null
           counter_notice_details?: string | null
           counter_notice_received_at?: string | null
           created_at?: string
           creator_id?: string
+          dmca_sent_at?: string | null
+          dmca_sent_to_email?: string | null
           evidence_notes?: string | null
           evidence_urls?: string[] | null
+          filing_method?: string | null
           good_faith_statement?: boolean
           id?: string
           infringement_type?: string

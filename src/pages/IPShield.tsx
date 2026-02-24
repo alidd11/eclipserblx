@@ -20,7 +20,8 @@ import {
   Shield, Plus, Clock, CheckCircle, XCircle, AlertTriangle,
   FileText, Send, Eye, LogIn, UserCheck, Loader2, ExternalLink,
   CreditCard, Crown, Search, Radar, Users, ExternalLink as GameLink,
-  TrendingUp, TrendingDown, Minus, Gavel, ShieldCheck, History
+  TrendingUp, TrendingDown, Minus, Gavel, ShieldCheck, History,
+  Copy, Mail
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -257,24 +258,69 @@ function TakedownFromDetectionDialog({ detection, onClose, userId }: { detection
   const [goodFaith, setGoodFaith] = useState(false);
   const [accuracy, setAccuracy] = useState(false);
   const [ownership, setOwnership] = useState(false);
+  const [filingMethod, setFilingMethod] = useState<'self' | 'agent'>('self');
+  const [agentAuth, setAgentAuth] = useState(false);
+  const [templateCopied, setTemplateCopied] = useState(false);
 
   if (!detection) return null;
+
+  const gameUrl = `https://www.roblox.com/games/${detection.detected_place_id || detection.detected_universe_id}`;
+  const matchReasons = (detection.match_reasons || []).join(', ');
+
+  const dmcaTemplate = `Dear Roblox Trust & Safety Team,
+
+I am writing to report copyright infringement on your platform.
+
+IDENTIFICATION OF COPYRIGHTED WORK:
+I am the original creator of the work being infringed. My original work is registered with Eclipse IP Shield (case pending).
+
+IDENTIFICATION OF INFRINGING MATERIAL:
+Game URL: ${gameUrl}
+Game Name: "${detection.game_name}"
+Creator: ${detection.game_creator_name}
+Universe ID: ${detection.detected_universe_id}
+
+This game has been identified as a potential copy with ${detection.similarity_score}% similarity to my original work.
+Detection details: ${matchReasons || 'Name match'}
+
+${evidenceNotes ? `ADDITIONAL EVIDENCE:\n${evidenceNotes}\n` : ''}
+STATEMENTS:
+1. I have a good faith belief that use of the copyrighted materials described above is not authorised by the copyright owner, its agent, or the law.
+2. The information in this notification is accurate.
+3. Under penalty of perjury, I am the copyright owner or authorised to act on behalf of the owner.
+
+CONTACT INFORMATION:
+[Your Full Legal Name]
+[Your Email Address]
+[Your Address]
+
+This notice is sent under the Digital Millennium Copyright Act (DMCA), 17 U.S.C. § 512(c).`;
+
+  const copyTemplate = () => {
+    navigator.clipboard.writeText(dmcaTemplate);
+    setTemplateCopied(true);
+    setTimeout(() => setTemplateCopied(false), 2000);
+    toast({ title: 'DMCA template copied to clipboard' });
+  };
 
   const handleSubmit = async () => {
     if (!goodFaith || !accuracy || !ownership) {
       toast({ title: 'Please confirm all statements', variant: 'destructive' });
       return;
     }
+    if (filingMethod === 'agent' && !agentAuth) {
+      toast({ title: 'Please authorise us to act on your behalf', variant: 'destructive' });
+      return;
+    }
+
     setSubmitting(true);
     try {
-      const gameUrl = `https://www.roblox.com/games/${detection.detected_place_id || detection.detected_universe_id}`;
-      const matchReasons = (detection.match_reasons || []).join(', ');
-
+      // Create the takedown request
       const { data, error } = await supabase
         .from('takedown_requests')
         .insert({
           creator_id: userId,
-          status: 'submitted',
+          status: filingMethod === 'agent' ? 'submitted' : 'submitted',
           priority: detection.similarity_score >= 70 ? 'high' : 'medium',
           infringement_type: 'copyright',
           target_platform: 'roblox',
@@ -284,13 +330,15 @@ function TakedownFromDetectionDialog({ detection, onClose, userId }: { detection
           good_faith_statement: true,
           accuracy_statement: true,
           ownership_confirmed: true,
+          filing_method: filingMethod,
+          agent_authorization: filingMethod === 'agent',
         } as any)
         .select('id, case_number')
         .single();
 
       if (error) throw error;
 
-      // Link the detection to the takedown request
+      // Link detection to takedown
       if (data?.id) {
         await supabase
           .from('ip_copy_detections' as any)
@@ -298,7 +346,20 @@ function TakedownFromDetectionDialog({ detection, onClose, userId }: { detection
           .eq('id', detection.id);
       }
 
-      toast({ title: 'Takedown filed!', description: `Case ${data?.case_number || ''} created successfully.` });
+      // If agent filing, invoke the edge function to send DMCA
+      if (filingMethod === 'agent' && data?.id) {
+        const { error: dmcaError } = await supabase.functions.invoke('file-dmca-takedown', {
+          body: { takedown_id: data.id },
+        });
+        if (dmcaError) {
+          toast({ title: 'Case created but DMCA sending failed', description: 'Our team will follow up manually.', variant: 'destructive' });
+        } else {
+          toast({ title: 'DMCA filed on your behalf!', description: `Case ${data.case_number} — notice sent for review and forwarding.` });
+        }
+      } else {
+        toast({ title: 'Takedown case created!', description: `Case ${data?.case_number}. Use the copied template to submit your DMCA notice directly.` });
+      }
+
       queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
       queryClient.invalidateQueries({ queryKey: ['takedown-requests'] });
       onClose();
@@ -311,7 +372,7 @@ function TakedownFromDetectionDialog({ detection, onClose, userId }: { detection
 
   return (
     <Dialog open={!!detection} onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Gavel className="h-5 w-5" />
@@ -328,7 +389,40 @@ function TakedownFromDetectionDialog({ detection, onClose, userId }: { detection
             <p><strong>Creator:</strong> {detection.game_creator_name} ({detection.game_creator_type})</p>
             <p><strong>Platform:</strong> Roblox</p>
             <p><strong>Similarity:</strong> {detection.similarity_score}%</p>
-            <p><strong>Match Reasons:</strong> {(detection.match_reasons || []).join(', ') || 'Name match'}</p>
+            <p><strong>Match Reasons:</strong> {matchReasons || 'Name match'}</p>
+          </div>
+
+          {/* Filing Method Selection */}
+          <div>
+            <Label className="text-sm font-medium mb-2 block">How would you like to file?</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setFilingMethod('self')}
+                className={`p-3 rounded-lg border text-left transition-colors ${
+                  filingMethod === 'self' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Copy className="h-4 w-4" />
+                  <span className="font-medium text-sm">Self-File</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Get a pre-filled DMCA template to submit yourself</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilingMethod('agent')}
+                className={`p-3 rounded-lg border text-left transition-colors ${
+                  filingMethod === 'agent' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Mail className="h-4 w-4" />
+                  <span className="font-medium text-sm">We File For You</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Authorise us to send the DMCA on your behalf</p>
+              </button>
+            </div>
           </div>
 
           <div>
@@ -340,6 +434,42 @@ function TakedownFromDetectionDialog({ detection, onClose, userId }: { detection
               rows={3}
             />
           </div>
+
+          {/* Self-file: Show template */}
+          {filingMethod === 'self' && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <Label className="text-sm">DMCA Notice Template</Label>
+                <Button variant="outline" size="sm" onClick={copyTemplate} className="gap-1">
+                  <Copy className="h-3 w-3" />
+                  {templateCopied ? 'Copied!' : 'Copy'}
+                </Button>
+              </div>
+              <div className="rounded-md bg-muted p-3 text-xs font-mono whitespace-pre-wrap max-h-40 overflow-y-auto">
+                {dmcaTemplate}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Send this to <strong>dmca@roblox.com</strong> from your own email. Fill in your contact details.
+              </p>
+            </div>
+          )}
+
+          {/* Agent filing: Additional authorization */}
+          {filingMethod === 'agent' && (
+            <div className="rounded-md border border-primary/30 bg-primary/5 p-3 space-y-2">
+              <p className="text-sm font-medium">Agent Authorisation</p>
+              <p className="text-xs text-muted-foreground">
+                By authorising us, Eclipse IP Shield will submit the DMCA notice on your behalf as your designated agent.
+                The notice will be reviewed by our team before being forwarded to the platform.
+              </p>
+              <div className="flex items-start gap-2">
+                <Checkbox id="agent-auth" checked={agentAuth} onCheckedChange={(v) => setAgentAuth(!!v)} />
+                <Label htmlFor="agent-auth" className="text-xs">
+                  I authorise Eclipse IP Shield to act as my agent and file DMCA notices on my behalf for this case.
+                </Label>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-3">
             <div className="flex items-start gap-2">
@@ -359,9 +489,13 @@ function TakedownFromDetectionDialog({ detection, onClose, userId }: { detection
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button variant="destructive" onClick={handleSubmit} disabled={submitting || !goodFaith || !accuracy || !ownership}>
-            {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Gavel className="h-4 w-4 mr-2" />}
-            Submit Takedown
+          <Button
+            variant="destructive"
+            onClick={handleSubmit}
+            disabled={submitting || !goodFaith || !accuracy || !ownership || (filingMethod === 'agent' && !agentAuth)}
+          >
+            {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : filingMethod === 'agent' ? <Mail className="h-4 w-4 mr-2" /> : <Gavel className="h-4 w-4 mr-2" />}
+            {filingMethod === 'agent' ? 'File DMCA On My Behalf' : 'Create Case & Copy Template'}
           </Button>
         </DialogFooter>
       </DialogContent>
