@@ -12,8 +12,11 @@ export const ECLIPSE_STORE_ID = QUANTIS_STORE_ID;
 // Vino Store - second admin-controlled marketplace store
 export const VINO_STORE_ID = '9b842052-e1fd-4dfe-99bf-c7625df3e17d';
 
+// Blueprint Store - admin-controlled template store
+export const BLUEPRINT_STORE_ID = 'de72b93c-7c05-4162-ba19-cd01a1678ccf';
+
 // All admin-managed stores (read-only in seller dashboard)
-export const ADMIN_MANAGED_STORES = [QUANTIS_STORE_ID, VINO_STORE_ID] as const;
+export const ADMIN_MANAGED_STORES = [QUANTIS_STORE_ID, VINO_STORE_ID, BLUEPRINT_STORE_ID] as const;
 
 export const CATEGORIES = [
   { name: "Vehicle Liveries", slug: "vehicle-liveries", icon: "Car" },
