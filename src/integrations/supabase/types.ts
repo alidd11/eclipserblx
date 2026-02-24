@@ -3369,14 +3369,22 @@ export type Database = {
           detection_count: number | null
           dismissed_at: string | null
           evidence_captured_at: string | null
+          evidence_data: Json | null
+          evidence_screenshots: string[] | null
           first_detected_at: string | null
+          game_badges_count: number | null
           game_created_at: string | null
           game_creator_id: string | null
           game_creator_name: string | null
           game_creator_type: string | null
           game_description: string | null
+          game_favorites: number | null
+          game_genre: string | null
           game_name: string
+          game_passes_count: number | null
           game_thumbnail_url: string | null
+          game_updated_at: string | null
+          game_visits: number | null
           id: string
           last_seen_at: string | null
           match_reasons: string[] | null
@@ -3403,14 +3411,22 @@ export type Database = {
           detection_count?: number | null
           dismissed_at?: string | null
           evidence_captured_at?: string | null
+          evidence_data?: Json | null
+          evidence_screenshots?: string[] | null
           first_detected_at?: string | null
+          game_badges_count?: number | null
           game_created_at?: string | null
           game_creator_id?: string | null
           game_creator_name?: string | null
           game_creator_type?: string | null
           game_description?: string | null
+          game_favorites?: number | null
+          game_genre?: string | null
           game_name: string
+          game_passes_count?: number | null
           game_thumbnail_url?: string | null
+          game_updated_at?: string | null
+          game_visits?: number | null
           id?: string
           last_seen_at?: string | null
           match_reasons?: string[] | null
@@ -3437,14 +3453,22 @@ export type Database = {
           detection_count?: number | null
           dismissed_at?: string | null
           evidence_captured_at?: string | null
+          evidence_data?: Json | null
+          evidence_screenshots?: string[] | null
           first_detected_at?: string | null
+          game_badges_count?: number | null
           game_created_at?: string | null
           game_creator_id?: string | null
           game_creator_name?: string | null
           game_creator_type?: string | null
           game_description?: string | null
+          game_favorites?: number | null
+          game_genre?: string | null
           game_name?: string
+          game_passes_count?: number | null
           game_thumbnail_url?: string | null
+          game_updated_at?: string | null
+          game_visits?: number | null
           id?: string
           last_seen_at?: string | null
           match_reasons?: string[] | null
