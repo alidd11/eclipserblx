@@ -60,20 +60,7 @@ export default function IPShield() {
   const [verifying, setVerifying] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
 
-  // Check identity verification status
-  const { data: verificationStatus, isLoading: verifyLoading, refetch: refetchVerification } = useQuery({
-    queryKey: ['ip-shield-identity-verification', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('check-identity-verification');
-      if (error) throw error;
-      return data as { verified: boolean; status: string; verifiedAt?: string };
-    },
-    enabled: !!user,
-  });
-
-  const isVerified = verificationStatus?.verified === true;
-
-  // Check IP Shield subscription status
+  // Check IP Shield subscription status (first gate)
   const { data: subscriptionStatus, isLoading: subLoading, refetch: refetchSubscription } = useQuery({
     queryKey: ['ip-shield-subscription', user?.id],
     queryFn: async () => {
@@ -81,10 +68,23 @@ export default function IPShield() {
       if (error) throw error;
       return data as { subscribed: boolean; subscription_end?: string; subscription_id?: string };
     },
-    enabled: !!user && isVerified,
+    enabled: !!user,
   });
 
   const isSubscribed = subscriptionStatus?.subscribed === true;
+
+  // Check identity verification status (second gate, only after subscribed)
+  const { data: verificationStatus, isLoading: verifyLoading, refetch: refetchVerification } = useQuery({
+    queryKey: ['ip-shield-identity-verification', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('check-identity-verification');
+      if (error) throw error;
+      return data as { verified: boolean; status: string; verifiedAt?: string };
+    },
+    enabled: !!user && isSubscribed,
+  });
+
+  const isVerified = verificationStatus?.verified === true;
 
   // Re-check verification when returning from Stripe
   useEffect(() => {
@@ -143,7 +143,7 @@ export default function IPShield() {
         .limit(1);
       return data?.[0] || null;
     },
-    enabled: !!user && isSubscribed,
+    enabled: !!user && isSubscribed && isVerified,
   });
 
   // Form state
@@ -172,7 +172,7 @@ export default function IPShield() {
       if (error) throw error;
       return data;
     },
-    enabled: !!user && isSubscribed,
+    enabled: !!user && isSubscribed && isVerified,
   });
 
   // Fetch IP registry
@@ -187,7 +187,7 @@ export default function IPShield() {
       if (error) throw error;
       return data;
     },
-    enabled: !!user && isSubscribed,
+    enabled: !!user && isSubscribed && isVerified,
   });
 
   // Submit takedown request
@@ -298,6 +298,70 @@ export default function IPShield() {
     );
   }
 
+  // Loading subscription status
+  if (subLoading) {
+    return (
+      <MainLayout>
+        <div className="container py-16 max-w-lg text-center">
+          <Skeleton className="h-16 w-16 mx-auto rounded-full mb-6" />
+          <Skeleton className="h-8 w-48 mx-auto mb-3" />
+          <Skeleton className="h-4 w-64 mx-auto" />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Not subscribed — show pricing (first gate)
+  if (!isSubscribed) {
+    return (
+      <MainLayout>
+        <div className="container py-16 max-w-lg text-center">
+          <Crown className="h-16 w-16 mx-auto text-primary/60 mb-6" />
+          <h1 className="text-3xl font-display font-bold mb-3">IP Shield</h1>
+          <p className="text-muted-foreground mb-6">
+            Protect your intellectual property — we'll file DMCA takedown notices on your behalf. Subscribe to get started.
+          </p>
+
+          <Card className="border-primary/30 bg-card text-left">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-xl font-bold">IP Shield</h3>
+                  <p className="text-sm text-muted-foreground">Monthly subscription</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-3xl font-bold">£39.99</span>
+                  <span className="text-muted-foreground text-sm">/mo</span>
+                </div>
+              </div>
+              <ul className="space-y-2 text-sm mb-6">
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> DMCA takedown filing on your behalf</li>
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Intellectual property registry</li>
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Case tracking & status updates</li>
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Cross-platform enforcement</li>
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Dedicated DMCA agent representation</li>
+              </ul>
+              <Button
+                className="w-full gap-2"
+                onClick={() => {
+                  setSubscribing(true);
+                  startCheckout.mutate();
+                }}
+                disabled={subscribing || startCheckout.isPending}
+              >
+                {(subscribing || startCheckout.isPending) ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</>
+                ) : (
+                  <><CreditCard className="h-4 w-4" /> Subscribe — £39.99/mo</>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </MainLayout>
+    );
+  }
+
   // Loading verification
   if (verifyLoading) {
     return (
@@ -311,19 +375,18 @@ export default function IPShield() {
     );
   }
 
-  // Not verified — show identity verification prompt
+  // Not verified — show identity verification prompt (second gate)
   if (!isVerified) {
     const isPending = verificationStatus?.status === 'processing';
     return (
       <MainLayout>
         <div className="container py-16 max-w-lg text-center">
           <UserCheck className="h-16 w-16 mx-auto text-primary/60 mb-6" />
-          <h1 className="text-3xl font-display font-bold mb-3">IP Shield</h1>
+          <h1 className="text-3xl font-display font-bold mb-3">Almost There!</h1>
           <p className="text-muted-foreground mb-2">
-            IP Shield is available exclusively to <strong>identity-verified</strong> users.
+            Thanks for subscribing! One last step — <strong>verify your identity</strong> to activate IP Shield.
           </p>
           <p className="text-sm text-muted-foreground mb-6">
-            To use this service, you'll need to verify your identity through a quick, secure process.
             This includes uploading a government-issued ID and taking a selfie. This ensures we can act as your DMCA agent with full legal standing.
           </p>
 
@@ -362,70 +425,6 @@ export default function IPShield() {
               A previous verification session was started but not completed. Click above to start again.
             </p>
           )}
-        </div>
-      </MainLayout>
-    );
-  }
-
-  // Loading subscription status
-  if (subLoading) {
-    return (
-      <MainLayout>
-        <div className="container py-16 max-w-lg text-center">
-          <Skeleton className="h-16 w-16 mx-auto rounded-full mb-6" />
-          <Skeleton className="h-8 w-48 mx-auto mb-3" />
-          <Skeleton className="h-4 w-64 mx-auto" />
-        </div>
-      </MainLayout>
-    );
-  }
-
-  // Not subscribed — show pricing
-  if (!isSubscribed) {
-    return (
-      <MainLayout>
-        <div className="container py-16 max-w-lg text-center">
-          <Crown className="h-16 w-16 mx-auto text-primary/60 mb-6" />
-          <h1 className="text-3xl font-display font-bold mb-3">IP Shield</h1>
-          <p className="text-muted-foreground mb-6">
-            Your identity has been verified. Subscribe to IP Shield to access DMCA takedown filing and IP registry services.
-          </p>
-
-          <Card className="border-primary/30 bg-card text-left">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-bold">IP Shield</h3>
-                  <p className="text-sm text-muted-foreground">Monthly subscription</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-3xl font-bold">£39.99</span>
-                  <span className="text-muted-foreground text-sm">/mo</span>
-                </div>
-              </div>
-              <ul className="space-y-2 text-sm mb-6">
-                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> DMCA takedown filing on your behalf</li>
-                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Intellectual property registry</li>
-                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Case tracking & status updates</li>
-                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Cross-platform enforcement</li>
-                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Dedicated DMCA agent representation</li>
-              </ul>
-              <Button
-                className="w-full gap-2"
-                onClick={() => {
-                  setSubscribing(true);
-                  startCheckout.mutate();
-                }}
-                disabled={subscribing || startCheckout.isPending}
-              >
-                {(subscribing || startCheckout.isPending) ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</>
-                ) : (
-                  <><CreditCard className="h-4 w-4" /> Subscribe — £39.99/mo</>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
         </div>
       </MainLayout>
     );
