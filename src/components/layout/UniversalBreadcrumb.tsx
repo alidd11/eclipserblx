@@ -1,5 +1,5 @@
-import { Link, useLocation } from 'react-router-dom';
-import { ChevronRight, ChevronLeft, Home, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { ChevronRight, Home, ArrowLeft, ArrowRight } from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -55,7 +55,6 @@ const excludedRoutes = ['/', '/auth'];
 
 function formatSegmentLabel(segment: string): string {
   if (routeLabels[segment]) return routeLabels[segment];
-  // Convert slugs to readable labels (e.g. "my-cool-store" -> "My Cool Store")
   return segment
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -64,22 +63,35 @@ function formatSegmentLabel(segment: string): string {
 
 export function UniversalBreadcrumb() {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { canGoBack, canGoForward, goBack, goForward } = useNavigationHistory();
   const pathSegments = location.pathname.split('/').filter(Boolean);
 
-  // Don't show breadcrumbs on excluded routes or root
   if (excludedRoutes.includes(location.pathname) || pathSegments.length === 0) {
     return null;
   }
 
-  // Build breadcrumb items
+  // Build breadcrumb items from path
   const breadcrumbItems = pathSegments.map((segment, index) => {
     const path = '/' + pathSegments.slice(0, index + 1).join('/');
     const label = formatSegmentLabel(segment);
     const isLast = index === pathSegments.length - 1;
-
     return { path, label, isLast };
   });
+
+  // Append query-param context (e.g. ?category=buildings → "Buildings")
+  const category = searchParams.get('category');
+  if (category) {
+    // The last path item is no longer "last" visually
+    if (breadcrumbItems.length > 0) {
+      breadcrumbItems[breadcrumbItems.length - 1].isLast = false;
+    }
+    breadcrumbItems.push({
+      path: location.pathname + '?category=' + category,
+      label: formatSegmentLabel(category),
+      isLast: true,
+    });
+  }
 
   const handleBack = () => {
     hapticTap();
@@ -92,25 +104,25 @@ export function UniversalBreadcrumb() {
   };
 
   return (
-    <div className="border-b border-border/50 bg-muted/30">
-      <div className="container mx-auto py-2 flex items-center gap-2">
+    <div className="border-b border-border/40 bg-card/50 backdrop-blur-sm">
+      <div className="container mx-auto py-2 px-3 sm:px-4 flex items-center gap-2.5">
         {/* Navigation History Buttons */}
-        <div className="flex items-center gap-0.5 shrink-0">
+        <div className="flex items-center gap-1 shrink-0">
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 onClick={handleBack}
                 disabled={!canGoBack}
                 className={cn(
-                  "h-7 w-7 flex items-center justify-center rounded-md transition-colors",
+                  "h-7 w-7 flex items-center justify-center rounded-full transition-all duration-150",
                   "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   canGoBack
-                    ? "text-muted-foreground hover:text-foreground hover:bg-muted active:scale-95"
-                    : "text-muted-foreground/30 cursor-not-allowed"
+                    ? "text-muted-foreground hover:text-foreground hover:bg-accent active:scale-90"
+                    : "text-muted-foreground/25 cursor-not-allowed"
                 )}
                 aria-label="Go back"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-3.5 w-3.5" />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="text-xs">
@@ -124,15 +136,15 @@ export function UniversalBreadcrumb() {
                 onClick={handleForward}
                 disabled={!canGoForward}
                 className={cn(
-                  "h-7 w-7 flex items-center justify-center rounded-md transition-colors",
+                  "h-7 w-7 flex items-center justify-center rounded-full transition-all duration-150",
                   "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   canGoForward
-                    ? "text-muted-foreground hover:text-foreground hover:bg-muted active:scale-95"
-                    : "text-muted-foreground/30 cursor-not-allowed"
+                    ? "text-muted-foreground hover:text-foreground hover:bg-accent active:scale-90"
+                    : "text-muted-foreground/25 cursor-not-allowed"
                 )}
                 aria-label="Go forward"
               >
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-3.5 w-3.5" />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="text-xs">
@@ -142,16 +154,16 @@ export function UniversalBreadcrumb() {
         </div>
 
         {/* Divider */}
-        <div className="h-4 w-px bg-border/60 shrink-0" />
+        <div className="h-4 w-px bg-border/50 shrink-0" />
 
         {/* Breadcrumb Trail */}
         <Breadcrumb className="min-w-0">
-          <BreadcrumbList>
+          <BreadcrumbList className="flex-nowrap">
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
+                <Link to="/" className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors">
                   <Home className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Eclipse</span>
+                  <span className="hidden sm:inline text-xs font-medium">Eclipse</span>
                 </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -159,14 +171,19 @@ export function UniversalBreadcrumb() {
             {breadcrumbItems.map((item) => (
               <span key={item.path} className="contents">
                 <BreadcrumbSeparator>
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  <ChevronRight className="h-3 w-3 text-muted-foreground/50" />
                 </BreadcrumbSeparator>
                 <BreadcrumbItem>
                   {item.isLast ? (
-                    <BreadcrumbPage className="truncate max-w-[200px]">{item.label}</BreadcrumbPage>
+                    <BreadcrumbPage className="truncate max-w-[180px] text-xs font-semibold text-foreground">
+                      {item.label}
+                    </BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink asChild>
-                      <Link to={item.path} className="text-muted-foreground hover:text-foreground truncate max-w-[150px]">
+                      <Link 
+                        to={item.path} 
+                        className="text-xs text-muted-foreground hover:text-primary truncate max-w-[140px] transition-colors"
+                      >
                         {item.label}
                       </Link>
                     </BreadcrumbLink>
