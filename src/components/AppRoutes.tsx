@@ -48,6 +48,7 @@ const Affiliate = lazy(() => import("@/pages/Affiliate"));
 const Messages = lazy(() => import("@/pages/Messages"));
 const Advertise = lazy(() => import("@/pages/Advertise"));
 const Credits = lazy(() => import("@/pages/Credits"));
+const Sell = lazy(() => import("@/pages/Sell"));
 const MyAdvertisementsPage = lazy(() => import("@/pages/Account/MyAdvertisementsPage"));
 const AdAnalyticsPage = lazy(() => import("@/pages/Account/AdAnalyticsPage"));
 const FollowingPage = lazy(() => import("@/pages/Account/FollowingPage").then(m => ({ default: m.FollowingPage })));
@@ -246,6 +247,7 @@ export function AppRoutes() {
         <Route path="/recruiter" element={<Recruiter />} />
         <Route path="/advertise" element={<Advertise />} />
         <Route path="/credits" element={<Credits />} />
+        <Route path="/sell" element={<Sell />} />
         <Route path="/account/advertisements" element={<MyAdvertisementsPage />} />
         <Route path="/account/ad-analytics" element={<AdAnalyticsPage />} />
         <Route path="/account/following" element={<FollowingPage />} />
