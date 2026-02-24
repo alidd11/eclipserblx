@@ -4,7 +4,8 @@ import {
   HelpCircle, Mail, Activity, ChevronDown, ShoppingCart, 
   User, LucideIcon, Home, TrendingUp, Store, Bell, FolderOpen,
   Sparkles, Download, Heart, Wallet, LogOut, ChevronLeft, ChevronRight,
-  MessageSquareText, Megaphone, FileQuestion, LayoutGrid, Shield
+  MessageSquareText, Megaphone, FileQuestion, LayoutGrid, Shield,
+  Globe, PenTool
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { categoryIconMap, PackageIcon, BotIcon } from '@/components/icons/CategoryIcons';
@@ -630,6 +631,44 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                   title: 'Discord Bots',
                   icon: BotIcon as unknown as LucideIcon,
                   href: '/products?category=bots',
+                })}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+          {/* Nested Templates sub-section inside Resources */}
+          {group.id === 'resources' && !isCollapsed && (
+            <Collapsible
+              open={openGroups['templates'] ?? false}
+              onOpenChange={() => toggleGroup('templates')}
+              className="mt-0.5"
+            >
+              <CollapsibleTrigger asChild>
+                <button
+                  className={cn(
+                    "w-full flex items-center gap-2.5 px-2.5 py-1.5 ml-3 rounded-md text-[13px] font-medium select-none",
+                    "transition-colors duration-100",
+                    "focus:outline-none focus-visible:outline-none",
+                    "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  )}
+                >
+                  <PenTool className={cn(ICON_SIZE)} />
+                  <span className="flex-1 text-left truncate">Templates</span>
+                  <ChevronDown className={cn(
+                    ICON_SIZE_SMALL, "shrink-0 transition-transform duration-200",
+                    (openGroups['templates'] ?? false) ? "rotate-0" : "-rotate-90"
+                  )} />
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-px pt-px">
+                {renderNavItem({
+                  title: 'Blueprint Store',
+                  icon: Store as unknown as LucideIcon,
+                  href: '/store/blueprint',
+                })}
+                {renderNavItem({
+                  title: 'Website Templates',
+                  icon: Globe as unknown as LucideIcon,
+                  href: '/products?category=website-templates',
                 })}
               </CollapsibleContent>
             </Collapsible>
