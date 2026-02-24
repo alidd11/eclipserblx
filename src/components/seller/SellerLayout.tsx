@@ -14,6 +14,7 @@ import { safeStorage } from '@/lib/safeStorage';
 import { hapticTap } from '@/lib/haptics';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { UniversalBreadcrumb } from '@/components/layout/UniversalBreadcrumb';
 import { FloatingActionButtons } from '@/components/ui/FloatingActionButtons';
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
@@ -277,6 +278,7 @@ function SellerLayoutContent({ children }: SellerLayoutProps) {
             hideBrandName
             onMenuClick={() => setMobileOpen(true)} 
           />
+          <UniversalBreadcrumb />
 
           {/* Scrollable Content */}
           <main className={cn(
