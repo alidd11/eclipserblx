@@ -3367,13 +3367,17 @@ export type Database = {
           game_creator_id: string | null
           game_creator_name: string | null
           game_creator_type: string | null
+          game_description: string | null
           game_name: string
           game_thumbnail_url: string | null
           id: string
+          match_reasons: string[] | null
           player_count: number | null
           registry_entry_id: string
           search_keyword: string
+          similarity_score: number | null
           status: string
+          thumbnail_analyzed: boolean | null
           updated_at: string
         }
         Insert: {
@@ -3385,13 +3389,17 @@ export type Database = {
           game_creator_id?: string | null
           game_creator_name?: string | null
           game_creator_type?: string | null
+          game_description?: string | null
           game_name: string
           game_thumbnail_url?: string | null
           id?: string
+          match_reasons?: string[] | null
           player_count?: number | null
           registry_entry_id: string
           search_keyword: string
+          similarity_score?: number | null
           status?: string
+          thumbnail_analyzed?: boolean | null
           updated_at?: string
         }
         Update: {
@@ -3403,13 +3411,17 @@ export type Database = {
           game_creator_id?: string | null
           game_creator_name?: string | null
           game_creator_type?: string | null
+          game_description?: string | null
           game_name?: string
           game_thumbnail_url?: string | null
           id?: string
+          match_reasons?: string[] | null
           player_count?: number | null
           registry_entry_id?: string
           search_keyword?: string
+          similarity_score?: number | null
           status?: string
+          thumbnail_analyzed?: boolean | null
           updated_at?: string
         }
         Relationships: [
