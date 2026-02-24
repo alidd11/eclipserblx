@@ -184,6 +184,9 @@ Deno.serve(async (req) => {
         case "help":
           return handleHelpCommand(serverContext);
 
+        case "walletbalance":
+          return await handleWalletBalanceCommand(supabase, discordUserId, discordUsername, discordAvatarUrl);
+
         // Global Guard commands
         case "globalban":
           return await handleGlobalBanCommand(supabase, interaction, discordUserId, discordUsername, discordAvatarUrl);
@@ -2501,6 +2504,61 @@ async function handleShowcaseCommand(supabase: any, serverContext: ServerContext
   } catch (err) {
     console.error("[discord-customer-bot] Showcase error:", err);
     return interactionResponse("Failed to fetch featured products. Try again later.", true);
+  }
+}
+
+// /walletbalance command - DM user their credit balance
+async function handleWalletBalanceCommand(
+  supabase: any,
+  discordUserId: string,
+  discordUsername: string,
+  discordAvatarUrl?: string,
+) {
+  // Look up linked account
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("user_id, display_name, username, customer_id")
+    .eq("discord_id", discordUserId)
+    .maybeSingle();
+
+  if (!profile) {
+    return interactionResponse(
+      "❌ Your Discord isn't linked to an Eclipse account. Use `/link` first.",
+      true
+    );
+  }
+
+  // Fetch credit balance
+  const { data: balance } = await supabase
+    .from("credit_balances")
+    .select("balance, total_purchased, total_gifted, total_spent")
+    .eq("user_id", profile.user_id)
+    .maybeSingle();
+
+  const bal = balance || { balance: 0, total_purchased: 0, total_gifted: 0, total_spent: 0 };
+
+  const embed = {
+    title: "💰 Your Eclipse Wallet",
+    color: 0x7c3aed,
+    fields: [
+      { name: "Current Balance", value: `£${Number(bal.balance).toFixed(2)}`, inline: true },
+      { name: "Total Purchased", value: `£${Number(bal.total_purchased).toFixed(2)}`, inline: true },
+      { name: "Total Gifted", value: `£${Number(bal.total_gifted).toFixed(2)}`, inline: true },
+      { name: "Total Spent", value: `£${Number(bal.total_spent).toFixed(2)}`, inline: true },
+    ],
+    thumbnail: discordAvatarUrl ? { url: discordAvatarUrl } : undefined,
+  };
+
+  // Send balance via DM, respond ephemerally in channel
+  const dmSent = await sendDMToUser(discordUserId, undefined, [embed]);
+
+  if (dmSent) {
+    return interactionResponse("💰 Your wallet balance has been sent to your DMs!", true);
+  } else {
+    return interactionResponse(
+      "❌ I couldn't send you a DM. Please make sure your DMs are open and try again.",
+      true
+    );
   }
 }
 
