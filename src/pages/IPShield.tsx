@@ -287,7 +287,7 @@ export default function IPShield() {
     {
       id: 'starter',
       name: 'Starter',
-      price: '19.99',
+      price: '24.99',
       description: 'Essential protection for individual creators',
       features: [
         '3 takedown requests/month',
@@ -301,7 +301,7 @@ export default function IPShield() {
     {
       id: 'pro',
       name: 'Pro',
-      price: '29.99',
+      price: '39.99',
       description: 'Advanced protection for serious creators',
       features: [
         '15 takedown requests/month',
