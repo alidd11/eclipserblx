@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,7 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { 
   Shield, Plus, Clock, CheckCircle, XCircle, AlertTriangle,
-  FileText, Send, Eye, LogIn
+  FileText, Send, Eye, LogIn, UserCheck, Loader2, ExternalLink
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -54,19 +55,45 @@ export default function IPShield() {
   const [showNewRequest, setShowNewRequest] = useState(false);
   const [activeTab, setActiveTab] = useState('cases');
 
-  // Check if user is a verified creator (has a verified store via Stripe Connect)
-  const { data: isVerified, isLoading: verifyLoading } = useQuery({
-    queryKey: ['ip-shield-verified', user?.id],
+  const [searchParams] = useSearchParams();
+  const [verifying, setVerifying] = useState(false);
+
+  // Check identity verification status
+  const { data: verificationStatus, isLoading: verifyLoading, refetch: refetchVerification } = useQuery({
+    queryKey: ['ip-shield-identity-verification', user?.id],
     queryFn: async () => {
-      const { data } = await supabase
-        .from('stores')
-        .select('id, is_verified')
-        .eq('owner_id', user!.id)
-        .eq('is_verified', true)
-        .limit(1);
-      return (data && data.length > 0);
+      const { data, error } = await supabase.functions.invoke('check-identity-verification');
+      if (error) throw error;
+      return data as { verified: boolean; status: string; verifiedAt?: string };
     },
     enabled: !!user,
+  });
+
+  const isVerified = verificationStatus?.verified === true;
+
+  // Re-check verification when returning from Stripe
+  useEffect(() => {
+    if (searchParams.get('verification') === 'complete' && user) {
+      refetchVerification();
+    }
+  }, [searchParams, user, refetchVerification]);
+
+  // Start identity verification
+  const startVerification = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('create-identity-verification');
+      if (error) throw error;
+      return data as { url: string };
+    },
+    onSuccess: (data) => {
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    },
+    onError: (error) => {
+      toast({ title: 'Verification failed', description: error.message, variant: 'destructive' });
+      setVerifying(false);
+    },
   });
 
   // Get user's store for linking
@@ -248,23 +275,57 @@ export default function IPShield() {
     );
   }
 
-  // Not a verified creator
+  // Not verified — show identity verification prompt
   if (!isVerified) {
+    const isPending = verificationStatus?.status === 'processing';
     return (
       <MainLayout>
         <div className="container py-16 max-w-lg text-center">
-          <Shield className="h-16 w-16 mx-auto text-muted-foreground/50 mb-6" />
+          <UserCheck className="h-16 w-16 mx-auto text-primary/60 mb-6" />
           <h1 className="text-3xl font-display font-bold mb-3">IP Shield</h1>
           <p className="text-muted-foreground mb-2">
-            IP Shield is available exclusively to <strong>verified creators</strong> on Eclipse.
+            IP Shield is available exclusively to <strong>identity-verified</strong> users.
           </p>
           <p className="text-sm text-muted-foreground mb-6">
-            To become verified, you need to complete Stripe identity verification through your seller dashboard. 
-            This ensures we can act as your DMCA agent with full legal standing.
+            To use this service, you'll need to verify your identity through a quick, secure process.
+            This includes uploading a government-issued ID and taking a selfie. This ensures we can act as your DMCA agent with full legal standing.
           </p>
-          <Button asChild variant="outline">
-            <Link to="/seller/settings/payments">Go to Seller Payments</Link>
-          </Button>
+
+          {isPending ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-center gap-2 text-primary">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span className="font-medium">Verification in progress</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Your identity is being reviewed. This usually takes a few minutes.
+              </p>
+              <Button variant="outline" size="sm" onClick={() => refetchVerification()}>
+                Check Status
+              </Button>
+            </div>
+          ) : (
+            <Button
+              onClick={() => {
+                setVerifying(true);
+                startVerification.mutate();
+              }}
+              disabled={verifying || startVerification.isPending}
+              className="gap-2"
+            >
+              {(verifying || startVerification.isPending) ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Starting Verification...</>
+              ) : (
+                <><ExternalLink className="h-4 w-4" /> Verify My Identity</>
+              )}
+            </Button>
+          )}
+
+          {verificationStatus?.status === 'requires_input' && (
+            <p className="text-xs text-muted-foreground mt-4">
+              A previous verification session was started but not completed. Click above to start again.
+            </p>
+          )}
         </div>
       </MainLayout>
     );
