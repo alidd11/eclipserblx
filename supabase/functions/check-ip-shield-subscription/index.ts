@@ -54,6 +54,22 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // Admin test override — grants Enterprise access for testing
+    const ADMIN_TEST_EMAILS = ["alicanimir1@gmail.com"];
+    if (ADMIN_TEST_EMAILS.includes(user.email)) {
+      logStep("Admin test override active", { email: user.email });
+      return new Response(JSON.stringify({
+        subscribed: true,
+        tier: "enterprise",
+        limits: TIER_LIMITS["enterprise"],
+        subscription_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        subscription_id: "admin_test_override",
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
