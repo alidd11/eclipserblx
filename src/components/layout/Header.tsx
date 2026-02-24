@@ -308,6 +308,38 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
                       <span>{cat.name}</span>
                     </NavLink>
                   ))}
+                  {/* Templates sub-section */}
+                  <div className="border-t border-border/20 mt-1 pt-1 mx-6">
+                    <span className="block px-4 py-1.5 text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider">Templates</span>
+                    <NavLink
+                      to="/store/blueprint"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) =>
+                        cn(
+                          "flex items-center pl-4 pr-3 py-2 text-sm font-medium transition-colors touch-manipulation",
+                          isActive
+                            ? "text-foreground bg-muted/60"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        )
+                      }
+                    >
+                      Blueprint Store
+                    </NavLink>
+                    <NavLink
+                      to="/products?category=website-templates"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) =>
+                        cn(
+                          "flex items-center pl-4 pr-3 py-2 text-sm font-medium transition-colors touch-manipulation",
+                          isActive
+                            ? "text-foreground bg-muted/60"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        )
+                      }
+                    >
+                      Website Templates
+                    </NavLink>
+                  </div>
                   <NavLink
                     to="/categories"
                     onClick={() => setMobileMenuOpen(false)}
