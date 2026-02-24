@@ -1151,6 +1151,7 @@ export type Database = {
           proof_urls: string[] | null
           roblox_asset_ids: string[] | null
           roblox_universe_ids: string[] | null
+          search_keywords: string[] | null
           store_id: string | null
           title: string
           updated_at: string
@@ -1164,6 +1165,7 @@ export type Database = {
           proof_urls?: string[] | null
           roblox_asset_ids?: string[] | null
           roblox_universe_ids?: string[] | null
+          search_keywords?: string[] | null
           store_id?: string | null
           title: string
           updated_at?: string
@@ -1177,6 +1179,7 @@ export type Database = {
           proof_urls?: string[] | null
           roblox_asset_ids?: string[] | null
           roblox_universe_ids?: string[] | null
+          search_keywords?: string[] | null
           store_id?: string | null
           title?: string
           updated_at?: string
@@ -3353,6 +3356,71 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      ip_copy_detections: {
+        Row: {
+          created_at: string
+          creator_id: string
+          detected_place_id: string | null
+          detected_universe_id: string
+          dismissed_at: string | null
+          game_creator_id: string | null
+          game_creator_name: string | null
+          game_creator_type: string | null
+          game_name: string
+          game_thumbnail_url: string | null
+          id: string
+          player_count: number | null
+          registry_entry_id: string
+          search_keyword: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          detected_place_id?: string | null
+          detected_universe_id: string
+          dismissed_at?: string | null
+          game_creator_id?: string | null
+          game_creator_name?: string | null
+          game_creator_type?: string | null
+          game_name: string
+          game_thumbnail_url?: string | null
+          id?: string
+          player_count?: number | null
+          registry_entry_id: string
+          search_keyword: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          detected_place_id?: string | null
+          detected_universe_id?: string
+          dismissed_at?: string | null
+          game_creator_id?: string | null
+          game_creator_name?: string | null
+          game_creator_type?: string | null
+          game_name?: string
+          game_thumbnail_url?: string | null
+          id?: string
+          player_count?: number | null
+          registry_entry_id?: string
+          search_keyword?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ip_copy_detections_registry_entry_id_fkey"
+            columns: ["registry_entry_id"]
+            isOneToOne: false
+            referencedRelation: "creator_ip_registry"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ip_monitor_alerts: {
         Row: {

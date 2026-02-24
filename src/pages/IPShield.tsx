@@ -19,7 +19,7 @@ import { toast } from '@/hooks/use-toast';
 import { 
   Shield, Plus, Clock, CheckCircle, XCircle, AlertTriangle,
   FileText, Send, Eye, LogIn, UserCheck, Loader2, ExternalLink,
-  CreditCard, Crown
+  CreditCard, Crown, Search, Radar, Users, ExternalLink as GameLink
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -49,6 +49,132 @@ const TYPE_LABELS: Record<string, string> = {
   unauthorized_resale: 'Unauthorized Resale',
   other: 'Other',
 };
+
+function CopyDetectionTab({ userId }: { userId?: string }) {
+  const queryClient = useQueryClient();
+  const [scanning, setScanning] = useState(false);
+
+  const { data: detections, isLoading } = useQuery({
+    queryKey: ['copy-detections', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('ip_copy_detections' as any)
+        .select('*')
+        .eq('creator_id', userId!)
+        .is('dismissed_at', null)
+        .order('player_count', { ascending: false });
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!userId,
+  });
+
+  const runScan = async () => {
+    setScanning(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('scan-roblox-copies');
+      if (error) throw error;
+      toast({ title: 'Scan complete', description: `Found ${data?.total_detected || 0} potential copies.` });
+      queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
+    } catch (err: any) {
+      toast({ title: 'Scan failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  const dismissDetection = async (id: string) => {
+    const { error } = await supabase
+      .from('ip_copy_detections' as any)
+      .update({ dismissed_at: new Date().toISOString(), status: 'dismissed' } as any)
+      .eq('id', id);
+    if (error) {
+      toast({ title: 'Failed to dismiss', variant: 'destructive' });
+    } else {
+      queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
+    }
+  };
+
+  return (
+    <TabsContent value="copies" className="space-y-4 mt-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          Searches Roblox for games with similar names to your registered works.
+        </p>
+        <Button variant="outline" size="sm" onClick={runScan} disabled={scanning}>
+          {scanning ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
+          {scanning ? 'Scanning...' : 'Run Scan'}
+        </Button>
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 w-full" />)}
+        </div>
+      ) : !detections || detections.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Radar className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+            <h3 className="font-semibold text-lg">No copies detected</h3>
+            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+              Register works in the IP Registry with search keywords, then run a scan to find potential copies on Roblox.
+            </p>
+            <Button className="mt-4" variant="outline" onClick={runScan} disabled={scanning}>
+              {scanning ? 'Scanning...' : 'Run Your First Scan'}
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-3">
+          {detections.map((d: any) => (
+            <Card key={d.id} className="hover:border-destructive/30 transition-colors">
+              <CardContent className="py-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium">{d.game_name}</span>
+                      <Badge variant="destructive" className="text-xs">Potential Copy</Badge>
+                      {d.player_count > 0 && (
+                        <Badge variant="outline" className="text-xs gap-1">
+                          <Users className="h-3 w-3" />
+                          {d.player_count.toLocaleString()} playing
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Created by <span className="font-medium text-foreground">{d.game_creator_name}</span>
+                      {d.game_creator_type === 'Group' && ' (Group)'}
+                      {' · '}Keyword: "{d.search_keyword}"
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Universe ID: {d.detected_universe_id}
+                      {' · '}Detected {format(new Date(d.created_at), 'MMM d, yyyy')}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <a
+                      href={`https://www.roblox.com/games/${d.detected_place_id || d.detected_universe_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        View
+                      </Button>
+                    </a>
+                    <Button variant="ghost" size="sm" onClick={() => dismissDetection(d.id)}>
+                      Dismiss
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </TabsContent>
+  );
+}
 
 export default function IPShield() {
   const { user } = useAuth();
@@ -232,6 +358,7 @@ export default function IPShield() {
     work_type: '' as string,
     proof_urls: '',
     roblox_asset_ids: '',
+    search_keywords: '',
   });
   const [showAddWork, setShowAddWork] = useState(false);
 
@@ -247,13 +374,14 @@ export default function IPShield() {
           work_type: registryForm.work_type,
           proof_urls: registryForm.proof_urls ? registryForm.proof_urls.split('\n').filter(Boolean) : [],
           roblox_asset_ids: registryForm.roblox_asset_ids ? registryForm.roblox_asset_ids.split(',').map(s => s.trim()).filter(Boolean) : [],
-        });
+          search_keywords: registryForm.search_keywords ? registryForm.search_keywords.split(',').map(s => s.trim()).filter(Boolean) : [],
+        } as any);
       if (error) throw error;
     },
     onSuccess: () => {
       toast({ title: 'Work registered', description: 'Your intellectual property has been added to the registry.' });
       setShowAddWork(false);
-      setRegistryForm({ title: '', description: '', work_type: '', proof_urls: '', roblox_asset_ids: '' });
+      setRegistryForm({ title: '', description: '', work_type: '', proof_urls: '', roblox_asset_ids: '', search_keywords: '' });
       queryClient.invalidateQueries({ queryKey: ['ip-registry'] });
     },
     onError: (error) => {
@@ -637,6 +765,10 @@ export default function IPShield() {
             <TabsList>
               <TabsTrigger value="cases">Takedown Cases</TabsTrigger>
               <TabsTrigger value="registry">IP Registry</TabsTrigger>
+              <TabsTrigger value="copies" className="gap-1.5">
+                <Radar className="h-3.5 w-3.5" />
+                Copy Detection
+              </TabsTrigger>
             </TabsList>
 
             {/* Cases Tab */}
@@ -698,6 +830,9 @@ export default function IPShield() {
                 </div>
               )}
             </TabsContent>
+
+            {/* Copy Detection Tab */}
+            <CopyDetectionTab userId={user?.id} />
 
             {/* IP Registry Tab */}
             <TabsContent value="registry" className="space-y-4 mt-4">
@@ -949,6 +1084,18 @@ export default function IPShield() {
                     onChange={e => setRegistryForm(f => ({ ...f, roblox_asset_ids: e.target.value }))}
                     placeholder="123456, 789012"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Copy Detection Keywords (comma-separated)</Label>
+                  <Input
+                    value={registryForm.search_keywords}
+                    onChange={e => setRegistryForm(f => ({ ...f, search_keywords: e.target.value }))}
+                    placeholder="UK:RP Westbridge, Westbridge RP"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Keywords to search Roblox for potential copies. Your work title is always searched automatically.
+                  </p>
                 </div>
               </div>
 
