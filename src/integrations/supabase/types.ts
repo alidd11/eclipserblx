@@ -3360,10 +3360,15 @@ export type Database = {
       ip_copy_detections: {
         Row: {
           created_at: string
+          creator_group_id: string | null
+          creator_group_name: string | null
           creator_id: string
+          creator_verified: boolean | null
           detected_place_id: string | null
           detected_universe_id: string
+          detection_count: number | null
           dismissed_at: string | null
+          first_detected_at: string | null
           game_creator_id: string | null
           game_creator_name: string | null
           game_creator_type: string | null
@@ -3371,21 +3376,30 @@ export type Database = {
           game_name: string
           game_thumbnail_url: string | null
           id: string
+          last_seen_at: string | null
           match_reasons: string[] | null
           player_count: number | null
+          player_count_trend: string | null
+          previous_player_count: number | null
           registry_entry_id: string
           search_keyword: string
           similarity_score: number | null
           status: string
+          takedown_request_id: string | null
           thumbnail_analyzed: boolean | null
           updated_at: string
         }
         Insert: {
           created_at?: string
+          creator_group_id?: string | null
+          creator_group_name?: string | null
           creator_id: string
+          creator_verified?: boolean | null
           detected_place_id?: string | null
           detected_universe_id: string
+          detection_count?: number | null
           dismissed_at?: string | null
+          first_detected_at?: string | null
           game_creator_id?: string | null
           game_creator_name?: string | null
           game_creator_type?: string | null
@@ -3393,21 +3407,30 @@ export type Database = {
           game_name: string
           game_thumbnail_url?: string | null
           id?: string
+          last_seen_at?: string | null
           match_reasons?: string[] | null
           player_count?: number | null
+          player_count_trend?: string | null
+          previous_player_count?: number | null
           registry_entry_id: string
           search_keyword: string
           similarity_score?: number | null
           status?: string
+          takedown_request_id?: string | null
           thumbnail_analyzed?: boolean | null
           updated_at?: string
         }
         Update: {
           created_at?: string
+          creator_group_id?: string | null
+          creator_group_name?: string | null
           creator_id?: string
+          creator_verified?: boolean | null
           detected_place_id?: string | null
           detected_universe_id?: string
+          detection_count?: number | null
           dismissed_at?: string | null
+          first_detected_at?: string | null
           game_creator_id?: string | null
           game_creator_name?: string | null
           game_creator_type?: string | null
@@ -3415,12 +3438,16 @@ export type Database = {
           game_name?: string
           game_thumbnail_url?: string | null
           id?: string
+          last_seen_at?: string | null
           match_reasons?: string[] | null
           player_count?: number | null
+          player_count_trend?: string | null
+          previous_player_count?: number | null
           registry_entry_id?: string
           search_keyword?: string
           similarity_score?: number | null
           status?: string
+          takedown_request_id?: string | null
           thumbnail_analyzed?: boolean | null
           updated_at?: string
         }
@@ -3430,6 +3457,45 @@ export type Database = {
             columns: ["registry_entry_id"]
             isOneToOne: false
             referencedRelation: "creator_ip_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ip_copy_detections_takedown_request_id_fkey"
+            columns: ["takedown_request_id"]
+            isOneToOne: false
+            referencedRelation: "takedown_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ip_detection_snapshots: {
+        Row: {
+          detection_id: string
+          id: string
+          player_count: number | null
+          similarity_score: number | null
+          snapshot_at: string
+        }
+        Insert: {
+          detection_id: string
+          id?: string
+          player_count?: number | null
+          similarity_score?: number | null
+          snapshot_at?: string
+        }
+        Update: {
+          detection_id?: string
+          id?: string
+          player_count?: number | null
+          similarity_score?: number | null
+          snapshot_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ip_detection_snapshots_detection_id_fkey"
+            columns: ["detection_id"]
+            isOneToOne: false
+            referencedRelation: "ip_copy_detections"
             referencedColumns: ["id"]
           },
         ]

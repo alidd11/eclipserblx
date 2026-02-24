@@ -19,7 +19,8 @@ import { toast } from '@/hooks/use-toast';
 import { 
   Shield, Plus, Clock, CheckCircle, XCircle, AlertTriangle,
   FileText, Send, Eye, LogIn, UserCheck, Loader2, ExternalLink,
-  CreditCard, Crown, Search, Radar, Users, ExternalLink as GameLink
+  CreditCard, Crown, Search, Radar, Users, ExternalLink as GameLink,
+  TrendingUp, TrendingDown, Minus, Gavel, ShieldCheck, History
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -53,6 +54,7 @@ const TYPE_LABELS: Record<string, string> = {
 function CopyDetectionTab({ userId }: { userId?: string }) {
   const queryClient = useQueryClient();
   const [scanning, setScanning] = useState(false);
+  const [takedownTarget, setTakedownTarget] = useState<any>(null);
 
   const { data: detections, isLoading } = useQuery({
     queryKey: ['copy-detections', userId],
@@ -74,7 +76,7 @@ function CopyDetectionTab({ userId }: { userId?: string }) {
     try {
       const { data, error } = await supabase.functions.invoke('scan-roblox-copies');
       if (error) throw error;
-      toast({ title: 'Scan complete', description: `Found ${data?.total_detected || 0} potential copies.` });
+      toast({ title: 'Scan complete', description: `Found ${data?.total_detected || 0} potential copies. ${data?.groups_verified || 0} groups verified.` });
       queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
     } catch (err: any) {
       toast({ title: 'Scan failed', description: err.message, variant: 'destructive' });
@@ -95,11 +97,21 @@ function CopyDetectionTab({ userId }: { userId?: string }) {
     }
   };
 
+  const fileTakedown = (detection: any) => {
+    setTakedownTarget(detection);
+  };
+
+  const TrendIcon = ({ trend }: { trend: string }) => {
+    if (trend === 'rising') return <TrendingUp className="h-3 w-3 text-destructive" />;
+    if (trend === 'falling') return <TrendingDown className="h-3 w-3 text-green-500" />;
+    return <Minus className="h-3 w-3 text-muted-foreground" />;
+  };
+
   return (
     <TabsContent value="copies" className="space-y-4 mt-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Searches Roblox for games with similar names to your registered works.
+          Searches Roblox for games with similar names, thumbnails, and descriptions.
         </p>
         <Button variant="outline" size="sm" onClick={runScan} disabled={scanning}>
           {scanning ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
@@ -131,29 +143,54 @@ function CopyDetectionTab({ userId }: { userId?: string }) {
             const reasons: string[] = d.match_reasons || [];
             const hasThumbMatch = reasons.some((r: string) => r.startsWith('thumbnail_similar'));
             const hasDescMatch = reasons.includes('description_match');
-            const threatLevel = score >= 70 ? 'destructive' : score >= 40 ? 'default' : 'secondary';
+            const creatorVerified = d.creator_verified;
+            const ownsGroup = reasons.includes('creator_owns_group');
+            const trend = d.player_count_trend || 'stable';
+            const detectionCount = d.detection_count || 1;
+            const threatLevel = creatorVerified ? 'secondary' : score >= 70 ? 'destructive' : score >= 40 ? 'default' : 'secondary';
 
             return (
-              <Card key={d.id} className={`transition-colors ${score >= 70 ? 'border-destructive/40' : 'hover:border-destructive/20'}`}>
+              <Card key={d.id} className={`transition-colors ${!creatorVerified && score >= 70 ? 'border-destructive/40' : 'hover:border-destructive/20'}`}>
                 <CardContent className="py-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium">{d.game_name}</span>
-                        <Badge variant={threatLevel as any} className="text-xs">
-                          {score >= 70 ? '🔴 High Match' : score >= 40 ? '🟡 Moderate' : '🟢 Low'}
-                          {score > 0 && ` · ${score}%`}
-                        </Badge>
+                        {creatorVerified ? (
+                          <Badge variant="secondary" className="text-xs gap-1">
+                            <ShieldCheck className="h-3 w-3" />
+                            Verified Owner
+                          </Badge>
+                        ) : (
+                          <Badge variant={threatLevel as any} className="text-xs">
+                            {score >= 70 ? '🔴 High Match' : score >= 40 ? '🟡 Moderate' : '🟢 Low'}
+                            {score > 0 && ` · ${score}%`}
+                          </Badge>
+                        )}
                         {d.player_count > 0 && (
                           <Badge variant="outline" className="text-xs gap-1">
                             <Users className="h-3 w-3" />
-                            {d.player_count.toLocaleString()} playing
+                            {d.player_count.toLocaleString()}
+                            <TrendIcon trend={trend} />
+                          </Badge>
+                        )}
+                        {detectionCount > 1 && (
+                          <Badge variant="outline" className="text-xs gap-1">
+                            <History className="h-3 w-3" />
+                            Seen {detectionCount}x
                           </Badge>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">
                         Created by <span className="font-medium text-foreground">{d.game_creator_name}</span>
-                        {d.game_creator_type === 'Group' && ' (Group)'}
+                        {d.game_creator_type === 'Group' && (
+                          <span>
+                            {' (Group'}
+                            {d.creator_group_name && `: ${d.creator_group_name}`}
+                            {ownsGroup && ' — you are a member'}
+                            {')'}
+                          </span>
+                        )}
                         {' · '}Keyword: "{d.search_keyword}"
                       </p>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -162,13 +199,25 @@ function CopyDetectionTab({ userId }: { userId?: string }) {
                         {d.thumbnail_analyzed && !hasThumbMatch && (
                           <Badge variant="outline" className="text-xs text-muted-foreground">✓ Thumbnail Clear</Badge>
                         )}
+                        {d.previous_player_count != null && d.previous_player_count !== d.player_count && (
+                          <Badge variant="outline" className="text-xs text-muted-foreground">
+                            Was {d.previous_player_count.toLocaleString()} players
+                          </Badge>
+                        )}
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         Universe ID: {d.detected_universe_id}
-                        {' · '}Detected {format(new Date(d.created_at), 'MMM d, yyyy')}
+                        {' · '}First seen {format(new Date(d.first_detected_at || d.created_at), 'MMM d, yyyy')}
+                        {d.last_seen_at && ` · Last seen ${format(new Date(d.last_seen_at), 'MMM d')}`}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
+                      {!creatorVerified && score >= 30 && !d.takedown_request_id && (
+                        <Button variant="destructive" size="sm" className="gap-1" onClick={() => fileTakedown(d)}>
+                          <Gavel className="h-3.5 w-3.5" />
+                          Takedown
+                        </Button>
+                      )}
                       <a
                         href={`https://www.roblox.com/games/${d.detected_place_id || d.detected_universe_id}`}
                         target="_blank"
@@ -190,7 +239,133 @@ function CopyDetectionTab({ userId }: { userId?: string }) {
           })}
         </div>
       )}
+
+      {/* One-Click Takedown Dialog */}
+      <TakedownFromDetectionDialog
+        detection={takedownTarget}
+        onClose={() => setTakedownTarget(null)}
+        userId={userId}
+      />
     </TabsContent>
+  );
+}
+
+function TakedownFromDetectionDialog({ detection, onClose, userId }: { detection: any; onClose: () => void; userId?: string }) {
+  const queryClient = useQueryClient();
+  const [submitting, setSubmitting] = useState(false);
+  const [evidenceNotes, setEvidenceNotes] = useState('');
+  const [goodFaith, setGoodFaith] = useState(false);
+  const [accuracy, setAccuracy] = useState(false);
+  const [ownership, setOwnership] = useState(false);
+
+  if (!detection) return null;
+
+  const handleSubmit = async () => {
+    if (!goodFaith || !accuracy || !ownership) {
+      toast({ title: 'Please confirm all statements', variant: 'destructive' });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const gameUrl = `https://www.roblox.com/games/${detection.detected_place_id || detection.detected_universe_id}`;
+      const matchReasons = (detection.match_reasons || []).join(', ');
+
+      const { data, error } = await supabase
+        .from('takedown_requests')
+        .insert({
+          creator_id: userId,
+          status: 'submitted',
+          priority: detection.similarity_score >= 70 ? 'high' : 'medium',
+          infringement_type: 'copyright',
+          target_platform: 'roblox',
+          infringing_url: gameUrl,
+          original_work_description: `Auto-detected copy of registered work. Game: "${detection.game_name}" by ${detection.game_creator_name}. Similarity: ${detection.similarity_score}%. Match reasons: ${matchReasons}.`,
+          evidence_notes: evidenceNotes || `Automated detection found this game with ${detection.similarity_score}% similarity score. ${matchReasons}`,
+          good_faith_statement: true,
+          accuracy_statement: true,
+          ownership_confirmed: true,
+        } as any)
+        .select('id, case_number')
+        .single();
+
+      if (error) throw error;
+
+      // Link the detection to the takedown request
+      if (data?.id) {
+        await supabase
+          .from('ip_copy_detections' as any)
+          .update({ takedown_request_id: data.id, status: 'takedown_filed' } as any)
+          .eq('id', detection.id);
+      }
+
+      toast({ title: 'Takedown filed!', description: `Case ${data?.case_number || ''} created successfully.` });
+      queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
+      queryClient.invalidateQueries({ queryKey: ['takedown-requests'] });
+      onClose();
+    } catch (err: any) {
+      toast({ title: 'Failed to file takedown', description: err.message, variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={!!detection} onOpenChange={() => onClose()}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Gavel className="h-5 w-5" />
+            File Takedown Request
+          </DialogTitle>
+          <DialogDescription>
+            Pre-filled from detection: <strong>{detection.game_name}</strong> ({detection.similarity_score}% match)
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="rounded-md bg-muted p-3 text-sm space-y-1">
+            <p><strong>Target:</strong> {detection.game_name}</p>
+            <p><strong>Creator:</strong> {detection.game_creator_name} ({detection.game_creator_type})</p>
+            <p><strong>Platform:</strong> Roblox</p>
+            <p><strong>Similarity:</strong> {detection.similarity_score}%</p>
+            <p><strong>Match Reasons:</strong> {(detection.match_reasons || []).join(', ') || 'Name match'}</p>
+          </div>
+
+          <div>
+            <Label>Additional Evidence Notes (optional)</Label>
+            <Textarea
+              value={evidenceNotes}
+              onChange={(e) => setEvidenceNotes(e.target.value)}
+              placeholder="Add any additional context about why this is infringing..."
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <Checkbox id="gf" checked={goodFaith} onCheckedChange={(v) => setGoodFaith(!!v)} />
+              <Label htmlFor="gf" className="text-xs">I have a good faith belief that the use of the material is not authorised.</Label>
+            </div>
+            <div className="flex items-start gap-2">
+              <Checkbox id="ac" checked={accuracy} onCheckedChange={(v) => setAccuracy(!!v)} />
+              <Label htmlFor="ac" className="text-xs">The information in this notice is accurate.</Label>
+            </div>
+            <div className="flex items-start gap-2">
+              <Checkbox id="ow" checked={ownership} onCheckedChange={(v) => setOwnership(!!v)} />
+              <Label htmlFor="ow" className="text-xs">I am the owner or authorised to act on behalf of the owner.</Label>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="destructive" onClick={handleSubmit} disabled={submitting || !goodFaith || !accuracy || !ownership}>
+            {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Gavel className="h-4 w-4 mr-2" />}
+            Submit Takedown
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
