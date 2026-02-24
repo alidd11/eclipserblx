@@ -32,6 +32,7 @@ Deno.serve(async (req) => {
     const storeCreatorRoleId = Deno.env.get("DISCORD_STORE_CREATOR_ROLE_ID");
     const customerRoleId = Deno.env.get("DISCORD_CUSTOMER_ROLE_ID");
     const loyalCustomerRoleId = Deno.env.get("DISCORD_LOYAL_CUSTOMER_ROLE_ID");
+    const verifiedSellerRoleId = Deno.env.get("DISCORD_VERIFIED_SELLER_ROLE_ID");
 
     if (!botToken) {
       log("Missing Discord bot token");
@@ -59,7 +60,7 @@ Deno.serve(async (req) => {
     // Fetch all relevant data in parallel
     const [subscriptionsResult, storesResult, ordersResult, storeServersResult, roleConfigsResult] = await Promise.all([
       supabase.from('subscriptions').select('user_id').eq('status', 'active'),
-      supabase.from('stores').select('id, owner_id, discord_guild_id').eq('is_active', true),
+      supabase.from('stores').select('id, owner_id, discord_guild_id, is_verified').eq('is_active', true),
       supabase.from('orders').select('user_id, order_items(store_id)').in('status', ['paid', 'completed']),
       supabase.from('stores').select('id, name, discord_guild_id').eq('is_active', true).not('discord_guild_id', 'is', null),
       supabase.from('discord_role_configs').select('*').eq('auto_assign_on_purchase', true),
@@ -68,6 +69,7 @@ Deno.serve(async (req) => {
     // Create lookup sets/maps
     const activeSubscribers = new Set(subscriptionsResult.data?.map(s => s.user_id) || []);
     const storeOwners = new Set(storesResult.data?.map(s => s.owner_id) || []);
+    const verifiedStoreOwners = new Set(storesResult.data?.filter(s => s.is_verified).map(s => s.owner_id) || []);
     
     // Count orders per user (total and per store)
     const orderCounts = new Map<string, number>();
@@ -97,6 +99,7 @@ Deno.serve(async (req) => {
       mainServer: {
         eclipsePlus: { assigned: 0, failed: 0 },
         storeCreator: { assigned: 0, failed: 0 },
+        verifiedSeller: { assigned: 0, failed: 0 },
         loyalCustomer: { assigned: 0, failed: 0 },
         customer: { assigned: 0, failed: 0 },
       },
@@ -122,6 +125,7 @@ Deno.serve(async (req) => {
 
         if (activeSubscribers.has(user_id)) await assign(eclipsePlusRoleId, "eclipsePlus", "Eclipse+");
         if (storeOwners.has(user_id)) await assign(storeCreatorRoleId, "storeCreator", "Store Creator");
+        if (verifiedStoreOwners.has(user_id)) await assign(verifiedSellerRoleId, "verifiedSeller", "Verified Seller");
 
         const orderCount = orderCounts.get(user_id) || 0;
         if (orderCount >= 5) {
