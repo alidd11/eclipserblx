@@ -76,6 +76,31 @@ async function resolvePlaceToUniverse(placeId: string): Promise<string | null> {
   }
 }
 
+// Get all group IDs a Roblox user belongs to (cached per scan run)
+const userGroupsCache = new Map<string, Set<string>>();
+async function getUserGroupIds(robloxUserId: string): Promise<Set<string>> {
+  if (userGroupsCache.has(robloxUserId)) return userGroupsCache.get(robloxUserId)!;
+  try {
+    const res = await fetch(
+      `https://groups.roblox.com/v1/users/${robloxUserId}/groups/roles`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) {
+      userGroupsCache.set(robloxUserId, new Set());
+      return new Set();
+    }
+    const data = await res.json();
+    const groupIds = new Set<string>(
+      (data.data || []).map((g: any) => String(g.group?.id)).filter(Boolean)
+    );
+    userGroupsCache.set(robloxUserId, groupIds);
+    return groupIds;
+  } catch {
+    userGroupsCache.set(robloxUserId, new Set());
+    return new Set();
+  }
+}
+
 interface AlertInfo {
   assetId: string;
   assetName: string;
@@ -221,6 +246,10 @@ serve(async (req) => {
         continue;
       }
 
+      // Pre-fetch all group memberships for this creator (single API call, cached)
+      const creatorGroupIds = await getUserGroupIds(creatorRobloxId);
+      logStep("Creator groups fetched", { creatorId: entry.creator_id, groupCount: creatorGroupIds.size });
+
       // --- Scan catalog assets ---
       if (entry.roblox_asset_ids && entry.roblox_asset_ids.length > 0) {
         for (const assetId of entry.roblox_asset_ids) {
@@ -233,9 +262,15 @@ serve(async (req) => {
             continue;
           }
 
-          if (details.creatorId && details.creatorId !== creatorRobloxId) {
-            logStep("ASSET MISMATCH", { assetId, expected: creatorRobloxId, actual: details.creatorId });
+          // FIX: Check BOTH direct user ID AND group ownership
+          const isOwnedByCreator = details.creatorId === creatorRobloxId;
+          const isOwnedByCreatorGroup = details.creatorType === 'Group' && creatorGroupIds.has(details.creatorId);
+          
+          if (details.creatorId && !isOwnedByCreator && !isOwnedByCreatorGroup) {
+            logStep("ASSET MISMATCH", { assetId, expected: creatorRobloxId, actual: details.creatorId, creatorType: details.creatorType });
             await processMatch(entry, assetId, "ownership_mismatch", details.creatorId, details.creatorName, details.assetName, details.creatorType, creatorRobloxId, "asset");
+          } else if (isOwnedByCreatorGroup) {
+            logStep("Asset owned by creator's group, OK", { assetId, groupId: details.creatorId });
           }
         }
       }
@@ -252,9 +287,15 @@ serve(async (req) => {
             continue;
           }
 
-          if (details.creatorId && details.creatorId !== creatorRobloxId) {
-            logStep("GAME MISMATCH", { universeId, expected: creatorRobloxId, actual: details.creatorId });
+          // FIX: Check BOTH direct user ID AND group ownership
+          const isOwnedByCreator = details.creatorId === creatorRobloxId;
+          const isOwnedByCreatorGroup = details.creatorType === 'Group' && creatorGroupIds.has(details.creatorId);
+
+          if (details.creatorId && !isOwnedByCreator && !isOwnedByCreatorGroup) {
+            logStep("GAME MISMATCH", { universeId, expected: creatorRobloxId, actual: details.creatorId, creatorType: details.creatorType });
             await processMatch(entry, universeId, "ownership_mismatch", details.creatorId, details.creatorName, details.gameName, details.creatorType, creatorRobloxId, "game");
+          } else if (isOwnedByCreatorGroup) {
+            logStep("Game owned by creator's group, OK", { universeId, groupId: details.creatorId });
           }
         }
       }
