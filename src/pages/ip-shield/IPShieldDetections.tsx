@@ -480,7 +480,18 @@ export default function IPShieldDetections() {
                               )}
                             </div>
                             <p className="text-xs text-muted-foreground mt-1 truncate">
-                              by <span className="font-medium text-foreground">{d.game_creator_name}</span>
+                              by{' '}
+                              <a
+                                href={d.game_creator_type === 'Group'
+                                  ? `https://www.roblox.com/groups/${d.game_creator_id}`
+                                  : `https://www.roblox.com/users/${d.game_creator_id}/profile`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-medium text-foreground hover:text-primary hover:underline transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {d.game_creator_name}
+                              </a>
                               {d.game_creator_type === 'Group' && (
                                 <span>{' (Group'}{d.creator_group_name && `: ${d.creator_group_name}`}{ownsGroup && ' — member'}{')'}</span>
                               )}

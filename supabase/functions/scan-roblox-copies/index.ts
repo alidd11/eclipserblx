@@ -534,6 +534,43 @@ async function fetchGameScreenshots(universeId: string): Promise<string[]> {
   }
 }
 
+// ─── FETCH GAME MEDIA ASSET IDS (for fingerprinting) ───
+async function fetchGameMediaAssetIds(universeId: string): Promise<string[]> {
+  try {
+    const res = await fetch(
+      `https://games.roblox.com/v2/games/${universeId}/media`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    const assetIds: string[] = [];
+    for (const item of (data.data || [])) {
+      if (item.imageId) assetIds.push(String(item.imageId));
+      if (item.assetId) assetIds.push(String(item.assetId));
+    }
+    return assetIds;
+  } catch {
+    return [];
+  }
+}
+
+// ─── ASSET FINGERPRINT COMPARISON ───
+function compareAssetFingerprints(
+  originalAssetIds: string[],
+  candidateAssetIds: string[]
+): { sharedAssets: string[]; score: number } {
+  if (originalAssetIds.length === 0 || candidateAssetIds.length === 0) {
+    return { sharedAssets: [], score: 0 };
+  }
+  const origSet = new Set(originalAssetIds);
+  const shared = candidateAssetIds.filter(id => origSet.has(id));
+  if (shared.length === 0) return { sharedAssets: [], score: 0 };
+  // Score based on overlap ratio relative to original
+  const overlapRatio = shared.length / originalAssetIds.length;
+  const score = Math.min(Math.round(overlapRatio * 100), SCORE_CAPS.assetFingerprint);
+  return { sharedAssets: shared, score };
+}
+
 // ─── FETCH GAME PASSES (Full details for comparison) ───
 interface GamePass { id: string; name: string; price: number | null; displayName?: string; }
 
@@ -795,7 +832,8 @@ const SCORE_CAPS = {
   thumbnail: 40,       // Max contribution from AI thumbnail (strong visual signal)
   gamePassMirror: 30,  // Max contribution from game pass structure mirroring
   screenshotAI: 35,    // Max contribution from AI screenshot comparison
-  // Total theoretical max ≈ 190, clamped to 100
+  assetFingerprint: 25, // Max contribution from shared asset IDs (decals, audio, meshes)
+  // Total theoretical max ≈ 215, clamped to 100
 };
 
 function getConfidenceLevel(score: number): string {
@@ -805,9 +843,33 @@ function getConfidenceLevel(score: number): string {
   return 'low';
 }
 
+// ─── OBFUSCATION NORMALIZATION (Detect leet speak, spacing tricks, character subs) ───
+function normalizeObfuscation(name: string): string {
+  let s = name.toLowerCase();
+  // Leet speak / character substitutions
+  const leetMap: Record<string, string> = {
+    '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b',
+    '@': 'a', '$': 's', '!': 'i', '|': 'l', '+': 't',
+    'á': 'a', 'à': 'a', 'ä': 'a', 'â': 'a', 'ã': 'a',
+    'é': 'e', 'è': 'e', 'ë': 'e', 'ê': 'e',
+    'í': 'i', 'ì': 'i', 'ï': 'i', 'î': 'i',
+    'ó': 'o', 'ò': 'o', 'ö': 'o', 'ô': 'o', 'õ': 'o',
+    'ú': 'u', 'ù': 'u', 'ü': 'u', 'û': 'u',
+    'ñ': 'n', 'ç': 'c',
+  };
+  s = [...s].map(c => leetMap[c] || c).join('');
+  // Remove all non-alphanumeric (strips special chars, emoji, unicode decorations)
+  s = s.replace(/[^a-z0-9\s]/g, '');
+  // Collapse repeated characters (e.g. "wesstbridge" -> "westbridge")
+  s = s.replace(/(.)\1{2,}/g, '$1$1');
+  // Collapse whitespace
+  s = s.replace(/\s+/g, ' ').trim();
+  return s;
+}
+
 function computeNameSimilarity(original: string, candidate: string): number {
-  const a = original.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
-  const b = candidate.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+  const a = normalizeObfuscation(original);
+  const b = normalizeObfuscation(candidate);
 
   if (a === b) return 100;
   if (b.includes(a) || a.includes(b)) return 85;
@@ -1094,7 +1156,7 @@ serve(async (req) => {
     { auth: { persistSession: false } }
   );
 
-  logStep("Enhanced copy detection scan started (v9 - game pass mirroring + screenshot AI)");
+  logStep("Enhanced copy detection scan started (v10 - asset fingerprinting + obfuscation detection)");
 
   try {
     let body: { registry_entry_id?: string; custom_search_terms?: string[]; scan_type?: string } = {};
@@ -1237,18 +1299,21 @@ serve(async (req) => {
       let originalCreatedDate: string | null = null;
       let originalGamePasses: GamePass[] = [];
       let originalScreenshots: string[] = [];
+      let originalAssetIds: string[] = [];
 
       if (entry.roblox_universe_ids && entry.roblox_universe_ids.length > 0) {
         const firstUniverse = entry.roblox_universe_ids[0];
-        const [thumb, details, passes, screenshots] = await Promise.all([
+        const [thumb, details, passes, screenshots, mediaAssets] = await Promise.all([
           fetchGameThumbnail(firstUniverse),
           fetchSingleGameDetails(firstUniverse),
           fetchGamePassesFull(firstUniverse),
           fetchGameScreenshots(firstUniverse),
+          fetchGameMediaAssetIds(firstUniverse),
         ]);
         originalThumbUrl = thumb;
         originalGamePasses = passes;
         originalScreenshots = screenshots;
+        originalAssetIds = mediaAssets;
         if (details) {
           if (!originalDescription && details.description) originalDescription = details.description;
           originalCreatedDate = details.created;
@@ -1426,10 +1491,31 @@ serve(async (req) => {
           await new Promise(r => setTimeout(r, 300));
         }
 
-        // 7. AI Screenshot Comparison (only for high-value candidates)
+        // 7. Asset ID Fingerprinting (shared decals, audio, meshes)
+        let assetScore = 0;
+        let assetFingerprintData: any = null;
+        if (originalAssetIds.length > 0 && prelimScore >= 20) {
+          const candidateAssets = await fetchGameMediaAssetIds(universeId);
+          if (candidateAssets.length > 0) {
+            const assetResult = compareAssetFingerprints(originalAssetIds, candidateAssets);
+            if (assetResult.score > 0) {
+              assetScore = assetResult.score;
+              matchReasons.push(`shared_assets_${assetResult.sharedAssets.length}`);
+              assetFingerprintData = {
+                shared_asset_ids: assetResult.sharedAssets,
+                shared_count: assetResult.sharedAssets.length,
+                original_count: originalAssetIds.length,
+                candidate_count: candidateAssets.length,
+              };
+              logStep("Shared assets detected", { universeId, shared: assetResult.sharedAssets.length, score: assetScore });
+            }
+          }
+        }
+
+        // 8. AI Screenshot Comparison (only for high-value candidates)
         let screenshotScore = 0;
         let screenshotComparisonData: any = null;
-        const preScreenshotScore = nameScore + descScore + dateScore + thumbScore + gamePassScore;
+        const preScreenshotScore = nameScore + descScore + dateScore + thumbScore + gamePassScore + assetScore;
         if (originalScreenshots.length > 0 && preScreenshotScore >= 35 && thumbnailsAnalyzed < 25) {
           const candidateScreenshots = await fetchGameScreenshots(universeId);
           if (candidateScreenshots.length > 0) {
@@ -1448,7 +1534,7 @@ serve(async (req) => {
           }
         }
 
-        const totalScore = Math.min(nameScore + descScore + dateScore + thumbScore + gamePassScore + screenshotScore, 100);
+        const totalScore = Math.min(nameScore + descScore + dateScore + thumbScore + gamePassScore + assetScore + screenshotScore, 100);
 
         // Skip low-confidence detections (raised from 20 to 25)
         if (totalScore < 25) continue;
@@ -1544,6 +1630,7 @@ serve(async (req) => {
             scan_run_id: scanRunId,
             game_pass_match_data: gamePassMatchData,
             screenshot_comparison_data: screenshotComparisonData,
+            asset_fingerprint_data: assetFingerprintData,
           }, {
             onConflict: "registry_entry_id,detected_universe_id",
             ignoreDuplicates: false,

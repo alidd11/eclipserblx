@@ -3359,6 +3359,7 @@ export type Database = {
       }
       ip_copy_detections: {
         Row: {
+          asset_fingerprint_data: Json | null
           confidence_level: string | null
           created_at: string
           creator_group_id: string | null
@@ -3405,6 +3406,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          asset_fingerprint_data?: Json | null
           confidence_level?: string | null
           created_at?: string
           creator_group_id?: string | null
@@ -3451,6 +3453,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          asset_fingerprint_data?: Json | null
           confidence_level?: string | null
           created_at?: string
           creator_group_id?: string | null

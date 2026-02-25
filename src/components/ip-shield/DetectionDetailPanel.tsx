@@ -9,7 +9,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ImageZoomModal } from '@/components/ui/ImageZoomModal';
 import {
   Users, Eye, Heart, ThumbsUp, ThumbsDown, Gamepad2, Calendar,
-  Crown, Image as ImageIcon, Ticket, ChevronUp, AlertTriangle, CheckCircle2, XCircle
+  Crown, Image as ImageIcon, Ticket, ChevronUp, AlertTriangle, CheckCircle2, XCircle, Fingerprint, ExternalLink
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
@@ -134,14 +134,18 @@ export function DetectionDetailPanel({ detection, onCollapse }: DetectionDetailP
               {data.groupOwner ? (
                 <>
                   {data.groupOwner.groupIcon && (
-                    <img src={data.groupOwner.groupIcon} alt="Group" className="h-10 w-10 rounded-lg object-cover border shrink-0" />
+                    <a href={`https://www.roblox.com/groups/${detection.game_creator_id}`} target="_blank" rel="noopener noreferrer">
+                      <img src={data.groupOwner.groupIcon} alt="Group" className="h-10 w-10 rounded-lg object-cover border shrink-0 hover:opacity-80 transition-opacity" />
+                    </a>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate">{data.groupOwner.groupName}</p>
+                    <a href={`https://www.roblox.com/groups/${detection.game_creator_id}`} target="_blank" rel="noopener noreferrer" className="text-xs font-medium truncate hover:text-primary hover:underline transition-colors flex items-center gap-1">
+                      {data.groupOwner.groupName} <ExternalLink className="h-2.5 w-2.5 shrink-0" />
+                    </a>
                     <p className="text-[10px] text-muted-foreground">{data.groupOwner.memberCount?.toLocaleString()} members</p>
                   </div>
                   {data.groupOwner.owner && (
-                    <div className="flex items-center gap-2 shrink-0 min-w-0">
+                    <a href={`https://www.roblox.com/users/${data.groupOwner.owner.id}/profile`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 shrink-0 min-w-0 hover:opacity-80 transition-opacity">
                       <Avatar className="h-8 w-8 shrink-0">
                         {data.groupOwner.owner.avatar && <AvatarImage src={data.groupOwner.owner.avatar} />}
                         <AvatarFallback className="text-[10px]">
@@ -152,20 +156,20 @@ export function DetectionDetailPanel({ detection, onCollapse }: DetectionDetailP
                         <p className="text-[10px] font-medium truncate">{data.groupOwner.owner.displayName}</p>
                         <p className="text-[10px] text-muted-foreground truncate">@{data.groupOwner.owner.username}</p>
                       </div>
-                    </div>
+                    </a>
                   )}
                 </>
               ) : data.creatorAvatar ? (
-                <>
+                <a href={`https://www.roblox.com/users/${detection.game_creator_id}/profile`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={data.creatorAvatar} />
                     <AvatarFallback className="text-xs">{detection.game_creator_name?.[0]}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-xs font-medium">{detection.game_creator_name}</p>
+                    <p className="text-xs font-medium flex items-center gap-1">{detection.game_creator_name} <ExternalLink className="h-2.5 w-2.5" /></p>
                     <p className="text-[10px] text-muted-foreground">Creator</p>
                   </div>
-                </>
+                </a>
               ) : null}
             </div>
           )}
@@ -242,7 +246,34 @@ export function DetectionDetailPanel({ detection, onCollapse }: DetectionDetailP
             </div>
           )}
 
-          {(detection.game_pass_match_data || detection.screenshot_comparison_data) && data.gamePasses?.length > 0 && (
+          {/* Asset Fingerprint Results */}
+          {detection.asset_fingerprint_data?.shared_count > 0 && (
+            <div>
+              <p className="text-xs font-medium flex items-center gap-1.5 mb-2">
+                <Fingerprint className="h-3.5 w-3.5 text-amber-500" /> Shared Asset IDs
+                <Badge variant={detection.asset_fingerprint_data.shared_count >= 3 ? 'destructive' : 'secondary'} className="text-[10px] ml-1">
+                  {detection.asset_fingerprint_data.shared_count} shared
+                </Badge>
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {detection.asset_fingerprint_data.shared_asset_ids.slice(0, 10).map((id: string, i: number) => (
+                  <a key={i} href={`https://www.roblox.com/library/${id}`} target="_blank" rel="noopener noreferrer">
+                    <Badge variant="outline" className="text-[10px] hover:bg-muted transition-colors cursor-pointer gap-1">
+                      {id} <ExternalLink className="h-2 w-2" />
+                    </Badge>
+                  </a>
+                ))}
+                {detection.asset_fingerprint_data.shared_count > 10 && (
+                  <Badge variant="outline" className="text-[10px]">+{detection.asset_fingerprint_data.shared_count - 10} more</Badge>
+                )}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {detection.asset_fingerprint_data.shared_count} of {detection.asset_fingerprint_data.original_count} original assets found in suspect game ({detection.asset_fingerprint_data.candidate_count} total assets)
+              </p>
+            </div>
+          )}
+
+          {(detection.game_pass_match_data || detection.screenshot_comparison_data || detection.asset_fingerprint_data) && data.gamePasses?.length > 0 && (
             <Separator />
           )}
 
