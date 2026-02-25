@@ -136,7 +136,7 @@ export function LinkedAccountsCard({
             {
               body: {
                 code,
-                redirect_uri: new URL("/account", window.location.origin).toString(),
+                redirect_uri: 'https://eclipserblx.com/account',
                 code_verifier: robloxCodeVerifier,
                 user_id: userId,
               },
