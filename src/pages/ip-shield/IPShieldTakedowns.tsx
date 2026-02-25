@@ -107,7 +107,7 @@ export default function IPShieldTakedowns() {
     queryFn: async () => {
       const { data } = await supabase
         .from('creator_ip_registry')
-        .select('id, title, description, work_type')
+        .select('id, title, description, work_type, proof_urls')
         .eq('creator_id', user!.id)
         .order('created_at', { ascending: false });
       return data || [];
@@ -189,7 +189,7 @@ export default function IPShieldTakedowns() {
   });
 
   const canSubmit = form.claimant_name && form.claimant_email && form.infringement_type && form.target_platform && form.infringing_url &&
-    form.original_work_description && form.good_faith_statement && form.accuracy_statement && form.ownership_confirmed;
+    form.original_work_url && form.original_work_description && form.good_faith_statement && form.accuracy_statement && form.ownership_confirmed;
 
   return (
     <IPShieldLayout>
@@ -409,6 +409,7 @@ export default function IPShieldTakedowns() {
                       setForm(f => ({
                         ...f,
                         original_work_description: entry.description || entry.title || f.original_work_description,
+                        original_work_url: entry.proof_urls?.[0] || f.original_work_url,
                         infringement_type: entry.work_type === 'game' || entry.work_type === 'model' ? 'copyright' : f.infringement_type,
                       }));
                     }
@@ -460,8 +461,8 @@ export default function IPShieldTakedowns() {
               </div>
 
               <div className="space-y-2">
-                <Label>Your Original Work URL</Label>
-                <Input value={form.original_work_url} onChange={e => setForm(f => ({ ...f, original_work_url: e.target.value }))} placeholder="Link to your original work (optional)" />
+                <Label>Your Original Work URL *</Label>
+                <Input value={form.original_work_url} onChange={e => setForm(f => ({ ...f, original_work_url: e.target.value }))} placeholder="Link to your original work" />
               </div>
 
               <div className="space-y-2">
