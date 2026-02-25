@@ -122,10 +122,17 @@ serve(async (req) => {
             // Dedup by URL
             if (detections.some(d => d.source_url === item.url)) continue;
 
+            // Skip generic site pages — if the query matches the domain name itself,
+            // ignore category/homepage results that aren't about the user's specific content
+            if (isGenericSitePage(query, item.url, item.title)) {
+              logStep("Skipping generic site page", { url: item.url });
+              continue;
+            }
+
             // Score the match based on content relevance
             const score = scoreExternalMatch(query, item);
 
-            if (score >= 30) {
+            if (score >= 40) { // Raised threshold from 30 to reduce false positives
               detections.push({
                 creator_id,
                 registry_entry_id: registry_entry_id || null,
@@ -227,6 +234,36 @@ async function firecrawlSearch(apiKey: string, query: string, limit: number) {
   }
 }
 
+// ─── FILTERING ───
+
+/**
+ * Detects generic site pages (homepages, category indexes) where the query
+ * only matches because the domain/site name is the same as the search term.
+ * e.g. searching "DarkBlox" should not flag darkblox.net's own homepage.
+ */
+function isGenericSitePage(query: string, url: string, title?: string): boolean {
+  const q = query.toLowerCase().replace(/\s+/g, '');
+  const hostname = new URL(url).hostname.toLowerCase();
+  const pathname = new URL(url).pathname.toLowerCase();
+
+  // Check if the query is essentially the domain name itself
+  const domainBase = hostname.replace(/^www\./, '').split('.')[0]; // e.g. "darkblox"
+  if (q === domainBase || domainBase.includes(q) || q.includes(domainBase)) {
+    // The query matches the domain name — only allow specific file/asset pages
+    // Generic paths: /, /categories/, /category/*, homepage variants
+    const genericPaths = ['/', '/categories', '/category/', '/downloads', '/files', '/forum'];
+    const isGenericPath = genericPaths.some(gp => pathname === gp || pathname.startsWith(gp + '?') || 
+      (gp.endsWith('/') && pathname.startsWith(gp) && pathname.split('/').filter(Boolean).length <= 2));
+    
+    // Also check if the page is a specific file/asset page (e.g. /file/1234-some-asset/)
+    const isSpecificPage = /\/file\/\d+/.test(pathname) || /\/asset\//.test(pathname);
+    
+    if (isGenericPath && !isSpecificPage) return true;
+  }
+
+  return false;
+}
+
 // ─── SCORING ───
 
 function scoreExternalMatch(query: string, result: any): number {
@@ -235,21 +272,31 @@ function scoreExternalMatch(query: string, result: any): number {
   const desc = (result.description || '').toLowerCase();
   const content = (result.markdown || '').toLowerCase();
   const url = (result.url || '').toLowerCase();
+  const hostname = new URL(result.url || 'https://x.com').hostname.toLowerCase();
+  const domainBase = hostname.replace(/^www\./, '').split('.')[0];
 
   let score = 0;
+
+  // If query essentially IS the domain name, heavily penalize
+  // (the user's content name matches the site name — almost always a false positive)
+  const qNorm = q.replace(/\s+/g, '');
+  if (qNorm === domainBase || domainBase.includes(qNorm)) {
+    return 0; // Skip entirely — domain name match, not content match
+  }
 
   // Exact name in title = strong signal
   if (title.includes(q)) score += 40;
   else if (title.includes(q.split(' ')[0])) score += 15;
 
-  // Name in URL
-  if (url.includes(q.replace(/\s+/g, '-')) || url.includes(q.replace(/\s+/g, ''))) score += 20;
+  // Name in URL path (not domain)
+  const urlPath = new URL(result.url || 'https://x.com').pathname.toLowerCase();
+  if (urlPath.includes(q.replace(/\s+/g, '-')) || urlPath.includes(q.replace(/\s+/g, ''))) score += 20;
 
   // Name in description
   if (desc.includes(q)) score += 15;
 
   // Keywords suggesting stolen/leaked content
-  const suspiciousKeywords = ['free', 'leak', 'copy', 'download', 'script', 'exploit', 'crack', 'stolen', 'rip'];
+  const suspiciousKeywords = ['free', 'leak', 'copy', 'download', 'script', 'exploit', 'crack', 'stolen', 'rip', 'uncopylocked'];
   const foundKeywords = suspiciousKeywords.filter(k => 
     title.includes(k) || desc.includes(k) || content.substring(0, 500).includes(k)
   );
