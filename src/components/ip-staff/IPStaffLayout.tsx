@@ -13,6 +13,8 @@ import { Footer } from '@/components/layout/Footer';
 import { UniversalBreadcrumb } from '@/components/layout/UniversalBreadcrumb';
 import { FloatingActionButtons } from '@/components/ui/FloatingActionButtons';
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
+import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
+import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
 
 const EDGE_THRESHOLD = 30;
 const MIN_SWIPE_DISTANCE = 50;
@@ -21,9 +23,10 @@ interface IPStaffLayoutProps {
   children: ReactNode;
 }
 
-export function IPStaffLayout({ children }: IPStaffLayoutProps) {
+function IPStaffLayoutContent({ children }: IPStaffLayoutProps) {
   const { user, loading: authLoading } = useAuth();
   const { hasPermission, isLoading: permLoading } = useUserPermissions();
+  const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -74,7 +77,6 @@ export function IPStaffLayout({ children }: IPStaffLayoutProps) {
     return <Navigate to="/auth" replace />;
   }
 
-  // Admin test email bypass + permission check
   const isAdminBypass = user.email === 'alicanimir1@gmail.com';
   if (!isAdminBypass && !hasPermission('ip_shield_staff')) {
     return <Navigate to="/" replace />;
@@ -83,6 +85,7 @@ export function IPStaffLayout({ children }: IPStaffLayoutProps) {
   return (
     <TooltipProvider delayDuration={0}>
       <ScrollProgressIndicator />
+      <SearchCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
       <div className="flex w-full bg-background overflow-x-hidden relative min-h-[100dvh]">
         <IPStaffSidebar
           collapsed={false}
@@ -125,5 +128,13 @@ export function IPStaffLayout({ children }: IPStaffLayoutProps) {
       </div>
       <FloatingActionButtons />
     </TooltipProvider>
+  );
+}
+
+export function IPStaffLayout({ children }: IPStaffLayoutProps) {
+  return (
+    <SearchCommandProvider>
+      <IPStaffLayoutContent>{children}</IPStaffLayoutContent>
+    </SearchCommandProvider>
   );
 }

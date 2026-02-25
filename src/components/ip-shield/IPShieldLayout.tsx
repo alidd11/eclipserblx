@@ -17,6 +17,8 @@ import { UniversalBreadcrumb } from '@/components/layout/UniversalBreadcrumb';
 import { FloatingActionButtons } from '@/components/ui/FloatingActionButtons';
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SearchCommandProvider } from '@/hooks/useSearchCommand';
+import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
 
 const EDGE_THRESHOLD = 30;
 const MIN_SWIPE_DISTANCE = 50;
@@ -112,52 +114,55 @@ export function IPShieldLayout({ children }: IPShieldLayoutProps) {
   }
 
   return (
-    <TooltipProvider delayDuration={0}>
-      <ScrollProgressIndicator />
-      <div className="flex w-full bg-background overflow-x-hidden relative min-h-[100dvh]">
-        {/* Desktop Sidebar */}
-        <IPShieldSidebar
-          collapsed={false}
-          onToggle={() => {}}
-          className="hidden md:flex"
-        />
-
-        {/* Mobile Sidebar Drawer */}
-        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-          <SheetContent
-            side="left"
-            className="p-0 w-64 border-r-0 !h-[100dvh] !max-h-[100dvh] bg-card overflow-hidden"
-            style={{ height: '100dvh', maxHeight: '100dvh' }}
-            data-gesture-exempt="true"
-            hideCloseButton
-          >
-            <IPShieldSidebar
-              collapsed={false}
-              onToggle={() => setMobileOpen(false)}
-              onNavigate={() => setMobileOpen(false)}
-              isMobileDrawer
-            />
-          </SheetContent>
-        </Sheet>
-
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col min-w-0 h-[100dvh]">
-          <Header 
-            showDesktopNav={false} 
-            hideBrandName
-            onMenuClick={() => setMobileOpen(true)} 
+    <SearchCommandProvider>
+      <TooltipProvider delayDuration={0}>
+        <ScrollProgressIndicator />
+        <SearchCommandPalette />
+        <div className="flex w-full bg-background overflow-x-hidden relative min-h-[100dvh]">
+          {/* Desktop Sidebar */}
+          <IPShieldSidebar
+            collapsed={false}
+            onToggle={() => {}}
+            className="hidden md:flex"
           />
-          <UniversalBreadcrumb />
 
-          <main className="flex-1 overflow-x-hidden overflow-y-auto pb-[env(safe-area-inset-bottom)]">
-            <div className="p-4 md:p-6 lg:p-8">
-              {children}
-            </div>
-            <Footer />
-          </main>
+          {/* Mobile Sidebar Drawer */}
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetContent
+              side="left"
+              className="p-0 w-64 border-r-0 !h-[100dvh] !max-h-[100dvh] bg-card overflow-hidden"
+              style={{ height: '100dvh', maxHeight: '100dvh' }}
+              data-gesture-exempt="true"
+              hideCloseButton
+            >
+              <IPShieldSidebar
+                collapsed={false}
+                onToggle={() => setMobileOpen(false)}
+                onNavigate={() => setMobileOpen(false)}
+                isMobileDrawer
+              />
+            </SheetContent>
+          </Sheet>
+
+          {/* Main Content */}
+          <div className="flex-1 flex flex-col min-w-0 h-[100dvh]">
+            <Header 
+              showDesktopNav={false} 
+              hideBrandName
+              onMenuClick={() => setMobileOpen(true)} 
+            />
+            <UniversalBreadcrumb />
+
+            <main className="flex-1 overflow-x-hidden overflow-y-auto pb-[env(safe-area-inset-bottom)]">
+              <div className="p-4 md:p-6 lg:p-8">
+                {children}
+              </div>
+              <Footer />
+            </main>
+          </div>
         </div>
-      </div>
-      <FloatingActionButtons />
-    </TooltipProvider>
+        <FloatingActionButtons />
+      </TooltipProvider>
+    </SearchCommandProvider>
   );
 }
