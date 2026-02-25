@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { IPShieldContactDialog } from '@/components/ip-shield/IPShieldContactDialog';
 
 const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof Clock }> = {
   submitted: { label: 'Submitted', variant: 'secondary', icon: Clock },
@@ -738,7 +739,9 @@ export default function IPShield() {
   const [subscribing, setSubscribing] = useState(false);
   const [recheckingCaseId, setRecheckingCaseId] = useState<string | null>(null);
   const [recheckResults, setRecheckResults] = useState<{ caseNumber: string; findings: any[]; totalCreations: number } | null>(null);
-
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: '', email: '', subject: 'Custom IP Shield Plan', message: '' });
+  const [contactSubmitting, setContactSubmitting] = useState(false);
   // Check IP Shield subscription status
   const { data: subscriptionStatus, isLoading: subLoading, refetch: refetchSubscription } = useQuery({
     queryKey: ['ip-shield-subscription', user?.id],
@@ -1041,10 +1044,8 @@ export default function IPShield() {
               <Users className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
               <h3 className="text-lg font-bold mb-1">Custom Plan</h3>
               <p className="text-sm text-muted-foreground mb-4">Need a tailored plan with specific limits? Contact us and we'll create a bespoke plan for you.</p>
-              <Button variant="outline" asChild>
-                <a href="mailto:legal@eclipserblx.com?subject=Custom IP Shield Plan">
+              <Button variant="outline" onClick={() => setShowContactForm(true)}>
                   <Mail className="h-4 w-4 mr-2" /> Contact Us
-                </a>
               </Button>
             </CardContent>
           </Card>
@@ -1053,6 +1054,7 @@ export default function IPShield() {
             <p>Already have an account? <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to manage your IP Shield subscription.</p>
           </div>
         </div>
+        <IPShieldContactDialog open={showContactForm} onOpenChange={setShowContactForm} />
       </MainLayout>
     );
   }
@@ -1128,14 +1130,13 @@ export default function IPShield() {
               <Users className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
               <h3 className="text-lg font-bold mb-1">Custom Plan</h3>
               <p className="text-sm text-muted-foreground mb-4">Need a tailored plan with specific limits? Contact us and we'll create a bespoke plan for you.</p>
-              <Button variant="outline" asChild>
-                <a href="mailto:legal@eclipserblx.com?subject=Custom IP Shield Plan">
+              <Button variant="outline" onClick={() => setShowContactForm(true)}>
                   <Mail className="h-4 w-4 mr-2" /> Contact Us
-                </a>
               </Button>
             </CardContent>
           </Card>
         </div>
+        <IPShieldContactDialog open={showContactForm} onOpenChange={setShowContactForm} />
       </MainLayout>
     );
   }
