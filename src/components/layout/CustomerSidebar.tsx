@@ -138,6 +138,21 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     staleTime: 5 * 60 * 1000,
   });
 
+  // Check if user has an active IP Shield subscription (or is admin test user)
+  const ADMIN_TEST_EMAILS = ['alicanimir1@gmail.com'];
+  const isIPShieldAdmin = !!user?.email && ADMIN_TEST_EMAILS.includes(user.email);
+  const { data: hasIPShield } = useQuery({
+    queryKey: ['sidebar-ip-shield-status', user?.id],
+    queryFn: async () => {
+      if (isIPShieldAdmin) return true;
+      const { data, error } = await supabase.functions.invoke('check-ip-shield-subscription');
+      if (error) return false;
+      return data?.subscribed === true;
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   // Fetch unread notification count
@@ -194,6 +209,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: t('sidebar.home'), icon: Home, href: '/' },
         ...(isStaff ? [{ title: 'Admin Dashboard', icon: Shield, href: '/admin' }] : []),
         ...(isSeller ? [{ title: t('sidebar.sellerDashboard'), icon: Store, href: '/seller' }] : []),
+        ...(hasIPShield ? [{ title: 'IP Shield', icon: Shield, href: '/ip-shield/dashboard' }] : []),
       ],
     },
     {
@@ -222,6 +238,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: t('sidebar.allProducts'), icon: Grid3X3, href: '/products' },
         { title: t('sidebar.featured'), icon: Star, href: '/featured' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
+        { title: 'IP Shield', icon: Shield, href: '/ip-shield' },
         { title: t('sidebar.advertise'), icon: Megaphone, href: '/advertise' },
       ],
     },
