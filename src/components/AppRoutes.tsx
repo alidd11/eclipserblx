@@ -252,6 +252,7 @@ export function AppRoutes() {
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/dmca" element={<DMCA />} />
         <Route path="/ip-shield" element={<IPShield />} />
+        <Route path="/ip-dashboard" element={<Navigate to="/ip-shield/dashboard" replace />} />
         <Route path="/ip-shield/dashboard" element={<IPShieldOverview />} />
         <Route path="/ip-shield/dashboard/takedowns" element={<IPShieldTakedowns />} />
         <Route path="/ip-shield/dashboard/registry" element={<IPShieldRegistry />} />
