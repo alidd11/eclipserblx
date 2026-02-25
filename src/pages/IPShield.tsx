@@ -975,7 +975,7 @@ export default function IPShield() {
     return (
       <MainLayout>
         {/* Hero */}
-        <div className="relative w-full overflow-hidden -mt-4 border-b border-border/40">
+        <div className="relative w-full overflow-hidden -mt-4">
           <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 39px, hsl(var(--foreground)) 39px, hsl(var(--foreground)) 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, hsl(var(--foreground)) 39px, hsl(var(--foreground)) 40px)' }} />
           <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 py-20 md:py-28 lg:py-36">
             <div className="inline-flex items-center gap-2 border border-border/60 rounded-full px-4 py-1.5 mb-8 bg-muted/30 backdrop-blur-sm">
@@ -992,7 +992,7 @@ export default function IPShield() {
           </div>
         </div>
 
-        <div className="container py-16 max-w-5xl">
+        <div className="container -mt-12 relative z-10 pb-16 max-w-5xl pt-0">
 
           <div className="grid sm:grid-cols-2 gap-5 mb-16">
             {highlights.map((h) => (
