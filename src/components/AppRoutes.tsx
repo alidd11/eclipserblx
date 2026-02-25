@@ -116,6 +116,7 @@ const AdminDisputes = lazy(() => import("@/pages/admin/Disputes"));
 const AdminAdvertisementAnalytics = lazy(() => import("@/pages/admin/AdvertisementAnalytics"));
 const AdminGiftCredits = lazy(() => import("@/pages/admin/GiftCredits"));
 const AdminIPReports = lazy(() => import("@/pages/admin/IPReports"));
+const AdminIPShieldCustomPlans = lazy(() => import("@/pages/admin/IPShieldCustomPlans"));
 const AdminDeveloperSubmissions = lazy(() => import("@/pages/admin/DeveloperSubmissions"));
 const AdminDeveloperPayments = lazy(() => import("@/pages/admin/DeveloperPayments"));
 const AdminDeveloperPaymentDetail = lazy(() => import("@/pages/admin/DeveloperPaymentDetail"));
@@ -368,6 +369,7 @@ export function AppRoutes() {
         <Route path="/admin/advertisement-analytics" element={<AdminAdvertisementAnalytics />} />
         <Route path="/admin/gift-credits" element={<AdminGiftCredits />} />
         <Route path="/admin/ip-reports" element={<AdminIPReports />} />
+        <Route path="/admin/ip-shield-custom-plans" element={<AdminIPShieldCustomPlans />} />
         <Route path="/admin/developer-submissions" element={<AdminDeveloperSubmissions />} />
         <Route path="/admin/developer-payments" element={<AdminDeveloperPayments />} />
         <Route path="/admin/developer-payments/:id" element={<AdminDeveloperPaymentDetail />} />
