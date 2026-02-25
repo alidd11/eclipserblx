@@ -24,6 +24,8 @@ export default function IPShieldRegistry() {
   const [showDialog, setShowDialog] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [scanningId, setScanningId] = useState<string | null>(null);
+  const [showScanDialog, setShowScanDialog] = useState<{ id: string; title: string } | null>(null);
+  const [customSearchTerms, setCustomSearchTerms] = useState('');
   const [registryForm, setRegistryForm] = useState(EMPTY_FORM);
 
   const { data: ipRegistry, isLoading: registryLoading } = useQuery({
@@ -170,22 +172,10 @@ export default function IPShieldRegistry() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        disabled={scanningId === work.id}
-                        onClick={async () => {
-                          setScanningId(work.id);
-                          toast({ title: 'Scanning...', description: `Running copy scan for "${work.title}"` });
-                          try {
-                            const { data: scanData } = await supabase.functions.invoke('scan-roblox-copies', {
-                              body: { registry_entry_id: work.id },
-                            });
-                            toast({ title: 'Scan complete', description: `Found ${scanData?.total_detected || 0} potential copies.` });
-                            queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
-                            queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
-                          } catch {
-                            toast({ title: 'Scan failed', variant: 'destructive' });
-                          } finally {
-                            setScanningId(null);
-                          }
+                        disabled={!!scanningId}
+                        onClick={() => {
+                          setCustomSearchTerms('');
+                          setShowScanDialog({ id: work.id, title: work.title });
                         }}
                       >
                         {scanningId === work.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
@@ -263,6 +253,66 @@ export default function IPShieldRegistry() {
               <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
               <Button onClick={() => saveWork.mutate()} disabled={!registryForm.title || !registryForm.work_type || saveWork.isPending}>
                 {saveWork.isPending ? (editingId ? 'Saving...' : 'Registering...') : (editingId ? 'Save Changes' : 'Register Work')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Scan Dialog */}
+        <Dialog open={!!showScanDialog} onOpenChange={(open) => { if (!open) setShowScanDialog(null); }}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Scan for Copies</DialogTitle>
+              <DialogDescription>
+                Search for copies of "{showScanDialog?.title}". Add your own search terms for more accurate results, or leave empty to use auto-generated keywords.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label>Custom Search Terms (one per line)</Label>
+                <Textarea
+                  value={customSearchTerms}
+                  onChange={e => setCustomSearchTerms(e.target.value)}
+                  placeholder={"e.g.\nWestbridge\nWestbridge RP\nUKRP Westbridge"}
+                  rows={4}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Type exactly what you'd search on Roblox. Each line is a separate search. Leave empty for automatic scan.
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowScanDialog(null)}>Cancel</Button>
+              <Button
+                disabled={!!scanningId}
+                onClick={async () => {
+                  if (!showScanDialog) return;
+                  const entryId = showScanDialog.id;
+                  const title = showScanDialog.title;
+                  setShowScanDialog(null);
+                  setScanningId(entryId);
+
+                  const terms = customSearchTerms.split('\n').map(s => s.trim()).filter(Boolean);
+                  toast({ title: 'Scanning...', description: terms.length > 0 ? `Searching ${terms.length} custom term${terms.length > 1 ? 's' : ''} for "${title}"` : `Running auto-scan for "${title}"` });
+
+                  try {
+                    const body: Record<string, unknown> = { registry_entry_id: entryId };
+                    if (terms.length > 0) body.custom_search_terms = terms;
+
+                    const { data: scanData } = await supabase.functions.invoke('scan-roblox-copies', { body });
+                    toast({ title: 'Scan complete', description: `Found ${scanData?.total_detected || 0} potential copies.` });
+                    queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
+                    queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
+                  } catch {
+                    toast({ title: 'Scan failed', variant: 'destructive' });
+                  } finally {
+                    setScanningId(null);
+                  }
+                }}
+              >
+                {scanningId ? 'Scanning...' : 'Start Scan'}
               </Button>
             </DialogFooter>
           </DialogContent>

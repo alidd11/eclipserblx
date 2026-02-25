@@ -886,7 +886,7 @@ serve(async (req) => {
   logStep("Enhanced copy detection scan started (v6 - accuracy overhaul)");
 
   try {
-    let body: { registry_entry_id?: string } = {};
+    let body: { registry_entry_id?: string; custom_search_terms?: string[] } = {};
     try { body = await req.json(); } catch { /* no body = scan all */ }
 
     let registryQuery = supabaseClient
@@ -968,18 +968,28 @@ serve(async (req) => {
         creatorGroupIds = await getUserGroups(creatorRobloxId);
       }
 
-      const baseKeywords: string[] = [];
-      if (entry.title) baseKeywords.push(entry.title);
-      if (entry.search_keywords) {
-        for (const kw of entry.search_keywords) {
-          if (!baseKeywords.includes(kw)) baseKeywords.push(kw);
+      // If custom search terms provided, use ONLY those (exact user intent)
+      // Otherwise fall back to auto-generated keyword variants
+      let uniqueKeywords: string[];
+
+      if (body.custom_search_terms && body.custom_search_terms.length > 0) {
+        uniqueKeywords = [...new Set(body.custom_search_terms.map(s => s.trim()).filter(Boolean))].slice(0, 10);
+        logStep("Using custom search terms", { terms: uniqueKeywords });
+      } else {
+        const baseKeywords: string[] = [];
+        if (entry.title) baseKeywords.push(entry.title);
+        if (entry.search_keywords) {
+          for (const kw of entry.search_keywords) {
+            if (!baseKeywords.includes(kw)) baseKeywords.push(kw);
+          }
         }
+
+        if (baseKeywords.length === 0) continue;
+
+        const keywords = baseKeywords.flatMap(kw => generateKeywordVariants(kw));
+        uniqueKeywords = [...new Set(keywords)];
       }
 
-      if (baseKeywords.length === 0) continue;
-
-      const keywords = baseKeywords.flatMap(kw => generateKeywordVariants(kw));
-      const uniqueKeywords = [...new Set(keywords)];
       logStep("Scanning entry", { title: entry.title, keywords: uniqueKeywords.length });
 
       const ownUniverseIds = new Set(entry.roblox_universe_ids || []);
