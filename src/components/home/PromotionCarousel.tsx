@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Store, ArrowRight, Percent, Coins } from 'lucide-react';
+import { Store, ArrowRight, Percent, Coins, Shield } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { useCallback, useEffect, useState } from 'react';
@@ -15,6 +15,16 @@ export function PromotionCarousel() {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const promotions = [
+    {
+      id: 'ip-shield',
+      icon: Shield,
+      label: 'IP SHIELD',
+      title: 'Protect Your Creations with IP Shield',
+      description: 'DMCA takedowns, copy detection & ownership monitoring for Roblox creators.',
+      cta: 'Learn More',
+      link: '/ip-shield',
+      accentClass: 'bg-blue-500',
+    },
     {
       id: 'affiliate',
       icon: Percent,
@@ -80,7 +90,7 @@ export function PromotionCarousel() {
           <promo.icon className="h-5 w-5 text-muted-foreground" />
         </div>
         <div className="min-w-0">
-          <span className={`text-[10px] font-bold tracking-widest uppercase ${promo.id === 'seller' ? 'text-amber-500' : promo.id === 'credits' ? 'text-emerald-500' : 'text-primary'} block mb-0.5`}>{promo.label}</span>
+          <span className={`text-[10px] font-bold tracking-widest uppercase ${promo.id === 'seller' ? 'text-amber-500' : promo.id === 'credits' ? 'text-emerald-500' : promo.id === 'ip-shield' ? 'text-blue-500' : 'text-primary'} block mb-0.5`}>{promo.label}</span>
           <h3 className="font-semibold text-sm text-foreground truncate">{promo.title}</h3>
           <p className="text-xs text-muted-foreground line-clamp-1 max-w-xs mt-0.5">{promo.description}</p>
         </div>
