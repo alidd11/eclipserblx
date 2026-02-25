@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { 
   Shield, LayoutDashboard, Gavel, FileText, Radar, Settings, 
-  LogOut, ChevronDown, LucideIcon, ExternalLink, CreditCard
+  LogOut, ChevronDown, LucideIcon, ExternalLink, CreditCard, Mail
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -22,6 +22,7 @@ const navItems: NavItem[] = [
   { title: 'Takedowns', icon: Gavel, href: '/ip-shield/dashboard/takedowns' },
   { title: 'IP Registry', icon: FileText, href: '/ip-shield/dashboard/registry' },
   { title: 'Copy Detection', icon: Radar, href: '/ip-shield/dashboard/detections' },
+  { title: 'Correspondence', icon: Mail, href: '/ip-shield/dashboard/correspondence' },
   { title: 'Subscription', icon: CreditCard, href: '/ip-shield/dashboard/settings' },
 ];
 
