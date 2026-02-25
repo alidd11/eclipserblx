@@ -291,11 +291,9 @@ export function ExternalWebScanner() {
                       variant="ghost"
                       size="sm"
                       className="text-xs gap-1"
-                      asChild
+                      onClick={() => window.open(d.source_url, '_blank', 'noopener,noreferrer')}
                     >
-                      <a href={d.source_url} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-3 w-3" /> View
-                      </a>
+                      <ExternalLink className="h-3 w-3" /> View
                     </Button>
                   </div>
                 </div>
