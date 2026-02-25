@@ -13,7 +13,7 @@ const logStep = (step: string, details?: unknown) => {
 };
 
 const PRICE_TO_TIER: Record<string, string> = {
-  "price_1T4OkOCjEHxHwNl9i1TPwCLk": "starter",
+  "price_1T4QCOCjEHxHwNl9Hr9uHeWe": "starter",
   "price_1T4OTVCjEHxHwNl9fNIFX8kG": "pro",
   "price_1T4OmYCjEHxHwNl9vLYAuHni": "enterprise",
 };
@@ -70,6 +70,40 @@ serve(async (req) => {
       });
     }
 
+    // Check for admin-assigned custom plan
+    const { data: customPlan } = await supabaseClient
+      .from("ip_shield_custom_plans")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("is_active", true)
+      .single();
+
+    if (customPlan) {
+      const now = new Date();
+      const notExpired = !customPlan.expires_at || new Date(customPlan.expires_at) > now;
+      const started = new Date(customPlan.starts_at) <= now;
+      if (notExpired && started) {
+        logStep("Custom plan found", { tier: customPlan.tier, label: customPlan.label });
+        return new Response(JSON.stringify({
+          subscribed: true,
+          tier: customPlan.tier || "custom",
+          limits: {
+            takedowns_per_month: customPlan.takedowns_per_month,
+            registry_limit: customPlan.registry_limit,
+            priority: customPlan.priority,
+            monitoring: customPlan.monitoring,
+            dedicated_agent: customPlan.dedicated_agent,
+          },
+          subscription_end: customPlan.expires_at || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+          subscription_id: `custom_${customPlan.id}`,
+          custom_plan: true,
+          custom_label: customPlan.label,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+    }
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });

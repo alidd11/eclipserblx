@@ -3616,6 +3616,63 @@ export type Database = {
         }
         Relationships: []
       }
+      ip_shield_custom_plans: {
+        Row: {
+          assigned_by: string | null
+          created_at: string
+          dedicated_agent: boolean
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          label: string | null
+          monitoring: boolean
+          notes: string | null
+          priority: boolean
+          registry_limit: number
+          starts_at: string
+          takedowns_per_month: number
+          tier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          created_at?: string
+          dedicated_agent?: boolean
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          monitoring?: boolean
+          notes?: string | null
+          priority?: boolean
+          registry_limit?: number
+          starts_at?: string
+          takedowns_per_month?: number
+          tier?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          created_at?: string
+          dedicated_agent?: boolean
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          monitoring?: boolean
+          notes?: string | null
+          priority?: boolean
+          registry_limit?: number
+          starts_at?: string
+          takedowns_per_month?: number
+          tier?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ip_violation_reports: {
         Row: {
           admin_notes: string | null

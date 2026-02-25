@@ -1036,6 +1036,19 @@ export default function IPShield() {
             ))}
           </div>
 
+          <Card className="max-w-md mx-auto mt-6 border-dashed">
+            <CardContent className="pt-6 text-center">
+              <Users className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
+              <h3 className="text-lg font-bold mb-1">Custom Plan</h3>
+              <p className="text-sm text-muted-foreground mb-4">Need a tailored plan with specific limits? Contact us and we'll create a bespoke plan for you.</p>
+              <Button variant="outline" asChild>
+                <a href="mailto:legal@eclipserblx.com?subject=Custom IP Shield Plan">
+                  <Mail className="h-4 w-4 mr-2" /> Contact Us
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+
           <div className="text-center text-sm text-muted-foreground">
             <p>Already have an account? <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to manage your IP Shield subscription.</p>
           </div>
@@ -1109,6 +1122,19 @@ export default function IPShield() {
               </Card>
             ))}
           </div>
+
+          <Card className="max-w-md mx-auto mt-6 border-dashed">
+            <CardContent className="pt-6 text-center">
+              <Users className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
+              <h3 className="text-lg font-bold mb-1">Custom Plan</h3>
+              <p className="text-sm text-muted-foreground mb-4">Need a tailored plan with specific limits? Contact us and we'll create a bespoke plan for you.</p>
+              <Button variant="outline" asChild>
+                <a href="mailto:legal@eclipserblx.com?subject=Custom IP Shield Plan">
+                  <Mail className="h-4 w-4 mr-2" /> Contact Us
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </MainLayout>
     );
