@@ -176,13 +176,8 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
           {/* Left side - Back button + Logo */}
           <div className="flex items-center gap-3 shrink-0">
             <BackButton showLabel={true} />
-            <Link to="/" className="flex items-center gap-3 shrink-0">
+            <Link to="/" className="flex items-center shrink-0">
               <EclipseLogo size="sm" />
-              {!hideBrandName && (
-                <span className="brand-text text-lg gradient-text whitespace-nowrap tracking-[0.25em]">
-                  {SITE_NAME}
-                </span>
-              )}
             </Link>
           </div>
 
