@@ -672,12 +672,19 @@ async function isUserInGroup(robloxUserId: string, groupId: string): Promise<boo
 // ─── CAPPED SIMILARITY SCORING ───
 // Each signal has a hard cap to prevent score inflation
 const SCORE_CAPS = {
-  nameMatch: 45,       // Max contribution from name similarity
-  description: 30,     // Max contribution from description analysis
-  creationDate: 12,    // Max contribution from creation date
-  thumbnail: 35,       // Max contribution from AI thumbnail
-  // Total theoretical max ≈ 122, clamped to 100
+  nameMatch: 50,       // Max contribution from name similarity (primary signal)
+  description: 25,     // Max contribution from description analysis
+  creationDate: 10,    // Max contribution from creation date
+  thumbnail: 40,       // Max contribution from AI thumbnail (strong visual signal)
+  // Total theoretical max ≈ 125, clamped to 100
 };
+
+function getConfidenceLevel(score: number): string {
+  if (score >= 75) return 'critical';
+  if (score >= 55) return 'high';
+  if (score >= 35) return 'medium';
+  return 'low';
+}
 
 function computeNameSimilarity(original: string, candidate: string): number {
   const a = original.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
@@ -883,11 +890,21 @@ serve(async (req) => {
     { auth: { persistSession: false } }
   );
 
-  logStep("Enhanced copy detection scan started (v6 - accuracy overhaul)");
+  logStep("Enhanced copy detection scan started (v7 - accuracy + tracking)");
 
   try {
-    let body: { registry_entry_id?: string; custom_search_terms?: string[] } = {};
+    let body: { registry_entry_id?: string; custom_search_terms?: string[]; scan_type?: string } = {};
     try { body = await req.json(); } catch { /* no body = scan all */ }
+
+    // Get auth user for scan run tracking
+    const authHeader = req.headers.get("authorization");
+    let scanCreatorId: string | null = null;
+
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user: authUser } } = await supabaseClient.auth.getUser(token);
+      if (authUser) scanCreatorId = authUser.id;
+    }
 
     let registryQuery = supabaseClient
       .from("creator_ip_registry")
@@ -907,6 +924,23 @@ serve(async (req) => {
       return new Response(JSON.stringify({ message: "No entries to scan", total_detected: 0 }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Create scan run record
+    let scanRunId: string | null = null;
+    if (scanCreatorId) {
+      const { data: scanRun } = await supabaseClient
+        .from("ip_scan_runs")
+        .insert({
+          creator_id: scanCreatorId,
+          registry_entry_id: body.registry_entry_id || null,
+          scan_type: body.scan_type || (body.registry_entry_id ? 'targeted' : 'full'),
+          status: 'running',
+          custom_keywords: body.custom_search_terms || null,
+        })
+        .select("id")
+        .single();
+      scanRunId = scanRun?.id || null;
     }
 
     const creatorIds = [...new Set(registryEntries.map(e => e.creator_id))];
@@ -1252,6 +1286,8 @@ serve(async (req) => {
             game_visits: gameVisits,
             game_genre: gameGenre,
             evidence_captured_at: evidenceCapturedAt,
+            confidence_level: getConfidenceLevel(totalScore),
+            scan_run_id: scanRunId,
           }, {
             onConflict: "registry_entry_id,detected_universe_id",
             ignoreDuplicates: false,
@@ -1337,14 +1373,30 @@ serve(async (req) => {
       }
     }
 
-    logStep("Scan complete (v6)", { 
+    logStep("Scan complete (v7)", { 
       totalSearches, totalDetected, thumbnailsAnalyzed, groupsVerified, 
       snapshotsCreated, evidenceCollected, suspiciousCreatorsScanned, genericSkipped 
     });
 
+    // Update scan run as completed
+    if (scanRunId) {
+      await supabaseClient
+        .from("ip_scan_runs")
+        .update({
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+          total_searches: totalSearches,
+          total_detected: totalDetected,
+          thumbnails_analyzed: thumbnailsAnalyzed,
+          evidence_collected: evidenceCollected,
+        })
+        .eq("id", scanRunId);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
+        scan_run_id: scanRunId,
         total_searches: totalSearches,
         total_detected: totalDetected,
         thumbnails_analyzed: thumbnailsAnalyzed,
@@ -1359,6 +1411,15 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("SCAN ERROR", { message: errorMessage });
+
+    // Mark scan run as failed
+    if (typeof scanRunId !== 'undefined' && scanRunId) {
+      await supabaseClient
+        .from("ip_scan_runs")
+        .update({ status: 'failed', completed_at: new Date().toISOString(), error_message: errorMessage })
+        .eq("id", scanRunId);
+    }
+
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
