@@ -9,10 +9,11 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ImageZoomModal } from '@/components/ui/ImageZoomModal';
 import {
   Users, Eye, Heart, ThumbsUp, ThumbsDown, Gamepad2, Calendar,
-  Crown, Image as ImageIcon, Ticket, ChevronUp
+  Crown, Image as ImageIcon, Ticket, ChevronUp, AlertTriangle, CheckCircle2, XCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 interface DetectionDetailPanelProps {
   detection: any;
@@ -167,6 +168,82 @@ export function DetectionDetailPanel({ detection, onCollapse }: DetectionDetailP
                 </>
               ) : null}
             </div>
+          )}
+
+          {/* Game Pass Mirroring Results */}
+          {detection.game_pass_match_data?.matched_passes?.length > 0 && (
+            <div>
+              <p className="text-xs font-medium flex items-center gap-1.5 mb-2">
+                <AlertTriangle className="h-3.5 w-3.5 text-amber-500" /> Game Pass Mirroring Detected
+                <Badge variant="destructive" className="text-[10px] ml-1">
+                  {detection.game_pass_match_data.matched_passes.length}/{detection.game_pass_match_data.total_original} matched
+                </Badge>
+              </p>
+              <div className="space-y-1">
+                {detection.game_pass_match_data.matched_passes.map((mp: any, i: number) => (
+                  <div key={i} className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-background border text-xs">
+                    <span className="truncate flex-1 text-muted-foreground">{mp.original_name}</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="truncate flex-1 font-medium">{mp.copy_name}</span>
+                    <span className="shrink-0 text-[10px] text-muted-foreground">
+                      {mp.original_price != null ? `R$${mp.original_price}` : 'Free'}
+                      {' / '}
+                      {mp.copy_price != null ? `R$${mp.copy_price}` : 'Free'}
+                    </span>
+                    <Badge variant={mp.similarity >= 80 ? 'destructive' : 'secondary'} className="text-[10px] shrink-0">
+                      {mp.similarity}%
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Screenshot AI Comparison Results */}
+          {detection.screenshot_comparison_data?.comparisons?.length > 0 && (
+            <div>
+              <p className="text-xs font-medium flex items-center gap-1.5 mb-2">
+                <ImageIcon className="h-3.5 w-3.5 text-amber-500" /> Screenshot Comparison
+                <Badge variant={detection.screenshot_comparison_data.overall_score >= 50 ? 'destructive' : 'secondary'} className="text-[10px] ml-1">
+                  {detection.screenshot_comparison_data.overall_score}% match
+                </Badge>
+              </p>
+              <div className="space-y-2">
+                {detection.screenshot_comparison_data.comparisons.map((comp: any, i: number) => (
+                  <div key={i} className="p-2 rounded-md bg-background border">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      {comp.is_similar ? (
+                        <XCircle className="h-3.5 w-3.5 text-destructive shrink-0" />
+                      ) : (
+                        <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                      )}
+                      <span className="text-[10px] text-muted-foreground flex-1">{comp.reasoning}</span>
+                      <Badge variant={comp.is_similar ? 'destructive' : 'outline'} className="text-[10px] shrink-0">
+                        {comp.confidence}%
+                      </Badge>
+                    </div>
+                    <div className="flex gap-2">
+                      <img
+                        src={comp.original_url}
+                        alt="Original"
+                        className="h-16 w-auto rounded object-cover cursor-pointer hover:opacity-80 transition-opacity border shrink-0"
+                        onClick={() => setZoomImage(comp.original_url)}
+                      />
+                      <img
+                        src={comp.copy_url}
+                        alt="Copy"
+                        className="h-16 w-auto rounded object-cover cursor-pointer hover:opacity-80 transition-opacity border shrink-0"
+                        onClick={() => setZoomImage(comp.copy_url)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(detection.game_pass_match_data || detection.screenshot_comparison_data) && data.gamePasses?.length > 0 && (
+            <Separator />
           )}
 
           {/* Game Passes */}

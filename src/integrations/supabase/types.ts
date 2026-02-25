@@ -3382,6 +3382,7 @@ export type Database = {
           game_favorites: number | null
           game_genre: string | null
           game_name: string
+          game_pass_match_data: Json | null
           game_passes_count: number | null
           game_thumbnail_url: string | null
           game_updated_at: string | null
@@ -3394,6 +3395,7 @@ export type Database = {
           previous_player_count: number | null
           registry_entry_id: string
           scan_run_id: string | null
+          screenshot_comparison_data: Json | null
           search_keyword: string
           similarity_score: number | null
           status: string
@@ -3426,6 +3428,7 @@ export type Database = {
           game_favorites?: number | null
           game_genre?: string | null
           game_name: string
+          game_pass_match_data?: Json | null
           game_passes_count?: number | null
           game_thumbnail_url?: string | null
           game_updated_at?: string | null
@@ -3438,6 +3441,7 @@ export type Database = {
           previous_player_count?: number | null
           registry_entry_id: string
           scan_run_id?: string | null
+          screenshot_comparison_data?: Json | null
           search_keyword: string
           similarity_score?: number | null
           status?: string
@@ -3470,6 +3474,7 @@ export type Database = {
           game_favorites?: number | null
           game_genre?: string | null
           game_name?: string
+          game_pass_match_data?: Json | null
           game_passes_count?: number | null
           game_thumbnail_url?: string | null
           game_updated_at?: string | null
@@ -3482,6 +3487,7 @@ export type Database = {
           previous_player_count?: number | null
           registry_entry_id?: string
           scan_run_id?: string | null
+          screenshot_comparison_data?: Json | null
           search_keyword?: string
           similarity_score?: number | null
           status?: string
