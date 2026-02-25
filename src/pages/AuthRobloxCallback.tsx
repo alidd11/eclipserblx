@@ -44,14 +44,13 @@ export default function AuthRobloxCallback() {
       sessionStorage.removeItem('roblox_code_verifier');
 
       try {
+        // Always use production domain - must match Roblox Creator Hub redirect URLs
         const productionDomain = 'https://eclipserblx.com';
-        const currentOrigin = window.location.origin;
-        const baseUrl = currentOrigin.startsWith('https://') ? currentOrigin : productionDomain;
 
         const { data, error: fnError } = await supabase.functions.invoke('roblox-auth-login', {
           body: {
             code,
-            redirect_uri: `${baseUrl}/auth/roblox/callback`,
+            redirect_uri: `${productionDomain}/auth/roblox/callback`,
             code_verifier: codeVerifier,
           },
         });

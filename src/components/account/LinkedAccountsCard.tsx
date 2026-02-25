@@ -258,7 +258,8 @@ export function LinkedAccountsCard({
 
   // Roblox OAuth - generate auth URL and redirect
   const getRobloxRedirectUri = () => {
-    return new URL("/account", window.location.origin).toString();
+    // Always use production domain - must match Roblox Creator Hub redirect URLs
+    return 'https://eclipserblx.com/account';
   };
 
   const handleLinkRoblox = async () => {
