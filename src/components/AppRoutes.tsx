@@ -13,6 +13,7 @@ import NotFound from "@/pages/NotFound";
 // Lazy loaded - OAuth callbacks
 const AuthDiscordCallback = lazy(() => import("@/pages/AuthDiscordCallback"));
 const AuthRobloxCallback = lazy(() => import("@/pages/AuthRobloxCallback"));
+const CompleteProfile = lazy(() => import("@/pages/CompleteProfile"));
 
 // Lazy loaded - user pages
 const Account = lazy(() => import("@/pages/Account"));
@@ -232,6 +233,7 @@ export function AppRoutes() {
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/discord/callback" element={<AuthDiscordCallback />} />
         <Route path="/auth/roblox/callback" element={<AuthRobloxCallback />} />
+        <Route path="/complete-profile" element={<CompleteProfile />} />
         <Route path="/account" element={<Account />} />
         <Route path="/messages" element={<Messages />} />
         <Route path="/purchases" element={<MyPurchases />} />

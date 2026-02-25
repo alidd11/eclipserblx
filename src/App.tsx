@@ -22,6 +22,7 @@ import { ConnectionErrorBoundary } from "@/components/ConnectionErrorBoundary";
 import { PWARouteRestorer } from "@/hooks/usePWALastRoute";
 import { GlobalBackground } from "@/components/layout/GlobalBackground";
 import { AppRoutes } from "@/components/AppRoutes";
+import { EmailGuard } from "@/components/auth/EmailGuard";
 
 // Optimized QueryClient with better caching
 const queryClient = new QueryClient({
@@ -67,7 +68,9 @@ const App = () => (
                         <AdminPWAHandler />
                         <PWARouteRestorer />
                         <Suspense fallback={<PageLoader />}>
-                          <AppRoutes />
+                          <EmailGuard>
+                            <AppRoutes />
+                          </EmailGuard>
                         </Suspense>
                         <InstallPrompt />
                       </PWAWrapper>
