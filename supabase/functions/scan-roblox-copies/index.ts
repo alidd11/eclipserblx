@@ -971,19 +971,18 @@ serve(async (req) => {
       // If custom search terms provided, use ONLY those (exact user intent)
       // Otherwise fall back to auto-generated keyword variants
       let uniqueKeywords: string[];
+      const baseKeywords: string[] = [];
+      if (entry.title) baseKeywords.push(entry.title);
+      if (entry.search_keywords) {
+        for (const kw of entry.search_keywords) {
+          if (!baseKeywords.includes(kw)) baseKeywords.push(kw);
+        }
+      }
 
       if (body.custom_search_terms && body.custom_search_terms.length > 0) {
         uniqueKeywords = [...new Set(body.custom_search_terms.map(s => s.trim()).filter(Boolean))].slice(0, 10);
         logStep("Using custom search terms", { terms: uniqueKeywords });
       } else {
-        const baseKeywords: string[] = [];
-        if (entry.title) baseKeywords.push(entry.title);
-        if (entry.search_keywords) {
-          for (const kw of entry.search_keywords) {
-            if (!baseKeywords.includes(kw)) baseKeywords.push(kw);
-          }
-        }
-
         if (baseKeywords.length === 0) continue;
 
         const keywords = baseKeywords.flatMap(kw => generateKeywordVariants(kw));
