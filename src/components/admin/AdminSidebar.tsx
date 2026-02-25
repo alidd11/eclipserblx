@@ -1,4 +1,4 @@
- import { useState, useEffect } from 'react';
+ import { useState, useEffect, useRef } from 'react';
  import { 
    LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
    ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
@@ -191,6 +191,8 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
     safeStorage.setItem(STORAGE_KEY, JSON.stringify(openGroups));
   }, [openGroups]);
 
+  const navRef = useRef<HTMLElement>(null);
+
   // Auto-expand group containing current route
   useEffect(() => {
     const currentPath = location.pathname;
@@ -200,6 +202,18 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
       );
       if (hasActiveItem && !openGroups[group.id]) {
         setOpenGroups(prev => ({ ...prev, [group.id]: true }));
+      }
+    });
+  }, [location.pathname]);
+
+  // Scroll active nav item into view when route changes
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      const nav = navRef.current;
+      if (!nav) return;
+      const activeLink = nav.querySelector('a.bg-primary, a[aria-current="page"]') as HTMLElement;
+      if (activeLink) {
+        activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       }
     });
   }, [location.pathname]);
@@ -486,7 +500,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
+      <nav ref={navRef} className="flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
         {/* Top-level links */}
         <div className="space-y-0.5 mb-1.5">
           {topLevelItems.filter(canAccessItem).map((item, index) => renderNavItem(item, index))}
