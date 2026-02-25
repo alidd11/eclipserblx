@@ -74,10 +74,63 @@ export default function IPShieldTakedowns() {
   const [recheckResults, setRecheckResults] = useState<any>(null);
 
   const [form, setForm] = useState({
+    claimant_name: '', claimant_email: '', claimant_address: '',
     infringement_type: '', target_platform: '', target_platform_other: '',
     infringing_url: '', original_work_url: '', original_work_description: '',
     evidence_notes: '', good_faith_statement: false, accuracy_statement: false, ownership_confirmed: false,
   });
+
+  // Fetch verified identity details to pre-populate form
+  const { data: verificationData } = useQuery({
+    queryKey: ['ip-shield-identity-verification', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('check-identity-verification');
+      if (error) throw error;
+      return data as { verified: boolean; status: string; verifiedName?: string; verifiedEmail?: string; verifiedAddress?: string };
+    },
+    enabled: !!user,
+  });
+
+  // Fetch user profile for fallback
+  const { data: userProfile } = useQuery({
+    queryKey: ['ip-shield-profile', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from('profiles').select('display_name, email').eq('user_id', user!.id).single();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Fetch registry entries for original work pre-population
+  const { data: registryEntries } = useQuery({
+    queryKey: ['ip-shield-registry-entries', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('creator_ip_registry')
+        .select('id, title, description, work_type')
+        .eq('creator_id', user!.id)
+        .order('created_at', { ascending: false });
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  // Pre-populate form when dialog opens
+  const openNewRequest = () => {
+    const name = verificationData?.verifiedName || userProfile?.display_name || '';
+    const email = verificationData?.verifiedEmail || userProfile?.email || user?.email || '';
+    const address = verificationData?.verifiedAddress || '';
+    setForm(f => ({
+      ...f,
+      claimant_name: name,
+      claimant_email: email,
+      claimant_address: address,
+    }));
+    setSelectedRegistryId('');
+    setShowNewRequest(true);
+  };
+
+  const [selectedRegistryId, setSelectedRegistryId] = useState('');
 
   const { data: cases, isLoading } = useQuery({
     queryKey: ['ip-shield-cases', user?.id],
@@ -109,6 +162,9 @@ export default function IPShieldTakedowns() {
         creator_id: user!.id,
         store_id: userStore?.id || null,
         status: 'submitted',
+        claimant_name: form.claimant_name || null,
+        claimant_email: form.claimant_email || null,
+        claimant_address: form.claimant_address || null,
         infringement_type: form.infringement_type,
         target_platform: platform,
         infringing_url: form.infringing_url,
@@ -124,7 +180,7 @@ export default function IPShieldTakedowns() {
     onSuccess: () => {
       toast({ title: 'Takedown request submitted', description: 'Our team will review your request shortly.' });
       setShowNewRequest(false);
-      setForm({ infringement_type: '', target_platform: '', target_platform_other: '', infringing_url: '', original_work_url: '', original_work_description: '', evidence_notes: '', good_faith_statement: false, accuracy_statement: false, ownership_confirmed: false });
+      setForm({ claimant_name: '', claimant_email: '', claimant_address: '', infringement_type: '', target_platform: '', target_platform_other: '', infringing_url: '', original_work_url: '', original_work_description: '', evidence_notes: '', good_faith_statement: false, accuracy_statement: false, ownership_confirmed: false });
       queryClient.invalidateQueries({ queryKey: ['ip-shield-cases'] });
     },
     onError: (error) => {
@@ -132,7 +188,7 @@ export default function IPShieldTakedowns() {
     },
   });
 
-  const canSubmit = form.infringement_type && form.target_platform && form.infringing_url &&
+  const canSubmit = form.claimant_name && form.claimant_email && form.infringement_type && form.target_platform && form.infringing_url &&
     form.original_work_description && form.good_faith_statement && form.accuracy_statement && form.ownership_confirmed;
 
   return (
@@ -148,7 +204,7 @@ export default function IPShieldTakedowns() {
               File and track DMCA takedown requests.
             </p>
           </div>
-          <Button onClick={() => setShowNewRequest(true)}>
+          <Button onClick={openNewRequest}>
             <Plus className="h-4 w-4 mr-2" /> New Takedown
           </Button>
         </div>
@@ -163,7 +219,7 @@ export default function IPShieldTakedowns() {
               <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
                 If someone is using your work without permission, submit a takedown request and we'll handle it for you.
               </p>
-              <Button className="mt-4" onClick={() => setShowNewRequest(true)}>
+              <Button className="mt-4" onClick={openNewRequest}>
                 <Plus className="h-4 w-4 mr-2" /> Submit Your First Request
               </Button>
             </CardContent>
@@ -320,6 +376,53 @@ export default function IPShieldTakedowns() {
             </DialogHeader>
 
             <div className="space-y-4">
+              {/* Claimant Info - Pre-populated from verified identity */}
+              <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg space-y-3">
+                <p className="text-xs font-medium text-primary flex items-center gap-1">
+                  <Shield className="h-3 w-3" />
+                  {verificationData?.verified ? 'Verified Identity — Auto-filled' : 'Claimant Information'}
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Full Legal Name *</Label>
+                    <Input value={form.claimant_name} onChange={e => setForm(f => ({ ...f, claimant_name: e.target.value }))} placeholder="Your full legal name" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Email *</Label>
+                    <Input type="email" value={form.claimant_email} onChange={e => setForm(f => ({ ...f, claimant_email: e.target.value }))} placeholder="your@email.com" />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Address (optional)</Label>
+                  <Input value={form.claimant_address} onChange={e => setForm(f => ({ ...f, claimant_address: e.target.value }))} placeholder="Your address" />
+                </div>
+              </div>
+
+              {/* Registry Entry Selector */}
+              {registryEntries && registryEntries.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Link to Registry Entry (optional)</Label>
+                  <Select value={selectedRegistryId} onValueChange={v => {
+                    setSelectedRegistryId(v);
+                    const entry = registryEntries.find((e: any) => e.id === v);
+                    if (entry) {
+                      setForm(f => ({
+                        ...f,
+                        original_work_description: entry.description || entry.title || f.original_work_description,
+                        infringement_type: entry.work_type === 'game' || entry.work_type === 'model' ? 'copyright' : f.infringement_type,
+                      }));
+                    }
+                  }}>
+                    <SelectTrigger><SelectValue placeholder="Pre-fill from your registry..." /></SelectTrigger>
+                    <SelectContent>
+                      {registryEntries.map((entry: any) => (
+                        <SelectItem key={entry.id} value={entry.id}>{entry.title} ({entry.work_type})</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label>Infringement Type *</Label>
                 <Select value={form.infringement_type} onValueChange={v => setForm(f => ({ ...f, infringement_type: v }))}>

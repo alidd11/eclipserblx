@@ -8059,6 +8059,9 @@ export type Database = {
           accuracy_statement: boolean
           agent_authorization: boolean | null
           case_number: string
+          claimant_address: string | null
+          claimant_email: string | null
+          claimant_name: string | null
           counter_notice_deadline: string | null
           counter_notice_details: string | null
           counter_notice_received_at: string | null
@@ -8098,6 +8101,9 @@ export type Database = {
           accuracy_statement?: boolean
           agent_authorization?: boolean | null
           case_number: string
+          claimant_address?: string | null
+          claimant_email?: string | null
+          claimant_name?: string | null
           counter_notice_deadline?: string | null
           counter_notice_details?: string | null
           counter_notice_received_at?: string | null
@@ -8137,6 +8143,9 @@ export type Database = {
           accuracy_statement?: boolean
           agent_authorization?: boolean | null
           case_number?: string
+          claimant_address?: string | null
+          claimant_email?: string | null
+          claimant_name?: string | null
           counter_notice_deadline?: string | null
           counter_notice_details?: string | null
           counter_notice_received_at?: string | null
