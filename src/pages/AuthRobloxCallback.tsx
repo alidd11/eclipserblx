@@ -39,19 +39,62 @@ export default function AuthRobloxCallback() {
         return;
       }
 
-      // Retrieve the code_verifier from sessionStorage (stored before redirect)
+      // Check if this is an account linking callback (vs sign-in)
+      const linkCodeVerifier = sessionStorage.getItem('roblox_link_code_verifier');
       const codeVerifier = sessionStorage.getItem('roblox_code_verifier');
+      const isLinking = !!linkCodeVerifier;
+      
+      // Clean up session storage
       sessionStorage.removeItem('roblox_code_verifier');
+      sessionStorage.removeItem('roblox_link_code_verifier');
+      sessionStorage.removeItem('roblox_link_state');
+
+      const productionDomain = 'https://eclipserblx.com';
+      const redirectUri = `${productionDomain}/auth/roblox/callback`;
+      const verifier = isLinking ? linkCodeVerifier : codeVerifier;
+
+      if (isLinking) {
+        // Account linking flow
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) {
+            setError('You must be logged in to link your Roblox account');
+            setTimeout(() => navigate('/account'), 3000);
+            return;
+          }
+
+          const { data, error: invokeError } = await supabase.functions.invoke('roblox-link-callback', {
+            body: {
+              code,
+              redirect_uri: redirectUri,
+              code_verifier: verifier,
+              user_id: user.id,
+            },
+          });
+
+          if (invokeError) throw invokeError;
+          if (data?.error) throw new Error(data.error);
+
+          toast({
+            title: 'Roblox Linked!',
+            description: `Connected as ${data.roblox_username}`,
+          });
+          navigate('/account');
+          return;
+        } catch (err) {
+          console.error('Roblox link callback error:', err);
+          setError(err instanceof Error ? err.message : 'Failed to link Roblox account');
+          setTimeout(() => navigate('/account'), 3000);
+          return;
+        }
+      }
 
       try {
-        // Always use production domain - must match Roblox Creator Hub redirect URLs
-        const productionDomain = 'https://eclipserblx.com';
-
         const { data, error: fnError } = await supabase.functions.invoke('roblox-auth-login', {
           body: {
             code,
-            redirect_uri: `${productionDomain}/auth/roblox/callback`,
-            code_verifier: codeVerifier,
+            redirect_uri: redirectUri,
+            code_verifier: verifier,
           },
         });
 
