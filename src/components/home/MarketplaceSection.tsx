@@ -314,6 +314,7 @@ export function MarketplaceSection() {
       {browseMode === 'stores' && (
         <>
           <TopStoresSection />
+          <FeaturedProductCard />
           <div className="grid grid-cols-2 gap-3 sm:gap-6">
             {storesLoading ? (
               Array.from({ length: 9 }).map((_, i) => (
