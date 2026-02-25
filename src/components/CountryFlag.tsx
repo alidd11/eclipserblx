@@ -24,15 +24,11 @@ const flags: Record<string, React.ReactNode> = {
   ),
   pt: (
     <svg viewBox="0 0 60 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="60" height="30" fill="#009739" />
-      <rect x="20" width="40" height="30" fill="#FFDF00" />
-      <rect x="20" width="40" height="30" fill="#002776" />
-      <polygon points="0,0 24,15 0,30" fill="#009739" />
-      <polygon points="0,0 24,15 0,30" fill="#009B3A" />
-      <rect width="24" height="30" fill="#009B3A" />
-      <rect x="24" width="36" height="30" fill="#FEDF00" />
-      <polygon points="30,6 44,15 30,24 16,15" fill="#002776" stroke="#002776" strokeWidth="0.5" />
-      <circle cx="30" cy="15" r="5" fill="#fff" stroke="#002776" strokeWidth="0.5" />
+      <rect width="60" height="30" fill="#009B3A" />
+      <polygon points="30,3 57,15 30,27 3,15" fill="#FEDF00" />
+      <circle cx="30" cy="15" r="7" fill="#002776" />
+      <path d="M23,15 C23,12 26,9 30,9 C34,9 37,12 37,15" fill="none" stroke="#fff" strokeWidth="1" />
+      <line x1="23" y1="15" x2="37" y2="15" stroke="#fff" strokeWidth="1" />
     </svg>
   ),
   fr: (
