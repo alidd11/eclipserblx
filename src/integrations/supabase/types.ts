@@ -3616,6 +3616,57 @@ export type Database = {
         }
         Relationships: []
       }
+      ip_shield_contact_messages: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          priority: string
+          responded_at: string | null
+          responded_by: string | null
+          staff_notes: string | null
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          priority?: string
+          responded_at?: string | null
+          responded_by?: string | null
+          staff_notes?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          priority?: string
+          responded_at?: string | null
+          responded_by?: string | null
+          staff_notes?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       ip_shield_custom_plans: {
         Row: {
           assigned_by: string | null

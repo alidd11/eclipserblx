@@ -181,6 +181,12 @@ const IPShieldRegistry = lazy(() => import("@/pages/ip-shield/IPShieldRegistry")
 const IPShieldDetections = lazy(() => import("@/pages/ip-shield/IPShieldDetections"));
 const IPShieldSettings = lazy(() => import("@/pages/ip-shield/IPShieldSettings"));
 
+// IP Staff Dashboard pages
+const IPStaffOverview = lazy(() => import("@/pages/ip-staff/IPStaffOverview"));
+const IPStaffTakedowns = lazy(() => import("@/pages/ip-staff/IPStaffTakedowns"));
+const IPStaffCustomPlans = lazy(() => import("@/pages/ip-staff/IPStaffCustomPlans"));
+const IPStaffInbox = lazy(() => import("@/pages/ip-staff/IPStaffInbox"));
+
 // Public pages
 const StorePage = lazy(() => import("@/pages/StorePage"));
 const StoreAbout = lazy(() => import("@/pages/StoreAbout"));
@@ -251,6 +257,10 @@ export function AppRoutes() {
         <Route path="/ip-shield/dashboard/registry" element={<IPShieldRegistry />} />
         <Route path="/ip-shield/dashboard/detections" element={<IPShieldDetections />} />
         <Route path="/ip-shield/dashboard/settings" element={<IPShieldSettings />} />
+        <Route path="/ip-staff" element={<IPStaffOverview />} />
+        <Route path="/ip-staff/takedowns" element={<IPStaffTakedowns />} />
+        <Route path="/ip-staff/custom-plans" element={<IPStaffCustomPlans />} />
+        <Route path="/ip-staff/inbox" element={<IPStaffInbox />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/support" element={<Support />} />
         <Route path="/contact" element={<Contact />} />
