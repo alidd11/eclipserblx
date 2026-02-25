@@ -27,6 +27,7 @@ import {
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { IPShieldContactDialog } from '@/components/ip-shield/IPShieldContactDialog';
+import ipShieldHero from '@/assets/ip-shield-hero.jpg';
 
 const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof Clock }> = {
   submitted: { label: 'Submitted', variant: 'secondary', icon: Clock },
@@ -973,14 +974,29 @@ export default function IPShield() {
 
     return (
       <MainLayout>
-        <div className="container py-16 max-w-5xl">
-          <div className="text-center mb-14">
-            <Shield className="h-16 w-16 mx-auto text-primary mb-5" />
-            <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">IP Shield</h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-              Professional intellectual property protection for Roblox creators. We handle DMCA takedowns, monitor your assets, and protect your work — so you can focus on creating.
+        {/* Cinematic Hero */}
+        <div className="relative w-full overflow-hidden -mt-4">
+          <div className="absolute inset-0">
+            <img
+              src={ipShieldHero}
+              alt="IP Shield - Intellectual Property Protection"
+              className="w-full h-full object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40" />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-transparent to-transparent" />
+          </div>
+          <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 py-24 md:py-36 lg:py-44">
+            <span className="uppercase tracking-[0.3em] text-xs font-semibold text-primary mb-4">Intellectual Property Protection</span>
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-black mb-6 leading-[1.05] max-w-3xl">
+              IP Shield
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
+              Professional DMCA enforcement, automated asset monitoring, and copy detection — so you can focus on creating.
             </p>
           </div>
+        </div>
+
+        <div className="container py-16 max-w-5xl">
 
           <div className="grid sm:grid-cols-2 gap-5 mb-16">
             {highlights.map((h) => (
