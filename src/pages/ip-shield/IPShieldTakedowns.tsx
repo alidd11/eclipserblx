@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { IPShieldLayout } from '@/components/ip-shield/IPShieldLayout';
+import { TakedownEvidenceUpload } from '@/components/ip-shield/TakedownEvidenceUpload';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -72,6 +73,8 @@ export default function IPShieldTakedowns() {
   const [showNewRequest, setShowNewRequest] = useState(false);
   const [recheckingCaseId, setRecheckingCaseId] = useState<string | null>(null);
   const [recheckResults, setRecheckResults] = useState<any>(null);
+  const [originalProofFiles, setOriginalProofFiles] = useState<string[]>([]);
+  const [infringingEvidenceFiles, setInfringingEvidenceFiles] = useState<string[]>([]);
 
   const [form, setForm] = useState({
     claimant_name: '', claimant_email: '', claimant_address: '',
@@ -127,6 +130,8 @@ export default function IPShieldTakedowns() {
       claimant_address: address,
     }));
     setSelectedRegistryId('');
+    setOriginalProofFiles([]);
+    setInfringingEvidenceFiles([]);
     setShowNewRequest(true);
   };
 
@@ -171,6 +176,8 @@ export default function IPShieldTakedowns() {
         original_work_url: form.original_work_url || null,
         original_work_description: form.original_work_description,
         evidence_notes: form.evidence_notes || null,
+        original_proof_screenshots: originalProofFiles.length > 0 ? originalProofFiles : null,
+        infringing_evidence_screenshots: infringingEvidenceFiles.length > 0 ? infringingEvidenceFiles : null,
         good_faith_statement: form.good_faith_statement,
         accuracy_statement: form.accuracy_statement,
         ownership_confirmed: form.ownership_confirmed,
@@ -181,6 +188,8 @@ export default function IPShieldTakedowns() {
       toast({ title: 'Takedown request submitted', description: 'Our team will review your request shortly.' });
       setShowNewRequest(false);
       setForm({ claimant_name: '', claimant_email: '', claimant_address: '', infringement_type: '', target_platform: '', target_platform_other: '', infringing_url: '', original_work_url: '', original_work_description: '', evidence_notes: '', good_faith_statement: false, accuracy_statement: false, ownership_confirmed: false });
+      setOriginalProofFiles([]);
+      setInfringingEvidenceFiles([]);
       queryClient.invalidateQueries({ queryKey: ['ip-shield-cases'] });
     },
     onError: (error) => {
@@ -470,9 +479,35 @@ export default function IPShieldTakedowns() {
                 <Textarea value={form.original_work_description} onChange={e => setForm(f => ({ ...f, original_work_description: e.target.value }))} placeholder="Describe your original work..." rows={3} />
               </div>
 
+              {/* Original Content Proof Screenshots */}
+              <div className="p-3 border rounded-lg space-y-2 bg-muted/30">
+                <TakedownEvidenceUpload
+                  userId={user!.id}
+                  folder="original-proof"
+                  files={originalProofFiles}
+                  onFilesChange={setOriginalProofFiles}
+                  maxFiles={5}
+                  label="📸 Original Content Proof"
+                  description="Upload screenshots proving your ownership — e.g. creation dates, Roblox Studio, original files."
+                />
+              </div>
+
+              {/* Infringing Content Evidence Screenshots */}
+              <div className="p-3 border rounded-lg space-y-2 bg-destructive/5">
+                <TakedownEvidenceUpload
+                  userId={user!.id}
+                  folder="infringing-evidence"
+                  files={infringingEvidenceFiles}
+                  onFilesChange={setInfringingEvidenceFiles}
+                  maxFiles={5}
+                  label="🚨 Infringing Content Evidence"
+                  description="Upload screenshots of the infringing content — e.g. copied game pages, stolen assets in use."
+                />
+              </div>
+
               <div className="space-y-2">
-                <Label>Additional Evidence or Notes</Label>
-                <Textarea value={form.evidence_notes} onChange={e => setForm(f => ({ ...f, evidence_notes: e.target.value }))} placeholder="Screenshots, timestamps, etc." rows={2} />
+                <Label>Additional Notes</Label>
+                <Textarea value={form.evidence_notes} onChange={e => setForm(f => ({ ...f, evidence_notes: e.target.value }))} placeholder="Any other context, timestamps, etc." rows={2} />
               </div>
 
               <div className="space-y-3 pt-2 border-t">

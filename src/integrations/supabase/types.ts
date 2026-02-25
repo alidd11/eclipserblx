@@ -8075,12 +8075,14 @@ export type Database = {
           good_faith_statement: boolean
           id: string
           infringement_type: string
+          infringing_evidence_screenshots: string[] | null
           infringing_url: string
           last_recheck_at: string | null
           notice_sent_at: string | null
           notice_sent_to: string | null
           offender_roblox_id: string | null
           offender_roblox_username: string | null
+          original_proof_screenshots: string[] | null
           original_work_description: string
           original_work_url: string | null
           ownership_confirmed: boolean
@@ -8117,12 +8119,14 @@ export type Database = {
           good_faith_statement?: boolean
           id?: string
           infringement_type: string
+          infringing_evidence_screenshots?: string[] | null
           infringing_url: string
           last_recheck_at?: string | null
           notice_sent_at?: string | null
           notice_sent_to?: string | null
           offender_roblox_id?: string | null
           offender_roblox_username?: string | null
+          original_proof_screenshots?: string[] | null
           original_work_description: string
           original_work_url?: string | null
           ownership_confirmed?: boolean
@@ -8159,12 +8163,14 @@ export type Database = {
           good_faith_statement?: boolean
           id?: string
           infringement_type?: string
+          infringing_evidence_screenshots?: string[] | null
           infringing_url?: string
           last_recheck_at?: string | null
           notice_sent_at?: string | null
           notice_sent_to?: string | null
           offender_roblox_id?: string | null
           offender_roblox_username?: string | null
+          original_proof_screenshots?: string[] | null
           original_work_description?: string
           original_work_url?: string | null
           ownership_confirmed?: boolean
