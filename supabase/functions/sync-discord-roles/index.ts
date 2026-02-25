@@ -123,9 +123,34 @@ Deno.serve(async (req) => {
           r.success ? results.mainServer[key].assigned++ : (results.mainServer[key].failed++, results.errors.push({ user_id, discord_id, role: roleName, server: "main", error: r.error || "Unknown" }));
         };
 
-        if (activeSubscribers.has(user_id)) await assign(eclipsePlusRoleId, "eclipsePlus", "Eclipse+");
-        if (storeOwners.has(user_id)) await assign(storeCreatorRoleId, "storeCreator", "Store Creator");
-        if (verifiedStoreOwners.has(user_id)) await assign(verifiedSellerRoleId, "verifiedSeller", "Verified Seller");
+        const remove = async (roleId: string | undefined, roleName: string) => {
+          if (!roleId) return;
+          const r = await modifyRole(botToken, mainGuildId, roleId, discord_id, "DELETE");
+          if (!r.success && r.error !== "User not in server") {
+            results.errors.push({ user_id, discord_id, role: `remove ${roleName}`, server: "main", error: r.error || "Unknown" });
+          }
+        };
+
+        // Eclipse+ — assign or remove
+        if (activeSubscribers.has(user_id)) {
+          await assign(eclipsePlusRoleId, "eclipsePlus", "Eclipse+");
+        } else {
+          await remove(eclipsePlusRoleId, "Eclipse+");
+        }
+
+        // Store Creator — assign or remove
+        if (storeOwners.has(user_id)) {
+          await assign(storeCreatorRoleId, "storeCreator", "Store Creator");
+        } else {
+          await remove(storeCreatorRoleId, "Store Creator");
+        }
+
+        // Verified Seller — assign or remove
+        if (verifiedStoreOwners.has(user_id)) {
+          await assign(verifiedSellerRoleId, "verifiedSeller", "Verified Seller");
+        } else {
+          await remove(verifiedSellerRoleId, "Verified Seller");
+        }
 
         const orderCount = orderCounts.get(user_id) || 0;
         if (orderCount >= 5) {
@@ -133,6 +158,10 @@ Deno.serve(async (req) => {
           if (customerRoleId) await modifyRole(botToken, mainGuildId, customerRoleId, discord_id, "DELETE");
         } else if (orderCount > 0) {
           await assign(customerRoleId, "customer", "Customer");
+          await remove(loyalCustomerRoleId, "Loyal Customer");
+        } else {
+          await remove(customerRoleId, "Customer");
+          await remove(loyalCustomerRoleId, "Loyal Customer");
         }
       }
 
