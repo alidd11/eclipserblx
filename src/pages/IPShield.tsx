@@ -27,7 +27,7 @@ import {
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { IPShieldContactDialog } from '@/components/ip-shield/IPShieldContactDialog';
-import ipShieldHero from '@/assets/ip-shield-hero.jpg';
+
 
 const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof Clock }> = {
   submitted: { label: 'Submitted', variant: 'secondary', icon: Clock },
@@ -974,24 +974,20 @@ export default function IPShield() {
 
     return (
       <MainLayout>
-        {/* Cinematic Hero */}
-        <div className="relative w-full overflow-hidden -mt-4">
-          <div className="absolute inset-0">
-            <img
-              src={ipShieldHero}
-              alt="IP Shield - Intellectual Property Protection"
-              className="w-full h-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40" />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-transparent to-transparent" />
-          </div>
-          <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 py-24 md:py-36 lg:py-44">
-            <span className="uppercase tracking-[0.3em] text-xs font-semibold text-primary mb-4">Intellectual Property Protection</span>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-black mb-6 leading-[1.05] max-w-3xl">
-              IP Shield
+        {/* Hero */}
+        <div className="relative w-full overflow-hidden -mt-4 border-b border-border/40">
+          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 39px, hsl(var(--foreground)) 39px, hsl(var(--foreground)) 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, hsl(var(--foreground)) 39px, hsl(var(--foreground)) 40px)' }} />
+          <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 py-20 md:py-28 lg:py-36">
+            <div className="inline-flex items-center gap-2 border border-border/60 rounded-full px-4 py-1.5 mb-8 bg-muted/30 backdrop-blur-sm">
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="uppercase tracking-[0.2em] text-[10px] font-medium text-muted-foreground">Active Protection</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-black mb-6 leading-[1.05] max-w-4xl tracking-tight">
+              Your Work.<br />
+              <span className="text-primary">Our Fight.</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
-              Professional DMCA enforcement, automated asset monitoring, and copy detection — so you can focus on creating.
+            <p className="text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed">
+              DMCA enforcement, automated monitoring, and copy detection for Roblox creators.
             </p>
           </div>
         </div>
