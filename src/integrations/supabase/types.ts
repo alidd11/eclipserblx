@@ -7908,12 +7908,17 @@ export type Database = {
           id: string
           infringement_type: string
           infringing_url: string
+          last_recheck_at: string | null
           notice_sent_at: string | null
           notice_sent_to: string | null
+          offender_roblox_id: string | null
+          offender_roblox_username: string | null
           original_work_description: string
           original_work_url: string | null
           ownership_confirmed: boolean
           priority: string
+          recheck_count: number | null
+          recheck_results: Json | null
           rejection_reason: string | null
           resolution_notes: string | null
           resolved_at: string | null
@@ -7942,12 +7947,17 @@ export type Database = {
           id?: string
           infringement_type: string
           infringing_url: string
+          last_recheck_at?: string | null
           notice_sent_at?: string | null
           notice_sent_to?: string | null
+          offender_roblox_id?: string | null
+          offender_roblox_username?: string | null
           original_work_description: string
           original_work_url?: string | null
           ownership_confirmed?: boolean
           priority?: string
+          recheck_count?: number | null
+          recheck_results?: Json | null
           rejection_reason?: string | null
           resolution_notes?: string | null
           resolved_at?: string | null
@@ -7976,12 +7986,17 @@ export type Database = {
           id?: string
           infringement_type?: string
           infringing_url?: string
+          last_recheck_at?: string | null
           notice_sent_at?: string | null
           notice_sent_to?: string | null
+          offender_roblox_id?: string | null
+          offender_roblox_username?: string | null
           original_work_description?: string
           original_work_url?: string | null
           ownership_confirmed?: boolean
           priority?: string
+          recheck_count?: number | null
+          recheck_results?: Json | null
           rejection_reason?: string | null
           resolution_notes?: string | null
           resolved_at?: string | null
