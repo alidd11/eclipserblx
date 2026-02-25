@@ -71,7 +71,7 @@ export function TopStoresSection() {
 
       <Link to={`/store/${store.slug}`} className="group block">
         <div
-          className="relative w-full aspect-[16/9] rounded-xl overflow-hidden border border-border"
+          className="relative w-full aspect-[3/1] rounded-xl overflow-hidden border border-border"
           style={{
             background: store.banner_url
               ? `url(${store.banner_url}) center/cover`

@@ -43,9 +43,9 @@ export function LandingHero() {
       <HeroBanner />
 
       <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-10 relative z-10">
-        <div className="w-full flex flex-col lg:flex-row lg:items-start lg:gap-12">
-          {/* Left: Text content — left-aligned on desktop */}
-          <div className="lg:flex-1 lg:max-w-xl">
+        <div className="w-full flex flex-col items-center lg:items-center">
+          {/* Centred hero content */}
+          <div className="lg:max-w-2xl text-center">
 
             <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold leading-[1.15] tracking-tight mb-3">
               {t('landing.headline')}{' '}
@@ -67,7 +67,7 @@ export function LandingHero() {
               </span>{' '}
               Experience.
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground max-w-md mb-5 leading-relaxed">
+            <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto mb-5 leading-relaxed">
               {t('landing.description')}
             </p>
 
@@ -101,7 +101,7 @@ export function LandingHero() {
               </Link>
             </div>
 
-            <div className="flex items-center justify-start gap-1.5 overflow-hidden">
+            <div className="flex items-center justify-center gap-1.5 overflow-hidden">
               <span className="text-[11px] text-muted-foreground flex items-center gap-1 flex-shrink-0">
                 <Search className="h-3 w-3" />
                 {t('landing.popular')}
@@ -118,13 +118,8 @@ export function LandingHero() {
             </div>
           </div>
 
-          {/* Right: Active offers card — desktop only */}
-          <div className="hidden lg:block lg:flex-1 lg:max-w-md mt-0">
-            <ActiveOffersCard />
-          </div>
-
-          {/* Mobile: Active offers card below text */}
-          <div className="lg:hidden mt-5">
+          {/* Active offers card below hero text */}
+          <div className="w-full lg:max-w-2xl mt-6">
             <ActiveOffersCard />
           </div>
         </div>
