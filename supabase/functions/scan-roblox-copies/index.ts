@@ -62,6 +62,54 @@ function levenshtein(a: string, b: string): number {
   return dp[m][n];
 }
 
+// ─── JARO-WINKLER DISTANCE (Better for short game names) ───
+function jaroWinkler(s1: string, s2: string): number {
+  if (s1 === s2) return 100;
+  const a = s1.toLowerCase(), b = s2.toLowerCase();
+  const la = a.length, lb = b.length;
+  if (la === 0 || lb === 0) return 0;
+
+  const matchWindow = Math.max(0, Math.floor(Math.max(la, lb) / 2) - 1);
+  const aMatched = new Array(la).fill(false);
+  const bMatched = new Array(lb).fill(false);
+
+  let matches = 0;
+  let transpositions = 0;
+
+  for (let i = 0; i < la; i++) {
+    const start = Math.max(0, i - matchWindow);
+    const end = Math.min(i + matchWindow + 1, lb);
+    for (let j = start; j < end; j++) {
+      if (bMatched[j] || a[i] !== b[j]) continue;
+      aMatched[i] = true;
+      bMatched[j] = true;
+      matches++;
+      break;
+    }
+  }
+
+  if (matches === 0) return 0;
+
+  let k = 0;
+  for (let i = 0; i < la; i++) {
+    if (!aMatched[i]) continue;
+    while (!bMatched[k]) k++;
+    if (a[i] !== b[k]) transpositions++;
+    k++;
+  }
+
+  const jaro = (matches / la + matches / lb + (matches - transpositions / 2) / matches) / 3;
+
+  let prefix = 0;
+  for (let i = 0; i < Math.min(4, la, lb); i++) {
+    if (a[i] === b[i]) prefix++;
+    else break;
+  }
+
+  const winkler = jaro + prefix * 0.1 * (1 - jaro);
+  return Math.round(winkler * 100);
+}
+
 // ─── SOUNDEX (Phonetic Matching) ───
 function soundex(s: string): string {
   const a = s.toUpperCase().replace(/[^A-Z]/g, '');
@@ -704,6 +752,7 @@ function computeNameSimilarity(original: string, candidate: string): number {
 
   const ngram = ngramSimilarity(a, b, 3);
   const tokenSet = tokenSetRatio(a, b);
+  const jw = jaroWinkler(a, b);
 
   let phoneticBonus = 0;
   const mainWordA = [...wordsA].sort((x, y) => y.length - x.length)[0];
@@ -712,8 +761,9 @@ function computeNameSimilarity(original: string, candidate: string): number {
     phoneticBonus = 15;
   }
 
+  // Jaro-Winkler weighted at 15%, reduces editSim to 15% (JW is better for short strings)
   const combined = Math.round(
-    jaccard * 0.25 + editSim * 0.25 + ngram * 0.15 + tokenSet * 0.25 + phoneticBonus * 0.1
+    jaccard * 0.20 + editSim * 0.15 + ngram * 0.15 + tokenSet * 0.20 + jw * 0.15 + phoneticBonus * 0.15
   );
   return Math.min(combined, 100);
 }
@@ -890,7 +940,7 @@ serve(async (req) => {
     { auth: { persistSession: false } }
   );
 
-  logStep("Enhanced copy detection scan started (v7 - accuracy + tracking)");
+  logStep("Enhanced copy detection scan started (v8 - Jaro-Winkler + reverse creator search)");
 
   try {
     let body: { registry_entry_id?: string; custom_search_terms?: string[]; scan_type?: string } = {};
@@ -1199,8 +1249,8 @@ serve(async (req) => {
         // Skip low-confidence detections (raised from 20 to 25)
         if (totalScore < 25) continue;
 
-        // Track suspicious creators for deep scanning
-        if (totalScore >= 40) {
+        // Track suspicious creators for reverse search (lowered to 35 for better coverage)
+        if (totalScore >= 35) {
           const key = `${result.creatorType}:${result.creatorId}`;
           const existing = suspiciousCreators.get(key);
           if (existing) {
@@ -1313,14 +1363,13 @@ serve(async (req) => {
         }
       }
 
-      // ─── DEEP SCAN: Scan suspicious creators' other games ───
-      if (suspiciousCreators.size > 0 && suspiciousCreatorsScanned < 10) {
+      // ─── REVERSE CREATOR SEARCH: Scan ALL games by any flagged creator ───
+      if (suspiciousCreators.size > 0 && suspiciousCreatorsScanned < 15) {
         for (const [key, info] of suspiciousCreators) {
-          if (suspiciousCreatorsScanned >= 10) break;
-          if (info.matchCount < 2) continue;
+          if (suspiciousCreatorsScanned >= 15) break;
 
           const [creatorType, creatorId] = key.split(':');
-          logStep("Deep scanning suspicious creator", { creatorType, creatorId, matchCount: info.matchCount });
+          logStep("Reverse creator search", { creatorType, creatorId, matchCount: info.matchCount });
 
           await new Promise(r => setTimeout(r, 500));
           
@@ -1333,20 +1382,36 @@ serve(async (req) => {
 
           suspiciousCreatorsScanned++;
 
+          // Check ALL of this creator's games against ALL registry entries (not just current)
           for (const game of creatorGames) {
             if (ownUniverseIds.has(game.universeId)) continue;
             if (allResults.has(game.universeId)) continue;
 
+            // Compare against current entry
             const nameSim = computeNameSimilarity(entry.title, game.name);
-            if (nameSim >= 40) {
-              logStep("Suspicious creator has similar game", { universeId: game.universeId, name: game.name, similarity: nameSim });
+
+            // Also check description similarity if available
+            let descBonus = 0;
+            if (game.description && originalDescription) {
+              const descResult = checkDescriptionMatch(game.description, baseKeywords, originalDescription);
+              if (descResult.isMatch) descBonus = Math.min(descResult.score, 15);
+            }
+
+            const reverseScore = Math.min(nameSim + descBonus, 100);
+
+            if (reverseScore >= 30) {
+              logStep("Reverse search: found similar game", { universeId: game.universeId, name: game.name, score: reverseScore });
               
+              const matchReasons = [`reverse_creator_search`, `name_match_${nameSim}%`];
+              if (descBonus > 0) matchReasons.push(`desc_match_${descBonus}`);
+              if (info.matchCount > 1) matchReasons.push(`repeat_offender_${info.matchCount}`);
+
               await supabaseClient
                 .from("ip_copy_detections")
                 .upsert({
                   registry_entry_id: entry.id,
                   creator_id: entry.creator_id,
-                  search_keyword: `deep_scan:${creatorId}`,
+                  search_keyword: `reverse_search:${creatorId}`,
                   detected_universe_id: game.universeId,
                   detected_place_id: game.placeId || null,
                   game_name: game.name,
@@ -1354,14 +1419,16 @@ serve(async (req) => {
                   game_creator_id: game.creatorId,
                   game_creator_type: game.creatorType,
                   player_count: game.playerCount,
-                  similarity_score: Math.min(Math.round(nameSim), 100),
-                  match_reasons: [`suspicious_creator_game`, `name_match_${nameSim}%`],
+                  similarity_score: reverseScore,
+                  match_reasons: matchReasons,
                   thumbnail_analyzed: false,
                   creator_verified: false,
                   detection_count: 1,
                   game_created_at: game.created || null,
                   last_seen_at: new Date().toISOString(),
                   updated_at: new Date().toISOString(),
+                  confidence_level: getConfidenceLevel(reverseScore),
+                  scan_run_id: scanRunId,
                 }, {
                   onConflict: "registry_entry_id,detected_universe_id",
                   ignoreDuplicates: false,
