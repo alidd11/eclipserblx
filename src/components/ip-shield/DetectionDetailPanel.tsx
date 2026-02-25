@@ -68,8 +68,8 @@ export function DetectionDetailPanel({ detection, onCollapse }: DetectionDetailP
 
   return (
     <>
-      <Card className="border-t-0 rounded-t-none border-primary/20 bg-muted/30 animate-in slide-in-from-top-2 duration-200">
-        <CardContent className="py-4 space-y-4">
+      <Card className="border-t-0 rounded-t-none border-primary/20 bg-muted/30 animate-in slide-in-from-top-2 duration-200 overflow-hidden">
+        <CardContent className="py-4 px-3 sm:px-6 space-y-4 overflow-hidden">
           {/* Top section: Thumbnail + Stats */}
           <div className="flex gap-4">
             {/* Game thumbnail */}
@@ -129,27 +129,27 @@ export function DetectionDetailPanel({ detection, onCollapse }: DetectionDetailP
 
           {/* Creator / Group Owner */}
           {(data.groupOwner || data.creatorAvatar) && (
-            <div className="flex items-center gap-3 p-2.5 rounded-lg bg-background border">
+            <div className="flex items-center gap-3 p-2.5 rounded-lg bg-background border overflow-hidden">
               {data.groupOwner ? (
                 <>
                   {data.groupOwner.groupIcon && (
-                    <img src={data.groupOwner.groupIcon} alt="Group" className="h-10 w-10 rounded-lg object-cover border" />
+                    <img src={data.groupOwner.groupIcon} alt="Group" className="h-10 w-10 rounded-lg object-cover border shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium truncate">{data.groupOwner.groupName}</p>
                     <p className="text-[10px] text-muted-foreground">{data.groupOwner.memberCount?.toLocaleString()} members</p>
                   </div>
                   {data.groupOwner.owner && (
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Avatar className="h-8 w-8">
+                    <div className="flex items-center gap-2 shrink-0 min-w-0">
+                      <Avatar className="h-8 w-8 shrink-0">
                         {data.groupOwner.owner.avatar && <AvatarImage src={data.groupOwner.owner.avatar} />}
                         <AvatarFallback className="text-[10px]">
                           <Crown className="h-3.5 w-3.5" />
                         </AvatarFallback>
                       </Avatar>
-                      <div className="text-right">
-                        <p className="text-[10px] font-medium">{data.groupOwner.owner.displayName}</p>
-                        <p className="text-[10px] text-muted-foreground">@{data.groupOwner.owner.username}</p>
+                      <div className="text-right min-w-0">
+                        <p className="text-[10px] font-medium truncate">{data.groupOwner.owner.displayName}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">@{data.groupOwner.owner.username}</p>
                       </div>
                     </div>
                   )}
