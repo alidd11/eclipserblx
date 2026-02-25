@@ -209,7 +209,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: t('sidebar.home'), icon: Home, href: '/' },
         ...(isStaff ? [{ title: 'Admin Dashboard', icon: Shield, href: '/admin' }] : []),
         ...(isSeller ? [{ title: t('sidebar.sellerDashboard'), icon: Store, href: '/seller' }] : []),
-        ...(hasIPShield ? [{ title: 'IP Shield', icon: Shield, href: '/ip-shield/dashboard' }] : []),
+        ...(hasIPShield ? [{ title: 'IP Shield', icon: Shield, href: isStaff ? '/ip-staff' : '/ip-shield/dashboard' }] : []),
       ],
     },
     {

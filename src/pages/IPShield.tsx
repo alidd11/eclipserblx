@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -731,6 +732,7 @@ function CaseTimeline({ caseData }: { caseData: any }) {
 // ─── MAIN COMPONENT ───
 export default function IPShield() {
   const { user } = useAuth();
+  const { isStaff, loading: adminLoading } = useAdminAuth();
   const queryClient = useQueryClient();
   const [showNewRequest, setShowNewRequest] = useState(false);
   const [activeTab, setActiveTab] = useState('cases');
@@ -743,7 +745,7 @@ export default function IPShield() {
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: 'Custom IP Shield Plan', message: '' });
   const [contactSubmitting, setContactSubmitting] = useState(false);
-  // Check IP Shield subscription status
+  // Check IP Shield subscription status (skip for staff)
   const { data: subscriptionStatus, isLoading: subLoading, refetch: refetchSubscription } = useQuery({
     queryKey: ['ip-shield-subscription', user?.id],
     queryFn: async () => {
@@ -751,12 +753,11 @@ export default function IPShield() {
       if (error) throw error;
       return data as { subscribed: boolean; tier?: string; limits?: { takedowns_per_month: number; registry_limit: number; priority: boolean; monitoring: boolean; dedicated_agent: boolean }; subscription_end?: string; subscription_id?: string };
     },
-    enabled: !!user,
+    enabled: !!user && !isStaff,
   });
 
-  const isSubscribed = subscriptionStatus?.subscribed === true;
-
-  // Check identity verification status
+  const isSubscribed = isStaff || subscriptionStatus?.subscribed === true;
+  // Check identity verification status (skip for staff)
   const { data: verificationStatus, isLoading: verifyLoading, refetch: refetchVerification } = useQuery({
     queryKey: ['ip-shield-identity-verification', user?.id],
     queryFn: async () => {
@@ -764,10 +765,10 @@ export default function IPShield() {
       if (error) throw error;
       return data as { verified: boolean; status: string; verifiedAt?: string };
     },
-    enabled: !!user && isSubscribed,
+    enabled: !!user && !isStaff && isSubscribed,
   });
 
-  const isVerified = verificationStatus?.verified === true;
+  const isVerified = isStaff || verificationStatus?.verified === true;
 
   useEffect(() => {
     if (searchParams.get('verification') === 'complete' && user) refetchVerification();
@@ -962,6 +963,11 @@ export default function IPShield() {
       popular: false,
     },
   ];
+
+  // Staff/admin bypass — redirect straight to staff dashboard
+  if (!adminLoading && user && isStaff) {
+    return <Navigate to="/ip-staff" replace />;
+  }
 
   // Not logged in
   if (!user) {
