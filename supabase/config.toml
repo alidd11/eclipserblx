@@ -349,3 +349,6 @@ verify_jwt = false
 
 [functions.poll-discord-audit-log]
 verify_jwt = false
+
+[functions.check-offender-activity]
+verify_jwt = false
