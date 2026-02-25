@@ -736,6 +736,8 @@ export default function IPShield() {
   const [searchParams] = useSearchParams();
   const [verifying, setVerifying] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
+  const [recheckingCaseId, setRecheckingCaseId] = useState<string | null>(null);
+  const [recheckResults, setRecheckResults] = useState<{ caseNumber: string; findings: any[]; totalCreations: number } | null>(null);
 
   // Check IP Shield subscription status
   const { data: subscriptionStatus, isLoading: subLoading, refetch: refetchSubscription } = useQuery({
@@ -1267,6 +1269,64 @@ export default function IPShield() {
                           </div>
                           {/* Timeline */}
                           <CaseTimeline caseData={c} />
+                          {/* Re-check offender button - show on sent/resolved cases */}
+                          {['notice_sent', 'resolved'].includes(c.status) && c.target_platform === 'roblox' && (
+                            <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={recheckingCaseId === c.id}
+                                onClick={async () => {
+                                  setRecheckingCaseId(c.id);
+                                  try {
+                                    const { data, error } = await supabase.functions.invoke('check-offender-activity', {
+                                      body: { takedown_id: c.id },
+                                    });
+                                    if (error) throw error;
+                                    if (data?.error) throw new Error(data.error);
+                                    setRecheckResults({
+                                      caseNumber: c.case_number,
+                                      findings: data.findings || [],
+                                      totalCreations: data.total_creations || 0,
+                                    });
+                                    queryClient.invalidateQueries({ queryKey: ['ip-shield-cases'] });
+                                    toast({ title: data.suspicious_count > 0 ? `⚠️ ${data.suspicious_count} suspicious find(s)` : '✅ No suspicious activity', description: `Scanned ${data.total_creations} creations from offender.` });
+                                  } catch (err: any) {
+                                    toast({ title: 'Re-check failed', description: err.message, variant: 'destructive' });
+                                  } finally {
+                                    setRecheckingCaseId(null);
+                                  }
+                                }}
+                              >
+                                {recheckingCaseId === c.id ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Radar className="h-3 w-3 mr-1" />}
+                                Re-check Offender
+                              </Button>
+                              {c.last_recheck_at && (
+                                <span className="text-xs text-muted-foreground">
+                                  Last checked {format(new Date(c.last_recheck_at), 'MMM d, HH:mm')}
+                                  {(c.recheck_results as any)?.suspicious_count > 0 && (
+                                    <Badge variant="destructive" className="ml-1 text-[10px] px-1 py-0">
+                                      {(c.recheck_results as any).suspicious_count} found
+                                    </Badge>
+                                  )}
+                                </span>
+                              )}
+                              {(c.recheck_results as any)?.suspicious_count > 0 && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-xs"
+                                  onClick={() => setRecheckResults({
+                                    caseNumber: c.case_number,
+                                    findings: (c.recheck_results as any).findings || [],
+                                    totalCreations: (c.recheck_results as any).total_creations || 0,
+                                  })}
+                                >
+                                  <Eye className="h-3 w-3 mr-1" /> View Results
+                                </Button>
+                              )}
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     );
@@ -1511,6 +1571,63 @@ export default function IPShield() {
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* Offender Re-check Results Dialog */}
+        <Dialog open={!!recheckResults} onOpenChange={() => setRecheckResults(null)}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Radar className="h-5 w-5" />
+                Offender Activity Check — {recheckResults?.caseNumber}
+              </DialogTitle>
+              <DialogDescription>
+                Scanned {recheckResults?.totalCreations || 0} creations from the offender's profile.
+              </DialogDescription>
+            </DialogHeader>
+            {recheckResults?.findings?.length === 0 ? (
+              <div className="text-center py-8">
+                <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-3" />
+                <p className="font-medium">No Suspicious Activity Found</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  The offender hasn't uploaded any content similar to your original work.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recheckResults?.findings?.map((f: any, i: number) => (
+                  <Card key={i} className={f.isNew ? 'border-destructive/50 bg-destructive/5' : ''}>
+                    <CardContent className="py-3">
+                      <div className="flex gap-3">
+                        {f.thumbnailUrl && (
+                          <img src={f.thumbnailUrl} alt={f.name} className="w-16 h-16 rounded object-cover flex-shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium text-sm truncate">{f.name}</span>
+                            {f.isNew && <Badge variant="destructive" className="text-[10px]">New/Updated</Badge>}
+                            <Badge variant="outline" className="text-[10px]">{f.overallScore}% match</Badge>
+                          </div>
+                          <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
+                            <span>Name: {f.nameSimilarity}%</span>
+                            <span>Desc: {f.descriptionSimilarity}%</span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <a href={f.gameUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1">
+                              <ExternalLink className="h-3 w-3" /> View on Roblox
+                            </a>
+                            <span className="text-xs text-muted-foreground">
+                              Updated {f.updated ? format(new Date(f.updated), 'MMM d, yyyy') : 'Unknown'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );
