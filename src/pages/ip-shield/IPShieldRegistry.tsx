@@ -13,17 +13,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
-import { FileText, Plus } from 'lucide-react';
+import { FileText, Plus, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
+
+const EMPTY_FORM = { title: '', description: '', work_type: '', proof_urls: '', roblox_asset_ids: '', roblox_universe_ids: '', search_keywords: '' };
 
 export default function IPShieldRegistry() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [showAddWork, setShowAddWork] = useState(false);
-  const [registryForm, setRegistryForm] = useState({
-    title: '', description: '', work_type: '', proof_urls: '',
-    roblox_asset_ids: '', roblox_universe_ids: '', search_keywords: '',
-  });
+  const [showDialog, setShowDialog] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [registryForm, setRegistryForm] = useState(EMPTY_FORM);
 
   const { data: ipRegistry, isLoading: registryLoading } = useQuery({
     queryKey: ['ip-registry', user?.id],
@@ -39,31 +39,60 @@ export default function IPShieldRegistry() {
     enabled: !!user,
   });
 
-  const registerWork = useMutation({
+  const openAdd = () => {
+    setEditingId(null);
+    setRegistryForm(EMPTY_FORM);
+    setShowDialog(true);
+  };
+
+  const openEdit = (work: any) => {
+    setEditingId(work.id);
+    setRegistryForm({
+      title: work.title || '',
+      description: work.description || '',
+      work_type: work.work_type || '',
+      proof_urls: (work.proof_urls || []).join('\n'),
+      roblox_asset_ids: (work.roblox_asset_ids || []).join(', '),
+      roblox_universe_ids: (work.roblox_universe_ids || []).join(', '),
+      search_keywords: (work.search_keywords || []).join(', '),
+    });
+    setShowDialog(true);
+  };
+
+  const parseForm = () => ({
+    title: registryForm.title,
+    description: registryForm.description || null,
+    work_type: registryForm.work_type,
+    proof_urls: registryForm.proof_urls ? registryForm.proof_urls.split('\n').filter(Boolean) : [],
+    roblox_asset_ids: registryForm.roblox_asset_ids ? registryForm.roblox_asset_ids.split(',').map(s => s.trim()).filter(Boolean) : [],
+    roblox_universe_ids: registryForm.roblox_universe_ids ? registryForm.roblox_universe_ids.split(',').map(s => s.trim()).filter(Boolean) : [],
+    search_keywords: registryForm.search_keywords ? registryForm.search_keywords.split(',').map(s => s.trim()).filter(Boolean) : [],
+  });
+
+  const saveWork = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.from('creator_ip_registry').insert({
-        creator_id: user!.id,
-        title: registryForm.title,
-        description: registryForm.description || null,
-        work_type: registryForm.work_type,
-        proof_urls: registryForm.proof_urls ? registryForm.proof_urls.split('\n').filter(Boolean) : [],
-        roblox_asset_ids: registryForm.roblox_asset_ids ? registryForm.roblox_asset_ids.split(',').map(s => s.trim()).filter(Boolean) : [],
-        roblox_universe_ids: registryForm.roblox_universe_ids ? registryForm.roblox_universe_ids.split(',').map(s => s.trim()).filter(Boolean) : [],
-        search_keywords: registryForm.search_keywords ? registryForm.search_keywords.split(',').map(s => s.trim()).filter(Boolean) : [],
-      }).select('id').single();
-      if (error) throw error;
-      return data;
+      const payload = parseForm();
+      if (editingId) {
+        const { error } = await supabase.from('creator_ip_registry').update(payload).eq('id', editingId).eq('creator_id', user!.id);
+        if (error) throw error;
+        return { id: editingId, isNew: false };
+      } else {
+        const { data, error } = await supabase.from('creator_ip_registry').insert({ ...payload, creator_id: user!.id }).select('id').single();
+        if (error) throw error;
+        return { id: data.id, isNew: true };
+      }
     },
-    onSuccess: async (data) => {
-      toast({ title: 'Work registered', description: 'Running initial copy scan...' });
-      setShowAddWork(false);
-      setRegistryForm({ title: '', description: '', work_type: '', proof_urls: '', roblox_asset_ids: '', roblox_universe_ids: '', search_keywords: '' });
+    onSuccess: async (result) => {
+      toast({ title: editingId ? 'Work updated' : 'Work registered', description: editingId ? 'Changes saved.' : 'Running initial copy scan...' });
+      setShowDialog(false);
+      setRegistryForm(EMPTY_FORM);
+      setEditingId(null);
       queryClient.invalidateQueries({ queryKey: ['ip-registry'] });
 
-      if (data?.id) {
+      if (result.isNew && result.id) {
         try {
           const { data: scanData } = await supabase.functions.invoke('scan-roblox-copies', {
-            body: { registry_entry_id: data.id },
+            body: { registry_entry_id: result.id },
           });
           toast({ title: 'Initial scan complete', description: `Found ${scanData?.total_detected || 0} potential copies.` });
           queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
@@ -74,7 +103,7 @@ export default function IPShieldRegistry() {
       }
     },
     onError: (error) => {
-      toast({ title: 'Failed to register', description: error.message, variant: 'destructive' });
+      toast({ title: editingId ? 'Failed to update' : 'Failed to register', description: error.message, variant: 'destructive' });
     },
   });
 
@@ -91,7 +120,7 @@ export default function IPShieldRegistry() {
               Register your original works for faster takedown processing. New entries are auto-scanned.
             </p>
           </div>
-          <Button variant="outline" onClick={() => setShowAddWork(true)}>
+          <Button variant="outline" onClick={openAdd}>
             <Plus className="h-4 w-4 mr-2" /> Register Work
           </Button>
         </div>
@@ -114,7 +143,7 @@ export default function IPShieldRegistry() {
               <Card key={work.id}>
                 <CardContent className="py-4">
                   <div className="flex items-start justify-between gap-3">
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{work.title}</span>
                         <Badge variant="outline" className="capitalize">{work.work_type}</Badge>
@@ -135,6 +164,9 @@ export default function IPShieldRegistry() {
                         Registered {format(new Date(work.created_at), 'MMM d, yyyy')}
                       </p>
                     </div>
+                    <Button variant="ghost" size="icon" className="shrink-0" onClick={() => openEdit(work)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -142,13 +174,13 @@ export default function IPShieldRegistry() {
           </div>
         )}
 
-        {/* Register Work Dialog */}
-        <Dialog open={showAddWork} onOpenChange={setShowAddWork}>
+        {/* Add / Edit Dialog */}
+        <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Register Original Work</DialogTitle>
+              <DialogTitle>{editingId ? 'Edit Registered Work' : 'Register Original Work'}</DialogTitle>
               <DialogDescription>
-                Pre-register your intellectual property. A copy scan runs automatically after registration.
+                {editingId ? 'Update the details of your registered work.' : 'Pre-register your intellectual property. A copy scan runs automatically after registration.'}
               </DialogDescription>
             </DialogHeader>
 
@@ -201,9 +233,9 @@ export default function IPShieldRegistry() {
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowAddWork(false)}>Cancel</Button>
-              <Button onClick={() => registerWork.mutate()} disabled={!registryForm.title || !registryForm.work_type || registerWork.isPending}>
-                {registerWork.isPending ? 'Registering...' : 'Register Work'}
+              <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
+              <Button onClick={() => saveWork.mutate()} disabled={!registryForm.title || !registryForm.work_type || saveWork.isPending}>
+                {saveWork.isPending ? (editingId ? 'Saving...' : 'Registering...') : (editingId ? 'Save Changes' : 'Register Work')}
               </Button>
             </DialogFooter>
           </DialogContent>
