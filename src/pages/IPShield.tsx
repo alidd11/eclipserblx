@@ -964,10 +964,6 @@ export default function IPShield() {
     },
   ];
 
-  // Staff/admin bypass — redirect straight to staff dashboard
-  if (!adminLoading && user && isStaff) {
-    return <Navigate to="/ip-staff" replace />;
-  }
 
   // Not logged in
   if (!user) {
