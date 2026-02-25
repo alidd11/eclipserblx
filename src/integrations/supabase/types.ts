@@ -3327,6 +3327,74 @@ export type Database = {
         }
         Relationships: []
       }
+      ip_abuse_complaints: {
+        Row: {
+          complaint_text: string
+          complaint_type: string
+          created_at: string
+          creator_id: string
+          detection_id: string | null
+          hosting_abuse_email: string | null
+          hosting_provider: string | null
+          id: string
+          registrar_abuse_email: string | null
+          registrar_name: string | null
+          response_notes: string | null
+          sent_at: string | null
+          sent_to_emails: string[] | null
+          status: string
+          target_domain: string
+          target_url: string
+          updated_at: string
+        }
+        Insert: {
+          complaint_text: string
+          complaint_type?: string
+          created_at?: string
+          creator_id: string
+          detection_id?: string | null
+          hosting_abuse_email?: string | null
+          hosting_provider?: string | null
+          id?: string
+          registrar_abuse_email?: string | null
+          registrar_name?: string | null
+          response_notes?: string | null
+          sent_at?: string | null
+          sent_to_emails?: string[] | null
+          status?: string
+          target_domain: string
+          target_url: string
+          updated_at?: string
+        }
+        Update: {
+          complaint_text?: string
+          complaint_type?: string
+          created_at?: string
+          creator_id?: string
+          detection_id?: string | null
+          hosting_abuse_email?: string | null
+          hosting_provider?: string | null
+          id?: string
+          registrar_abuse_email?: string | null
+          registrar_name?: string | null
+          response_notes?: string | null
+          sent_at?: string | null
+          sent_to_emails?: string[] | null
+          status?: string
+          target_domain?: string
+          target_url?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ip_abuse_complaints_detection_id_fkey"
+            columns: ["detection_id"]
+            isOneToOne: false
+            referencedRelation: "ip_external_detections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ip_bans: {
         Row: {
           banned_by: string
@@ -3544,6 +3612,65 @@ export type Database = {
             columns: ["detection_id"]
             isOneToOne: false
             referencedRelation: "ip_copy_detections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ip_external_detections: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          creator_id: string
+          id: string
+          match_type: string
+          matched_content: string | null
+          page_title: string | null
+          registry_entry_id: string | null
+          scraped_content: string | null
+          screenshot_url: string | null
+          source_url: string
+          source_website: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          creator_id: string
+          id?: string
+          match_type?: string
+          matched_content?: string | null
+          page_title?: string | null
+          registry_entry_id?: string | null
+          scraped_content?: string | null
+          screenshot_url?: string | null
+          source_url: string
+          source_website: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          creator_id?: string
+          id?: string
+          match_type?: string
+          matched_content?: string | null
+          page_title?: string | null
+          registry_entry_id?: string | null
+          scraped_content?: string | null
+          screenshot_url?: string | null
+          source_url?: string
+          source_website?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ip_external_detections_registry_entry_id_fkey"
+            columns: ["registry_entry_id"]
+            isOneToOne: false
+            referencedRelation: "creator_ip_registry"
             referencedColumns: ["id"]
           },
         ]

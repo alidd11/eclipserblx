@@ -11,13 +11,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Radar, Search, Loader2, ExternalLink, Gavel, Users,
   TrendingUp, TrendingDown, Minus, ShieldCheck, History, CheckSquare,
-  Filter, Clock, AlertTriangle, Target, RefreshCw, X, ChevronDown
+  Filter, Clock, AlertTriangle, Target, RefreshCw, X, ChevronDown, Globe
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { DetectionDetailPanel } from '@/components/ip-shield/DetectionDetailPanel';
+import { ExternalWebScanner } from '@/components/ip-shield/ExternalWebScanner';
 
 type SortOption = 'score_desc' | 'score_asc' | 'newest' | 'oldest' | 'players';
 type FilterOption = 'all' | 'critical' | 'high' | 'medium' | 'low' | 'actionable';
@@ -238,7 +240,7 @@ export default function IPShieldDetections() {
               Copy Detection
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              AI-powered Roblox scanning with thumbnail analysis, name matching, and plagiarism detection.
+              AI-powered scanning across Roblox and external websites.
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -263,6 +265,17 @@ export default function IPShieldDetections() {
           </div>
         </div>
 
+        <Tabs defaultValue="roblox" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="roblox" className="gap-1.5"><Radar className="h-3.5 w-3.5" /> Roblox Scanner</TabsTrigger>
+            <TabsTrigger value="external" className="gap-1.5"><Globe className="h-3.5 w-3.5" /> External Websites</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="external">
+            <ExternalWebScanner />
+          </TabsContent>
+
+          <TabsContent value="roblox" className="space-y-6">
         {/* Last Scan Info */}
         {lastScanRun && (
           <div className="flex items-center gap-3 text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
@@ -537,6 +550,8 @@ export default function IPShieldDetections() {
             </div>
           </div>
         )}
+          </TabsContent>
+        </Tabs>
       </div>
     </IPShieldLayout>
   );
