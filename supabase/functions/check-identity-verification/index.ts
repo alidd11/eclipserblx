@@ -48,6 +48,8 @@ serve(async (req) => {
         verified: true,
         status: 'verified',
         verifiedAt: new Date().toISOString(),
+        verifiedName: user.email?.split('@')[0] || '',
+        verifiedEmail: user.email || '',
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -64,10 +66,48 @@ serve(async (req) => {
 
     if (verifiedLocal && verifiedLocal.length > 0) {
       logStep("Already verified locally");
+
+      // Try to fetch verified person details from Stripe
+      let verifiedName = '';
+      let verifiedAddress = '';
+      try {
+        const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+        // Find the verified session to get person details
+        const { data: verifiedSession } = await supabaseClient
+          .from('identity_verifications')
+          .select('stripe_session_id')
+          .eq('user_id', user.id)
+          .eq('status', 'verified')
+          .limit(1);
+
+        if (verifiedSession?.[0]?.stripe_session_id) {
+          const session = await stripe.identity.verificationSessions.retrieve(
+            verifiedSession[0].stripe_session_id,
+            { expand: ['verified_outputs'] }
+          );
+          const outputs = (session as any).verified_outputs;
+          if (outputs) {
+            const fn = outputs.first_name || '';
+            const ln = outputs.last_name || '';
+            verifiedName = `${fn} ${ln}`.trim();
+            const addr = outputs.address;
+            if (addr) {
+              verifiedAddress = [addr.line1, addr.line2, addr.city, addr.state, addr.postal_code, addr.country]
+                .filter(Boolean).join(', ');
+            }
+          }
+        }
+      } catch (err) {
+        logStep("Warning: Could not fetch verified person details", { error: String(err) });
+      }
+
       return new Response(JSON.stringify({
         verified: true,
         status: 'verified',
         verifiedAt: verifiedLocal[0].verified_at,
+        verifiedName,
+        verifiedEmail: user.email || '',
+        verifiedAddress,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
