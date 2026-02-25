@@ -136,7 +136,7 @@ export function LinkedAccountsCard({
             {
               body: {
                 code,
-                redirect_uri: 'https://eclipserblx.com/account',
+                redirect_uri: 'https://eclipserblx.com/auth/roblox/callback',
                 code_verifier: robloxCodeVerifier,
                 user_id: userId,
               },
@@ -258,8 +258,8 @@ export function LinkedAccountsCard({
 
   // Roblox OAuth - generate auth URL and redirect
   const getRobloxRedirectUri = () => {
-    // Always use production domain - must match Roblox Creator Hub redirect URLs
-    return 'https://eclipserblx.com/account';
+    // Reuse the same redirect URI registered for sign-in in the Roblox Creator Hub
+    return 'https://eclipserblx.com/auth/roblox/callback';
   };
 
   const handleLinkRoblox = async () => {
