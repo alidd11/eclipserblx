@@ -208,6 +208,62 @@ serve(async (req) => {
         }
       }
 
+      // ── Upsert the subscription record in the subscriptions table ──
+      const subData: Record<string, unknown> = {
+        user_id: userId,
+        status: isActive ? "active" : (subscription.status === "canceled" ? "cancelled" : subscription.status),
+        tier: "pro",
+        stripe_subscription_id: subscription.id,
+        stripe_customer_id: customerId,
+        current_period_start: subscription.current_period_start
+          ? new Date(subscription.current_period_start * 1000).toISOString()
+          : null,
+        current_period_end: subscription.current_period_end
+          ? new Date(subscription.current_period_end * 1000).toISOString()
+          : null,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Try to find existing subscription for this user (by stripe_subscription_id or user_id)
+      const { data: existingSub } = await supabaseAdmin
+        .from("subscriptions")
+        .select("id")
+        .eq("stripe_subscription_id", subscription.id)
+        .maybeSingle();
+
+      if (existingSub) {
+        // Update existing
+        const { error: subUpdateErr } = await supabaseAdmin
+          .from("subscriptions")
+          .update(subData)
+          .eq("id", existingSub.id);
+        if (subUpdateErr) {
+          logStep("ERROR updating subscription record", { error: subUpdateErr.message });
+        } else {
+          logStep("Updated subscription record", { id: existingSub.id, status: subData.status });
+        }
+      } else if (isActive) {
+        // Only insert if activating (don't create records for deactivation of unknown subs)
+        const { error: subInsertErr } = await supabaseAdmin
+          .from("subscriptions")
+          .insert({ ...subData, created_at: new Date().toISOString() });
+        if (subInsertErr) {
+          logStep("ERROR inserting subscription record", { error: subInsertErr.message });
+        } else {
+          logStep("Created subscription record", { userId, stripeSubId: subscription.id });
+        }
+      }
+
+      // Also assign eclipse_plus_member role when activating
+      if (isActive) {
+        const { error: roleErr } = await supabaseAdmin
+          .from("user_roles")
+          .upsert({ user_id: userId, role: "eclipse_plus_member" }, { onConflict: "user_id,role" });
+        if (roleErr) {
+          logStep("Error assigning eclipse_plus_member role", { error: roleErr.message });
+        }
+      }
+
       if (discordEvent && profile.discord_id) {
         logStep("Sending Discord webhook", { userId, discordEvent, discordId: profile.discord_id });
         
