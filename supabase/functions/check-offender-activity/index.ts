@@ -265,7 +265,7 @@ serve(async (req) => {
             })
             .eq("id", takedown_id);
           
-          logStep("Resolved offender", { offenderRobloxId, offenderType, username });
+          logStep("Resolved offender", { offenderRobloxId, offenderType, displayName });
         }
       }
     }
