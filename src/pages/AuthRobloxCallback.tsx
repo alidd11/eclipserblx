@@ -159,7 +159,12 @@ export default function AuthRobloxCallback() {
             }
           }
 
-          navigate('/');
+          // Roblox users always get placeholder emails — redirect to add real email
+          if (data.isNewUser) {
+            navigate('/complete-profile', { replace: true });
+          } else {
+            navigate('/');
+          }
         } else {
           setError('No session received');
           toast({

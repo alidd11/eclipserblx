@@ -111,7 +111,13 @@ export default function AuthDiscordCallback() {
             }
           }
 
-          navigate('/');
+          // If new user and email is placeholder, go to complete-profile
+          const userEmail = data.session.user?.email;
+          if (data.isNewUser && (!userEmail || userEmail.endsWith('.placeholder.local'))) {
+            navigate('/complete-profile', { replace: true });
+          } else {
+            navigate('/');
+          }
         } else {
           setError('No session received');
           toast({
