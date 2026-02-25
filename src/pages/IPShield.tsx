@@ -980,9 +980,6 @@ export default function IPShield() {
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
               Professional intellectual property protection for Roblox creators. We handle DMCA takedowns, monitor your assets, and protect your work — so you can focus on creating.
             </p>
-            <Button size="lg" asChild>
-              <Link to="/auth"><LogIn className="h-4 w-4 mr-2" /> Sign In to Get Started</Link>
-            </Button>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-5 mb-16">
