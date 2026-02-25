@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,9 +14,10 @@ import { toast } from '@/hooks/use-toast';
 import {
   Radar, Search, Loader2, ExternalLink, Gavel, Users,
   TrendingUp, TrendingDown, Minus, ShieldCheck, History, CheckSquare,
-  Filter, Clock, AlertTriangle, Target, RefreshCw, X
+  Filter, Clock, AlertTriangle, Target, RefreshCw, X, ChevronDown
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
+import { DetectionDetailPanel } from '@/components/ip-shield/DetectionDetailPanel';
 
 type SortOption = 'score_desc' | 'score_asc' | 'newest' | 'oldest' | 'players';
 type FilterOption = 'all' | 'critical' | 'high' | 'medium' | 'low' | 'actionable';
@@ -32,6 +33,11 @@ export default function IPShieldDetections() {
   const [searchQuery, setSearchQuery] = useState('');
   const [customKeywords, setCustomKeywords] = useState('');
   const [showCustomScan, setShowCustomScan] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const toggleExpand = useCallback((id: string) => {
+    setExpandedId(prev => prev === id ? null : id);
+  }, []);
 
   const { data: detections, isLoading } = useQuery({
     queryKey: ['copy-detections', user?.id],
@@ -438,69 +444,78 @@ export default function IPShieldDetections() {
                 const confidenceLabel = score >= 75 ? '🔴 Critical' : score >= 55 ? '🟠 High' : score >= 35 ? '🟡 Medium' : '🟢 Low';
 
                 return (
-                  <Card key={d.id} className={`transition-colors ${isSelected ? 'border-destructive ring-1 ring-destructive/20' : score >= 75 && !creatorVerified ? 'border-destructive/40' : 'hover:border-muted-foreground/20'}`}>
-                    <CardContent className="py-3 px-4">
-                      <div className="flex items-start gap-3">
-                        {canSelect && (
-                          <Checkbox checked={isSelected} onCheckedChange={() => toggleSelect(d.id)} className="mt-1" />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium text-sm">{d.game_name}</span>
-                            {creatorVerified ? (
-                              <Badge variant="secondary" className="text-[10px] gap-1"><ShieldCheck className="h-3 w-3" /> Verified</Badge>
-                            ) : (
-                              <Badge variant={confidenceColor as any} className="text-[10px]">
-                                {confidenceLabel}{score > 0 && ` · ${score}%`}
-                              </Badge>
-                            )}
-                            {d.takedown_request_id && (
-                              <Badge variant="outline" className="text-[10px] gap-1 text-primary"><Gavel className="h-3 w-3" /> Takedown Filed</Badge>
-                            )}
-                            {d.player_count > 0 && (
-                              <Badge variant="outline" className="text-[10px] gap-1"><Users className="h-3 w-3" /> {d.player_count.toLocaleString()} <TrendIcon trend={trend} /></Badge>
-                            )}
-                            {detectionCount > 1 && (
-                              <Badge variant="outline" className="text-[10px] gap-1"><History className="h-3 w-3" /> {detectionCount}x</Badge>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            by <span className="font-medium text-foreground">{d.game_creator_name}</span>
-                            {d.game_creator_type === 'Group' && (
-                              <span>{' (Group'}{d.creator_group_name && `: ${d.creator_group_name}`}{ownsGroup && ' — member'}{')'}</span>
-                            )}
-                            {' · '}"{d.search_keyword}"
-                          </p>
-                          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                            {hasThumbMatch && <Badge variant="outline" className="text-[10px] py-0">🖼️ Thumbnail</Badge>}
-                            {hasDescMatch && <Badge variant="outline" className="text-[10px] py-0">📝 Description</Badge>}
-                            {hasSuspicious && <Badge variant="outline" className="text-[10px] py-0 text-destructive">⚠️ Suspicious</Badge>}
-                            {d.thumbnail_analyzed && !hasThumbMatch && (
-                              <Badge variant="outline" className="text-[10px] py-0 text-muted-foreground">✓ Thumb Clear</Badge>
-                            )}
-                          </div>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">
-                            ID: {d.detected_universe_id}
-                            {' · '}Found {format(new Date(d.first_detected_at || d.created_at), 'MMM d, yyyy')}
-                            {d.last_seen_at && ` · Last ${format(new Date(d.last_seen_at), 'MMM d')}`}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          {!creatorVerified && score >= 30 && !d.takedown_request_id && !bulkMode && (
-                            <Button variant="destructive" size="sm" className="gap-1 h-7 text-xs" asChild>
-                              <a href="/ip-shield/dashboard/takedowns"><Gavel className="h-3 w-3" /> Takedown</a>
-                            </Button>
+                  <div key={d.id}>
+                    <Card
+                      className={`transition-colors cursor-pointer ${expandedId === d.id ? 'rounded-b-none border-primary/20' : ''} ${isSelected ? 'border-destructive ring-1 ring-destructive/20' : score >= 75 && !creatorVerified ? 'border-destructive/40' : 'hover:border-muted-foreground/20'}`}
+                      onClick={() => !bulkMode && toggleExpand(d.id)}
+                    >
+                      <CardContent className="py-3 px-4">
+                        <div className="flex items-start gap-3">
+                          {canSelect && (
+                            <Checkbox checked={isSelected} onCheckedChange={(e) => { e && toggleSelect(d.id); }} className="mt-1" onClick={(e) => e.stopPropagation()} />
                           )}
-                          <a href={`https://www.roblox.com/games/${d.detected_place_id || d.detected_universe_id}`} target="_blank" rel="noopener noreferrer">
-                            <Button variant="outline" size="sm" className="gap-1 h-7 text-xs"><ExternalLink className="h-3 w-3" /> View</Button>
-                          </a>
-                          {!bulkMode && (
-                            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => dismissDetection(d.id)}>Dismiss</Button>
-                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-medium text-sm">{d.game_name}</span>
+                              {creatorVerified ? (
+                                <Badge variant="secondary" className="text-[10px] gap-1"><ShieldCheck className="h-3 w-3" /> Verified</Badge>
+                              ) : (
+                                <Badge variant={confidenceColor as any} className="text-[10px]">
+                                  {confidenceLabel}{score > 0 && ` · ${score}%`}
+                                </Badge>
+                              )}
+                              {d.takedown_request_id && (
+                                <Badge variant="outline" className="text-[10px] gap-1 text-primary"><Gavel className="h-3 w-3" /> Takedown Filed</Badge>
+                              )}
+                              {d.player_count > 0 && (
+                                <Badge variant="outline" className="text-[10px] gap-1"><Users className="h-3 w-3" /> {d.player_count.toLocaleString()} <TrendIcon trend={trend} /></Badge>
+                              )}
+                              {detectionCount > 1 && (
+                                <Badge variant="outline" className="text-[10px] gap-1"><History className="h-3 w-3" /> {detectionCount}x</Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              by <span className="font-medium text-foreground">{d.game_creator_name}</span>
+                              {d.game_creator_type === 'Group' && (
+                                <span>{' (Group'}{d.creator_group_name && `: ${d.creator_group_name}`}{ownsGroup && ' — member'}{')'}</span>
+                              )}
+                              {' · '}"{d.search_keyword}"
+                            </p>
+                            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                              {hasThumbMatch && <Badge variant="outline" className="text-[10px] py-0">🖼️ Thumbnail</Badge>}
+                              {hasDescMatch && <Badge variant="outline" className="text-[10px] py-0">📝 Description</Badge>}
+                              {hasSuspicious && <Badge variant="outline" className="text-[10px] py-0 text-destructive">⚠️ Suspicious</Badge>}
+                              {d.thumbnail_analyzed && !hasThumbMatch && (
+                                <Badge variant="outline" className="text-[10px] py-0 text-muted-foreground">✓ Thumb Clear</Badge>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              ID: {d.detected_universe_id}
+                              {' · '}Found {format(new Date(d.first_detected_at || d.created_at), 'MMM d, yyyy')}
+                              {d.last_seen_at && ` · Last ${format(new Date(d.last_seen_at), 'MMM d')}`}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {!creatorVerified && score >= 30 && !d.takedown_request_id && !bulkMode && (
+                              <Button variant="destructive" size="sm" className="gap-1 h-7 text-xs" asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                                <a href="/ip-shield/dashboard/takedowns"><Gavel className="h-3 w-3" /> Takedown</a>
+                              </Button>
+                            )}
+                            <a href={`https://www.roblox.com/games/${d.detected_place_id || d.detected_universe_id}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                              <Button variant="outline" size="sm" className="gap-1 h-7 text-xs"><ExternalLink className="h-3 w-3" /> View</Button>
+                            </a>
+                            {!bulkMode && (
+                              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); dismissDetection(d.id); }}>Dismiss</Button>
+                            )}
+                            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${expandedId === d.id ? 'rotate-180' : ''}`} />
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                    {expandedId === d.id && (
+                      <DetectionDetailPanel detection={d} onCollapse={() => setExpandedId(null)} />
+                    )}
+                  </div>
                 );
               })}
             </div>
