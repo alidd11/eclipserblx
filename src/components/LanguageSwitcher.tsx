@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { Globe } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,6 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { supportedLanguages } from '@/i18n';
 import { cn } from '@/lib/utils';
+import { CountryFlag } from '@/components/CountryFlag';
 
 interface LanguageSwitcherProps {
   compact?: boolean;
@@ -31,7 +31,7 @@ export function LanguageSwitcher({ compact = false }: LanguageSwitcherProps) {
           )}
           aria-label="Change language"
         >
-          <Globe className={cn(compact ? 'h-3.5 w-3.5' : 'h-4 w-4')} />
+          <CountryFlag code={currentLang.code} className={cn(compact ? 'w-4 h-3' : 'w-5 h-3.5')} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[140px]">
@@ -44,7 +44,7 @@ export function LanguageSwitcher({ compact = false }: LanguageSwitcherProps) {
               i18n.language === lang.code && 'bg-accent'
             )}
           >
-            <span className="text-base leading-none" role="img" aria-label={lang.label}>{lang.flag}</span>
+            <CountryFlag code={lang.code} className="w-5 h-3.5" />
             <span>{lang.label}</span>
           </DropdownMenuItem>
         ))}
