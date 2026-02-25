@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
-import { FileText, Plus, Pencil } from 'lucide-react';
+import { FileText, Plus, Pencil, Search, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 const EMPTY_FORM = { title: '', description: '', work_type: '', proof_urls: '', roblox_asset_ids: '', roblox_universe_ids: '', search_keywords: '' };
@@ -23,6 +23,7 @@ export default function IPShieldRegistry() {
   const queryClient = useQueryClient();
   const [showDialog, setShowDialog] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [scanningId, setScanningId] = useState<string | null>(null);
   const [registryForm, setRegistryForm] = useState(EMPTY_FORM);
 
   const { data: ipRegistry, isLoading: registryLoading } = useQuery({
@@ -164,9 +165,35 @@ export default function IPShieldRegistry() {
                         Registered {format(new Date(work.created_at), 'MMM d, yyyy')}
                       </p>
                     </div>
-                    <Button variant="ghost" size="icon" className="shrink-0" onClick={() => openEdit(work)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        disabled={scanningId === work.id}
+                        onClick={async () => {
+                          setScanningId(work.id);
+                          toast({ title: 'Scanning...', description: `Running copy scan for "${work.title}"` });
+                          try {
+                            const { data: scanData } = await supabase.functions.invoke('scan-roblox-copies', {
+                              body: { registry_entry_id: work.id },
+                            });
+                            toast({ title: 'Scan complete', description: `Found ${scanData?.total_detected || 0} potential copies.` });
+                            queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
+                            queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
+                          } catch {
+                            toast({ title: 'Scan failed', variant: 'destructive' });
+                          } finally {
+                            setScanningId(null);
+                          }
+                        }}
+                      >
+                        {scanningId === work.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(work)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
