@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { 
-  Shield, LayoutDashboard, Gavel, Users, MessageSquare,
+  Shield, LayoutDashboard, Gavel, Users, MessageSquare, Mail,
   LogOut, LucideIcon, ExternalLink
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
@@ -20,6 +20,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { title: 'Overview', icon: LayoutDashboard, href: '/ip-staff' },
   { title: 'Takedown Requests', icon: Gavel, href: '/ip-staff/takedowns' },
+  { title: 'Email Management', icon: Mail, href: '/ip-staff/emails' },
   { title: 'Custom Plans', icon: Users, href: '/ip-staff/custom-plans' },
   { title: 'Contact Inbox', icon: MessageSquare, href: '/ip-staff/inbox' },
 ];

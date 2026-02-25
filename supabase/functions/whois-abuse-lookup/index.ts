@@ -312,6 +312,43 @@ ${complaintText}
       .eq('id', detection_id);
   }
 
+  // Create email thread for correspondence tracking
+  if (send_complaint && complaint) {
+    try {
+      const { data: thread } = await supabaseClient
+        .from('ip_email_threads')
+        .insert({
+          creator_id: user.id,
+          subject: `Abuse Complaint - ${cleanDomain} - ${original_work_title}`,
+          thread_type: 'abuse_complaint',
+          complaint_id: complaint.id,
+          recipient_email: 'legal@eclipserblx.com',
+          recipient_name: 'Eclipse Legal Team',
+        })
+        .select()
+        .single();
+
+      if (thread) {
+        await supabaseClient.from('ip_email_messages').insert({
+          thread_id: thread.id,
+          sender_id: user.id,
+          sender_email: 'legal@eclipserblx.com',
+          sender_name: `Eclipse IP Shield (Agent for ${creatorName})`,
+          recipient_email: 'legal@eclipserblx.com',
+          recipient_name: 'Eclipse Legal Team',
+          direction: 'outbound',
+          subject: `DMCA Abuse Complaint - ${cleanDomain} - ${original_work_title}`,
+          body_html: `<pre style="white-space: pre-wrap; font-family: inherit;">${complaintText}</pre><p><strong>Registrar:</strong> ${registrar || 'Unknown'}<br/><strong>Hosting:</strong> ${hostingProvider || 'Unknown'}</p>`,
+          body_text: complaintText,
+          status: 'sent',
+          sent_at: new Date().toISOString(),
+        });
+      }
+    } catch (threadErr) {
+      logStep("Email thread creation warning (non-blocking)", { error: String(threadErr) });
+    }
+  }
+
   logStep("Complaint filed", { domain: cleanDomain, sent: send_complaint });
 
   return new Response(

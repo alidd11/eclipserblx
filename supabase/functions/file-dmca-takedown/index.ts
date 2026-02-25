@@ -142,6 +142,57 @@ legal@eclipserblx.com
       })
       .eq("id", takedown_id);
 
+    // Create email thread + messages for correspondence tracking
+    try {
+      const { data: thread } = await supabaseClient
+        .from("ip_email_threads")
+        .insert({
+          creator_id: takedown.creator_id,
+          subject: `DMCA Takedown Notice - ${takedown.case_number}`,
+          thread_type: 'dmca_takedown',
+          takedown_id: takedown_id,
+          recipient_email: 'legal@eclipserblx.com',
+          recipient_name: 'Eclipse Legal Team',
+        })
+        .select()
+        .single();
+
+      if (thread) {
+        // Log the DMCA notice as outbound message
+        await supabaseClient.from("ip_email_messages").insert({
+          thread_id: thread.id,
+          sender_id: takedown.creator_id,
+          sender_email: 'legal@eclipserblx.com',
+          sender_name: `Eclipse IP Shield (Agent for ${creatorName})`,
+          recipient_email: 'legal@eclipserblx.com',
+          recipient_name: 'Eclipse Legal Team',
+          direction: 'outbound',
+          subject: `DMCA Takedown Notice - ${takedown.case_number} - ${takedown.target_platform}`,
+          body_html: `<pre style="white-space: pre-wrap; font-family: inherit;">${dmcaNotice}</pre>`,
+          body_text: dmcaNotice,
+          status: 'sent',
+          sent_at: new Date().toISOString(),
+        });
+
+        // Log the confirmation email to creator
+        await supabaseClient.from("ip_email_messages").insert({
+          thread_id: thread.id,
+          sender_id: null,
+          sender_email: 'noreply@eclipserblx.com',
+          sender_name: 'Eclipse IP Shield',
+          recipient_email: creatorEmail,
+          recipient_name: creatorName,
+          direction: 'outbound',
+          subject: `DMCA Takedown Filed - ${takedown.case_number}`,
+          body_html: `<p>Your DMCA takedown request (${takedown.case_number}) has been filed on your behalf.</p><p><strong>Platform:</strong> ${takedown.target_platform}</p>`,
+          status: 'sent',
+          sent_at: new Date().toISOString(),
+        });
+      }
+    } catch (threadErr) {
+      logStep("Email thread creation warning (non-blocking)", { error: String(threadErr) });
+    }
+
     logStep("DMCA notice sent successfully", { case_number: takedown.case_number });
 
     return new Response(

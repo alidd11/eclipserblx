@@ -3616,6 +3616,141 @@ export type Database = {
           },
         ]
       }
+      ip_email_messages: {
+        Row: {
+          body_html: string
+          body_text: string | null
+          created_at: string
+          direction: Database["public"]["Enums"]["ip_email_direction"]
+          error_message: string | null
+          id: string
+          recipient_email: string
+          recipient_name: string | null
+          resend_message_id: string | null
+          sender_email: string
+          sender_id: string | null
+          sender_name: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["ip_email_status"]
+          subject: string
+          thread_id: string
+        }
+        Insert: {
+          body_html: string
+          body_text?: string | null
+          created_at?: string
+          direction?: Database["public"]["Enums"]["ip_email_direction"]
+          error_message?: string | null
+          id?: string
+          recipient_email: string
+          recipient_name?: string | null
+          resend_message_id?: string | null
+          sender_email: string
+          sender_id?: string | null
+          sender_name?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["ip_email_status"]
+          subject: string
+          thread_id: string
+        }
+        Update: {
+          body_html?: string
+          body_text?: string | null
+          created_at?: string
+          direction?: Database["public"]["Enums"]["ip_email_direction"]
+          error_message?: string | null
+          id?: string
+          recipient_email?: string
+          recipient_name?: string | null
+          resend_message_id?: string | null
+          sender_email?: string
+          sender_id?: string | null
+          sender_name?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["ip_email_status"]
+          subject?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ip_email_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "ip_email_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ip_email_threads: {
+        Row: {
+          complaint_id: string | null
+          created_at: string
+          creator_id: string
+          id: string
+          last_message_at: string
+          recipient_email: string
+          recipient_name: string | null
+          registry_id: string | null
+          status: string
+          subject: string
+          takedown_id: string | null
+          thread_type: Database["public"]["Enums"]["ip_email_thread_type"]
+          updated_at: string
+        }
+        Insert: {
+          complaint_id?: string | null
+          created_at?: string
+          creator_id: string
+          id?: string
+          last_message_at?: string
+          recipient_email: string
+          recipient_name?: string | null
+          registry_id?: string | null
+          status?: string
+          subject: string
+          takedown_id?: string | null
+          thread_type?: Database["public"]["Enums"]["ip_email_thread_type"]
+          updated_at?: string
+        }
+        Update: {
+          complaint_id?: string | null
+          created_at?: string
+          creator_id?: string
+          id?: string
+          last_message_at?: string
+          recipient_email?: string
+          recipient_name?: string | null
+          registry_id?: string | null
+          status?: string
+          subject?: string
+          takedown_id?: string | null
+          thread_type?: Database["public"]["Enums"]["ip_email_thread_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ip_email_threads_complaint_id_fkey"
+            columns: ["complaint_id"]
+            isOneToOne: false
+            referencedRelation: "ip_abuse_complaints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ip_email_threads_registry_id_fkey"
+            columns: ["registry_id"]
+            isOneToOne: false
+            referencedRelation: "creator_ip_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ip_email_threads_takedown_id_fkey"
+            columns: ["takedown_id"]
+            isOneToOne: false
+            referencedRelation: "takedown_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ip_external_detections: {
         Row: {
           confidence_score: number | null
@@ -8993,6 +9128,15 @@ export type Database = {
         | "failed"
         | "missing_permissions"
       global_ban_type: "permanent" | "temporary"
+      ip_email_direction: "outbound" | "inbound"
+      ip_email_status:
+        | "draft"
+        | "sending"
+        | "sent"
+        | "delivered"
+        | "failed"
+        | "bounced"
+      ip_email_thread_type: "dmca_takedown" | "abuse_complaint" | "general"
       outreach_activity_type:
         | "created"
         | "contacted"
@@ -9145,6 +9289,16 @@ export const Constants = {
         "missing_permissions",
       ],
       global_ban_type: ["permanent", "temporary"],
+      ip_email_direction: ["outbound", "inbound"],
+      ip_email_status: [
+        "draft",
+        "sending",
+        "sent",
+        "delivered",
+        "failed",
+        "bounced",
+      ],
+      ip_email_thread_type: ["dmca_takedown", "abuse_complaint", "general"],
       outreach_activity_type: [
         "created",
         "contacted",
