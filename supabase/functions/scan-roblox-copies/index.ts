@@ -534,19 +534,88 @@ async function fetchGameScreenshots(universeId: string): Promise<string[]> {
   }
 }
 
-// ─── FETCH GAME PASSES COUNT ───
-async function fetchGamePassesCount(universeId: string): Promise<number | null> {
+// ─── FETCH GAME PASSES (Full details for comparison) ───
+interface GamePass { id: string; name: string; price: number | null; displayName?: string; }
+
+async function fetchGamePassesFull(universeId: string): Promise<GamePass[]> {
   try {
     const res = await fetch(
       `https://games.roblox.com/v1/games/${universeId}/game-passes?limit=100&sortOrder=Asc`,
       { headers: { Accept: "application/json" } }
     );
-    if (!res.ok) return null;
+    if (!res.ok) return [];
     const data = await res.json();
-    return data.data?.length || 0;
+    return (data.data || []).map((gp: any) => ({
+      id: String(gp.id),
+      name: gp.name || '',
+      price: gp.price ?? null,
+      displayName: gp.displayName || gp.name || '',
+    }));
   } catch {
-    return null;
+    return [];
   }
+}
+
+async function fetchGamePassesCount(universeId: string): Promise<number | null> {
+  const passes = await fetchGamePassesFull(universeId);
+  return passes.length;
+}
+
+// ─── GAME PASS MIRRORING COMPARISON ───
+function compareGamePasses(
+  originalPasses: GamePass[],
+  candidatePasses: GamePass[]
+): { matchedPasses: { original_name: string; copy_name: string; similarity: number; original_price: number | null; copy_price: number | null }[]; matchScore: number } {
+  if (originalPasses.length === 0 || candidatePasses.length === 0) {
+    return { matchedPasses: [], matchScore: 0 };
+  }
+
+  const matchedPasses: { original_name: string; copy_name: string; similarity: number; original_price: number | null; copy_price: number | null }[] = [];
+  const usedCandidates = new Set<number>();
+
+  for (const origPass of originalPasses) {
+    let bestMatch = { idx: -1, sim: 0 };
+    for (let ci = 0; ci < candidatePasses.length; ci++) {
+      if (usedCandidates.has(ci)) continue;
+      const candPass = candidatePasses[ci];
+
+      // Name similarity
+      const nameSim = computeNameSimilarity(origPass.name, candPass.name);
+      // Price similarity bonus
+      let priceBonus = 0;
+      if (origPass.price !== null && candPass.price !== null) {
+        if (origPass.price === candPass.price) priceBonus = 15;
+        else if (Math.abs(origPass.price - candPass.price) / Math.max(origPass.price, candPass.price, 1) < 0.2) priceBonus = 8;
+      }
+      const totalSim = Math.min(nameSim + priceBonus, 100);
+      if (totalSim > bestMatch.sim) {
+        bestMatch = { idx: ci, sim: totalSim };
+      }
+    }
+
+    if (bestMatch.idx >= 0 && bestMatch.sim >= 50) {
+      usedCandidates.add(bestMatch.idx);
+      matchedPasses.push({
+        original_name: origPass.name,
+        copy_name: candidatePasses[bestMatch.idx].name,
+        similarity: bestMatch.sim,
+        original_price: origPass.price,
+        copy_price: candidatePasses[bestMatch.idx].price,
+      });
+    }
+  }
+
+  // Score: ratio of matched passes weighted by similarity
+  const maxPossible = Math.min(originalPasses.length, candidatePasses.length);
+  if (maxPossible === 0) return { matchedPasses: [], matchScore: 0 };
+
+  const avgSim = matchedPasses.length > 0
+    ? matchedPasses.reduce((s, m) => s + m.similarity, 0) / matchedPasses.length
+    : 0;
+  const coverageRatio = matchedPasses.length / maxPossible;
+  const matchScore = Math.round(avgSim * coverageRatio);
+
+  return { matchedPasses, matchScore };
 }
 
 // ─── FETCH GAME BADGES COUNT ───
@@ -724,7 +793,9 @@ const SCORE_CAPS = {
   description: 25,     // Max contribution from description analysis
   creationDate: 10,    // Max contribution from creation date
   thumbnail: 40,       // Max contribution from AI thumbnail (strong visual signal)
-  // Total theoretical max ≈ 125, clamped to 100
+  gamePassMirror: 30,  // Max contribution from game pass structure mirroring
+  screenshotAI: 35,    // Max contribution from AI screenshot comparison
+  // Total theoretical max ≈ 190, clamped to 100
 };
 
 function getConfidenceLevel(score: number): string {
@@ -928,6 +999,89 @@ Respond with ONLY a JSON object (no markdown):
   }
 }
 
+// ─── AI SCREENSHOT COMPARISON (Compares in-game screenshots, not just icons) ───
+async function compareScreenshotsAI(
+  originalScreenshots: string[],
+  candidateScreenshots: string[],
+  originalTitle: string,
+  candidateTitle: string
+): Promise<{ comparisons: { original_url: string; copy_url: string; is_similar: boolean; confidence: number; reasoning: string }[]; overallScore: number }> {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY || originalScreenshots.length === 0 || candidateScreenshots.length === 0) {
+    return { comparisons: [], overallScore: 0 };
+  }
+
+  // Compare up to 2 screenshot pairs to save credits
+  const pairsToCompare = Math.min(2, Math.min(originalScreenshots.length, candidateScreenshots.length));
+  const comparisons: { original_url: string; copy_url: string; is_similar: boolean; confidence: number; reasoning: string }[] = [];
+
+  for (let i = 0; i < pairsToCompare; i++) {
+    try {
+      await new Promise(r => setTimeout(r, 500));
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-lite",
+          messages: [{
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `Compare these two Roblox game screenshots. The first is from "${originalTitle}" (original). The second is from "${candidateTitle}" (suspected copy).
+
+Look for evidence that the second game copied game elements from the first:
+- Same or very similar map layout/terrain/buildings
+- Copied UI elements, HUD layouts, or GUI designs
+- Identical game mechanics visible (same tools, vehicles, systems)
+- Reused 3D models, textures, or environment assets
+- Similar spawn areas or lobby designs
+
+Do NOT flag:
+- Common Roblox templates or free model usage
+- Standard UI patterns shared by many games
+- Generic terrain or skyboxes
+
+Respond with ONLY a JSON object (no markdown):
+{"is_similar": true/false, "confidence": 0-100, "reasoning": "brief explanation"}`
+              },
+              { type: "image_url", image_url: { url: originalScreenshots[i] } },
+              { type: "image_url", image_url: { url: candidateScreenshots[i] } },
+            ],
+          }],
+        }),
+      });
+
+      if (!response.ok) continue;
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || "";
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        comparisons.push({
+          original_url: originalScreenshots[i],
+          copy_url: candidateScreenshots[i],
+          is_similar: parsed.is_similar === true,
+          confidence: parsed.confidence || 0,
+          reasoning: parsed.reasoning || "",
+        });
+      }
+    } catch (err) {
+      logStep("Screenshot comparison error", { error: String(err) });
+    }
+  }
+
+  const similarOnes = comparisons.filter(c => c.is_similar);
+  const overallScore = similarOnes.length > 0
+    ? Math.round(similarOnes.reduce((s, c) => s + c.confidence, 0) / comparisons.length)
+    : 0;
+
+  return { comparisons, overallScore };
+}
+
 // ─── MAIN HANDLER ───
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -940,7 +1094,7 @@ serve(async (req) => {
     { auth: { persistSession: false } }
   );
 
-  logStep("Enhanced copy detection scan started (v8 - Jaro-Winkler + reverse creator search)");
+  logStep("Enhanced copy detection scan started (v9 - game pass mirroring + screenshot AI)");
 
   try {
     let body: { registry_entry_id?: string; custom_search_terms?: string[]; scan_type?: string } = {};
@@ -1077,18 +1231,24 @@ serve(async (req) => {
 
       const ownUniverseIds = new Set(entry.roblox_universe_ids || []);
 
-      // Fetch original game details in ONE call (replaces 3 separate calls)
+      // Fetch original game details, passes, and screenshots in parallel
       let originalThumbUrl: string | null = null;
       let originalDescription: string | null = entry.description || null;
       let originalCreatedDate: string | null = null;
+      let originalGamePasses: GamePass[] = [];
+      let originalScreenshots: string[] = [];
 
       if (entry.roblox_universe_ids && entry.roblox_universe_ids.length > 0) {
         const firstUniverse = entry.roblox_universe_ids[0];
-        const [thumb, details] = await Promise.all([
+        const [thumb, details, passes, screenshots] = await Promise.all([
           fetchGameThumbnail(firstUniverse),
           fetchSingleGameDetails(firstUniverse),
+          fetchGamePassesFull(firstUniverse),
+          fetchGameScreenshots(firstUniverse),
         ]);
         originalThumbUrl = thumb;
+        originalGamePasses = passes;
+        originalScreenshots = screenshots;
         if (details) {
           if (!originalDescription && details.description) originalDescription = details.description;
           originalCreatedDate = details.created;
@@ -1244,7 +1404,51 @@ serve(async (req) => {
           }
         }
 
-        const totalScore = Math.min(nameScore + descScore + dateScore + thumbScore, 100);
+        // 6. Game Pass Mirroring (only for candidates with decent name match)
+        let gamePassScore = 0;
+        let gamePassMatchData: any = null;
+        if (originalGamePasses.length > 0 && prelimScore >= 25) {
+          const candidatePasses = await fetchGamePassesFull(universeId);
+          if (candidatePasses.length > 0) {
+            const passResult = compareGamePasses(originalGamePasses, candidatePasses);
+            if (passResult.matchScore >= 30) {
+              gamePassScore = Math.min(Math.round(passResult.matchScore * 0.5), SCORE_CAPS.gamePassMirror);
+              matchReasons.push(`game_pass_mirror_${passResult.matchedPasses.length}/${originalGamePasses.length}`);
+              gamePassMatchData = {
+                matched_passes: passResult.matchedPasses,
+                match_score: passResult.matchScore,
+                total_original: originalGamePasses.length,
+                total_copy: candidatePasses.length,
+              };
+              logStep("Game pass mirroring detected", { universeId, matchedCount: passResult.matchedPasses.length, score: gamePassScore });
+            }
+          }
+          await new Promise(r => setTimeout(r, 300));
+        }
+
+        // 7. AI Screenshot Comparison (only for high-value candidates)
+        let screenshotScore = 0;
+        let screenshotComparisonData: any = null;
+        const preScreenshotScore = nameScore + descScore + dateScore + thumbScore + gamePassScore;
+        if (originalScreenshots.length > 0 && preScreenshotScore >= 35 && thumbnailsAnalyzed < 25) {
+          const candidateScreenshots = await fetchGameScreenshots(universeId);
+          if (candidateScreenshots.length > 0) {
+            const ssResult = await compareScreenshotsAI(
+              originalScreenshots, candidateScreenshots, entry.title, result.name
+            );
+            if (ssResult.overallScore > 0) {
+              screenshotScore = Math.min(ssResult.overallScore, SCORE_CAPS.screenshotAI);
+              matchReasons.push(`screenshot_match_${ssResult.overallScore}%`);
+              screenshotComparisonData = {
+                comparisons: ssResult.comparisons,
+                overall_score: ssResult.overallScore,
+              };
+              logStep("Screenshot similarity detected", { universeId, score: screenshotScore });
+            }
+          }
+        }
+
+        const totalScore = Math.min(nameScore + descScore + dateScore + thumbScore + gamePassScore + screenshotScore, 100);
 
         // Skip low-confidence detections (raised from 20 to 25)
         if (totalScore < 25) continue;
@@ -1260,7 +1464,7 @@ serve(async (req) => {
           }
         }
 
-        // 6. Evidence collection for medium+ threats (uses pre-fetched details)
+        // 8. Evidence collection for medium+ threats (uses pre-fetched details)
         let evidenceData: Record<string, unknown> = {};
         let evidenceScreenshots: string[] = [];
         let gameBadgesCount: number | null = null;
@@ -1338,6 +1542,8 @@ serve(async (req) => {
             evidence_captured_at: evidenceCapturedAt,
             confidence_level: getConfidenceLevel(totalScore),
             scan_run_id: scanRunId,
+            game_pass_match_data: gamePassMatchData,
+            screenshot_comparison_data: screenshotComparisonData,
           }, {
             onConflict: "registry_entry_id,detected_universe_id",
             ignoreDuplicates: false,
