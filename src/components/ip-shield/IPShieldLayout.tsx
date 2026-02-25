@@ -17,7 +17,7 @@ import { UniversalBreadcrumb } from '@/components/layout/UniversalBreadcrumb';
 import { FloatingActionButtons } from '@/components/ui/FloatingActionButtons';
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SearchCommandProvider } from '@/hooks/useSearchCommand';
+import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
 import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
 
 const EDGE_THRESHOLD = 30;
@@ -27,9 +27,10 @@ interface IPShieldLayoutProps {
   children: ReactNode;
 }
 
-export function IPShieldLayout({ children }: IPShieldLayoutProps) {
+function IPShieldLayoutContent({ children }: IPShieldLayoutProps) {
   const { user, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
+  const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -114,55 +115,61 @@ export function IPShieldLayout({ children }: IPShieldLayoutProps) {
   }
 
   return (
-    <SearchCommandProvider>
-      <TooltipProvider delayDuration={0}>
-        <ScrollProgressIndicator />
-        <SearchCommandPalette />
-        <div className="flex w-full bg-background overflow-x-hidden relative min-h-[100dvh]">
-          {/* Desktop Sidebar */}
-          <IPShieldSidebar
-            collapsed={false}
-            onToggle={() => {}}
-            className="hidden md:flex"
-          />
+    <TooltipProvider delayDuration={0}>
+      <ScrollProgressIndicator />
+      <SearchCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
+      <div className="flex w-full bg-background overflow-x-hidden relative min-h-[100dvh]">
+        {/* Desktop Sidebar */}
+        <IPShieldSidebar
+          collapsed={false}
+          onToggle={() => {}}
+          className="hidden md:flex"
+        />
 
-          {/* Mobile Sidebar Drawer */}
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetContent
-              side="left"
-              className="p-0 w-64 border-r-0 !h-[100dvh] !max-h-[100dvh] bg-card overflow-hidden"
-              style={{ height: '100dvh', maxHeight: '100dvh' }}
-              data-gesture-exempt="true"
-              hideCloseButton
-            >
-              <IPShieldSidebar
-                collapsed={false}
-                onToggle={() => setMobileOpen(false)}
-                onNavigate={() => setMobileOpen(false)}
-                isMobileDrawer
-              />
-            </SheetContent>
-          </Sheet>
-
-          {/* Main Content */}
-          <div className="flex-1 flex flex-col min-w-0 h-[100dvh]">
-            <Header 
-              showDesktopNav={false} 
-              hideBrandName
-              onMenuClick={() => setMobileOpen(true)} 
+        {/* Mobile Sidebar Drawer */}
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetContent
+            side="left"
+            className="p-0 w-64 border-r-0 !h-[100dvh] !max-h-[100dvh] bg-card overflow-hidden"
+            style={{ height: '100dvh', maxHeight: '100dvh' }}
+            data-gesture-exempt="true"
+            hideCloseButton
+          >
+            <IPShieldSidebar
+              collapsed={false}
+              onToggle={() => setMobileOpen(false)}
+              onNavigate={() => setMobileOpen(false)}
+              isMobileDrawer
             />
-            <UniversalBreadcrumb />
+          </SheetContent>
+        </Sheet>
 
-            <main className="flex-1 overflow-x-hidden overflow-y-auto pb-[env(safe-area-inset-bottom)]">
-              <div className="p-4 md:p-6 lg:p-8">
-                {children}
-              </div>
-              <Footer />
-            </main>
-          </div>
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col min-w-0 h-[100dvh]">
+          <Header 
+            showDesktopNav={false} 
+            hideBrandName
+            onMenuClick={() => setMobileOpen(true)} 
+          />
+          <UniversalBreadcrumb />
+
+          <main className="flex-1 overflow-x-hidden overflow-y-auto pb-[env(safe-area-inset-bottom)]">
+            <div className="p-4 md:p-6 lg:p-8">
+              {children}
+            </div>
+            <Footer />
+          </main>
         </div>
-        <FloatingActionButtons />
-      </TooltipProvider>
+      </div>
+      <FloatingActionButtons />
+    </TooltipProvider>
+  );
+}
+
+export function IPShieldLayout({ children }: IPShieldLayoutProps) {
+  return (
+    <SearchCommandProvider>
+      <IPShieldLayoutContent>{children}</IPShieldLayoutContent>
     </SearchCommandProvider>
   );
 }
