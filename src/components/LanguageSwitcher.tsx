@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { Globe } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +30,9 @@ export function LanguageSwitcher({ compact = false }: LanguageSwitcherProps) {
           )}
           aria-label="Change language"
         >
-          <span className="text-sm">{currentLang.flag}</span>
+          <span className={cn('leading-none', compact ? 'text-base' : 'text-lg')} role="img" aria-label={currentLang.label}>
+            {currentLang.flag}
+          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[140px]">
@@ -44,7 +45,7 @@ export function LanguageSwitcher({ compact = false }: LanguageSwitcherProps) {
               i18n.language === lang.code && 'bg-accent'
             )}
           >
-            <span>{lang.flag}</span>
+            <span className="text-base leading-none" role="img" aria-label={lang.label}>{lang.flag}</span>
             <span>{lang.label}</span>
           </DropdownMenuItem>
         ))}
