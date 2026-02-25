@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Store, Sparkles, ShoppingBag, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { HeroProductShowcase } from './HeroProductShowcase';
+
 import { ActiveOffersCard } from '@/components/home/ActiveOffersCard';
 import { HeroBanner } from './HeroBanner';
 import { useTranslation } from 'react-i18next';
@@ -124,9 +124,6 @@ export function LandingHero() {
           </div>
         </div>
 
-        <div className="hidden lg:block mt-8">
-          <HeroProductShowcase />
-        </div>
       </div>
     </section>
   );
