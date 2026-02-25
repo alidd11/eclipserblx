@@ -3359,6 +3359,7 @@ export type Database = {
       }
       ip_copy_detections: {
         Row: {
+          confidence_level: string | null
           created_at: string
           creator_group_id: string | null
           creator_group_name: string | null
@@ -3392,6 +3393,7 @@ export type Database = {
           player_count_trend: string | null
           previous_player_count: number | null
           registry_entry_id: string
+          scan_run_id: string | null
           search_keyword: string
           similarity_score: number | null
           status: string
@@ -3401,6 +3403,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          confidence_level?: string | null
           created_at?: string
           creator_group_id?: string | null
           creator_group_name?: string | null
@@ -3434,6 +3437,7 @@ export type Database = {
           player_count_trend?: string | null
           previous_player_count?: number | null
           registry_entry_id: string
+          scan_run_id?: string | null
           search_keyword: string
           similarity_score?: number | null
           status?: string
@@ -3443,6 +3447,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          confidence_level?: string | null
           created_at?: string
           creator_group_id?: string | null
           creator_group_name?: string | null
@@ -3476,6 +3481,7 @@ export type Database = {
           player_count_trend?: string | null
           previous_player_count?: number | null
           registry_entry_id?: string
+          scan_run_id?: string | null
           search_keyword?: string
           similarity_score?: number | null
           status?: string
@@ -3613,6 +3619,57 @@ export type Database = {
           status?: string
           total_alerts_generated?: number | null
           total_assets_scanned?: number | null
+        }
+        Relationships: []
+      }
+      ip_scan_runs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          creator_id: string
+          custom_keywords: string[] | null
+          error_message: string | null
+          evidence_collected: number | null
+          id: string
+          registry_entry_id: string | null
+          scan_type: string
+          started_at: string
+          status: string
+          thumbnails_analyzed: number | null
+          total_detected: number | null
+          total_searches: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          creator_id: string
+          custom_keywords?: string[] | null
+          error_message?: string | null
+          evidence_collected?: number | null
+          id?: string
+          registry_entry_id?: string | null
+          scan_type?: string
+          started_at?: string
+          status?: string
+          thumbnails_analyzed?: number | null
+          total_detected?: number | null
+          total_searches?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          creator_id?: string
+          custom_keywords?: string[] | null
+          error_message?: string | null
+          evidence_collected?: number | null
+          id?: string
+          registry_entry_id?: string | null
+          scan_type?: string
+          started_at?: string
+          status?: string
+          thumbnails_analyzed?: number | null
+          total_detected?: number | null
+          total_searches?: number | null
         }
         Relationships: []
       }
