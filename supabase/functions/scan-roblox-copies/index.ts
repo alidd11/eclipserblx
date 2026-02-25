@@ -153,55 +153,50 @@ function extractDescriptionKeywords(description: string): string[] {
     .map(([word]) => word);
 }
 
-// ─── KEYWORD VARIANT GENERATION ───
+// ─── KEYWORD VARIANT GENERATION (v2 - tighter, fewer noise searches) ───
 function generateKeywordVariants(keyword: string): string[] {
   const variants = new Set<string>();
   variants.add(keyword);
 
   const noSpecial = keyword.replace(/[^a-zA-Z0-9\s]/g, '');
-  if (noSpecial !== keyword) variants.add(noSpecial);
+  if (noSpecial !== keyword && noSpecial.length >= 3) variants.add(noSpecial);
 
   const spaced = keyword.replace(/[^a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
-  if (spaced !== keyword) variants.add(spaced);
+  if (spaced !== keyword && spaced.length >= 3) variants.add(spaced);
 
   const words = spaced.split(' ').filter(w => w.length >= 3);
 
+  // Only search individual words if they are long enough to be distinctive (6+ chars)
+  // Short words like "UKRP" or "West" produce too much noise on their own
   for (const w of words) {
-    if (w.length >= 4) variants.add(w);
+    if (w.length >= 6) variants.add(w);
   }
 
+  // Adjacent word pairs (core context)
   if (words.length >= 2) {
-    variants.add(`${words[0]} ${words[words.length - 1]}`);
     for (let i = 0; i < words.length - 1; i++) {
       variants.add(`${words[i]} ${words[i + 1]}`);
     }
   }
 
+  // Strip RP/Roleplay suffix to find the core name
   const withoutRP = spaced.replace(/\b(RP|Roleplay|Role Play|Simulator|Sim|Tycoon)\b/gi, '').replace(/\s+/g, ' ').trim();
-  if (withoutRP.length >= 3 && withoutRP !== spaced) variants.add(withoutRP);
+  if (withoutRP.length >= 4 && withoutRP !== spaced) variants.add(withoutRP);
 
+  // Add RP/Roleplay variants only if original doesn't have them
   if (!/\bRP\b/i.test(keyword) && words.length <= 3) {
     variants.add(`${keyword} RP`);
     variants.add(`${keyword} Roleplay`);
   }
 
-  const baseTitle = spaced.replace(/\b(RP|Roleplay|Role Play)\b/gi, '').trim();
-  if (baseTitle.length >= 3) {
+  // Only add clone-style variants for the core distinctive name (no generic prefixes)
+  const baseTitle = withoutRP.length >= 4 ? withoutRP : spaced;
+  if (baseTitle.length >= 5) {
     variants.add(`${baseTitle} 2`);
-    variants.add(`Real ${baseTitle}`);
-    variants.add(`New ${baseTitle}`);
     variants.add(`${baseTitle} Remake`);
-    variants.add(`${baseTitle} Remastered`);
-    variants.add(`${baseTitle} Free`);
-    variants.add(`Fake ${baseTitle}`);
   }
 
-  const significantWords = words.filter(w => w.length >= 4);
-  if (significantWords.length >= 1 && significantWords.join(' ') !== spaced) {
-    variants.add(significantWords.join(' '));
-  }
-
-  return [...variants].slice(0, 25);
+  return [...variants].slice(0, 15);
 }
 
 // ─── ROBLOX SEARCH: OMNI-SEARCH API ───
@@ -888,7 +883,7 @@ serve(async (req) => {
     { auth: { persistSession: false } }
   );
 
-  logStep("Enhanced copy detection scan started (v5 - accuracy fixes)");
+  logStep("Enhanced copy detection scan started (v6 - accuracy overhaul)");
 
   try {
     let body: { registry_entry_id?: string } = {};
@@ -1125,13 +1120,20 @@ serve(async (req) => {
 
         let prelimScore = nameScore + descScore + dateScore;
 
-        // Only store if there's meaningful signal
-        if (prelimScore < 20 && matchReasons.length === 0) continue;
+        // ACCURACY FIX: Require meaningful name similarity as a gate
+        // Without at least a partial name match, description/date signals alone are too noisy
+        if (nameScore === 0) {
+          // No name relevance at all — skip unless description is very strong (plagiarism)
+          if (descScore < 20) continue;
+        }
+
+        // Raise minimum threshold from 20 to 25 to reduce noise
+        if (prelimScore < 25 && matchReasons.length === 0) continue;
 
         // 5. AI Thumbnail comparison (only for promising candidates, capped)
         let thumbnailAnalyzed = false;
         let thumbnailUrl: string | null = null;
-        if (originalThumbUrl && prelimScore >= 25 && thumbnailsAnalyzed < 20) {
+        if (originalThumbUrl && prelimScore >= 30 && thumbnailsAnalyzed < 20) {
           thumbnailUrl = await fetchGameThumbnail(universeId);
           if (thumbnailUrl) {
             await new Promise(r => setTimeout(r, 500));
@@ -1151,8 +1153,8 @@ serve(async (req) => {
 
         const totalScore = Math.min(nameScore + descScore + dateScore + thumbScore, 100);
 
-        // Skip low-confidence detections
-        if (totalScore < 20) continue;
+        // Skip low-confidence detections (raised from 20 to 25)
+        if (totalScore < 25) continue;
 
         // Track suspicious creators for deep scanning
         if (totalScore >= 40) {
@@ -1291,7 +1293,7 @@ serve(async (req) => {
             if (allResults.has(game.universeId)) continue;
 
             const nameSim = computeNameSimilarity(entry.title, game.name);
-            if (nameSim >= 30) {
+            if (nameSim >= 40) {
               logStep("Suspicious creator has similar game", { universeId: game.universeId, name: game.name, similarity: nameSim });
               
               await supabaseClient
@@ -1326,7 +1328,7 @@ serve(async (req) => {
       }
     }
 
-    logStep("Scan complete (v5)", { 
+    logStep("Scan complete (v6)", { 
       totalSearches, totalDetected, thumbnailsAnalyzed, groupsVerified, 
       snapshotsCreated, evidenceCollected, suspiciousCreatorsScanned, genericSkipped 
     });
