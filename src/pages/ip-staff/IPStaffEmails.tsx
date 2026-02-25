@@ -11,11 +11,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Mail, Plus, Send, ChevronRight, Clock, ArrowUpRight, ArrowDownLeft, Inbox, X } from 'lucide-react';
+import { Mail, Plus, Send, ChevronRight, Clock, ArrowUpRight, ArrowDownLeft, Inbox, X, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
+import { emailTemplates } from '@/components/ip-staff/EmailTemplates';
 
 interface EmailThread {
   id: string;
@@ -426,11 +427,65 @@ export default function IPStaffEmails() {
               </Select>
             </div>
             <div>
+              <Label className="text-xs">Template Preset</Label>
+              <Select
+                value=""
+                onValueChange={(templateId) => {
+                  const template = emailTemplates.find(t => t.id === templateId);
+                  if (template) {
+                    setComposeSubject(template.subject);
+                    setComposeBody(template.body);
+                    setComposeType(template.type);
+                    toast.success(`Loaded "${template.name}" template`);
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a template..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_header_dmca" disabled className="text-xs font-semibold text-muted-foreground">
+                    — DMCA Takedown —
+                  </SelectItem>
+                  {emailTemplates.filter(t => t.type === 'dmca_takedown').map(t => (
+                    <SelectItem key={t.id} value={t.id}>
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-3 w-3 text-orange-500" />
+                        {t.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="_header_abuse" disabled className="text-xs font-semibold text-muted-foreground">
+                    — Abuse Complaints —
+                  </SelectItem>
+                  {emailTemplates.filter(t => t.type === 'abuse_complaint').map(t => (
+                    <SelectItem key={t.id} value={t.id}>
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-3 w-3 text-destructive" />
+                        {t.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="_header_general" disabled className="text-xs font-semibold text-muted-foreground">
+                    — General —
+                  </SelectItem>
+                  {emailTemplates.filter(t => t.type === 'general').map(t => (
+                    <SelectItem key={t.id} value={t.id}>
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-3 w-3 text-primary" />
+                        {t.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <Label className="text-xs">Message</Label>
               <Textarea
                 value={composeBody}
                 onChange={e => setComposeBody(e.target.value)}
-                placeholder="Write your email..."
+                placeholder="Write your email or select a template above..."
                 className="min-h-[150px]"
               />
             </div>
