@@ -449,21 +449,26 @@ export default function IPShieldDetections() {
                       className={`transition-colors cursor-pointer ${expandedId === d.id ? 'rounded-b-none border-primary/20' : ''} ${isSelected ? 'border-destructive ring-1 ring-destructive/20' : score >= 75 && !creatorVerified ? 'border-destructive/40' : 'hover:border-muted-foreground/20'}`}
                       onClick={() => !bulkMode && toggleExpand(d.id)}
                     >
-                      <CardContent className="py-3 px-4">
-                        <div className="flex items-start gap-3">
+                      <CardContent className="py-3 px-3 sm:px-4">
+                        <div className="flex items-start gap-2 sm:gap-3">
                           {canSelect && (
                             <Checkbox checked={isSelected} onCheckedChange={(e) => { e && toggleSelect(d.id); }} className="mt-1" onClick={(e) => e.stopPropagation()} />
                           )}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-medium text-sm">{d.game_name}</span>
-                              {creatorVerified ? (
-                                <Badge variant="secondary" className="text-[10px] gap-1"><ShieldCheck className="h-3 w-3" /> Verified</Badge>
-                              ) : (
-                                <Badge variant={confidenceColor as any} className="text-[10px]">
-                                  {confidenceLabel}{score > 0 && ` · ${score}%`}
-                                </Badge>
-                              )}
+                          <div className="flex-1 min-w-0 overflow-hidden">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-center gap-2 flex-wrap min-w-0 flex-1">
+                                <span className="font-medium text-sm break-words">{d.game_name}</span>
+                                {creatorVerified ? (
+                                  <Badge variant="secondary" className="text-[10px] gap-1 shrink-0"><ShieldCheck className="h-3 w-3" /> Verified</Badge>
+                                ) : (
+                                  <Badge variant={confidenceColor as any} className="text-[10px] shrink-0">
+                                    {confidenceLabel}{score > 0 && ` · ${score}%`}
+                                  </Badge>
+                                )}
+                              </div>
+                              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform shrink-0 mt-0.5 ${expandedId === d.id ? 'rotate-180' : ''}`} />
+                            </div>
+                            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                               {d.takedown_request_id && (
                                 <Badge variant="outline" className="text-[10px] gap-1 text-primary"><Gavel className="h-3 w-3" /> Takedown Filed</Badge>
                               )}
@@ -474,7 +479,7 @@ export default function IPShieldDetections() {
                                 <Badge variant="outline" className="text-[10px] gap-1"><History className="h-3 w-3" /> {detectionCount}x</Badge>
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1">
+                            <p className="text-xs text-muted-foreground mt-1 truncate">
                               by <span className="font-medium text-foreground">{d.game_creator_name}</span>
                               {d.game_creator_type === 'Group' && (
                                 <span>{' (Group'}{d.creator_group_name && `: ${d.creator_group_name}`}{ownsGroup && ' — member'}{')'}</span>
@@ -494,20 +499,20 @@ export default function IPShieldDetections() {
                               {' · '}Found {format(new Date(d.first_detected_at || d.created_at), 'MMM d, yyyy')}
                               {d.last_seen_at && ` · Last ${format(new Date(d.last_seen_at), 'MMM d')}`}
                             </p>
-                          </div>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            {!creatorVerified && score >= 30 && !d.takedown_request_id && !bulkMode && (
-                              <Button variant="destructive" size="sm" className="gap-1 h-7 text-xs" asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-                                <a href="/ip-shield/dashboard/takedowns"><Gavel className="h-3 w-3" /> Takedown</a>
-                              </Button>
-                            )}
-                            <a href={`https://www.roblox.com/games/${d.detected_place_id || d.detected_universe_id}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                              <Button variant="outline" size="sm" className="gap-1 h-7 text-xs"><ExternalLink className="h-3 w-3" /> View</Button>
-                            </a>
-                            {!bulkMode && (
-                              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); dismissDetection(d.id); }}>Dismiss</Button>
-                            )}
-                            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${expandedId === d.id ? 'rotate-180' : ''}`} />
+                            {/* Action buttons - stacked on mobile */}
+                            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                              {!creatorVerified && score >= 30 && !d.takedown_request_id && !bulkMode && (
+                                <Button variant="destructive" size="sm" className="gap-1 h-7 text-xs" asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                                  <a href="/ip-shield/dashboard/takedowns"><Gavel className="h-3 w-3" /> Takedown</a>
+                                </Button>
+                              )}
+                              <a href={`https://www.roblox.com/games/${d.detected_place_id || d.detected_universe_id}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                                <Button variant="outline" size="sm" className="gap-1 h-7 text-xs"><ExternalLink className="h-3 w-3" /> View</Button>
+                              </a>
+                              {!bulkMode && (
+                                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); dismissDetection(d.id); }}>Dismiss</Button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </CardContent>
