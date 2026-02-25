@@ -610,10 +610,9 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     setErrors({});
     
     try {
+      // Always use production domain - must match Roblox Creator Hub redirect URLs
       const productionDomain = 'https://eclipserblx.com';
-      const currentOrigin = window.location.origin;
-      const baseUrl = currentOrigin.startsWith('https://') ? currentOrigin : productionDomain;
-      const redirectUri = `${baseUrl}/auth/roblox/callback`;
+      const redirectUri = `${productionDomain}/auth/roblox/callback`;
       
       const { data, error } = await supabase.functions.invoke('roblox-auth-url', {
         body: { redirect_uri: redirectUri },
