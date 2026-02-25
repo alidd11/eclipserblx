@@ -131,6 +131,31 @@ async function fetchRobloxUsername(robloxUserId: string): Promise<string | null>
   }
 }
 
+async function fetchGroupName(groupId: string): Promise<string | null> {
+  try {
+    const res = await fetch(`https://groups.roblox.com/v1/groups/${groupId}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.name || null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchRootPlaceId(universeId: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://games.roblox.com/v1/games?universeIds=${universeId}`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.data?.[0]?.rootPlaceId ? String(data.data[0].rootPlaceId) : null;
+  } catch {
+    return null;
+  }
+}
+
 // Extract Roblox creator ID from a universe's details
 async function extractCreatorFromUniverse(universeId: string): Promise<{ creatorId: string; creatorType: string } | null> {
   try {
@@ -226,15 +251,17 @@ serve(async (req) => {
           offenderRobloxId = creator.creatorId;
           offenderType = creator.creatorType;
           
-          // Get username
-          const username = await fetchRobloxUsername(offenderRobloxId);
+          // Get display name
+          const displayName = offenderType === "Group" 
+            ? await fetchGroupName(offenderRobloxId) 
+            : await fetchRobloxUsername(offenderRobloxId);
           
           // Save to DB for future checks
           await supabaseClient
             .from("takedown_requests")
             .update({
               offender_roblox_id: offenderRobloxId,
-              offender_roblox_username: username || `${offenderType}:${offenderRobloxId}`,
+              offender_roblox_username: displayName || `${offenderType}:${offenderRobloxId}`,
             })
             .eq("id", takedown_id);
           
@@ -305,7 +332,12 @@ serve(async (req) => {
 
       // Flag if similarity is meaningful (≥25%) or if it's new activity
       if (overallScore >= 25 || (isNew && overallScore >= 15)) {
-        const thumbnail = await fetchGameThumbnail(creation.universeId);
+        // Fetch thumbnail and root place ID in parallel for valid Roblox links
+        const [thumbnail, rootPlaceId] = await Promise.all([
+          fetchGameThumbnail(creation.universeId),
+          fetchRootPlaceId(creation.universeId),
+        ]);
+        const linkId = rootPlaceId || creation.universeId;
         suspiciousFinds.push({
           universeId: creation.universeId,
           name: creation.name,
@@ -315,7 +347,7 @@ serve(async (req) => {
           descriptionSimilarity: descScore,
           overallScore,
           thumbnailUrl: thumbnail,
-          gameUrl: `https://www.roblox.com/games/${creation.universeId}`,
+          gameUrl: `https://www.roblox.com/games/${linkId}`,
           isNew,
         });
       }
