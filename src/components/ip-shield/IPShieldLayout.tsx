@@ -2,6 +2,7 @@ import { ReactNode, useState, useCallback, useRef, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { IPShieldSidebar } from './IPShieldSidebar';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
@@ -26,6 +27,7 @@ interface IPShieldLayoutProps {
 
 export function IPShieldLayout({ children }: IPShieldLayoutProps) {
   const { user, loading: authLoading } = useAuth();
+  const { isStaff, loading: adminLoading } = useAdminAuth();
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -63,7 +65,7 @@ export function IPShieldLayout({ children }: IPShieldLayoutProps) {
     };
   }, [isMobile, handleTouchStart, handleTouchEnd]);
 
-  // Check subscription + verification
+  // Check subscription + verification (skip for staff/admins)
   const { data: subscriptionStatus, isLoading: subLoading } = useQuery({
     queryKey: ['ip-shield-subscription', user?.id],
     queryFn: async () => {
@@ -71,7 +73,7 @@ export function IPShieldLayout({ children }: IPShieldLayoutProps) {
       if (error) throw error;
       return data as { subscribed: boolean; tier?: string; limits?: any; custom_plan?: boolean };
     },
-    enabled: !!user,
+    enabled: !!user && !isStaff,
   });
 
   const { data: verificationStatus, isLoading: verifyLoading } = useQuery({
@@ -81,10 +83,10 @@ export function IPShieldLayout({ children }: IPShieldLayoutProps) {
       if (error) throw error;
       return data as { verified: boolean; status: string };
     },
-    enabled: !!user && subscriptionStatus?.subscribed === true,
+    enabled: !!user && !isStaff && subscriptionStatus?.subscribed === true,
   });
 
-  const loading = authLoading || subLoading || (subscriptionStatus?.subscribed && verifyLoading);
+  const loading = authLoading || adminLoading || (!isStaff && (subLoading || (subscriptionStatus?.subscribed && verifyLoading)));
 
   if (loading) {
     return (
@@ -98,12 +100,15 @@ export function IPShieldLayout({ children }: IPShieldLayoutProps) {
     return <Navigate to="/auth" replace />;
   }
 
-  if (!subscriptionStatus?.subscribed) {
-    return <Navigate to="/ip-shield" replace />;
-  }
+  // Staff/admins bypass subscription and verification checks
+  if (!isStaff) {
+    if (!subscriptionStatus?.subscribed) {
+      return <Navigate to="/ip-shield" replace />;
+    }
 
-  if (!verificationStatus?.verified) {
-    return <Navigate to="/ip-shield" replace />;
+    if (!verificationStatus?.verified) {
+      return <Navigate to="/ip-shield" replace />;
+    }
   }
 
   return (
