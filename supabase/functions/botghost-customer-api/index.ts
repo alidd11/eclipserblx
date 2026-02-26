@@ -170,19 +170,16 @@ async function handleLink(supabase: any, body: BotGhostRequest) {
     });
   }
 
+  const linkUrl = "https://eclipserblx.com/account?action=link-discord";
+
   return jsonResponse({
     success: false,
     linked: false,
     embed: {
       title: "🔗 Link Your Discord",
-      description: "Your Discord isn't linked to an Eclipse account yet.\n\nFollow the steps below to link your account and unlock exclusive features!\n\n\u200B",
-      color: 0x5865F2, // Discord Blurple
+      description: `Your Discord isn't linked to an Eclipse account yet.\n\n**[Click here to link your account](${linkUrl})** — it only takes a few seconds!\n\nYou'll be asked to sign in (if needed) and authorize Discord. Once done, run \`/link\` again to confirm.\n\u200B`,
+      color: 0x5865F2,
       fields: [
-        {
-          name: "📋 How to Link",
-          value: "**1.** Visit [eclipserblx.com/account](https://eclipserblx.com/account)\n**2.** Find the **Discord Account** card\n**3.** Click **Link with Discord**\n**4.** Authorize the connection\n**5.** Run `/link` again to confirm!",
-          inline: false,
-        },
         {
           name: "✨ Benefits",
           value: "• View your profile & purchases\n• Download products directly\n• Access Eclipse+ perks",
@@ -198,7 +195,14 @@ async function handleLink(supabase: any, body: BotGhostRequest) {
       },
       timestamp: new Date().toISOString(),
     },
-    message: "🔗 **Discord Not Linked** - Visit https://eclipserblx.com/account to link your account!",
+    message: `🔗 **Discord Not Linked** — [Click here to link your account](${linkUrl})`,
+    buttons: [
+      {
+        label: "Link Account",
+        url: linkUrl,
+        style: 5,
+      },
+    ],
   });
 }
 
