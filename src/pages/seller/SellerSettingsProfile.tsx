@@ -12,13 +12,15 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { BrandingImageUpload } from '@/components/seller/BrandingImageUpload';
+import { Switch } from '@/components/ui/switch';
 import { 
   Store, 
   Image as ImageIcon,
   CheckCircle,
   Save,
   Link as LinkIcon,
-  Info
+  Info,
+  Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
@@ -33,6 +35,7 @@ const INITIAL_FORM_DATA = {
   twitter_url: '',
   youtube_url: '',
   tiktok_url: '',
+  pwyw_enabled: false,
 };
 
 export default function SellerSettingsProfile() {
@@ -57,6 +60,7 @@ export default function SellerSettingsProfile() {
         twitter_url: store.twitter_url || '',
         youtube_url: store.youtube_url || '',
         tiktok_url: store.tiktok_url || '',
+        pwyw_enabled: (store as any).pwyw_enabled ?? false,
       });
     }
   }, [store]);
@@ -77,6 +81,7 @@ export default function SellerSettingsProfile() {
           twitter_url: data.twitter_url || null,
           youtube_url: data.youtube_url || null,
           tiktok_url: data.tiktok_url || null,
+          pwyw_enabled: data.pwyw_enabled,
           updated_at: new Date().toISOString(),
         } as any)
         .eq('id', store.id);
@@ -229,6 +234,38 @@ export default function SellerSettingsProfile() {
                   />
                 </>
               )}
+
+              <Button onClick={handleSubmit} disabled={updateStore.isPending}>
+                <Save className="h-4 w-4 mr-2" />
+                {updateStore.isPending ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Pay What You Want */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-emerald-500" />
+                Pay What You Want
+              </CardTitle>
+              <CardDescription>
+                Allow products in your store to use flexible "Pay What You Want" pricing, where buyers choose their own price
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Enable PWYW Pricing</Label>
+                  <p className="text-sm text-muted-foreground">
+                    When enabled, you can set individual products to "Pay What You Want" in the product editor
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.pwyw_enabled}
+                  onCheckedChange={(checked) => setFormData({ ...formData, pwyw_enabled: checked })}
+                />
+              </div>
 
               <Button onClick={handleSubmit} disabled={updateStore.isPending}>
                 <Save className="h-4 w-4 mr-2" />
