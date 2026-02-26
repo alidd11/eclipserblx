@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAdminAdAnalytics } from '@/hooks/useAdminAdAnalytics';
-import { RevolutLineChart, RevolutBarChart } from '@/components/ui/revolut-chart';
+import { RevolutLineChart, RevolutBarChart, RevolutAreaChart } from '@/components/ui/revolut-chart';
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { 
   Megaphone, 
@@ -158,7 +158,7 @@ export default function AdvertisementAnalytics() {
               <CardDescription>Last 30 days</CardDescription>
             </CardHeader>
             <CardContent>
-              <RevolutBarChart
+              <RevolutAreaChart
                 data={dailyData}
                 xKey="date"
                 series={[{ dataKey: 'revenue', color: 'hsl(142 76% 36%)', name: 'Revenue' }]}
@@ -231,7 +231,7 @@ export default function AdvertisementAnalytics() {
               <CardDescription>Last 30 days</CardDescription>
             </CardHeader>
             <CardContent>
-              <RevolutBarChart
+              <RevolutAreaChart
                 data={dailyData}
                 xKey="date"
                 series={[{ dataKey: 'adsPosted', color: 'hsl(170 70% 45%)', name: 'Ads Posted' }]}

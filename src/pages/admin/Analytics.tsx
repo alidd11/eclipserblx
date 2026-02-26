@@ -1218,7 +1218,7 @@ export default function AdminAnalytics() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <RevolutBarChart
+                <RevolutAreaChart
                   data={referralTrend || []}
                   xKey="date"
                   series={[{ dataKey: 'clicks', color: 'hsl(160 60% 50%)', name: 'Clicks' }]}

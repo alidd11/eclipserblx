@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { RevolutLineChart, RevolutBarChart } from '@/components/ui/revolut-chart';
+import { RevolutLineChart, RevolutBarChart, RevolutAreaChart } from '@/components/ui/revolut-chart';
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { format, subDays, startOfDay, endOfDay, eachDayOfInterval } from 'date-fns';
 import { 
@@ -359,8 +359,8 @@ export default function SellerAnalytics() {
                       data={processedData.dailyData}
                       xKey="date"
                       series={[
-                        { dataKey: 'views', color: 'hsl(var(--primary))', name: 'Views' },
-                        { dataKey: 'uniqueVisitors', color: 'hsl(var(--chart-2))', name: 'Unique Visitors' },
+                        { dataKey: 'views', color: 'hsl(160 60% 50%)', name: 'Views' },
+                        { dataKey: 'uniqueVisitors', color: 'hsl(142 76% 36%)', name: 'Unique Visitors' },
                       ]}
                       height={320}
                     />
@@ -532,13 +532,13 @@ export default function SellerAnalytics() {
                     <CardDescription>Views, add-to-carts, and purchases per day</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <RevolutBarChart
+                    <RevolutAreaChart
                       data={processedData.dailyData}
                       xKey="date"
                       series={[
-                        { dataKey: 'views', color: 'hsl(var(--primary))', name: 'Views' },
-                        { dataKey: 'addToCarts', color: 'hsl(var(--chart-2))', name: 'Add to Cart' },
-                        { dataKey: 'purchases', color: 'hsl(var(--chart-3))', name: 'Purchases' },
+                        { dataKey: 'views', color: 'hsl(160 60% 50%)', name: 'Views' },
+                        { dataKey: 'addToCarts', color: 'hsl(142 76% 36%)', name: 'Add to Cart' },
+                        { dataKey: 'purchases', color: 'hsl(170 70% 45%)', name: 'Purchases' },
                       ]}
                       height={320}
                     />
