@@ -108,21 +108,15 @@ const commands = [
   },
   {
     name: "update",
-    description: "Assign a Discord role to a user (Admin only)",
+    description: "Sync a user's Eclipse roles (Admin only)",
     contexts: [0], // Guild only
     integration_types: [0],
     default_member_permissions: "268435456", // MANAGE_ROLES permission required
     options: [
       {
         name: "user",
-        description: "The user to update",
+        description: "The user to sync roles for",
         type: 6, // USER
-        required: true,
-      },
-      {
-        name: "role",
-        description: "The role to assign",
-        type: 8, // ROLE
         required: true,
       },
     ],
