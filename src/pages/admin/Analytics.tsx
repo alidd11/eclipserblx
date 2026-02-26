@@ -851,7 +851,7 @@ export default function AdminAnalytics() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <RevolutBarChart
+                <RevolutAreaChart
                   data={visitTrend || []}
                   xKey="date"
                   series={[
