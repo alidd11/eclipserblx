@@ -58,12 +58,12 @@ export default function AdminAnalytics() {
     },
   });
 
-  // Downloads over last 7 days
+  // Downloads trend
   const { data: downloadTrend } = useQuery({
-    queryKey: ['admin-download-trend'],
+    queryKey: ['admin-download-trend', range],
     queryFn: async () => {
-      const days = [];
-      for (let i = 6; i >= 0; i--) {
+      const result = [];
+      for (let i = days - 1; i >= 0; i--) {
         const date = subDays(new Date(), i);
         const start = startOfDay(date).toISOString();
         const end = endOfDay(date).toISOString();
@@ -74,21 +74,21 @@ export default function AdminAnalytics() {
           .gte('downloaded_at', start)
           .lte('downloaded_at', end);
         
-        days.push({
-          date: format(date, 'EEE'),
+        result.push({
+          date: format(date, days <= 7 ? 'EEE' : 'MMM d'),
           downloads: count ?? 0,
         });
       }
-      return days;
+      return result;
     },
   });
 
-  // Orders over last 7 days
+  // Orders trend
   const { data: orderTrend } = useQuery({
-    queryKey: ['admin-order-trend'],
+    queryKey: ['admin-order-trend', range],
     queryFn: async () => {
-      const days = [];
-      for (let i = 6; i >= 0; i--) {
+      const result = [];
+      for (let i = days - 1; i >= 0; i--) {
         const date = subDays(new Date(), i);
         const start = startOfDay(date).toISOString();
         const end = endOfDay(date).toISOString();
@@ -99,12 +99,12 @@ export default function AdminAnalytics() {
           .gte('created_at', start)
           .lte('created_at', end);
         
-        days.push({
-          date: format(date, 'EEE'),
+        result.push({
+          date: format(date, days <= 7 ? 'EEE' : 'MMM d'),
           orders: count ?? 0,
         });
       }
-      return days;
+      return result;
     },
   });
 
