@@ -10,17 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { 
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
   FunnelChart,
   Funnel,
   LabelList,
   ResponsiveContainer,
-  Tooltip,
 } from 'recharts';
 import { RevolutLineChart, RevolutBarChart } from '@/components/ui/revolut-chart';
+import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { format, subDays, startOfDay, endOfDay, eachDayOfInterval } from 'date-fns';
 import { 
   Eye, 
@@ -169,7 +165,7 @@ export default function SellerAnalytics() {
     
     const deviceData = Object.entries(deviceCounts).map(([name, value]) => ({
       name,
-      value,
+      value: value as number,
     }));
 
     // Top referrers
@@ -424,27 +420,12 @@ export default function SellerAnalytics() {
                     </CardHeader>
                     <CardContent>
                       {processedData.deviceData.length > 0 ? (
-                        <div className="h-48">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                              <Pie
-                                data={processedData.deviceData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={40}
-                                outerRadius={65}
-                                paddingAngle={5}
-                                dataKey="value"
-                              >
-                                {processedData.deviceData.map((_, index) => (
-                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                              </Pie>
-                              <Legend />
-                              <Tooltip />
-                            </PieChart>
-                          </ResponsiveContainer>
-                        </div>
+                        <RevolutDonutChart
+                          data={processedData.deviceData}
+                          height={192}
+                          innerRadius={40}
+                          outerRadius={65}
+                        />
                       ) : (
                         <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">
                           No device data available

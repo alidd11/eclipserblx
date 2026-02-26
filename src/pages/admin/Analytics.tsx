@@ -4,9 +4,8 @@ import { Package, ShoppingCart, Users, Download, TrendingUp, Calendar, BarChart3
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { RevolutBarChart, RevolutAreaChart } from '@/components/ui/revolut-chart';
+import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -508,19 +507,6 @@ export default function AdminAnalytics() {
     },
   });
 
-  const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
-
-  const chartConfig = {
-    downloads: { label: 'Downloads', color: 'hsl(var(--primary))' },
-    orders: { label: 'Orders', color: 'hsl(var(--chart-2))' },
-    users: { label: 'Users', color: 'hsl(var(--chart-3))' },
-    total: { label: 'Total Visits', color: 'hsl(var(--primary))' },
-    new: { label: 'New Visitors', color: 'hsl(var(--chart-2))' },
-    returning: { label: 'Returning', color: 'hsl(var(--chart-3))' },
-    storeViews: { label: 'Store Views', color: 'hsl(var(--primary))' },
-    productViews: { label: 'Product Views', color: 'hsl(var(--chart-2))' },
-    clicks: { label: 'Clicks', color: 'hsl(var(--primary))' },
-  };
 
   const getDeviceIcon = (device: string) => {
     switch (device) {
@@ -760,26 +746,12 @@ export default function AdminAnalytics() {
                   {categoryStats?.length === 0 ? (
                     <p className="text-muted-foreground text-center py-8">No products yet</p>
                   ) : (
-                  <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Pie
-                          data={categoryStats || []}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          dataKey="value"
-                          nameKey="name"
-                          label={({ name, value }) => `${name}: ${value}`}
-                        >
-                          {categoryStats?.map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
+                    <RevolutDonutChart
+                      data={categoryStats || []}
+                      height={250}
+                      showLabels
+                      showLegend={false}
+                    />
                   )}
                 </CardContent>
               </Card>
@@ -928,26 +900,14 @@ export default function AdminAnalytics() {
                   {deviceStats?.length === 0 ? (
                     <p className="text-muted-foreground text-center py-4 text-sm">No data yet</p>
                   ) : (
-                    <ChartContainer config={chartConfig} className="h-[150px] w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                          <Pie
-                            data={deviceStats || []}
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={50}
-                            dataKey="value"
-                            nameKey="name"
-                            label={({ name }) => name}
-                          >
-                            {deviceStats?.map((_, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
+                    <RevolutDonutChart
+                      data={deviceStats || []}
+                      height={150}
+                      innerRadius={30}
+                      outerRadius={50}
+                      showLegend={false}
+                      showLabels
+                    />
                   )}
                 </CardContent>
               </Card>
@@ -964,26 +924,14 @@ export default function AdminAnalytics() {
                   {browserStats?.length === 0 ? (
                     <p className="text-muted-foreground text-center py-4 text-sm">No data yet</p>
                   ) : (
-                    <ChartContainer config={chartConfig} className="h-[150px] w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                          <Pie
-                            data={browserStats || []}
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={50}
-                            dataKey="value"
-                            nameKey="name"
-                            label={({ name }) => name}
-                          >
-                            {browserStats?.map((_, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
+                    <RevolutDonutChart
+                      data={browserStats || []}
+                      height={150}
+                      innerRadius={30}
+                      outerRadius={50}
+                      showLegend={false}
+                      showLabels
+                    />
                   )}
                 </CardContent>
               </Card>
@@ -1141,26 +1089,11 @@ export default function AdminAnalytics() {
                   {sellerEventTypes?.length === 0 ? (
                     <p className="text-muted-foreground text-center py-4 text-sm">No events yet</p>
                   ) : (
-                    <ChartContainer config={chartConfig} className="h-[200px] w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                          <Pie
-                            data={sellerEventTypes || []}
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={70}
-                            dataKey="value"
-                            nameKey="name"
-                            label={({ name, value }) => `${name}: ${value}`}
-                          >
-                            {sellerEventTypes?.map((_, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
+                    <RevolutDonutChart
+                      data={sellerEventTypes || []}
+                      height={200}
+                      showLabels
+                    />
                   )}
                 </CardContent>
               </Card>
@@ -1177,26 +1110,11 @@ export default function AdminAnalytics() {
                   {sellerDeviceStats?.length === 0 ? (
                     <p className="text-muted-foreground text-center py-4 text-sm">No data yet</p>
                   ) : (
-                    <ChartContainer config={chartConfig} className="h-[200px] w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                          <Pie
-                            data={sellerDeviceStats || []}
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={70}
-                            dataKey="value"
-                            nameKey="name"
-                            label={({ name }) => name}
-                          >
-                            {sellerDeviceStats?.map((_, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
+                    <RevolutDonutChart
+                      data={sellerDeviceStats || []}
+                      height={200}
+                      showLabels
+                    />
                   )}
                 </CardContent>
               </Card>
