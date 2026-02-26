@@ -10,15 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { 
-  LineChart, 
-  Line, 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
@@ -26,7 +17,10 @@ import {
   FunnelChart,
   Funnel,
   LabelList,
+  ResponsiveContainer,
+  Tooltip,
 } from 'recharts';
+import { RevolutLineChart, RevolutBarChart } from '@/components/ui/revolut-chart';
 import { format, subDays, startOfDay, endOfDay, eachDayOfInterval } from 'date-fns';
 import { 
   Eye, 
@@ -371,24 +365,15 @@ export default function SellerAnalytics() {
                     <CardDescription>Daily store and product views</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={processedData.dailyData}>
-                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                          <XAxis dataKey="date" className="text-xs" />
-                          <YAxis className="text-xs" />
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: 'hsl(var(--background))', 
-                              border: '1px solid hsl(var(--border))',
-                              borderRadius: '8px'
-                            }} 
-                          />
-                          <Line type="monotone" dataKey="views" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} name="Views" />
-                          <Line type="monotone" dataKey="uniqueVisitors" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} name="Unique Visitors" />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
+                    <RevolutLineChart
+                      data={processedData.dailyData}
+                      xKey="date"
+                      series={[
+                        { dataKey: 'views', color: 'hsl(var(--primary))', name: 'Views' },
+                        { dataKey: 'uniqueVisitors', color: 'hsl(var(--chart-2))', name: 'Unique Visitors' },
+                      ]}
+                      height={320}
+                    />
                   </CardContent>
                 </Card>
 
@@ -572,25 +557,16 @@ export default function SellerAnalytics() {
                     <CardDescription>Views, add-to-carts, and purchases per day</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={processedData.dailyData}>
-                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                          <XAxis dataKey="date" className="text-xs" />
-                          <YAxis className="text-xs" />
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: 'hsl(var(--background))', 
-                              border: '1px solid hsl(var(--border))',
-                              borderRadius: '8px'
-                            }} 
-                          />
-                          <Bar dataKey="views" fill="hsl(var(--primary))" name="Views" />
-                          <Bar dataKey="addToCarts" fill="hsl(var(--chart-2))" name="Add to Cart" />
-                          <Bar dataKey="purchases" fill="hsl(var(--chart-3))" name="Purchases" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
+                    <RevolutBarChart
+                      data={processedData.dailyData}
+                      xKey="date"
+                      series={[
+                        { dataKey: 'views', color: 'hsl(var(--primary))', name: 'Views' },
+                        { dataKey: 'addToCarts', color: 'hsl(var(--chart-2))', name: 'Add to Cart' },
+                        { dataKey: 'purchases', color: 'hsl(var(--chart-3))', name: 'Purchases' },
+                      ]}
+                      height={320}
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>

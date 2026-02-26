@@ -8,8 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AdminStatCard } from '@/components/admin/AdminStatCard';
 import { supabase } from '@/integrations/supabase/client';
 import { subDays, format, isAfter, startOfDay, startOfWeek, startOfMonth } from 'date-fns';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { RevolutLineChart } from '@/components/ui/revolut-chart';
 
 const trendChartConfig = {
   commission: { label: 'Platform Commission', color: 'hsl(var(--primary))' },
@@ -302,16 +301,16 @@ export function SellerEarningsTab() {
           {trendData.length === 0 ? (
             <Skeleton className="h-64 w-full" />
           ) : (
-            <ChartContainer config={trendChartConfig} className="h-64 w-full">
-              <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="displayDate" tick={{ fontSize: 12 }} className="text-muted-foreground" />
-                <YAxis tickFormatter={(v) => `£${v}`} tick={{ fontSize: 12 }} className="text-muted-foreground" />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Line type="monotone" dataKey="commission" stroke="var(--color-commission)" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="sellerNet" stroke="var(--color-sellerNet)" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ChartContainer>
+            <RevolutLineChart
+              data={trendData}
+              xKey="displayDate"
+              series={[
+                { dataKey: 'commission', color: 'hsl(var(--primary))', name: 'Platform Commission' },
+                { dataKey: 'sellerNet', color: 'hsl(142 76% 36%)', name: 'Seller Net' },
+              ]}
+              height={256}
+              yFormatter={(v) => `£${v}`}
+            />
           )}
         </CardContent>
       </Card>

@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter, subDays, format } from 'date-fns';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { RevolutLineChart } from '@/components/ui/revolut-chart';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { showSuccessNotification, showInfoNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useAuth } from '@/hooks/useAuth';
@@ -718,84 +718,47 @@ export default function AdminIncome() {
                   <Skeleton className="h-[300px] w-full" />
                 ) : (
                   <div className="h-[300px] w-full">
-                    <ChartContainer
-                      config={{
-                        gross: {
-                          label: "Gross Revenue",
-                          color: "hsl(var(--primary))",
-                        },
-                        net: {
-                          label: "Net Revenue",
-                          color: "hsl(142 76% 36%)",
-                        },
-                      }}
-                    >
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={stripeChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                          <XAxis
-                            dataKey="displayDate"
-                            tick={{ fontSize: 12 }}
-                            className="text-muted-foreground"
-                            tickLine={false}
-                            axisLine={false}
-                            interval="preserveStartEnd"
-                          />
-                          <YAxis
-                            tickFormatter={(value) => `£${value}`}
-                            tick={{ fontSize: 12 }}
-                            className="text-muted-foreground"
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <ChartTooltip
-                            content={({ active, payload }) => {
-                              if (!active || !payload?.length) return null;
-                              const data = payload[0].payload;
-                              return (
-                                <div className="bg-background border rounded-lg p-3 shadow-lg">
-                                  <p className="font-medium mb-2">{data.displayDate}</p>
-                                  <div className="space-y-1 text-sm">
-                                    <div className="flex justify-between gap-4">
-                                      <span className="text-muted-foreground">Gross:</span>
-                                      <span>£{data.gross.toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex justify-between gap-4">
-                                      <span className="text-muted-foreground">Fees:</span>
-                                      <span className="text-red-500">-£{data.fees.toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex justify-between gap-4 border-t pt-1">
-                                      <span className="font-medium">Net:</span>
-                                      <span className="text-green-600 font-medium">£{data.net.toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex justify-between gap-4 text-xs text-muted-foreground">
-                                      <span>Transactions:</span>
-                                      <span>{data.count}</span>
-                                    </div>
+                    <RevolutLineChart
+                      data={stripeChartData}
+                      xKey="displayDate"
+                      series={[
+                        { dataKey: 'gross', color: 'hsl(var(--primary))', name: 'Gross Revenue' },
+                        { dataKey: 'net', color: 'hsl(142 76% 36%)', name: 'Net Revenue' },
+                      ]}
+                      height={300}
+                      yFormatter={(v) => `£${v}`}
+                      tooltipContent={
+                        <ChartTooltip
+                          content={({ active, payload }) => {
+                            if (!active || !payload?.length) return null;
+                            const data = payload[0].payload;
+                            return (
+                              <div className="bg-popover border rounded-lg p-3 shadow-lg">
+                                <p className="font-medium mb-2">{data.displayDate}</p>
+                                <div className="space-y-1 text-sm">
+                                  <div className="flex justify-between gap-4">
+                                    <span className="text-muted-foreground">Gross:</span>
+                                    <span>£{data.gross.toFixed(2)}</span>
+                                  </div>
+                                  <div className="flex justify-between gap-4">
+                                    <span className="text-muted-foreground">Fees:</span>
+                                    <span className="text-destructive">-£{data.fees.toFixed(2)}</span>
+                                  </div>
+                                  <div className="flex justify-between gap-4 border-t pt-1">
+                                    <span className="font-medium">Net:</span>
+                                    <span className="text-green-600 font-medium">£{data.net.toFixed(2)}</span>
+                                  </div>
+                                  <div className="flex justify-between gap-4 text-xs text-muted-foreground">
+                                    <span>Transactions:</span>
+                                    <span>{data.count}</span>
                                   </div>
                                 </div>
-                              );
-                            }}
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="gross"
-                            stroke="hsl(var(--primary))"
-                            strokeWidth={2}
-                            dot={false}
-                            activeDot={{ r: 6, fill: "hsl(var(--primary))" }}
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="net"
-                            stroke="hsl(142 76% 36%)"
-                            strokeWidth={2}
-                            dot={false}
-                            activeDot={{ r: 6, fill: "hsl(142 76% 36%)" }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
+                              </div>
+                            );
+                          }}
+                        />
+                      }
+                    />
                   </div>
                 )}
               </CardContent>
@@ -888,50 +851,14 @@ export default function AdminIncome() {
                 </CardHeader>
                 <CardContent>
                   <div className="h-[300px] w-full">
-                    <ChartContainer
-                      config={{
-                        total: {
-                          label: "Gross Revenue",
-                          color: "hsl(var(--primary))",
-                        },
-                      }}
-                    >
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={incomeTrend ?? []} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                          <XAxis
-                            dataKey="displayDate"
-                            tick={{ fontSize: 12 }}
-                            className="text-muted-foreground"
-                            tickLine={false}
-                            axisLine={false}
-                            interval="preserveStartEnd"
-                          />
-                          <YAxis
-                            tickFormatter={(value) => `£${value}`}
-                            tick={{ fontSize: 12 }}
-                            className="text-muted-foreground"
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <ChartTooltip
-                            content={
-                              <ChartTooltipContent
-                                formatter={(value) => [`£${Number(value).toFixed(2)}`, 'Gross Revenue']}
-                              />
-                            }
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="total"
-                            stroke="hsl(var(--primary))"
-                            strokeWidth={2}
-                            dot={false}
-                            activeDot={{ r: 6, fill: "hsl(var(--primary))" }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
+                    <RevolutLineChart
+                      data={incomeTrend ?? []}
+                      xKey="displayDate"
+                      series={[{ dataKey: 'total', color: 'hsl(var(--primary))', name: 'Gross Revenue' }]}
+                      height={300}
+                      yFormatter={(v) => `£${v}`}
+                      tooltipFormatter={(v) => [`£${v.toFixed(2)}`, 'Gross Revenue']}
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -1224,50 +1151,14 @@ export default function AdminIncome() {
                 </CardHeader>
                 <CardContent>
                   <div className="h-[300px] w-full">
-                    <ChartContainer
-                      config={{
-                        net: {
-                          label: "Net Robux",
-                          color: "hsl(280 60% 50%)",
-                        },
-                      }}
-                    >
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={robuxTrendData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                          <XAxis
-                            dataKey="displayDate"
-                            tick={{ fontSize: 12 }}
-                            className="text-muted-foreground"
-                            tickLine={false}
-                            axisLine={false}
-                            interval="preserveStartEnd"
-                          />
-                          <YAxis
-                            tickFormatter={(value) => `R$${value}`}
-                            tick={{ fontSize: 12 }}
-                            className="text-muted-foreground"
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <ChartTooltip
-                            content={
-                              <ChartTooltipContent
-                                formatter={(value) => [`R$${Number(value).toLocaleString()}`, 'Net Robux']}
-                              />
-                            }
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="net"
-                            stroke="hsl(280 60% 50%)"
-                            strokeWidth={2}
-                            dot={false}
-                            activeDot={{ r: 6, fill: "hsl(280 60% 50%)" }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
+                    <RevolutLineChart
+                      data={robuxTrendData}
+                      xKey="displayDate"
+                      series={[{ dataKey: 'net', color: 'hsl(280 60% 50%)', name: 'Net Robux' }]}
+                      height={300}
+                      yFormatter={(v) => `R$${v}`}
+                      tooltipFormatter={(v) => [`R$${Number(v).toLocaleString()}`, 'Net Robux']}
+                    />
                   </div>
                 </CardContent>
               </Card>

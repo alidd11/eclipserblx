@@ -4,8 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useState } from 'react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { format, subDays, startOfDay } from 'date-fns';
+import { RevolutAreaChart } from '@/components/ui/revolut-chart';
+import { format, subDays } from 'date-fns';
 
 export function RevenueChart() {
   const { store } = useSellerStatus();
@@ -26,7 +26,6 @@ export function RevenueChart() {
         .gte('created_at', startDate)
         .order('created_at', { ascending: true });
 
-      // Aggregate by day
       const dayMap = new Map<string, number>();
       for (let i = 0; i < days; i++) {
         const day = format(subDays(new Date(), days - 1 - i), 'MMM dd');
@@ -65,46 +64,14 @@ export function RevenueChart() {
             Loading chart...
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={chartData} margin={{ top: 8, right: 0, left: -10, bottom: 0 }}>
-              <defs>
-                <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis
-                dataKey="date"
-                tickLine={false}
-                axisLine={false}
-                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-                interval="preserveStartEnd"
-              />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-                tickFormatter={(v) => `£${v}`}
-                width={45}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '6px',
-                  fontSize: '12px',
-                }}
-                formatter={(value: number) => [`£${value.toFixed(2)}`, 'Revenue']}
-              />
-              <Area
-                type="monotone"
-                dataKey="revenue"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2}
-                fill="url(#revenueGrad)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <RevolutAreaChart
+            data={chartData || []}
+            xKey="date"
+            series={[{ dataKey: 'revenue', color: 'hsl(var(--primary))', name: 'Revenue' }]}
+            height={180}
+            yFormatter={(v) => `£${v}`}
+            tooltipFormatter={(v) => [`£${v.toFixed(2)}`, 'Revenue']}
+          />
         )}
       </CardContent>
     </Card>

@@ -5,7 +5,8 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { RevolutAreaChart, RevolutBarChart } from '@/components/ui/revolut-chart';
 import { TrendingUp, Package, DollarSign, Layers } from 'lucide-react';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 
@@ -139,23 +140,14 @@ export default function SellerRevenueBreakdown() {
       <Card>
         <CardHeader><CardTitle className="text-base">Revenue Over Time</CardTitle></CardHeader>
         <CardContent>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={dailyRevenue}>
-                <defs>
-                  <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `£${v}`} />
-                <Tooltip formatter={(v: number) => [`£${v.toFixed(2)}`, 'Revenue']} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
-                <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#revGrad)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          <RevolutAreaChart
+            data={dailyRevenue}
+            xKey="date"
+            series={[{ dataKey: 'revenue', color: 'hsl(var(--primary))', name: 'Revenue' }]}
+            height={256}
+            yFormatter={(v) => `£${v}`}
+            tooltipFormatter={(v) => [`£${v.toFixed(2)}`, 'Revenue']}
+          />
         </CardContent>
       </Card>
 
@@ -164,17 +156,15 @@ export default function SellerRevenueBreakdown() {
         <Card>
           <CardHeader><CardTitle className="text-base">Top Products by Revenue</CardTitle></CardHeader>
           <CardContent>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={byProduct} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis type="number" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `£${v}`} />
-                  <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip formatter={(v: number) => [`£${v.toFixed(2)}`, 'Revenue']} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
-                  <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <RevolutBarChart
+              data={byProduct}
+              xKey="name"
+              series={[{ dataKey: 'revenue', color: 'hsl(var(--primary))', name: 'Revenue', radius: [0, 6, 6, 0] }]}
+              height={256}
+              layout="vertical"
+              yFormatter={(v) => `£${v}`}
+              tooltipFormatter={(v) => [`£${v.toFixed(2)}`, 'Revenue']}
+            />
           </CardContent>
         </Card>
 

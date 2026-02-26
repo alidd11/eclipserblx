@@ -24,7 +24,8 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link, Navigate } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { RevolutLineChart } from '@/components/ui/revolut-chart';
 import { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -203,38 +204,12 @@ export default function AdAnalyticsPage() {
               </CardHeader>
               <CardContent>
                 {dailyClickData.length > 0 ? (
-                  <div className="h-80 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={dailyClickData}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                        <XAxis 
-                          dataKey="date" 
-                          className="text-xs fill-muted-foreground"
-                          tick={{ fontSize: 12 }}
-                          interval={isMobile ? 6 : 2}
-                        />
-                        <YAxis 
-                          className="text-xs fill-muted-foreground"
-                          tick={{ fontSize: 12 }}
-                        />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: 'hsl(var(--card))', 
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: '8px',
-                          }}
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="clicks" 
-                          stroke="hsl(var(--primary))" 
-                          strokeWidth={2}
-                          dot={false}
-                          name="Total Clicks"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
+                  <RevolutLineChart
+                    data={dailyClickData}
+                    xKey="date"
+                    series={[{ dataKey: 'clicks', color: 'hsl(var(--primary))', name: 'Total Clicks' }]}
+                    height={320}
+                  />
                 ) : (
                   <div className="h-80 flex items-center justify-center text-muted-foreground">
                     <div className="text-center">

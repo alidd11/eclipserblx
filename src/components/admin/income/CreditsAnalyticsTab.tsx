@@ -9,8 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter, subDays, format } from 'date-fns';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { RevolutLineChart } from '@/components/ui/revolut-chart';
 
 export function CreditsAnalyticsTab() {
   // Fetch all credit transactions
@@ -338,53 +337,17 @@ export function CreditsAnalyticsTab() {
           {isLoading ? (
             <Skeleton className="h-[300px] w-full" />
           ) : (
-            <ChartContainer config={{
-              purchases: { label: 'Purchased', color: 'hsl(217 91% 60%)' },
-              spends: { label: 'Spent', color: 'hsl(0 84% 60%)' },
-              gifts: { label: 'Gifted', color: 'hsl(280 65% 60%)' },
-            }} className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trendData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="displayDate" 
-                    tick={{ fontSize: 12 }} 
-                    tickLine={false}
-                    interval="preserveStartEnd"
-                  />
-                  <YAxis 
-                    tick={{ fontSize: 12 }} 
-                    tickLine={false}
-                    tickFormatter={(value) => `£${value}`}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line 
-                    type="monotone" 
-                    dataKey="purchases" 
-                    stroke="hsl(217 91% 60%)" 
-                    strokeWidth={2}
-                    dot={false}
-                    name="Purchased"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="spends" 
-                    stroke="hsl(0 84% 60%)" 
-                    strokeWidth={2}
-                    dot={false}
-                    name="Spent"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="gifts" 
-                    stroke="hsl(280 65% 60%)" 
-                    strokeWidth={2}
-                    dot={false}
-                    name="Gifted"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+            <RevolutLineChart
+              data={trendData}
+              xKey="displayDate"
+              series={[
+                { dataKey: 'purchases', color: 'hsl(217 91% 60%)', name: 'Purchased' },
+                { dataKey: 'spends', color: 'hsl(0 84% 60%)', name: 'Spent' },
+                { dataKey: 'gifts', color: 'hsl(280 65% 60%)', name: 'Gifted' },
+              ]}
+              height={300}
+              yFormatter={(v) => `£${v}`}
+            />
           )}
         </CardContent>
       </Card>
