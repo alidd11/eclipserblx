@@ -89,7 +89,7 @@ export function RevolutAreaChart({
           <ChartGradients gradients={gradients} />
           <XAxis dataKey={xKey} {...AXIS_STYLE} interval="preserveStartEnd" />
           {showYAxis && (
-            <YAxis {...AXIS_STYLE} tickFormatter={yFormatter} width={48} />
+            <YAxis {...AXIS_STYLE} tickFormatter={yFormatter} width={48} allowDecimals={false} />
           )}
           <Tooltip
             {...TOOLTIP_STYLE}
@@ -147,7 +147,7 @@ export function RevolutLineChart({
         <LineChart data={data} margin={{ top: 4, right: 8, left: showYAxis ? -8 : -30, bottom: 0 }}>
           <XAxis dataKey={xKey} {...AXIS_STYLE} interval="preserveStartEnd" />
           {showYAxis && (
-            <YAxis {...AXIS_STYLE} tickFormatter={yFormatter} width={48} />
+            <YAxis {...AXIS_STYLE} tickFormatter={yFormatter} width={48} allowDecimals={false} />
           )}
           <Tooltip
             {...TOOLTIP_STYLE}
@@ -208,13 +208,13 @@ export function RevolutBarChart({
         <BarChart data={data} layout={layout} margin={{ top: 4, right: 8, left: isVertical ? 0 : (showYAxis ? -8 : -30), bottom: 0 }}>
           {isVertical ? (
             <>
-              <XAxis type="number" {...AXIS_STYLE} tickFormatter={yFormatter} />
+              <XAxis type="number" {...AXIS_STYLE} tickFormatter={yFormatter} allowDecimals={false} />
               <YAxis type="category" dataKey={xKey} {...AXIS_STYLE} width={100} />
             </>
           ) : (
             <>
               <XAxis dataKey={xKey} {...AXIS_STYLE} interval="preserveStartEnd" />
-              {showYAxis && <YAxis {...AXIS_STYLE} tickFormatter={yFormatter} width={48} />}
+              {showYAxis && <YAxis {...AXIS_STYLE} tickFormatter={yFormatter} width={48} allowDecimals={false} />}
             </>
           )}
           <Tooltip
