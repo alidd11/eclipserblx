@@ -72,6 +72,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
+import { validateImageQuality } from '@/lib/imageQuality';
 import { hapticTap } from '@/lib/haptics';
 import { ADMIN_MANAGED_STORES } from '@/lib/constants';
 
@@ -338,6 +339,13 @@ export default function SellerProducts() {
     try {
       for (const file of Array.from(files)) {
         if (form.images.length >= 8) break;
+
+        // Quality check
+        const quality = await validateImageQuality(file);
+        if (!quality.valid) {
+          toast.error(quality.reason || 'Image does not meet quality standards');
+          continue;
+        }
 
         toast.info('Scanning image...', { id: 'img-scan' });
         const scanResult = await performSecurityScan(file, { skipLuaAnalysis: true });
