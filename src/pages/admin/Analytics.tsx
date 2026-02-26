@@ -687,10 +687,10 @@ export default function AdminAnalytics() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                <RevolutBarChart
+                <RevolutAreaChart
                   data={downloadTrend || []}
                   xKey="date"
-                  series={[{ dataKey: 'downloads', color: 'hsl(var(--primary))', name: 'Downloads' }]}
+                  series={[{ dataKey: 'downloads', color: 'hsl(160 60% 50%)', name: 'Downloads', gradientId: 'dlGrad' }]}
                   height={250}
                 />
                 </CardContent>
@@ -705,10 +705,10 @@ export default function AdminAnalytics() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                <RevolutBarChart
+                <RevolutAreaChart
                   data={orderTrend || []}
                   xKey="date"
-                  series={[{ dataKey: 'orders', color: 'hsl(var(--chart-2))', name: 'Orders' }]}
+                  series={[{ dataKey: 'orders', color: 'hsl(142 76% 46%)', name: 'Orders', gradientId: 'ordGrad' }]}
                   height={250}
                 />
                 </CardContent>
@@ -725,10 +725,10 @@ export default function AdminAnalytics() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                <RevolutBarChart
+                <RevolutAreaChart
                   data={userTrend || []}
                   xKey="date"
-                  series={[{ dataKey: 'users', color: 'hsl(var(--chart-3))', name: 'Users' }]}
+                  series={[{ dataKey: 'users', color: 'hsl(170 70% 45%)', name: 'Users', gradientId: 'usrGrad' }]}
                   height={250}
                 />
                 </CardContent>

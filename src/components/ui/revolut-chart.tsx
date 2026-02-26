@@ -69,8 +69,8 @@ function ChartGradients({ gradients }: { gradients: GradientDef[] }) {
     <defs>
       {gradients.map((g) => (
         <linearGradient key={g.id} id={g.id} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={g.color} stopOpacity={g.opacity?.[0] ?? 0.35} />
-          <stop offset="85%" stopColor={g.color} stopOpacity={g.opacity?.[1] ?? 0.03} />
+          <stop offset="0%" stopColor={g.color} stopOpacity={g.opacity?.[0] ?? 0.45} />
+          <stop offset="60%" stopColor={g.color} stopOpacity={g.opacity?.[1] ?? 0.12} />
           <stop offset="100%" stopColor={g.color} stopOpacity={0} />
         </linearGradient>
       ))}
