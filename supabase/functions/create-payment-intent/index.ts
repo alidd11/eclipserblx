@@ -169,7 +169,7 @@ serve(async (req) => {
         const productIds = items.map(item => item.id);
         const { data: products, error: productsError } = await supabaseClient
           .from('products')
-      .select('id, name, price, category_id, is_resellable, store_id, stores(eclipse_plus_discount_enabled)')
+      .select('id, name, price, category_id, is_resellable, store_id, is_pay_what_you_want, min_price, stores(eclipse_plus_discount_enabled)')
       .in('id', productIds);
 
         if (productsError) throw new Error("Failed to verify product prices");
@@ -183,10 +183,21 @@ serve(async (req) => {
           const product = productMap.get(item.id);
           if (!product) throw new Error(`Product not found: ${item.id}`);
 
-          const originalPrice = product.price;
+          let originalPrice = product.price;
           let finalPrice = originalPrice;
+
+          // PWYW: Use custom_price from buyer
+          if ((product as any).is_pay_what_you_want && item.custom_price !== undefined) {
+            const minPrice = (product as any).min_price || 0;
+            const customPrice = Number(item.custom_price);
+            if (customPrice < minPrice) throw new Error(`Price for "${product.name}" must be at least £${minPrice.toFixed(2)}`);
+            if (customPrice > 0 && customPrice < 1) throw new Error(`Minimum paid amount is £1.00`);
+            if (customPrice === 0) throw new Error(`Free orders should use the free order endpoint`);
+            originalPrice = customPrice;
+            finalPrice = customPrice;
+          }
           
-          if (isEclipseMember) {
+          if (isEclipseMember && !(product as any).is_pay_what_you_want) {
             const storeEclipse = product.stores?.eclipse_plus_discount_enabled;
             finalPrice = calculateMemberPrice(originalPrice, product.category_id, product.is_resellable, storeEclipse);
             if (finalPrice < originalPrice) {

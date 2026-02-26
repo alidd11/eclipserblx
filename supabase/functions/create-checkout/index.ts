@@ -22,6 +22,8 @@ interface CartItem {
   image?: string;
   category_slug?: string;
   category_id?: string;
+  is_pwyw?: boolean;
+  custom_price?: number;
 }
 
 interface CheckoutRequest {
@@ -131,7 +133,7 @@ serve(async (req) => {
     const productIds = items.map(item => item.id);
     const { data: products, error: productsError } = await supabaseClient
       .from('products')
-      .select('id, name, price, category_id, is_resellable, images, store_id, stores(eclipse_plus_discount_enabled)')
+      .select('id, name, price, category_id, is_resellable, images, store_id, is_pay_what_you_want, min_price, stores(eclipse_plus_discount_enabled)')
       .in('id', productIds);
 
     if (productsError) {
@@ -162,8 +164,32 @@ serve(async (req) => {
         throw new Error(`Product not found: ${item.id}`);
       }
 
-      const originalPrice = product.price;
+      let originalPrice = product.price;
       let finalPrice = originalPrice;
+
+      // PWYW: Use custom_price from buyer, validated against min_price
+      if ((product as any).is_pay_what_you_want && item.custom_price !== undefined) {
+        const minPrice = (product as any).min_price || 0;
+        const customPrice = Number(item.custom_price);
+
+        if (customPrice < minPrice) {
+          throw new Error(`Price for "${product.name}" must be at least £${minPrice.toFixed(2)}`);
+        }
+
+        // Stripe minimum: if paying, must be at least £1
+        if (customPrice > 0 && customPrice < 1) {
+          throw new Error(`Minimum paid amount for "${product.name}" is £1.00`);
+        }
+
+        // £0 orders should not reach this function — they use fulfill-free-order
+        if (customPrice === 0) {
+          throw new Error(`Free orders should use the free order endpoint`);
+        }
+
+        originalPrice = customPrice;
+        finalPrice = customPrice;
+        logStep("PWYW price accepted", { productId: product.id, customPrice });
+      }
 
       // Apply Eclipse+ discount server-side if user is a member
       if (isEclipseMember) {
