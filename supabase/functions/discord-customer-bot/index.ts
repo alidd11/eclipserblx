@@ -3160,7 +3160,7 @@ async function handleGlobalBansListCommand(
   return interactionResponse("", true, [embed]);
 }
 
-// /update command - Admin-only: assign a Discord role to a user
+// /update command - Admin-only: sync Eclipse platform roles for a target user
 async function handleUpdateRoleCommand(
   supabase: any,
   interaction: DiscordInteraction,
@@ -3173,7 +3173,7 @@ async function handleUpdateRoleCommand(
   const options = interaction.data?.options || [];
   const memberPermissions = interaction.member?.permissions;
 
-  // Check MANAGE_ROLES permission (bit 28 = 0x10000000 = 268435456)
+  // Check MANAGE_ROLES permission
   const MANAGE_ROLES = BigInt(0x10000000);
   const hasPermission = memberPermissions
     ? (BigInt(memberPermissions) & MANAGE_ROLES) === MANAGE_ROLES
@@ -3185,20 +3185,17 @@ async function handleUpdateRoleCommand(
       title: "❌ Permission Denied",
       description: "You need the **Manage Roles** permission to use this command.",
       footer: { text: branding.footer },
-      timestamp: new Date().toISOString(),
     }]);
   }
 
   const targetUserId = options.find((o) => o.name === "user")?.value;
-  const targetRoleId = options.find((o) => o.name === "role")?.value;
 
-  if (!targetUserId || !targetRoleId) {
+  if (!targetUserId) {
     return interactionResponse("", true, [{
       color: 0xef4444,
-      title: "❌ Missing Options",
-      description: "Please provide both a **user** and a **role**.",
+      title: "❌ Missing User",
+      description: "Please provide a **user** to sync roles for.",
       footer: { text: branding.footer },
-      timestamp: new Date().toISOString(),
     }]);
   }
 
@@ -3211,66 +3208,198 @@ async function handleUpdateRoleCommand(
       title: "❌ Configuration Error",
       description: "Bot configuration error. Please contact support.",
       footer: { text: branding.footer },
-      timestamp: new Date().toISOString(),
+    }]);
+  }
+
+  // Look up the target user's linked Eclipse account by their Discord ID
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("user_id, username, discord_id")
+    .eq("discord_id", targetUserId)
+    .maybeSingle();
+
+  if (!profile) {
+    return interactionResponse("", true, [{
+      color: 0xef4444,
+      title: "❌ Account Not Linked",
+      description: `<@${targetUserId}> doesn't have a linked Eclipse account.`,
+      footer: { text: branding.footer },
     }]);
   }
 
   try {
-    // Assign the role via Discord API
-    const roleResponse = await fetch(
-      `https://discord.com/api/v10/guilds/${guildId}/members/${targetUserId}/roles/${targetRoleId}`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bot ${botToken}`,
-          "Content-Type": "application/json",
-        },
+    const rolesToAssign: { id: string; name: string }[] = [];
+    const rolesToRemove: { id: string; name: string }[] = [];
+
+    if (serverContext.isMainServer) {
+      const customerRoleId = Deno.env.get("DISCORD_CUSTOMER_ROLE_ID");
+      const loyalCustomerRoleId = Deno.env.get("DISCORD_LOYAL_CUSTOMER_ROLE_ID");
+      const storeCreatorRoleId = Deno.env.get("DISCORD_STORE_CREATOR_ROLE_ID");
+      const eclipsePlusRoleId = Deno.env.get("DISCORD_ROLE_ID");
+      const verifiedSellerRoleId = Deno.env.get("DISCORD_VERIFIED_SELLER_ROLE_ID");
+
+      const [ordersResult, subscriptionResult, storeResult] = await Promise.all([
+        supabase
+          .from("orders")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", profile.user_id)
+          .in("status", ["paid", "completed"]),
+        supabase
+          .from("subscriptions")
+          .select("id")
+          .eq("user_id", profile.user_id)
+          .eq("status", "active")
+          .maybeSingle(),
+        supabase
+          .from("stores")
+          .select("id, is_verified")
+          .eq("owner_id", profile.user_id)
+          .eq("is_active", true)
+          .maybeSingle(),
+      ]);
+
+      const purchaseCount = ordersResult.count || 0;
+      const hasSubscription = !!subscriptionResult.data;
+      const hasStore = !!storeResult.data;
+      const isVerified = storeResult.data?.is_verified === true;
+
+      // Customer / Loyal Customer
+      if (purchaseCount >= 5 && loyalCustomerRoleId) {
+        rolesToAssign.push({ id: loyalCustomerRoleId, name: "Loyal Customer" });
+        if (customerRoleId) rolesToRemove.push({ id: customerRoleId, name: "Customer" });
+      } else if (purchaseCount >= 1 && customerRoleId) {
+        rolesToAssign.push({ id: customerRoleId, name: "Customer" });
+        if (loyalCustomerRoleId) rolesToRemove.push({ id: loyalCustomerRoleId, name: "Loyal Customer" });
+      } else {
+        if (customerRoleId) rolesToRemove.push({ id: customerRoleId, name: "Customer" });
+        if (loyalCustomerRoleId) rolesToRemove.push({ id: loyalCustomerRoleId, name: "Loyal Customer" });
       }
-    );
 
-    if (roleResponse.status === 204 || roleResponse.ok) {
-      console.log(`[discord-customer-bot] /update: Role ${targetRoleId} assigned to ${targetUserId} by ${discordUsername}`);
-
-      // Log to audit
-      await supabase.from("audit_logs").insert({
-        action: "discord_role_update",
-        resource: "discord_roles",
-        user_id: null,
-        details: {
-          admin_discord_id: discordUserId,
-          admin_discord_username: discordUsername,
-          target_discord_id: targetUserId,
-          role_id: targetRoleId,
-          guild_id: guildId,
-        },
-      });
-
-      return interactionResponse("", true, [{
-        color: 0x22c55e,
-        title: "✅ Role Updated",
-        description: `Successfully assigned <@&${targetRoleId}> to <@${targetUserId}>.`,
-        footer: { text: branding.footer },
-        timestamp: new Date().toISOString(),
-      }]);
-    } else {
-      const errorText = await roleResponse.text();
-      console.error(`[discord-customer-bot] /update: Failed to assign role:`, errorText);
-
-      let errorMessage = "Failed to assign the role.";
-      if (roleResponse.status === 403) {
-        errorMessage = "I don't have permission to assign that role. Make sure the bot's role is **higher** than the target role in the server settings.";
-      } else if (roleResponse.status === 404) {
-        errorMessage = "The specified user or role was not found in this server.";
+      // Eclipse+
+      if (hasSubscription && eclipsePlusRoleId) {
+        rolesToAssign.push({ id: eclipsePlusRoleId, name: "Eclipse+" });
+      } else if (eclipsePlusRoleId) {
+        rolesToRemove.push({ id: eclipsePlusRoleId, name: "Eclipse+" });
       }
 
-      return interactionResponse("", true, [{
-        color: 0xef4444,
-        title: "❌ Role Update Failed",
-        description: errorMessage,
-        footer: { text: branding.footer },
-        timestamp: new Date().toISOString(),
-      }]);
+      // Store Creator
+      if (hasStore && storeCreatorRoleId) {
+        rolesToAssign.push({ id: storeCreatorRoleId, name: "Store Creator" });
+      } else if (storeCreatorRoleId) {
+        rolesToRemove.push({ id: storeCreatorRoleId, name: "Store Creator" });
+      }
+
+      // Verified Seller
+      if (isVerified && verifiedSellerRoleId) {
+        rolesToAssign.push({ id: verifiedSellerRoleId, name: "Verified Seller" });
+      } else if (verifiedSellerRoleId) {
+        rolesToRemove.push({ id: verifiedSellerRoleId, name: "Verified Seller" });
+      }
+    } else if (serverContext.store) {
+      // Store server: use store-specific role configs
+      const [roleConfigsResult, ordersResult] = await Promise.all([
+        supabase
+          .from("discord_role_configs")
+          .select("*")
+          .eq("store_id", serverContext.store.id)
+          .eq("auto_assign_on_purchase", true),
+        supabase
+          .from("orders")
+          .select("id")
+          .eq("user_id", profile.user_id)
+          .in("status", ["paid", "completed"])
+          .limit(200),
+      ]);
+
+      const roleConfigs = roleConfigsResult.data || [];
+      const orderIds = (ordersResult.data || []).map((o: any) => o.id);
+
+      if (orderIds.length > 0 && roleConfigs.length > 0) {
+        const { data: orderItems } = await supabase
+          .from("order_items")
+          .select("store_id")
+          .in("order_id", orderIds)
+          .eq("store_id", serverContext.store.id);
+
+        const storeOrderCount = orderItems?.length || 0;
+
+        for (const cfg of roleConfigs) {
+          const eligible =
+            (!cfg.min_order_count || storeOrderCount >= cfg.min_order_count);
+          if (eligible) {
+            rolesToAssign.push({ id: cfg.role_id, name: cfg.role_name });
+          }
+        }
+      }
     }
+
+    // Execute role changes
+    const assigned: string[] = [];
+    const removed: string[] = [];
+    const errors: string[] = [];
+
+    const assignPromises = rolesToAssign.map(async (role) => {
+      const res = await fetch(
+        `https://discord.com/api/v10/guilds/${guildId}/members/${targetUserId}/roles/${role.id}`,
+        { method: "PUT", headers: { Authorization: `Bot ${botToken}`, "Content-Type": "application/json" } }
+      );
+      if (res.status === 204 || res.ok) {
+        assigned.push(role.name);
+      } else {
+        errors.push(`Failed to assign ${role.name}`);
+      }
+    });
+
+    const removePromises = rolesToRemove.map(async (role) => {
+      const res = await fetch(
+        `https://discord.com/api/v10/guilds/${guildId}/members/${targetUserId}/roles/${role.id}`,
+        { method: "DELETE", headers: { Authorization: `Bot ${botToken}`, "Content-Type": "application/json" } }
+      );
+      if (res.status === 204 || res.status === 404 || res.ok) {
+        removed.push(role.name);
+      }
+    });
+
+    await Promise.all([...assignPromises, ...removePromises]);
+
+    // Audit log
+    await supabase.from("audit_logs").insert({
+      action: "discord_role_sync_manual",
+      resource: "discord_roles",
+      user_id: null,
+      details: {
+        admin_discord_id: discordUserId,
+        admin_discord_username: discordUsername,
+        target_discord_id: targetUserId,
+        target_eclipse_user: profile.username,
+        assigned,
+        removed,
+        errors,
+        guild_id: guildId,
+      },
+    });
+
+    const fields = [];
+    if (assigned.length > 0) {
+      fields.push({ name: "✅ Assigned", value: assigned.map(r => `\`${r}\``).join(", "), inline: true });
+    }
+    if (removed.length > 0) {
+      fields.push({ name: "🔄 Removed", value: removed.map(r => `\`${r}\``).join(", "), inline: true });
+    }
+    if (errors.length > 0) {
+      fields.push({ name: "⚠️ Errors", value: errors.join("\n"), inline: false });
+    }
+    if (assigned.length === 0 && removed.length === 0 && errors.length === 0) {
+      fields.push({ name: "ℹ️ No Changes", value: "No roles needed updating for this user.", inline: false });
+    }
+
+    return interactionResponse("", true, [{
+      color: errors.length > 0 ? 0xf59e0b : 0x22c55e,
+      title: `🔄 Role Sync — ${profile.username}`,
+      description: `Synced Eclipse roles for <@${targetUserId}>.`,
+      fields,
+      footer: { text: branding.footer },
+    }]);
   } catch (error) {
     console.error(`[discord-customer-bot] /update error:`, error);
     return interactionResponse("", true, [{
@@ -3278,7 +3407,6 @@ async function handleUpdateRoleCommand(
       title: "❌ Error",
       description: "An unexpected error occurred. Please try again.",
       footer: { text: branding.footer },
-      timestamp: new Date().toISOString(),
     }]);
   }
 }
