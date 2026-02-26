@@ -779,8 +779,28 @@ export default function SellerStoreDetail() {
                 </CollapsibleTrigger>
                 <CollapsibleContent className="mt-3">
                   {!paymentDetails?.stripe_account_id ? (
-                    <div className="rounded-md border border-dashed p-4 text-center text-sm text-muted-foreground">
-                      No Stripe Connect account linked yet
+                    <div className="rounded-md border border-dashed p-4 text-center text-sm space-y-3">
+                      <p className="text-muted-foreground">No Stripe Connect account linked yet</p>
+                      <p className="text-xs text-muted-foreground">
+                        The seller needs to complete Stripe Connect onboarding from their{' '}
+                        <span className="font-medium text-foreground">Seller Dashboard → Settings → Payments</span>{' '}
+                        page to get verified.
+                      </p>
+                      <div className="space-y-1.5 text-left">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Required Steps</p>
+                        <div className="flex items-center gap-2 text-sm">
+                          <XCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span>Create Stripe Connect Account</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <XCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span>Submit Identity / KYC Details</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <XCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span>Enable Payouts</span>
+                        </div>
+                      </div>
                     </div>
                   ) : (
                     <div className="rounded-md border p-3 text-sm space-y-3">
@@ -792,18 +812,14 @@ export default function SellerStoreDetail() {
                       <div className="space-y-2">
                         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Onboarding Steps</p>
                         <div className="flex items-center gap-2">
-                          {paymentDetails.stripe_account_id ? (
-                            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                          ) : (
-                            <XCircle className="h-4 w-4 text-muted-foreground shrink-0" />
-                          )}
+                          <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
                           <span>Account Created</span>
                         </div>
                         <div className="flex items-center gap-2">
                           {paymentDetails.details_submitted ? (
                             <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
                           ) : (
-                            <XCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <XCircle className="h-4 w-4 text-destructive shrink-0" />
                           )}
                           <span>Details Submitted (KYC / Identity)</span>
                         </div>
@@ -811,11 +827,19 @@ export default function SellerStoreDetail() {
                           {paymentDetails.payouts_enabled ? (
                             <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
                           ) : (
-                            <XCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <XCircle className="h-4 w-4 text-destructive shrink-0" />
                           )}
                           <span>Payouts Enabled</span>
                         </div>
                       </div>
+                      {(!paymentDetails.details_submitted || !paymentDetails.payouts_enabled) && (
+                        <div className="pt-2 border-t">
+                          <p className="text-xs text-muted-foreground">
+                            Seller needs to complete remaining steps from their{' '}
+                            <span className="font-medium text-foreground">Seller Dashboard → Settings → Payments</span>
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </CollapsibleContent>
