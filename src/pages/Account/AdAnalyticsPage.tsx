@@ -206,7 +206,7 @@ export default function AdAnalyticsPage() {
                   <RevolutLineChart
                     data={dailyClickData}
                     xKey="date"
-                    series={[{ dataKey: 'clicks', color: 'hsl(var(--primary))', name: 'Total Clicks' }]}
+                    series={[{ dataKey: 'clicks', color: 'hsl(160 60% 50%)', name: 'Total Clicks' }]}
                     height={320}
                   />
                 ) : (

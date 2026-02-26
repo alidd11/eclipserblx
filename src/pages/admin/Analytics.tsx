@@ -855,8 +855,8 @@ export default function AdminAnalytics() {
                   data={visitTrend || []}
                   xKey="date"
                   series={[
-                    { dataKey: 'new', color: 'hsl(var(--chart-2))', name: 'New' },
-                    { dataKey: 'returning', color: 'hsl(var(--chart-3))', name: 'Returning' },
+                    { dataKey: 'new', color: 'hsl(160 60% 50%)', name: 'New' },
+                    { dataKey: 'returning', color: 'hsl(142 76% 36%)', name: 'Returning' },
                   ]}
                   height={250}
                 />
@@ -1068,8 +1068,8 @@ export default function AdminAnalytics() {
                   data={sellerAnalyticsTrend || []}
                   xKey="date"
                   series={[
-                    { dataKey: 'storeViews', color: 'hsl(var(--primary))', name: 'Store Views' },
-                    { dataKey: 'productViews', color: 'hsl(var(--chart-2))', name: 'Product Views' },
+                    { dataKey: 'storeViews', color: 'hsl(160 60% 50%)', name: 'Store Views' },
+                    { dataKey: 'productViews', color: 'hsl(142 76% 36%)', name: 'Product Views' },
                   ]}
                   height={250}
                 />
@@ -1221,7 +1221,7 @@ export default function AdminAnalytics() {
                 <RevolutBarChart
                   data={referralTrend || []}
                   xKey="date"
-                  series={[{ dataKey: 'clicks', color: 'hsl(var(--primary))', name: 'Clicks' }]}
+                  series={[{ dataKey: 'clicks', color: 'hsl(160 60% 50%)', name: 'Clicks' }]}
                   height={250}
                 />
               </CardContent>
