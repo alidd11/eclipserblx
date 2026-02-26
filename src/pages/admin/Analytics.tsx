@@ -690,7 +690,7 @@ export default function AdminAnalytics() {
                 <RevolutAreaChart
                   data={downloadTrend || []}
                   xKey="date"
-                  series={[{ dataKey: 'downloads', color: 'hsl(190 90% 55%)', name: 'Downloads', gradientId: 'dlGrad' }]}
+                  series={[{ dataKey: 'downloads', color: 'hsl(262 100% 71%)', name: 'Downloads', gradientId: 'dlGrad' }]}
                   height={250}
                 />
                 </CardContent>
@@ -855,8 +855,8 @@ export default function AdminAnalytics() {
                   data={visitTrend || []}
                   xKey="date"
                   series={[
-                    { dataKey: 'new', color: 'hsl(190 90% 55%)', name: 'New' },
-                    { dataKey: 'returning', color: 'hsl(200 80% 45%)', name: 'Returning' },
+                    { dataKey: 'new', color: 'hsl(262 100% 71%)', name: 'New' },
+                    { dataKey: 'returning', color: 'hsl(220 95% 59%)', name: 'Returning' },
                   ]}
                   height={250}
                 />
@@ -1068,8 +1068,8 @@ export default function AdminAnalytics() {
                   data={sellerAnalyticsTrend || []}
                   xKey="date"
                   series={[
-                    { dataKey: 'storeViews', color: 'hsl(190 90% 55%)', name: 'Store Views' },
-                    { dataKey: 'productViews', color: 'hsl(200 80% 45%)', name: 'Product Views' },
+                    { dataKey: 'storeViews', color: 'hsl(262 100% 71%)', name: 'Store Views' },
+                    { dataKey: 'productViews', color: 'hsl(220 95% 59%)', name: 'Product Views' },
                   ]}
                   height={250}
                 />
@@ -1221,7 +1221,7 @@ export default function AdminAnalytics() {
                 <RevolutAreaChart
                   data={referralTrend || []}
                   xKey="date"
-                  series={[{ dataKey: 'clicks', color: 'hsl(190 90% 55%)', name: 'Clicks' }]}
+                  series={[{ dataKey: 'clicks', color: 'hsl(262 100% 71%)', name: 'Clicks' }]}
                   height={250}
                 />
               </CardContent>

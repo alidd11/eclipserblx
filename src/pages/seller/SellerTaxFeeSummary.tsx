@@ -122,9 +122,9 @@ export default function SellerTaxFeeSummary() {
                 data={monthlyData}
                 xKey="month"
                 series={[
-                  { dataKey: 'net', name: 'Net Earnings', color: 'hsl(190 90% 55%)' },
-                  { dataKey: 'platformFee', name: 'Commission', color: 'hsl(200 80% 45%)' },
-                  { dataKey: 'stripeFee', name: 'Processing', color: 'hsl(185 85% 50%)' },
+                  { dataKey: 'net', name: 'Net Earnings', color: 'hsl(262 100% 71%)' },
+                  { dataKey: 'platformFee', name: 'Commission', color: 'hsl(220 95% 59%)' },
+                  { dataKey: 'stripeFee', name: 'Processing', color: 'hsl(240 90% 65%)' },
                 ]}
                 height={288}
                 yFormatter={(v) => `£${v}`}

@@ -305,8 +305,8 @@ export function SellerEarningsTab() {
               data={trendData}
               xKey="displayDate"
               series={[
-                { dataKey: 'commission', color: 'hsl(190 90% 55%)', name: 'Platform Commission' },
-                { dataKey: 'sellerNet', color: 'hsl(200 80% 45%)', name: 'Seller Net' },
+                { dataKey: 'commission', color: 'hsl(262 100% 71%)', name: 'Platform Commission' },
+                { dataKey: 'sellerNet', color: 'hsl(220 95% 59%)', name: 'Seller Net' },
               ]}
               height={256}
               yFormatter={(v) => `£${v}`}

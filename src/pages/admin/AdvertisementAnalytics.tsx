@@ -142,7 +142,7 @@ export default function AdvertisementAnalytics() {
               <RevolutLineChart
                 data={dailyData}
                 xKey="date"
-                series={[{ dataKey: 'clicks', color: 'hsl(190 90% 55%)', name: 'Clicks' }]}
+                series={[{ dataKey: 'clicks', color: 'hsl(262 100% 71%)', name: 'Clicks' }]}
                 height={256}
               />
             </CardContent>

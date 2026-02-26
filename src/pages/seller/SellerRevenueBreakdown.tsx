@@ -143,7 +143,7 @@ export default function SellerRevenueBreakdown() {
           <RevolutAreaChart
             data={dailyRevenue}
             xKey="date"
-            series={[{ dataKey: 'revenue', color: 'hsl(190 90% 55%)', name: 'Revenue' }]}
+            series={[{ dataKey: 'revenue', color: 'hsl(262 100% 71%)', name: 'Revenue' }]}
             height={256}
             yFormatter={(v) => `£${v}`}
             tooltipFormatter={(v) => [`£${v.toFixed(2)}`, 'Revenue']}
