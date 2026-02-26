@@ -654,6 +654,18 @@ export default function SellerProductEditor() {
 
               {/* Pay What You Want */}
               <div className="space-y-4 pt-4 border-t">
+                {!(store as any)?.pwyw_enabled ? (
+                  <div className="flex items-center gap-3 p-3 rounded-lg border border-muted bg-muted/30">
+                    <Sparkles className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <p className="text-sm text-muted-foreground">
+                      Pay What You Want pricing is disabled for your store.{' '}
+                      <a href="/seller/settings/profile" className="underline text-primary hover:text-primary/80">
+                        Enable it in Store Settings
+                      </a>
+                    </p>
+                  </div>
+                ) : (
+                <>
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label className="flex items-center gap-2">
@@ -697,6 +709,8 @@ export default function SellerProductEditor() {
                       </p>
                     </div>
                   </div>
+                )}
+                </>
                 )}
               </div>
 

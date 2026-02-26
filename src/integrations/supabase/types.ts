@@ -7920,6 +7920,7 @@ export type Database = {
           owner_id: string
           payout_method: string
           product_count: number | null
+          pwyw_enabled: boolean
           recruited_by: string | null
           recruiter_commission_paid: boolean | null
           rejection_reason: string | null
@@ -7991,6 +7992,7 @@ export type Database = {
           owner_id: string
           payout_method?: string
           product_count?: number | null
+          pwyw_enabled?: boolean
           recruited_by?: string | null
           recruiter_commission_paid?: boolean | null
           rejection_reason?: string | null
@@ -8062,6 +8064,7 @@ export type Database = {
           owner_id?: string
           payout_method?: string
           product_count?: number | null
+          pwyw_enabled?: boolean
           recruited_by?: string | null
           recruiter_commission_paid?: boolean | null
           rejection_reason?: string | null
