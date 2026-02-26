@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { RevolutBarChart } from '@/components/ui/revolut-chart';
 import { Receipt, Percent, DollarSign, TrendingDown } from 'lucide-react';
 
 export default function SellerTaxFeeSummary() {
@@ -118,18 +118,18 @@ export default function SellerTaxFeeSummary() {
         <CardContent>
           <div className="h-72">
             {monthlyData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `£${v}`} />
-                  <Tooltip formatter={(v: number) => `£${v.toFixed(2)}`} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
-                  <Legend />
-                  <Bar dataKey="net" name="Net Earnings" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="platformFee" name="Commission" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="stripeFee" name="Processing" fill="hsl(var(--chart-4))" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <RevolutBarChart
+                data={monthlyData}
+                xKey="month"
+                series={[
+                  { dataKey: 'net', name: 'Net Earnings', color: 'hsl(var(--primary))' },
+                  { dataKey: 'platformFee', name: 'Commission', color: 'hsl(var(--chart-3))' },
+                  { dataKey: 'stripeFee', name: 'Processing', color: 'hsl(var(--chart-4))' },
+                ]}
+                height={288}
+                yFormatter={(v) => `£${v}`}
+                tooltipFormatter={(v) => [`£${v.toFixed(2)}`, '']}
+              />
             ) : (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
                 No transaction data available yet

@@ -5,7 +5,8 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { RevolutBarChart, RevolutAreaChart } from '@/components/ui/revolut-chart';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -700,16 +701,12 @@ export default function AdminAnalytics() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={downloadTrend || []} margin={{ left: 0, right: 8 }}>
-                      <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} tickMargin={8} />
-                      <YAxis tickLine={false} axisLine={false} fontSize={12} width={30} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="downloads" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
+                <RevolutBarChart
+                  data={downloadTrend || []}
+                  xKey="date"
+                  series={[{ dataKey: 'downloads', color: 'hsl(var(--primary))', name: 'Downloads' }]}
+                  height={250}
+                />
                 </CardContent>
               </Card>
 
@@ -722,16 +719,12 @@ export default function AdminAnalytics() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={orderTrend || []} margin={{ left: 0, right: 8 }}>
-                      <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} tickMargin={8} />
-                      <YAxis tickLine={false} axisLine={false} fontSize={12} width={30} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="orders" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
+                <RevolutBarChart
+                  data={orderTrend || []}
+                  xKey="date"
+                  series={[{ dataKey: 'orders', color: 'hsl(var(--chart-2))', name: 'Orders' }]}
+                  height={250}
+                />
                 </CardContent>
               </Card>
             </div>
@@ -746,16 +739,12 @@ export default function AdminAnalytics() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={userTrend || []} margin={{ left: 0, right: 8 }}>
-                      <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} tickMargin={8} />
-                      <YAxis tickLine={false} axisLine={false} fontSize={12} width={30} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="users" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
+                <RevolutBarChart
+                  data={userTrend || []}
+                  xKey="date"
+                  series={[{ dataKey: 'users', color: 'hsl(var(--chart-3))', name: 'Users' }]}
+                  height={250}
+                />
                 </CardContent>
               </Card>
 
@@ -890,17 +879,15 @@ export default function AdminAnalytics() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={visitTrend || []} margin={{ left: 0, right: 8 }}>
-                      <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} tickMargin={8} />
-                      <YAxis tickLine={false} axisLine={false} fontSize={12} width={30} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="new" stackId="a" fill="hsl(var(--chart-2))" radius={[0, 0, 0, 0]} name="New" />
-                      <Bar dataKey="returning" stackId="a" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} name="Returning" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
+                <RevolutBarChart
+                  data={visitTrend || []}
+                  xKey="date"
+                  series={[
+                    { dataKey: 'new', color: 'hsl(var(--chart-2))', name: 'New' },
+                    { dataKey: 'returning', color: 'hsl(var(--chart-3))', name: 'Returning' },
+                  ]}
+                  height={250}
+                />
               </CardContent>
             </Card>
 
@@ -1129,17 +1116,15 @@ export default function AdminAnalytics() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={sellerAnalyticsTrend || []} margin={{ left: 0, right: 8 }}>
-                      <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} tickMargin={8} />
-                      <YAxis tickLine={false} axisLine={false} fontSize={12} width={30} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Area type="monotone" dataKey="storeViews" stackId="1" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.6} name="Store Views" />
-                      <Area type="monotone" dataKey="productViews" stackId="1" stroke="hsl(var(--chart-2))" fill="hsl(var(--chart-2))" fillOpacity={0.6} name="Product Views" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
+                <RevolutAreaChart
+                  data={sellerAnalyticsTrend || []}
+                  xKey="date"
+                  series={[
+                    { dataKey: 'storeViews', color: 'hsl(var(--primary))', name: 'Store Views' },
+                    { dataKey: 'productViews', color: 'hsl(var(--chart-2))', name: 'Product Views' },
+                  ]}
+                  height={250}
+                />
               </CardContent>
             </Card>
 
@@ -1315,16 +1300,12 @@ export default function AdminAnalytics() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={referralTrend || []} margin={{ left: 0, right: 8 }}>
-                      <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} tickMargin={8} />
-                      <YAxis tickLine={false} axisLine={false} fontSize={12} width={30} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="clicks" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
+                <RevolutBarChart
+                  data={referralTrend || []}
+                  xKey="date"
+                  series={[{ dataKey: 'clicks', color: 'hsl(var(--primary))', name: 'Clicks' }]}
+                  height={250}
+                />
               </CardContent>
             </Card>
 
