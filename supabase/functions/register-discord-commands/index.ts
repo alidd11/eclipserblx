@@ -106,6 +106,27 @@ const commands = [
     contexts: [0], // Guild only
     integration_types: [0],
   },
+  {
+    name: "update",
+    description: "Assign a Discord role to a user (Admin only)",
+    contexts: [0], // Guild only
+    integration_types: [0],
+    default_member_permissions: "268435456", // MANAGE_ROLES permission required
+    options: [
+      {
+        name: "user",
+        description: "The user to update",
+        type: 6, // USER
+        required: true,
+      },
+      {
+        name: "role",
+        description: "The role to assign",
+        type: 8, // ROLE
+        required: true,
+      },
+    ],
+  },
 ];
 
 // NOTE: Global Guard commands (/globalban, /globalunban, /globalbans) are registered 

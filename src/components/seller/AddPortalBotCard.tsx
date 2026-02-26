@@ -17,6 +17,7 @@ const AVAILABLE_COMMANDS = [
   { name: '/profile', description: 'View Eclipse Portal profile and stats' },
   { name: '/store', description: 'View store information and browse products' },
   { name: '/getrole', description: 'Claim customer roles based on purchase history' },
+  { name: '/update', description: 'Assign a Discord role to a user (Admin only)' },
 ];
 
 export function AddPortalBotCard() {

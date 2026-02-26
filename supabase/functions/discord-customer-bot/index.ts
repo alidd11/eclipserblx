@@ -37,6 +37,8 @@ interface DiscordInteraction {
       global_name?: string;
       avatar?: string;
     };
+    permissions?: string;
+    roles?: string[];
   };
   user?: {
     id: string;
@@ -186,6 +188,9 @@ Deno.serve(async (req) => {
 
         case "walletbalance":
           return await handleWalletBalanceCommand(supabase, discordUserId, discordUsername, discordAvatarUrl);
+
+        case "update":
+          return await handleUpdateRoleCommand(supabase, interaction, discordUserId, discordUsername, serverContext, discordAvatarUrl);
 
         // Global Guard commands
         case "globalban":
@@ -3153,4 +3158,127 @@ async function handleGlobalBansListCommand(
   };
 
   return interactionResponse("", true, [embed]);
+}
+
+// /update command - Admin-only: assign a Discord role to a user
+async function handleUpdateRoleCommand(
+  supabase: any,
+  interaction: DiscordInteraction,
+  discordUserId: string,
+  discordUsername: string,
+  serverContext: ServerContext,
+  discordAvatarUrl?: string
+) {
+  const branding = getBranding(serverContext);
+  const options = interaction.data?.options || [];
+  const memberPermissions = interaction.member?.permissions;
+
+  // Check MANAGE_ROLES permission (bit 28 = 0x10000000 = 268435456)
+  const MANAGE_ROLES = BigInt(0x10000000);
+  const hasPermission = memberPermissions
+    ? (BigInt(memberPermissions) & MANAGE_ROLES) === MANAGE_ROLES
+    : false;
+
+  if (!hasPermission) {
+    return interactionResponse("", true, [{
+      color: 0xef4444,
+      title: "❌ Permission Denied",
+      description: "You need the **Manage Roles** permission to use this command.",
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    }]);
+  }
+
+  const targetUserId = options.find((o) => o.name === "user")?.value;
+  const targetRoleId = options.find((o) => o.name === "role")?.value;
+
+  if (!targetUserId || !targetRoleId) {
+    return interactionResponse("", true, [{
+      color: 0xef4444,
+      title: "❌ Missing Options",
+      description: "Please provide both a **user** and a **role**.",
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    }]);
+  }
+
+  const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
+  const guildId = serverContext.guildId;
+
+  if (!botToken || !guildId) {
+    return interactionResponse("", true, [{
+      color: 0xef4444,
+      title: "❌ Configuration Error",
+      description: "Bot configuration error. Please contact support.",
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    }]);
+  }
+
+  try {
+    // Assign the role via Discord API
+    const roleResponse = await fetch(
+      `https://discord.com/api/v10/guilds/${guildId}/members/${targetUserId}/roles/${targetRoleId}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bot ${botToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (roleResponse.status === 204 || roleResponse.ok) {
+      console.log(`[discord-customer-bot] /update: Role ${targetRoleId} assigned to ${targetUserId} by ${discordUsername}`);
+
+      // Log to audit
+      await supabase.from("audit_logs").insert({
+        action: "discord_role_update",
+        resource: "discord_roles",
+        user_id: null,
+        details: {
+          admin_discord_id: discordUserId,
+          admin_discord_username: discordUsername,
+          target_discord_id: targetUserId,
+          role_id: targetRoleId,
+          guild_id: guildId,
+        },
+      });
+
+      return interactionResponse("", true, [{
+        color: 0x22c55e,
+        title: "✅ Role Updated",
+        description: `Successfully assigned <@&${targetRoleId}> to <@${targetUserId}>.`,
+        footer: { text: branding.footer },
+        timestamp: new Date().toISOString(),
+      }]);
+    } else {
+      const errorText = await roleResponse.text();
+      console.error(`[discord-customer-bot] /update: Failed to assign role:`, errorText);
+
+      let errorMessage = "Failed to assign the role.";
+      if (roleResponse.status === 403) {
+        errorMessage = "I don't have permission to assign that role. Make sure the bot's role is **higher** than the target role in the server settings.";
+      } else if (roleResponse.status === 404) {
+        errorMessage = "The specified user or role was not found in this server.";
+      }
+
+      return interactionResponse("", true, [{
+        color: 0xef4444,
+        title: "❌ Role Update Failed",
+        description: errorMessage,
+        footer: { text: branding.footer },
+        timestamp: new Date().toISOString(),
+      }]);
+    }
+  } catch (error) {
+    console.error(`[discord-customer-bot] /update error:`, error);
+    return interactionResponse("", true, [{
+      color: 0xef4444,
+      title: "❌ Error",
+      description: "An unexpected error occurred. Please try again.",
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    }]);
+  }
 }
