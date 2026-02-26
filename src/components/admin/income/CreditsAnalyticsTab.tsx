@@ -341,9 +341,9 @@ export function CreditsAnalyticsTab() {
               data={trendData}
               xKey="displayDate"
               series={[
-                { dataKey: 'purchases', color: 'hsl(160 60% 50%)', name: 'Purchased' },
-                { dataKey: 'spends', color: 'hsl(142 76% 36%)', name: 'Spent' },
-                { dataKey: 'gifts', color: 'hsl(170 70% 45%)', name: 'Gifted' },
+                { dataKey: 'purchases', color: 'hsl(190 90% 55%)', name: 'Purchased' },
+                { dataKey: 'spends', color: 'hsl(200 80% 45%)', name: 'Spent' },
+                { dataKey: 'gifts', color: 'hsl(185 85% 50%)', name: 'Gifted' },
               ]}
               height={300}
               yFormatter={(v) => `£${v}`}

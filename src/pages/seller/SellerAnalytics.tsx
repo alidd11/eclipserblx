@@ -359,8 +359,8 @@ export default function SellerAnalytics() {
                       data={processedData.dailyData}
                       xKey="date"
                       series={[
-                        { dataKey: 'views', color: 'hsl(160 60% 50%)', name: 'Views' },
-                        { dataKey: 'uniqueVisitors', color: 'hsl(142 76% 36%)', name: 'Unique Visitors' },
+                        { dataKey: 'views', color: 'hsl(190 90% 55%)', name: 'Views' },
+                        { dataKey: 'uniqueVisitors', color: 'hsl(200 80% 45%)', name: 'Unique Visitors' },
                       ]}
                       height={320}
                     />
@@ -536,9 +536,9 @@ export default function SellerAnalytics() {
                       data={processedData.dailyData}
                       xKey="date"
                       series={[
-                        { dataKey: 'views', color: 'hsl(160 60% 50%)', name: 'Views' },
-                        { dataKey: 'addToCarts', color: 'hsl(142 76% 36%)', name: 'Add to Cart' },
-                        { dataKey: 'purchases', color: 'hsl(170 70% 45%)', name: 'Purchases' },
+                        { dataKey: 'views', color: 'hsl(190 90% 55%)', name: 'Views' },
+                        { dataKey: 'addToCarts', color: 'hsl(200 80% 45%)', name: 'Add to Cart' },
+                        { dataKey: 'purchases', color: 'hsl(185 85% 50%)', name: 'Purchases' },
                       ]}
                       height={320}
                     />

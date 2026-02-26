@@ -12,7 +12,7 @@ import { RevolutLineChart } from '@/components/ui/revolut-chart';
 
 const trendChartConfig = {
   commission: { label: 'Platform Commission', color: 'hsl(var(--primary))' },
-  sellerNet: { label: 'Seller Earnings', color: 'hsl(142 76% 36%)' },
+  sellerNet: { label: 'Seller Earnings', color: 'hsl(200 80% 45%)' },
 };
 
 export function SellerEarningsTab() {
@@ -305,8 +305,8 @@ export function SellerEarningsTab() {
               data={trendData}
               xKey="displayDate"
               series={[
-                { dataKey: 'commission', color: 'hsl(160 60% 50%)', name: 'Platform Commission' },
-                { dataKey: 'sellerNet', color: 'hsl(142 76% 36%)', name: 'Seller Net' },
+                { dataKey: 'commission', color: 'hsl(190 90% 55%)', name: 'Platform Commission' },
+                { dataKey: 'sellerNet', color: 'hsl(200 80% 45%)', name: 'Seller Net' },
               ]}
               height={256}
               yFormatter={(v) => `£${v}`}
