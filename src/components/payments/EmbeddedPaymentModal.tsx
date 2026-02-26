@@ -49,6 +49,8 @@ interface CartItem {
   image?: string;
   category_slug?: string;
   category_id?: string;
+  is_pwyw?: boolean;
+  custom_price?: number;
 }
 
 interface EmbeddedPaymentModalProps {

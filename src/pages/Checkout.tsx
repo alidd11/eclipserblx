@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { CreditCard, ChevronLeft, Tag, X, Check, Sparkles } from 'lucide-react';
+import { CreditCard, ChevronLeft, Tag, X, Check, Sparkles, Gift } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,22 +42,25 @@ export default function Checkout() {
   // Calculate Eclipse+ member pricing
   const calculateMemberPricing = () => {
     const itemsWithMemberPricing = items.map(item => {
-      const eligible = isEligibleForDiscount(item.category_id, item.is_resellable, item.store_eclipse_enabled);
-      const memberPrice = eligible ? getMemberPrice(item.price, item.category_id, item.is_resellable) : item.price;
+      // PWYW items use custom_price directly — Eclipse+ discounts don't apply to buyer-chosen prices
+      const effectivePrice = item.is_pwyw ? (item.custom_price ?? item.price) : item.price;
+      const eligible = !item.is_pwyw && isEligibleForDiscount(item.category_id, item.is_resellable, item.store_eclipse_enabled);
+      const memberPrice = eligible ? getMemberPrice(effectivePrice, item.category_id, item.is_resellable) : effectivePrice;
       return {
         ...item,
-        originalPrice: item.price,
-        memberPrice: isSubscribed && eligible ? memberPrice : item.price,
+        originalPrice: effectivePrice,
+        memberPrice: isSubscribed && eligible ? memberPrice : effectivePrice,
         hasEclipseDiscount: isSubscribed && eligible,
         discountPercent: getDiscountPercent(item.category_id, item.is_resellable),
-        potentialMemberPrice: eligible ? memberPrice : item.price,
+        potentialMemberPrice: eligible ? memberPrice : effectivePrice,
       };
     });
 
     const memberSubtotal = itemsWithMemberPricing.reduce((sum, item) => sum + item.memberPrice, 0);
-    const eclipseDiscount = isSubscribed ? total - memberSubtotal : 0;
+    const originalTotal = items.reduce((sum, item) => sum + (item.is_pwyw ? (item.custom_price ?? item.price) : item.price), 0);
+    const eclipseDiscount = isSubscribed ? originalTotal - memberSubtotal : 0;
     const potentialMemberSubtotal = itemsWithMemberPricing.reduce((sum, item) => sum + item.potentialMemberPrice, 0);
-    const potentialSavings = !isSubscribed ? total - potentialMemberSubtotal : 0;
+    const potentialSavings = !isSubscribed ? originalTotal - potentialMemberSubtotal : 0;
 
     return { itemsWithMemberPricing, memberSubtotal, eclipseDiscount, potentialSavings };
   };
@@ -194,6 +197,34 @@ export default function Checkout() {
     setAppliedDiscount(null);
   };
 
+  const isFreeOrder = finalTotal === 0;
+
+  const handleFreeOrder = async () => {
+    if (!user) return;
+    setIsProcessing(true);
+    try {
+      const freeItems = items.map(item => ({
+        id: item.id,
+        custom_price: 0,
+      }));
+
+      const { data, error } = await supabase.functions.invoke('fulfill-free-order', {
+        body: { items: freeItems },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      clearCart();
+      showSuccessNotification(t('checkout.paymentSuccess'), 'Your free products are ready to download!');
+      navigate(`/order-success?order_id=${data.orderId}&free=true`);
+    } catch (err: any) {
+      showErrorNotification(t('common.error'), err.message || 'Failed to claim free products');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleStripeCheckout = async () => {
     if (!user?.email) {
       showErrorNotification(t('checkout.signInRequired'), t('checkout.signInToCheckout'));
@@ -227,6 +258,8 @@ export default function Checkout() {
           image: item.image,
           category_slug: item.category_slug,
           category_id: item.category_id,
+          is_pwyw: item.is_pwyw,
+          custom_price: item.is_pwyw ? item.memberPrice : undefined,
         }))}
         discountCodeId={appliedDiscount?.id}
         onSuccess={handlePaymentSuccess}
@@ -400,28 +433,46 @@ export default function Checkout() {
 
             <div className="gaming-card p-4 sm:p-6 space-y-4">
               <h2 className="text-xl font-display font-bold flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                {t('checkout.payment')}
+                {isFreeOrder ? <Gift className="h-5 w-5" /> : <CreditCard className="h-5 w-5" />}
+                {isFreeOrder ? 'Claim Products' : t('checkout.payment')}
               </h2>
 
-              <PaymentMethodDisplay
-                items={itemsWithMemberPricing.map(item => ({
-                  id: item.id,
-                  name: item.name,
-                  price: item.memberPrice,
-                  originalPrice: item.originalPrice,
-                  image: item.image,
-                  category_slug: item.category_slug,
-                  category_id: item.category_id,
-                }))}
-                total={finalTotal}
-                email={user?.email || ''}
-                accessToken={session?.access_token}
-                discountCodeId={appliedDiscount?.id}
-                isProcessing={isProcessing}
-                onProcessing={setIsProcessing}
-                onCardCheckout={handleStripeCheckout}
-              />
+              {isFreeOrder ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    These products are free — no payment required!
+                  </p>
+                  <Button
+                    onClick={handleFreeOrder}
+                    className="w-full h-14 gradient-button border-0 text-base font-semibold"
+                    disabled={isProcessing}
+                  >
+                    <Gift className="h-5 w-5 mr-2" />
+                    {isProcessing ? 'Claiming...' : 'Get for Free'}
+                  </Button>
+                </div>
+              ) : (
+                <PaymentMethodDisplay
+                  items={itemsWithMemberPricing.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    price: item.memberPrice,
+                    originalPrice: item.originalPrice,
+                    image: item.image,
+                    category_slug: item.category_slug,
+                    category_id: item.category_id,
+                    is_pwyw: item.is_pwyw,
+                    custom_price: item.is_pwyw ? item.memberPrice : undefined,
+                  }))}
+                  total={finalTotal}
+                  email={user?.email || ''}
+                  accessToken={session?.access_token}
+                  discountCodeId={appliedDiscount?.id}
+                  isProcessing={isProcessing}
+                  onProcessing={setIsProcessing}
+                  onCardCheckout={handleStripeCheckout}
+                />
+              )}
             </div>
           </div>
         </div>
