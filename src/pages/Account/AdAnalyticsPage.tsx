@@ -24,7 +24,6 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link, Navigate } from 'react-router-dom';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
 import { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';

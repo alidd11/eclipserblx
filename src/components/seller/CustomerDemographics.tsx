@@ -2,7 +2,7 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { Globe } from 'lucide-react';
 
 const COLORS = [
@@ -68,7 +68,7 @@ export function CustomerDemographics() {
     enabled: !!store?.id,
   });
 
-  const total = countryData?.reduce((s, d) => s + d.value, 0) || 0;
+  
 
   return (
     <Card>
@@ -84,49 +84,14 @@ export function CustomerDemographics() {
             Loading...
           </div>
         ) : countryData && countryData.length > 0 ? (
-          <div className="flex items-center gap-4">
-            <ResponsiveContainer width={120} height={120}>
-              <PieChart>
-                <Pie
-                  data={countryData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={30}
-                  outerRadius={55}
-                  paddingAngle={2}
-                  dataKey="value"
-                >
-                  {countryData.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex-1 space-y-1.5">
-              {countryData.map((entry, i) => (
-                <div key={entry.name} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="h-2.5 w-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: COLORS[i % COLORS.length] }}
-                    />
-                    <span className="truncate">{entry.name}</span>
-                  </div>
-                  <span className="text-muted-foreground text-xs">
-                    {total > 0 ? ((entry.value / total) * 100).toFixed(0) : 0}%
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <RevolutDonutChart
+            data={countryData}
+            height={200}
+            innerRadius={30}
+            outerRadius={55}
+            showLegend
+            colors={COLORS}
+          />
         ) : (
           <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">
             No visitor data yet

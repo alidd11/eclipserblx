@@ -5,8 +5,8 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { RevolutAreaChart, RevolutBarChart } from '@/components/ui/revolut-chart';
+import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { TrendingUp, Package, DollarSign, Layers } from 'lucide-react';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 
@@ -172,20 +172,17 @@ export default function SellerRevenueBreakdown() {
         <Card>
           <CardHeader><CardTitle className="text-base">Revenue by Category</CardTitle></CardHeader>
           <CardContent>
-            <div className="h-64 flex items-center justify-center">
-              {byCategory.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={byCategory} cx="50%" cy="50%" outerRadius={80} innerRadius={40} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
-                      {byCategory.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                    </Pie>
-                    <Tooltip formatter={(v: number) => [`£${v.toFixed(2)}`, 'Revenue']} />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <p className="text-sm text-muted-foreground">No category data available</p>
-              )}
-            </div>
+            {byCategory.length > 0 ? (
+              <RevolutDonutChart
+                data={byCategory}
+                height={256}
+                showLabels
+                showLegend
+                colors={COLORS}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-8">No category data available</p>
+            )}
           </CardContent>
         </Card>
       </div>
