@@ -4,6 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAdminAdAnalytics } from '@/hooks/useAdminAdAnalytics';
+import { RevolutLineChart, RevolutBarChart } from '@/components/ui/revolut-chart';
+import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { 
   Megaphone, 
   MousePointerClick, 
@@ -16,21 +18,6 @@ import {
   Clock
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  Legend
-} from 'recharts';
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-GB', {
@@ -38,8 +25,6 @@ const formatCurrency = (amount: number) => {
     currency: 'GBP',
   }).format(amount);
 };
-
-const CHART_COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
 const getDeviceIcon = (device: string) => {
   const lowerDevice = device.toLowerCase();
@@ -75,6 +60,9 @@ export default function AdvertisementAnalytics() {
       </AdminLayout>
     );
   }
+
+  // Transform tier breakdown for donut chart
+  const tierDonutData = tierBreakdown.map(t => ({ name: t.tier, value: t.count }));
 
   return (
     <AdminLayout requiredPermissions={['view_analytics']}>
@@ -151,38 +139,12 @@ export default function AdvertisementAnalytics() {
               <CardDescription>Last 30 days</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dailyData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis 
-                      dataKey="date" 
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      className="text-muted-foreground"
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      className="text-muted-foreground"
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="clicks" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+              <RevolutLineChart
+                data={dailyData}
+                xKey="date"
+                series={[{ dataKey: 'clicks', color: 'hsl(var(--primary))', name: 'Clicks' }]}
+                height={256}
+              />
             </CardContent>
           </Card>
 
@@ -196,38 +158,14 @@ export default function AdvertisementAnalytics() {
               <CardDescription>Last 30 days</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dailyData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis 
-                      dataKey="date" 
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      className="text-muted-foreground"
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      className="text-muted-foreground"
-                      tickFormatter={(value) => `£${value}`}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }}
-                      formatter={(value: number) => [formatCurrency(value), 'Revenue']}
-                    />
-                    <Bar 
-                      dataKey="revenue" 
-                      fill="hsl(var(--chart-2))" 
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              <RevolutBarChart
+                data={dailyData}
+                xKey="date"
+                series={[{ dataKey: 'revenue', color: 'hsl(var(--chart-2))', name: 'Revenue' }]}
+                height={256}
+                yFormatter={(v) => `£${v}`}
+                tooltipFormatter={(value: number) => [formatCurrency(value), 'Revenue']}
+              />
             </CardContent>
           </Card>
         </div>
@@ -245,34 +183,7 @@ export default function AdvertisementAnalytics() {
             </CardHeader>
             <CardContent>
               {tierBreakdown.length > 0 ? (
-                <div className="h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={tierBreakdown}
-                        dataKey="count"
-                        nameKey="tier"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={40}
-                        outerRadius={70}
-                        paddingAngle={2}
-                      >
-                        {tierBreakdown.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: 'hsl(var(--card))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px'
-                        }}
-                      />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
+                <RevolutDonutChart data={tierDonutData} height={192} />
               ) : (
                 <p className="text-muted-foreground text-center py-8">No active subscriptions</p>
               )}
@@ -320,36 +231,12 @@ export default function AdvertisementAnalytics() {
               <CardDescription>Last 30 days</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dailyData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis 
-                      dataKey="date" 
-                      tick={{ fontSize: 10 }}
-                      tickLine={false}
-                      interval="preserveStartEnd"
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 10 }}
-                      tickLine={false}
-                      allowDecimals={false}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }}
-                    />
-                    <Bar 
-                      dataKey="adsPosted" 
-                      fill="hsl(var(--chart-3))" 
-                      radius={[2, 2, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              <RevolutBarChart
+                data={dailyData}
+                xKey="date"
+                series={[{ dataKey: 'adsPosted', color: 'hsl(var(--chart-3))', name: 'Ads Posted' }]}
+                height={192}
+              />
             </CardContent>
           </Card>
         </div>
