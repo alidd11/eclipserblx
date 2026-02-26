@@ -722,7 +722,7 @@ export default function AdminIncome() {
                       data={stripeChartData}
                       xKey="displayDate"
                       series={[
-                        { dataKey: 'gross', color: 'hsl(var(--primary))', name: 'Gross Revenue' },
+                        { dataKey: 'gross', color: 'hsl(160 60% 50%)', name: 'Gross Revenue' },
                         { dataKey: 'net', color: 'hsl(142 76% 36%)', name: 'Net Revenue' },
                       ]}
                       height={300}
@@ -854,7 +854,7 @@ export default function AdminIncome() {
                     <RevolutLineChart
                       data={incomeTrend ?? []}
                       xKey="displayDate"
-                      series={[{ dataKey: 'total', color: 'hsl(var(--primary))', name: 'Gross Revenue' }]}
+                      series={[{ dataKey: 'total', color: 'hsl(160 60% 50%)', name: 'Gross Revenue' }]}
                       height={300}
                       yFormatter={(v) => `£${v}`}
                       tooltipFormatter={(v) => [`£${v.toFixed(2)}`, 'Gross Revenue']}
@@ -1154,7 +1154,7 @@ export default function AdminIncome() {
                     <RevolutLineChart
                       data={robuxTrendData}
                       xKey="displayDate"
-                      series={[{ dataKey: 'net', color: 'hsl(280 60% 50%)', name: 'Net Robux' }]}
+                      series={[{ dataKey: 'net', color: 'hsl(170 70% 45%)', name: 'Net Robux' }]}
                       height={300}
                       yFormatter={(v) => `R$${v}`}
                       tooltipFormatter={(v) => [`R$${Number(v).toLocaleString()}`, 'Net Robux']}
