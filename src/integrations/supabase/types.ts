@@ -4852,8 +4852,10 @@ export type Database = {
           ip_ownership_confirmed: boolean
           is_active: boolean | null
           is_featured: boolean | null
+          is_pay_what_you_want: boolean
           is_resellable: boolean
           is_seller_product: boolean | null
+          min_price: number | null
           moderation_flags: Json | null
           moderation_notes: string | null
           moderation_status: string | null
@@ -4890,8 +4892,10 @@ export type Database = {
           ip_ownership_confirmed?: boolean
           is_active?: boolean | null
           is_featured?: boolean | null
+          is_pay_what_you_want?: boolean
           is_resellable?: boolean
           is_seller_product?: boolean | null
+          min_price?: number | null
           moderation_flags?: Json | null
           moderation_notes?: string | null
           moderation_status?: string | null
@@ -4928,8 +4932,10 @@ export type Database = {
           ip_ownership_confirmed?: boolean
           is_active?: boolean | null
           is_featured?: boolean | null
+          is_pay_what_you_want?: boolean
           is_resellable?: boolean
           is_seller_product?: boolean | null
+          min_price?: number | null
           moderation_flags?: Json | null
           moderation_notes?: string | null
           moderation_status?: string | null

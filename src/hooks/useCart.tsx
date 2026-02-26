@@ -16,6 +16,8 @@ export interface CartItem {
   bundle_label?: string; // Human-readable bundle name (e.g., "3-Pack")
   store_eclipse_enabled?: boolean; // Whether store has Eclipse+ discounts enabled
   store_name?: string; // Store name for transparency in cart/checkout
+  is_pwyw?: boolean; // Pay What You Want product
+  custom_price?: number; // Buyer-chosen price for PWYW products
 }
 
 interface CartContextType {

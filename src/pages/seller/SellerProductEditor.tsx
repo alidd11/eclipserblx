@@ -37,7 +37,8 @@ import {
   ImagePlus,
   Calendar,
   Clock,
-  Shield
+  Shield,
+  Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
@@ -68,6 +69,8 @@ interface ProductFormData {
   early_access_enabled: boolean;
   early_access_hours: string;
   ip_ownership_confirmed: boolean;
+  is_pay_what_you_want: boolean;
+  min_price: string;
 }
 
 const INITIAL_FORM_DATA: ProductFormData = {
@@ -86,6 +89,8 @@ const INITIAL_FORM_DATA: ProductFormData = {
   early_access_enabled: false,
   early_access_hours: '',
   ip_ownership_confirmed: false,
+  is_pay_what_you_want: false,
+  min_price: '0',
 };
 
 export default function SellerProductEditor() {
@@ -167,6 +172,8 @@ export default function SellerProductEditor() {
         early_access_enabled: hasSchedule && hasEarlyAccess,
         early_access_hours: product.early_access_hours?.toString() || '',
         ip_ownership_confirmed: (product as any).ip_ownership_confirmed ?? false,
+        is_pay_what_you_want: (product as any).is_pay_what_you_want ?? false,
+        min_price: ((product as any).min_price ?? 0).toString(),
       });
     }
   }, [product]);
@@ -390,6 +397,8 @@ export default function SellerProductEditor() {
         release_at: releaseAt,
         early_access_hours: earlyAccessHours,
         ip_ownership_confirmed: data.ip_ownership_confirmed,
+        is_pay_what_you_want: data.is_pay_what_you_want,
+        min_price: data.is_pay_what_you_want ? (parseFloat(data.min_price) || 0) : null,
       };
 
       if (isEditing && productId) {
@@ -465,9 +474,16 @@ export default function SellerProductEditor() {
       toast.error('Please enter a product name');
       return;
     }
-    if (!formData.price || parseFloat(formData.price) <= 0) {
+    if (!formData.is_pay_what_you_want && (!formData.price || parseFloat(formData.price) <= 0)) {
       toast.error('Please enter a valid price');
       return;
+    }
+    if (formData.is_pay_what_you_want) {
+      const minP = parseFloat(formData.min_price);
+      if (minP > 0 && minP < 1) {
+        toast.error('Minimum price must be £0 (free) or at least £1.00 (Stripe minimum)');
+        return;
+      }
     }
     if (!formData.ip_ownership_confirmed) {
       toast.error('You must confirm you have the rights to sell this product');
@@ -636,7 +652,54 @@ export default function SellerProductEditor() {
                 />
               </div>
 
-              {/* IP Ownership Confirmation */}
+              {/* Pay What You Want */}
+              <div className="space-y-4 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-emerald-500" />
+                      Pay What You Want
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Let buyers choose their own price, including free
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.is_pay_what_you_want}
+                    onCheckedChange={(checked) => setFormData({ 
+                      ...formData, 
+                      is_pay_what_you_want: checked,
+                      min_price: checked ? (formData.min_price || '0') : '0',
+                    })}
+                  />
+                </div>
+
+                {formData.is_pay_what_you_want && (
+                  <div className="space-y-3 p-4 rounded-lg border border-emerald-500/30 bg-emerald-500/5">
+                    <div className="space-y-2">
+                      <Label htmlFor="min_price">Minimum Price (£)</Label>
+                      <Input
+                        id="min_price"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={formData.min_price}
+                        onChange={(e) => setFormData({ ...formData, min_price: e.target.value })}
+                        placeholder="0.00"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Set to £0 for completely free downloads. The "Price" field above becomes the suggested price shown to buyers.
+                        {parseFloat(formData.min_price) > 0 && parseFloat(formData.min_price) < 1 && (
+                          <span className="text-destructive block mt-1">
+                            ⚠ Minimum must be £0 (free) or £1+ (Stripe minimum)
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-3 pt-4 border-t">
                 <div className="flex items-start gap-3 p-4 rounded-lg border border-primary/30 bg-primary/5">
                   <Checkbox

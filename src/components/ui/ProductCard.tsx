@@ -73,9 +73,11 @@ interface ProductCardProps {
   showNewBadge?: boolean;
   averageRating?: number;
   storeEclipseEnabled?: boolean;
+  isPayWhatYouWant?: boolean;
+  minPrice?: number;
 }
 
-export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted, isResellable, showBestSellerBadge, showNewBadge, averageRating, storeEclipseEnabled }, ref) {
+export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted, isResellable, showBestSellerBadge, showNewBadge, averageRating, storeEclipseEnabled, isPayWhatYouWant, minPrice }, ref) {
   const { addItem, isInCart } = useCart();
   const { isSubscribed, isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const { formatPrice } = useCurrency();
@@ -282,13 +284,20 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
 
           {/* Price section - show both prices only if eligible for discount */}
           <div className="flex flex-col gap-0.5 mt-auto pt-1">
-            {hasMemberDiscount ? (
+            {isPayWhatYouWant ? (
               <>
-                {/* Normal price */}
+                <span className="text-xs xs:text-sm font-bold whitespace-nowrap leading-none text-emerald-500">
+                  {minPrice === 0 ? 'Free+' : `From ${formatPrice(minPrice || 0)}`}
+                </span>
+                <span className="text-[9px] xs:text-[10px] text-muted-foreground leading-none">
+                  Pay what you want
+                </span>
+              </>
+            ) : hasMemberDiscount ? (
+              <>
                 <span className="text-[9px] xs:text-[10px] text-muted-foreground leading-none line-through">
                   {formatPrice(price)}
                 </span>
-                {/* Member price + discount badge */}
                 <div className="flex items-center gap-1">
                   <span className="text-xs xs:text-sm font-bold whitespace-nowrap leading-none text-amber-400">
                     {formatPrice(memberPrice)}
@@ -300,7 +309,6 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 </div>
               </>
             ) : (
-              /* Single price for Eclipse Savers or non-discountable products */
               <span className="text-xs xs:text-sm font-bold whitespace-nowrap leading-none text-foreground">
                 {formatPrice(price)}
               </span>

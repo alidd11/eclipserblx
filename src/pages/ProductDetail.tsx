@@ -1,7 +1,7 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ShoppingCart, Check, ChevronLeft, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck, Clock, Flag, Share2 } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck, Clock, Flag, Share2, Heart } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
@@ -49,6 +49,7 @@ export default function ProductDetail() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
   const [showIPReportDialog, setShowIPReportDialog] = useState(false);
+  const [pwywAmount, setPwywAmount] = useState<string>('');
   const [selectedBundle, setSelectedBundle] = useState<{
     id: string;
     quantity: number;
@@ -259,6 +260,17 @@ export default function ProductDetail() {
   // Check if this is a scheduled product (for admin preview banner)
   const isScheduledProduct = product?.release_at && new Date(product.release_at) > new Date();
 
+  // Pay What You Want - hooks must be before early returns
+  const isPWYW = !!(product as any)?.is_pay_what_you_want;
+  const pwywMinPrice = (product as any)?.min_price ?? 0;
+  const pwywSuggestedPrice = product?.price ?? 0;
+
+  useEffect(() => {
+    if (isPWYW && !pwywAmount) {
+      setPwywAmount(pwywSuggestedPrice.toString());
+    }
+  }, [isPWYW, pwywSuggestedPrice]);
+
   if (isLoading || adminLoading) {
     return (
       <MainLayout>
@@ -305,12 +317,21 @@ export default function ProductDetail() {
   // Check if this is a bot product
   const isBotProduct = product.categories?.slug === 'bots';
 
+  const getPwywCartPrice = () => {
+    const amount = parseFloat(pwywAmount) || 0;
+    return Math.max(amount, pwywMinPrice);
+  };
+
   const handleAddToCart = () => {
     if (!inCart) {
+      const effectivePrice = isPWYW 
+        ? getPwywCartPrice() 
+        : (isBotProduct && selectedBundle ? selectedBundle.price_gbp : product.price);
+
       const cartItem: CartItem = {
         id: product.id,
         name: product.name,
-        price: isBotProduct && selectedBundle ? selectedBundle.price_gbp : product.price,
+        price: effectivePrice,
         image: product.images?.[0],
         slug: product.slug,
         category_slug: product.categories?.slug,
@@ -318,6 +339,8 @@ export default function ProductDetail() {
         is_resellable: product.is_resellable,
         store_eclipse_enabled: storeEclipseEnabled,
         store_name: product.stores?.name,
+        is_pwyw: isPWYW || undefined,
+        custom_price: isPWYW ? effectivePrice : undefined,
       };
 
       // Add bundle info if this is a bot product with a bundle selected
@@ -499,8 +522,47 @@ export default function ProductDetail() {
                 </div>
 
                 <div className="space-y-2">
-                  {/* Bot products show bundle pricing instead of regular price */}
-                  {isBotProduct ? (
+                  {/* PWYW pricing */}
+                  {isPWYW ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Heart className="h-5 w-5 text-emerald-500" />
+                        <span className="text-sm font-medium text-emerald-500">Pay What You Want</span>
+                      </div>
+                      {pwywSuggestedPrice > 0 && (
+                        <p className="text-sm text-muted-foreground">
+                          Suggested price: {formatPrice(pwywSuggestedPrice)}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-medium text-muted-foreground">£</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min={pwywMinPrice}
+                          value={pwywAmount}
+                          onChange={(e) => setPwywAmount(e.target.value)}
+                          className="text-3xl font-bold bg-transparent border-b-2 border-border focus:border-primary outline-none w-32 text-foreground"
+                          placeholder="0.00"
+                        />
+                      </div>
+                      {pwywMinPrice === 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Enter £0 for a free download, or pay any amount to support the creator
+                        </p>
+                      )}
+                      {pwywMinPrice > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Minimum: {formatPrice(pwywMinPrice)}
+                        </p>
+                      )}
+                      {parseFloat(pwywAmount) > 0 && parseFloat(pwywAmount) < 1 && (
+                        <p className="text-xs text-destructive">
+                          Paid amounts must be at least £1.00
+                        </p>
+                      )}
+                    </div>
+                  ) : isBotProduct ? (
                     <div className="space-y-4">
                       <BotLicenseBundleSelector
                         productId={product.id}
@@ -522,18 +584,15 @@ export default function ProductDetail() {
                     </div>
                   ) : (
                     <>
-                      {/* Regular price - shown prominently when not eligible for discount */}
                       {!isEligible ? (
                         <span className="text-4xl font-bold">
                           {formatPrice(Number(product.price))}
                         </span>
                       ) : (
                         <>
-                          {/* Regular price strikethrough */}
                           <p className="text-lg text-muted-foreground line-through">
                             {formatPrice(Number(product.price))}
                           </p>
-                          {/* Member price prominently displayed */}
                           <div className="flex items-center gap-3 flex-wrap">
                             <span className="text-4xl font-bold flex items-center gap-2 text-amber-400">
                               <Sparkles className="h-6 w-6" />
@@ -543,7 +602,6 @@ export default function ProductDetail() {
                               {discountPercent}% off with Eclipse+
                             </Badge>
                           </div>
-                          {/* Call to action for non-subscribers */}
                           {!isSubscribed && (
                             <Link 
                               to="/eclipse-plus" 
@@ -587,16 +645,22 @@ export default function ProductDetail() {
                       )}
                       variant={inCart ? "secondary" : "default"}
                       onClick={handleAddToCart}
+                      disabled={isPWYW && parseFloat(pwywAmount) > 0 && parseFloat(pwywAmount) < 1}
                     >
                       {inCart ? (
                         <>
                           <Check className="h-5 w-5 mr-2" />
                           Added to Cart
                         </>
+                      ) : isPWYW && getPwywCartPrice() === 0 ? (
+                        <>
+                          <Heart className="h-5 w-5 mr-2" />
+                          Get for Free
+                        </>
                       ) : (
                         <>
                           <ShoppingCart className="h-5 w-5 mr-2" />
-                          Add to Cart
+                          {isPWYW ? `Add to Cart — ${formatPrice(getPwywCartPrice())}` : 'Add to Cart'}
                         </>
                       )}
                     </Button>
@@ -608,8 +672,8 @@ export default function ProductDetail() {
                     )}
                   </div>
                   
-                  {/* Robux payment option - exclude bots category */}
-                  {product.categories?.slug !== 'bots' && (
+                  {/* Robux payment option - exclude bots category and PWYW free */}
+                  {product.categories?.slug !== 'bots' && !(isPWYW && getPwywCartPrice() === 0) && (
                     <RobuxPayButton />
                   )}
                 </div>
