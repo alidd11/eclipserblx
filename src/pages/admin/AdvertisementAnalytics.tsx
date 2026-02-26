@@ -142,7 +142,7 @@ export default function AdvertisementAnalytics() {
               <RevolutLineChart
                 data={dailyData}
                 xKey="date"
-                series={[{ dataKey: 'clicks', color: 'hsl(160 60% 50%)', name: 'Clicks' }]}
+                series={[{ dataKey: 'clicks', color: 'hsl(190 90% 55%)', name: 'Clicks' }]}
                 height={256}
               />
             </CardContent>
@@ -161,7 +161,7 @@ export default function AdvertisementAnalytics() {
               <RevolutAreaChart
                 data={dailyData}
                 xKey="date"
-                series={[{ dataKey: 'revenue', color: 'hsl(142 76% 36%)', name: 'Revenue' }]}
+                series={[{ dataKey: 'revenue', color: 'hsl(200 80% 45%)', name: 'Revenue' }]}
                 height={256}
                 yFormatter={(v) => `£${v}`}
                 tooltipFormatter={(value: number) => [formatCurrency(value), 'Revenue']}
@@ -234,7 +234,7 @@ export default function AdvertisementAnalytics() {
               <RevolutAreaChart
                 data={dailyData}
                 xKey="date"
-                series={[{ dataKey: 'adsPosted', color: 'hsl(170 70% 45%)', name: 'Ads Posted' }]}
+                series={[{ dataKey: 'adsPosted', color: 'hsl(185 85% 50%)', name: 'Ads Posted' }]}
                 height={192}
               />
             </CardContent>
