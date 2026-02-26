@@ -41,6 +41,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
+import { validateImageQuality } from '@/lib/imageQuality';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 import { containsBlockedLinks } from '@/lib/blockedLinks';
 
@@ -209,6 +210,13 @@ export default function SellerProductEditor() {
       const newImages: string[] = [];
 
       for (const file of filesToUpload) {
+        // Quality check
+        const quality = await validateImageQuality(file);
+        if (!quality.valid) {
+          toast.error(quality.reason || 'Image does not meet quality standards');
+          continue;
+        }
+
         // Security scan (virus + NSFW)
         toast.info('Scanning image...', { id: 'img-scan' });
         const scanResult = await performSecurityScan(file, { skipLuaAnalysis: true });
