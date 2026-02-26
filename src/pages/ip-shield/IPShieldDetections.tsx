@@ -20,6 +20,7 @@ import {
 import { format, formatDistanceToNow } from 'date-fns';
 import { DetectionDetailPanel } from '@/components/ip-shield/DetectionDetailPanel';
 import { ExternalWebScanner } from '@/components/ip-shield/ExternalWebScanner';
+import { ManualReportDialog } from '@/components/ip-shield/ManualReportDialog';
 
 type SortOption = 'score_desc' | 'score_asc' | 'newest' | 'oldest' | 'players';
 type FilterOption = 'all' | 'critical' | 'high' | 'medium' | 'low' | 'actionable';
@@ -36,6 +37,7 @@ export default function IPShieldDetections() {
   const [customKeywords, setCustomKeywords] = useState('');
   const [showCustomScan, setShowCustomScan] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showManualReport, setShowManualReport] = useState(false);
 
   const toggleExpand = useCallback((id: string) => {
     setExpandedId(prev => prev === id ? null : id);
@@ -254,6 +256,10 @@ export default function IPShieldDetections() {
                 {bulkMode ? 'Cancel' : 'Bulk Takedown'}
               </Button>
             )}
+            <Button variant="outline" size="sm" onClick={() => setShowManualReport(true)}>
+              <AlertTriangle className="h-4 w-4 mr-1" />
+              Report Game
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setShowCustomScan(!showCustomScan)}>
               <Target className="h-4 w-4 mr-1" />
               Custom Scan
@@ -553,6 +559,19 @@ export default function IPShieldDetections() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {user && (
+        <ManualReportDialog
+          open={showManualReport}
+          onOpenChange={setShowManualReport}
+          registryEntries={(registryEntries || []) as { id: string; title: string }[]}
+          userId={user.id}
+          onReported={() => {
+            queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
+            queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
+          }}
+        />
+      )}
     </IPShieldLayout>
   );
 }
