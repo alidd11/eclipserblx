@@ -74,7 +74,7 @@ interface RevolutAreaChartProps {
 
 export function RevolutAreaChart({
   data, xKey, series, height = 240,
-  yFormatter = (v) => `${v}`, tooltipFormatter, tooltipContent,
+  yFormatter = (v: number) => `${Math.round(v)}`, tooltipFormatter, tooltipContent,
   showYAxis = true, className,
 }: RevolutAreaChartProps) {
   const gradients: GradientDef[] = series.map((s, i) => ({
@@ -138,7 +138,7 @@ interface RevolutLineChartProps {
 
 export function RevolutLineChart({
   data, xKey, series, height = 240,
-  yFormatter = (v) => `${v}`, tooltipFormatter, tooltipContent,
+  yFormatter = (v: number) => `${Math.round(v)}`, tooltipFormatter, tooltipContent,
   showYAxis = true, className,
 }: RevolutLineChartProps) {
   return (
@@ -197,7 +197,7 @@ interface RevolutBarChartProps {
 
 export function RevolutBarChart({
   data, xKey, series, height = 240,
-  yFormatter = (v) => `${v}`, tooltipFormatter, tooltipContent,
+  yFormatter = (v: number) => `${Math.round(v)}`, tooltipFormatter, tooltipContent,
   showYAxis = true, layout = 'horizontal', className,
 }: RevolutBarChartProps) {
   const isVertical = layout === 'vertical';
