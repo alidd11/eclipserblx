@@ -126,18 +126,32 @@ export default function JobChannels() {
 
   const toggleActiveMutation = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('job_channels')
         .update({ is_active })
-        .eq('id', id);
+        .eq('id', id)
+        .select()
+        .single();
       
       if (error) throw error;
+      return data;
+    },
+    onMutate: async ({ id, is_active }) => {
+      await queryClient.cancelQueries({ queryKey: ['job-channels'] });
+      const previous = queryClient.getQueryData<JobChannel[]>(['job-channels']);
+      queryClient.setQueryData<JobChannel[]>(['job-channels'], (old) =>
+        old?.map((ch) => (ch.id === id ? { ...ch, is_active } : ch))
+      );
+      return { previous };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-channels'] });
       toast.success('Channel status updated');
     },
-    onError: () => {
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['job-channels'], context.previous);
+      }
       toast.error('Failed to update channel status');
     },
   });
