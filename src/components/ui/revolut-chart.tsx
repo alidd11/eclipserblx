@@ -1,6 +1,6 @@
 /**
  * Revolut-style chart primitives.
- * Smooth curves, gradient fills, no grid lines, minimal axes, clean tooltips.
+ * Ultra-smooth curves, prominent gradient fills, no grid lines, minimal axes, clean tooltips.
  */
 
 import {
@@ -14,7 +14,7 @@ import { ReactNode, useMemo } from 'react';
 const AXIS_STYLE = {
   tickLine: false as const,
   axisLine: false as const,
-  tick: { fontSize: 11, fill: 'hsl(var(--muted-foreground))' },
+  tick: { fontSize: 11, fill: 'hsl(var(--muted-foreground))', opacity: 0.6 },
 };
 
 const TOOLTIP_STYLE = {
@@ -69,8 +69,9 @@ function ChartGradients({ gradients }: { gradients: GradientDef[] }) {
     <defs>
       {gradients.map((g) => (
         <linearGradient key={g.id} id={g.id} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={g.color} stopOpacity={g.opacity?.[0] ?? 0.28} />
-          <stop offset="100%" stopColor={g.color} stopOpacity={g.opacity?.[1] ?? 0} />
+          <stop offset="0%" stopColor={g.color} stopOpacity={g.opacity?.[0] ?? 0.35} />
+          <stop offset="85%" stopColor={g.color} stopOpacity={g.opacity?.[1] ?? 0.03} />
+          <stop offset="100%" stopColor={g.color} stopOpacity={0} />
         </linearGradient>
       ))}
     </defs>
@@ -129,14 +130,16 @@ export function RevolutAreaChart({
           {series.map((s, i) => (
             <Area
               key={s.dataKey}
-              type="natural"
+              type="monotone"
               dataKey={s.dataKey}
               name={s.name || s.dataKey}
               stroke={s.color}
-              strokeWidth={2.5}
+              strokeWidth={2}
               fill={`url(#${s.gradientId || `revGrad-${i}`})`}
-              activeDot={{ r: 5, fill: s.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
+              activeDot={{ r: 4, fill: s.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
               dot={false}
+              animationDuration={800}
+              animationEasing="ease-out"
             />
           ))}
         </AreaChart>
@@ -191,14 +194,16 @@ export function RevolutLineChart({
           {series.map((s) => (
             <Line
               key={s.dataKey}
-              type="natural"
+              type="monotone"
               dataKey={s.dataKey}
               name={s.name || s.dataKey}
               stroke={s.color}
-              strokeWidth={2.5}
+              strokeWidth={2}
               strokeDasharray={s.strokeDasharray}
               dot={false}
-              activeDot={{ r: 5, fill: s.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
+              activeDot={{ r: 4, fill: s.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
+              animationDuration={800}
+              animationEasing="ease-out"
             />
           ))}
         </LineChart>
@@ -258,7 +263,7 @@ export function RevolutBarChart({
             {...TOOLTIP_STYLE}
             formatter={tooltipFormatter}
             content={tooltipContent as any}
-            cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }}
+            cursor={{ fill: 'hsl(var(--muted))', opacity: 0.15 }}
           />
           {series.map((s) => (
             <Bar
@@ -268,6 +273,8 @@ export function RevolutBarChart({
               fill={s.color}
               radius={s.radius || [6, 6, 0, 0]}
               maxBarSize={40}
+              animationDuration={800}
+              animationEasing="ease-out"
             />
           ))}
         </BarChart>
