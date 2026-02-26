@@ -55,40 +55,91 @@ serve(async (req) => {
     const creatorName = profile.display_name || profile.username || "IP Shield User";
     const creatorEmail = profile.email;
 
-    // Build the DMCA notice email for Roblox
+    const platformName = takedown.target_platform === 'roblox' ? 'Roblox' : takedown.target_platform;
+    const platformEmail = takedown.target_platform === 'roblox' ? 'dmca@roblox.com' : 'the appropriate abuse contact';
+    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    // Build the DMCA notice in proper legal format per 17 U.S.C. § 512(c)(3)
+    // PII is redacted — Eclipse IP Shield acts as authorised agent
     const dmcaNotice = `
-Dear Roblox Trust & Safety Team,
+DMCA TAKEDOWN NOTICE PURSUANT TO 17 U.S.C. § 512(c)(3)
 
-I am writing on behalf of ${creatorName} as their authorised agent through Eclipse IP Shield, a digital rights protection service.
-
-DMCA TAKEDOWN NOTICE
+Date: ${today}
 Case Reference: ${takedown.case_number}
 
-IDENTIFICATION OF COPYRIGHTED WORK:
-${takedown.original_work_description || 'The original copyrighted work is registered with Eclipse IP Shield.'}
+To: ${platformName} Trust & Safety / DMCA Agent
+Via: ${platformEmail}
 
-IDENTIFICATION OF INFRINGING MATERIAL:
-Platform: ${takedown.target_platform === 'roblox' ? 'Roblox' : takedown.target_platform}
-URL: ${takedown.infringing_url || 'See details below'}
+Dear Sir/Madam,
 
-EVIDENCE:
-${takedown.evidence_notes || 'Evidence has been collected through automated detection systems and manual review.'}
+I, the undersigned, am the authorised agent of the copyright owner ("Claimant") acting through Eclipse IP Shield, a digital rights protection service. The Claimant's identity is held on file under case reference ${takedown.case_number} and will be disclosed to the service provider upon lawful request.
 
-STATEMENTS:
-1. I have a good faith belief that use of the copyrighted materials described above is not authorised by the copyright owner, its agent, or the law.
-2. The information in this notification is accurate.
-3. I am authorised to act on behalf of the owner of an exclusive right that is allegedly infringed.
+This letter constitutes a notification of claimed infringement under the Digital Millennium Copyright Act, 17 U.S.C. § 512(c)(3).
 
-CONTACT INFORMATION:
-Name: Eclipse IP Shield (Agent for ${creatorName})
+─────────────────────────────────────────────
+
+1. IDENTIFICATION OF THE COPYRIGHTED WORK CLAIMED TO HAVE BEEN INFRINGED
+(§ 512(c)(3)(A)(ii))
+
+${takedown.original_work_description || 'The original copyrighted work is registered with Eclipse IP Shield. Full details, including proof of ownership, are available upon request.'}
+
+─────────────────────────────────────────────
+
+2. IDENTIFICATION OF THE MATERIAL THAT IS CLAIMED TO BE INFRINGING
+(§ 512(c)(3)(A)(iii))
+
+Platform: ${platformName}
+URL / Location of Infringing Material: ${takedown.infringing_url || 'Provided in accompanying evidence'}
+
+The above material is an unauthorised reproduction and/or derivative of the Claimant's copyrighted work.
+
+─────────────────────────────────────────────
+
+3. SUPPORTING EVIDENCE
+
+${takedown.evidence_notes || 'Evidence of original ownership and infringement has been collected through automated detection systems and manual review. Supporting documentation is available upon request.'}
+
+─────────────────────────────────────────────
+
+4. CONTACT INFORMATION OF THE COMPLAINING PARTY
+(§ 512(c)(3)(A)(iv))
+
+Name: Eclipse IP Shield (Authorised Agent)
 Email: legal@eclipserblx.com
-Reference: ${takedown.case_number}
+Case Reference: ${takedown.case_number}
 
-This notice is sent under the Digital Millennium Copyright Act (DMCA), 17 U.S.C. § 512(c).
+Note: The Claimant's personal identifying information is held confidentially by Eclipse IP Shield and will be provided to the service provider's designated agent upon valid legal request, in accordance with applicable data protection obligations.
 
-Regards,
+─────────────────────────────────────────────
+
+5. STATEMENTS UNDER PENALTY OF PERJURY
+(§ 512(c)(3)(A)(v) & (vi))
+
+I hereby state that:
+
+(a) I have a good faith belief that use of the material described above is not authorised by the copyright owner, its agent, or the law.
+
+(b) The information in this notification is accurate, and under penalty of perjury, I am authorised to act on behalf of the owner of an exclusive right that is allegedly infringed.
+
+─────────────────────────────────────────────
+
+6. REQUESTED ACTION
+
+We respectfully request that you:
+  (i)   Expeditiously remove or disable access to the infringing material identified above;
+  (ii)  Notify the uploader of this takedown notice in accordance with § 512(g); and
+  (iii) Preserve any associated account and upload data for potential further legal proceedings.
+
+─────────────────────────────────────────────
+
+This notice is made in good faith and in compliance with the requirements of the Digital Millennium Copyright Act, 17 U.S.C. § 512(c).
+
+Respectfully submitted,
+
 Eclipse IP Shield
+Authorised Agent for the Claimant
 legal@eclipserblx.com
+Ref: ${takedown.case_number}
     `.trim();
 
     // Send the DMCA notice via email
@@ -123,8 +174,9 @@ legal@eclipserblx.com
             <p style="margin: 4px 0;"><strong>Infringing URL:</strong> ${takedown.infringing_url || 'N/A'}</p>
             <p style="margin: 4px 0;"><strong>Status:</strong> Notice Sent</p>
           </div>
+          <p><strong>Your personal information has been redacted</strong> from the DMCA notice. Eclipse IP Shield is listed as the authorised agent. Your identity is held confidentially and will only be disclosed upon valid legal request.</p>
           <p>Our team will review and forward the DMCA notice to the relevant platform. You'll be notified of any updates.</p>
-          <p style="color: #666; font-size: 12px;">Eclipse IP Shield — Protecting your creative work.</p>
+          <p style="color: #666; font-size: 12px;">Eclipse IP Shield — Protecting your creative work and your privacy.</p>
         </div>
       `,
     });
@@ -163,7 +215,7 @@ legal@eclipserblx.com
           thread_id: thread.id,
           sender_id: takedown.creator_id,
           sender_email: 'legal@eclipserblx.com',
-          sender_name: `Eclipse IP Shield (Agent for ${creatorName})`,
+          sender_name: 'Eclipse IP Shield (Authorised Agent)',
           recipient_email: 'legal@eclipserblx.com',
           recipient_name: 'Eclipse Legal Team',
           direction: 'outbound',
