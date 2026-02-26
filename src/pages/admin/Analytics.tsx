@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Package, ShoppingCart, Users, Download, TrendingUp, Calendar, BarChart3, Eye, UserPlus, UserCheck, Monitor, Smartphone, Tablet, Globe, Clock, ArrowRight, Store, Link2, MousePointerClick } from 'lucide-react';
+import { Package, ShoppingCart, Users, Download, TrendingUp, Calendar, BarChart3, Eye, UserPlus, UserCheck, Monitor, Smartphone, Tablet, Globe, Clock, ArrowRight, Store, Link2, MousePointerClick, FileDown, MapPin } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,9 +11,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { PercentChange } from '@/components/admin/analytics/PercentChange';
+import { exportToCSV } from '@/lib/export-csv';
 
 export default function AdminAnalytics() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [range, setRange] = useState<'7d' | '14d' | '30d'>('7d');
+  const days = range === '7d' ? 7 : range === '14d' ? 14 : 30;
+  const rangeLabel = range === '7d' ? '7 Days' : range === '14d' ? '14 Days' : '30 Days';
 
   const { data: stats } = useQuery({
     queryKey: ['admin-analytics-stats'],
@@ -120,28 +126,19 @@ export default function AdminAnalytics() {
     },
   });
 
-  // User registrations over last 7 days
+  // User registrations trend
   const { data: userTrend } = useQuery({
-    queryKey: ['admin-user-trend'],
+    queryKey: ['admin-user-trend', range],
     queryFn: async () => {
-      const days = [];
-      for (let i = 6; i >= 0; i--) {
+      const result = [];
+      for (let i = days - 1; i >= 0; i--) {
         const date = subDays(new Date(), i);
         const start = startOfDay(date).toISOString();
         const end = endOfDay(date).toISOString();
-        
-        const { count } = await supabase
-          .from('profiles')
-          .select('id', { count: 'exact', head: true })
-          .gte('created_at', start)
-          .lte('created_at', end);
-        
-        days.push({
-          date: format(date, 'EEE'),
-          users: count ?? 0,
-        });
+        const { count } = await supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', start).lte('created_at', end);
+        result.push({ date: format(date, days <= 7 ? 'EEE' : 'MMM d'), users: count ?? 0 });
       }
-      return days;
+      return result;
     },
   });
 
@@ -224,31 +221,27 @@ export default function AdminAnalytics() {
     },
   });
 
-  // Page visits trend over 7 days
+  // Page visits trend
   const { data: visitTrend } = useQuery({
-    queryKey: ['admin-visit-trend'],
+    queryKey: ['admin-visit-trend', range],
     queryFn: async () => {
-      const days = [];
-      for (let i = 6; i >= 0; i--) {
+      const result = [];
+      for (let i = days - 1; i >= 0; i--) {
         const date = subDays(new Date(), i);
         const start = startOfDay(date).toISOString();
         const end = endOfDay(date).toISOString();
-        
         const [total, newV] = await Promise.all([
-          supabase.from('page_visits').select('id', { count: 'exact', head: true })
-            .gte('created_at', start).lte('created_at', end),
-          supabase.from('page_visits').select('id', { count: 'exact', head: true })
-            .gte('created_at', start).lte('created_at', end).eq('is_new_visitor', true),
+          supabase.from('page_visits').select('id', { count: 'exact', head: true }).gte('created_at', start).lte('created_at', end),
+          supabase.from('page_visits').select('id', { count: 'exact', head: true }).gte('created_at', start).lte('created_at', end).eq('is_new_visitor', true),
         ]);
-        
-        days.push({
-          date: format(date, 'EEE'),
+        result.push({
+          date: format(date, days <= 7 ? 'EEE' : 'MMM d'),
           total: total.count ?? 0,
           new: newV.count ?? 0,
           returning: (total.count ?? 0) - (newV.count ?? 0),
         });
       }
-      return days;
+      return result;
     },
   });
 
@@ -312,32 +305,26 @@ export default function AdminAnalytics() {
     },
   });
 
-  // Seller analytics trend over 7 days
+  // Seller analytics trend
   const { data: sellerAnalyticsTrend } = useQuery({
-    queryKey: ['admin-seller-analytics-trend'],
+    queryKey: ['admin-seller-analytics-trend', range],
     queryFn: async () => {
-      const days = [];
-      for (let i = 6; i >= 0; i--) {
+      const result = [];
+      for (let i = days - 1; i >= 0; i--) {
         const date = subDays(new Date(), i);
         const start = startOfDay(date).toISOString();
         const end = endOfDay(date).toISOString();
-        
         const [storeViews, productViews] = await Promise.all([
-          supabase.from('seller_analytics').select('id', { count: 'exact', head: true })
-            .eq('event_type', 'store_view')
-            .gte('created_at', start).lte('created_at', end),
-          supabase.from('seller_analytics').select('id', { count: 'exact', head: true })
-            .eq('event_type', 'product_view')
-            .gte('created_at', start).lte('created_at', end),
+          supabase.from('seller_analytics').select('id', { count: 'exact', head: true }).eq('event_type', 'store_view').gte('created_at', start).lte('created_at', end),
+          supabase.from('seller_analytics').select('id', { count: 'exact', head: true }).eq('event_type', 'product_view').gte('created_at', start).lte('created_at', end),
         ]);
-        
-        days.push({
-          date: format(date, 'EEE'),
+        result.push({
+          date: format(date, days <= 7 ? 'EEE' : 'MMM d'),
           storeViews: storeViews.count ?? 0,
           productViews: productViews.count ?? 0,
         });
       }
-      return days;
+      return result;
     },
   });
 
@@ -422,28 +409,19 @@ export default function AdminAnalytics() {
     },
   });
 
-  // Referral trend over 7 days
+  // Referral trend
   const { data: referralTrend } = useQuery({
-    queryKey: ['admin-referral-trend'],
+    queryKey: ['admin-referral-trend', range],
     queryFn: async () => {
-      const days = [];
-      for (let i = 6; i >= 0; i--) {
+      const result = [];
+      for (let i = days - 1; i >= 0; i--) {
         const date = subDays(new Date(), i);
         const start = startOfDay(date).toISOString();
         const end = endOfDay(date).toISOString();
-        
-        const { count } = await supabase
-          .from('referral_clicks')
-          .select('id', { count: 'exact', head: true })
-          .gte('created_at', start)
-          .lte('created_at', end);
-        
-        days.push({
-          date: format(date, 'EEE'),
-          clicks: count ?? 0,
-        });
+        const { count } = await supabase.from('referral_clicks').select('id', { count: 'exact', head: true }).gte('created_at', start).lte('created_at', end);
+        result.push({ date: format(date, days <= 7 ? 'EEE' : 'MMM d'), clicks: count ?? 0 });
       }
-      return days;
+      return result;
     },
   });
 
@@ -507,6 +485,83 @@ export default function AdminAnalytics() {
     },
   });
 
+  // Period comparison stats
+  const { data: currentPeriodStats } = useQuery({
+    queryKey: ['admin-current-period-stats', range],
+    queryFn: async () => {
+      const start = startOfDay(subDays(new Date(), days - 1)).toISOString();
+      const end = endOfDay(new Date()).toISOString();
+      const [downloads, orders, users, visits] = await Promise.all([
+        supabase.from('download_logs').select('id', { count: 'exact', head: true }).gte('downloaded_at', start).lte('downloaded_at', end),
+        supabase.from('orders').select('id', { count: 'exact', head: true }).gte('created_at', start).lte('created_at', end),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', start).lte('created_at', end),
+        supabase.from('page_visits').select('id', { count: 'exact', head: true }).gte('created_at', start).lte('created_at', end),
+      ]);
+      return { downloads: downloads.count ?? 0, orders: orders.count ?? 0, users: users.count ?? 0, visits: visits.count ?? 0 };
+    },
+  });
+
+  const { data: previousPeriodStats } = useQuery({
+    queryKey: ['admin-previous-period-stats', range],
+    queryFn: async () => {
+      const start = startOfDay(subDays(new Date(), days * 2 - 1)).toISOString();
+      const end = endOfDay(subDays(new Date(), days)).toISOString();
+      const [downloads, orders, users, visits] = await Promise.all([
+        supabase.from('download_logs').select('id', { count: 'exact', head: true }).gte('downloaded_at', start).lte('downloaded_at', end),
+        supabase.from('orders').select('id', { count: 'exact', head: true }).gte('created_at', start).lte('created_at', end),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', start).lte('created_at', end),
+        supabase.from('page_visits').select('id', { count: 'exact', head: true }).gte('created_at', start).lte('created_at', end),
+      ]);
+      return { downloads: downloads.count ?? 0, orders: orders.count ?? 0, users: users.count ?? 0, visits: visits.count ?? 0 };
+    },
+  });
+
+  // Country breakdown
+  const { data: countryStats } = useQuery({
+    queryKey: ['admin-country-stats'],
+    queryFn: async () => {
+      const { data } = await supabase.from('page_visits').select('*').limit(1000);
+      const countryCount: Record<string, number> = {};
+      (data as any[])?.forEach(v => {
+        const country = v.country || 'Unknown';
+        countryCount[country] = (countryCount[country] || 0) + 1;
+      });
+      return Object.entries(countryCount).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 10);
+    },
+  });
+
+            {/* Country Breakdown */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4" />
+                  By Country
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!countryStats || countryStats.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-4 text-sm">No country data yet</p>
+                ) : (
+                  <div className="space-y-2">
+                    {countryStats.slice(0, 8).map((item) => {
+                      const maxVal = countryStats[0]?.value || 1;
+                      return (
+                        <div key={item.name} className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm">{item.name}</span>
+                            <span className="text-xs text-muted-foreground">{item.value}</span>
+                          </div>
+                          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${(item.value / maxVal) * 100}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
 
   const getDeviceIcon = (device: string) => {
     switch (device) {
@@ -521,8 +576,41 @@ export default function AdminAnalytics() {
       <div className="space-y-6">
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-2xl sm:text-3xl font-display">Analytics</CardTitle>
-            <p className="text-muted-foreground text-sm">Comprehensive platform metrics and insights</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <CardTitle className="text-2xl sm:text-3xl font-display">Analytics</CardTitle>
+                <p className="text-muted-foreground text-sm">Comprehensive platform metrics and insights</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center bg-muted rounded-lg p-0.5">
+                  {(['7d', '14d', '30d'] as const).map(r => (
+                    <Button
+                      key={r}
+                      variant={range === r ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setRange(r)}
+                      className="text-xs h-7 px-3"
+                    >
+                      {r}
+                    </Button>
+                  ))}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    const exportData = activeTab === 'page-visits' ? recentVisits :
+                      activeTab === 'referrals' ? recentReferrals :
+                      downloadTrend;
+                    if (exportData?.length) exportToCSV(exportData as any[], `analytics-${activeTab}-${range}`);
+                  }}
+                >
+                  <FileDown className="h-3.5 w-3.5 mr-1" />
+                  Export
+                </Button>
+              </div>
+            </div>
           </CardHeader>
         </Card>
 
@@ -590,6 +678,9 @@ export default function AdminAnalytics() {
                       <p className="text-2xl font-bold">{stats?.orders ?? 0}</p>
                       <p className="text-xs text-muted-foreground">Total Orders</p>
                     </div>
+                    {currentPeriodStats && previousPeriodStats && (
+                      <PercentChange current={currentPeriodStats.orders} previous={previousPeriodStats.orders} label={`vs prev ${range}`} />
+                    )}
                     <p className="text-[10px] text-muted-foreground/70">
                       {stats?.pendingOrders ?? 0} pending · {stats?.completedOrders ?? 0} completed
                     </p>
@@ -613,6 +704,9 @@ export default function AdminAnalytics() {
                       <p className="text-2xl font-bold">{stats?.users ?? 0}</p>
                       <p className="text-xs text-muted-foreground">Users</p>
                     </div>
+                    {currentPeriodStats && previousPeriodStats && (
+                      <PercentChange current={currentPeriodStats.users} previous={previousPeriodStats.users} label={`vs prev ${range}`} />
+                    )}
                   </div>
 
                   <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
@@ -623,8 +717,63 @@ export default function AdminAnalytics() {
                       <p className="text-2xl font-bold">{stats?.downloads ?? 0}</p>
                       <p className="text-xs text-muted-foreground">Downloads</p>
                     </div>
+                    {currentPeriodStats && previousPeriodStats && (
+                      <PercentChange current={currentPeriodStats.downloads} previous={previousPeriodStats.downloads} label={`vs prev ${range}`} />
+                    )}
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Conversion Funnel */}
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2">
+                  <ArrowRight className="h-5 w-5" />
+                  Conversion Funnel
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {(() => {
+                  const visits = pageVisitStats?.total ?? 0;
+                  const productViews = sellerAnalyticsStats?.productViews ?? 0;
+                  const orders = stats?.orders ?? 0;
+                  const maxVal = Math.max(visits, 1);
+                  const stages = [
+                    { label: 'Page Visits', value: visits },
+                    { label: 'Product Views', value: productViews },
+                    { label: 'Orders', value: orders },
+                  ];
+                  return (
+                    <div className="space-y-3">
+                      {stages.map((stage, i) => {
+                        const pct = visits > 0 ? ((stage.value / maxVal) * 100).toFixed(1) : '0';
+                        const dropoff = i > 0 && stages[i - 1].value > 0
+                          ? ((1 - stage.value / stages[i - 1].value) * 100).toFixed(0)
+                          : null;
+                        return (
+                          <div key={stage.label} className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium">{stage.label}</span>
+                                {dropoff && (
+                                  <span className="text-[10px] text-muted-foreground">-{dropoff}% drop</span>
+                                )}
+                              </div>
+                              <span className="text-sm font-bold">{stage.value.toLocaleString()}</span>
+                            </div>
+                            <div className="h-2 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-primary rounded-full transition-all duration-500"
+                                style={{ width: `${pct}%`, opacity: 1 - i * 0.2 }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
               </CardContent>
             </Card>
 
@@ -683,7 +832,7 @@ export default function AdminAnalytics() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5" />
-                    Downloads (Last 7 Days)
+                    Downloads (Last {rangeLabel})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -701,14 +850,14 @@ export default function AdminAnalytics() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <ShoppingCart className="h-5 w-5" />
-                    Orders (Last 7 Days)
+                    Orders (Last {rangeLabel})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                 <RevolutAreaChart
                   data={orderTrend || []}
                   xKey="date"
-                  series={[{ dataKey: 'orders', color: 'hsl(200 80% 45%)', name: 'Orders', gradientId: 'ordGrad' }]}
+                  series={[{ dataKey: 'orders', color: 'hsl(220 95% 59%)', name: 'Orders', gradientId: 'ordGrad' }]}
                   height={250}
                 />
                 </CardContent>
@@ -721,14 +870,14 @@ export default function AdminAnalytics() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5" />
-                    New Users (Last 7 Days)
+                    New Users (Last {rangeLabel})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                 <RevolutAreaChart
                   data={userTrend || []}
                   xKey="date"
-                  series={[{ dataKey: 'users', color: 'hsl(185 85% 50%)', name: 'Users', gradientId: 'usrGrad' }]}
+                  series={[{ dataKey: 'users', color: 'hsl(240 90% 65%)', name: 'Users', gradientId: 'usrGrad' }]}
                   height={250}
                 />
                 </CardContent>
@@ -847,7 +996,7 @@ export default function AdminAnalytics() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
-                  Visitor Trend (Last 7 Days)
+                  Visitor Trend (Last {rangeLabel})
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -1060,7 +1209,7 @@ export default function AdminAnalytics() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
-                  Seller Activity (Last 7 Days)
+                  Seller Activity (Last {rangeLabel})
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -1214,7 +1363,7 @@ export default function AdminAnalytics() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
-                  Referral Clicks (Last 7 Days)
+                  Referral Clicks (Last {rangeLabel})
                 </CardTitle>
               </CardHeader>
               <CardContent>
