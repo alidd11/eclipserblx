@@ -7,7 +7,7 @@ import {
   AreaChart, Area, LineChart, Line, BarChart, Bar,
   XAxis, YAxis, Tooltip, ResponsiveContainer,
 } from 'recharts';
-import { ReactNode } from 'react';
+import { ReactNode, useMemo } from 'react';
 
 /* ── Shared style constants ── */
 
@@ -29,6 +29,32 @@ const TOOLTIP_STYLE = {
   cursor: { stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1, strokeDasharray: '4 4' },
   itemStyle: { color: 'hsl(var(--foreground))' },
 };
+
+/* ── Integer ticks helper ── */
+
+function useIntegerTicks(data: any[], seriesKeys: string[], maxTicks = 5): number[] {
+  return useMemo(() => {
+    if (!data || data.length === 0) return [0];
+    let max = 0;
+    for (const item of data) {
+      for (const key of seriesKeys) {
+        const v = Number(item[key]) || 0;
+        if (v > max) max = v;
+      }
+    }
+    const ceiling = Math.max(1, Math.ceil(max));
+    const count = Math.min(ceiling, maxTicks);
+    const step = Math.max(1, Math.ceil(ceiling / count));
+    const ticks: number[] = [];
+    for (let i = 0; i <= ceiling; i += step) {
+      ticks.push(i);
+    }
+    if (ticks[ticks.length - 1] < ceiling) {
+      ticks.push(ceiling);
+    }
+    return ticks;
+  }, [data, seriesKeys, maxTicks]);
+}
 
 /* ── Gradient helpers ── */
 
@@ -82,6 +108,10 @@ export function RevolutAreaChart({
     color: s.color,
   }));
 
+  const seriesKeys = useMemo(() => series.map(s => s.dataKey), [series]);
+  const intTicks = useIntegerTicks(data, seriesKeys);
+  const yDomain: [number, number] = [0, intTicks[intTicks.length - 1] || 1];
+
   return (
     <div className={className} style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
@@ -89,7 +119,7 @@ export function RevolutAreaChart({
           <ChartGradients gradients={gradients} />
           <XAxis dataKey={xKey} {...AXIS_STYLE} interval="preserveStartEnd" />
           {showYAxis && (
-            <YAxis {...AXIS_STYLE} tickFormatter={(v) => yFormatter(Math.round(v))} width={48} allowDecimals={false} domain={[0, 'auto']} />
+            <YAxis {...AXIS_STYLE} tickFormatter={(v) => yFormatter(Math.round(v))} width={48} allowDecimals={false} domain={yDomain} ticks={intTicks} />
           )}
           <Tooltip
             {...TOOLTIP_STYLE}
@@ -141,13 +171,17 @@ export function RevolutLineChart({
   yFormatter = (v: number) => `${Math.round(v)}`, tooltipFormatter, tooltipContent,
   showYAxis = true, className,
 }: RevolutLineChartProps) {
+  const seriesKeys = useMemo(() => series.map(s => s.dataKey), [series]);
+  const intTicks = useIntegerTicks(data, seriesKeys);
+  const yDomain: [number, number] = [0, intTicks[intTicks.length - 1] || 1];
+
   return (
     <div className={className} style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 4, right: 8, left: showYAxis ? -8 : -30, bottom: 0 }}>
           <XAxis dataKey={xKey} {...AXIS_STYLE} interval="preserveStartEnd" />
           {showYAxis && (
-            <YAxis {...AXIS_STYLE} tickFormatter={(v) => yFormatter(Math.round(v))} width={48} allowDecimals={false} domain={[0, 'auto']} />
+            <YAxis {...AXIS_STYLE} tickFormatter={(v) => yFormatter(Math.round(v))} width={48} allowDecimals={false} domain={yDomain} ticks={intTicks} />
           )}
           <Tooltip
             {...TOOLTIP_STYLE}
@@ -201,6 +235,9 @@ export function RevolutBarChart({
   showYAxis = true, layout = 'horizontal', className,
 }: RevolutBarChartProps) {
   const isVertical = layout === 'vertical';
+  const seriesKeys = useMemo(() => series.map(s => s.dataKey), [series]);
+  const intTicks = useIntegerTicks(data, seriesKeys);
+  const yDomain: [number, number] = [0, intTicks[intTicks.length - 1] || 1];
 
   return (
     <div className={className} style={{ height }}>
@@ -208,13 +245,13 @@ export function RevolutBarChart({
         <BarChart data={data} layout={layout} margin={{ top: 4, right: 8, left: isVertical ? 0 : (showYAxis ? -8 : -30), bottom: 0 }}>
           {isVertical ? (
             <>
-              <XAxis type="number" {...AXIS_STYLE} tickFormatter={(v) => yFormatter(Math.round(v))} allowDecimals={false} domain={[0, 'auto']} />
+              <XAxis type="number" {...AXIS_STYLE} tickFormatter={(v) => yFormatter(Math.round(v))} allowDecimals={false} domain={yDomain} ticks={intTicks} />
               <YAxis type="category" dataKey={xKey} {...AXIS_STYLE} width={100} />
             </>
           ) : (
             <>
               <XAxis dataKey={xKey} {...AXIS_STYLE} interval="preserveStartEnd" />
-              {showYAxis && <YAxis {...AXIS_STYLE} tickFormatter={(v) => yFormatter(Math.round(v))} width={48} allowDecimals={false} domain={[0, 'auto']} />}
+              {showYAxis && <YAxis {...AXIS_STYLE} tickFormatter={(v) => yFormatter(Math.round(v))} width={48} allowDecimals={false} domain={yDomain} ticks={intTicks} />}
             </>
           )}
           <Tooltip
