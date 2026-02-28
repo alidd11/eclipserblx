@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Store, ShieldCheck, Award, ChevronRight } from 'lucide-react';
+import { Store, ShieldCheck, Award, ChevronRight, Megaphone } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,10 +17,55 @@ interface TopStore {
   is_verified: boolean;
   is_trusted: boolean;
   follower_count: number;
+  isPromoted?: boolean;
 }
 
 export function TopStoresSection() {
-  const { data: stores, isLoading } = useQuery({
+  // First try to find an active store_spotlight promotion winner
+  const { data: promotedStore } = useQuery({
+    queryKey: ['store-spotlight-promotion'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('product_promotions')
+        .select(`
+          id,
+          store_id,
+          stores!product_promotions_store_id_fkey (
+            id, name, slug, description, logo_url, banner_url, accent_color,
+            is_verified, is_trusted, follower_count, status, is_active, is_testing
+          )
+        `)
+        .eq('slot_type', 'store_spotlight')
+        .eq('status', 'active')
+        .order('current_bid', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+      if (!data || data.length === 0) return null;
+
+      const promo = data[0];
+      const s = promo.stores as any;
+      if (!s || s.status !== 'approved' || !s.is_active || s.is_testing) return null;
+
+      return {
+        id: s.id,
+        name: s.name,
+        slug: s.slug,
+        description: s.description,
+        logo_url: s.logo_url,
+        banner_url: s.banner_url,
+        accent_color: s.accent_color,
+        is_verified: s.is_verified,
+        is_trusted: s.is_trusted,
+        follower_count: s.follower_count,
+        isPromoted: true,
+        promotionId: promo.id,
+      } as TopStore & { promotionId: string };
+    },
+  });
+
+  // Fallback: algorithmic selection (small sellers first)
+  const { data: fallbackStores, isLoading } = useQuery({
     queryKey: ['top-stores-featured'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -38,13 +83,49 @@ export function TopStoresSection() {
       if (error) throw error;
       return data as TopStore[];
     },
+    // Only run fallback if no promoted store
+    enabled: !promotedStore,
   });
 
-  if (!isLoading && (!stores || stores.length === 0)) {
+  const store = promotedStore || fallbackStores?.[0];
+  const isPromoted = !!(promotedStore);
+
+  // Track impression for promoted store
+  useQuery({
+    queryKey: ['store-spotlight-impression', (promotedStore as any)?.promotionId],
+    queryFn: async () => {
+      const promoId = (promotedStore as any)?.promotionId;
+      if (!promoId) return null;
+      const today = new Date().toISOString().split('T')[0];
+      // Upsert today's analytics row, incrementing impressions
+      const { data: existing } = await supabase
+        .from('promotion_analytics')
+        .select('id, impressions')
+        .eq('promotion_id', promoId)
+        .eq('date', today)
+        .maybeSingle();
+
+      if (existing) {
+        await supabase
+          .from('promotion_analytics')
+          .update({ impressions: (existing.impressions || 0) + 1 })
+          .eq('id', existing.id);
+      } else {
+        await supabase
+          .from('promotion_analytics')
+          .insert({ promotion_id: promoId, date: today, impressions: 1, clicks: 0 });
+      }
+      return true;
+    },
+    enabled: !!promotedStore,
+    staleTime: 1000 * 60 * 5, // Only once per 5 min
+  });
+
+  if (!isLoading && !store) {
     return null;
   }
 
-  if (isLoading) {
+  if (isLoading && !store) {
     return (
       <section className="space-y-3">
         <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Featured Store</h2>
@@ -53,8 +134,7 @@ export function TopStoresSection() {
     );
   }
 
-  const store = stores![0];
-  const accentColor = store.accent_color || 'hsl(var(--primary))';
+  const accentColor = store!.accent_color || 'hsl(var(--primary))';
 
   return (
     <section className="space-y-3">
@@ -69,29 +149,39 @@ export function TopStoresSection() {
         </Link>
       </div>
 
-      <Link to={`/store/${store.slug}`} className="group block">
+      <Link to={`/store/${store!.slug}`} className="group block">
         <div
           className="relative w-full aspect-[3/1] rounded-xl overflow-hidden border border-border"
           style={{
-            background: store.banner_url
-              ? `url(${store.banner_url}) center/cover`
+            background: store!.banner_url
+              ? `url(${store!.banner_url}) center/cover`
               : `linear-gradient(135deg, ${accentColor}40, ${accentColor}20)`,
           }}
         >
           {/* Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
+          {/* Promoted badge */}
+          {isPromoted && (
+            <div className="absolute top-2 right-2 z-10">
+              <Badge className="text-[10px] px-1.5 py-0.5 gap-0.5 bg-primary/90 text-primary-foreground border-0">
+                <Megaphone className="h-2.5 w-2.5" />
+                Promoted
+              </Badge>
+            </div>
+          )}
+
           {/* Content */}
           <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-6">
             {/* Badges */}
             <div className="flex items-center gap-1.5 mb-2">
-              {store.is_trusted && (
+              {store!.is_trusted && (
                 <Badge className="text-[10px] px-1.5 py-0.5 gap-0.5 bg-amber-500 text-white border-0">
                   <Award className="h-2.5 w-2.5" />
                   Trusted Seller
                 </Badge>
               )}
-              {store.is_verified && !store.is_trusted && (
+              {store!.is_verified && !store!.is_trusted && (
                 <Badge className="text-[10px] px-1.5 py-0.5 gap-0.5 bg-blue-500/80 text-white border-0">
                   <ShieldCheck className="h-2.5 w-2.5" />
                   Verified
@@ -101,10 +191,10 @@ export function TopStoresSection() {
 
             {/* Store info */}
             <div className="flex items-center gap-2.5 mb-2">
-              {store.logo_url ? (
+              {store!.logo_url ? (
                 <img
-                  src={store.logo_url}
-                  alt={store.name}
+                  src={store!.logo_url}
+                  alt={store!.name}
                   className="h-10 w-10 rounded-lg object-contain bg-white/10 backdrop-blur-sm border border-white/20 flex-shrink-0"
                 />
               ) : (
@@ -114,10 +204,10 @@ export function TopStoresSection() {
               )}
               <div className="min-w-0">
                 <h3 className="text-lg sm:text-xl font-bold text-white truncate group-hover:text-primary transition-colors">
-                  {store.name}
+                  {store!.name}
                 </h3>
-                {store.description && (
-                  <p className="text-xs text-white/70 line-clamp-1">{store.description}</p>
+                {store!.description && (
+                  <p className="text-xs text-white/70 line-clamp-1">{store!.description}</p>
                 )}
               </div>
             </div>

@@ -140,6 +140,58 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ── STORE SPOTLIGHT (1 winner) ──
+    const { data: storeSpotlightBids } = await supabase
+      .from('product_promotions')
+      .select('*')
+      .eq('slot_type', 'store_spotlight')
+      .eq('status', 'pending_auction')
+      .order('max_bid', { ascending: false });
+
+    const storeSpotlightWinners: string[] = [];
+    if (storeSpotlightBids && storeSpotlightBids.length > 0) {
+      const winner = storeSpotlightBids[0];
+
+      const { data: spent } = await supabase.rpc('spend_credits', {
+        p_user_id: winner.user_id,
+        p_amount: winner.max_bid,
+        p_description: `Promotion: Store Spotlight (${auctionDate})`,
+      });
+
+      if (spent) {
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7);
+
+        await supabase
+          .from('product_promotions')
+          .update({
+            status: 'active',
+            current_bid: winner.max_bid,
+            started_at: new Date().toISOString(),
+            expires_at: expiresAt.toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', winner.id);
+
+        storeSpotlightWinners.push(winner.id);
+
+        const loserIds = storeSpotlightBids.slice(1).map(b => b.id);
+        if (loserIds.length > 0) {
+          await supabase
+            .from('product_promotions')
+            .update({ status: 'outbid', updated_at: new Date().toISOString() })
+            .in('id', loserIds);
+        }
+      }
+    }
+
+    await supabase.from('promotion_auctions').insert({
+      auction_date: auctionDate,
+      slot_type: 'store_spotlight',
+      winners: storeSpotlightWinners,
+      total_bids: storeSpotlightBids?.length || 0,
+    });
+
     // ── EXPIRE old active promotions ──
     await supabase
       .from('product_promotions')
@@ -148,7 +200,11 @@ Deno.serve(async (req) => {
       .lt('expires_at', new Date().toISOString());
 
     return new Response(
-      JSON.stringify({ success: true, featured_winners: featuredWinners.length }),
+      JSON.stringify({ 
+        success: true, 
+        featured_winners: featuredWinners.length,
+        store_spotlight_winners: storeSpotlightWinners.length,
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
