@@ -493,6 +493,11 @@ export default function SellerProductEditor() {
       toast.error('A product file must be uploaded before saving');
       return;
     }
+    const plainDesc = formData.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+    if (plainDesc.length < 100) {
+      toast.error(`Description must be at least 100 characters (currently ${plainDesc.length})`);
+      return;
+    }
 
     // Warn about blocked marketplace links (they'll be stripped by sanitization)
     if (containsBlockedLinks(formData.description)) {
@@ -618,12 +623,15 @@ export default function SellerProductEditor() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Description <span className="text-destructive">*</span></Label>
                 <RichTextEditor
                   content={formData.description}
                   onChange={(content) => setFormData({ ...formData, description: content })}
-                  placeholder="Describe your product..."
+                  placeholder="Describe your product (min. 100 characters)..."
                 />
+                <p className="text-xs text-muted-foreground">
+                  {formData.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().length}/100 characters minimum
+                </p>
               </div>
 
               <div className="flex items-center justify-between">

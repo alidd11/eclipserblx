@@ -468,6 +468,11 @@ export default function SellerProducts() {
       toast.error('A product file must be uploaded before saving');
       return;
     }
+    const plainDesc = form.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+    if (plainDesc.length < 100) {
+      toast.error(`Description must be at least 100 characters (currently ${plainDesc.length})`);
+      return;
+    }
 
     saveProduct.mutate(form);
   };
@@ -856,12 +861,15 @@ export default function SellerProducts() {
               </div>
 
               <div className="space-y-2">
-                <Label>Description</Label>
+                <Label>Description <span className="text-destructive">*</span></Label>
                 <RichTextEditor
                   content={form.description}
                   onChange={(content) => setForm({ ...form, description: content })}
-                  placeholder="Describe your product..."
+                  placeholder="Describe your product (min. 100 characters)..."
                 />
+                <p className="text-xs text-muted-foreground">
+                  {form.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().length}/100 characters minimum
+                </p>
               </div>
 
               {/* Product Images */}
