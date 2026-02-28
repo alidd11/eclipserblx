@@ -134,8 +134,58 @@ function parseClearlyDevStore(markdown: string, storeUrl: string, links?: string
   return products;
 }
 
+/** Extract the rich HTML description block from a ClearlyDev product page */
+function extractHtmlDescription(html: string): string {
+  if (!html) return '';
+
+  // Try to find the description section in the HTML
+  // ClearlyDev uses a section/div with "Description" heading followed by content
+  const descPatterns = [
+    // Match content between Description heading and next section
+    /(?:<h[23][^>]*>.*?Description.*?<\/h[23]>)([\s\S]*?)(?=<h[23]|<footer|<div[^>]*class="[^"]*(?:refund|review|related|license))/i,
+    // Match a div/section that contains "description" in class/id
+    /<(?:div|section)[^>]*(?:class|id)="[^"]*description[^"]*"[^>]*>([\s\S]*?)<\/(?:div|section)>/i,
+  ];
+
+  for (const pattern of descPatterns) {
+    const match = html.match(pattern);
+    if (match && match[1]) {
+      let content = match[1].trim();
+      
+      // Strip script/style tags
+      content = content.replace(/<script[\s\S]*?<\/script>/gi, '');
+      content = content.replace(/<style[\s\S]*?<\/style>/gi, '');
+      
+      // Remove images from description (they go in the gallery)
+      content = content.replace(/<img[^>]*>/gi, '');
+      
+      // Strip wrapper divs but keep semantic content tags
+      content = content.replace(/<\/?div[^>]*>/gi, '');
+      content = content.replace(/<\/?section[^>]*>/gi, '');
+      content = content.replace(/<\/?span[^>]*>/gi, '');
+      
+      // Keep only safe HTML tags
+      const allowedTagPattern = /<\/?(?:p|br|strong|b|em|i|u|h2|h3|h4|ul|ol|li|hr|a(?:\s[^>]*)?)>/gi;
+      const tagPattern = /<\/?[a-z][a-z0-9]*(?:\s[^>]*)?>/gi;
+      content = content.replace(tagPattern, (tag) => {
+        return allowedTagPattern.test(tag) ? tag : '';
+      });
+      // Reset lastIndex after using global regex
+      allowedTagPattern.lastIndex = 0;
+      
+      // Clean up excessive whitespace
+      content = content.replace(/\n{3,}/g, '\n\n').trim();
+      
+      if (content.length > 20) {
+        return content.slice(0, 5000);
+      }
+    }
+  }
+  return '';
+}
+
 // Parse ClearlyDev product page for full details
-function parseClearlyDevProduct(markdown: string, url: string): ExternalProduct | null {
+function parseClearlyDevProduct(markdown: string, url: string, html?: string): ExternalProduct | null {
   let name = '';
 
   // Strategy 1: Page title line (first line often has "Product Name | ClearlyDev Marketplace")
@@ -179,9 +229,7 @@ function parseClearlyDevProduct(markdown: string, url: string): ExternalProduct 
   const images: string[] = [];
   const skipImagePatterns = /\/(avatar|profile|favicon|logo|icon|clearlydev-logo|clearlydev_logo|clearlydev|clearly-dev|brand|banner)\b/i;
   const skipImageDomains = /\b(rbxcdn\.com|roblox\.com|tr\.rbxcdn\.com|thumbs\.roblox\.com)\b/i;
-  // Skip images whose alt text or URL suggests platform branding
   const skipAltTextPatterns = /\b(clearlydev|clearly\s*dev|clearly\.dev|store\s*logo|seller\s*avatar|platform\s*logo|store\s*banner|builtbybit|built\s*by\s*bit|marketplace\s*logo)\b/i;
-  // Skip images whose URL contains clearlydev branding indicators anywhere in the path
   const skipUrlBrandingPatterns = /clearlydev\.(com|io|dev)\/.*\/(logo|brand|banner|icon)/i;
   let imgMatch;
   while ((imgMatch = imageRegex.exec(markdown)) !== null) {
@@ -191,7 +239,6 @@ function parseClearlyDevProduct(markdown: string, url: string): ExternalProduct 
     if (skipImageDomains.test(imgUrl)) continue;
     if (skipAltTextPatterns.test(imgAlt)) continue;
     if (skipUrlBrandingPatterns.test(imgUrl)) continue;
-    // Keep the full proxy URL - stripping plain/ causes files.clearlydev.com to return Roblox placeholders
     const cleanUrl = imgUrl;
     if (!images.includes(cleanUrl)) {
       images.push(cleanUrl);
@@ -201,23 +248,31 @@ function parseClearlyDevProduct(markdown: string, url: string): ExternalProduct 
   const priceMatch = markdown.match(/\$(\d+(?:\.\d{2})?)/);
   const price = priceMatch ? parseFloat(priceMatch[1]) : 0;
   
-  const descStart = markdown.indexOf('Description');
-  const descEnd = markdown.indexOf('## ') > descStart ? markdown.indexOf('## ', descStart + 10) : markdown.length;
+  // Try to extract rich HTML description first, fall back to markdown
   let description = '';
-  if (descStart > -1) {
-    description = markdown.substring(descStart + 11, descEnd)
-      .replace(/!\[.*?\]\([^\)]+\)/g, '')
-      .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim()
-      .slice(0, 2000);
+  if (html) {
+    description = extractHtmlDescription(html);
+  }
+  
+  // Fallback: extract from markdown if HTML extraction failed
+  if (!description) {
+    const descStart = markdown.indexOf('Description');
+    const descEnd = markdown.indexOf('## ') > descStart ? markdown.indexOf('## ', descStart + 10) : markdown.length;
+    if (descStart > -1) {
+      description = markdown.substring(descStart + 11, descEnd)
+        .replace(/!\[.*?\]\([^\)]+\)/g, '')
+        .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim()
+        .slice(0, 2000);
+    }
   }
   
   const categorySlug = suggestCategory(name, description);
   
   // ClearlyDev pages: first image is often a branded banner, last 2 are platform logos — remove all
   const cleanedImages = images.length > 3 
-    ? images.slice(1, -2)  // Skip first (banner) and last 2 (logos)
+    ? images.slice(1, -2)
     : images.length > 2 
       ? images.slice(0, -2) 
       : images;
@@ -267,7 +322,7 @@ function parseBuiltByBitStore(markdown: string, storeUrl: string): ExternalProdu
 }
 
 // Scrape a single URL using Firecrawl
-async function scrapeUrl(url: string, apiKey: string): Promise<{ success: boolean; markdown?: string; links?: string[]; error?: string }> {
+async function scrapeUrl(url: string, apiKey: string): Promise<{ success: boolean; markdown?: string; html?: string; links?: string[]; error?: string }> {
   console.log(`Scraping: ${url}`);
   
   const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
@@ -278,7 +333,7 @@ async function scrapeUrl(url: string, apiKey: string): Promise<{ success: boolea
     },
     body: JSON.stringify({
       url,
-      formats: ['markdown', 'links'],
+      formats: ['markdown', 'html', 'links'],
       onlyMainContent: false,
       waitFor: 15000,
     }),
@@ -292,11 +347,12 @@ async function scrapeUrl(url: string, apiKey: string): Promise<{ success: boolea
   }
   
   const markdown = data.data?.markdown || data.markdown || '';
+  const html = data.data?.html || data.html || '';
   const links = data.data?.links || data.links || [];
   
-  console.log(`Scraped ${markdown.length} chars markdown, ${links.length} links`);
+  console.log(`Scraped ${markdown.length} chars markdown, ${html.length} chars html, ${links.length} links`);
   
-  return { success: true, markdown, links };
+  return { success: true, markdown, html, links };
 }
 
 // Download image and upload to Supabase storage
@@ -550,7 +606,7 @@ serve(async (req) => {
 
       let product: ExternalProduct | null = null;
       if (detectedPlatform === 'clearlydev') {
-        product = parseClearlyDevProduct(scrapeResult.markdown!, productUrl);
+        product = parseClearlyDevProduct(scrapeResult.markdown!, productUrl, scrapeResult.html);
       }
 
       if (!product) {
@@ -673,7 +729,7 @@ serve(async (req) => {
 
         let product: ExternalProduct | null = null;
         if (detectedPlatform === 'clearlydev') {
-          product = parseClearlyDevProduct(scrapeResult.markdown!, url);
+          product = parseClearlyDevProduct(scrapeResult.markdown!, url, scrapeResult.html);
         }
 
         if (!product) {
