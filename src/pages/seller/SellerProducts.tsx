@@ -464,6 +464,10 @@ export default function SellerProducts() {
       toast.error('Please enter a valid price');
       return;
     }
+    if (!form.asset_file_url) {
+      toast.error('A product file must be uploaded before saving');
+      return;
+    }
 
     saveProduct.mutate(form);
   };
@@ -916,7 +920,7 @@ export default function SellerProducts() {
 
               {/* Downloadable File */}
               <div className="space-y-2">
-                <Label>Downloadable File</Label>
+                <Label>Downloadable File <span className="text-destructive">*</span></Label>
                 <input
                   type="file"
                   ref={fileInputRef}
