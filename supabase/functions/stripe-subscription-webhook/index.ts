@@ -565,7 +565,8 @@ async function handleIpShieldSubscription(
       (ipStaffUsers || []).forEach((r: any) => allStaff.add(r.user_id));
 
       if (allStaff.size > 0) {
-        const staffNotifications = Array.from(allStaff).map((staffId) => ({
+        const staffIds = Array.from(allStaff);
+        const staffNotifications = staffIds.map((staffId) => ({
           user_id: staffId,
           title: `🛡️ New IP Shield Subscriber`,
           message: `${displayName} (${customerEmail}) subscribed to IP Shield ${tierName}.`,
@@ -580,6 +581,93 @@ async function handleIpShieldSubscription(
           logStep("Failed to notify staff", { error: notifErr.message });
         } else {
           logStep("Staff notified", { count: allStaff.size });
+        }
+
+        // 4. Send push notifications to all admin/staff
+        try {
+          const { data: pushSubs } = await supabase
+            .from("push_subscriptions")
+            .select("user_id, subscription")
+            .in("user_id", staffIds);
+
+          if (pushSubs && pushSubs.length > 0) {
+            for (const sub of pushSubs) {
+              try {
+                const subscription = typeof sub.subscription === "string" ? JSON.parse(sub.subscription) : sub.subscription;
+                const payload = JSON.stringify({
+                  title: "🛡️ New IP Shield Subscriber",
+                  body: `${displayName} subscribed to IP Shield ${tierName}`,
+                  tag: `ip-shield-sub-${subscription.id || Date.now()}`,
+                  data: { url: "/ip-staff" },
+                });
+
+                await fetch(subscription.endpoint, {
+                  method: "POST",
+                  body: payload,
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                });
+              } catch (pushErr) {
+                logStep("Push notification failed for user", { userId: sub.user_id, error: String(pushErr) });
+              }
+            }
+            logStep("Push notifications sent to staff", { count: pushSubs.length });
+          }
+        } catch (pushErr) {
+          logStep("Failed to send push notifications", { error: String(pushErr) });
+        }
+
+        // 5. Send individual email alerts to admin users
+        try {
+          const { data: adminUsers } = await supabase
+            .from("user_roles")
+            .select("user_id")
+            .eq("role", "admin");
+
+          if (adminUsers && adminUsers.length > 0) {
+            const adminIds = adminUsers.map((a: any) => a.user_id);
+            const { data: adminProfiles } = await supabase
+              .from("profiles")
+              .select("user_id, email")
+              .in("user_id", adminIds);
+
+            const resendKey = Deno.env.get("RESEND_API_KEY");
+            if (resendKey && adminProfiles && adminProfiles.length > 0) {
+              const adminEmails = adminProfiles.map((p: any) => p.email).filter(Boolean);
+              if (adminEmails.length > 0) {
+                await fetch("https://api.resend.com/emails", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${resendKey}`,
+                  },
+                  body: JSON.stringify({
+                    from: "Eclipse IP Shield <noreply@eclipserblx.com>",
+                    to: adminEmails,
+                    subject: `🛡️ New IP Shield Subscription — ${tierName} — ${displayName}`,
+                    html: `
+                      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h2 style="color: #1a1a2e;">🛡️ New IP Shield Subscriber</h2>
+                        <p>A new user has subscribed to IP Shield.</p>
+                        <div style="background: #f4f4f8; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                          <p style="margin: 4px 0;"><strong>User:</strong> ${displayName}</p>
+                          <p style="margin: 4px 0;"><strong>Email:</strong> ${customerEmail}</p>
+                          <p style="margin: 4px 0;"><strong>Tier:</strong> ${tierName}</p>
+                          <p style="margin: 4px 0;"><strong>Subscription ID:</strong> ${subscription.id}</p>
+                          <p style="margin: 4px 0;"><strong>Period End:</strong> ${subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toLocaleDateString("en-GB") : "N/A"}</p>
+                        </div>
+                        <p style="color: #666; font-size: 13px;">You are receiving this because you are an admin on the Eclipse platform.</p>
+                      </div>
+                    `,
+                  }),
+                });
+                logStep("Admin email notifications sent", { count: adminEmails.length });
+              }
+            }
+          }
+        } catch (adminEmailErr) {
+          logStep("Failed to send admin email notifications", { error: String(adminEmailErr) });
         }
       }
     } catch (staffErr) {
