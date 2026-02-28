@@ -65,6 +65,18 @@ serve(async (req) => {
       return new Response(`Webhook signature verification failed: ${message}`, { status: 400 });
     }
 
+    // IP Shield price IDs
+    const IP_SHIELD_PRICE_IDS = [
+      "price_1T4QCOCjEHxHwNl9Hr9uHeWe", // starter
+      "price_1T4OTVCjEHxHwNl9fNIFX8kG", // pro
+      "price_1T4OmYCjEHxHwNl9vLYAuHni", // enterprise
+    ];
+    const IP_SHIELD_TIER_MAP: Record<string, string> = {
+      "price_1T4QCOCjEHxHwNl9Hr9uHeWe": "Starter",
+      "price_1T4OTVCjEHxHwNl9fNIFX8kG": "Pro",
+      "price_1T4OmYCjEHxHwNl9vLYAuHni": "Enterprise",
+    };
+
     // Handle subscription events
     if (event.type.startsWith("customer.subscription.")) {
       const subscription = event.data.object as Stripe.Subscription;
@@ -73,12 +85,19 @@ serve(async (req) => {
       // Check if this is a Global Guard subscription
       const isGlobalGuard = subscription.metadata?.product_type === 'global_guard';
       
+      // Check if this is an IP Shield subscription
+      const ipShieldItem = subscription.items.data.find(item => 
+        IP_SHIELD_PRICE_IDS.includes(item.price.id)
+      );
+      const isIpShield = !!ipShieldItem;
+      
       logStep("Processing subscription event", { 
         type: event.type, 
         subscriptionId: subscription.id,
         customerId,
         status: subscription.status,
         isGlobalGuard,
+        isIpShield,
       });
 
       // Get customer email to find user
@@ -120,6 +139,15 @@ serve(async (req) => {
       // Handle Global Guard subscriptions separately
       if (isGlobalGuard) {
         await handleGlobalGuardSubscription(supabaseAdmin, subscription, userId, event.type);
+        return new Response(JSON.stringify({ received: true }), {
+          headers: { "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+      
+      // Handle IP Shield subscriptions
+      if (isIpShield) {
+        await handleIpShieldSubscription(supabaseAdmin, subscription, userId, customerEmail, event.type, ipShieldItem!, IP_SHIELD_TIER_MAP);
         return new Response(JSON.stringify({ received: true }), {
           headers: { "Content-Type": "application/json" },
           status: 200,
@@ -428,5 +456,134 @@ async function grantEclipsePlusCreditBonus(
     }
   } catch (e) {
     console.log(`[STRIPE-SUBSCRIPTION-WEBHOOK] Failed to grant credit bonus: ${String(e)}`);
+  }
+}
+
+// Handle IP Shield subscription events — send email + in-app notifications
+async function handleIpShieldSubscription(
+  supabase: any,
+  subscription: Stripe.Subscription,
+  userId: string,
+  customerEmail: string,
+  eventType: string,
+  ipShieldItem: Stripe.SubscriptionItem,
+  tierMap: Record<string, string>,
+) {
+  const tierName = tierMap[ipShieldItem.price.id] || "Unknown";
+  const isActivation = (
+    eventType === "customer.subscription.created" ||
+    (eventType === "customer.subscription.updated" && subscription.status === "active")
+  );
+
+  logStep("Handling IP Shield subscription", {
+    userId,
+    tier: tierName,
+    status: subscription.status,
+    eventType,
+    isActivation,
+  });
+
+  // Get user display info
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name, username, email")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const displayName = profile?.display_name || profile?.username || customerEmail;
+
+  // 1. Send email notification to legal team
+  if (isActivation) {
+    try {
+      const resendKey = Deno.env.get("RESEND_API_KEY");
+      if (resendKey) {
+        const emailRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${resendKey}`,
+          },
+          body: JSON.stringify({
+            from: "Eclipse IP Shield <noreply@eclipserblx.com>",
+            to: ["legal@eclipserblx.com"],
+            subject: `🛡️ New IP Shield Subscription — ${tierName} — ${displayName}`,
+            html: `
+              <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #1a1a2e;">🛡️ New IP Shield Subscriber</h2>
+                <div style="background: #f4f4f8; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                  <p style="margin: 4px 0;"><strong>User:</strong> ${displayName}</p>
+                  <p style="margin: 4px 0;"><strong>Email:</strong> ${customerEmail}</p>
+                  <p style="margin: 4px 0;"><strong>Tier:</strong> ${tierName}</p>
+                  <p style="margin: 4px 0;"><strong>Subscription ID:</strong> ${subscription.id}</p>
+                  <p style="margin: 4px 0;"><strong>Period End:</strong> ${subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toLocaleDateString("en-GB") : "N/A"}</p>
+                </div>
+                <p style="color: #666; font-size: 13px;">This user now has access to the IP Shield dashboard. Ensure onboarding steps are tracked.</p>
+              </div>
+            `,
+          }),
+        });
+        logStep("IP Shield email notification sent", { status: emailRes.status });
+      } else {
+        logStep("RESEND_API_KEY not set, skipping email notification");
+      }
+    } catch (emailErr) {
+      logStep("Failed to send IP Shield email notification", { error: String(emailErr) });
+    }
+  }
+
+  // 2. Create in-app notification for the subscriber
+  const notifTitle = isActivation
+    ? `🛡️ IP Shield ${tierName} Activated!`
+    : `⚠️ IP Shield Subscription ${subscription.status === "canceled" ? "Cancelled" : "Updated"}`;
+  const notifMessage = isActivation
+    ? `Your IP Shield ${tierName} plan is now active. Head to the IP Shield dashboard to register your assets.`
+    : `Your IP Shield subscription status has changed to: ${subscription.status}.`;
+
+  await supabase.from("notifications").insert({
+    user_id: userId,
+    title: notifTitle,
+    message: notifMessage,
+    type: "general",
+  });
+
+  // 3. Notify all staff with ip_shield_staff permission via in-app notifications
+  if (isActivation) {
+    try {
+      const { data: staffUsers } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .in("role", ["admin", "owner"]);
+
+      const { data: ipStaffUsers } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "ip_shield_staff");
+
+      // Merge unique staff user IDs
+      const allStaff = new Set<string>();
+      (staffUsers || []).forEach((r: any) => allStaff.add(r.user_id));
+      (ipStaffUsers || []).forEach((r: any) => allStaff.add(r.user_id));
+
+      if (allStaff.size > 0) {
+        const staffNotifications = Array.from(allStaff).map((staffId) => ({
+          user_id: staffId,
+          title: `🛡️ New IP Shield Subscriber`,
+          message: `${displayName} (${customerEmail}) subscribed to IP Shield ${tierName}.`,
+          type: "general",
+        }));
+
+        const { error: notifErr } = await supabase
+          .from("notifications")
+          .insert(staffNotifications);
+
+        if (notifErr) {
+          logStep("Failed to notify staff", { error: notifErr.message });
+        } else {
+          logStep("Staff notified", { count: allStaff.size });
+        }
+      }
+    } catch (staffErr) {
+      logStep("Failed to query staff users", { error: String(staffErr) });
+    }
   }
 }
