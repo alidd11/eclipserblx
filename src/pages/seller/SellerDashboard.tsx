@@ -57,17 +57,22 @@ export default function SellerDashboard() {
   const { data: productStats } = useQuery({
     queryKey: ['seller-product-stats', store?.id],
     queryFn: async () => {
-      if (!store?.id) return { total: 0, pending: 0, approved: 0 };
+      if (!store?.id) return { total: 0, pending: 0, approved: 0, nonCompliant: 0 };
       const { data, error } = await supabase
         .from('products')
-        .select('id, moderation_status')
+        .select('id, moderation_status, description, asset_file_url')
         .eq('store_id', store.id);
       if (error) throw error;
       const products = data || [];
+      const nonCompliant = products.filter(p => {
+        const plainDesc = (p.description || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+        return plainDesc.length < 100 || !p.asset_file_url;
+      });
       return {
         total: products.length,
         pending: products.filter(p => p.moderation_status === 'pending').length,
         approved: products.filter(p => p.moderation_status === 'approved').length,
+        nonCompliant: nonCompliant.length,
       };
     },
     enabled: !!store?.id,
@@ -115,6 +120,33 @@ export default function SellerDashboard() {
 
         {/* File Review Consent Banners */}
         <FileReviewConsentBanner />
+
+        {/* Non-compliant Products Banner */}
+        {productStats && productStats.nonCompliant > 0 && (
+          <Card className="border-destructive/50 bg-destructive/5">
+            <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-4 py-4">
+              <div className="flex items-center gap-3 flex-1">
+                <div className="p-2 rounded-lg bg-destructive/10">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                </div>
+                <div>
+                  <p className="font-semibold text-destructive">
+                    {productStats.nonCompliant} Product{productStats.nonCompliant > 1 ? 's' : ''} Need Attention
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Some products are missing a file or have a description under 100 characters. Please update them.
+                  </p>
+                </div>
+              </div>
+              <Button variant="destructive" size="sm" asChild>
+                <Link to="/seller/products">
+                  <Package className="h-4 w-4 mr-2" />
+                  Fix Products
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* ── Onboarding Wizard (modal, shows once for new sellers) ── */}
         <SellerOnboardingWizard />
