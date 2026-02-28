@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Award, ChevronRight, Users, Package } from 'lucide-react';
+import { ShieldCheck, Award, ChevronRight, Users, Package, Megaphone } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { STORE_LISTING_COLUMNS } from '@/lib/storeColumns';
@@ -21,11 +22,58 @@ interface FeaturedStore {
   follower_count: number | null;
   average_rating: number | null;
   product_count: number | null;
+  isPromoted?: boolean;
 }
 
-function useAlgorithmicStores() {
+function usePromotedSpotlightStore() {
   return useQuery({
-    queryKey: ['pwa-featured-stores'],
+    queryKey: ['pwa-store-spotlight-promotion'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('product_promotions')
+        .select(`
+          id,
+          store_id,
+          stores!product_promotions_store_id_fkey (
+            id, name, slug, description, logo_url, banner_url, accent_color,
+            is_verified, is_trusted, follower_count, average_rating, product_count,
+            status, is_active, is_testing
+          )
+        `)
+        .eq('slot_type', 'store_spotlight')
+        .eq('status', 'active')
+        .order('current_bid', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+      if (!data || data.length === 0) return null;
+
+      const s = data[0].stores as any;
+      if (!s || s.status !== 'approved' || !s.is_active || s.is_testing) return null;
+
+      return {
+        id: s.id,
+        name: s.name,
+        slug: s.slug,
+        description: s.description,
+        logo_url: s.logo_url,
+        banner_url: s.banner_url,
+        accent_color: s.accent_color,
+        is_verified: s.is_verified,
+        is_trusted: s.is_trusted,
+        follower_count: s.follower_count,
+        average_rating: s.average_rating,
+        product_count: s.product_count,
+        isPromoted: true,
+      } as FeaturedStore;
+    },
+    staleTime: 1000 * 60 * 2,
+  });
+}
+
+function useAlgorithmicStores(excludeStoreId?: string | null) {
+  return useQuery({
+    queryKey: ['pwa-featured-stores', excludeStoreId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('stores')
@@ -35,7 +83,10 @@ function useAlgorithmicStores() {
         .order('created_at', { ascending: false })
         .limit(8);
       if (error) throw error;
-      const stores = data as FeaturedStore[];
+      let stores = data as FeaturedStore[];
+      if (excludeStoreId) {
+        stores = stores.filter(s => s.id !== excludeStoreId);
+      }
       const scored = stores.map(store => ({
         ...store,
         score: Math.random() * 100
@@ -206,10 +257,11 @@ function CompactStoreSkeleton() {
 
 export function PWAFeaturedStores() {
   const { t } = useTranslation();
-  const { data: stores, isLoading } = useAlgorithmicStores();
+  const { data: promotedStore } = usePromotedSpotlightStore();
+  const { data: stores, isLoading } = useAlgorithmicStores(promotedStore?.id);
 
-  const spotlightStore = stores?.[0];
-  const listStores = stores?.slice(1, 7);
+  const spotlightStore = promotedStore || stores?.[0];
+  const listStores = promotedStore ? stores?.slice(0, 6) : stores?.slice(1, 7);
 
   return (
     <div className="space-y-3">

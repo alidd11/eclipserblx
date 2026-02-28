@@ -37,7 +37,7 @@ export function CreatePromotionDialog({ open, onOpenChange }: CreatePromotionDia
   const queryClient = useQueryClient();
 
   const [productId, setProductId] = useState('');
-  const [slotType, setSlotType] = useState<'featured' | 'category_spotlight'>('featured');
+  const [slotType, setSlotType] = useState<'featured' | 'category_spotlight' | 'store_spotlight'>('featured');
   const [bidAmount, setBidAmount] = useState(5);
 
   // Fetch seller's approved products
@@ -133,7 +133,7 @@ export function CreatePromotionDialog({ open, onOpenChange }: CreatePromotionDia
           {/* Slot type */}
           <div className="space-y-2">
             <Label>Promotion Slot</Label>
-            <Select value={slotType} onValueChange={(v) => setSlotType(v as 'featured' | 'category_spotlight')}>
+            <Select value={slotType} onValueChange={(v) => setSlotType(v as 'featured' | 'category_spotlight' | 'store_spotlight')}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -143,6 +143,9 @@ export function CreatePromotionDialog({ open, onOpenChange }: CreatePromotionDia
                 </SelectItem>
                 <SelectItem value="category_spotlight">
                   Category Spotlight — Top of category (3 slots)
+                </SelectItem>
+                <SelectItem value="store_spotlight">
+                  Store Spotlight — Featured store banner (1 slot)
                 </SelectItem>
               </SelectContent>
             </Select>
