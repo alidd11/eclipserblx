@@ -232,7 +232,7 @@ function SpotlightPrice({ product }: { product: { price: number; category_id: st
   );
 }
 
-export function MarketplaceSection() {
+export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSection(_props, ref) {
   const { hasAccess, isAdmin, isMarketplacePublic, loading: accessLoading } = useMarketplaceAccess();
   const { isSeller } = useSellerStatus();
   const [browseMode, setBrowseMode] = useState<'stores' | 'products' | 'categories'>('stores');
@@ -306,7 +306,7 @@ export function MarketplaceSection() {
   const allStores = spotlightStoreId ? storesList.filter(s => s.id !== spotlightStoreId) : storesList;
 
   return (
-    <section className="container mx-auto px-4 py-6 sm:py-8 space-y-8">
+    <section ref={ref} className="container mx-auto px-4 py-6 sm:py-8 space-y-8">
       {/* Browse Mode Toggle */}
       <MarketplaceBrowseToggle mode={browseMode} onChange={setBrowseMode} />
 
@@ -429,4 +429,4 @@ export function MarketplaceSection() {
       )}
     </section>
   );
-}
+});
