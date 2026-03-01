@@ -13,7 +13,12 @@ const SAFE_STORE_COLUMNS = `
   hero_title, hero_subtitle, hero_cta_text, hero_cta_link, custom_css,
   font_heading, font_body, announcement_text, announcement_active,
   featured_product_ids, layout_style, show_reviews, show_social_proof,
-  follower_count, about_content, is_trusted, payout_method, pwyw_enabled
+  follower_count, about_content, is_trusted, payout_method, pwyw_enabled,
+  eclipse_plus_discount_enabled, is_testing,
+  roblox_group_id, roblox_group_discount_enabled, roblox_group_discount_percent,
+  roblox_group_min_rank, roblox_premium_discount_enabled, roblox_premium_discount_percent,
+  roblox_gamepass_id, roblox_gamepass_discount_enabled, roblox_gamepass_discount_percent,
+  banner_start_at, banner_end_at
 `;
 
 export interface Store {
@@ -71,10 +76,27 @@ export interface Store {
   payout_method?: string;
   // Pay What You Want
   pwyw_enabled?: boolean;
+  // Eclipse+ discount
+  eclipse_plus_discount_enabled?: boolean;
+  // Testing mode
+  is_testing?: boolean;
   // Followers
   follower_count?: number;
   about_content?: string;
   is_trusted?: boolean;
+  // Roblox integrations
+  roblox_group_id?: string;
+  roblox_group_discount_enabled?: boolean;
+  roblox_group_discount_percent?: number;
+  roblox_group_min_rank?: number;
+  roblox_premium_discount_enabled?: boolean;
+  roblox_premium_discount_percent?: number;
+  roblox_gamepass_id?: string;
+  roblox_gamepass_discount_enabled?: boolean;
+  roblox_gamepass_discount_percent?: number;
+  // Scheduled banner
+  banner_start_at?: string;
+  banner_end_at?: string;
   // Credentials (fetched separately from store_credentials table)
   credentials?: StoreCredentials;
   // Payment details (fetched separately from store_payment_details table)

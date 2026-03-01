@@ -52,16 +52,16 @@ export default function SellerSettingsRoblox() {
   useEffect(() => {
     if (store) {
       setFormData({
-        roblox_url: (store as any).roblox_url || '',
-        roblox_group_id: (store as any).roblox_group_id || '',
-        roblox_group_discount_enabled: (store as any).roblox_group_discount_enabled || false,
-        roblox_group_discount_percent: (store as any).roblox_group_discount_percent || 10,
-        roblox_group_min_rank: (store as any).roblox_group_min_rank || 1,
-        roblox_premium_discount_enabled: (store as any).roblox_premium_discount_enabled || false,
-        roblox_premium_discount_percent: (store as any).roblox_premium_discount_percent || 5,
-        roblox_gamepass_id: (store as any).roblox_gamepass_id || '',
-        roblox_gamepass_discount_enabled: (store as any).roblox_gamepass_discount_enabled || false,
-        roblox_gamepass_discount_percent: (store as any).roblox_gamepass_discount_percent || 15,
+        roblox_url: store.roblox_url || '',
+        roblox_group_id: store.roblox_group_id || '',
+        roblox_group_discount_enabled: store.roblox_group_discount_enabled || false,
+        roblox_group_discount_percent: store.roblox_group_discount_percent || 10,
+        roblox_group_min_rank: store.roblox_group_min_rank || 1,
+        roblox_premium_discount_enabled: store.roblox_premium_discount_enabled || false,
+        roblox_premium_discount_percent: store.roblox_premium_discount_percent || 5,
+        roblox_gamepass_id: store.roblox_gamepass_id || '',
+        roblox_gamepass_discount_enabled: store.roblox_gamepass_discount_enabled || false,
+        roblox_gamepass_discount_percent: store.roblox_gamepass_discount_percent || 15,
       });
     }
   }, [store]);

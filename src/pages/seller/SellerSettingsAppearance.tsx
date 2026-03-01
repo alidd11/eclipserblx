@@ -117,8 +117,8 @@ export default function SellerSettingsAppearance() {
         show_reviews: store.show_reviews !== false,
         show_social_proof: store.show_social_proof !== false,
         custom_css: store.custom_css || '',
-        banner_start_at: (store as any).banner_start_at || null,
-        banner_end_at: (store as any).banner_end_at || null,
+        banner_start_at: store.banner_start_at || null,
+        banner_end_at: store.banner_end_at || null,
       });
     }
   }, [store]);
