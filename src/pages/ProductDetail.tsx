@@ -32,6 +32,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useCurrency } from '@/hooks/useCurrency';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { useProductTranslation } from '@/hooks/useProductTranslation';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -101,6 +102,17 @@ export default function ProductDetail() {
   });
 
   const { getTranslatedName, getTranslatedDescription } = useProductTranslation(product?.id);
+
+  // Dynamic SEO meta for product pages
+  usePageMeta({
+    title: product?.name,
+    description: product?.description
+      ? product.description.replace(/<[^>]*>/g, '').slice(0, 155)
+      : product?.name
+        ? `Buy ${product.name} on Eclipse marketplace`
+        : undefined,
+    canonicalPath: slug ? `/products/${slug}` : undefined,
+  });
 
   const { data: relatedProducts } = useQuery({
     queryKey: ['related-products', product?.category_id, isStaff],

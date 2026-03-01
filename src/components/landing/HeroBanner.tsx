@@ -3,10 +3,12 @@ import heroBg from '@/assets/hero-bg.jpeg';
 export function HeroBanner() {
   return (
     <div className="absolute inset-x-0 top-0 h-[420px] sm:h-[480px] overflow-hidden">
-      {/* Single hero background image */}
+      {/* Single hero background image with explicit dimensions to prevent CLS */}
       <img
         src={heroBg}
         alt=""
+        width={1920}
+        height={480}
         className="absolute inset-0 w-full h-full object-cover"
       />
 

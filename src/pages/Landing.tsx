@@ -1,17 +1,15 @@
 import { forwardRef } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LandingHero } from '@/components/landing/LandingHero';
-
-
-
-
 import { PromotionCarousel } from '@/components/home/PromotionCarousel';
-
 import { MarketplaceSection } from '@/components/home/MarketplaceSection';
 import { PWADiscordBanner } from '@/components/landing/PWADiscordBanner';
 import { OrganizationSchema, WebsiteSearchSchema } from '@/components/seo/StructuredData';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
+  usePageMeta({ canonicalPath: '/' });
+
   return (
     <MainLayout>
       <OrganizationSchema />
