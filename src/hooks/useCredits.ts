@@ -110,7 +110,7 @@ export function useCredits() {
   }, [state.balance]);
 
   // Purchase products using credits
-  const purchaseWithCredits = useCallback(async (items: Array<{ id: string; name: string; price: number }>): Promise<{ success: boolean; orderId?: string; error?: string }> => {
+  const purchaseWithCredits = useCallback(async (items: Array<{ id: string; name: string; price: number; custom_price?: number }>): Promise<{ success: boolean; orderId?: string; error?: string }> => {
     if (!user) {
       return { success: false, error: 'You must be logged in to use credits' };
     }

@@ -11,6 +11,7 @@ interface CartItem {
   id: string;
   name: string;
   price: number;
+  custom_price?: number;
 }
 
 interface CreditPaymentButtonProps {

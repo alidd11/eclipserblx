@@ -13,6 +13,7 @@ interface CartItem {
   price: number;
   category_slug?: string;
   category_id?: string;
+  custom_price?: number;
 }
 
 interface PurchaseRequest {
@@ -78,7 +79,7 @@ serve(async (req) => {
     const { data: products, error: productsError } = await supabaseClient
       .from('products')
       .select(`
-        id, name, price, category_id, is_seller_product, store_id,
+        id, name, price, category_id, is_seller_product, store_id, is_pay_what_you_want, min_price,
         stores(owner_id, commission_rate, custom_commission_rate, custom_rate_expires_at, name)
       `)
       .in('id', productIds);
@@ -109,6 +110,17 @@ serve(async (req) => {
         throw new Error(`Product not found: ${item.id}`);
       }
 
+      // Handle PWYW pricing
+      let finalPrice = product.price;
+      if ((product as any).is_pay_what_you_want && item.custom_price !== undefined) {
+        const minPrice = (product as any).min_price || 0;
+        const customPrice = Number(item.custom_price);
+        if (customPrice < minPrice) throw new Error(`Price for "${product.name}" must be at least £${minPrice.toFixed(2)}`);
+        if (customPrice > 0 && customPrice < 1) throw new Error(`Minimum paid amount is £1.00`);
+        if (customPrice === 0) throw new Error(`Free orders should use the free order endpoint`);
+        finalPrice = customPrice;
+      }
+
       // Supabase returns stores as a single object (not array) for belongsTo relations
       const storesData = product.stores as unknown as { 
         owner_id: string; 
@@ -137,7 +149,7 @@ serve(async (req) => {
       validatedItems.push({
         id: product.id,
         name: product.name,
-        price: product.price,
+        price: finalPrice,
         is_seller_product: product.is_seller_product || false,
         store_id: product.store_id,
         seller_id: storeInfo?.owner_id,
@@ -145,7 +157,7 @@ serve(async (req) => {
         store_name: storeInfo?.name,
       });
 
-      totalPrice += product.price;
+      totalPrice += finalPrice;
     }
 
     logStep("Validated items", { totalPrice, itemCount: validatedItems.length });
