@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,9 +9,6 @@ import { CartProvider } from "@/hooks/useCart";
 import { ChatPanelProvider } from "@/hooks/useChatPanel";
 import { CookieConsentProvider } from "@/hooks/useCookieConsent";
 import { CurrencyProvider } from "@/hooks/useCurrency";
-import { ChatWidget } from "@/components/chat/ChatWidget";
-import { ChatSidePanel } from "@/components/chat/ChatSidePanel";
-import { CookieConsentBanner } from "@/components/cookies/CookieConsentBanner";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { PWAWrapper } from "@/components/pwa/PWAWrapper";
 import { IpBanCheck } from "@/components/IpBanCheck";
@@ -23,6 +20,11 @@ import { PWARouteRestorer } from "@/hooks/usePWALastRoute";
 import { GlobalBackground } from "@/components/layout/GlobalBackground";
 import { AppRoutes } from "@/components/AppRoutes";
 import { EmailGuard } from "@/components/auth/EmailGuard";
+
+// Lazy-load heavy components that aren't needed on initial render
+const ChatWidget = lazy(() => import("@/components/chat/ChatWidget").then(m => ({ default: m.ChatWidget })));
+const ChatSidePanel = lazy(() => import("@/components/chat/ChatSidePanel").then(m => ({ default: m.ChatSidePanel })));
+const CookieConsentBanner = lazy(() => import("@/components/cookies/CookieConsentBanner").then(m => ({ default: m.CookieConsentBanner })));
 
 // Optimized QueryClient with better caching
 const queryClient = new QueryClient({
@@ -75,9 +77,11 @@ const App = () => (
                         <InstallPrompt />
                       </PWAWrapper>
                       {/* Chat components rendered OUTSIDE PWAWrapper to prevent transform-related positioning issues */}
-                      <ChatWidget />
-                      <ChatSidePanel />
-                      <CookieConsentBanner />
+                      <Suspense fallback={null}>
+                        <ChatWidget />
+                        <ChatSidePanel />
+                        <CookieConsentBanner />
+                      </Suspense>
                     </IpBanCheck>
                   </BrowserRouter>
                 </TooltipProvider>
