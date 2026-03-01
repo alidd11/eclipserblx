@@ -39,7 +39,7 @@ export function LandingHero() {
   };
 
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative overflow-hidden" style={{ minHeight: '420px' }}>
       <HeroBanner />
 
       <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-10 relative z-10">
