@@ -1,19 +1,24 @@
 import { useEffect, useRef } from 'react';
 import { checkScheduledReleases } from '@/lib/pushNotifications';
+import { useAuth } from '@/hooks/useAuth';
 
-const CHECK_INTERVAL = 60 * 1000; // Check every minute
+const CHECK_INTERVAL = 5 * 60 * 1000; // Check every 5 minutes (reduced from 1 min)
 
 /**
  * Hook that periodically checks for scheduled product releases
  * and sends notifications to store followers when products go live.
  * 
- * This should be mounted in a top-level component that's always rendered
- * (like App.tsx or MainLayout).
+ * Only runs for authenticated users to avoid unnecessary backend calls
+ * from anonymous visitors.
  */
 export function useScheduledReleaseCheck() {
+  const { user } = useAuth();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    // Don't poll for unauthenticated visitors
+    if (!user) return;
+
     // Initial check on mount
     checkScheduledReleases().then(result => {
       if (result.processed && result.processed > 0) {
@@ -34,5 +39,5 @@ export function useScheduledReleaseCheck() {
         clearInterval(intervalRef.current);
       }
     };
-  }, []);
+  }, [user]);
 }
