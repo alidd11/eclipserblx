@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronRight, ShieldCheck, Award, Package, Crown } from 'lucide-react';
@@ -7,7 +8,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFeaturedProducts, ScoredProduct } from '@/hooks/useFeaturedProducts';
 
-function SpotlightCard({ product }: { product: ScoredProduct }) {
+const SpotlightCard = memo(function SpotlightCard({ product }: { product: ScoredProduct }) {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
 
@@ -21,7 +22,7 @@ function SpotlightCard({ product }: { product: ScoredProduct }) {
       <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
         <div className="aspect-[16/9] relative overflow-hidden bg-muted">
           {product.images?.[0] ? (
-            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
+            <img src={product.images[0]} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-muted">
               <Package className="h-8 w-8 text-muted-foreground/30" />
@@ -49,7 +50,7 @@ function SpotlightCard({ product }: { product: ScoredProduct }) {
         {/* Store strip */}
         <div className="h-7 flex items-center gap-1.5 px-2.5 bg-muted/60">
           {product.stores?.logo_url && (
-            <img src={product.stores.logo_url} alt="" className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0" />
+            <img src={product.stores.logo_url} alt="" loading="lazy" decoding="async" className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0" />
           )}
           <span className="text-[10px] text-muted-foreground font-medium truncate">{product.stores?.name}</span>
           {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
@@ -58,9 +59,9 @@ function SpotlightCard({ product }: { product: ScoredProduct }) {
       </div>
     </Link>
   );
-}
+});
 
-function GridCard({ product }: { product: ScoredProduct }) {
+const GridCard = memo(function GridCard({ product }: { product: ScoredProduct }) {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
 
@@ -74,7 +75,7 @@ function GridCard({ product }: { product: ScoredProduct }) {
       <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200">
         <div className="aspect-[4/3] relative overflow-hidden bg-muted">
           {product.images?.[0] ? (
-            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
+            <img src={product.images[0]} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-muted">
               <span className="text-muted-foreground text-sm">No image</span>
@@ -84,7 +85,7 @@ function GridCard({ product }: { product: ScoredProduct }) {
         {/* Store strip */}
         <div className="h-6 flex items-center gap-1 px-2 bg-muted/60">
           {product.stores?.logo_url && (
-            <img src={product.stores.logo_url} alt="" className="h-3 w-3 rounded-sm object-cover flex-shrink-0" />
+            <img src={product.stores.logo_url} alt="" loading="lazy" decoding="async" className="h-3 w-3 rounded-sm object-cover flex-shrink-0" />
           )}
           <span className="text-[9px] text-muted-foreground font-medium truncate">{product.stores?.name}</span>
           {product.stores?.is_verified && <ShieldCheck className="h-2.5 w-2.5 text-blue-400 flex-shrink-0" />}
@@ -118,7 +119,7 @@ function GridCard({ product }: { product: ScoredProduct }) {
       </div>
     </Link>
   );
-}
+});
 
 export function PWARecentReleases() {
   const { data: products, isLoading } = useFeaturedProducts({
