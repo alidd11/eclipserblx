@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
@@ -56,7 +56,7 @@ const legalItems = [
   { title: 'Refund Policy', icon: RotateCcw, href: '/refunds', keywords: ['refund', 'return', 'money back'] },
 ];
 
-export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPaletteProps) {
+export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPaletteProps>(function SearchCommandPalette({ open, onOpenChange }, _ref) {
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
   const [products, setProducts] = useState<Product[]>([]);
@@ -247,4 +247,4 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
       </CommandList>
     </CommandDialog>
   );
-}
+});

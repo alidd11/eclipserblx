@@ -79,7 +79,7 @@ serve(async (req) => {
       .from('products')
       .select(`
         id, name, price, category_id, is_seller_product, store_id,
-        stores(owner_id, commission_rate, name)
+        stores(owner_id, commission_rate, custom_commission_rate, custom_rate_expires_at, name)
       `)
       .in('id', productIds);
 
@@ -113,15 +113,26 @@ serve(async (req) => {
       const storesData = product.stores as unknown as { 
         owner_id: string; 
         commission_rate?: number; 
+        custom_commission_rate?: number;
+        custom_rate_expires_at?: string;
         name?: string; 
       } | { 
         owner_id: string; 
         commission_rate?: number; 
+        custom_commission_rate?: number;
+        custom_rate_expires_at?: string;
         name?: string; 
       }[] | null;
 
       // Handle both array and object formats for safety
       const storeInfo = Array.isArray(storesData) ? storesData[0] : storesData;
+
+      // Use custom commission rate if set and not expired
+      const hasActiveCustomRate = storeInfo?.custom_commission_rate != null && 
+        (!storeInfo?.custom_rate_expires_at || new Date(storeInfo.custom_rate_expires_at) > new Date());
+      const effectiveCommissionRate = hasActiveCustomRate 
+        ? storeInfo!.custom_commission_rate! 
+        : (storeInfo?.commission_rate ?? 15);
 
       validatedItems.push({
         id: product.id,
@@ -130,7 +141,7 @@ serve(async (req) => {
         is_seller_product: product.is_seller_product || false,
         store_id: product.store_id,
         seller_id: storeInfo?.owner_id,
-        commission_rate: storeInfo?.commission_rate ?? 15,
+        commission_rate: effectiveCommissionRate,
         store_name: storeInfo?.name,
       });
 
