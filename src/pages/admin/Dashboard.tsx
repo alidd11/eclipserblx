@@ -467,11 +467,11 @@ export default function AdminDashboard() {
         {/* Staff Announcements */}
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
                 <Megaphone className="h-5 w-5" />
                 Announcements
-              </div>
+              </CardTitle>
               {isAdmin && (
                 <Dialog open={showNewAnnouncement} onOpenChange={setShowNewAnnouncement}>
                   <DialogTrigger asChild>
@@ -527,7 +527,7 @@ export default function AdminDashboard() {
                   </DialogContent>
                 </Dialog>
               )}
-            </CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
             {!announcements?.length ? (
