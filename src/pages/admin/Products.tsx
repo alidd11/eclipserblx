@@ -7,6 +7,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
@@ -787,7 +788,15 @@ export default function AdminProducts() {
               )}
               
               {isLoading ? (
-                <p className="text-center py-8 text-muted-foreground">Loading...</p>
+                <div className="space-y-3">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="p-4 rounded-lg bg-muted/50 border border-border space-y-2">
+                      <Skeleton className="h-14 w-14 rounded-lg" />
+                      <Skeleton className="h-4 w-40" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                  ))}
+                </div>
               ) : products?.length === 0 ? (
                 <p className="text-center py-8 text-muted-foreground">No products found</p>
               ) : (
@@ -863,9 +872,15 @@ export default function AdminProducts() {
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Loading...</TableCell>
-                    </TableRow>
+                    <>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                          {Array.from({ length: 6 }).map((_, j) => (
+                            <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </>
                   ) : products?.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No products found</TableCell>

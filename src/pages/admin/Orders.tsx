@@ -5,6 +5,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -232,7 +233,15 @@ export default function AdminOrders() {
             {/* Mobile Card View */}
             <div className="block md:hidden space-y-3">
               {isLoading ? (
-                <p className="text-center py-8 text-muted-foreground">Loading...</p>
+                <div className="space-y-3">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="p-4 rounded-lg bg-muted/50 border border-border space-y-3">
+                      <div className="flex justify-between"><Skeleton className="h-4 w-24" /><Skeleton className="h-5 w-16" /></div>
+                      <Skeleton className="h-3 w-32" />
+                      <div className="flex justify-between"><Skeleton className="h-3 w-20" /><Skeleton className="h-4 w-16" /></div>
+                    </div>
+                  ))}
+                </div>
               ) : orders?.length === 0 ? (
                 <p className="text-center py-8 text-muted-foreground">No orders found</p>
               ) : (
@@ -273,11 +282,15 @@ export default function AdminOrders() {
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        Loading...
-                      </TableCell>
-                    </TableRow>
+                    <>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                          {Array.from({ length: 6 }).map((_, j) => (
+                            <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </>
                   ) : orders?.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
