@@ -21,10 +21,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { CreateTicketDialog } from '@/components/support/CreateTicketDialog';
 
 export default function Contact() {
   usePageTracking({ pagePath: '/contact' });
+  usePageMeta({
+    title: 'Contact Us',
+    description: 'Get in touch with Eclipse support. Send a message, open a ticket, or join our Discord community for help.',
+    canonicalPath: '/contact',
+  });
   const { user } = useAuth();
   const navigate = useNavigate();
   const { discordUrl } = useDiscordUrl();

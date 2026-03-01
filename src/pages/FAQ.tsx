@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -272,6 +273,11 @@ function FAQCategorySection({ category, searchQuery }: { category: FAQCategory; 
 
 export default function FAQ() {
   usePageTracking({ pagePath: '/faq' });
+  usePageMeta({
+    title: 'FAQ',
+    description: 'Find answers to frequently asked questions about Eclipse marketplace — buying, selling, payments, Eclipse+ membership and more.',
+    canonicalPath: '/faq',
+  });
   const { t } = useTranslation();
   const { discordUrl } = useDiscordUrl();
   const [searchQuery, setSearchQuery] = useState('');

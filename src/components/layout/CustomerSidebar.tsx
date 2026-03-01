@@ -670,7 +670,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
 
 
   return (
-    <aside 
+    <aside
+      aria-label="Main navigation"
       className={cn(
         "bg-sidebar text-foreground flex flex-col transition-all duration-200 shrink-0 overflow-x-hidden",
         isMobileDrawer 

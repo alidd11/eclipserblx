@@ -45,7 +45,7 @@ function PopularProductCard({ product, rank }: { product: PopularProduct; rank: 
         {/* Product image */}
         <div className="flex-shrink-0 w-16 h-12 rounded-md overflow-hidden bg-muted">
           {product.images?.[0] ? (
-            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+            <img src={product.images[0]} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <Package className="h-4 w-4 text-muted-foreground/30" />

@@ -120,6 +120,8 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
               <img
                 src={displayProduct.images[0]}
                 alt={displayProduct.name}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
               />
             ) : (

@@ -64,7 +64,7 @@ export function PromotionCard({ promotion }: { promotion: Promotion }) {
           {/* Thumbnail */}
           <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 bg-muted">
             {promotion.products?.images?.[0] ? (
-              <img src={promotion.products.images[0]} alt="" className="w-full h-full object-cover" />
+              <img src={promotion.products.images[0]} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <Megaphone className="h-6 w-6 text-muted-foreground/30" />
