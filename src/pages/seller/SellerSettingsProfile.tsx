@@ -56,7 +56,7 @@ export default function SellerSettingsProfile() {
         logo_url: store.logo_url || '',
         banner_url: store.banner_url || '',
         bio: store.bio || '',
-        about_content: (store as any).about_content || '',
+        about_content: store.about_content || '',
         twitter_url: store.twitter_url || '',
         youtube_url: store.youtube_url || '',
         tiktok_url: store.tiktok_url || '',
@@ -83,7 +83,7 @@ export default function SellerSettingsProfile() {
           tiktok_url: data.tiktok_url || null,
           pwyw_enabled: data.pwyw_enabled,
           updated_at: new Date().toISOString(),
-        } as any)
+        })
         .eq('id', store.id);
 
       if (error) throw error;

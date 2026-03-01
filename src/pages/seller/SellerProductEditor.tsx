@@ -145,8 +145,7 @@ export default function SellerProductEditor() {
         .single();
 
       if (error) throw error;
-      // Cast to include early_access_hours which may not be in types yet
-      return data as typeof data & { early_access_hours?: number | null };
+      return data;
     },
     enabled: !!productId && !!store?.id,
   });
@@ -171,9 +170,9 @@ export default function SellerProductEditor() {
         release_at: product.release_at ? new Date(product.release_at).toISOString().slice(0, 16) : '',
         early_access_enabled: hasSchedule && hasEarlyAccess,
         early_access_hours: product.early_access_hours?.toString() || '',
-        ip_ownership_confirmed: (product as any).ip_ownership_confirmed ?? false,
-        is_pay_what_you_want: (product as any).is_pay_what_you_want ?? false,
-        min_price: ((product as any).min_price ?? 0).toString(),
+        ip_ownership_confirmed: product.ip_ownership_confirmed ?? false,
+        is_pay_what_you_want: product.is_pay_what_you_want ?? false,
+        min_price: (product.min_price ?? 0).toString(),
       });
     }
   }, [product]);
