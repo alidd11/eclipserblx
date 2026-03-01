@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ShieldCheck, Award, Crown, Package } from 'lucide-react';
@@ -30,7 +31,7 @@ interface FeaturedProduct {
   } | null;
 }
 
-export function FeaturedProductCard() {
+export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedProductCard(_props, ref) {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
 
@@ -186,4 +187,4 @@ export function FeaturedProductCard() {
       </Link>
     </div>
   );
-}
+});

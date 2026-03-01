@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Store, ShieldCheck, Award, ChevronRight, Megaphone } from 'lucide-react';
@@ -5,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
-
 interface TopStore {
   id: string;
   name: string;
@@ -20,7 +20,7 @@ interface TopStore {
   isPromoted?: boolean;
 }
 
-export function TopStoresSection() {
+export const TopStoresSection = forwardRef<HTMLDivElement>(function TopStoresSection(_props, ref) {
   // First try to find an active store_spotlight promotion winner
   const { data: promotedStore } = useQuery({
     queryKey: ['store-spotlight-promotion'],
@@ -226,4 +226,4 @@ export function TopStoresSection() {
       </Link>
     </section>
   );
-}
+});
