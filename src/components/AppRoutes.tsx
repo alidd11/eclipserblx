@@ -1,4 +1,4 @@
-import { lazy, Suspense, forwardRef } from "react";
+import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -212,7 +212,7 @@ function PageLoader() {
 /**
  * Main app routes - checks subdomain first and routes accordingly
  */
-export const AppRoutes = forwardRef<HTMLDivElement>(function AppRoutes(_props, _ref) {
+export function AppRoutes() {
   const hostname = window.location.hostname;
   const isGlobalGuardDomain = hostname.startsWith('guard.') || hostname === 'guard.eclipserblx.com';
 
@@ -413,4 +413,4 @@ export const AppRoutes = forwardRef<HTMLDivElement>(function AppRoutes(_props, _
       </Routes>
     </Suspense>
   );
-});
+}
