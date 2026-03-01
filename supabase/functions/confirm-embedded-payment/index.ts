@@ -131,37 +131,27 @@ serve(async (req) => {
           const everyonePings = parseInt(paymentIntent.metadata?.everyone_pings || '0');
 
           if (herePings > 0 || everyonePings > 0) {
-            const { error: updateError } = await supabaseAdmin
+            // Fetch current balances then increment
+            const { data: currentSub } = await supabaseAdmin
               .from('advertisement_subscriptions')
-              .update({
-                here_pings_balance: supabaseAdmin.rpc('increment_here_pings', { amount: herePings }),
-                everyone_pings_balance: supabaseAdmin.rpc('increment_everyone_pings', { amount: everyonePings }),
-              })
+              .select('here_pings_balance, everyone_pings_balance')
               .eq('user_id', user.id)
-              .eq('status', 'active');
+              .eq('status', 'active')
+              .single();
 
-            // Fallback: direct update with raw SQL approach
-            if (updateError) {
-              await supabaseAdmin.from('advertisement_subscriptions')
-                .select('here_pings_balance, everyone_pings_balance')
+            if (currentSub) {
+              await supabaseAdmin
+                .from('advertisement_subscriptions')
+                .update({
+                  here_pings_balance: (currentSub.here_pings_balance || 0) + herePings,
+                  everyone_pings_balance: (currentSub.everyone_pings_balance || 0) + everyonePings,
+                })
                 .eq('user_id', user.id)
-                .eq('status', 'active')
-                .single()
-                .then(async ({ data }) => {
-                  if (data) {
-                    await supabaseAdmin
-                      .from('advertisement_subscriptions')
-                      .update({
-                        here_pings_balance: (data.here_pings_balance || 0) + herePings,
-                        everyone_pings_balance: (data.everyone_pings_balance || 0) + everyonePings,
-                      })
-                      .eq('user_id', user.id)
-                      .eq('status', 'active');
-                  }
-                });
+                .eq('status', 'active');
+              logStep("Ad pings added", { herePings, everyonePings });
+            } else {
+              logStep("No active ad subscription found for ping fulfillment", { userId: user.id });
             }
-
-            logStep("Ad pings added", { herePings, everyonePings });
           }
           break;
         }
