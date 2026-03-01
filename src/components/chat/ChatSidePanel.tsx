@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, forwardRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
@@ -80,7 +80,7 @@ function getOpeningStatus() {
   return { isOpen };
 }
 
-export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_props, _ref) {
+export function ChatSidePanel() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isOpen, closeChat } = useChatPanel();
@@ -914,4 +914,4 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
       )}
     </AnimatePresence>
   );
-});
+}
