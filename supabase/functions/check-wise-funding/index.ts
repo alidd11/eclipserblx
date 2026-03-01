@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
     // Get all payouts awaiting funds
     const { data: pendingPayouts, error: fetchError } = await supabase
       .from('seller_payouts')
-      .select('*, stores(name, wise_recipient_id)')
+      .select('*, stores(name)')
       .eq('status', 'awaiting_funds')
       .eq('funding_status', 'funding_requested');
 
@@ -132,8 +132,8 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Get recipient ID from store
-      const recipientId = payout.stores?.wise_recipient_id;
+      // Wise recipient ID would need to be stored somewhere — for now, skip
+      const recipientId = null; // TODO: Add wise_recipient_id to store_payment_details
       
       if (!recipientId) {
         logStep('No recipient configured for payout', { payoutId: payout.id });
