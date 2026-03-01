@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 
 // Lazy load Global Guard router for /guard path
 const GlobalGuardRouter = lazy(() => import("@/components/global-guard/GlobalGuardRouter").then(m => ({ default: m.GlobalGuardRouter })));
@@ -227,6 +228,7 @@ export function AppRoutes() {
 
   // Otherwise render the main app routes
   return (
+    <RouteErrorBoundary>
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={<Index />} />
@@ -412,5 +414,6 @@ export function AppRoutes() {
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
+    </RouteErrorBoundary>
   );
 }
