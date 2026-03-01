@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LandingHero } from '@/components/landing/LandingHero';
 
@@ -10,7 +11,7 @@ import { MarketplaceSection } from '@/components/home/MarketplaceSection';
 import { PWADiscordBanner } from '@/components/landing/PWADiscordBanner';
 import { OrganizationSchema, WebsiteSearchSchema } from '@/components/seo/StructuredData';
 
-export default function Landing() {
+const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
   return (
     <MainLayout>
       <OrganizationSchema />
@@ -36,4 +37,6 @@ export default function Landing() {
       <MarketplaceSection />
     </MainLayout>
   );
-}
+});
+
+export default Landing;

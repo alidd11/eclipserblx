@@ -1,4 +1,4 @@
-import { ReactNode, forwardRef, useState, useEffect, useCallback, useRef } from 'react';
+import { ReactNode, useState, useEffect, useCallback, useRef } from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { CustomerSidebar } from './CustomerSidebar';
@@ -201,14 +201,10 @@ function MainLayoutContent({ children }: MainLayoutProps) {
   );
 }
 
-export const MainLayout = forwardRef<HTMLDivElement, MainLayoutProps>(
-  function MainLayout({ children }, ref) {
-    return (
-      <SearchCommandProvider>
-        <div ref={ref}>
-          <MainLayoutContent>{children}</MainLayoutContent>
-        </div>
-      </SearchCommandProvider>
-    );
-  }
-);
+export function MainLayout({ children }: MainLayoutProps) {
+  return (
+    <SearchCommandProvider>
+      <MainLayoutContent>{children}</MainLayoutContent>
+    </SearchCommandProvider>
+  );
+}

@@ -546,7 +546,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   };
 
   return (
-    <MainLayout ref={ref}>
+    <MainLayout>
       <div className="container py-8 space-y-6 max-w-4xl ml-auto mr-4 sm:mr-8 lg:mr-auto">
         {/* My Profile Card */}
         <Card className="bg-card border-border overflow-hidden">
