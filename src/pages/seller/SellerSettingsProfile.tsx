@@ -60,7 +60,7 @@ export default function SellerSettingsProfile() {
         twitter_url: store.twitter_url || '',
         youtube_url: store.youtube_url || '',
         tiktok_url: store.tiktok_url || '',
-        pwyw_enabled: (store as any).pwyw_enabled ?? false,
+        pwyw_enabled: store.pwyw_enabled ?? false,
       });
     }
   }, [store]);

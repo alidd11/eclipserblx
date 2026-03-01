@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Store, ChevronRight, ShieldCheck, Award, Users, Search, Package, FlaskConical, Crown, Car, Code, Bot, Layout, Box, Palette, Wrench, Gamepad2, Map, Shirt, Plane, ArrowRight } from 'lucide-react';
@@ -34,11 +34,11 @@ interface StoreData {
   is_testing?: boolean;
 }
 
-function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingBadge?: boolean }) {
+const StoreCard = forwardRef<HTMLAnchorElement, { store: StoreData; showTestingBadge?: boolean }>(function StoreCard({ store, showTestingBadge }, ref) {
   const accentColor = store.accent_color || '#8B5CF6';
   
   return (
-    <Link to={`/store/${store.slug}`}>
+    <Link to={`/store/${store.slug}`} ref={ref}>
       <div className="group overflow-hidden h-full border border-border hover:border-primary/40 transition-colors duration-200 rounded-md bg-card">
         <div 
           className="h-20 relative overflow-hidden"
@@ -117,11 +117,11 @@ function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingB
       </div>
     </Link>
   );
-}
+});
 
-function StoreCardSkeleton() {
+const StoreCardSkeleton = forwardRef<HTMLDivElement>(function StoreCardSkeleton(_props, ref) {
   return (
-    <div className="overflow-hidden h-full border border-border rounded-md bg-card">
+    <div ref={ref} className="overflow-hidden h-full border border-border rounded-md bg-card">
       <Skeleton className="h-20 rounded-none" />
       <div className="pt-0 -mt-8 relative px-3 pb-3">
         <div className="flex items-start gap-3 mb-3">
@@ -136,7 +136,7 @@ function StoreCardSkeleton() {
       </div>
     </div>
   );
-}
+});
 
 function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; average_rating?: number | null; categories?: { name: string } | null; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
   const { formatPrice } = useCurrency();
