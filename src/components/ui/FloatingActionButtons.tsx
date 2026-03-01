@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, MessageCircle, ArrowUp } from 'lucide-react';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
 import { useChatPanel } from '@/hooks/useChatPanel';
 
-export function FloatingActionButtons() {
+export const FloatingActionButtons = forwardRef<HTMLDivElement>(function FloatingActionButtons(_props, ref) {
   const navigate = useNavigate();
   const { items } = useCart();
   const { openChat } = useChatPanel();
@@ -34,6 +34,7 @@ export function FloatingActionButtons() {
     <AnimatePresence>
       {isVisible && (
         <motion.div
+          ref={ref}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
@@ -90,4 +91,4 @@ export function FloatingActionButtons() {
       )}
     </AnimatePresence>
   );
-}
+});

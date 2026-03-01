@@ -277,7 +277,7 @@ serve(async (req) => {
         // Check if this is a seller product and get store commission rate
         const { data: product } = await supabaseClient
           .from("products")
-          .select("is_seller_product, store_id, price, stores(owner_id, commission_rate, name)")
+          .select("is_seller_product, store_id, price, stores(owner_id, commission_rate, custom_commission_rate, custom_rate_expires_at, name)")
           .eq("id", item.id)
           .single();
 
@@ -285,11 +285,19 @@ serve(async (req) => {
           const storesArray = product.stores as unknown as { 
             owner_id: string; 
             commission_rate?: number; 
+            custom_commission_rate?: number;
+            custom_rate_expires_at?: string;
             name?: string; 
           }[] | null;
           const sellerId = storesArray?.[0]?.owner_id;
-          const commissionRate = storesArray?.[0]?.commission_rate ?? 15; // Default 15% commission
-          const storeName = storesArray?.[0]?.name;
+          const storeData = storesArray?.[0];
+          // Use custom commission rate if set and not expired, otherwise fall back to default
+          const hasActiveCustomRate = storeData?.custom_commission_rate != null && 
+            (!storeData?.custom_rate_expires_at || new Date(storeData.custom_rate_expires_at) > new Date());
+          const commissionRate = hasActiveCustomRate 
+            ? storeData!.custom_commission_rate! 
+            : (storeData?.commission_rate ?? 15);
+          const storeName = storeData?.name;
 
           // Fetch Discord credentials from separate secure table
           const { data: credentials } = await supabaseClient
