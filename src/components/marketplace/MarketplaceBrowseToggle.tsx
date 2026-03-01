@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Store, Package, LayoutGrid } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -14,9 +15,9 @@ const tabs: { mode: BrowseMode; label: string; icon: typeof Store }[] = [
   { mode: 'products', label: 'Products', icon: Package },
 ];
 
-export function MarketplaceBrowseToggle({ mode, onChange }: MarketplaceBrowseToggleProps) {
+export const MarketplaceBrowseToggle = forwardRef<HTMLDivElement, MarketplaceBrowseToggleProps>(function MarketplaceBrowseToggle({ mode, onChange }, ref) {
   return (
-    <div className="flex items-center justify-center border-b border-border">
+    <div ref={ref} className="flex items-center justify-center border-b border-border">
       {tabs.map(({ mode: m, label, icon: Icon }) => (
         <button
           key={m}
@@ -34,4 +35,4 @@ export function MarketplaceBrowseToggle({ mode, onChange }: MarketplaceBrowseTog
       ))}
     </div>
   );
-}
+});
