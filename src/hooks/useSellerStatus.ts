@@ -13,7 +13,7 @@ const SAFE_STORE_COLUMNS = `
   hero_title, hero_subtitle, hero_cta_text, hero_cta_link, custom_css,
   font_heading, font_body, announcement_text, announcement_active,
   featured_product_ids, layout_style, show_reviews, show_social_proof,
-  follower_count, about_content, is_trusted, payout_method
+  follower_count, about_content, is_trusted, payout_method, pwyw_enabled
 `;
 
 export interface Store {
