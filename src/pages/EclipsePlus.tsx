@@ -11,6 +11,7 @@ import { useSubscription, ECLIPSE_PLUS_DISCOUNT } from '@/hooks/useSubscription'
 import { cn } from '@/lib/utils';
 import { differenceInDays, differenceInHours, format } from 'date-fns';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 const faqs = [
   {
@@ -39,6 +40,11 @@ const benefits = [
 
 export default function EclipsePlus() {
   usePageTracking({ pagePath: '/eclipse-plus' });
+  usePageMeta({
+    title: 'Eclipse+ Membership',
+    description: 'Join Eclipse+ for up to 35% off all products, free monthly claims, store credit bonuses and exclusive member perks.',
+    canonicalPath: '/eclipse-plus',
+  });
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

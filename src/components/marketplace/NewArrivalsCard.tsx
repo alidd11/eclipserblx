@@ -86,6 +86,8 @@ export function NewArrivalsCard() {
                   <img 
                     src={product.images[0]} 
                     alt={product.name}
+                    loading="lazy"
+                    decoding="async"
                     className="h-12 w-12 rounded-lg object-cover bg-muted"
                   />
                 ) : (
