@@ -69,6 +69,8 @@ export interface Store {
   show_social_proof?: boolean;
   // Payout method (non-sensitive field)
   payout_method?: string;
+  // Pay What You Want
+  pwyw_enabled?: boolean;
   // Followers
   follower_count?: number;
   about_content?: string;

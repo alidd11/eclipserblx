@@ -662,7 +662,7 @@ export default function SellerProductEditor() {
 
               {/* Pay What You Want */}
               <div className="space-y-4 pt-4 border-t">
-                {!(store as any)?.pwyw_enabled ? (
+                {!store?.pwyw_enabled ? (
                   <div className="flex items-center gap-3 p-3 rounded-lg border border-muted bg-muted/30">
                     <Sparkles className="h-4 w-4 text-muted-foreground shrink-0" />
                     <p className="text-sm text-muted-foreground">
