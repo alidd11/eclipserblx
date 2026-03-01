@@ -1,135 +1,37 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useRef } from 'react';
+import { useSystemStatus, SystemStatus } from '@/hooks/useSystemStatus';
 
 export type ConnectionStatus = 'connected' | 'degraded' | 'offline';
 
-interface NetworkQualityState {
-  status: ConnectionStatus;
-  lastChecked: Date | null;
-  consecutiveFailures: number;
+function mapStatus(s: SystemStatus): ConnectionStatus {
+  if (s === 'online') return 'connected';
+  if (s === 'degraded') return 'degraded';
+  if (s === 'offline') return 'offline';
+  return navigator.onLine ? 'connected' : 'offline';
 }
 
-const PING_INTERVAL = 30000; // 30 seconds
-const DEGRADED_THRESHOLD = 2; // failures before marking as degraded
-const OFFLINE_THRESHOLD = 4; // failures before marking as offline
-
+/**
+ * Network quality hook that delegates to the shared useSystemStatus singleton
+ * so only ONE polling loop runs across the entire app.
+ */
 export function useNetworkQuality() {
-  const [state, setState] = useState<NetworkQualityState>({
-    status: navigator.onLine ? 'connected' : 'offline',
-    lastChecked: null,
-    consecutiveFailures: 0,
-  });
-  
-  const previousStatus = useRef<ConnectionStatus>(state.status);
-  const pingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const systemStatus = useSystemStatus();
+  const status = mapStatus(systemStatus);
+  const previousStatus = useRef<ConnectionStatus>(status);
 
-  const checkConnection = useCallback(async (): Promise<boolean> => {
-    try {
-      // Simple lightweight query to check connectivity
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const { error } = await supabase
-        .from('categories')
-        .select('id')
-        .limit(1)
-        .abortSignal(controller.signal);
-      
-      clearTimeout(timeoutId);
-      return !error;
-    } catch {
-      return false;
-    }
-  }, []);
-
-  const updateStatus = useCallback((isConnected: boolean) => {
-    setState(prev => {
-      const newFailures = isConnected ? 0 : prev.consecutiveFailures + 1;
-      
-      let newStatus: ConnectionStatus;
-      if (!navigator.onLine) {
-        newStatus = 'offline';
-      } else if (isConnected) {
-        newStatus = 'connected';
-      } else if (newFailures >= OFFLINE_THRESHOLD) {
-        newStatus = 'offline';
-      } else if (newFailures >= DEGRADED_THRESHOLD) {
-        newStatus = 'degraded';
-      } else {
-        newStatus = prev.status;
-      }
-      
-      return {
-        status: newStatus,
-        lastChecked: new Date(),
-        consecutiveFailures: newFailures,
-      };
-    });
-  }, []);
-
-  const runPing = useCallback(async () => {
-    if (!navigator.onLine) {
-      updateStatus(false);
-      return;
-    }
-    
-    const isConnected = await checkConnection();
-    updateStatus(isConnected);
-  }, [checkConnection, updateStatus]);
-
-  // Force an immediate check
-  const forceCheck = useCallback(async () => {
-    await runPing();
-  }, [runPing]);
+  const justRecovered = previousStatus.current !== 'connected' && status === 'connected';
 
   useEffect(() => {
-    // Initial check
-    runPing();
-    
-    // Set up periodic pings
-    const intervalId = setInterval(runPing, PING_INTERVAL);
-    
-    // Listen for online/offline events
-    const handleOnline = () => {
-      // When coming back online, do an immediate check
-      runPing();
-    };
-    
-    const handleOffline = () => {
-      setState(prev => ({
-        ...prev,
-        status: 'offline',
-        consecutiveFailures: OFFLINE_THRESHOLD,
-      }));
-    };
-    
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    
-    return () => {
-      clearInterval(intervalId);
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-      if (pingTimeoutRef.current) {
-        clearTimeout(pingTimeoutRef.current);
-      }
-    };
-  }, [runPing]);
-
-  // Track status changes for "just recovered" detection
-  const justRecovered = previousStatus.current !== 'connected' && state.status === 'connected';
-  
-  useEffect(() => {
-    previousStatus.current = state.status;
-  }, [state.status]);
+    previousStatus.current = status;
+  }, [status]);
 
   return {
-    status: state.status,
-    isConnected: state.status === 'connected',
-    isDegraded: state.status === 'degraded',
-    isOffline: state.status === 'offline',
+    status,
+    isConnected: status === 'connected',
+    isDegraded: status === 'degraded',
+    isOffline: status === 'offline',
     justRecovered,
-    lastChecked: state.lastChecked,
-    forceCheck,
+    lastChecked: new Date(),
+    forceCheck: async () => {}, // No-op — shared polling handles this
   };
 }
