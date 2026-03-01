@@ -1,4 +1,4 @@
-import { memo, useState, useEffect } from 'react';
+import { memo, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { ShoppingCart, User, Menu, X, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Sparkles, ChevronDown, LayoutGrid } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -10,6 +10,7 @@ import { SITE_NAME } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { EclipseLogo } from '@/components/ui/EclipseLogo';
 import { supabase } from '@/integrations/supabase/client';
+import { useSystemStatus } from '@/hooks/useSystemStatus';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
@@ -33,7 +34,7 @@ const legalLinkDefs = [
   { href: '/refunds', labelKey: 'nav.refundPolicy', icon: RotateCcw },
 ];
 
-type SystemStatus = 'online' | 'degraded' | 'offline' | 'checking';
+
 
 
 interface HeaderProps {
@@ -49,7 +50,7 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
   const { discordUrl } = useDiscordUrl();
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking');
+  const systemStatus = useSystemStatus();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
@@ -79,30 +80,6 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
     setMobileMenuOpen(false);
   };
 
-  // Check system status on mount and periodically
-  useEffect(() => {
-    const checkStatus = async () => {
-      try {
-        const start = Date.now();
-        const { error } = await supabase.from('categories').select('id').limit(1);
-        const latency = Date.now() - start;
-        
-        if (error) {
-          setSystemStatus('offline');
-        } else if (latency > 2000) {
-          setSystemStatus('degraded');
-        } else {
-          setSystemStatus('online');
-        }
-      } catch {
-        setSystemStatus('offline');
-      }
-    };
-
-    checkStatus();
-    const interval = setInterval(checkStatus, 60000); // Check every minute
-    return () => clearInterval(interval);
-  }, []);
 
   const statusConfig = {
     online: { label: t('status.online'), color: 'text-green-500', bg: 'bg-green-500' },

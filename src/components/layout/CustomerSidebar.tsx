@@ -20,6 +20,7 @@ import { safeStorage } from '@/lib/safeStorage';
 import { hapticTap } from '@/lib/haptics';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { supabase } from '@/integrations/supabase/client';
+import { useSystemStatus } from '@/hooks/useSystemStatus';
 
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -84,7 +85,7 @@ const ICON_SIZE_SMALL = "h-3.5 w-3.5";
 const ICON_STROKE_ACTIVE = "stroke-[2.25]";
 const ICON_STROKE_DEFAULT = "stroke-[1.75]";
 
-type SystemStatus = 'online' | 'degraded' | 'offline' | 'checking';
+
 
 interface CustomerSidebarProps {
   collapsed: boolean;
@@ -106,7 +107,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const { t } = useTranslation();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [systemStatus, setSystemStatus] = useState<SystemStatus>('checking');
+  const systemStatus = useSystemStatus();
   // Fetch parent categories for Resources section
   const { data: parentCategories } = useQuery({
     queryKey: ['sidebar-categories'],
@@ -294,30 +295,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     });
   }, [location.pathname]);
 
-  // Check system status
-  useEffect(() => {
-    const checkStatus = async () => {
-      try {
-        const start = Date.now();
-        const { error } = await supabase.from('categories').select('id').limit(1);
-        const latency = Date.now() - start;
-        
-        if (error) {
-          setSystemStatus('offline');
-        } else if (latency > 2000) {
-          setSystemStatus('degraded');
-        } else {
-          setSystemStatus('online');
-        }
-      } catch {
-        setSystemStatus('offline');
-      }
-    };
-
-    checkStatus();
-    const interval = setInterval(checkStatus, 60000);
-    return () => clearInterval(interval);
-  }, []);
 
   const statusConfig = {
     online: { color: 'text-green-500', bg: 'bg-green-500' },
