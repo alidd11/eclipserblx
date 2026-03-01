@@ -455,7 +455,7 @@ export default function MyPurchases() {
                           
                           <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                             {item.product?.images?.[0] ? (
-                              <img src={item.product.images[0]} alt={item.product_name} className="w-full h-full object-cover" />
+                              <img src={item.product.images[0]} alt={item.product_name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                             ) : isBot ? (
                               <div className="w-full h-full flex items-center justify-center bg-blue-500/10">
                                 <Bot className="h-6 w-6 text-blue-500" />

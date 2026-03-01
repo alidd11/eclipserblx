@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, forwardRef } from 'react';
+import { useEffect, useState, useMemo, memo, forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Store, ChevronRight, ShieldCheck, Award, Users, Search, Package, FlaskConical, Crown, Car, Code, Bot, Layout, Box, Palette, Wrench, Gamepad2, Map, Shirt, Plane, ArrowRight } from 'lucide-react';
@@ -138,7 +138,7 @@ const StoreCardSkeleton = forwardRef<HTMLDivElement>(function StoreCardSkeleton(
   );
 });
 
-function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; average_rating?: number | null; categories?: { name: string } | null; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
+const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; average_rating?: number | null; categories?: { name: string } | null; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
 
@@ -152,7 +152,7 @@ function MarketplaceProductCard({ product }: { product: { id: string; name: stri
       <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200">
         <div className="aspect-[4/3] relative overflow-hidden bg-muted">
           {product.images?.[0] ? (
-            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
+            <img src={product.images[0]} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-muted">
               <span className="text-muted-foreground text-sm">No image</span>
@@ -162,7 +162,7 @@ function MarketplaceProductCard({ product }: { product: { id: string; name: stri
         {/* Store strip */}
         <div className="h-7 flex items-center gap-1.5 px-2.5 bg-muted/60">
           {product.stores?.logo_url && (
-            <img src={product.stores.logo_url} alt="" className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0" />
+            <img src={product.stores.logo_url} alt="" loading="lazy" decoding="async" className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0" />
           )}
           <span className="text-[10px] text-muted-foreground font-medium truncate">{product.stores?.name}</span>
           {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
@@ -204,7 +204,7 @@ function MarketplaceProductCard({ product }: { product: { id: string; name: stri
       </div>
     </Link>
   );
-}
+});
 
 function SpotlightPrice({ product }: { product: { price: number; category_id: string | null; is_resellable: boolean; stores: { eclipse_plus_discount_enabled: boolean } | null } }) {
   const { formatPrice } = useCurrency();
@@ -370,7 +370,7 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
                           <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
                             <div className="aspect-[16/9] relative overflow-hidden bg-muted">
                               {spotlight.images?.[0] ? (
-                                <img src={spotlight.images[0]} alt={spotlight.name} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
+                                <img src={spotlight.images[0]} alt={spotlight.name} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center bg-muted">
                                   <Package className="h-8 w-8 text-muted-foreground/30" />
@@ -385,7 +385,7 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
                             {/* Store strip */}
                             <div className="h-7 flex items-center gap-1.5 px-2.5 bg-muted/60">
                               {spotlight.stores?.logo_url && (
-                                <img src={spotlight.stores.logo_url} alt="" className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0" />
+                                <img src={spotlight.stores.logo_url} alt="" loading="lazy" decoding="async" className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0" />
                               )}
                               <span className="text-[10px] text-muted-foreground font-medium truncate">{spotlight.stores?.name}</span>
                               {spotlight.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
