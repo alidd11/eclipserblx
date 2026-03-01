@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import DOMPurify from 'dompurify';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { IPStaffLayout } from '@/components/ip-staff/IPStaffLayout';
@@ -352,7 +353,7 @@ export default function IPStaffEmails() {
                             </div>
                             <div 
                               className="text-sm prose prose-sm max-w-none dark:prose-invert"
-                              dangerouslySetInnerHTML={{ __html: msg.body_html }}
+                              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.body_html) }}
                             />
                           </div>
                         ))}

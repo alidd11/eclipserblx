@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import DOMPurify from 'dompurify';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -227,7 +228,7 @@ export default function IPShieldCorrespondence() {
                             </div>
                             <div 
                               className="text-sm prose prose-sm max-w-none dark:prose-invert"
-                              dangerouslySetInnerHTML={{ __html: msg.body_html }}
+                              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.body_html) }}
                             />
                           </div>
                         ))}
