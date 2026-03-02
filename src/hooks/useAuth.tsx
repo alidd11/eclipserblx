@@ -32,21 +32,28 @@ export const AuthProvider = forwardRef<HTMLDivElement, { children: ReactNode }>(
         setInitialized(true);
 
         // Log staff login/logout activity (deferred to avoid deadlock)
+        // Only on actual sign-in, not token refreshes or session restores
         if (session?.user && event === 'SIGNED_IN') {
           setTimeout(async () => {
-            // Check for staff roles
-            const { data: roles } = await supabase
-              .from('user_roles')
-              .select('role, custom_roles!inner(is_status_role)')
-              .eq('user_id', session.user.id)
-              .eq('custom_roles.is_status_role', false);
+            try {
+              // Check for staff roles using a simple query
+              const { data: roles } = await supabase
+                .from('user_roles')
+                .select('role, custom_roles!inner(is_status_role)')
+                .eq('user_id', session.user.id)
+                .eq('custom_roles.is_status_role', false);
 
-            if (roles && roles.length > 0) {
-              await supabase.from('staff_activity').insert({
-                user_id: session.user.id,
-                activity_type: 'login',
-                details: { roles: roles.map(r => r.role) },
-              });
+              // Double-check we actually have non-status roles before inserting
+              if (roles && roles.length > 0) {
+                await supabase.from('staff_activity').insert({
+                  user_id: session.user.id,
+                  activity_type: 'login',
+                  details: { roles: roles.map(r => r.role) },
+                }).throwOnError();
+              }
+            } catch (e) {
+              // Silent fail - staff activity logging is best-effort
+              console.debug('Staff activity log skipped:', e);
             }
 
             // Attempt to claim any active signup promotions (silent - don't block login)
@@ -57,7 +64,6 @@ export const AuthProvider = forwardRef<HTMLDivElement, { children: ReactNode }>(
               }
             } catch (e) {
               // Silent fail - promotions are optional
-              console.log('No signup promotions available');
             }
           }, 0);
         }
@@ -112,20 +118,24 @@ export const AuthProvider = forwardRef<HTMLDivElement, { children: ReactNode }>(
   };
 
   const signOut = async () => {
-    // Log staff logout before signing out
+    // Log staff logout before signing out (best-effort)
     if (user) {
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('role, custom_roles!inner(is_status_role)')
-        .eq('user_id', user.id)
-        .eq('custom_roles.is_status_role', false);
+      try {
+        const { data: roles } = await supabase
+          .from('user_roles')
+          .select('role, custom_roles!inner(is_status_role)')
+          .eq('user_id', user.id)
+          .eq('custom_roles.is_status_role', false);
 
-      if (roles && roles.length > 0) {
-        await supabase.from('staff_activity').insert({
-          user_id: user.id,
-          activity_type: 'logout',
-          details: { roles: roles.map(r => r.role) },
-        });
+        if (roles && roles.length > 0) {
+          await supabase.from('staff_activity').insert({
+            user_id: user.id,
+            activity_type: 'logout',
+            details: { roles: roles.map(r => r.role) },
+          }).throwOnError();
+        }
+      } catch (e) {
+        console.debug('Staff activity logout log skipped:', e);
       }
     }
     await supabase.auth.signOut();

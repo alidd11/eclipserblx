@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   DropdownMenu,
@@ -14,7 +15,7 @@ interface LanguageSwitcherProps {
   compact?: boolean;
 }
 
-export function LanguageSwitcher({ compact = false }: LanguageSwitcherProps) {
+export const LanguageSwitcher = forwardRef<HTMLDivElement, LanguageSwitcherProps>(function LanguageSwitcher({ compact = false }, _ref) {
   const { i18n } = useTranslation();
 
   const currentLang = supportedLanguages.find((l) => l.code === i18n.language) ?? supportedLanguages[0];
@@ -51,4 +52,4 @@ export function LanguageSwitcher({ compact = false }: LanguageSwitcherProps) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+});
