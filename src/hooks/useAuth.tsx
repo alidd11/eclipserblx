@@ -37,8 +37,9 @@ export const AuthProvider = forwardRef<HTMLDivElement, { children: ReactNode }>(
             // Check for staff roles
             const { data: roles } = await supabase
               .from('user_roles')
-              .select('role')
-              .eq('user_id', session.user.id);
+              .select('role, custom_roles!inner(is_status_role)')
+              .eq('user_id', session.user.id)
+              .eq('custom_roles.is_status_role', false);
 
             if (roles && roles.length > 0) {
               await supabase.from('staff_activity').insert({
@@ -115,8 +116,9 @@ export const AuthProvider = forwardRef<HTMLDivElement, { children: ReactNode }>(
     if (user) {
       const { data: roles } = await supabase
         .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id);
+        .select('role, custom_roles!inner(is_status_role)')
+        .eq('user_id', user.id)
+        .eq('custom_roles.is_status_role', false);
 
       if (roles && roles.length > 0) {
         await supabase.from('staff_activity').insert({
