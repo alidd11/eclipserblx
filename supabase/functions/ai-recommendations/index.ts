@@ -1,18 +1,42 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req) => {
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Rate limit
+  const clientIp = getClientIp(req);
+  const rl = checkRateLimit({ ...RATE_LIMITS.API, identifier: clientIp, action: 'ai-recommendations' });
+  if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
   try {
     const { userId, productId, limit = 6 } = await req.json();
+
+    // Validate inputs
+    if (userId && (!UUID_REGEX.test(userId))) {
+      return new Response(
+        JSON.stringify({ error: "Invalid userId" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (productId && (!UUID_REGEX.test(productId))) {
+      return new Response(
+        JSON.stringify({ error: "Invalid productId" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const safeLimit = Math.min(Math.max(1, Number(limit) || 6), 20);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -23,16 +47,12 @@ serve(async (req) => {
 
     // Strategy 1: If user is logged in, use purchase history
     if (userId) {
-      // Get user's purchased categories
       const { data: purchases } = await supabase
         .from("order_items")
-        .select(`
-          products (category_id)
-        `)
+        .select(`products (category_id)`)
         .eq("orders.user_id", userId)
         .limit(20);
 
-      // Get user's viewed products
       const { data: views } = await supabase
         .from("product_views")
         .select("product_id")
@@ -42,7 +62,6 @@ serve(async (req) => {
 
       const viewedIds = views?.map((v) => v.product_id) || [];
 
-      // Get followed stores' products
       const { data: follows } = await supabase
         .from("store_follows")
         .select("store_id")
@@ -51,7 +70,6 @@ serve(async (req) => {
       const followedStoreIds = follows?.map((f) => f.store_id) || [];
 
       if (followedStoreIds.length > 0) {
-        // Recommend from followed stores
         const { data: followedProducts } = await supabase
           .from("products")
           .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_trusted, is_active)")
@@ -59,18 +77,16 @@ serve(async (req) => {
           .eq("is_active", true)
           .eq("moderation_status", "approved")
           .order("created_at", { ascending: false })
-          .limit(limit * 2);
+          .limit(safeLimit * 2);
 
         if (followedProducts && followedProducts.length > 0) {
-          // Only include products with active stores
           const filtered = followedProducts.filter((p: any) => p.stores?.is_active === true);
-          recommendations = filtered.slice(0, limit);
+          recommendations = filtered.slice(0, safeLimit);
           strategy = "followed_stores";
         }
       }
 
-      // If not enough from followed stores, add from viewed categories
-      if (recommendations.length < limit && viewedIds.length > 0) {
+      if (recommendations.length < safeLimit && viewedIds.length > 0) {
         const { data: viewedProducts } = await supabase
           .from("products")
           .select("id, name, slug, price, images, category_id, categories(name)")
@@ -88,12 +104,11 @@ serve(async (req) => {
             .eq("is_active", true)
             .eq("moderation_status", "approved")
             .order("download_count", { ascending: false })
-            .limit((limit - recommendations.length) * 2);
+            .limit((safeLimit - recommendations.length) * 2);
 
           if (similarProducts) {
-            // Only include products with active stores
             const filtered = similarProducts.filter((p: any) => p.stores?.is_active === true);
-            recommendations = [...recommendations, ...filtered.slice(0, limit - recommendations.length)];
+            recommendations = [...recommendations, ...filtered.slice(0, safeLimit - recommendations.length)];
             strategy = recommendations.length > followedStoreIds.length ? "similar_categories" : strategy;
           }
         }
@@ -101,7 +116,7 @@ serve(async (req) => {
     }
 
     // Strategy 2: If viewing a specific product, find similar
-    if (productId && recommendations.length < limit) {
+    if (productId && recommendations.length < safeLimit) {
       const { data: product } = await supabase
         .from("products")
         .select("category_id, store_id, price")
@@ -117,19 +132,18 @@ serve(async (req) => {
           .eq("is_active", true)
           .eq("moderation_status", "approved")
           .order("download_count", { ascending: false })
-          .limit((limit - recommendations.length) * 2);
+          .limit((safeLimit - recommendations.length) * 2);
 
         if (similar) {
-          // Only include products with active stores
           const filtered = similar.filter((p: any) => p.stores?.is_active === true);
-          recommendations = [...recommendations, ...filtered.slice(0, limit - recommendations.length)];
+          recommendations = [...recommendations, ...filtered.slice(0, safeLimit - recommendations.length)];
           strategy = "similar_products";
         }
       }
     }
 
     // Strategy 3: Fall back to popular products
-    if (recommendations.length < limit) {
+    if (recommendations.length < safeLimit) {
       const existingIds = recommendations.map((r) => r.id);
       
       const { data: popular } = await supabase
@@ -138,13 +152,12 @@ serve(async (req) => {
         .eq("is_active", true)
         .eq("moderation_status", "approved")
         .order("download_count", { ascending: false })
-        .limit((limit - recommendations.length) * 2);
+        .limit((safeLimit - recommendations.length) * 2);
 
       if (popular) {
-        // Only include products with active stores
         const filtered = popular.filter((p: any) => p.stores?.is_active === true);
         const withoutDupes = filtered.filter((p: any) => !existingIds.includes(p.id));
-        recommendations = [...recommendations, ...withoutDupes.slice(0, limit - recommendations.length)];
+        recommendations = [...recommendations, ...withoutDupes.slice(0, safeLimit - recommendations.length)];
       }
     }
 
@@ -154,7 +167,7 @@ serve(async (req) => {
       if (seen.has(r.id)) return false;
       seen.add(r.id);
       return true;
-    }).slice(0, limit);
+    }).slice(0, safeLimit);
 
     return new Response(
       JSON.stringify({
@@ -167,7 +180,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("Recommendations error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Failed to get recommendations" }),
+      JSON.stringify({ error: "Failed to get recommendations" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

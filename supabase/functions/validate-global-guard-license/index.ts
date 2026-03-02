@@ -1,28 +1,30 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-api-key",
 };
 
-// Define which features are available for each tier
+const DISCORD_GUILD_ID_REGEX = /^\d{17,20}$/;
+
 const FREE_FEATURES = [
-  "ban_check",      // Can check if user is banned
-  "server_info",    // Basic server info
+  "ban_check",
+  "server_info",
 ];
 
 const PREMIUM_FEATURES = [
   "ban_check",
   "server_info",
-  "ban_add",        // Add bans
-  "ban_remove",     // Remove bans
-  "ban_sync",       // Sync bans across servers
-  "ban_import",     // Import ban lists
-  "ban_export",     // Export ban lists
-  "evidence",       // Attach evidence to bans
-  "appeal_system",  // Ban appeal handling
-  "audit_log",      // Full audit logging
-  "priority_sync",  // Priority ban synchronization
+  "ban_add",
+  "ban_remove",
+  "ban_sync",
+  "ban_import",
+  "ban_export",
+  "evidence",
+  "appeal_system",
+  "audit_log",
+  "priority_sync",
 ];
 
 Deno.serve(async (req) => {
@@ -30,35 +32,36 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // Rate limit
+  const clientIp = getClientIp(req);
+  const rl = checkRateLimit({ ...RATE_LIMITS.API, identifier: clientIp, action: 'validate-global-guard-license' });
+  if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
   try {
     const { guild_id } = await req.json();
 
-    if (!guild_id) {
+    if (!guild_id || !DISCORD_GUILD_ID_REGEX.test(String(guild_id))) {
       return new Response(
-        JSON.stringify({ valid: false, error: "Missing guild_id" }),
+        JSON.stringify({ valid: false, error: "Invalid guild_id format" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`[validate-global-guard-license] Checking license for guild: ${guild_id}`);
+    const sanitizedGuildId = String(guild_id);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Check for active license
     const { data: license, error } = await supabase
       .from("bot_installation_codes")
       .select("id, guild_id, license_status, discord_guild_name")
-      .eq("guild_id", guild_id)
+      .eq("guild_id", sanitizedGuildId)
       .eq("license_status", "active")
       .single();
 
     if (error || !license) {
-      console.log(`[validate-global-guard-license] No active license for guild ${guild_id} - returning free tier`);
-      
-      // Return free tier access instead of rejecting
       return new Response(
         JSON.stringify({ 
           valid: true, 
@@ -72,7 +75,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`[validate-global-guard-license] Valid license found for ${license.discord_guild_name}`);
     return new Response(
       JSON.stringify({ 
         valid: true,

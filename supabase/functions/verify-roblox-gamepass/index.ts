@@ -1,43 +1,42 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req) => {
+const ROBLOX_ID_REGEX = /^\d{1,20}$/;
+
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const clientIp = getClientIp(req);
+  const rl = checkRateLimit({ ...RATE_LIMITS.API, identifier: clientIp, action: 'verify-roblox-gamepass' });
+  if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
   try {
     const { roblox_user_id, gamepass_id } = await req.json();
 
-    if (!roblox_user_id || !gamepass_id) {
+    const userId = String(roblox_user_id ?? '');
+    const passId = String(gamepass_id ?? '');
+
+    if (!ROBLOX_ID_REGEX.test(userId) || !ROBLOX_ID_REGEX.test(passId)) {
       return new Response(
-        JSON.stringify({ error: "Missing roblox_user_id or gamepass_id" }),
+        JSON.stringify({ error: "Invalid roblox_user_id or gamepass_id" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Check if user owns a specific game pass
     const response = await fetch(
-      `https://inventory.roblox.com/v1/users/${roblox_user_id}/items/GamePass/${gamepass_id}`,
-      {
-        headers: {
-          "Accept": "application/json",
-        },
-      }
+      `https://inventory.roblox.com/v1/users/${userId}/items/GamePass/${passId}`,
+      { headers: { "Accept": "application/json" } }
     );
 
     if (!response.ok) {
       return new Response(
-        JSON.stringify({ 
-          ownsGamepass: false, 
-          userId: roblox_user_id,
-          gamepassId: gamepass_id,
-          error: "Could not verify game pass ownership"
-        }),
+        JSON.stringify({ ownsGamepass: false, error: "Could not verify game pass ownership" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -46,11 +45,7 @@ serve(async (req) => {
     const ownsGamepass = data.data && data.data.length > 0;
 
     return new Response(
-      JSON.stringify({
-        ownsGamepass,
-        userId: roblox_user_id,
-        gamepassId: gamepass_id,
-      }),
+      JSON.stringify({ ownsGamepass }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
