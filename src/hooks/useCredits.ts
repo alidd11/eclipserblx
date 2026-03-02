@@ -115,7 +115,7 @@ export function useCredits() {
       return { success: false, error: 'You must be logged in to use credits' };
     }
 
-    const totalPrice = items.reduce((sum, item) => sum + item.price, 0);
+    const totalPrice = items.reduce((sum, item) => sum + (item.custom_price ?? item.price), 0);
     if (state.balance < totalPrice) {
       return { success: false, error: `Insufficient credit balance. Required: £${totalPrice.toFixed(2)}, Available: £${state.balance.toFixed(2)}` };
     }
