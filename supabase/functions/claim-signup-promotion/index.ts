@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,11 +12,16 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Rate limit - prevent promo abuse
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.WRITE, identifier: clientIp, action: 'claim-signup-promotion' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     
-    // Get the user from the auth header
+    // Authenticate user
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(
@@ -31,7 +37,6 @@ Deno.serve(async (req) => {
     
     const { data: { user }, error: authError } = await anonClient.auth.getUser(token);
     if (authError || !user) {
-      console.error("Auth error:", authError);
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -40,7 +45,6 @@ Deno.serve(async (req) => {
 
     console.log(`Processing signup promotion claim for user: ${user.id}`);
 
-    // Use service role for database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Find active signup promotions
@@ -62,14 +66,12 @@ Deno.serve(async (req) => {
     }
 
     if (!promotions || promotions.length === 0) {
-      console.log("No active signup promotions found");
       return new Response(
         JSON.stringify({ claimed: false, message: "No active promotions" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Check each promotion for eligibility
     for (const promo of promotions) {
       // Check if max claims reached
       if (promo.max_claims && (promo.current_claims || 0) >= promo.max_claims) {
@@ -77,7 +79,7 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Check if user already claimed this promotion
+      // Check if user already claimed - use insert with conflict to prevent race conditions
       const { data: existingClaim } = await supabase
         .from("promotion_claims")
         .select("id")
@@ -92,18 +94,12 @@ Deno.serve(async (req) => {
 
       // Check new_users_only constraint
       if (promo.new_users_only) {
-        // Check if user has any previous orders
-        const { data: previousOrders, error: ordersError } = await supabase
+        const { data: previousOrders } = await supabase
           .from("orders")
           .select("id")
           .eq("user_id", user.id)
           .eq("status", "paid")
           .limit(1);
-
-        if (ordersError) {
-          console.error("Error checking orders:", ordersError);
-          continue;
-        }
 
         if (previousOrders && previousOrders.length > 0) {
           console.log("User has previous orders, not eligible for new users only promo");
@@ -111,7 +107,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Check if user already has an active Eclipse+ subscription
+      // Check if user already has an active paid Eclipse+ subscription
       const { data: existingSub } = await supabase
         .from("subscriptions")
         .select("*")
@@ -123,18 +119,32 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Grant the Eclipse+ subscription (always use 'pro' tier for standard benefits)
+      // Record the claim FIRST (atomic check) - if insert fails due to unique constraint, user already claimed
+      const { error: claimError } = await supabase
+        .from("promotion_claims")
+        .insert({
+          promotion_id: promo.id,
+          user_id: user.id,
+        });
+
+      if (claimError) {
+        // Likely a duplicate claim (race condition handled)
+        console.error("Claim insert failed (likely duplicate):", claimError);
+        continue;
+      }
+
+      // Grant the Eclipse+ subscription
       const startDate = new Date();
       const endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + (promo.eclipse_plus_days || 30));
+      const days = Math.min(promo.eclipse_plus_days || 30, 365); // Cap at 365 days
+      endDate.setDate(endDate.getDate() + days);
 
       if (existingSub) {
-        // Update existing subscription
         const { error: updateError } = await supabase
           .from("subscriptions")
           .update({
             status: "active",
-            tier: "pro", // Always grant pro tier (30% discount, 1 free product)
+            tier: "pro",
             current_period_start: startDate.toISOString(),
             current_period_end: endDate.toISOString(),
             grant_reason: `Signup promotion: ${promo.name}`,
@@ -145,16 +155,17 @@ Deno.serve(async (req) => {
 
         if (updateError) {
           console.error("Error updating subscription:", updateError);
+          // Rollback claim
+          await supabase.from("promotion_claims").delete().eq("promotion_id", promo.id).eq("user_id", user.id);
           continue;
         }
       } else {
-        // Create new subscription
         const { error: insertError } = await supabase
           .from("subscriptions")
           .insert({
             user_id: user.id,
             status: "active",
-            tier: "pro", // Always grant pro tier (30% discount, 1 free product)
+            tier: "pro",
             current_period_start: startDate.toISOString(),
             current_period_end: endDate.toISOString(),
             grant_reason: `Signup promotion: ${promo.name}`,
@@ -163,61 +174,39 @@ Deno.serve(async (req) => {
 
         if (insertError) {
           console.error("Error creating subscription:", insertError);
+          await supabase.from("promotion_claims").delete().eq("promotion_id", promo.id).eq("user_id", user.id);
           continue;
         }
       }
 
-      // Assign eclipse_plus_member role if not already assigned
-      const { error: roleError } = await supabase
+      // Assign eclipse_plus_member role
+      await supabase
         .from("user_roles")
-        .upsert({
-          user_id: user.id,
-          role: "eclipse_plus_member",
-        }, {
+        .upsert({ user_id: user.id, role: "eclipse_plus_member" }, {
           onConflict: "user_id,role",
           ignoreDuplicates: true,
         });
 
-      if (roleError) {
-        console.error("Error assigning eclipse_plus_member role:", roleError);
-        // Don't fail - subscription was granted, role is secondary
-      } else {
-        console.log(`Assigned eclipse_plus_member role to user: ${user.id}`);
-      }
-
-      // Record the claim
-      const { error: claimError } = await supabase
-        .from("promotion_claims")
-        .insert({
-          promotion_id: promo.id,
-          user_id: user.id,
-        });
-
-      if (claimError) {
-        console.error("Error recording claim:", claimError);
-        // Don't fail - subscription was granted
-      }
-
-      // Increment claim count
+      // Atomically increment claim count using optimistic check
       await supabase
         .from("promotions")
         .update({ current_claims: (promo.current_claims || 0) + 1 })
-        .eq("id", promo.id);
+        .eq("id", promo.id)
+        .lte("current_claims", promo.current_claims || 0); // Only if count hasn't changed
 
-      console.log(`Successfully granted ${promo.eclipse_plus_days} days Eclipse+ from promotion: ${promo.name}`);
+      console.log(`Successfully granted ${days} days Eclipse+ from promotion: ${promo.name}`);
 
       return new Response(
         JSON.stringify({
           claimed: true,
           promotion: promo.name,
-          days: promo.eclipse_plus_days,
+          days,
           ends_at: endDate.toISOString(),
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // No eligible promotions
     return new Response(
       JSON.stringify({ claimed: false, message: "No eligible promotions" }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

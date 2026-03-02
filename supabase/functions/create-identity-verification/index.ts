@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,6 +19,11 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limit - identity verification is expensive
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.EXPENSIVE, identifier: clientIp, action: 'create-identity-verification' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     logStep("Function started");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
@@ -57,7 +63,12 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
-    const origin = req.headers.get("origin") || "https://eclipserblx.com";
+    // Validate origin
+    const rawOrigin = req.headers.get("origin");
+    const allowedOrigins = ["https://eclipserblx.com", "https://www.eclipserblx.com"];
+    const origin = rawOrigin && allowedOrigins.some(o => rawOrigin.startsWith(o))
+      ? rawOrigin
+      : "https://eclipserblx.com";
 
     // Create Stripe Identity VerificationSession with document + selfie
     const session = await stripe.identity.verificationSessions.create({

@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,21 +24,49 @@ interface DiscordTokenResponse {
   scope: string;
 }
 
+// Validate redirect_uri to prevent open redirect / SSRF
+const ALLOWED_REDIRECT_ORIGINS = [
+  'https://eclipserblx.com',
+  'https://www.eclipserblx.com',
+  'http://localhost:5173',
+  'http://localhost:8080',
+];
+
+function isValidRedirectUri(uri: string | undefined | null): boolean {
+  if (!uri || typeof uri !== 'string') return false;
+  try {
+    const parsed = new URL(uri);
+    return ALLOWED_REDIRECT_ORIGINS.some(o => uri.startsWith(o)) ||
+      parsed.hostname.endsWith('.lovable.app');
+  } catch {
+    return false;
+  }
+}
+
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
+    // Rate limit - auth endpoints are sensitive
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.AUTH, identifier: clientIp, action: 'discord-auth-login' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     const { code, redirect_uri } = await req.json();
 
-    if (!code) {
+    if (!code || typeof code !== 'string' || code.length > 200) {
       return new Response(
-        JSON.stringify({ error: 'Authorization code is required' }),
+        JSON.stringify({ error: 'Valid authorization code is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Validate redirect_uri
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const defaultRedirect = `${supabaseUrl.replace('.supabase.co', '.lovable.app')}/auth/discord/callback`;
+    const safeRedirectUri = isValidRedirectUri(redirect_uri) ? redirect_uri : defaultRedirect;
 
     const clientId = Deno.env.get('DISCORD_CLIENT_ID');
     const clientSecret = Deno.env.get('DISCORD_CLIENT_SECRET');
@@ -54,15 +83,13 @@ Deno.serve(async (req) => {
     console.log('Exchanging code for Discord tokens...');
     const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         client_id: clientId,
         client_secret: clientSecret,
         grant_type: 'authorization_code',
         code,
-        redirect_uri: redirect_uri || `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovable.app')}/auth/discord/callback`,
+        redirect_uri: safeRedirectUri,
       }),
     });
 
@@ -80,9 +107,7 @@ Deno.serve(async (req) => {
 
     // Get Discord user info
     const userResponse = await fetch('https://discord.com/api/users/@me', {
-      headers: {
-        Authorization: `Bearer ${tokens.access_token}`,
-      },
+      headers: { Authorization: `Bearer ${tokens.access_token}` },
     });
 
     if (!userResponse.ok) {
@@ -94,16 +119,21 @@ Deno.serve(async (req) => {
     }
 
     const discordUser: DiscordUser = await userResponse.json();
+
+    // Validate Discord user data
+    if (!discordUser.id || typeof discordUser.id !== 'string' || !/^\d{1,20}$/.test(discordUser.id)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid Discord user data' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log(`Discord user authenticated: ${discordUser.username} (${discordUser.id})`);
 
     // Initialize Supabase admin client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
+      auth: { autoRefreshToken: false, persistSession: false },
     });
 
     // Check if a profile exists with this Discord ID
@@ -121,11 +151,9 @@ Deno.serve(async (req) => {
     let isNewUser = false;
 
     if (existingProfile?.user_id) {
-      // User exists - sign them in
       console.log(`Found existing user with Discord ID: ${existingProfile.user_id}`);
       userId = existingProfile.user_id;
     } else {
-      // Check if Discord email is already used by another account
       if (discordUser.email) {
         const { data: emailProfile } = await supabase
           .from('profiles')
@@ -134,11 +162,9 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         if (emailProfile?.user_id) {
-          // Email exists - link Discord to this account
           console.log(`Linking Discord to existing email account: ${emailProfile.user_id}`);
           userId = emailProfile.user_id;
           
-          // Update profile with Discord ID
           await supabase
             .from('profiles')
             .update({
@@ -147,18 +173,15 @@ Deno.serve(async (req) => {
             })
             .eq('user_id', userId);
         } else {
-          // Create new user
           isNewUser = true;
           console.log('Creating new user account...');
           
-          // Generate a random secure password (user won't need it for Discord login)
           const randomPassword = crypto.randomUUID() + crypto.randomUUID();
           
-          // Create auth user
           const { data: authData, error: authError } = await supabase.auth.admin.createUser({
             email: discordUser.email,
             password: randomPassword,
-            email_confirm: true, // Discord already verified their email
+            email_confirm: true,
             user_metadata: {
               display_name: discordUser.global_name || discordUser.username,
               avatar_url: discordUser.avatar 
@@ -179,7 +202,6 @@ Deno.serve(async (req) => {
           userId = authData.user.id;
           console.log(`Created new auth user: ${userId}`);
 
-          // Update the profile with Discord info (profile should be auto-created by trigger)
           const displayName = discordUser.global_name || discordUser.username;
           await supabase
             .from('profiles')
@@ -195,7 +217,6 @@ Deno.serve(async (req) => {
             .eq('user_id', userId);
         }
       } else {
-        // No email from Discord - can't create account
         return new Response(
           JSON.stringify({ 
             error: 'Discord account has no email. Please link your email to Discord or use email sign-up.' 
@@ -205,116 +226,43 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Generate a Supabase session for the user
+    // Generate a session for the user
     console.log(`Generating session for user: ${userId}`);
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
+    
+    const { data: profileForEmail } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('user_id', userId)
+      .single();
+    
+    const userEmail = profileForEmail?.email || discordUser.email!;
+
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
-      email: (await supabase.from('profiles').select('email').eq('user_id', userId).single()).data?.email || discordUser.email!,
+      email: userEmail,
+      options: {
+        redirectTo: safeRedirectUri,
+      }
     });
 
-    if (sessionError || !sessionData) {
-      console.error('Failed to generate session link:', sessionError);
-      
-      // Alternative: Create session directly using signInWithPassword won't work without password
-      // Instead, we'll use the admin API to get a session token
-      const { data: { user }, error: getUserError } = await supabase.auth.admin.getUserById(userId);
-      
-      if (getUserError || !user) {
-        return new Response(
-          JSON.stringify({ error: 'Failed to authenticate user' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Generate custom tokens using admin API
-      // We need to use a workaround - create a short-lived magic link
-      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-        type: 'magiclink',
-        email: user.email!,
-        options: {
-          redirectTo: redirect_uri || Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovable.app'),
-        }
-      });
-
-      if (linkError || !linkData) {
-        console.error('Failed to generate magic link:', linkError);
-        return new Response(
-          JSON.stringify({ error: 'Failed to create session' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Extract the token from the link and verify it to get a session
-      const linkUrl = new URL(linkData.properties?.hashed_token ? 
-        `${supabaseUrl}/auth/v1/verify?token=${linkData.properties.hashed_token}&type=magiclink` :
-        linkData.properties?.action_link || '');
-      
-      // Use the token_hash to verify and get session
-      const tokenHash = linkData.properties?.hashed_token;
-      
-      if (!tokenHash) {
-        return new Response(
-          JSON.stringify({ error: 'Failed to generate authentication token' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Verify the OTP to get a session
-      const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-      const verifyResponse = await fetch(`${supabaseUrl}/auth/v1/verify`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': anonKey,
-        },
-        body: JSON.stringify({
-          type: 'magiclink',
-          token_hash: tokenHash,
-        }),
-      });
-
-      if (!verifyResponse.ok) {
-        const verifyError = await verifyResponse.text();
-        console.error('Token verification failed:', verifyError);
-        return new Response(
-          JSON.stringify({ error: 'Failed to create session' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      const session = await verifyResponse.json();
-
+    if (linkError || !linkData) {
+      console.error('Failed to generate magic link:', linkError);
       return new Response(
-        JSON.stringify({
-          session: {
-            access_token: session.access_token,
-            refresh_token: session.refresh_token,
-            expires_in: session.expires_in,
-            token_type: session.token_type || 'bearer',
-            user: session.user,
-          },
-          isNewUser,
-          discordUser: {
-            id: discordUser.id,
-            username: discordUser.username,
-            avatar: discordUser.avatar,
-          },
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // This path uses the magic link token
-    const tokenHash = sessionData.properties?.hashed_token;
-    
-    if (!tokenHash) {
-      return new Response(
-        JSON.stringify({ error: 'Failed to generate session' }),
+        JSON.stringify({ error: 'Failed to create session' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Verify the token to get a session
+    const tokenHash = linkData.properties?.hashed_token;
+    
+    if (!tokenHash) {
+      return new Response(
+        JSON.stringify({ error: 'Failed to generate authentication token' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify the OTP to get a session
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const verifyResponse = await fetch(`${supabaseUrl}/auth/v1/verify`, {
       method: 'POST',
@@ -330,7 +278,7 @@ Deno.serve(async (req) => {
 
     if (!verifyResponse.ok) {
       const verifyError = await verifyResponse.text();
-      console.error('Verify failed:', verifyError);
+      console.error('Token verification failed:', verifyError);
       return new Response(
         JSON.stringify({ error: 'Failed to create session' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
