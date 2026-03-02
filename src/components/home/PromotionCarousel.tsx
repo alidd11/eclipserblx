@@ -74,7 +74,7 @@ export function PromotionCarousel() {
       <div className="flex items-center gap-3 min-w-0">
         <div className={`w-0.5 h-10 ${promo.accentClass} rounded-full shrink-0`} />
         <div className="min-w-0">
-          <h3 className="font-semibold text-sm text-foreground truncate">{promo.title}</h3>
+          <h3 className="font-semibold text-sm text-foreground truncate uppercase tracking-wide">{promo.title}</h3>
           <p className="text-xs text-muted-foreground line-clamp-1 max-w-xs mt-0.5">{promo.description}</p>
         </div>
       </div>
