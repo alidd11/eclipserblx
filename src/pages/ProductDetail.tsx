@@ -35,6 +35,8 @@ import { usePageTracking } from '@/hooks/usePageTracking';
 import { useProductTranslation } from '@/hooks/useProductTranslation';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { BreadcrumbSchema, ProductSchema } from '@/components/seo/StructuredData';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { RecentlyViewedProducts } from '@/components/product/RecentlyViewedProducts';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -104,6 +106,20 @@ export default function ProductDetail() {
   });
 
   const { getTranslatedName, getTranslatedDescription } = useProductTranslation(product?.id);
+  const { addProduct: addToRecentlyViewed } = useRecentlyViewed();
+
+  // Track recently viewed product
+  useEffect(() => {
+    if (product) {
+      addToRecentlyViewed({
+        id: product.id,
+        slug: product.slug,
+        name: product.name,
+        image: product.images?.[0],
+        price: product.price,
+      });
+    }
+  }, [product?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Dynamic SEO meta for product pages
   usePageMeta({
@@ -941,6 +957,7 @@ export default function ProductDetail() {
             </CardContent>
           </Card>
         )}
+        <RecentlyViewedProducts currentProductId={product.id} />
         </div>
       </PullToRefresh>
 
