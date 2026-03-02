@@ -253,10 +253,16 @@ export default function SellerRefunds() {
                     <Label>Your Response</Label>
                     <Textarea 
                       value={response} 
-                      onChange={e => setResponse(e.target.value)}
+                      onChange={e => {
+                        if (e.target.value.length <= 1000) {
+                          setResponse(e.target.value);
+                        }
+                      }}
                       placeholder="Explain your decision..."
                       rows={3}
+                      maxLength={1000}
                     />
+                    <p className="text-xs text-muted-foreground text-right">{response.length}/1,000</p>
                   </div>
                   <div className="flex gap-2">
                     <Button 

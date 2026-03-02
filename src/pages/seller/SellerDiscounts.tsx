@@ -244,12 +244,33 @@ export default function SellerDiscounts() {
   };
 
   const handleSubmit = () => {
-    if (!formData.code.trim()) {
+    const code = formData.code.trim();
+    if (!code) {
       toast.error('Please enter a discount code');
+      return;
+    }
+    if (code.length > 30) {
+      toast.error('Discount code must be under 30 characters');
+      return;
+    }
+    if (!/^[A-Z0-9_-]+$/.test(code.toUpperCase())) {
+      toast.error('Discount code can only contain letters, numbers, hyphens, and underscores');
       return;
     }
     if (formData.discount_value <= 0) {
       toast.error('Discount value must be greater than 0');
+      return;
+    }
+    if (formData.discount_type === 'percentage' && formData.discount_value > 50) {
+      toast.error('Discount percentage cannot exceed 50%');
+      return;
+    }
+    if (formData.discount_type === 'fixed' && formData.discount_value > 10000) {
+      toast.error('Fixed discount cannot exceed £10,000');
+      return;
+    }
+    if (formData.max_uses && (parseInt(formData.max_uses) <= 0 || parseInt(formData.max_uses) > 100000)) {
+      toast.error('Max uses must be between 1 and 100,000');
       return;
     }
 

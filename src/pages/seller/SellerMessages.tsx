@@ -241,8 +241,13 @@ export default function SellerMessages() {
   });
 
   const handleSend = () => {
-    if (!newMessage.trim() || !selectedConversation) return;
-    sendMessageMutation.mutate({ conversationId: selectedConversation, message: newMessage.trim() });
+    const trimmed = newMessage.trim();
+    if (!trimmed || !selectedConversation) return;
+    if (trimmed.length > 2000) {
+      toast.error('Message must be under 2,000 characters');
+      return;
+    }
+    sendMessageMutation.mutate({ conversationId: selectedConversation, message: trimmed });
   };
 
   if (!user || !isSeller) return null;
@@ -361,9 +366,14 @@ export default function SellerMessages() {
                   <Input
                     placeholder="Type a message..."
                     value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 2000) {
+                        setNewMessage(e.target.value);
+                      }
+                    }}
                     onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
                     className="rounded-full"
+                    maxLength={2000}
                   />
                 </div>
                 <Button
