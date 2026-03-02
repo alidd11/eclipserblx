@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, memo, forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Store, ChevronRight, ShieldCheck, Award, Users, Search, Package, FlaskConical, Crown, Car, Code, Bot, Layout, Box, Palette, Wrench, Gamepad2, Map, Shirt, Plane, ArrowRight } from 'lucide-react';
+import { usePrefetchProduct } from '@/hooks/usePrefetchProduct';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -141,6 +142,7 @@ const StoreCardSkeleton = forwardRef<HTMLDivElement>(function StoreCardSkeleton(
 const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; average_rating?: number | null; categories?: { name: string } | null; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
+  const prefetch = usePrefetchProduct();
 
   const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
   const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
@@ -148,7 +150,7 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
   const hasMemberDiscount = isEligible && memberPrice < product.price;
 
   return (
-    <Link to={`/products/${product.slug}`} className="group block h-full">
+    <Link to={`/products/${product.slug}`} className="group block h-full" onMouseEnter={() => prefetch(product.slug)}>
       <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200">
         <div className="aspect-[4/3] relative overflow-hidden bg-muted">
           {product.images?.[0] ? (
