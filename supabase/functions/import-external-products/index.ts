@@ -217,12 +217,11 @@ function extractHtmlDescription(html: string): string {
       content = content.replace(/<\/?section[^>]*>/gi, '');
       content = content.replace(/<\/?span[^>]*>/gi, '');
       
-      const allowedTagPattern = /<\/?(?:p|br|strong|b|em|i|u|h2|h3|h4|ul|ol|li|hr|a(?:\s[^>]*)?)>/gi;
+      const allowedTagNames = /^<\/?(?:p|br|strong|b|em|i|u|h2|h3|h4|ul|ol|li|hr|a)(?:\s|>|\/)/i;
       const tagPattern = /<\/?[a-z][a-z0-9]*(?:\s[^>]*)?>/gi;
       content = content.replace(tagPattern, (tag) => {
-        return allowedTagPattern.test(tag) ? tag : '';
+        return allowedTagNames.test(tag) ? tag : '';
       });
-      allowedTagPattern.lastIndex = 0;
       
       content = content.replace(/\n{3,}/g, '\n\n').trim();
       
@@ -639,13 +638,22 @@ async function downloadAndUploadImage(
 
     console.log(`Downloading image: ${downloadUrl}`);
     
-    const response = await fetch(downloadUrl, {
-      headers: {
-        // Some CDNs require a browser-like User-Agent
-        'User-Agent': 'Mozilla/5.0 (compatible; EclipseImporter/1.0)',
-        'Accept': 'image/*,*/*',
-      },
-    });
+    // Add a 15-second timeout to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    
+    let response: Response;
+    try {
+      response = await fetch(downloadUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; EclipseImporter/1.0)',
+          'Accept': 'image/*,*/*',
+        },
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
     if (!response.ok) {
       console.error(`Failed to download image: ${response.status}`);
       return null;
@@ -742,7 +750,7 @@ serve(async (req) => {
       );
     }
 
-    const { action, storeUrl, productUrl, productUrls, platform, downloadImages, targetStoreId, categoryOverride } = await req.json();
+    const { action, storeUrl, productUrl, productUrls, platform, downloadImages, targetStoreId, categoryOverride } = await req.json().catch(() => ({}));
 
     // Validate action
     const validActions = ['list', 'details', 'bulk-details', 'history'];
@@ -953,7 +961,25 @@ serve(async (req) => {
         );
       }
 
+      // Check for duplicate import
+      const { data: existingImport } = await supabaseAdmin
+        .from('product_imports')
+        .select('product_id')
+        .eq('store_id', store.id)
+        .eq('source_url', productUrl)
+        .eq('status', 'completed')
+        .not('product_id', 'is', null)
+        .maybeSingle();
+
+      if (existingImport) {
+        return new Response(
+          JSON.stringify({ success: false, error: "This product has already been imported" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Download and re-upload images if requested — in parallel for speed
+      const originalImageCount = product.images.length;
       if (downloadImages && product.images.length > 0) {
         console.log(`Downloading ${product.images.length} images in parallel...`);
         const productSlug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30);
@@ -964,8 +990,8 @@ serve(async (req) => {
         const uploadResults = await Promise.all(uploadPromises);
         const uploadedImages = uploadResults.filter((u): u is string => u !== null);
         
+        console.log(`Successfully uploaded ${uploadedImages.length}/${originalImageCount} images`);
         product.images = uploadedImages.length > 0 ? uploadedImages : product.images;
-        console.log(`Successfully uploaded ${uploadedImages.length}/${product.images.length} images`);
       }
 
       // Use category override if provided, otherwise fall back to suggested
@@ -996,27 +1022,38 @@ serve(async (req) => {
         .select('id')
         .single();
 
-      let productId: string | null = null;
       if (createError) {
         console.error(`Failed to create product record:`, createError.message);
-      } else {
-        productId = createdProduct.id;
-      }
-
-      // Record the import
-      await supabaseAdmin
-        .from('product_imports')
-        .insert({
+        // Record the failed import
+        await supabaseAdmin.from('product_imports').insert({
           store_id: store.id,
           source_url: productUrl,
           source_platform: detectedPlatform || 'unknown',
           source_name: product.name,
           source_price: product.price,
           imported_by: user.id,
-          status: 'completed',
-          product_id: productId,
-          metadata: { images_downloaded: downloadImages, image_count: product.images.length },
+          status: 'failed',
+          error_message: createError.message,
+          metadata: { images_downloaded: downloadImages, image_count: originalImageCount },
         });
+        return new Response(
+          JSON.stringify({ success: false, error: `Failed to create product: ${createError.message}` }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Record the successful import
+      await supabaseAdmin.from('product_imports').insert({
+        store_id: store.id,
+        source_url: productUrl,
+        source_platform: detectedPlatform || 'unknown',
+        source_name: product.name,
+        source_price: product.price,
+        imported_by: user.id,
+        status: 'completed',
+        product_id: createdProduct.id,
+        metadata: { images_downloaded: downloadImages, image_count: originalImageCount },
+      });
 
       return new Response(
         JSON.stringify({ success: true, product }),
@@ -1037,110 +1074,146 @@ serve(async (req) => {
 
       console.log(`Bulk importing ${safeUrls.length} products (${productUrls.length - safeUrls.length} rejected)...`);
       
+      // Parse categoryOverride as a map (url -> categoryId) if provided
+      const categoryOverrides: Record<string, string> = typeof categoryOverride === 'object' && categoryOverride ? categoryOverride : {};
+      
       const results: { url: string; success: boolean; product?: ExternalProduct; error?: string }[] = [];
       
       for (const url of safeUrls) {
-        let detectedPlatform = platform;
-        if (!detectedPlatform) {
-          if (url.includes('clearlydev.com')) detectedPlatform = 'clearlydev';
-          else if (url.includes('builtbybit.com')) detectedPlatform = 'builtbybit';
-        }
-
-        const scrapeResult = await scrapeUrl(url, firecrawlApiKey);
-        if (!scrapeResult.success) {
-          results.push({ url, success: false, error: scrapeResult.error });
-          await supabaseAdmin.from('product_imports').insert({
-            store_id: store.id,
-            source_url: url,
-            source_platform: detectedPlatform || 'unknown',
-            source_name: 'Unknown',
-            imported_by: user.id,
-            status: 'failed',
-            error_message: scrapeResult.error,
-          });
-          continue;
-        }
-
-        let product: ExternalProduct | null = null;
-        if (detectedPlatform === 'clearlydev') {
-          product = parseClearlyDevProduct(scrapeResult.markdown!, url, scrapeResult.html);
-        } else if (detectedPlatform === 'builtbybit') {
-          product = parseBuiltByBitProduct(scrapeResult.markdown!, url, scrapeResult.html);
-        }
-
-        if (!product) {
-          results.push({ url, success: false, error: "Could not parse product" });
-          await supabaseAdmin.from('product_imports').insert({
-            store_id: store.id,
-            source_url: url,
-            source_platform: detectedPlatform || 'unknown',
-            source_name: 'Unknown',
-            imported_by: user.id,
-            status: 'failed',
-            error_message: 'Could not parse product details',
-          });
-          continue;
-        }
-
-        if (downloadImages && product.images.length > 0) {
-          const productSlug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30);
-          
-          const uploadPromises = product.images.map((imgUrl, i) =>
-            downloadAndUploadImage(imgUrl, store.id, productSlug, i, supabaseAdmin)
-          );
-          const uploadResults = await Promise.all(uploadPromises);
-          const uploadedImages = uploadResults.filter((u): u is string => u !== null);
-          
-          if (uploadedImages.length > 0) {
-            product.images = uploadedImages;
+        try {
+          let detectedPlatform = platform;
+          if (!detectedPlatform) {
+            if (url.includes('clearlydev.com')) detectedPlatform = 'clearlydev';
+            else if (url.includes('builtbybit.com')) detectedPlatform = 'builtbybit';
           }
-        }
 
-        product.suggestedCategoryId = product.suggestedCategoryId 
-          ? categoryMap.get(product.suggestedCategoryId) 
-          : undefined;
+          // Check for duplicate
+          const { data: existingImport } = await supabaseAdmin
+            .from('product_imports')
+            .select('product_id')
+            .eq('store_id', store.id)
+            .eq('source_url', url)
+            .eq('status', 'completed')
+            .not('product_id', 'is', null)
+            .maybeSingle();
 
-        const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
-        const randomSuffix = crypto.randomUUID().slice(0, 8);
-        const uniqueSlug = `${productSlugForDb}-${randomSuffix}`;
-        
-        const { data: createdProduct, error: createError } = await supabaseAdmin
-          .from('products')
-          .insert({
-            name: product.name,
-            slug: uniqueSlug,
-            description: stripBlockedUrls(product.description) || null,
-            price: product.price || 0,
-            images: product.images.length > 0 ? product.images : [],
+          if (existingImport) {
+            results.push({ url, success: false, error: "Already imported" });
+            continue;
+          }
+
+          const scrapeResult = await scrapeUrl(url, firecrawlApiKey);
+          if (!scrapeResult.success) {
+            results.push({ url, success: false, error: scrapeResult.error });
+            await supabaseAdmin.from('product_imports').insert({
+              store_id: store.id,
+              source_url: url,
+              source_platform: detectedPlatform || 'unknown',
+              source_name: 'Unknown',
+              imported_by: user.id,
+              status: 'failed',
+              error_message: scrapeResult.error,
+            });
+            continue;
+          }
+
+          let product: ExternalProduct | null = null;
+          if (detectedPlatform === 'clearlydev') {
+            product = parseClearlyDevProduct(scrapeResult.markdown!, url, scrapeResult.html);
+          } else if (detectedPlatform === 'builtbybit') {
+            product = parseBuiltByBitProduct(scrapeResult.markdown!, url, scrapeResult.html);
+          }
+
+          if (!product) {
+            results.push({ url, success: false, error: "Could not parse product" });
+            await supabaseAdmin.from('product_imports').insert({
+              store_id: store.id,
+              source_url: url,
+              source_platform: detectedPlatform || 'unknown',
+              source_name: 'Unknown',
+              imported_by: user.id,
+              status: 'failed',
+              error_message: 'Could not parse product details',
+            });
+            continue;
+          }
+
+          const originalImageCount = product.images.length;
+          if (downloadImages && product.images.length > 0) {
+            const productSlug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30);
+            
+            const uploadPromises = product.images.map((imgUrl, i) =>
+              downloadAndUploadImage(imgUrl, store.id, productSlug, i, supabaseAdmin)
+            );
+            const uploadResults = await Promise.all(uploadPromises);
+            const uploadedImages = uploadResults.filter((u): u is string => u !== null);
+            
+            if (uploadedImages.length > 0) {
+              product.images = uploadedImages;
+            }
+          }
+
+          // Apply category override for this URL, or fall back to auto-suggestion
+          const urlCategoryOverride = categoryOverrides[url];
+          product.suggestedCategoryId = urlCategoryOverride || (product.suggestedCategoryId 
+            ? categoryMap.get(product.suggestedCategoryId) 
+            : undefined);
+
+          const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+          const randomSuffix = crypto.randomUUID().slice(0, 8);
+          const uniqueSlug = `${productSlugForDb}-${randomSuffix}`;
+          
+          const { data: createdProduct, error: createError } = await supabaseAdmin
+            .from('products')
+            .insert({
+              name: product.name,
+              slug: uniqueSlug,
+              description: stripBlockedUrls(product.description) || null,
+              price: product.price || 0,
+              images: product.images.length > 0 ? product.images : [],
+              store_id: store.id,
+              is_seller_product: true,
+              is_active: true,
+              category_id: product.suggestedCategoryId || null,
+              moderation_status: 'approved',
+            })
+            .select('id')
+            .single();
+
+          if (createError) {
+            console.error(`Failed to create product record for "${product.name}":`, createError.message);
+            results.push({ url, success: false, error: `DB error: ${createError.message}` });
+            await supabaseAdmin.from('product_imports').insert({
+              store_id: store.id,
+              source_url: url,
+              source_platform: detectedPlatform || 'unknown',
+              source_name: product.name,
+              source_price: product.price,
+              imported_by: user.id,
+              status: 'failed',
+              error_message: createError.message,
+              metadata: { images_downloaded: downloadImages, image_count: originalImageCount },
+            });
+            continue;
+          }
+
+          await supabaseAdmin.from('product_imports').insert({
             store_id: store.id,
-            is_seller_product: true,
-            is_active: true,
-            category_id: product.suggestedCategoryId || null,
-            moderation_status: 'approved',
-          })
-          .select('id')
-          .single();
+            source_url: url,
+            source_platform: detectedPlatform || 'unknown',
+            source_name: product.name,
+            source_price: product.price,
+            imported_by: user.id,
+            status: 'completed',
+            product_id: createdProduct.id,
+            metadata: { images_downloaded: downloadImages, image_count: originalImageCount },
+          });
 
-        let productId: string | null = null;
-        if (createError) {
-          console.error(`Failed to create product record for "${product.name}":`, createError.message);
-        } else {
-          productId = createdProduct.id;
+          results.push({ url, success: true, product });
+        } catch (err) {
+          console.error(`Unexpected error importing ${url}:`, err);
+          results.push({ url, success: false, error: `Unexpected error: ${err}` });
         }
-
-        await supabaseAdmin.from('product_imports').insert({
-          store_id: store.id,
-          source_url: url,
-          source_platform: detectedPlatform || 'unknown',
-          source_name: product.name,
-          source_price: product.price,
-          imported_by: user.id,
-          status: 'completed',
-          product_id: productId,
-          metadata: { images_downloaded: downloadImages, image_count: product.images.length },
-        });
-
-        results.push({ url, success: true, product });
       }
 
       return new Response(
