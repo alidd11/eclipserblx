@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp as sharedGetClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -97,13 +98,19 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: "Invalid token format" }), 
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
+      // Rate limit token redemptions to prevent brute-force
+      const redeemIp = sharedGetClientIp(req);
+      const redeemRl = checkRateLimit({ ...RATE_LIMITS.API, identifier: redeemIp, action: 'download-redeem' });
+      if (!redeemRl.allowed) return rateLimitResponse(redeemRl, corsHeaders);
+      
       return await handleTokenRedemption(tokenParam, req);
     }
 
     // Otherwise, this is a token generation request (POST with auth)
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
     );
 
     // Get user from auth header

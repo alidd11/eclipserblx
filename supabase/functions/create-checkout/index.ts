@@ -316,8 +316,24 @@ serve(async (req) => {
       quantity: 1,
     }));
 
-    // Store order info in metadata
-    const origin = req.headers.get("origin") || "http://localhost:5173";
+    // Validate origin to prevent open redirects
+    const rawOrigin = req.headers.get("origin");
+    const allowedOrigins = ["https://eclipserblx.com", "https://www.eclipserblx.com"];
+    const origin = rawOrigin && allowedOrigins.some(o => rawOrigin.startsWith(o))
+      ? rawOrigin
+      : "https://eclipserblx.com";
+
+    // Validate successUrl/cancelUrl if provided - must be same origin
+    const isValidReturnUrl = (url: string | undefined): boolean => {
+      if (!url) return false;
+      try {
+        const parsed = new URL(url);
+        return allowedOrigins.some(o => url.startsWith(o)) || parsed.origin === origin;
+      } catch { return false; }
+    };
+
+    const safeSuccessUrl = isValidReturnUrl(successUrl) ? successUrl : `${origin}/order-success?session_id={CHECKOUT_SESSION_ID}`;
+    const safeCancelUrl = isValidReturnUrl(cancelUrl) ? cancelUrl : `${origin}/checkout`;
 
     // Create session configuration
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
@@ -329,8 +345,8 @@ serve(async (req) => {
       payment_intent_data: {
         setup_future_usage: 'on_session',
       },
-      success_url: successUrl || `${origin}/order-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: cancelUrl || `${origin}/checkout`,
+      success_url: safeSuccessUrl!,
+      cancel_url: safeCancelUrl!,
       metadata: {
         user_id: userId || "",
         customer_email: userEmail || "",
