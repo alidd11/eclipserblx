@@ -70,21 +70,23 @@ export function PromotionCarousel() {
   );
 
   const renderSlide = (promo: typeof promotions[0]) => (
-    <div className="flex items-start justify-between gap-3 px-5 py-4">
-      <div className="flex items-start gap-3 min-w-0">
+    <div className="px-5 py-4">
+      <div className="flex items-start gap-3">
         <div className={`w-0.5 h-10 mt-0.5 ${promo.accentClass} rounded-full shrink-0`} />
-        <div className="min-w-0">
-          <h3 className="font-semibold text-[11px] xs:text-[13px] text-foreground uppercase tracking-wide whitespace-nowrap">{promo.title}</h3>
-          <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{promo.description}</p>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="font-semibold text-[11px] xs:text-[13px] text-foreground uppercase tracking-wide whitespace-nowrap">{promo.title}</h3>
+            <Link
+              to={promo.link}
+              className="shrink-0 flex items-center gap-1 text-[10px] xs:text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {promo.cta}
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{promo.description}</p>
         </div>
       </div>
-      <Link
-        to={promo.link}
-        className="shrink-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors mt-1"
-      >
-        {promo.cta}
-        <ArrowRight className="h-3.5 w-3.5" />
-      </Link>
     </div>
   );
 
