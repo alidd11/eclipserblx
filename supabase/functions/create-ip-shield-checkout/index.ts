@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,6 +20,7 @@ const IP_SHIELD_PRICES: Record<string, string> = {
 };
 
 const ALL_PRICE_IDS = Object.values(IP_SHIELD_PRICES);
+const VALID_TIERS = Object.keys(IP_SHIELD_PRICES);
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -26,6 +28,11 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limit
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.WRITE, identifier: clientIp, action: 'create-ip-shield-checkout' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     logStep("Function started");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
@@ -46,12 +53,15 @@ serve(async (req) => {
 
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    logStep("User authenticated", { userId: user.id });
 
     const body = await req.json().catch(() => ({}));
     const tier = body.tier || "starter";
+    
+    // Validate tier against whitelist
+    if (!VALID_TIERS.includes(tier)) throw new Error(`Invalid tier: ${tier}`);
+    
     const priceId = IP_SHIELD_PRICES[tier];
-    if (!priceId) throw new Error(`Invalid tier: ${tier}`);
     logStep("Selected tier", { tier, priceId });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
@@ -73,22 +83,27 @@ serve(async (req) => {
         sub.items.data.some(item => ALL_PRICE_IDS.includes(item.price.id))
       );
       if (existingSub) {
-        return new Response(JSON.stringify({ error: "You already have an active IP Shield subscription. Manage it from your account settings." }), {
+        return new Response(JSON.stringify({ error: "You already have an active IP Shield subscription." }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 400,
         });
       }
     }
 
-    const origin = req.headers.get("origin") || "https://eclipserblx.com";
+    // Validate origin
+    const origin = req.headers.get("origin");
+    const allowedOrigins = ["https://eclipserblx.com", "https://www.eclipserblx.com"];
+    const returnOrigin = origin && allowedOrigins.some(o => origin!.startsWith(o))
+      ? origin
+      : "https://eclipserblx.com";
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      success_url: `${origin}/ip-shield?subscription=success`,
-      cancel_url: `${origin}/ip-shield?subscription=cancelled`,
+      success_url: `${returnOrigin}/ip-shield?subscription=success`,
+      cancel_url: `${returnOrigin}/ip-shield?subscription=cancelled`,
       metadata: { user_id: user.id, product: "ip_shield", tier },
     });
 

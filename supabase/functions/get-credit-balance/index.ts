@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,12 +18,12 @@ serve(async (req) => {
   }
 
   try {
-    logStep("Function started");
+    // Rate limit
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.API, identifier: clientIp, action: 'get-credit-balance' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
 
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
+    logStep("Function started");
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -35,7 +36,7 @@ serve(async (req) => {
     if (!authHeader) throw new Error("No authorization header provided");
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     
     const user = userData.user;
@@ -54,7 +55,6 @@ serve(async (req) => {
       throw new Error(`Failed to fetch balance: ${balanceError.message}`);
     }
 
-    // If no balance record, return zeros
     const creditData = balance || {
       balance: 0,
       total_purchased: 0,
