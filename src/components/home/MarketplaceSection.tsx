@@ -36,7 +36,7 @@ interface StoreData {
   is_testing?: boolean;
 }
 
-const StoreCard = forwardRef<HTMLAnchorElement, { store: StoreData; showTestingBadge?: boolean }>(function StoreCard({ store, showTestingBadge }, ref) {
+const StoreCard = memo(forwardRef<HTMLAnchorElement, { store: StoreData; showTestingBadge?: boolean }>(function StoreCard({ store, showTestingBadge }, ref) {
   const accentColor = store.accent_color || '#8B5CF6';
   
   return (
@@ -119,7 +119,7 @@ const StoreCard = forwardRef<HTMLAnchorElement, { store: StoreData; showTestingB
       </div>
     </Link>
   );
-});
+}));
 
 const StoreCardSkeleton = forwardRef<HTMLDivElement>(function StoreCardSkeleton(_props, ref) {
   return (
