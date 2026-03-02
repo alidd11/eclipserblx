@@ -51,6 +51,7 @@ const Messages = lazy(() => import("@/pages/Messages"));
 const Advertise = lazy(() => import("@/pages/Advertise"));
 const Credits = lazy(() => import("@/pages/Credits"));
 const Sell = lazy(() => import("@/pages/Sell"));
+const SearchResults = lazy(() => import("@/pages/SearchResults"));
 const MyAdvertisementsPage = lazy(() => import("@/pages/Account/MyAdvertisementsPage"));
 const AdAnalyticsPage = lazy(() => import("@/pages/Account/AdAnalyticsPage"));
 const FollowingPage = lazy(() => import("@/pages/Account/FollowingPage").then(m => ({ default: m.FollowingPage })));
@@ -243,6 +244,7 @@ export const AppRoutes = forwardRef<HTMLDivElement>(function AppRoutes(_, _ref) 
         <Route path="/downloads" element={<MyPurchases />} />
         <Route path="/orders" element={<MyPurchases />} />
         <Route path="/products" element={<Products />} />
+        <Route path="/search" element={<SearchResults />} />
         <Route path="/featured" element={<Featured />} />
         <Route path="/categories" element={<Categories />} />
         
