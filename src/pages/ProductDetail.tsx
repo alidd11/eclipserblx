@@ -34,7 +34,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { useProductTranslation } from '@/hooks/useProductTranslation';
 import { usePageMeta } from '@/hooks/usePageMeta';
-import { BreadcrumbSchema } from '@/components/seo/StructuredData';
+import { BreadcrumbSchema, ProductSchema } from '@/components/seo/StructuredData';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -114,6 +114,7 @@ export default function ProductDetail() {
         ? `Buy ${product.name} on Eclipse marketplace`
         : undefined,
     canonicalPath: slug ? `/products/${slug}` : undefined,
+    ogImage: product?.images?.[0] || undefined,
   });
 
   // Breadcrumb structured data for rich results
@@ -398,6 +399,15 @@ export default function ProductDetail() {
   return (
     <MainLayout>
       {product && breadcrumbItems.length > 1 && <BreadcrumbSchema items={breadcrumbItems} />}
+      {product && (
+        <ProductSchema
+          name={product.name}
+          description={product.description?.replace(/<[^>]*>/g, '').slice(0, 300) || product.name}
+          image={product.images?.[0] || ''}
+          price={product.price}
+          seller={product.stores?.name || 'Eclipse'}
+        />
+      )}
       <PullToRefresh onRefresh={handleRefresh}>
         <div className="container py-8 space-y-8 overflow-x-hidden max-w-full">
         

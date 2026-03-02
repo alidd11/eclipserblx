@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Filter, Search, ChevronDown, Package, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -73,8 +73,11 @@ export default function Products() {
     staleTime: 60000,
   });
 
-  const { data: products, isLoading } = useQuery({
-    queryKey: ['products', categorySlug, debouncedSearch, featuredOnly, sortBy, sourceFilter, isStaff],
+  const isMobile = useIsMobile();
+  const productsPerPage = isMobile ? PRODUCTS_PER_PAGE_MOBILE : PRODUCTS_PER_PAGE_DESKTOP;
+
+  const { data: productsData, isLoading } = useQuery({
+    queryKey: ['products', categorySlug, debouncedSearch, featuredOnly, sortBy, sourceFilter, isStaff, currentPage, productsPerPage],
     queryFn: async () => {
       let query = supabase
         .from('products')
@@ -83,7 +86,7 @@ export default function Products() {
           category_id, store_id, created_at, is_resellable, download_count,
           categories (name, slug),
           stores (name, slug, logo_url, is_verified, is_trusted, is_active, eclipse_plus_discount_enabled)
-        `);
+        `, { count: 'exact' });
 
       if (!isStaff) {
         query = query
@@ -108,48 +111,49 @@ export default function Products() {
       }
 
       if (debouncedSearch) {
-        query = query.ilike('name', `%${debouncedSearch}%`);
+        query = query.or(`name.ilike.%${debouncedSearch}%,description.ilike.%${debouncedSearch}%`);
       }
 
-      const { data, error } = await query;
+      // Server-side sorting
+      switch (sortBy) {
+        case 'newest':
+          query = query.order('created_at', { ascending: false });
+          break;
+        case 'oldest':
+          query = query.order('created_at', { ascending: true });
+          break;
+        case 'price-low':
+          query = query.order('price', { ascending: true });
+          break;
+        case 'price-high':
+          query = query.order('price', { ascending: false });
+          break;
+        case 'popularity':
+          query = query.order('download_count', { ascending: false, nullsFirst: false });
+          break;
+        case 'smart':
+        default:
+          query = query
+            .order('is_featured', { ascending: false })
+            .order('created_at', { ascending: false });
+          break;
+      }
+
+      // Server-side pagination
+      const from = (currentPage - 1) * productsPerPage;
+      const to = from + productsPerPage - 1;
+      query = query.range(from, to);
+
+      const { data, error, count } = await query;
       if (error) throw error;
       
+      // Filter out products from inactive stores (can't do this in query easily)
       const filtered = (data || []).filter(p => p.stores?.is_active === true);
       
-      const now = new Date();
-      const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
-      
-      const sorted = filtered.sort((a, b) => {
-        switch (sortBy) {
-          case 'newest':
-            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-          case 'oldest':
-            return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-          case 'price-low':
-            return a.price - b.price;
-          case 'price-high':
-            return b.price - a.price;
-          case 'popularity':
-            return (b.download_count || 0) - (a.download_count || 0);
-          case 'smart':
-          default:
-            if (a.is_featured && !b.is_featured) return -1;
-            if (!a.is_featured && b.is_featured) return 1;
-            const aIsNew = new Date(a.created_at) > threeDaysAgo;
-            const bIsNew = new Date(b.created_at) > threeDaysAgo;
-            if (aIsNew && !bIsNew) return -1;
-            if (!aIsNew && bIsNew) return 1;
-            if (aIsNew && bIsNew) {
-              return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-            }
-            return (b.download_count || 0) - (a.download_count || 0);
-        }
-      });
-      
-      return sorted;
+      return { products: filtered, totalCount: count || 0 };
     },
     enabled: !adminLoading && (categories !== undefined || !categorySlug),
-    staleTime: 0,
+    staleTime: 1000 * 60, // 1 minute
   });
 
   const sortOptions = [
@@ -246,8 +250,9 @@ export default function Products() {
           </CardContent>
         </Card>
 
-        <ProductsGridWrapper 
-          products={products}
+        <ProductsGrid 
+          products={productsData?.products}
+          totalCount={productsData?.totalCount ?? 0}
           isLoading={isLoading}
           currentPage={currentPage}
           search={search}
@@ -256,6 +261,7 @@ export default function Products() {
           setSearchParams={setSearchParams}
           categorySlug={categorySlug}
           featuredOnly={featuredOnly}
+          productsPerPage={productsPerPage}
         />
 
         <FeaturedProductsCard />
@@ -265,14 +271,11 @@ export default function Products() {
   );
 }
 
-function ProductsGridWrapper(props: Omit<ProductsGridProps, 'productsPerPage'>) {
-  const isMobile = useIsMobile();
-  const productsPerPage = isMobile ? PRODUCTS_PER_PAGE_MOBILE : PRODUCTS_PER_PAGE_DESKTOP;
-  return <ProductsGrid {...props} productsPerPage={productsPerPage} />;
-}
+
 
 interface ProductsGridProps {
   products: any[] | undefined;
+  totalCount: number;
   isLoading: boolean;
   currentPage: number;
   search: string;
@@ -286,6 +289,7 @@ interface ProductsGridProps {
 
 function ProductsGrid({ 
   products, 
+  totalCount,
   isLoading, 
   currentPage, 
   search, 
@@ -297,11 +301,8 @@ function ProductsGrid({
   productsPerPage
 }: ProductsGridProps) {
   const { t } = useTranslation();
-  const totalProducts = products?.length ?? 0;
+  const totalProducts = totalCount;
   const totalPages = Math.ceil(totalProducts / productsPerPage);
-  const startIndex = (currentPage - 1) * productsPerPage;
-  const endIndex = startIndex + productsPerPage;
-  const paginatedProducts = products?.slice(startIndex, endIndex) ?? [];
 
   const goToPage = (page: number) => {
     const newParams = new URLSearchParams(searchParams);
@@ -336,7 +337,7 @@ function ProductsGrid({
   return (
     <div className="space-y-6">
       <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
-        {paginatedProducts.map((product) => (
+        {(products || []).map((product) => (
           <ProductCard
             key={product.id}
             id={product.id}
@@ -424,7 +425,7 @@ function ProductsGrid({
 
       {totalPages > 1 && (
         <p className="text-center text-sm text-muted-foreground">
-          {t('products.showingRange', { start: startIndex + 1, end: Math.min(endIndex, totalProducts), total: totalProducts })}
+          {t('products.showingRange', { start: (currentPage - 1) * productsPerPage + 1, end: Math.min(currentPage * productsPerPage, totalProducts), total: totalProducts })}
         </p>
       )}
     </div>
