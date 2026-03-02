@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,6 +18,11 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limit
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.WRITE, identifier: clientIp, action: 'gift-credits' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     logStep("Function started");
 
     const supabaseClient = createClient(
@@ -54,6 +60,17 @@ serve(async (req) => {
 
     // Parse request body
     const { targetUserId, amount, reason } = await req.json();
+
+    // Validate targetUserId is a valid UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!targetUserId || typeof targetUserId !== 'string' || !uuidRegex.test(targetUserId)) {
+      throw new Error("Invalid target user ID");
+    }
+
+    // Validate reason length
+    if (reason && (typeof reason !== 'string' || reason.length > 500)) {
+      throw new Error("Reason must be under 500 characters");
+    }
     
     if (!targetUserId) throw new Error("Target user ID is required");
     

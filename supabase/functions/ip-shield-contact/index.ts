@@ -1,16 +1,25 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Rate limit - strict for contact forms
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.AUTH, identifier: clientIp, action: 'ip-shield-contact' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     const authHeader = req.headers.get('Authorization');
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -33,6 +42,16 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // Input length validation
+    if (typeof name !== 'string' || name.length > 100) throw new Error('Name must be under 100 characters');
+    if (typeof email !== 'string' || email.length > 255) throw new Error('Invalid email');
+    if (typeof subject !== 'string' || subject.length > 200) throw new Error('Subject must be under 200 characters');
+    if (typeof message !== 'string' || message.length > 5000) throw new Error('Message must be under 5000 characters');
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) throw new Error('Invalid email format');
 
     // Save to database
     const { error: dbError } = await supabase
@@ -71,10 +90,10 @@ Deno.serve(async (req) => {
             subject: `[IP Shield Contact] ${subject}`,
             html: `
               <h2>New IP Shield Contact Message</h2>
-              <p><strong>From:</strong> ${name} (${email})</p>
-              <p><strong>Subject:</strong> ${subject}</p>
+              <p><strong>From:</strong> ${escapeHtml(name)} (${escapeHtml(email)})</p>
+              <p><strong>Subject:</strong> ${escapeHtml(subject)}</p>
               <hr />
-              <p>${message.replace(/\n/g, '<br />')}</p>
+              <p>${escapeHtml(message).replace(/\n/g, '<br />')}</p>
               <hr />
               <p><em>User ID: ${userId || 'Not logged in'}</em></p>
             `,

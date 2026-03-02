@@ -274,6 +274,22 @@ Deno.serve(async (req) => {
         )
       }
 
+      // Validate password strength
+      if (typeof newPassword !== 'string' || newPassword.length < 8 || newPassword.length > 128) {
+        return new Response(
+          JSON.stringify({ error: 'Password must be between 8 and 128 characters' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Validate code format (4 digits)
+      if (typeof code !== 'string' || !/^\d{4}$/.test(code)) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid code format' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
       console.log(`Verifying password reset for: ${email}`)
 
       // Find valid code
@@ -302,15 +318,14 @@ Deno.serve(async (req) => {
         .update({ used: true })
         .eq('id', resetCode.id)
 
-      // Get user by email from auth.users
-      const { data: { users }, error: listError } = await supabase.auth.admin.listUsers()
-      
-      if (listError) {
-        console.error('Failed to list users:', listError)
-        throw new Error('Failed to process request')
-      }
+      // Get user by email from profiles, then use admin API
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('email', email.toLowerCase())
+        .single()
 
-      const user = users.find(u => u.email?.toLowerCase() === email.toLowerCase())
+      const user = userProfile ? { id: userProfile.user_id, email: email.toLowerCase() } : null
 
       if (!user) {
         console.error('User not found in auth.users')
