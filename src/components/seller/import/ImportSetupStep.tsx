@@ -1,0 +1,172 @@
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Loader2, AlertCircle, Info, Search, Shield, Globe, CheckCircle, Package
+} from 'lucide-react';
+import { productImportApi, ExternalProduct } from '@/lib/api/productImport';
+
+interface ImportSetupStepProps {
+  onProductsFound: (products: ExternalProduct[], platform: string | null) => void;
+}
+
+export function ImportSetupStep({ onProductsFound }: ImportSetupStepProps) {
+  const [storeUrl, setStoreUrl] = useState('');
+  const [ownershipConfirmed, setOwnershipConfirmed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const supportedPlatforms = productImportApi.getSupportedPlatforms();
+
+  const handleSearch = async () => {
+    if (!storeUrl.trim()) {
+      setError('Please enter a store URL');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await productImportApi.listProducts(storeUrl);
+
+      if (!result.success) {
+        setError(result.error || 'Failed to fetch products');
+        return;
+      }
+
+      const found = result.products || [];
+      if (!found.length) {
+        setError('No products found. Make sure you entered a valid store page URL.');
+      } else {
+        onProductsFound(found, result.platform || null);
+      }
+    } catch {
+      setError('An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-5">
+      {/* Ownership Confirmation */}
+      <Card className={`border-2 transition-colors ${ownershipConfirmed ? 'border-primary/30 bg-primary/5' : 'border-dashed'}`}>
+        <CardContent className="pt-5">
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="ownership-confirm"
+              checked={ownershipConfirmed}
+              onCheckedChange={(checked) => setOwnershipConfirmed(checked === true)}
+              className="mt-0.5"
+            />
+            <div className="space-y-1.5">
+              <Label htmlFor="ownership-confirm" className="text-sm font-medium leading-none cursor-pointer flex items-center gap-2">
+                <Shield className="h-4 w-4 text-primary" />
+                I confirm ownership of this content
+              </Label>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                By checking this box, I confirm that I am the rightful owner of the products I am importing
+                and have the legal right to use all associated names, descriptions, and images.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* URL Input */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            Enter your store URL
+          </CardTitle>
+          <CardDescription>We support ClearlyDev and BuiltByBit stores</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            {supportedPlatforms.map(p => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setStoreUrl(p.baseUrl)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-muted/30 hover:bg-muted/60 transition-colors text-left"
+              >
+                <span className="text-sm font-medium">{p.name}</span>
+                <Badge variant="outline" className="text-[10px] px-1.5">
+                  {p.id === 'clearlydev' ? 'Full' : 'Beta'}
+                </Badge>
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-2">
+            <Input
+              placeholder="https://clearlydev.com/store/your-store"
+              value={storeUrl}
+              onChange={(e) => setStoreUrl(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && ownershipConfirmed && handleSearch()}
+              disabled={isLoading || !ownershipConfirmed}
+              className="font-mono text-sm"
+            />
+            <Button
+              onClick={handleSearch}
+              disabled={isLoading || !ownershipConfirmed || !storeUrl.trim()}
+              className="gap-2 shrink-0"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Scanning…
+                </>
+              ) : (
+                <>
+                  <Search className="h-4 w-4" />
+                  Find Products
+                </>
+              )}
+            </Button>
+          </div>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {!ownershipConfirmed && (
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <Info className="h-3 w-3" />
+              Confirm ownership above to proceed
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* How it works */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        {[
+          { icon: Search, title: 'Scan', desc: 'We scan your store page to find all products' },
+          { icon: Package, title: 'Select', desc: 'Choose which products to import' },
+          { icon: CheckCircle, title: 'Import', desc: 'Products are created with metadata & images' },
+        ].map(({ icon: Icon, title, desc }) => (
+          <div key={title} className="flex items-start gap-3 p-3 rounded-lg border bg-muted/20">
+            <div className="p-2 rounded-md bg-primary/10">
+              <Icon className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">{title}</p>
+              <p className="text-xs text-muted-foreground">{desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

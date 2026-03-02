@@ -5886,6 +5886,8 @@ export type Database = {
           is_verified_purchase: boolean | null
           product_id: string | null
           rating: number
+          seller_replied_at: string | null
+          seller_reply: string | null
           title: string | null
           updated_at: string
           user_id: string
@@ -5903,6 +5905,8 @@ export type Database = {
           is_verified_purchase?: boolean | null
           product_id?: string | null
           rating: number
+          seller_replied_at?: string | null
+          seller_reply?: string | null
           title?: string | null
           updated_at?: string
           user_id: string
@@ -5920,6 +5924,8 @@ export type Database = {
           is_verified_purchase?: boolean | null
           product_id?: string | null
           rating?: number
+          seller_replied_at?: string | null
+          seller_reply?: string | null
           title?: string | null
           updated_at?: string
           user_id?: string
