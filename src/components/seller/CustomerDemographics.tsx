@@ -28,6 +28,7 @@ export function CustomerDemographics() {
         .select('metadata')
         .eq('store_id', store.id)
         .eq('type', 'sale')
+        .is('refunded_at', null)
         .not('metadata', 'is', null)
         .limit(200);
 

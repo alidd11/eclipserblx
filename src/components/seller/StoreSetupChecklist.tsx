@@ -34,7 +34,7 @@ export function StoreSetupChecklist() {
   const { store } = useSellerStatus();
 
   const { data: setupData, isLoading } = useQuery({
-    queryKey: ['store-setup-checklist', store?.id],
+    queryKey: ['seller-onboarding-wizard', store?.id],
     queryFn: async () => {
       if (!store?.id) return null;
 

@@ -28,17 +28,18 @@ export function ProductHealthDonut() {
 
       const approved = products.filter(p => p.moderation_status === 'approved').length;
       const pending = products.filter(p => p.moderation_status === 'pending').length;
+      const rejected = products.filter(p => p.moderation_status === 'rejected').length;
+      const other = products.length - approved - pending - rejected;
       const nonCompliant = products.filter(p => {
         const plainDesc = (p.description || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
         return plainDesc.length < 100 || !p.asset_file_url;
       }).length;
-      const other = products.length - approved - pending;
 
       const chartData = [];
       if (approved > 0) chartData.push({ name: 'Approved', value: approved });
       if (pending > 0) chartData.push({ name: 'Pending', value: pending });
-      if (nonCompliant > 0) chartData.push({ name: 'Needs Fix', value: nonCompliant });
-      if (other > 0 && other !== approved) chartData.push({ name: 'Other', value: other });
+      if (rejected > 0) chartData.push({ name: 'Rejected', value: rejected });
+      if (other > 0) chartData.push({ name: 'Other', value: other });
 
       return { chartData, total: products.length, approved, pending, nonCompliant };
     },
