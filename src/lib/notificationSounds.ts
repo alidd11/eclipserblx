@@ -2,6 +2,7 @@
  * Notification Sound Library
  * Provides customizable sounds for different notification types
  */
+import { safeStorage } from '@/lib/safeStorage';
 
 export type NotificationType = 'success' | 'error' | 'info' | 'warning' | 'message' | 'order';
 export type SoundOption = 'default' | 'chime' | 'bell' | 'pop' | 'ding' | 'whoosh' | 'none';
@@ -54,7 +55,7 @@ const DEFAULT_PREFERENCES: SoundPreferences = {
 
 export function getSoundPreferences(): SoundPreferences {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = safeStorage.getItem(STORAGE_KEY);
     if (saved) {
       return { ...DEFAULT_PREFERENCES, ...JSON.parse(saved) };
     }
@@ -67,7 +68,7 @@ export function getSoundPreferences(): SoundPreferences {
 export function saveSoundPreferences(prefs: Partial<SoundPreferences>): void {
   const current = getSoundPreferences();
   const updated = { ...current, ...prefs };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  safeStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 }
 
 // Web Audio API sound generators
@@ -205,7 +206,7 @@ export function playNotificationSound(type: NotificationType = 'info'): void {
   const soundOption = prefs[type] || 'default';
   
   // Check if sound is globally enabled
-  const soundEnabled = localStorage.getItem('notification-sound-enabled') !== 'false';
+  const soundEnabled = safeStorage.getItem('notification-sound-enabled') !== 'false';
   if (!soundEnabled || soundOption === 'none') return;
   
   const ctx = createAudioContext();
