@@ -42,9 +42,9 @@ export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_pro
   const [showInfo, setShowInfo] = useState(false);
 
   const cookieBannerVisible = showBanner && !showSettings;
-  // Cookie banner is ~120px on mobile with text wrapping + buttons
+  // Cookie banner is ~40px slim single row
   const bottomOffset = cookieBannerVisible
-    ? 'calc(10rem + env(safe-area-inset-bottom, 0px))'
+    ? 'calc(4rem + env(safe-area-inset-bottom, 0px))'
     : 'max(1.5rem, env(safe-area-inset-bottom, 0px) + 1rem)';
 
   // Hide the chat widget on admin pages only
@@ -94,7 +94,7 @@ export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_pro
           className="fixed z-[9998] h-6 w-6 rounded-full bg-muted shadow-sm touch-manipulation cursor-pointer flex items-center justify-center hover:bg-muted transition-colors"
           style={{
             bottom: cookieBannerVisible
-              ? 'calc(11.5rem + env(safe-area-inset-bottom, 0px))'
+              ? 'calc(5.5rem + env(safe-area-inset-bottom, 0px))'
               : 'max(4.5rem, env(safe-area-inset-bottom, 0px) + 4rem)',
             right: 'max(1.5rem, env(safe-area-inset-right, 0px) + 1rem)',
           }}

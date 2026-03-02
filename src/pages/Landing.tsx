@@ -23,7 +23,7 @@ const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
 
       {/* Promotions + Discord — side by side on desktop for density */}
       <SectionErrorBoundary section="promotions" compact>
-        <div className="px-4 sm:px-6 lg:px-8 -mt-6 relative z-20 space-y-3">
+        <div className="px-4 sm:px-6 lg:px-8 -mt-10 relative z-20 space-y-3">
           <div className="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
             <PromotionCarousel />
             <PWADiscordBanner />

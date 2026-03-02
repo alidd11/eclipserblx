@@ -21,31 +21,31 @@ export function CookieConsentBanner() {
             className="fixed bottom-0 left-0 right-0 z-[200] border-t border-border bg-card/95 backdrop-blur-sm"
             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
-            <div className="px-4 pt-3 pb-3 flex flex-col gap-2.5">
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
+            <div className="px-4 py-2.5 flex items-center gap-3">
+              <p className="text-[10px] text-muted-foreground leading-snug flex-1 min-w-0">
                 {t('cookies.description')}{' '}
                 <Link to="/privacy" className="text-foreground hover:text-primary underline underline-offset-2 transition-colors">
                   {t('auth.privacyPolicy')}
-                </Link>.
+                </Link>
               </p>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={rejectNonEssential}
-                  className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
                 >
                   {t('cookies.rejectNonEssential')}
                 </button>
                 <button
                   onClick={openSettings}
-                  className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
                 >
                   {t('cookies.customize')}
                 </button>
                 <Button
                   size="sm"
                   onClick={acceptAll}
-                  className="h-7 px-4 text-[11px] uppercase tracking-wider font-bold rounded-sm ml-auto"
+                  className="h-6 px-3 text-[10px] uppercase tracking-wider font-bold rounded-sm"
                 >
                   {t('cookies.acceptAll')}
                 </Button>
