@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, forwardRef } from 'react';
 import { safeStorage } from '@/lib/safeStorage';
 
 export interface CookiePreferences {
@@ -29,7 +29,7 @@ const defaultPreferences: CookiePreferences = {
 
 const CookieConsentContext = createContext<CookieConsentContextType | undefined>(undefined);
 
-export function CookieConsentProvider({ children }: { children: React.ReactNode }) {
+export const CookieConsentProvider = forwardRef<HTMLDivElement, { children: React.ReactNode }>(function CookieConsentProvider({ children }, _ref) {
   const [hasConsented, setHasConsented] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>(defaultPreferences);
   const [showBanner, setShowBanner] = useState(false);
@@ -113,7 +113,7 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
       {children}
     </CookieConsentContext.Provider>
   );
-}
+});
 
 export function useCookieConsent() {
   const context = useContext(CookieConsentContext);
