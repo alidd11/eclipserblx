@@ -9038,6 +9038,10 @@ export type Database = {
         Args: { p_ad_id: string; p_is_unique: boolean }
         Returns: undefined
       }
+      increment_promotion_impression: {
+        Args: { p_date: string; p_promotion_id: string }
+        Returns: undefined
+      }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       is_store_owner: {
         Args: { store_uuid: string; user_uuid: string }
