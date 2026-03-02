@@ -149,31 +149,31 @@ export function LandingHero() {
               {t('landing.description')}
             </p>
 
-            <div className="flex justify-center items-center gap-2 mb-5">
-              <Link to="/products">
-                <Button size="sm" className="h-8 px-3 text-xs">
+            <div className="space-y-3 mb-5">
+              <Link to="/products" className="block">
+                <Button size="sm" className="w-full h-10 text-sm font-semibold">
                   Browse Marketplace
-                  <ArrowRight className="ml-1.5 h-3 w-3" />
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              {!isSeller && (
-                <Link to="/seller">
-                  <Button size="sm" variant="outline" className="h-8 px-3 text-xs">
-                    <Store className="h-3.5 w-3.5 sm:mr-1.5" />
-                    <span className="hidden sm:inline">Sell</span>
-                  </Button>
-                </Link>
-              )}
-              <Link to="/eclipse-plus">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 px-3 text-xs text-amber-500 border-amber-500/30 hover:text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50"
+              <div className="flex justify-center items-center gap-5">
+                {!isSeller && (
+                  <Link
+                    to="/seller"
+                    className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+                  >
+                    <Store className="h-3.5 w-3.5" />
+                    Start Selling
+                  </Link>
+                )}
+                <Link
+                  to="/eclipse-plus"
+                  className="text-xs font-medium text-amber-500/80 hover:text-amber-400 transition-colors flex items-center gap-1.5"
                 >
-                  <Sparkles className="h-3.5 w-3.5 sm:mr-1.5" />
+                  <Sparkles className="h-3.5 w-3.5" />
                   Eclipse+
-                </Button>
-              </Link>
+                </Link>
+              </div>
             </div>
 
             <div className="flex items-center justify-center gap-1.5 overflow-hidden">
