@@ -54,7 +54,32 @@ Deno.serve(async (req) => {
       throw new Error('Wise API key not configured');
     }
 
+    // Auth guard: require service-role or authenticated staff
+    const authHeader = req.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+    const isServiceRole = token === supabaseServiceKey;
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    if (!isServiceRole) {
+      if (!token) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+      const { data: hasPermission } = await supabase.rpc('has_permission', {
+        _user_id: user.id,
+        _permission_name: 'process_seller_payouts'
+      });
+      if (!hasPermission) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+    }
 
     logStep('Starting scheduled check for pending payouts');
 

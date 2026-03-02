@@ -209,8 +209,8 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/advertise?success=true&ad_id=${advertisement.id}`,
-      cancel_url: `${req.headers.get("origin")}/advertise?cancelled=true`,
+      success_url: `https://eclipserblx.com/advertise?success=true&ad_id=${advertisement.id}`,
+      cancel_url: `https://eclipserblx.com/advertise?cancelled=true`,
       metadata: {
         advertisement_id: advertisement.id,
         type: "discord_advertisement",
