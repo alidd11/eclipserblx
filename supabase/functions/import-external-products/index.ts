@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+// Using Deno.serve (modern API)
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
@@ -716,7 +716,7 @@ async function downloadAndUploadImage(
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -750,7 +750,16 @@ serve(async (req) => {
       );
     }
 
-    const { action, storeUrl, productUrl, productUrls, platform, downloadImages, targetStoreId, categoryOverride } = await req.json().catch(() => ({}));
+    let body: Record<string, unknown> = {};
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ success: false, error: "Invalid JSON body" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const { action, storeUrl, productUrl, productUrls, platform, downloadImages, targetStoreId, categoryOverride } = body as any;
 
     // Validate action
     const validActions = ['list', 'details', 'bulk-details', 'history'];
@@ -1255,9 +1264,10 @@ serve(async (req) => {
     );
 
   } catch (error: unknown) {
-    console.error("Import error:", error);
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error("Import error:", errMsg, error);
     return new Response(
-      JSON.stringify({ success: false, error: "Import failed" }),
+      JSON.stringify({ success: false, error: `Import failed: ${errMsg}` }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
