@@ -12,23 +12,20 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[GIFT-CREDITS] ${step}${detailsStr}`);
 };
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Rate limit
+    // Rate limit - strict for financial operations
     const clientIp = getClientIp(req);
-    const rl = checkRateLimit({ ...RATE_LIMITS.WRITE, identifier: clientIp, action: 'gift-credits' });
+    const rl = checkRateLimit({ ...RATE_LIMITS.AUTH, identifier: clientIp, action: 'gift-credits' });
     if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
 
     logStep("Function started");
-
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -41,19 +38,21 @@ serve(async (req) => {
     if (!authHeader) throw new Error("No authorization header provided");
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     
     const adminUser = userData.user;
     if (!adminUser) throw new Error("User not authenticated");
     logStep("User authenticated", { userId: adminUser.id });
 
-    // Check if user is staff
-    const { data: isStaff, error: staffError } = await supabaseAdmin.rpc('is_staff', { 
-      _user_id: adminUser.id 
-    });
-    
-    if (staffError || !isStaff) {
+    // Check if user is staff via user_roles table
+    const { data: roles } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", adminUser.id);
+
+    const isStaff = roles?.some(r => ['admin', 'staff', 'moderator', 'head_moderator'].includes(r.role));
+    if (!isStaff) {
       throw new Error("Only staff members can gift credits");
     }
     logStep("Staff verification passed");
@@ -62,9 +61,13 @@ serve(async (req) => {
     const { targetUserId, amount, reason } = await req.json();
 
     // Validate targetUserId is a valid UUID
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!targetUserId || typeof targetUserId !== 'string' || !uuidRegex.test(targetUserId)) {
+    if (!targetUserId || typeof targetUserId !== 'string' || !UUID_REGEX.test(targetUserId)) {
       throw new Error("Invalid target user ID");
+    }
+
+    // Prevent gifting to self
+    if (targetUserId === adminUser.id) {
+      throw new Error("Cannot gift credits to yourself");
     }
 
     // Validate reason length
@@ -72,22 +75,20 @@ serve(async (req) => {
       throw new Error("Reason must be under 500 characters");
     }
     
-    if (!targetUserId) throw new Error("Target user ID is required");
-    
     // Validate amount (minimum £0.01, maximum £1000.00)
     const amountNum = parseFloat(amount);
-    if (isNaN(amountNum) || amountNum < 0.01 || amountNum > 1000) {
+    if (isNaN(amountNum) || !isFinite(amountNum) || amountNum < 0.01 || amountNum > 1000) {
       throw new Error("Amount must be between £0.01 and £1000.00");
     }
 
     const creditAmount = Math.round(amountNum * 100) / 100;
     
-    logStep("Gift request", { targetUserId, creditAmount, reason });
+    logStep("Gift request", { targetUserId, creditAmount });
 
     // Verify target user exists
     const { data: targetProfile } = await supabaseAdmin
       .from("profiles")
-      .select("user_id, display_name, email")
+      .select("user_id, display_name")
       .eq("user_id", targetUserId)
       .maybeSingle();
 
@@ -108,14 +109,10 @@ serve(async (req) => {
 
     if (creditError) {
       logStep("ERROR adding credits", { error: creditError.message });
-      throw new Error(`Failed to add credits: ${creditError.message}`);
+      throw new Error("Failed to add credits");
     }
 
-    logStep("Credits gifted successfully", { 
-      targetUserId, 
-      amount: creditAmount, 
-      transactionId: transaction?.id 
-    });
+    logStep("Credits gifted successfully", { targetUserId, amount: creditAmount });
 
     // Create notification for the recipient
     await supabaseAdmin
@@ -127,13 +124,20 @@ serve(async (req) => {
         type: "general",
       });
 
+    // Audit log
+    await supabaseAdmin.from("audit_logs").insert({
+      user_id: adminUser.id,
+      action: "credits_gifted",
+      resource: "credit_balances",
+      details: { target_user_id: targetUserId, amount: creditAmount, reason },
+    });
+
     return new Response(JSON.stringify({ 
       success: true, 
       amount: creditAmount,
       targetUser: {
         id: targetProfile.user_id,
         name: targetProfile.display_name,
-        email: targetProfile.email,
       }
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

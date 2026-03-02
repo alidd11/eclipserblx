@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,12 +12,22 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[PROCESS-AFFILIATE-PAYOUT] ${step}${detailsStr}`);
 };
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Rate limit - strict for financial operations
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.AUTH, identifier: clientIp, action: 'process-affiliate-payout' });
+    if (!rl.allowed) {
+      logStep("Rate limit exceeded", { ip: clientIp });
+      return rateLimitResponse(rl, corsHeaders);
+    }
+
     logStep("Function started");
 
     const supabaseClient = createClient(
@@ -25,7 +36,7 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Check if request is from staff
+    // Authenticate
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
 
@@ -42,7 +53,11 @@ serve(async (req) => {
     logStep("Staff authenticated", { staffUserId: staffUser.id });
 
     const { payoutId } = await req.json();
-    if (!payoutId) throw new Error("Payout ID is required");
+
+    // Validate payoutId is a valid UUID
+    if (!payoutId || typeof payoutId !== 'string' || !UUID_REGEX.test(payoutId)) {
+      throw new Error("Invalid payout ID format");
+    }
 
     // Get payout details
     const { data: payout, error: payoutError } = await supabaseClient
@@ -58,7 +73,6 @@ serve(async (req) => {
     const payoutMethod = payout.payout_method || 'paypal';
 
     if (payoutMethod === 'stripe') {
-      // Stripe payouts should already be processed automatically
       throw new Error("Stripe payouts are processed automatically. This payout may have already been completed.");
     }
 
@@ -67,11 +81,15 @@ serve(async (req) => {
       throw new Error("No PayPal email associated with this payout request");
     }
 
+    // Validate payout amount is reasonable
+    if (typeof payout.amount !== 'number' || payout.amount <= 0 || payout.amount > 1000000) {
+      throw new Error("Invalid payout amount");
+    }
+
     logStep("Processing PayPal payout", { 
       payoutId, 
       amount: payout.amount, 
       userId: payout.user_id,
-      paypalEmail: payout.paypal_email 
     });
 
     // Mark as completed - staff will manually send PayPal payment
@@ -81,9 +99,10 @@ serve(async (req) => {
         status: 'completed',
         processed_at: new Date().toISOString(),
         processed_by: staffUser.id,
-        notes: `PayPal payment to be sent to: ${payout.paypal_email}`,
+        notes: `PayPal payout processed by staff`,
       })
-      .eq('id', payoutId);
+      .eq('id', payoutId)
+      .eq('status', 'pending'); // Optimistic concurrency check
 
     if (updateError) {
       throw new Error("Failed to update payout status");
@@ -106,16 +125,22 @@ serve(async (req) => {
         .eq('user_id', payout.user_id);
     }
 
+    // Audit log
+    await supabaseClient.from('audit_logs').insert({
+      user_id: staffUser.id,
+      action: 'affiliate_payout_processed',
+      resource: 'affiliate_payouts',
+      details: { payout_id: payoutId, amount: payout.amount, method: payoutMethod },
+    });
+
     logStep("Payout marked as completed", { 
       payoutId, 
-      paypalEmail: payout.paypal_email,
       amount: `£${(payout.amount / 100).toFixed(2)}` 
     });
 
     return new Response(JSON.stringify({ 
       success: true,
-      message: `Payout marked as completed. Please send £${(payout.amount / 100).toFixed(2)} to ${payout.paypal_email} via PayPal.`,
-      paypalEmail: payout.paypal_email,
+      message: `Payout marked as completed. Amount: £${(payout.amount / 100).toFixed(2)}`,
       amount: payout.amount,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
