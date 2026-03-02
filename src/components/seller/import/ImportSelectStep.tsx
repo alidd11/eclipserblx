@@ -13,8 +13,12 @@ import {
   Collapsible, CollapsibleContent, CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import {
-  Search, Image, Globe, Sparkles, ArrowLeft, ArrowRight, ImageOff,
-  ChevronDown, Tag,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  Search, Image, Globe, ArrowLeft, ArrowRight, ImageOff,
+  ChevronDown, Tag, EyeOff, Zap,
 } from 'lucide-react';
 import { ExternalProduct } from '@/lib/api/productImport';
 import { useQuery } from '@tanstack/react-query';
@@ -34,10 +38,11 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
   });
   const [downloadImages, setDownloadImages] = useState(true);
   const [searchFilter, setSearchFilter] = useState('');
+  const [hideImported, setHideImported] = useState(false);
   const [categoryOverrides, setCategoryOverrides] = useState<Record<string, string>>({});
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  // Fetch categories for override dropdown
   const { data: categories } = useQuery({
     queryKey: ['categories-for-import'],
     queryFn: async () => {
@@ -54,10 +59,12 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
   const alreadyImportedCount = products.length - notImported.length;
 
   const filteredProducts = useMemo(() =>
-    products.filter(p =>
-      !searchFilter || p.name.toLowerCase().includes(searchFilter.toLowerCase())
-    ),
-    [products, searchFilter]
+    products.filter(p => {
+      if (hideImported && p.alreadyImported) return false;
+      if (searchFilter && !p.name.toLowerCase().includes(searchFilter.toLowerCase())) return false;
+      return true;
+    }),
+    [products, searchFilter, hideImported]
   );
 
   const toggleProduct = (sourceUrl: string) => {
@@ -87,8 +94,15 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
   };
 
   const platformLabel = platform === 'clearlydev' ? 'ClearlyDev' : platform === 'builtbybit' ? 'BuiltByBit' : platform;
-
   const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').trim();
+
+  const handleImportClick = () => {
+    if (selectedProducts.size > 5) {
+      setConfirmOpen(true);
+    } else {
+      onImport(Array.from(selectedProducts), downloadImages);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -106,12 +120,23 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
             )}
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <Switch id="download-images" checked={downloadImages} onCheckedChange={setDownloadImages} />
-          <Label htmlFor="download-images" className="text-xs flex items-center gap-1 cursor-pointer">
-            <Image className="h-3 w-3" />
-            Download images
-          </Label>
+        <div className="flex items-center gap-4">
+          {alreadyImportedCount > 0 && (
+            <div className="flex items-center gap-2">
+              <Switch id="hide-imported" checked={hideImported} onCheckedChange={setHideImported} />
+              <Label htmlFor="hide-imported" className="text-xs flex items-center gap-1 cursor-pointer">
+                <EyeOff className="h-3 w-3" />
+                Hide imported
+              </Label>
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <Switch id="download-images" checked={downloadImages} onCheckedChange={setDownloadImages} />
+            <Label htmlFor="download-images" className="text-xs flex items-center gap-1 cursor-pointer">
+              <Image className="h-3 w-3" />
+              Download images
+            </Label>
+          </div>
         </div>
       </div>
 
@@ -211,7 +236,6 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
                 {/* Expandable description & category override */}
                 {(plainDesc || (categories && categories.length > 0)) && isSelected && !isImported && (
                   <div className="space-y-2 pt-1 border-t border-border/50">
-                    {/* Description preview */}
                     {plainDesc && (
                       <Collapsible open={isExpanded} onOpenChange={() => toggleDescription(product.sourceUrl)}>
                         <CollapsibleTrigger className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors w-full text-left">
@@ -226,7 +250,6 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
                       </Collapsible>
                     )}
 
-                    {/* Category override */}
                     {categories && categories.length > 0 && (
                       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         <Tag className="h-3 w-3 text-muted-foreground shrink-0" />
@@ -268,15 +291,35 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
             {selectedProducts.size} selected
           </span>
           <Button
-            onClick={() => onImport(Array.from(selectedProducts), downloadImages)}
+            onClick={handleImportClick}
             disabled={selectedProducts.size === 0}
             className="gap-2"
           >
+            <Zap className="h-4 w-4" />
             Import {selectedProducts.size > 0 ? `(${selectedProducts.size})` : ''}
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
+
+      {/* Confirmation dialog for large imports */}
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Import {selectedProducts.size} products?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will import {selectedProducts.size} products{downloadImages ? ' including downloading all images' : ''}.
+              This may take a few minutes. You can cancel at any time during the import.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => onImport(Array.from(selectedProducts), downloadImages)}>
+              Start Import
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
