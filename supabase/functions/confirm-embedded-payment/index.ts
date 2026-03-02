@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,12 +13,21 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[CONFIRM-EMBEDDED-PAYMENT] ${step}${detailsStr}`);
 };
 
+// Validate Stripe ID format
+const isValidStripeId = (id: string, prefix: string): boolean =>
+  typeof id === 'string' && id.startsWith(prefix + '_') && id.length > prefix.length + 1 && id.length < 100;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Rate limit
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.WRITE, identifier: clientIp, action: 'confirm-embedded-payment' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     logStep("Function started");
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -30,7 +40,13 @@ serve(async (req) => {
     );
 
     const { paymentIntentId, setupIntentId, tier, billingPeriod } = await req.json();
-    
+
+    // Validate input formats
+    if (paymentIntentId && !isValidStripeId(paymentIntentId, 'pi')) throw new Error("Invalid payment intent ID");
+    if (setupIntentId && !isValidStripeId(setupIntentId, 'seti')) throw new Error("Invalid setup intent ID");
+    if (tier && (typeof tier !== 'string' || tier.length > 50)) throw new Error("Invalid tier");
+    if (billingPeriod && !['monthly', 'annual'].includes(billingPeriod)) throw new Error("Invalid billing period");
+
     // Authenticate user
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("Authorization required");

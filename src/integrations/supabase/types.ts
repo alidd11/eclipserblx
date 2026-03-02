@@ -9025,6 +9025,10 @@ export type Database = {
       }
       has_premium_global_guard: { Args: { _user_id: string }; Returns: boolean }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
+      increment_ad_clicks: {
+        Args: { p_ad_id: string; p_is_unique: boolean }
+        Returns: undefined
+      }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       is_store_owner: {
         Args: { store_uuid: string; user_uuid: string }

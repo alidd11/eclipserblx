@@ -124,6 +124,21 @@ serve(async (req) => {
       );
     }
 
+    // Input length validation
+    if (typeof userMessage !== 'string' || userMessage.length > 2000) {
+      return new Response(
+        JSON.stringify({ error: "Message too long (max 2000 characters)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (typeof conversationId !== 'string' || conversationId.length > 100) {
+      return new Response(
+        JSON.stringify({ error: "Invalid conversation ID" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     console.log("[AI-CHAT] Processing message for conversation:", conversationId);
 
     // Check if user wants to escalate

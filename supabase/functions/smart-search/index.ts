@@ -36,6 +36,14 @@ serve(async (req) => {
       );
     }
 
+    // Input length validation
+    if (query.length > 500) {
+      return new Response(
+        JSON.stringify({ error: "Query too long (max 500 characters)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       console.error("LOVABLE_API_KEY is not configured");
