@@ -111,9 +111,9 @@ export const productImportApi = {
   /**
    * Get full details for a single product
    */
-  async getProductDetails(productUrl: string, downloadImages = false): Promise<ImportDetailsResponse> {
+  async getProductDetails(productUrl: string, downloadImages = false, categoryOverride?: string): Promise<ImportDetailsResponse> {
     const { data, error } = await supabase.functions.invoke('import-external-products', {
-      body: { action: 'details', productUrl, downloadImages },
+      body: { action: 'details', productUrl, downloadImages, categoryOverride },
     });
 
     if (error) {

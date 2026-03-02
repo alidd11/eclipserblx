@@ -126,9 +126,20 @@ function isProductImage(imgUrl: string, imgAlt: string): boolean {
 
 // ─── Store page parsers ────────────────────────────────────────────────────────
 
-function parseClearlyDevStore(markdown: string, storeUrl: string, links?: string[]): ExternalProduct[] {
+function parseClearlyDevStore(markdown: string, storeUrl: string, links?: string[]): { products: ExternalProduct[]; sellerName?: string } {
   const products: ExternalProduct[] = [];
   const seenUrls = new Set<string>();
+
+  // Extract seller name from store URL slug or markdown heading
+  let sellerName: string | undefined;
+  const storeSlugMatch = storeUrl.match(/\/store\/([^\/\?#]+)/);
+  if (storeSlugMatch) {
+    sellerName = storeSlugMatch[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim();
+  }
+  const headingMatch = markdown.match(/^#{1,2}\s+(.+?)(?:\s*(?:Store|Shop|Products))?$/m);
+  if (headingMatch && headingMatch[1].length >= 2 && headingMatch[1].length <= 40) {
+    sellerName = headingMatch[1].trim();
+  }
   
   const productLinkRegex = /\[([^\]]+)\]\((https:\/\/clearlydev\.com\/product\/[^\)]+)\)/g;
   
@@ -182,7 +193,7 @@ function parseClearlyDevStore(markdown: string, storeUrl: string, links?: string
     }
   }
   
-  return products;
+  return { products, sellerName };
 }
 
 /** Extract the rich HTML description block from a ClearlyDev product page */
@@ -558,7 +569,7 @@ async function scrapeUrl(
           url,
           formats: ['markdown', 'html', 'links'],
           onlyMainContent: false,
-          waitFor: 15000,
+          waitFor: 5000,
         }),
       });
 
@@ -731,7 +742,7 @@ serve(async (req) => {
       );
     }
 
-    const { action, storeUrl, productUrl, productUrls, platform, downloadImages, targetStoreId } = await req.json();
+    const { action, storeUrl, productUrl, productUrls, platform, downloadImages, targetStoreId, categoryOverride } = await req.json();
 
     // Validate action
     const validActions = ['list', 'details', 'bulk-details', 'history'];
@@ -859,8 +870,11 @@ serve(async (req) => {
       }
 
       let products: ExternalProduct[] = [];
+      let sellerName: string | undefined;
       if (detectedPlatform === 'clearlydev') {
-        products = parseClearlyDevStore(scrapeResult.markdown!, storeUrl, scrapeResult.links);
+        const result = parseClearlyDevStore(scrapeResult.markdown!, storeUrl, scrapeResult.links);
+        products = result.products;
+        sellerName = result.sellerName;
       } else if (detectedPlatform === 'builtbybit') {
         products = parseBuiltByBitStore(scrapeResult.markdown!, storeUrl);
       }
@@ -939,36 +953,31 @@ serve(async (req) => {
         );
       }
 
-      // Download and re-upload images if requested
+      // Download and re-upload images if requested — in parallel for speed
       if (downloadImages && product.images.length > 0) {
-        console.log(`Downloading ${product.images.length} images...`);
+        console.log(`Downloading ${product.images.length} images in parallel...`);
         const productSlug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30);
-        const uploadedImages: string[] = [];
         
-        for (let i = 0; i < product.images.length; i++) {
-          const uploadedUrl = await downloadAndUploadImage(
-            product.images[i],
-            store.id,
-            productSlug,
-            i,
-            supabaseAdmin
-          );
-          if (uploadedUrl) {
-            uploadedImages.push(uploadedUrl);
-          }
-        }
+        const uploadPromises = product.images.map((imgUrl, i) =>
+          downloadAndUploadImage(imgUrl, store.id, productSlug, i, supabaseAdmin)
+        );
+        const uploadResults = await Promise.all(uploadPromises);
+        const uploadedImages = uploadResults.filter((u): u is string => u !== null);
         
         product.images = uploadedImages.length > 0 ? uploadedImages : product.images;
         console.log(`Successfully uploaded ${uploadedImages.length}/${product.images.length} images`);
       }
 
-      product.suggestedCategoryId = product.suggestedCategoryId 
+      // Use category override if provided, otherwise fall back to suggested
+      const finalCategoryId = categoryOverride || (product.suggestedCategoryId 
         ? categoryMap.get(product.suggestedCategoryId) 
-        : undefined;
+        : undefined);
+      product.suggestedCategoryId = finalCategoryId;
 
-      // Auto-create product record
-      const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80);
-      const uniqueSlug = `${productSlugForDb}-${Date.now().toString(36)}`;
+      // Auto-create product record with robust unique slug
+      const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+      const randomSuffix = crypto.randomUUID().slice(0, 8);
+      const uniqueSlug = `${productSlugForDb}-${randomSuffix}`;
       
       const { data: createdProduct, error: createError } = await supabaseAdmin
         .from('products')
@@ -1075,20 +1084,12 @@ serve(async (req) => {
 
         if (downloadImages && product.images.length > 0) {
           const productSlug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30);
-          const uploadedImages: string[] = [];
           
-          for (let i = 0; i < product.images.length; i++) {
-            const uploadedUrl = await downloadAndUploadImage(
-              product.images[i],
-              store.id,
-              productSlug,
-              i,
-              supabaseAdmin
-            );
-            if (uploadedUrl) {
-              uploadedImages.push(uploadedUrl);
-            }
-          }
+          const uploadPromises = product.images.map((imgUrl, i) =>
+            downloadAndUploadImage(imgUrl, store.id, productSlug, i, supabaseAdmin)
+          );
+          const uploadResults = await Promise.all(uploadPromises);
+          const uploadedImages = uploadResults.filter((u): u is string => u !== null);
           
           if (uploadedImages.length > 0) {
             product.images = uploadedImages;
@@ -1099,8 +1100,9 @@ serve(async (req) => {
           ? categoryMap.get(product.suggestedCategoryId) 
           : undefined;
 
-        const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80);
-        const uniqueSlug = `${productSlugForDb}-${Date.now().toString(36)}`;
+        const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+        const randomSuffix = crypto.randomUUID().slice(0, 8);
+        const uniqueSlug = `${productSlugForDb}-${randomSuffix}`;
         
         const { data: createdProduct, error: createError } = await supabaseAdmin
           .from('products')

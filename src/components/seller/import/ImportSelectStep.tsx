@@ -28,7 +28,7 @@ interface ImportSelectStepProps {
   products: ExternalProduct[];
   platform: string | null;
   onBack: () => void;
-  onImport: (urls: string[], downloadImages: boolean) => void;
+  onImport: (urls: string[], downloadImages: boolean, categoryOverrides?: Record<string, string>) => void;
 }
 
 export function ImportSelectStep({ products, platform, onBack, onImport }: ImportSelectStepProps) {
@@ -96,11 +96,20 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
   const platformLabel = platform === 'clearlydev' ? 'ClearlyDev' : platform === 'builtbybit' ? 'BuiltByBit' : platform;
   const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').trim();
 
+  // Build overrides map for only selected products that have overrides
+  const getActiveOverrides = () => {
+    const active: Record<string, string> = {};
+    for (const url of selectedProducts) {
+      if (categoryOverrides[url]) active[url] = categoryOverrides[url];
+    }
+    return Object.keys(active).length > 0 ? active : undefined;
+  };
+
   const handleImportClick = () => {
     if (selectedProducts.size > 5) {
       setConfirmOpen(true);
     } else {
-      onImport(Array.from(selectedProducts), downloadImages);
+      onImport(Array.from(selectedProducts), downloadImages, getActiveOverrides());
     }
   };
 
@@ -314,7 +323,7 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => onImport(Array.from(selectedProducts), downloadImages)}>
+            <AlertDialogAction onClick={() => onImport(Array.from(selectedProducts), downloadImages, getActiveOverrides())}>
               Start Import
             </AlertDialogAction>
           </AlertDialogFooter>

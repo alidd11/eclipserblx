@@ -19,6 +19,7 @@ interface ImportProgressStepProps {
   urls: string[];
   products: ExternalProduct[];
   downloadImages: boolean;
+  categoryOverrides?: Record<string, string>;
   concurrency?: number;
   onComplete: (results: ProductImportStatus[]) => void;
 }
@@ -27,6 +28,7 @@ export function ImportProgressStep({
   urls,
   products,
   downloadImages,
+  categoryOverrides,
   concurrency = 2,
   onComplete,
 }: ImportProgressStepProps) {
@@ -90,7 +92,7 @@ export function ImportProgressStep({
           );
 
           try {
-            const result = await productImportApi.getProductDetails(url, downloadImages);
+            const result = await productImportApi.getProductDetails(url, downloadImages, categoryOverrides?.[url]);
             const duration = Date.now() - itemStart;
 
             if (cancelledRef.current) {
@@ -150,7 +152,7 @@ export function ImportProgressStep({
     return () => {
       abortRef.current?.abort();
     };
-  }, [urls, products, downloadImages, concurrency, onComplete]);
+  }, [urls, products, downloadImages, categoryOverrides, concurrency, onComplete]);
 
   return (
     <Card>
