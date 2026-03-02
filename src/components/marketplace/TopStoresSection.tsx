@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Store, ShieldCheck, Award, ChevronRight, Megaphone } from 'lucide-react';
@@ -90,36 +90,19 @@ export const TopStoresSection = forwardRef<HTMLDivElement>(function TopStoresSec
   const store = promotedStore || fallbackStores?.[0];
   const isPromoted = !!(promotedStore);
 
-  // Track impression for promoted store
-  useQuery({
-    queryKey: ['store-spotlight-impression', (promotedStore as any)?.promotionId],
-    queryFn: async () => {
-      const promoId = (promotedStore as any)?.promotionId;
-      if (!promoId) return null;
-      const today = new Date().toISOString().split('T')[0];
-      // Upsert today's analytics row, incrementing impressions
-      const { data: existing } = await supabase
-        .from('promotion_analytics')
-        .select('id, impressions')
-        .eq('promotion_id', promoId)
-        .eq('date', today)
-        .maybeSingle();
+  // Track impression for promoted store (fire-and-forget, atomic)
+  const impressionTracked = useRef(false);
+  useEffect(() => {
+    const promoId = (promotedStore as any)?.promotionId;
+    if (!promoId || impressionTracked.current) return;
+    impressionTracked.current = true;
 
-      if (existing) {
-        await supabase
-          .from('promotion_analytics')
-          .update({ impressions: (existing.impressions || 0) + 1 })
-          .eq('id', existing.id);
-      } else {
-        await supabase
-          .from('promotion_analytics')
-          .insert({ promotion_id: promoId, date: today, impressions: 1, clicks: 0 });
-      }
-      return true;
-    },
-    enabled: !!promotedStore,
-    staleTime: 1000 * 60 * 5, // Only once per 5 min
-  });
+    const today = new Date().toISOString().split('T')[0];
+    supabase.rpc('increment_promotion_impression', {
+      p_promotion_id: promoId,
+      p_date: today,
+    }).then(() => {}, () => { /* silently ignore analytics errors */ });
+  }, [promotedStore]);
 
   if (!isLoading && !store) {
     return null;

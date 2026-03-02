@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useCredits } from '@/hooks/useCredits';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Eye, MousePointerClick, Pause, Play, X, TrendingUp, Megaphone } from 'lucide-react';
+import { Eye, MousePointerClick, Pause, Play, X, TrendingUp, Megaphone, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Promotion {
@@ -36,8 +37,10 @@ const statusConfig: Record<string, { label: string; className: string }> = {
 
 export function PromotionCard({ promotion }: { promotion: Promotion }) {
   const queryClient = useQueryClient();
+  const { balance } = useCredits();
   const [showRebid, setShowRebid] = useState(false);
   const [newBid, setNewBid] = useState(Math.max(promotion.max_bid + 1, 5));
+  const rebidExceedsBalance = newBid > balance;
   const ctr = promotion.impressions > 0 ? ((promotion.clicks / promotion.impressions) * 100).toFixed(1) : '0.0';
   const config = statusConfig[promotion.status] || statusConfig.pending_auction;
 
@@ -112,33 +115,41 @@ export function PromotionCard({ promotion }: { promotion: Promotion }) {
 
             {/* Re-bid input */}
             {showRebid && (
-              <div className="flex items-center gap-2 mt-2">
-                <Input
-                  type="number"
-                  min={Math.max(promotion.max_bid + 1, 5)}
-                  max={500}
-                  value={newBid}
-                  onChange={(e) => setNewBid(Math.max(5, parseInt(e.target.value) || 5))}
-                  className="h-6 w-20 text-xs"
-                  placeholder="New bid"
-                />
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="h-6 text-[10px] px-2"
-                  onClick={() => updateStatus.mutate({ newStatus: 'pending_auction', bidAmount: newBid })}
-                  disabled={updateStatus.isPending || newBid < 5}
-                >
-                  Confirm
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 text-[10px] px-2"
-                  onClick={() => setShowRebid(false)}
-                >
-                  Cancel
-                </Button>
+              <div className="space-y-1.5 mt-2">
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={Math.max(promotion.max_bid + 1, 5)}
+                    max={500}
+                    value={newBid}
+                    onChange={(e) => setNewBid(Math.max(5, parseInt(e.target.value) || 5))}
+                    className="h-6 w-20 text-xs"
+                    placeholder="New bid"
+                  />
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="h-6 text-[10px] px-2"
+                    onClick={() => updateStatus.mutate({ newStatus: 'pending_auction', bidAmount: newBid })}
+                    disabled={updateStatus.isPending || newBid < 5 || rebidExceedsBalance}
+                  >
+                    Confirm
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-[10px] px-2"
+                    onClick={() => setShowRebid(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+                {rebidExceedsBalance && (
+                  <p className="flex items-center gap-1 text-[10px] text-destructive">
+                    <AlertTriangle className="h-3 w-3" />
+                    Insufficient credits (£{balance.toFixed(0)} available)
+                  </p>
+                )}
               </div>
             )}
 
