@@ -1,91 +1,100 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface VerifyCodeRequest {
-  code: string;
-  conversationId: string;
-}
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// BOT-XXXX-XXXX-XXXX format
+const BOT_CODE_REGEX = /^BOT-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Rate limit
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.WRITE, identifier: clientIp, action: 'verify-chat-code' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     
-    // Create service client for database operations
     const supabaseService = createClient(supabaseUrl, supabaseServiceKey);
     
-    // Get the user from the auth header
+    // Auth check
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized', verified: false, masked_code: '' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Create user client to get the authenticated user
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } }
     });
 
     const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
     if (userError || !user) {
-      console.error('Auth error:', userError);
       return new Response(
         JSON.stringify({ error: 'Unauthorized', verified: false, masked_code: '' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Parse request body
-    const { code, conversationId }: VerifyCodeRequest = await req.json();
+    const { code, conversationId } = await req.json();
 
-    if (!code || !conversationId) {
+    // Input validation
+    if (!code || typeof code !== 'string' || code.length > 50) {
       return new Response(
-        JSON.stringify({ error: 'Missing code or conversationId', verified: false, masked_code: '' }),
+        JSON.stringify({ error: 'Invalid code format', verified: false, masked_code: '' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Verifying code for user ${user.id} in conversation ${conversationId}`);
+    if (!conversationId || typeof conversationId !== 'string' || !UUID_REGEX.test(conversationId)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid conversation ID', verified: false, masked_code: '' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    // Mask the code for display (BOT-XXXX-XXXX-XXXX -> BOT-****-****-****)
-    const maskCode = (code: string): string => {
-      const parts = code.split('-');
+    const normalizedCode = code.toUpperCase().trim();
+
+    // Validate code format
+    if (!BOT_CODE_REGEX.test(normalizedCode)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid code format', verified: false, masked_code: '' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Mask the code for display
+    const maskCode = (c: string): string => {
+      const parts = c.split('-');
       if (parts.length === 4 && parts[0] === 'BOT') {
         return `BOT-****-****-${parts[3].slice(-2)}**`;
       }
-      // Fallback: show first 4 and last 2 chars
-      if (code.length > 6) {
-        return code.slice(0, 4) + '*'.repeat(code.length - 6) + code.slice(-2);
-      }
-      return '*'.repeat(code.length);
+      return '*'.repeat(c.length);
     };
 
-    const maskedCode = maskCode(code.toUpperCase());
+    const maskedCode = maskCode(normalizedCode);
 
-    // Look up the code in the database
-    // The code must belong to the authenticated user
+    // Look up the code - must belong to the authenticated user
     const { data: codeData, error: codeError } = await supabaseService
       .from('bot_installation_codes')
       .select('id, installation_code, product_name, user_id, is_used, status')
-      .eq('installation_code', code.toUpperCase())
+      .eq('installation_code', normalizedCode)
       .eq('user_id', user.id)
       .single();
 
     if (codeError || !codeData) {
-      console.log('Code not found or does not belong to user:', codeError?.message);
-      
       // Insert a verification message even if failed
       await supabaseService.from('chat_messages').insert({
         conversation_id: conversationId,
@@ -110,10 +119,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('Code verified successfully:', codeData.id);
-
-    // Insert a verification message in the chat
-    const { error: insertError } = await supabaseService.from('chat_messages').insert({
+    // Insert verification message
+    await supabaseService.from('chat_messages').insert({
       conversation_id: conversationId,
       message: `[Code Verification] ${maskedCode}`,
       sender_type: 'customer',
@@ -127,10 +134,6 @@ Deno.serve(async (req) => {
         status: codeData.status
       }
     });
-
-    if (insertError) {
-      console.error('Error inserting verification message:', insertError);
-    }
 
     return new Response(
       JSON.stringify({ 

@@ -90,11 +90,10 @@ Deno.serve(async (req) => {
     }
 
     if (ban) {
-      console.log(`IP ${clientIp} is banned. Reason: ${ban.reason || 'No reason provided'}`);
+      console.log(`IP banned. Reason: ${ban.reason || 'No reason provided'}`);
       return new Response(
         JSON.stringify({
           banned: true,
-          ip: clientIp,
           reason: ban.reason || 'Your IP address has been banned.',
           expires_at: ban.expires_at,
         }),
@@ -102,23 +101,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`IP ${clientIp} is not banned`);
     return new Response(
-      JSON.stringify({ banned: false, ip: clientIp }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json',
-          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-        } 
-      }
+      JSON.stringify({ banned: false }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Unexpected error in check-ip-ban:', error);
     // Fail open - don't block users due to errors
     return new Response(
-      JSON.stringify({ banned: false, error: 'Check failed' }),
+      JSON.stringify({ banned: false }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

@@ -1,7 +1,27 @@
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+// Whitelist of allowed redirect origins
+const ALLOWED_REDIRECT_ORIGINS = [
+  'https://eclipserblx.com',
+  'https://www.eclipserblx.com',
+  'http://localhost:5173',
+  'http://localhost:8080',
+];
+
+function isValidRedirectUri(uri: string): boolean {
+  try {
+    const parsed = new URL(uri);
+    return ALLOWED_REDIRECT_ORIGINS.some(o => uri.startsWith(o)) ||
+      parsed.hostname.endsWith('.lovable.app');
+  } catch {
+    return false;
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -9,12 +29,26 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const body = await req.json().catch(() => ({}));
-    const redirect_uri = typeof body?.redirect_uri === 'string' ? body.redirect_uri : '';
+    // Rate limit
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.AUTH, identifier: clientIp, action: 'roblox-auth-url' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
 
-    if (!redirect_uri || !/^https?:\/\//i.test(redirect_uri)) {
+    const body = await req.json().catch(() => ({}));
+    const redirect_uri = typeof body?.redirect_uri === 'string' ? body.redirect_uri.trim() : '';
+
+    if (!redirect_uri) {
       return new Response(
-        JSON.stringify({ error: 'Invalid redirect_uri provided' }),
+        JSON.stringify({ error: 'redirect_uri is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate redirect_uri against whitelist
+    if (!isValidRedirectUri(redirect_uri)) {
+      console.error('[roblox-auth-url] Rejected redirect_uri:', redirect_uri);
+      return new Response(
+        JSON.stringify({ error: 'Invalid redirect URI' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -29,7 +63,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Generate a random state for CSRF protection
+    // Generate CSRF state
     const state = crypto.randomUUID();
 
     // Generate PKCE code verifier and challenge
