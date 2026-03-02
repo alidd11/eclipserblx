@@ -4,10 +4,12 @@ import { Shield, Database, Cookie, UserCheck, Globe, Mail } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 export default function PrivacyPolicy() {
   const { discordUrl } = useDiscordUrl();
   usePageTracking({ pagePath: '/privacy-policy' });
+  usePageMeta({ title: 'Privacy Policy', description: 'Eclipse privacy policy. How we collect, use and protect your personal data on our Roblox asset marketplace.', canonicalPath: '/privacy' });
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-12 max-w-4xl">

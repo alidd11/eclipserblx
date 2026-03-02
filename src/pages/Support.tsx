@@ -7,6 +7,7 @@
  import { useDiscordUrl } from '@/hooks/useDiscordUrl';
  import { CreateTicketDialog } from '@/components/support/CreateTicketDialog';
  import { useAuth } from '@/hooks/useAuth';
+ import { usePageMeta } from '@/hooks/usePageMeta';
  import {
    Ticket,
    FileQuestion,
@@ -66,6 +67,7 @@ const supportCategories = [
 
 export default function Support() {
   const { discordUrl } = useDiscordUrl();
+  usePageMeta({ title: 'Support', description: 'Get help with Eclipse marketplace. Browse support articles, open a ticket or contact our team.', canonicalPath: '/support' });
    const { user } = useAuth();
    const navigate = useNavigate();
    const [createDialogOpen, setCreateDialogOpen] = useState(false);

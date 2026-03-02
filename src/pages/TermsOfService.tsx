@@ -4,10 +4,12 @@ import { FileText, AlertTriangle, Scale, ShieldCheck, Ban, CreditCard, Globe, Ma
 import { Card, CardContent } from '@/components/ui/card';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 export default function TermsOfService() {
   const { discordUrl } = useDiscordUrl();
   usePageTracking({ pagePath: '/terms-of-service' });
+  usePageMeta({ title: 'Terms of Service', description: 'Eclipse terms of service. Rules and conditions for using our Roblox asset marketplace.', canonicalPath: '/terms' });
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-12 max-w-4xl">

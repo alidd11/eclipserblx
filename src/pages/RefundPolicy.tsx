@@ -4,10 +4,12 @@ import { SITE_NAME } from '@/lib/constants';
 import { AlertCircle, CheckCircle, XCircle, Scale, Clock, Mail } from 'lucide-react';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 export default function RefundPolicy() {
   const { discordUrl } = useDiscordUrl();
   usePageTracking({ pagePath: '/refund-policy' });
+  usePageMeta({ title: 'Refund Policy', description: 'Eclipse refund policy. Learn about our digital product refund process, eligibility and timelines.', canonicalPath: '/refunds' });
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-12 max-w-4xl">
