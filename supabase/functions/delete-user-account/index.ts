@@ -7,9 +7,9 @@ const corsHeaders = {
 };
 
 const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -19,6 +19,7 @@ Deno.serve(async (req) => {
     const clientIp = getClientIp(req);
     const rl = checkRateLimit({ ...RATE_LIMITS.AUTH, identifier: clientIp, action: 'delete-user-account' });
     if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
@@ -27,17 +28,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Create client with user's token to verify identity
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
+    const serviceClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false },
     });
 
-    // Verify the requesting user
-    const { data: { user: requestingUser }, error: authError } = await userClient.auth.getUser();
+    // Authenticate with service role for reliability
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user: requestingUser }, error: authError } = await serviceClient.auth.getUser(token);
     if (authError || !requestingUser) {
       console.error('Auth error:', authError);
       return new Response(
@@ -47,8 +47,6 @@ Deno.serve(async (req) => {
     }
 
     // Check if requesting user is the primary admin
-    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
-    
     const { data: adminProfile } = await serviceClient
       .from('profiles')
       .select('email')
@@ -56,18 +54,18 @@ Deno.serve(async (req) => {
       .single();
 
     if (adminProfile?.email !== PRIMARY_ADMIN_EMAIL) {
-      console.error('Non-primary admin attempted account deletion:', adminProfile?.email);
+      console.error('Non-primary admin attempted account deletion:', requestingUser.id);
       return new Response(
         JSON.stringify({ error: 'Only the primary administrator can delete accounts' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Get the user ID to delete from request body
+    // Get and validate the user ID to delete
     const { userId } = await req.json();
-    if (!userId || typeof userId !== 'string') {
+    if (!userId || typeof userId !== 'string' || !UUID_REGEX.test(userId)) {
       return new Response(
-        JSON.stringify({ error: 'User ID is required' }),
+        JSON.stringify({ error: 'Invalid user ID format' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -79,35 +77,49 @@ Deno.serve(async (req) => {
       .eq('user_id', userId)
       .single();
 
-    if (targetProfile?.email === PRIMARY_ADMIN_EMAIL) {
+    if (!targetProfile) {
+      return new Response(
+        JSON.stringify({ error: 'User not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (targetProfile.email === PRIMARY_ADMIN_EMAIL) {
       return new Response(
         JSON.stringify({ error: 'Cannot delete the primary administrator account' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Primary admin deleting user account: ${userId} (${targetProfile?.display_name || targetProfile?.email})`);
+    // Prevent deleting own account through this endpoint
+    if (userId === requestingUser.id) {
+      return new Response(
+        JSON.stringify({ error: 'Cannot delete your own account through this endpoint' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    // Delete the user from auth.users (this will cascade to profiles due to trigger/FK)
+    console.log(`Primary admin deleting user account: ${userId}`);
+
+    // Delete the user from auth.users (cascades to profiles)
     const { error: deleteError } = await serviceClient.auth.admin.deleteUser(userId);
 
     if (deleteError) {
       console.error('Error deleting user:', deleteError);
       return new Response(
-        JSON.stringify({ error: deleteError.message }),
+        JSON.stringify({ error: 'Failed to delete account' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Log the action
+    // Audit log
     await serviceClient.from('audit_logs').insert({
       user_id: requestingUser.id,
       action: 'account_deleted',
       resource: 'users',
       details: { 
         deleted_user_id: userId, 
-        deleted_user_email: targetProfile?.email,
-        deleted_user_name: targetProfile?.display_name
+        deleted_user_name: targetProfile.display_name,
       }
     });
 

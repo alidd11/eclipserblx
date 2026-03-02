@@ -7,15 +7,11 @@ const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface MassEmailRequest {
-  emails: string[];
-  subject: string;
-  content: string;
-}
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_RECIPIENTS = 500;
 
 function escapeHtml(text: string): string {
   const htmlEntities: Record<string, string> = {
@@ -62,7 +58,9 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false },
+    });
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
@@ -74,7 +72,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
@@ -82,6 +79,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Require admin role specifically
     const { data: roles } = await supabase
       .from("user_roles")
       .select("role")
@@ -95,40 +93,52 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { emails, subject, content }: MassEmailRequest = await req.json();
+    const { emails, subject, content } = await req.json();
 
-    if (!emails || emails.length === 0) {
+    // Validate emails array
+    if (!Array.isArray(emails) || emails.length === 0) {
       return new Response(
         JSON.stringify({ error: "No recipients provided" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (!subject || !content) {
+    if (emails.length > MAX_RECIPIENTS) {
       return new Response(
-        JSON.stringify({ error: "Subject and content are required" }),
+        JSON.stringify({ error: `Maximum ${MAX_RECIPIENTS} recipients allowed` }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (subject.length > 200) {
+    // Validate each email
+    const validEmails = emails.filter((e: unknown): e is string => 
+      typeof e === 'string' && EMAIL_REGEX.test(e) && e.length <= 255
+    );
+    if (validEmails.length === 0) {
       return new Response(
-        JSON.stringify({ error: "Subject must be less than 200 characters" }),
+        JSON.stringify({ error: "No valid email addresses provided" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (content.length > 10000) {
+    if (!subject || typeof subject !== 'string' || subject.length > 200) {
       return new Response(
-        JSON.stringify({ error: "Content must be less than 10000 characters" }),
+        JSON.stringify({ error: "Subject is required and must be under 200 characters" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!content || typeof content !== 'string' || content.length > 10000) {
+      return new Response(
+        JSON.stringify({ error: "Content is required and must be under 10000 characters" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     if (containsDangerousPatterns(subject) || containsDangerousPatterns(content)) {
-      console.warn(`[send-mass-email] Dangerous patterns detected in email from admin ${user.id}`);
+      console.warn(`[send-mass-email] Dangerous patterns detected from admin ${user.id}`);
       return new Response(
-        JSON.stringify({ error: "Content contains potentially dangerous code patterns. Please use plain text only." }),
+        JSON.stringify({ error: "Content contains potentially dangerous code patterns" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -136,7 +146,7 @@ const handler = async (req: Request): Promise<Response> => {
     const sanitizedSubject = escapeHtml(subject);
     const sanitizedContent = content
       .split('\n')
-      .map(line => `<p style="margin: 0 0 14px 0;">${escapeHtml(line)}</p>`)
+      .map((line: string) => `<p style="margin: 0 0 14px 0;">${escapeHtml(line)}</p>`)
       .join('');
 
     const htmlContent = `
@@ -189,8 +199,8 @@ const handler = async (req: Request): Promise<Response> => {
     let sent = 0;
     const errors: string[] = [];
 
-    for (let i = 0; i < emails.length; i += batchSize) {
-      const batch = emails.slice(i, i + batchSize);
+    for (let i = 0; i < validEmails.length; i += batchSize) {
+      const batch = validEmails.slice(i, i + batchSize);
       
       const results = await Promise.allSettled(
         batch.map(email =>
@@ -207,50 +217,45 @@ const handler = async (req: Request): Promise<Response> => {
         if (result.status === "fulfilled") {
           sent++;
         } else {
-          errors.push(`${batch[idx]}: ${result.reason}`);
-          console.error(`Failed to send to ${batch[idx]}:`, result.reason);
+          errors.push(`${batch[idx]}: send failed`);
+          console.error(`Failed to send to ${batch[idx]}`);
         }
       });
 
-      if (i + batchSize < emails.length) {
+      if (i + batchSize < validEmails.length) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
 
+    // Audit log
     await supabase.from("audit_logs").insert({
       user_id: user.id,
       action: "mass_email_sent",
       resource: "email_subscriptions",
       details: {
-        total_recipients: emails.length,
-        sent: sent,
+        total_recipients: validEmails.length,
+        sent,
         failed: errors.length,
-        subject: subject,
+        subject,
       },
     });
 
-    console.log(`Mass email sent: ${sent}/${emails.length} successful`);
+    console.log(`Mass email sent: ${sent}/${validEmails.length} successful`);
 
     return new Response(
       JSON.stringify({
         success: true,
         sent,
         failed: errors.length,
-        total: emails.length,
+        total: validEmails.length,
       }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error in send-mass-email:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ error: "Internal server error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 };
