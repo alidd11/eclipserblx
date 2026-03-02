@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -46,6 +47,7 @@ export default function AdminBotCodes() {
   const { isAdmin } = useAdminAuth();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [selectedCode, setSelectedCode] = useState<BotInstallationCode | null>(null);
   const [markUsedDialogOpen, setMarkUsedDialogOpen] = useState(false);
   const [usedByInput, setUsedByInput] = useState('');
@@ -63,15 +65,15 @@ export default function AdminBotCodes() {
   }, [markUsedDialogOpen]);
 
   const { data: codes, isLoading } = useQuery({
-    queryKey: ['admin-bot-codes', searchQuery],
+    queryKey: ['admin-bot-codes', debouncedSearch],
     queryFn: async () => {
       let query = supabase
         .from('bot_installation_codes')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (searchQuery.trim()) {
-        query = query.or(`installation_code.ilike.%${searchQuery}%,product_name.ilike.%${searchQuery}%,used_by.ilike.%${searchQuery}%`);
+      if (debouncedSearch.trim()) {
+        query = query.or(`installation_code.ilike.%${debouncedSearch}%,product_name.ilike.%${debouncedSearch}%,used_by.ilike.%${debouncedSearch}%`);
       }
 
       const { data, error } = await query.limit(100);

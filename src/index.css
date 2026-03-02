@@ -4,7 +4,7 @@
 
 /* Orientation lock is now handled by React component OrientationLockOverlay */
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap&font-display=swap');
+/* Fonts loaded via <link> in index.html for faster FCP */
 
 @layer base {
   /* Light theme - Clean utilitarian with blurple accent */
