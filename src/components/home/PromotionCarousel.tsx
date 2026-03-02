@@ -20,7 +20,7 @@ export function PromotionCarousel() {
       description: 'DMCA takedowns, copy detection & ownership monitoring for Roblox creators.',
       cta: 'Learn More',
       link: '/ip-shield',
-      accentClass: 'bg-blue-500',
+      accentClass: 'bg-primary',
     },
     {
       id: 'affiliate',
@@ -36,7 +36,7 @@ export function PromotionCarousel() {
       description: t('landing.sellerDesc'),
       cta: t('landing.sellerCta'),
       link: '/account',
-      accentClass: 'bg-amber-500',
+      accentClass: 'bg-primary',
     },
     {
       id: 'credits',
@@ -44,7 +44,7 @@ export function PromotionCarousel() {
       description: 'Pay with credits to skip transaction fees and check out instantly.',
       cta: 'Top Up',
       link: '/wallet',
-      accentClass: 'bg-emerald-500',
+      accentClass: 'bg-primary',
     },
   ];
 
