@@ -35,7 +35,7 @@ export function Footer() {
   ];
 
   return (
-    <footer className="border-t border-border mt-auto min-h-[280px]" role="contentinfo" aria-label="Site footer">
+    <footer className="border-t border-border mt-auto h-[280px] contain-intrinsic-size-[auto_280px] content-visibility-auto" role="contentinfo" aria-label="Site footer" style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 280px' }}>
       <div className="px-4 sm:px-6 lg:px-8 py-10 max-w-3xl mx-auto">
         {/* 3-column link grid */}
         <div className="grid grid-cols-3 gap-12 mb-10">
