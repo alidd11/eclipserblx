@@ -101,7 +101,7 @@ export function PromotionCard({ promotion }: { promotion: Promotion }) {
             </div>
 
             {/* Actions */}
-            {['active', 'pending_auction', 'paused'].includes(promotion.status) && (
+            {['active', 'pending_auction', 'paused', 'outbid'].includes(promotion.status) && (
               <div className="flex items-center gap-1.5 mt-2">
                 {promotion.status === 'active' || promotion.status === 'pending_auction' ? (
                   <Button
@@ -112,6 +112,16 @@ export function PromotionCard({ promotion }: { promotion: Promotion }) {
                     disabled={updateStatus.isPending}
                   >
                     <Pause className="h-3 w-3 mr-1" /> Pause
+                  </Button>
+                ) : promotion.status === 'outbid' ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-[10px] px-2 text-primary"
+                    onClick={() => updateStatus.mutate('pending_auction')}
+                    disabled={updateStatus.isPending}
+                  >
+                    <Play className="h-3 w-3 mr-1" /> Re-bid
                   </Button>
                 ) : (
                   <Button
@@ -124,15 +134,17 @@ export function PromotionCard({ promotion }: { promotion: Promotion }) {
                     <Play className="h-3 w-3 mr-1" /> Resume
                   </Button>
                 )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 text-[10px] px-2 text-destructive hover:text-destructive"
-                  onClick={() => updateStatus.mutate('cancelled')}
-                  disabled={updateStatus.isPending}
-                >
-                  <X className="h-3 w-3 mr-1" /> Cancel
-                </Button>
+                {promotion.status !== 'active' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-[10px] px-2 text-destructive hover:text-destructive"
+                    onClick={() => updateStatus.mutate('cancelled')}
+                    disabled={updateStatus.isPending}
+                  >
+                    <X className="h-3 w-3 mr-1" /> Cancel
+                  </Button>
+                )}
               </div>
             )}
           </div>

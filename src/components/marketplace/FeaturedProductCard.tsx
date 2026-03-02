@@ -58,6 +58,9 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
       if (!data?.[0]) return null;
       
       const promo = data[0] as any;
+      const store = promo.products?.stores;
+      // Filter out inactive/testing stores
+      if (!store || !store.is_active || store.is_testing) return null;
       return { ...promo.products, _promoted: true } as FeaturedProduct & { _promoted?: boolean };
     },
     staleTime: 5 * 60 * 1000,
