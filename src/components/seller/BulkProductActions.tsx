@@ -106,16 +106,19 @@ export function BulkProductActions({
 
   return (
     <>
-      <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+      <div className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+        selectedIds.length > 0 ? 'bg-primary/5 border-primary/20' : 'bg-muted/50'
+      }`}>
         <Checkbox
           checked={someSelected ? "indeterminate" : allSelected}
           onCheckedChange={toggleAll}
           aria-label="Select all products"
         />
-        <span className="text-sm text-muted-foreground">
+        <span className="text-sm text-muted-foreground flex-1">
           {selectedIds.length > 0 ? (
             <>
-              <span className="font-medium text-foreground">{selectedIds.length}</span> selected
+              <span className="font-medium text-foreground">{selectedIds.length}</span> of{' '}
+              <span className="font-medium text-foreground">{products.length}</span> selected
             </>
           ) : (
             'Select products for bulk actions'
