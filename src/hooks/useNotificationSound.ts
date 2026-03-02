@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { playNotificationSound, type NotificationType } from '@/lib/notificationSounds';
+import { safeStorage } from '@/lib/safeStorage';
 
 // Trigger haptic feedback on mobile devices
 const triggerHapticFeedback = () => {
@@ -19,10 +20,10 @@ export function useNotificationSound() {
     lastPlayedRef.current = now;
 
     // Check if haptic feedback is enabled (stored preference)
-    const hapticEnabled = localStorage.getItem('notification_haptic_enabled') !== 'false';
+    const hapticEnabled = safeStorage.getItem('notification_haptic_enabled') !== 'false';
     
     // Check if sound is enabled
-    const soundEnabled = localStorage.getItem('notification-sound-enabled') !== 'false';
+    const soundEnabled = safeStorage.getItem('notification-sound-enabled') !== 'false';
     
     try {
       if (soundEnabled) {

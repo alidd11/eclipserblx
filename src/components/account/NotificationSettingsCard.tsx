@@ -7,6 +7,7 @@ import { useBackgroundPush } from '@/hooks/useBackgroundPush';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
+import { safeStorage } from '@/lib/safeStorage';
 
 const SOUND_ENABLED_KEY = 'notification-sound-enabled';
 const HAPTIC_ENABLED_KEY = 'haptic-feedback-enabled';
@@ -16,11 +17,11 @@ export function NotificationSettingsCard() {
   const { permission, isSubscribed, subscribe, unsubscribe, isLoading: pushLoading, isiOSDevice, isPWAMode } = useBackgroundPush();
   const [isTogglingPush, setIsTogglingPush] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(() => {
-    const saved = localStorage.getItem(SOUND_ENABLED_KEY);
+    const saved = safeStorage.getItem(SOUND_ENABLED_KEY);
     return saved !== 'false';
   });
   const [hapticEnabled, setHapticEnabled] = useState(() => {
-    const saved = localStorage.getItem(HAPTIC_ENABLED_KEY);
+    const saved = safeStorage.getItem(HAPTIC_ENABLED_KEY);
     return saved !== 'false';
   });
 
@@ -60,13 +61,13 @@ export function NotificationSettingsCard() {
 
   const handleSoundToggle = (enabled: boolean) => {
     setSoundEnabled(enabled);
-    localStorage.setItem(SOUND_ENABLED_KEY, String(enabled));
+    safeStorage.setItem(SOUND_ENABLED_KEY, String(enabled));
     showSuccessNotification(enabled ? 'Sound Enabled' : 'Sound Disabled', 'Notification sound preference updated');
   };
 
   const handleHapticToggle = (enabled: boolean) => {
     setHapticEnabled(enabled);
-    localStorage.setItem(HAPTIC_ENABLED_KEY, String(enabled));
+    safeStorage.setItem(HAPTIC_ENABLED_KEY, String(enabled));
     if (enabled && 'vibrate' in navigator) {
       navigator.vibrate(50);
     }

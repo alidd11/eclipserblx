@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { safeStorage } from '@/lib/safeStorage';
 import {
   Dialog,
   DialogContent,
@@ -42,7 +43,7 @@ export function SellerOnboardingWizard() {
   const { store } = useSellerStatus();
   const [dismissed, setDismissed] = useState(() => {
     if (!store?.id) return true;
-    return localStorage.getItem(`${ONBOARDING_DISMISSED_KEY}-${store.id}`) === 'true';
+    return safeStorage.getItem(`${ONBOARDING_DISMISSED_KEY}-${store.id}`) === 'true';
   });
 
   const { data: setupData, isLoading } = useQuery({
@@ -89,7 +90,7 @@ export function SellerOnboardingWizard() {
 
   const handleDismiss = () => {
     if (store?.id) {
-      localStorage.setItem(`${ONBOARDING_DISMISSED_KEY}-${store.id}`, 'true');
+      safeStorage.setItem(`${ONBOARDING_DISMISSED_KEY}-${store.id}`, 'true');
     }
     setDismissed(true);
   };

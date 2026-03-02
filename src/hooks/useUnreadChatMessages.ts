@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { safeStorage } from '@/lib/safeStorage';
 
 export function useUnreadChatMessages(isPanelOpen: boolean) {
   const { user } = useAuth();
@@ -10,7 +11,7 @@ export function useUnreadChatMessages(isPanelOpen: boolean) {
   // Load last read timestamp from localStorage
   useEffect(() => {
     if (!user) return;
-    const stored = localStorage.getItem(`chat_last_read_${user.id}`);
+    const stored = safeStorage.getItem(`chat_last_read_${user.id}`);
     setLastReadTimestamp(stored);
   }, [user]);
 
@@ -18,7 +19,7 @@ export function useUnreadChatMessages(isPanelOpen: boolean) {
   useEffect(() => {
     if (isPanelOpen && user) {
       const now = new Date().toISOString();
-      localStorage.setItem(`chat_last_read_${user.id}`, now);
+      safeStorage.setItem(`chat_last_read_${user.id}`, now);
       setLastReadTimestamp(now);
       setUnreadCount(0);
     }

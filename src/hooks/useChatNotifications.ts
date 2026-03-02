@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { safeStorage } from '@/lib/safeStorage';
 
 interface ChatNotifications {
   staffMessagesUnread: boolean;
@@ -47,8 +48,8 @@ export function useChatNotifications(): ChatNotifications {
           .limit(50);
 
         // Get last read timestamps from localStorage
-        const staffLastRead = localStorage.getItem(`staff-chat-last-read-${user.id}`);
-        const adminLastRead = localStorage.getItem(`admin-chat-last-read-${user.id}`);
+        const staffLastRead = safeStorage.getItem(`staff-chat-last-read-${user.id}`);
+        const adminLastRead = safeStorage.getItem(`admin-chat-last-read-${user.id}`);
 
         const staffLastReadTime = staffLastRead ? new Date(staffLastRead) : new Date(0);
         const adminLastReadTime = adminLastRead ? new Date(adminLastRead) : new Date(0);
@@ -143,5 +144,5 @@ export function markChatAsRead(chatType: 'staff' | 'admin', userId: string) {
   const key = chatType === 'staff' 
     ? `staff-chat-last-read-${userId}` 
     : `admin-chat-last-read-${userId}`;
-  localStorage.setItem(key, new Date().toISOString());
+  safeStorage.setItem(key, new Date().toISOString());
 }

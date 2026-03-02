@@ -2,6 +2,7 @@ import { useState, useEffect, forwardRef } from 'react';
 import { X, Download, Smartphone, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
+import { safeStorage } from '@/lib/safeStorage';
 import { useLocation } from 'react-router-dom';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -43,7 +44,7 @@ export const InstallPrompt = forwardRef<HTMLDivElement>(function InstallPrompt(_
     setIsiOSDevice(isIOS());
 
     // Check if dismissed recently (within 7 days)
-    const dismissedAt = localStorage.getItem('pwa-prompt-dismissed');
+    const dismissedAt = safeStorage.getItem('pwa-prompt-dismissed');
     if (dismissedAt) {
       const daysSinceDismissed = (Date.now() - parseInt(dismissedAt)) / (1000 * 60 * 60 * 24);
       if (daysSinceDismissed < 7) {
@@ -93,7 +94,7 @@ export const InstallPrompt = forwardRef<HTMLDivElement>(function InstallPrompt(_
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    localStorage.setItem('pwa-prompt-dismissed', Date.now().toString());
+    safeStorage.setItem('pwa-prompt-dismissed', Date.now().toString());
   };
 
   if (isInstalled || !showPrompt || isAdminRoute) return null;
