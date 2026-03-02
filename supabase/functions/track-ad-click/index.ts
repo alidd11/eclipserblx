@@ -109,27 +109,11 @@ serve(async (req) => {
         device_type: deviceType,
       });
 
-    // Update the advertisement click counts using RPC for atomic increment
-    // First, get current values to increment
-    const { data: currentAd } = await supabaseAdmin
-      .from("discord_advertisements")
-      .select("total_clicks, unique_clicks")
-      .eq("id", adId)
-      .single();
-
-    const updateData: Record<string, unknown> = {
-      total_clicks: (currentAd?.total_clicks || 0) + 1,
-      last_clicked_at: new Date().toISOString(),
-    };
-
-    if (isUniqueClick) {
-      updateData.unique_clicks = (currentAd?.unique_clicks || 0) + 1;
-    }
-
-    await supabaseAdmin
-      .from("discord_advertisements")
-      .update(updateData)
-      .eq("id", adId);
+    // Atomic increment via database function to prevent race conditions
+    await supabaseAdmin.rpc('increment_ad_clicks', {
+      p_ad_id: adId,
+      p_is_unique: isUniqueClick,
+    });
 
     logStep("Click recorded successfully", { 
       adId, 

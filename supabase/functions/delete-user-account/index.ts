@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,6 +15,10 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Rate limit - very strict for destructive operations
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.AUTH, identifier: clientIp, action: 'delete-user-account' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
@@ -60,7 +65,7 @@ Deno.serve(async (req) => {
 
     // Get the user ID to delete from request body
     const { userId } = await req.json();
-    if (!userId) {
+    if (!userId || typeof userId !== 'string') {
       return new Response(
         JSON.stringify({ error: 'User ID is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
