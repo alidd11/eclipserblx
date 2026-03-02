@@ -35,6 +35,8 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { usePageMeta } from '@/hooks/usePageMeta';
+import { StoreSchema } from '@/components/seo/StructuredData';
 
 // Theme configurations
 const getThemeStyles = (theme: string, accentColor: string) => {
@@ -90,6 +92,10 @@ const PRODUCTS_PER_PAGE_DESKTOP = 8;
 export default function StorePage() {
   const { storeSlug } = useParams<{ storeSlug: string }>();
   usePageTracking({ pagePath: `/store/${storeSlug}` });
+  usePageMeta({
+    title: storeSlug ? `${storeSlug} Store` : 'Store',
+    canonicalPath: storeSlug ? `/store/${storeSlug}` : undefined,
+  });
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -363,6 +369,14 @@ export default function StorePage() {
   const isDarkTheme = theme === 'dark';
 
   return (
+    <>
+    <StoreSchema
+      name={store.name}
+      description={store.description || undefined}
+      url={`https://eclipserblx.com/store/${store.slug || storeSlug}`}
+      image={store.logo_url || undefined}
+      rating={store.average_rating || undefined}
+    />
     <StoreLayout 
       store={{
         id: store.id,
@@ -890,5 +904,6 @@ export default function StorePage() {
         </>
       )}
     </StoreLayout>
+    </>
   );
 }
