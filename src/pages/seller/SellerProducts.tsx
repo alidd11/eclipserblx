@@ -205,11 +205,25 @@ export default function SellerProducts() {
 
         if (error) throw error;
       } else {
+        // Ensure slug has a unique suffix for new products
+        if (!productData.slug || productData.slug.length < 3) {
+          productData.slug = data.name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '')
+            .slice(0, 60) + '-' + crypto.randomUUID().slice(0, 8);
+        }
+
         const { error } = await supabase
           .from('products')
           .insert(productData as any);
 
-        if (error) throw error;
+        if (error) {
+          if (error.message?.includes('duplicate') || error.code === '23505') {
+            throw new Error('A product with this URL slug already exists. Please change the slug.');
+          }
+          throw error;
+        }
       }
     },
     onSuccess: (_data, variables) => {
@@ -266,12 +280,15 @@ export default function SellerProducts() {
     },
   });
 
-  // Generate slug from name
+  // Generate slug from name with unique suffix to prevent collisions
   const generateSlug = (name: string) => {
-    return name
+    const base = name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/(^-|-$)/g, '')
+      .slice(0, 60);
+    const suffix = crypto.randomUUID().slice(0, 8);
+    return `${base}-${suffix}`;
   };
 
   // Helper function to format datetime for input
@@ -807,8 +824,13 @@ export default function SellerProducts() {
                   <Input
                     id="slug"
                     value={form.slug}
-                    onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                    onChange={(e) => {
+                      const sanitized = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                      setForm({ ...form, slug: sanitized });
+                    }}
+                    placeholder="auto-generated-from-name"
                   />
+                  <p className="text-xs text-muted-foreground">Only lowercase letters, numbers, and hyphens.</p>
                 </div>
               </div>
 
