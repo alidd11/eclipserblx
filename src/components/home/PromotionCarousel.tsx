@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 
 export function PromotionCarousel() {
   const { t } = useTranslation();
-  const [isReady, setIsReady] = useState(false);
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true, skipSnaps: false },
     [Autoplay({ delay: 8000, stopOnInteraction: false, stopOnMouseEnter: true })]
@@ -64,7 +63,6 @@ export function PromotionCarousel() {
 
   useEffect(() => {
     if (!emblaApi) return;
-    setIsReady(true);
     emblaApi.on('select', onSelect);
     emblaApi.on('reInit', onSelect);
     onSelect();
@@ -78,8 +76,6 @@ export function PromotionCarousel() {
     (index: number) => emblaApi && emblaApi.scrollTo(index),
     [emblaApi]
   );
-
-  const currentPromo = promotions[selectedIndex] || promotions[0];
 
   const renderSlide = (promo: typeof promotions[0]) => (
     <div className="flex items-center justify-between gap-4 px-5 py-4">
@@ -107,10 +103,7 @@ export function PromotionCarousel() {
 
   return (
     <div className="border border-border bg-card rounded-md overflow-hidden">
-      <div
-        ref={emblaRef}
-        className={`overflow-hidden transition-opacity duration-300 ${isReady ? 'opacity-100' : 'opacity-0 absolute'}`}
-      >
+      <div ref={emblaRef} className="overflow-hidden">
         <div className="flex">
           {promotions.map((promo) => (
             <div key={promo.id} className="flex-[0_0_100%] min-w-0">
@@ -119,8 +112,6 @@ export function PromotionCarousel() {
           ))}
         </div>
       </div>
-
-      {!isReady && renderSlide(currentPromo)}
 
       {/* Dots */}
       <div className="flex justify-center gap-1.5 pb-3">
