@@ -162,6 +162,7 @@ const SellerFAQ = lazy(() => import("@/pages/seller/documents/SellerFAQ"));
 const SellerSettingsProfile = lazy(() => import("@/pages/seller/SellerSettingsProfile"));
 const SellerSettingsAppearance = lazy(() => import("@/pages/seller/SellerSettingsAppearance"));
 const SellerSettingsTeam = lazy(() => import("@/pages/seller/SellerSettingsTeam"));
+const AcceptTeamInvite = lazy(() => import("@/pages/seller/AcceptTeamInvite"));
 const SellerSettingsPayments = lazy(() => import("@/pages/seller/SellerSettingsPayments"));
 const SellerSettingsNotifications = lazy(() => import("@/pages/seller/SellerSettingsNotifications"));
 const SellerSettingsRoblox = lazy(() => import("@/pages/seller/SellerSettingsRoblox"));
@@ -325,6 +326,7 @@ export const AppRoutes = forwardRef<HTMLDivElement>(function AppRoutes(_, _ref) 
         <Route path="/seller/settings/profile" element={<SellerSettingsProfile />} />
         <Route path="/seller/settings/appearance" element={<SellerSettingsAppearance />} />
         <Route path="/seller/settings/team" element={<SellerSettingsTeam />} />
+        <Route path="/seller/team/accept" element={<AcceptTeamInvite />} />
         <Route path="/seller/settings/payments" element={<SellerSettingsPayments />} />
         <Route path="/seller/settings/notifications" element={<SellerSettingsNotifications />} />
         <Route path="/seller/roblox" element={<SellerSettingsRoblox />} />
