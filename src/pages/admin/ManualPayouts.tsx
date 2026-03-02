@@ -355,8 +355,12 @@ export default function ManualPayouts() {
                 : "e.g., Reason for rejection..."
               }
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value.length <= 1000) setNotes(e.target.value);
+              }}
+              maxLength={1000}
             />
+            <p className="text-xs text-muted-foreground text-right">{notes.length}/1000</p>
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>

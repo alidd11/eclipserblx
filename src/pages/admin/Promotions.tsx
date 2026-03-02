@@ -317,8 +317,13 @@ export default function AdminPromotions() {
   };
 
   const handleSubmitDiscount = () => {
-    if (!discountForm.code.trim()) {
+    const trimmedCode = discountForm.code.trim().toUpperCase();
+    if (!trimmedCode) {
       toast.error('Please enter a discount code');
+      return;
+    }
+    if (trimmedCode.length > 30 || !/^[A-Z0-9_-]+$/.test(trimmedCode)) {
+      toast.error('Code must be alphanumeric (max 30 chars, hyphens/underscores allowed)');
       return;
     }
     if (discountForm.discount_value <= 0) {
@@ -327,6 +332,14 @@ export default function AdminPromotions() {
     }
     if (discountForm.discount_type === 'percentage' && discountForm.discount_value > 100) {
       toast.error('Percentage discount cannot exceed 100%');
+      return;
+    }
+    if (discountForm.discount_type === 'fixed' && discountForm.discount_value > 10000) {
+      toast.error('Fixed discount cannot exceed £10,000');
+      return;
+    }
+    if (discountForm.max_uses !== null && discountForm.max_uses > 100000) {
+      toast.error('Max uses cannot exceed 100,000');
       return;
     }
     saveDiscountMutation.mutate(discountForm);
@@ -368,6 +381,22 @@ export default function AdminPromotions() {
   const handleSubmitPromo = () => {
     if (!promoForm.name.trim()) {
       toast.error('Please enter a promotion name');
+      return;
+    }
+    if (promoForm.name.length > 100) {
+      toast.error('Promotion name must be under 100 characters');
+      return;
+    }
+    if (promoForm.description.length > 500) {
+      toast.error('Description must be under 500 characters');
+      return;
+    }
+    if (promoForm.eclipse_plus_days < 1 || promoForm.eclipse_plus_days > 365) {
+      toast.error('Eclipse+ days must be between 1 and 365');
+      return;
+    }
+    if (promoForm.max_claims !== null && promoForm.max_claims > 100000) {
+      toast.error('Max claims cannot exceed 100,000');
       return;
     }
     savePromoMutation.mutate(promoForm);

@@ -239,10 +239,14 @@ export default function AdminGiftCredits() {
                     <Textarea
                       id="gift-reason"
                       value={reason}
-                      onChange={(e) => setReason(e.target.value)}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 500) setReason(e.target.value);
+                      }}
                       placeholder="e.g., Compensation for issue, loyalty reward..."
                       rows={3}
+                      maxLength={500}
                     />
+                    <p className="text-xs text-muted-foreground text-right">{reason.length}/500</p>
                   </div>
 
                   {/* Quick amounts */}

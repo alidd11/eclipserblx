@@ -71,6 +71,7 @@ export default function AdminUsers() {
   const [ipBanDialogUser, setIpBanDialogUser] = useState<any>(null);
   const [ipAddress, setIpAddress] = useState('');
   const [banReason, setBanReason] = useState('');
+  const IP_REGEX = /^(\d{1,3}\.){3}\d{1,3}$/;
   const [deleteConfirmUser, setDeleteConfirmUser] = useState<any>(null);
   const [selfBanConfirmOpen, setSelfBanConfirmOpen] = useState(false);
   const [grantEclipsePlusUser, setGrantEclipsePlusUser] = useState<any>(null);
@@ -911,7 +912,11 @@ export default function AdminUsers() {
                   placeholder="e.g., 192.168.1.100"
                   value={ipAddress}
                   onChange={(e) => setIpAddress(e.target.value)}
+                  maxLength={45}
                 />
+                {ipAddress.trim() && !IP_REGEX.test(ipAddress.trim()) && (
+                  <p className="text-xs text-destructive">Invalid IP address format</p>
+                )}
                 <p className="text-xs text-muted-foreground">Enter the IP address to ban</p>
                 {currentAdminIp && (
                   <p className="text-xs text-muted-foreground">Your current IP: <span className="font-mono text-primary">{currentAdminIp}</span></p>
@@ -936,9 +941,13 @@ export default function AdminUsers() {
                 <Textarea
                   placeholder="Why is this IP being banned?"
                   value={banReason}
-                  onChange={(e) => setBanReason(e.target.value)}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 500) setBanReason(e.target.value);
+                  }}
                   rows={2}
+                  maxLength={500}
                 />
+                <p className="text-xs text-muted-foreground text-right">{banReason.length}/500</p>
               </div>
 
               <DialogFooter>
@@ -947,7 +956,7 @@ export default function AdminUsers() {
                 </Button>
                 <Button
                   variant="destructive"
-                  disabled={!ipAddress.trim() || ipBanMutation.isPending}
+                  disabled={!ipAddress.trim() || !IP_REGEX.test(ipAddress.trim()) || ipBanMutation.isPending}
                   onClick={handleBanClick}
                   className="bg-orange-500 hover:bg-orange-600"
                 >

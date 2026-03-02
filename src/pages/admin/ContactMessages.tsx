@@ -653,12 +653,16 @@ export default function ContactMessages() {
                   <Textarea
                     placeholder="Type your reply here or select a template above..."
                     value={replyContent}
-                    onChange={(e) => setReplyContent(e.target.value)}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 5000) setReplyContent(e.target.value);
+                    }}
                     rows={8}
                     className="resize-none"
+                    maxLength={5000}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    This will be sent as a branded email from Eclipse Support
+                  <p className="text-xs text-muted-foreground flex justify-between">
+                    <span>This will be sent as a branded email from Eclipse Support</span>
+                    <span>{replyContent.length}/5000</span>
                   </p>
                 </div>
 
@@ -687,9 +691,13 @@ export default function ContactMessages() {
                   <Textarea
                     placeholder="Add notes about this message (only visible to staff)..."
                     value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 2000) setNotes(e.target.value);
+                    }}
                     rows={6}
+                    maxLength={2000}
                   />
+                  <p className="text-xs text-muted-foreground text-right">{notes.length}/2000</p>
                 </div>
                 <Button 
                   onClick={() => selectedMessage && handleSaveNotes(selectedMessage.id)}

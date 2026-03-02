@@ -445,6 +445,18 @@ export default function AdminCategories() {
       });
       return;
     }
+    if (form.name.length > 100) {
+      toast({ title: 'Validation error', description: 'Category name must be under 100 characters.', variant: 'destructive' });
+      return;
+    }
+    if (form.slug.length > 100) {
+      toast({ title: 'Validation error', description: 'Slug must be under 100 characters.', variant: 'destructive' });
+      return;
+    }
+    if (form.description.length > 500) {
+      toast({ title: 'Validation error', description: 'Description must be under 500 characters.', variant: 'destructive' });
+      return;
+    }
     saveMutation.mutate({ form, id: editingCategory?.id });
   };
 
