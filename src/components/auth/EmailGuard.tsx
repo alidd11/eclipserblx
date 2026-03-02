@@ -1,12 +1,12 @@
+import { forwardRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useRequireEmail } from '@/hooks/useRequireEmail';
-import { Loader2 } from 'lucide-react';
 
 /**
  * Wraps the app to redirect users with placeholder emails to /complete-profile.
  * Allows /auth, /complete-profile, and OAuth callback routes to pass through.
  */
-export function EmailGuard({ children }: { children: React.ReactNode }) {
+export const EmailGuard = forwardRef<HTMLDivElement, { children: React.ReactNode }>(function EmailGuard({ children }, _ref) {
   const { needsEmail, loading } = useRequireEmail();
   
   if (loading) {
@@ -24,4 +24,4 @@ export function EmailGuard({ children }: { children: React.ReactNode }) {
   }
 
   return <>{children}</>;
-}
+});

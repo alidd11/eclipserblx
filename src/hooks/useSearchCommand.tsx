@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, forwardRef, ReactNode } from 'react';
 
 interface SearchCommandContextType {
   open: boolean;
@@ -8,7 +8,7 @@ interface SearchCommandContextType {
 
 const SearchCommandContext = createContext<SearchCommandContextType | undefined>(undefined);
 
-export function SearchCommandProvider({ children }: { children: ReactNode }) {
+export const SearchCommandProvider = forwardRef<HTMLDivElement, { children: ReactNode }>(function SearchCommandProvider({ children }, _ref) {
   const [open, setOpen] = useState(false);
 
   const toggle = useCallback(() => {
@@ -33,7 +33,7 @@ export function SearchCommandProvider({ children }: { children: ReactNode }) {
       {children}
     </SearchCommandContext.Provider>
   );
-}
+});
 
 export function useSearchCommand() {
   const context = useContext(SearchCommandContext);

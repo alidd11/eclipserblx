@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, forwardRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Ban, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
@@ -10,7 +10,7 @@ interface BanInfo {
   ip?: string;
 }
 
-export function IpBanCheck({ children }: { children: React.ReactNode }) {
+export const IpBanCheck = forwardRef<HTMLDivElement, { children: React.ReactNode }>(function IpBanCheck({ children }, _ref) {
   const [banInfo, setBanInfo] = useState<BanInfo | null>(null);
   const [isChecking, setIsChecking] = useState(true);
 
@@ -100,4 +100,4 @@ export function IpBanCheck({ children }: { children: React.ReactNode }) {
 
   // Allow access
   return <>{children}</>;
-}
+});
