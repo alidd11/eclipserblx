@@ -177,12 +177,15 @@ export default function SellerProductEditor() {
     }
   }, [product]);
 
-  // Generate slug from name
+  // Generate slug from name with unique suffix to prevent collisions
   const generateSlug = (name: string) => {
-    return name
+    const base = name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/(^-|-$)/g, '')
+      .slice(0, 60);
+    const suffix = crypto.randomUUID().slice(0, 8);
+    return `${base}-${suffix}`;
   };
 
   const handleNameChange = (name: string) => {
@@ -410,13 +413,27 @@ export default function SellerProductEditor() {
         if (error) throw error;
         return { productId, isAutoApproved: shouldAutoApprove };
       } else {
+        // Ensure slug has a unique suffix for new products
+        if (!productData.slug || productData.slug.length < 3) {
+          productData.slug = data.name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '')
+            .slice(0, 60) + '-' + crypto.randomUUID().slice(0, 8);
+        }
+
         const { data: insertedProduct, error } = await supabase
           .from('products')
           .insert(productData)
           .select('id')
           .single();
 
-        if (error) throw error;
+        if (error) {
+          if (error.message?.includes('duplicate') || error.code === '23505') {
+            throw new Error('A product with this URL slug already exists. Please change the slug.');
+          }
+          throw error;
+        }
         return { productId: insertedProduct.id, isAutoApproved: shouldAutoApprove };
       }
     },
@@ -596,11 +613,14 @@ export default function SellerProductEditor() {
                 <Input
                   id="slug"
                   value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  placeholder="product-url-slug"
+                  onChange={(e) => {
+                    const sanitized = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                    setFormData({ ...formData, slug: sanitized });
+                  }}
+                  placeholder="auto-generated-from-name"
                 />
                 <p className="text-xs text-muted-foreground">
-                  This will be used in the product URL
+                  Only lowercase letters, numbers, and hyphens. Used in the product URL.
                 </p>
               </div>
 
