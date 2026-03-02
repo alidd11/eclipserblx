@@ -29,8 +29,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Space Grotesk', 'sans-serif'],
-        sans: ['Manrope', 'sans-serif'],
+        display: ['Sora', 'sans-serif'],
+        sans: ['Source Sans 3', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
