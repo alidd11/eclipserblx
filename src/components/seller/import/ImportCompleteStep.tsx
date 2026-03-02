@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, RefreshCw, Package } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, XCircle, RefreshCw, Package, Clock, Zap } from 'lucide-react';
 import { ProductImportStatus } from './ImportProgressStep';
+import { motion } from 'framer-motion';
 
 interface ImportCompleteStepProps {
   results: ProductImportStatus[];
@@ -15,36 +17,75 @@ export function ImportCompleteStep({ results, onReset, onRetryFailed }: ImportCo
   const successCount = results.filter(r => r.status === 'success').length;
   const failCount = results.filter(r => r.status === 'failed').length;
   const failedUrls = results.filter(r => r.status === 'failed').map(r => r.url);
+  const totalDuration = results.reduce((sum, r) => sum + (r.duration || 0), 0);
+  const avgDuration = results.length > 0 ? totalDuration / results.length : 0;
 
   return (
     <div className="space-y-4">
       {/* Summary card */}
-      <Card className={successCount > 0 ? 'border-green-500/30' : 'border-destructive/30'}>
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            {successCount > 0 ? (
-              <div className="p-3 rounded-full bg-green-500/10">
-                <CheckCircle className="h-8 w-8 text-green-500" />
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+      >
+        <Card className={successCount > 0 ? 'border-green-500/30' : 'border-destructive/30'}>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              {successCount > 0 ? (
+                <motion.div
+                  className="p-3 rounded-full bg-green-500/10"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: 'spring', stiffness: 400 }}
+                >
+                  <CheckCircle className="h-8 w-8 text-green-500" />
+                </motion.div>
+              ) : (
+                <div className="p-3 rounded-full bg-destructive/10">
+                  <XCircle className="h-8 w-8 text-destructive" />
+                </div>
+              )}
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold">
+                  {successCount > 0
+                    ? `${successCount} product${successCount !== 1 ? 's' : ''} imported`
+                    : 'Import failed'}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {failCount > 0 && `${failCount} failed. `}
+                  {successCount > 0 && 'Products have been created and are ready for review.'}
+                </p>
               </div>
-            ) : (
-              <div className="p-3 rounded-full bg-destructive/10">
-                <XCircle className="h-8 w-8 text-destructive" />
+            </div>
+
+            {/* Stats row */}
+            {results.length > 0 && (
+              <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border/50">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>Total: {(totalDuration / 1000).toFixed(1)}s</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Zap className="h-3.5 w-3.5" />
+                  <span>Avg: {(avgDuration / 1000).toFixed(1)}s/product</span>
+                </div>
+                <div className="ml-auto flex items-center gap-2">
+                  {successCount > 0 && (
+                    <Badge variant="secondary" className="text-[10px] gap-1 bg-green-500/10 text-green-600 border-green-500/20">
+                      <CheckCircle className="h-2.5 w-2.5" /> {successCount} succeeded
+                    </Badge>
+                  )}
+                  {failCount > 0 && (
+                    <Badge variant="secondary" className="text-[10px] gap-1 bg-destructive/10 text-destructive border-destructive/20">
+                      <XCircle className="h-2.5 w-2.5" /> {failCount} failed
+                    </Badge>
+                  )}
+                </div>
               </div>
             )}
-            <div>
-              <h3 className="text-lg font-semibold">
-                {successCount > 0
-                  ? `${successCount} product${successCount !== 1 ? 's' : ''} imported`
-                  : 'Import failed'}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {failCount > 0 && `${failCount} failed. `}
-                {successCount > 0 && 'Products have been created and are ready for review.'}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Results list */}
       {results.length > 1 && (
@@ -55,17 +96,28 @@ export function ImportCompleteStep({ results, onReset, onRetryFailed }: ImportCo
           <CardContent>
             <div className="space-y-2">
               {results.map((result, i) => (
-                <div key={i} className="flex items-center gap-3 py-2">
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="flex items-center gap-3 py-2"
+                >
                   {result.status === 'success' ? (
                     <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
                   ) : (
                     <XCircle className="h-4 w-4 text-destructive shrink-0" />
                   )}
                   <span className="text-sm truncate flex-1">{result.name}</span>
+                  {result.duration && (
+                    <span className="text-[10px] text-muted-foreground shrink-0">
+                      {(result.duration / 1000).toFixed(1)}s
+                    </span>
+                  )}
                   {result.error && (
                     <span className="text-xs text-destructive truncate max-w-[200px]">{result.error}</span>
                   )}
-                </div>
+                </motion.div>
               ))}
             </div>
           </CardContent>

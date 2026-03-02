@@ -7,9 +7,18 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Search, Image, Globe, Sparkles, ArrowLeft, ArrowRight, ImageOff
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
+import {
+  Collapsible, CollapsibleContent, CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import {
+  Search, Image, Globe, Sparkles, ArrowLeft, ArrowRight, ImageOff,
+  ChevronDown, Tag,
 } from 'lucide-react';
 import { ExternalProduct } from '@/lib/api/productImport';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ImportSelectStepProps {
   products: ExternalProduct[];
@@ -25,6 +34,21 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
   });
   const [downloadImages, setDownloadImages] = useState(true);
   const [searchFilter, setSearchFilter] = useState('');
+  const [categoryOverrides, setCategoryOverrides] = useState<Record<string, string>>({});
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
+
+  // Fetch categories for override dropdown
+  const { data: categories } = useQuery({
+    queryKey: ['categories-for-import'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('id, name, parent_id')
+        .order('display_order');
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const notImported = useMemo(() => products.filter(p => !p.alreadyImported), [products]);
   const alreadyImportedCount = products.length - notImported.length;
@@ -53,7 +77,18 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
     }
   };
 
+  const toggleDescription = (sourceUrl: string) => {
+    setExpandedDescriptions(prev => {
+      const next = new Set(prev);
+      if (next.has(sourceUrl)) next.delete(sourceUrl);
+      else next.add(sourceUrl);
+      return next;
+    });
+  };
+
   const platformLabel = platform === 'clearlydev' ? 'ClearlyDev' : platform === 'builtbybit' ? 'BuiltByBit' : platform;
+
+  const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').trim();
 
   return (
     <div className="space-y-4">
@@ -102,12 +137,15 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
           {filteredProducts.map((product) => {
             const isSelected = selectedProducts.has(product.sourceUrl);
             const isImported = product.alreadyImported;
+            const plainDesc = product.description ? stripHtml(product.description) : '';
+            const isExpanded = expandedDescriptions.has(product.sourceUrl);
+            const override = categoryOverrides[product.sourceUrl];
+            const matchedCat = categories?.find(c => c.id === (override || product.suggestedCategoryId));
 
             return (
               <div
                 key={product.sourceUrl}
-                onClick={() => !isImported && toggleProduct(product.sourceUrl)}
-                className={`group relative flex gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                className={`group relative flex flex-col gap-2 p-3 rounded-lg border transition-all ${
                   isImported
                     ? 'opacity-50 cursor-not-allowed border-muted'
                     : isSelected
@@ -115,62 +153,104 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
                       : 'hover:border-muted-foreground/30 hover:bg-muted/30'
                 }`}
               >
-                {/* Image preview */}
-                <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center shrink-0 overflow-hidden">
-                  {product.images?.[0] ? (
-                    <img
-                      src={product.images[0]}
-                      alt=""
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                        (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                  ) : null}
-                  <ImageOff className={`h-5 w-5 text-muted-foreground/40 ${product.images?.[0] ? 'hidden' : ''}`} />
-                </div>
+                <div
+                  className="flex gap-3 cursor-pointer"
+                  onClick={() => !isImported && toggleProduct(product.sourceUrl)}
+                >
+                  {/* Image preview */}
+                  <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center shrink-0 overflow-hidden">
+                    {product.images?.[0] ? (
+                      <img
+                        src={product.images[0]}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    <ImageOff className={`h-5 w-5 text-muted-foreground/40 ${product.images?.[0] ? 'hidden' : ''}`} />
+                  </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-medium truncate">{product.name}</p>
-                      {product.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-                          {product.description.replace(/<[^>]*>/g, '').substring(0, 80)}
-                        </p>
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => toggleProduct(product.sourceUrl)}
+                        onClick={(e) => e.stopPropagation()}
+                        disabled={isImported}
+                        className="shrink-0 mt-0.5"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      {product.price > 0 && (
+                        <span className="text-xs font-medium text-primary">
+                          £{product.price.toFixed(2)}
+                        </span>
+                      )}
+                      {product.price === 0 && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Free</Badge>
+                      )}
+                      {isImported && (
+                        <Badge variant="outline" className="text-[10px] text-warning border-warning/40 px-1.5 py-0">
+                          Already imported
+                        </Badge>
+                      )}
+                      {matchedCat && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-0.5">
+                          <Tag className="h-2.5 w-2.5" />
+                          {matchedCat.name}
+                        </Badge>
                       )}
                     </div>
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={() => toggleProduct(product.sourceUrl)}
-                      onClick={(e) => e.stopPropagation()}
-                      disabled={isImported}
-                      className="shrink-0 mt-0.5"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    {product.price > 0 && (
-                      <span className="text-xs font-medium text-primary">
-                        £{product.price.toFixed(2)}
-                      </span>
-                    )}
-                    {product.price === 0 && (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Free</Badge>
-                    )}
-                    {isImported && (
-                      <Badge variant="outline" className="text-[10px] text-warning border-warning/40 px-1.5 py-0">
-                        Already imported
-                      </Badge>
-                    )}
-                    {product.suggestedCategoryId && (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                        <Sparkles className="h-2.5 w-2.5 mr-0.5" />
-                        Matched
-                      </Badge>
-                    )}
                   </div>
                 </div>
+
+                {/* Expandable description & category override */}
+                {(plainDesc || (categories && categories.length > 0)) && isSelected && !isImported && (
+                  <div className="space-y-2 pt-1 border-t border-border/50">
+                    {/* Description preview */}
+                    {plainDesc && (
+                      <Collapsible open={isExpanded} onOpenChange={() => toggleDescription(product.sourceUrl)}>
+                        <CollapsibleTrigger className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors w-full text-left">
+                          <ChevronDown className={`h-3 w-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                          {isExpanded ? 'Hide description' : 'Preview description'}
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-6 bg-muted/30 rounded p-2">
+                            {plainDesc.substring(0, 500)}{plainDesc.length > 500 ? '…' : ''}
+                          </p>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    )}
+
+                    {/* Category override */}
+                    {categories && categories.length > 0 && (
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        <Tag className="h-3 w-3 text-muted-foreground shrink-0" />
+                        <Select
+                          value={override || product.suggestedCategoryId || ''}
+                          onValueChange={(val) =>
+                            setCategoryOverrides(prev => ({ ...prev, [product.sourceUrl]: val }))
+                          }
+                        >
+                          <SelectTrigger className="h-7 text-[11px] flex-1">
+                            <SelectValue placeholder="Assign category…" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.filter(c => !c.parent_id).map((cat) => (
+                              <SelectItem key={cat.id} value={cat.id} className="text-xs">
+                                {cat.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
