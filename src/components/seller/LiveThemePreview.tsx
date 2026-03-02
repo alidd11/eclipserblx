@@ -23,7 +23,7 @@ const FONT_MAP: Record<string, string> = {
   poppins: '"Poppins", sans-serif',
   montserrat: '"Montserrat", sans-serif',
   playfair: '"Playfair Display", serif',
-  'space-grotesk': '"Space Grotesk", sans-serif',
+  'sora': '"Sora", sans-serif',
   'dm-sans': '"DM Sans", sans-serif',
 };
 
