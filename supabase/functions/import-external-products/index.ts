@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -42,7 +43,6 @@ const blockedDomainPattern = new RegExp(
 /** Strip plain-text URLs pointing to blocked domains from a description string */
 function stripBlockedUrls(text: string): string {
   if (!text) return '';
-  // Remove plain URLs to blocked domains
   return text.replace(/https?:\/\/[^\s<>"']*(?:clearlydev\.com|builtbybit\.com|scriptblox\.com|v3rmillion\.net|robloxscripts\.com)[^\s<>"']*/gi, '').trim();
 }
 
@@ -58,7 +58,6 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
 
 function suggestCategory(name: string, description: string): string | undefined {
   const text = `${name} ${description}`.toLowerCase();
-  
   for (const [slug, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
     if (keywords.some(kw => text.includes(kw))) {
       return slug;
@@ -67,12 +66,23 @@ function suggestCategory(name: string, description: string): string | undefined 
   return undefined;
 }
 
+// Allowed URL patterns for scraping (prevent SSRF)
+const ALLOWED_SCRAPE_DOMAINS = ['clearlydev.com', 'builtbybit.com'];
+
+function isAllowedScrapeUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return ALLOWED_SCRAPE_DOMAINS.some(d => parsed.hostname === d || parsed.hostname.endsWith(`.${d}`));
+  } catch {
+    return false;
+  }
+}
+
 // Parse ClearlyDev store page
 function parseClearlyDevStore(markdown: string, storeUrl: string, links?: string[]): ExternalProduct[] {
   const products: ExternalProduct[] = [];
   const seenUrls = new Set<string>();
   
-  // Method 1: Parse markdown for product links
   const productLinkRegex = /\[([^\]]+)\]\((https:\/\/clearlydev\.com\/product\/[^\)]+)\)/g;
   
   let match;
@@ -96,16 +106,12 @@ function parseClearlyDevStore(markdown: string, storeUrl: string, links?: string
     });
   }
   
-  // Method 2: If no products found from markdown, use links array from Firecrawl
   if (products.length === 0 && links && links.length > 0) {
-    console.log(`No products from markdown, checking ${links.length} raw links...`);
-    
     for (const link of links) {
       if (!link.includes('clearlydev.com/product/')) continue;
       if (seenUrls.has(link)) continue;
       seenUrls.add(link);
       
-      // Extract product name from URL slug
       const slugMatch = link.match(/\/product\/([^\/\?#]+)/);
       const slug = slugMatch ? slugMatch[1] : '';
       const name = slug
@@ -122,13 +128,11 @@ function parseClearlyDevStore(markdown: string, storeUrl: string, links?: string
         description: '',
         price: 0,
         images: [],
-        sourceUrl: link.split('?')[0], // Remove query params
+        sourceUrl: link.split('?')[0],
         platform: 'clearlydev',
         suggestedCategoryId: categorySlug,
       });
     }
-    
-    console.log(`Found ${products.length} products from links array`);
   }
   
   return products;
@@ -138,12 +142,8 @@ function parseClearlyDevStore(markdown: string, storeUrl: string, links?: string
 function extractHtmlDescription(html: string): string {
   if (!html) return '';
 
-  // Try to find the description section in the HTML
-  // ClearlyDev uses a section/div with "Description" heading followed by content
   const descPatterns = [
-    // Match content between Description heading and next section
     /(?:<h[23][^>]*>.*?Description.*?<\/h[23]>)([\s\S]*?)(?=<h[23]|<footer|<div[^>]*class="[^"]*(?:refund|review|related|license))/i,
-    // Match a div/section that contains "description" in class/id
     /<(?:div|section)[^>]*(?:class|id)="[^"]*description[^"]*"[^>]*>([\s\S]*?)<\/(?:div|section)>/i,
   ];
 
@@ -152,28 +152,20 @@ function extractHtmlDescription(html: string): string {
     if (match && match[1]) {
       let content = match[1].trim();
       
-      // Strip script/style tags
       content = content.replace(/<script[\s\S]*?<\/script>/gi, '');
       content = content.replace(/<style[\s\S]*?<\/style>/gi, '');
-      
-      // Remove images from description (they go in the gallery)
       content = content.replace(/<img[^>]*>/gi, '');
-      
-      // Strip wrapper divs but keep semantic content tags
       content = content.replace(/<\/?div[^>]*>/gi, '');
       content = content.replace(/<\/?section[^>]*>/gi, '');
       content = content.replace(/<\/?span[^>]*>/gi, '');
       
-      // Keep only safe HTML tags
       const allowedTagPattern = /<\/?(?:p|br|strong|b|em|i|u|h2|h3|h4|ul|ol|li|hr|a(?:\s[^>]*)?)>/gi;
       const tagPattern = /<\/?[a-z][a-z0-9]*(?:\s[^>]*)?>/gi;
       content = content.replace(tagPattern, (tag) => {
         return allowedTagPattern.test(tag) ? tag : '';
       });
-      // Reset lastIndex after using global regex
       allowedTagPattern.lastIndex = 0;
       
-      // Clean up excessive whitespace
       content = content.replace(/\n{3,}/g, '\n\n').trim();
       
       if (content.length > 20) {
@@ -188,8 +180,7 @@ function extractHtmlDescription(html: string): string {
 function parseClearlyDevProduct(markdown: string, url: string, html?: string): ExternalProduct | null {
   let name = '';
 
-  // Strategy 1: Page title line (first line often has "Product Name | ClearlyDev Marketplace")
-  const pageTitleMatch = markdown.match(/^(.+?)\s*\\?\|.*ClearlyDev/m);
+  const pageTitleMatch = markdown.match(/^(.+?)\s*\\\|.*ClearlyDev/m);
   if (pageTitleMatch) {
     const candidate = pageTitleMatch[1].trim();
     if (candidate.length >= 3 && !candidate.toLowerCase().includes('hi, there')) {
@@ -197,9 +188,8 @@ function parseClearlyDevProduct(markdown: string, url: string, html?: string): E
     }
   }
 
-  // Strategy 2: Find ## heading that is NOT a generic greeting/section header
   if (!name) {
-    const headingRegex = /^#{1,2}\s+(.+?)(?:\s*\\|\s*$)/gm;
+    const headingRegex = /^#{1,2}\s+(.+?)(?:\s*\\\|\s*$)/gm;
     let hMatch;
     const skipPatterns = /^(hi,?\s*there|description|refund|instant|reviews?|related|license|file\s*size)/i;
     while ((hMatch = headingRegex.exec(markdown)) !== null) {
@@ -211,7 +201,6 @@ function parseClearlyDevProduct(markdown: string, url: string, html?: string): E
     }
   }
 
-  // Strategy 3: Extract from URL slug as last resort
   if (!name) {
     const slugMatch = url.match(/\/product\/([^\/\?#]+)/);
     if (slugMatch) {
@@ -224,7 +213,6 @@ function parseClearlyDevProduct(markdown: string, url: string, html?: string): E
 
   if (!name) return null;
   
-  // Match all markdown images with http/https URLs
   const imageRegex = /!\[([^\]]*)\]\((https?:\/\/[^\)]+)\)/g;
   const images: string[] = [];
   const skipImagePatterns = /\/(avatar|profile|favicon|logo|icon|clearlydev-logo|clearlydev_logo|clearlydev|clearly-dev|brand|banner)\b/i;
@@ -239,22 +227,19 @@ function parseClearlyDevProduct(markdown: string, url: string, html?: string): E
     if (skipImageDomains.test(imgUrl)) continue;
     if (skipAltTextPatterns.test(imgAlt)) continue;
     if (skipUrlBrandingPatterns.test(imgUrl)) continue;
-    const cleanUrl = imgUrl;
-    if (!images.includes(cleanUrl)) {
-      images.push(cleanUrl);
+    if (!images.includes(imgUrl)) {
+      images.push(imgUrl);
     }
   }
   
   const priceMatch = markdown.match(/\$(\d+(?:\.\d{2})?)/);
   const price = priceMatch ? parseFloat(priceMatch[1]) : 0;
   
-  // Try to extract rich HTML description first, fall back to markdown
   let description = '';
   if (html) {
     description = extractHtmlDescription(html);
   }
   
-  // Fallback: extract from markdown if HTML extraction failed
   if (!description) {
     const descStart = markdown.indexOf('Description');
     const descEnd = markdown.indexOf('## ') > descStart ? markdown.indexOf('## ', descStart + 10) : markdown.length;
@@ -270,7 +255,6 @@ function parseClearlyDevProduct(markdown: string, url: string, html?: string): E
   
   const categorySlug = suggestCategory(name, description);
   
-  // ClearlyDev pages: first image is often a branded banner, last 2 are platform logos — remove all
   const cleanedImages = images.length > 3 
     ? images.slice(1, -2)
     : images.length > 2 
@@ -364,6 +348,17 @@ async function downloadAndUploadImage(
   supabaseAdmin: ReturnType<typeof createClient>
 ): Promise<string | null> {
   try {
+    // Validate image URL - only allow HTTP(S) URLs
+    try {
+      const parsed = new URL(imageUrl);
+      if (!['http:', 'https:'].includes(parsed.protocol)) {
+        console.log(`Skipping non-HTTP image URL: ${imageUrl}`);
+        return null;
+      }
+    } catch {
+      return null;
+    }
+
     console.log(`Downloading image: ${imageUrl}`);
     
     const response = await fetch(imageUrl);
@@ -372,7 +367,6 @@ async function downloadAndUploadImage(
       return null;
     }
 
-    // Reject Roblox placeholder images (redirects or tiny fallback icons)
     const finalUrl = response.url || imageUrl;
     if (/\b(rbxcdn\.com|roblox\.com)\b/i.test(finalUrl)) {
       console.log(`Skipping Roblox placeholder image: ${finalUrl}`);
@@ -380,8 +374,21 @@ async function downloadAndUploadImage(
     }
     
     const contentType = response.headers.get('content-type') || 'image/jpeg';
+    // Validate content type is actually an image
+    if (!contentType.startsWith('image/')) {
+      console.log(`Skipping non-image content type: ${contentType}`);
+      return null;
+    }
+    
     const extension = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
     const blob = await response.blob();
+    
+    // Reject suspiciously large files (>10MB)
+    if (blob.size > 10 * 1024 * 1024) {
+      console.log(`Skipping oversized image: ${blob.size} bytes`);
+      return null;
+    }
+    
     const arrayBuffer = await blob.arrayBuffer();
     
     const filePath = `${storeId}/${productSlug}-import-${imageIndex}.${extension}`;
@@ -409,12 +416,19 @@ async function downloadAndUploadImage(
   }
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Rate limiting
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.EXPENSIVE, identifier: clientIp, action: 'import-external-products' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
@@ -439,6 +453,23 @@ serve(async (req) => {
     }
 
     const { action, storeUrl, productUrl, productUrls, platform, downloadImages, targetStoreId } = await req.json();
+
+    // Validate action
+    const validActions = ['list', 'details', 'bulk-details', 'history'];
+    if (!action || !validActions.includes(action)) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Invalid action" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate targetStoreId format if provided
+    if (targetStoreId && !UUID_REGEX.test(targetStoreId)) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Invalid store ID format" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const firecrawlApiKey = Deno.env.get("FIRECRAWL_API_KEY");
     if (!firecrawlApiKey) {
@@ -480,7 +511,6 @@ serve(async (req) => {
     let store: { id: string; name: string; slug: string } | null = null;
 
     if (isAdmin && targetStoreId) {
-      // Admin importing on behalf of another store
       const { data: targetStore } = await supabaseAdmin
         .from('stores')
         .select('id, name, slug')
@@ -514,9 +544,17 @@ serve(async (req) => {
 
     // Action: List products from external store
     if (action === 'list') {
-      if (!storeUrl) {
+      if (!storeUrl || typeof storeUrl !== 'string') {
         return new Response(
           JSON.stringify({ success: false, error: "Store URL is required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // SSRF prevention: only allow known marketplace domains
+      if (!isAllowedScrapeUrl(storeUrl)) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Unsupported platform. Use ClearlyDev or BuiltByBit URLs." }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -568,12 +606,12 @@ serve(async (req) => {
 
       console.log(`Found ${products.length} products`);
 
+      // Do NOT include rawMarkdown in response - prevents information leakage
       return new Response(
         JSON.stringify({ 
           success: true, 
           products,
           platform: detectedPlatform,
-          rawMarkdown: scrapeResult.markdown?.slice(0, 500),
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -581,9 +619,17 @@ serve(async (req) => {
 
     // Action: Fetch full product details
     if (action === 'details') {
-      if (!productUrl) {
+      if (!productUrl || typeof productUrl !== 'string') {
         return new Response(
           JSON.stringify({ success: false, error: "Product URL is required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // SSRF prevention
+      if (!isAllowedScrapeUrl(productUrl)) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Unsupported platform URL" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -638,12 +684,11 @@ serve(async (req) => {
         product.images = uploadedImages.length > 0 ? uploadedImages : product.images;
       }
 
-      // Add suggested category ID
       product.suggestedCategoryId = product.suggestedCategoryId 
         ? categoryMap.get(product.suggestedCategoryId) 
         : undefined;
 
-      // Auto-create product record in the products table
+      // Auto-create product record
       const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80);
       const uniqueSlug = `${productSlugForDb}-${Date.now().toString(36)}`;
       
@@ -701,11 +746,14 @@ serve(async (req) => {
         );
       }
 
-      console.log(`Bulk importing ${productUrls.length} products...`);
+      // Cap at 50 and validate all URLs
+      const safeUrls = productUrls.slice(0, 50).filter((u: any) => typeof u === 'string' && isAllowedScrapeUrl(u));
+
+      console.log(`Bulk importing ${safeUrls.length} products (${productUrls.length - safeUrls.length} rejected)...`);
       
       const results: { url: string; success: boolean; product?: ExternalProduct; error?: string }[] = [];
       
-      for (const url of productUrls.slice(0, 50)) { // Limit to 50 at a time
+      for (const url of safeUrls) {
         let detectedPlatform = platform;
         if (!detectedPlatform) {
           if (url.includes('clearlydev.com')) detectedPlatform = 'clearlydev';
@@ -746,7 +794,6 @@ serve(async (req) => {
           continue;
         }
 
-        // Download images if requested
         if (downloadImages && product.images.length > 0) {
           const productSlug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30);
           const uploadedImages: string[] = [];
@@ -773,7 +820,6 @@ serve(async (req) => {
           ? categoryMap.get(product.suggestedCategoryId) 
           : undefined;
 
-        // Auto-create product record in the products table
         const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80);
         const uniqueSlug = `${productSlugForDb}-${Date.now().toString(36)}`;
         
@@ -838,7 +884,7 @@ serve(async (req) => {
 
       if (historyError) {
         return new Response(
-          JSON.stringify({ success: false, error: historyError.message }),
+          JSON.stringify({ success: false, error: "Failed to load history" }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -856,9 +902,8 @@ serve(async (req) => {
 
   } catch (error: unknown) {
     console.error("Import error:", error);
-    const message = error instanceof Error ? error.message : "Internal server error";
     return new Response(
-      JSON.stringify({ success: false, error: message }),
+      JSON.stringify({ success: false, error: "Import failed" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
 
@@ -8,6 +9,8 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface SaleNotificationRequest {
   store_id: string;
@@ -33,18 +36,89 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[NOTIFY-SELLER-SALE] ${step}`, details ? JSON.stringify(details) : '');
 };
 
+// Escape HTML to prevent XSS in email templates
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // AUTH GUARD: Only service-role or authenticated staff can call this
+    const authHeader = req.headers.get("Authorization");
+    const token = authHeader?.replace("Bearer ", "");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const isServiceRole = token === serviceRoleKey;
+
+    if (!isServiceRole) {
+      // Check for authenticated staff
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const tempClient = createClient(supabaseUrl, serviceRoleKey!);
+      
+      if (!token) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: { user }, error: authError } = await tempClient.auth.getUser(token);
+      if (authError || !user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: roles } = await tempClient
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
+      
+      const staffRoles = new Set(['admin', 'lead_administrator', 'owner', 'moderator']);
+      const isStaff = roles?.some(r => staffRoles.has(r.role));
+      if (!isStaff) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // Rate limiting
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.WRITE, identifier: clientIp, action: 'notify-seller-sale' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createClient(supabaseUrl, serviceRoleKey!);
 
     const body: NotificationRequest = await req.json();
     logStep("Received request", { type: body.type, store_id: body.store_id });
+
+    // Input validation
+    if (!body.store_id || !UUID_REGEX.test(body.store_id)) {
+      throw new Error("Invalid store ID");
+    }
+    if (!body.order_id || !UUID_REGEX.test(body.order_id)) {
+      throw new Error("Invalid order ID");
+    }
+    if (!body.product_name || typeof body.product_name !== 'string') {
+      throw new Error("Product name required");
+    }
+    if (typeof body.amount !== 'number' || body.amount < 0) {
+      throw new Error("Invalid amount");
+    }
+
+    // Sanitize inputs for email
+    const safeProductName = escapeHtml(body.product_name.slice(0, 200));
+    const safeAmount = Math.abs(body.amount).toFixed(2);
+    const safeOrderId = body.order_id.substring(0, 8);
 
     // Get store owner info
     const { data: store, error: storeError } = await supabase
@@ -63,6 +137,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (profileError || !profile) throw new Error("Seller profile not found");
 
+    const safeDisplayName = escapeHtml((profile.display_name || 'Seller').slice(0, 100));
+    const safeStoreName = escapeHtml((store.name || 'Your Store').slice(0, 100));
+
     let emailContent: { subject: string; title: string; message: string };
     let notificationType: string;
     let notificationTitle: string;
@@ -77,20 +154,19 @@ const handler = async (req: Request): Promise<Response> => {
         .eq('type', 'sale');
 
       const isFirstSale = (saleCount ?? 0) <= 1;
-      logStep("Sale count check", { store_id: body.store_id, saleCount, isFirstSale });
 
       notificationType = 'sale';
       notificationTitle = isFirstSale ? 'Your First Sale!' : 'New Sale!';
       notificationMessage = isFirstSale
-        ? `Congratulations! You just made your first sale — "${body.product_name}" for £${body.amount.toFixed(2)}. This is just the beginning!`
-        : `You sold "${body.product_name}" for £${body.amount.toFixed(2)}${body.buyer_name ? ` to ${body.buyer_name}` : ''}.`;
+        ? `Congratulations! You just made your first sale — "${safeProductName}" for £${safeAmount}. This is just the beginning!`
+        : `You sold "${safeProductName}" for £${safeAmount}.`;
 
       if (isFirstSale) {
         emailContent = {
           subject: `Congratulations on your first sale!`,
           title: 'Your First Sale',
           message: `
-            <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">Hi ${profile.display_name},</p>
+            <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">Hi ${safeDisplayName},</p>
             <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
               This is a big moment — you just made your <strong style="color: #22c55e;">first ever sale</strong> on Eclipse.
             </p>
@@ -98,15 +174,15 @@ const handler = async (req: Request): Promise<Response> => {
               <table width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td style="font-size: 13px; color: #737373; padding-bottom: 8px;">Product</td>
-                  <td style="font-size: 13px; color: #e4e4e7; text-align: right; padding-bottom: 8px;">${body.product_name}</td>
+                  <td style="font-size: 13px; color: #e4e4e7; text-align: right; padding-bottom: 8px;">${safeProductName}</td>
                 </tr>
                 <tr>
                   <td style="font-size: 13px; color: #737373; padding-bottom: 8px;">Amount</td>
-                  <td style="font-size: 13px; color: #22c55e; text-align: right; padding-bottom: 8px; font-weight: 600;">£${body.amount.toFixed(2)}</td>
+                  <td style="font-size: 13px; color: #22c55e; text-align: right; padding-bottom: 8px; font-weight: 600;">£${safeAmount}</td>
                 </tr>
                 <tr>
                   <td style="font-size: 13px; color: #737373;">Store</td>
-                  <td style="font-size: 13px; color: #a3a3a3; text-align: right;">${store.name}</td>
+                  <td style="font-size: 13px; color: #a3a3a3; text-align: right;">${safeStoreName}</td>
                 </tr>
               </table>
             </div>
@@ -120,26 +196,26 @@ const handler = async (req: Request): Promise<Response> => {
         };
       } else {
         emailContent = {
-          subject: `You made a sale — ${body.product_name}`,
+          subject: `You made a sale — ${safeProductName}`,
           title: 'New Sale',
           message: `
-            <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">Hi ${profile.display_name},</p>
+            <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">Hi ${safeDisplayName},</p>
             <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
-              Someone just purchased <strong style="color: #e4e4e7;">${body.product_name}</strong> from your store.
+              Someone just purchased <strong style="color: #e4e4e7;">${safeProductName}</strong> from your store.
             </p>
             <div style="background: #1a1a2e; border-radius: 8px; padding: 16px; margin: 0 0 16px 0;">
               <table width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td style="font-size: 13px; color: #737373; padding-bottom: 8px;">Product</td>
-                  <td style="font-size: 13px; color: #e4e4e7; text-align: right; padding-bottom: 8px;">${body.product_name}</td>
+                  <td style="font-size: 13px; color: #e4e4e7; text-align: right; padding-bottom: 8px;">${safeProductName}</td>
                 </tr>
                 <tr>
                   <td style="font-size: 13px; color: #737373; padding-bottom: 8px;">Amount</td>
-                  <td style="font-size: 13px; color: #22c55e; text-align: right; padding-bottom: 8px; font-weight: 600;">£${body.amount.toFixed(2)}</td>
+                  <td style="font-size: 13px; color: #22c55e; text-align: right; padding-bottom: 8px; font-weight: 600;">£${safeAmount}</td>
                 </tr>
                 <tr>
                   <td style="font-size: 13px; color: #737373;">Order</td>
-                  <td style="font-size: 13px; color: #a3a3a3; text-align: right; font-family: monospace;">${body.order_id.substring(0, 8)}...</td>
+                  <td style="font-size: 13px; color: #a3a3a3; text-align: right; font-family: monospace;">${safeOrderId}...</td>
                 </tr>
               </table>
             </div>
@@ -150,31 +226,33 @@ const handler = async (req: Request): Promise<Response> => {
         };
       }
     } else {
+      const safeReason = escapeHtml(((body as any).reason || 'No reason given').slice(0, 500));
+      
       notificationType = 'dispute';
       notificationTitle = 'Dispute Filed';
-      notificationMessage = `A dispute has been filed on "${body.product_name}" (£${body.amount.toFixed(2)}). Reason: ${body.reason}`;
+      notificationMessage = `A dispute has been filed on "${safeProductName}" (£${safeAmount}). Reason: ${safeReason}`;
 
       emailContent = {
-        subject: `Dispute filed on your product — ${body.product_name}`,
+        subject: `Dispute filed on your product — ${safeProductName}`,
         title: 'Dispute Notification',
         message: `
-          <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">Hi ${profile.display_name},</p>
+          <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">Hi ${safeDisplayName},</p>
           <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
-            A dispute has been filed on an order involving <strong style="color: #e4e4e7;">${body.product_name}</strong>.
+            A dispute has been filed on an order involving <strong style="color: #e4e4e7;">${safeProductName}</strong>.
           </p>
           <div style="background: #1a1a2e; border-left: 3px solid #ef4444; border-radius: 0 8px 8px 0; padding: 16px; margin: 0 0 16px 0;">
             <table width="100%" cellspacing="0" cellpadding="0">
               <tr>
                 <td style="font-size: 13px; color: #737373; padding-bottom: 8px;">Product</td>
-                <td style="font-size: 13px; color: #e4e4e7; text-align: right; padding-bottom: 8px;">${body.product_name}</td>
+                <td style="font-size: 13px; color: #e4e4e7; text-align: right; padding-bottom: 8px;">${safeProductName}</td>
               </tr>
               <tr>
                 <td style="font-size: 13px; color: #737373; padding-bottom: 8px;">Amount</td>
-                <td style="font-size: 13px; color: #ef4444; text-align: right; padding-bottom: 8px; font-weight: 600;">£${body.amount.toFixed(2)}</td>
+                <td style="font-size: 13px; color: #ef4444; text-align: right; padding-bottom: 8px; font-weight: 600;">£${safeAmount}</td>
               </tr>
               <tr>
                 <td style="font-size: 13px; color: #737373; padding-bottom: 8px;">Reason</td>
-                <td style="font-size: 13px; color: #a3a3a3; text-align: right; padding-bottom: 8px;">${body.reason}</td>
+                <td style="font-size: 13px; color: #a3a3a3; text-align: right; padding-bottom: 8px;">${safeReason}</td>
               </tr>
             </table>
           </div>
@@ -251,7 +329,7 @@ const handler = async (req: Request): Promise<Response> => {
       html: emailHtml,
     });
 
-    logStep("Notification sent", { type: body.type, email: emailResponse });
+    logStep("Notification sent", { type: body.type });
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
@@ -260,7 +338,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     logStep("Error", { error: error.message });
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: "Notification failed" }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }

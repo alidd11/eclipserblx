@@ -51,8 +51,21 @@ serve(async (req) => {
 
     const { items } = await req.json();
 
-    if (!items || items.length === 0) {
+    if (!items || !Array.isArray(items) || items.length === 0) {
       throw new Error("No items provided");
+    }
+
+    // Validate all product IDs are valid UUIDs
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    for (const item of items) {
+      if (!item.id || !UUID_REGEX.test(item.id)) {
+        throw new Error("Invalid product ID format");
+      }
+    }
+
+    // Cap items to prevent abuse
+    if (items.length > 10) {
+      throw new Error("Maximum 10 items per order");
     }
 
     // Fetch products from DB and validate they are all genuinely free (PWYW with custom_price = 0)

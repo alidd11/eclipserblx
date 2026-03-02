@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,6 +8,7 @@ const corsHeaders = {
 };
 
 const SUPPORTED_LANGUAGES = ["es", "pt", "fr", "de"];
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -14,18 +16,57 @@ serve(async (req) => {
   }
 
   try {
+    // AUTH GUARD: Only service-role or authenticated staff can trigger translations
+    const authHeader = req.headers.get("Authorization");
+    const token = authHeader?.replace("Bearer ", "");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const isServiceRole = token === serviceRoleKey;
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    if (!isServiceRole) {
+      if (!token) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Verify user is staff or product owner
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
+      
+      const staffRoles = new Set(['admin', 'lead_administrator', 'owner', 'moderator', 'seller']);
+      const hasAccess = roles?.some(r => staffRoles.has(r.role));
+      if (!hasAccess) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // Rate limiting - AI calls are expensive
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.EXPENSIVE, identifier: clientIp, action: 'translate-product' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     const { productId } = await req.json();
 
-    if (!productId) {
+    if (!productId || !UUID_REGEX.test(productId)) {
       return new Response(
-        JSON.stringify({ error: "productId is required" }),
+        JSON.stringify({ error: "Valid product ID is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Check if all translations already exist
     const { data: existingTranslations } = await supabase
@@ -180,7 +221,7 @@ Product Description: ${product.description || "No description"}`,
   } catch (error) {
     console.error("Translation error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Translation failed" }),
+      JSON.stringify({ error: "Translation failed" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
