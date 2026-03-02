@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Eye, MousePointerClick, Pause, Play, X, TrendingUp, Megaphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -35,14 +36,22 @@ const statusConfig: Record<string, { label: string; className: string }> = {
 
 export function PromotionCard({ promotion }: { promotion: Promotion }) {
   const queryClient = useQueryClient();
+  const [showRebid, setShowRebid] = useState(false);
+  const [newBid, setNewBid] = useState(Math.max(promotion.max_bid + 1, 5));
   const ctr = promotion.impressions > 0 ? ((promotion.clicks / promotion.impressions) * 100).toFixed(1) : '0.0';
   const config = statusConfig[promotion.status] || statusConfig.pending_auction;
 
   const updateStatus = useMutation({
-    mutationFn: async (newStatus: string) => {
+    mutationFn: async ({ newStatus, bidAmount }: { newStatus: string; bidAmount?: number }) => {
       const updates: Record<string, unknown> = { status: newStatus, updated_at: new Date().toISOString() };
       if (newStatus === 'paused') updates.paused_at = new Date().toISOString();
-      if (newStatus === 'pending_auction') updates.paused_at = null;
+      if (newStatus === 'pending_auction') {
+        updates.paused_at = null;
+        if (bidAmount && bidAmount >= 5) {
+          updates.max_bid = bidAmount;
+          updates.current_bid = bidAmount;
+        }
+      }
 
       const { error } = await supabase
         .from('product_promotions')
@@ -52,6 +61,7 @@ export function PromotionCard({ promotion }: { promotion: Promotion }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seller-promotions'] });
+      setShowRebid(false);
       toast.success('Promotion updated');
     },
     onError: () => toast.error('Failed to update promotion'),
@@ -100,15 +110,47 @@ export function PromotionCard({ promotion }: { promotion: Promotion }) {
               </span>
             </div>
 
+            {/* Re-bid input */}
+            {showRebid && (
+              <div className="flex items-center gap-2 mt-2">
+                <Input
+                  type="number"
+                  min={Math.max(promotion.max_bid + 1, 5)}
+                  max={500}
+                  value={newBid}
+                  onChange={(e) => setNewBid(Math.max(5, parseInt(e.target.value) || 5))}
+                  className="h-6 w-20 text-xs"
+                  placeholder="New bid"
+                />
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="h-6 text-[10px] px-2"
+                  onClick={() => updateStatus.mutate({ newStatus: 'pending_auction', bidAmount: newBid })}
+                  disabled={updateStatus.isPending || newBid < 5}
+                >
+                  Confirm
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-[10px] px-2"
+                  onClick={() => setShowRebid(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
+
             {/* Actions */}
-            {['active', 'pending_auction', 'paused', 'outbid'].includes(promotion.status) && (
+            {!showRebid && ['active', 'pending_auction', 'paused', 'outbid'].includes(promotion.status) && (
               <div className="flex items-center gap-1.5 mt-2">
                 {promotion.status === 'active' || promotion.status === 'pending_auction' ? (
                   <Button
                     variant="ghost"
                     size="sm"
                     className="h-6 text-[10px] px-2"
-                    onClick={() => updateStatus.mutate('paused')}
+                    onClick={() => updateStatus.mutate({ newStatus: 'paused' })}
                     disabled={updateStatus.isPending}
                   >
                     <Pause className="h-3 w-3 mr-1" /> Pause
@@ -118,7 +160,7 @@ export function PromotionCard({ promotion }: { promotion: Promotion }) {
                     variant="ghost"
                     size="sm"
                     className="h-6 text-[10px] px-2 text-primary"
-                    onClick={() => updateStatus.mutate('pending_auction')}
+                    onClick={() => setShowRebid(true)}
                     disabled={updateStatus.isPending}
                   >
                     <Play className="h-3 w-3 mr-1" /> Re-bid
@@ -128,7 +170,7 @@ export function PromotionCard({ promotion }: { promotion: Promotion }) {
                     variant="ghost"
                     size="sm"
                     className="h-6 text-[10px] px-2"
-                    onClick={() => updateStatus.mutate('pending_auction')}
+                    onClick={() => updateStatus.mutate({ newStatus: 'pending_auction' })}
                     disabled={updateStatus.isPending}
                   >
                     <Play className="h-3 w-3 mr-1" /> Resume
@@ -139,7 +181,7 @@ export function PromotionCard({ promotion }: { promotion: Promotion }) {
                     variant="ghost"
                     size="sm"
                     className="h-6 text-[10px] px-2 text-destructive hover:text-destructive"
-                    onClick={() => updateStatus.mutate('cancelled')}
+                    onClick={() => updateStatus.mutate({ newStatus: 'cancelled' })}
                     disabled={updateStatus.isPending}
                   >
                     <X className="h-3 w-3 mr-1" /> Cancel

@@ -100,16 +100,16 @@ Deno.serve(async (req) => {
 
     const auctionDate = new Date().toISOString().split('T')[0];
 
-    // ── DUPLICATE RESOLVE GUARD ──
-    const { data: existingAuction } = await supabase
+    // ── DUPLICATE RESOLVE GUARD (check ALL slot types) ──
+    const { data: existingAuctions } = await supabase
       .from('promotion_auctions')
-      .select('id')
-      .eq('auction_date', auctionDate)
-      .eq('slot_type', 'featured')
-      .limit(1)
-      .maybeSingle();
+      .select('slot_type')
+      .eq('auction_date', auctionDate);
 
-    if (existingAuction) {
+    const resolvedSlots = new Set((existingAuctions || []).map((a: any) => a.slot_type));
+
+    if (resolvedSlots.has('featured') && resolvedSlots.has('store_spotlight')) {
+      // If both single-winner slots are resolved, likely fully done
       console.log(`Auction for ${auctionDate} already resolved, skipping.`);
       return new Response(
         JSON.stringify({ success: true, skipped: true, reason: 'already_resolved' }),
@@ -118,28 +118,28 @@ Deno.serve(async (req) => {
     }
 
     // ── FEATURED SLOT (1 winner, fall-through) ──
-    const { data: featuredBids } = await supabase
-      .from('product_promotions')
-      .select('*')
-      .eq('slot_type', 'featured')
-      .eq('status', 'pending_auction')
-      .order('max_bid', { ascending: false });
+    if (!resolvedSlots.has('featured')) {
+      const { data: featuredBids } = await supabase
+        .from('product_promotions')
+        .select('*')
+        .eq('slot_type', 'featured')
+        .eq('status', 'pending_auction')
+        .order('max_bid', { ascending: false });
 
-    const featured = await awardSlots(
-      supabase, featuredBids || [], 1, auctionDate, 'Featured slot'
-    );
+      const featured = await awardSlots(
+        supabase, featuredBids || [], 1, auctionDate, 'Featured slot'
+      );
 
-    // Notify outbid sellers
-    const featuredOutbid = (featuredBids || []).filter(b => featured.outbidIds.includes(b.id));
-    await notifyOutbidSellers(supabase, featuredOutbid, 'Featured slot');
+      const featuredOutbid = (featuredBids || []).filter(b => featured.outbidIds.includes(b.id));
+      await notifyOutbidSellers(supabase, featuredOutbid, 'Featured slot');
 
-    // Log featured auction
-    await supabase.from('promotion_auctions').insert({
-      auction_date: auctionDate,
-      slot_type: 'featured',
-      winners: featured.winnerIds,
-      total_bids: featuredBids?.length || 0,
-    });
+      await supabase.from('promotion_auctions').insert({
+        auction_date: auctionDate,
+        slot_type: 'featured',
+        winners: featured.winnerIds,
+        total_bids: featuredBids?.length || 0,
+      });
+    }
 
     // ── CATEGORY SPOTLIGHT (3 winners per category, fall-through) ──
     const { data: spotlightBids } = await supabase
@@ -176,26 +176,28 @@ Deno.serve(async (req) => {
     }
 
     // ── STORE SPOTLIGHT (1 winner, fall-through) ──
-    const { data: storeSpotlightBids } = await supabase
-      .from('product_promotions')
-      .select('*')
-      .eq('slot_type', 'store_spotlight')
-      .eq('status', 'pending_auction')
-      .order('max_bid', { ascending: false });
+    if (!resolvedSlots.has('store_spotlight')) {
+      const { data: storeSpotlightBids } = await supabase
+        .from('product_promotions')
+        .select('*')
+        .eq('slot_type', 'store_spotlight')
+        .eq('status', 'pending_auction')
+        .order('max_bid', { ascending: false });
 
-    const storeResult = await awardSlots(
-      supabase, storeSpotlightBids || [], 1, auctionDate, 'Store Spotlight'
-    );
+      const storeResult = await awardSlots(
+        supabase, storeSpotlightBids || [], 1, auctionDate, 'Store Spotlight'
+      );
 
-    const storeOutbid = (storeSpotlightBids || []).filter(b => storeResult.outbidIds.includes(b.id));
-    await notifyOutbidSellers(supabase, storeOutbid, 'Store Spotlight');
+      const storeOutbid = (storeSpotlightBids || []).filter(b => storeResult.outbidIds.includes(b.id));
+      await notifyOutbidSellers(supabase, storeOutbid, 'Store Spotlight');
 
-    await supabase.from('promotion_auctions').insert({
-      auction_date: auctionDate,
-      slot_type: 'store_spotlight',
-      winners: storeResult.winnerIds,
-      total_bids: storeSpotlightBids?.length || 0,
-    });
+      await supabase.from('promotion_auctions').insert({
+        auction_date: auctionDate,
+        slot_type: 'store_spotlight',
+        winners: storeResult.winnerIds,
+        total_bids: storeSpotlightBids?.length || 0,
+      });
+    }
 
     // ── EXPIRE old active promotions ──
     await supabase
