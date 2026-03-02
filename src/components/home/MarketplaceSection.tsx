@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Store, ChevronRight, ShieldCheck, Award, Users, Search, Package, FlaskConical, Crown, Car, Code, Bot, Layout, Box, Palette, Wrench, Gamepad2, Map, Shirt, Plane, ArrowRight } from 'lucide-react';
 import { usePrefetchProduct } from '@/hooks/usePrefetchProduct';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -240,6 +241,7 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
   const [browseMode, setBrowseMode] = useState<'stores' | 'products' | 'categories'>('stores');
   const { formatPrice } = useCurrency();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   // Fetch all approved stores
   const { data: stores, isLoading: storesLoading } = useQuery({
@@ -328,9 +330,9 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
               ))
             ) : (
               <div className="col-span-full py-12 border-t border-b border-border">
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/50 mb-2">Marketplace</p>
-                <p className="text-lg font-bold text-foreground">No stores yet</p>
-                <p className="text-sm text-muted-foreground mt-1">Check back soon — sellers are on the way.</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/50 mb-2">{t('marketplace.marketplace')}</p>
+                <p className="text-lg font-bold text-foreground">{t('marketplace.noStoresYet')}</p>
+                <p className="text-sm text-muted-foreground mt-1">{t('marketplace.checkBackSoon')}</p>
               </div>
             )}
           </div>
@@ -343,9 +345,9 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
           <FeaturedProductCard />
           <MostPopularSection />
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Recently Released</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('marketplace.recentlyReleased')}</h2>
             <Link to="/products" className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-0.5">
-              View all <ChevronRight className="h-3.5 w-3.5" />
+              {t('marketplace.viewAll')} <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>
           {productsLoading ? (
