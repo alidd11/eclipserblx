@@ -179,6 +179,18 @@ export default function AdminSettings() {
   });
 
   const handleSave = () => {
+    if (formData.store_name.length > 100) {
+      toast.error('Store name must be under 100 characters');
+      return;
+    }
+    if (formData.contact_email && formData.contact_email.length > 255) {
+      toast.error('Contact email must be under 255 characters');
+      return;
+    }
+    if (formData.contact_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contact_email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
     saveMutation.mutate(formData);
   };
 
