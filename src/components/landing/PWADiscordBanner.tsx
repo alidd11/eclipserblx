@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const DiscordLogo = forwardRef<SVGSVGElement, { className?: string }>(function DiscordLogo({ className }, ref) {
   return (
@@ -12,6 +13,7 @@ const DiscordLogo = forwardRef<SVGSVGElement, { className?: string }>(function D
 
 export function PWADiscordBanner() {
   const { discordUrl } = useDiscordUrl();
+  const { t } = useTranslation();
 
   return (
     <a
@@ -26,14 +28,14 @@ export function PWADiscordBanner() {
           <DiscordLogo className="h-5 w-5 text-muted-foreground" />
         </div>
         <div className="min-w-0">
-          <span className="text-[10px] font-bold tracking-widest uppercase text-[#5865F2] block mb-0.5">COMMUNITY</span>
-          <h3 className="font-semibold text-sm text-foreground truncate">Join the Discord Server</h3>
-          <p className="text-xs text-muted-foreground line-clamp-1 max-w-xs mt-0.5">Chat, get support & stay updated with the community</p>
+          <span className="text-[10px] font-bold tracking-widest uppercase text-[#5865F2] block mb-0.5">{t('discord.community')}</span>
+          <h3 className="font-semibold text-sm text-foreground truncate">{t('discord.joinDiscord')}</h3>
+          <p className="text-xs text-muted-foreground line-clamp-1 max-w-xs mt-0.5">{t('discord.joinDiscordDesc')}</p>
         </div>
       </div>
 
       <div className="shrink-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors pr-5">
-        Join
+        {t('discord.join')}
         <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
       </div>
     </a>

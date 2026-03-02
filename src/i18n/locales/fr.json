@@ -346,5 +346,34 @@
   },
   "search": {
     "placeholder": "Rechercher produits, catégories..."
+  },
+  "marketplace": {
+    "marketplace": "Marché",
+    "noStoresYet": "Aucune boutique pour l'instant",
+    "checkBackSoon": "Revenez bientôt — les vendeurs arrivent.",
+    "recentlyReleased": "Récemment Publié",
+    "viewAll": "Tout voir",
+    "stores": "Boutiques",
+    "products": "Produits",
+    "categories": "Catégories"
+  },
+  "stores": {
+    "allStores": "Toutes les Boutiques",
+    "discoverSellers": "Découvrez les créateurs et vendeurs du marché",
+    "searchStores": "Rechercher des boutiques...",
+    "staffPicks": "Choix de l'Équipe",
+    "trendingStores": "Boutiques Tendance",
+    "allStoresSection": "Toutes les Boutiques",
+    "noStoresFound": "Aucune boutique trouvée",
+    "adjustFilters": "Essayez de modifier votre recherche ou vos filtres",
+    "followers": "abonnés",
+    "trusted": "Fiable",
+    "verified": "Vérifié"
+  },
+  "discord": {
+    "community": "Communauté",
+    "joinDiscord": "Rejoignez le serveur Discord",
+    "joinDiscordDesc": "Discutez, obtenez de l'aide et restez informé avec la communauté",
+    "join": "Rejoindre"
   }
 }
