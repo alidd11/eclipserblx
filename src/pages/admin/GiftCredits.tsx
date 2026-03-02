@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Loader2, Gift, Search, UserPlus, Wallet, Check } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 export default function AdminGiftCredits() {
   const { session } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [selectedUser, setSelectedUser] = useState<{
     id: string;
     display_name: string;
@@ -29,9 +31,9 @@ export default function AdminGiftCredits() {
 
   // Search users
   const { data: searchResults, isLoading: isSearching } = useQuery({
-    queryKey: ['user-search', searchQuery],
+    queryKey: ['user-search', debouncedSearch],
     queryFn: async () => {
-      if (searchQuery.length < 2) return [];
+      if (debouncedSearch.length < 2) return [];
       
       const { data, error } = await supabase
         .from('profiles')

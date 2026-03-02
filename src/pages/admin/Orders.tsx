@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, Eye, Package, Trash2 } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -49,6 +50,7 @@ const ORDERS_PER_PAGE = 20;
 export default function AdminOrders() {
   const { user } = useAuth();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -75,7 +77,7 @@ export default function AdminOrders() {
   });
 
   const { data: orders, isLoading } = useQuery({
-    queryKey: ['admin-orders', search, statusFilter, currentPage],
+    queryKey: ['admin-orders', debouncedSearch, statusFilter, currentPage],
     queryFn: async () => {
       const from = (currentPage - 1) * ORDERS_PER_PAGE;
       const to = from + ORDERS_PER_PAGE - 1;
@@ -92,7 +94,7 @@ export default function AdminOrders() {
       if (error) throw error;
       
       // If searching, filter by user's customer_id from profiles
-      if (search && data) {
+      if (debouncedSearch && data) {
         const userIds = data.filter(o => o.user_id).map(o => o.user_id);
         if (userIds.length > 0) {
           const { data: profiles } = await supabase
@@ -104,8 +106,8 @@ export default function AdminOrders() {
           
           return data.filter(order => {
             const customerId = order.user_id ? customerIdMap.get(order.user_id) : null;
-            return customerId?.toLowerCase().includes(search.toLowerCase()) ||
-                   order.id.toLowerCase().includes(search.toLowerCase());
+            return customerId?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                   order.id.toLowerCase().includes(debouncedSearch.toLowerCase());
           });
         }
       }

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -35,10 +36,11 @@ interface BotInstallation {
 
 export default function BotServers() {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 300);
 
   // Fetch all bot installations with guild data
   const { data: installations = [], isLoading } = useQuery({
-    queryKey: ['bot-servers', searchQuery],
+    queryKey: ['bot-servers', debouncedSearch],
     queryFn: async () => {
       let query = supabase
         .from('bot_installation_codes')
@@ -46,9 +48,9 @@ export default function BotServers() {
         .not('guild_id', 'is', null)
         .order('activated_at', { ascending: false, nullsFirst: false });
 
-      if (searchQuery.trim()) {
+      if (debouncedSearch.trim()) {
         query = query.or(
-          `discord_guild_name.ilike.%${searchQuery}%,product_name.ilike.%${searchQuery}%,guild_id.ilike.%${searchQuery}%`
+          `discord_guild_name.ilike.%${debouncedSearch}%,product_name.ilike.%${debouncedSearch}%,guild_id.ilike.%${debouncedSearch}%`
         );
       }
 
