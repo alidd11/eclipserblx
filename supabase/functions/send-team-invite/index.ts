@@ -10,7 +10,7 @@ const corsHeaders = {
 };
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const ALLOWED_ROLES = new Set(['admin', 'editor', 'viewer']);
+const ALLOWED_ROLES = new Set(['manager', 'editor', 'viewer']);
 
 function escapeHtml(text: string): string {
   return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -18,7 +18,7 @@ function escapeHtml(text: string): string {
 
 const getRoleLabel = (role: string): string => {
   switch (role) {
-    case 'admin': return 'Admin';
+    case 'manager': return 'Manager';
     case 'editor': return 'Editor';
     case 'viewer': return 'Viewer';
     default: return 'Member';
@@ -27,9 +27,9 @@ const getRoleLabel = (role: string): string => {
 
 const getRoleDescription = (role: string): string => {
   switch (role) {
-    case 'admin': return 'Full access to manage products, orders, settings, and team members.';
-    case 'editor': return 'Can manage products and orders, but cannot change store settings or team.';
-    case 'viewer': return 'View-only access to store analytics and order history.';
+    case 'manager': return 'Can manage products, orders, and team settings.';
+    case 'editor': return 'Can edit products and view orders.';
+    case 'viewer': return 'View-only access to store data.';
     default: return '';
   }
 };

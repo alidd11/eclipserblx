@@ -174,7 +174,27 @@ export default function SellerSettingsTeam() {
         .eq('user_id', user.id)
         .single();
       
-      const { data: inviteData, error } = await supabase
+      // Check if this email is already a team member
+      const { data: existingMember } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('email', email.toLowerCase().trim())
+        .single();
+      
+      if (existingMember) {
+        const { data: alreadyMember } = await supabase
+          .from('store_team_members')
+          .select('id')
+          .eq('store_id', store.id)
+          .eq('user_id', existingMember.user_id)
+          .maybeSingle();
+        
+        if (alreadyMember) {
+          throw new Error('This user is already a team member');
+        }
+      }
+
+      const { data: inviteResult, error } = await supabase
         .from('store_team_invites')
         .insert({
           store_id: store.id,
@@ -182,7 +202,7 @@ export default function SellerSettingsTeam() {
           role,
           invited_by: user.id,
         })
-        .select('id')
+        .select('id, token')
         .single();
       
       if (error) {
@@ -199,7 +219,7 @@ export default function SellerSettingsTeam() {
           store_name: store.name,
           inviter_name: inviterProfile?.display_name || 'A store owner',
           role,
-          invite_token: inviteData.id,
+          invite_token: inviteResult.token,
         },
       });
       
