@@ -1,4 +1,4 @@
- import { useState } from 'react';
+ import { useState, useEffect } from 'react';
  import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
  import { useNavigate } from 'react-router-dom';
  import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -63,6 +63,27 @@
    const [search, setSearch] = useState('');
    const [statusFilter, setStatusFilter] = useState<string>('all');
  
+  // Realtime subscription for auto-refresh
+  useEffect(() => {
+    const channel = supabase
+      .channel('customer-tickets-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'support_tickets' },
+        () => queryClient.invalidateQueries({ queryKey: ['admin-customer-tickets'] })
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'ticket_messages' },
+        () => queryClient.invalidateQueries({ queryKey: ['admin-customer-tickets'] })
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   // Fetch active tickets only (exclude resolved/closed - they go to transcripts)
   const { data: tickets, isLoading } = useQuery({
     queryKey: ['admin-customer-tickets', statusFilter],

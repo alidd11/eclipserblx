@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MessageSquare, Clock, CheckCircle, Send, Link as LinkIcon, User, Store, AlertCircle, XCircle, AlertTriangle, Paperclip, X, ChevronDown } from 'lucide-react';
 import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
@@ -87,6 +87,31 @@ export default function SellerTickets() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Realtime subscription for auto-refresh
+  useEffect(() => {
+    const channel = supabase
+      .channel('seller-tickets-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'seller_support_tickets' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['admin-seller-tickets'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'seller_ticket_messages' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['admin-ticket-messages'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   // Fetch tickets
   const { data: tickets, isLoading } = useQuery({
