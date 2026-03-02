@@ -12,5 +12,23 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /seller/
+Disallow: /account/
+Disallow: /auth
+Disallow: /checkout
+Disallow: /cart
+Disallow: /messages
+Disallow: /notifications
+Disallow: /support/tickets
+Disallow: /support/chat
+Disallow: /chat-history
+Disallow: /store-messages
+Disallow: /ip-staff/
+Disallow: /ip-shield
+Disallow: /global-guard/
+Disallow: /bot-dashboard
+Disallow: /order-success
+Disallow: /complete-profile
 
 Sitemap: https://eclipserblx.com/sitemap.xml

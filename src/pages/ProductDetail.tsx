@@ -422,6 +422,8 @@ export default function ProductDetail() {
           image={product.images?.[0] || ''}
           price={product.price}
           seller={product.stores?.name || 'Eclipse'}
+          rating={averageRating || undefined}
+          reviewCount={reviewCount || undefined}
         />
       )}
       <PullToRefresh onRefresh={handleRefresh}>

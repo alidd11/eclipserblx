@@ -214,3 +214,56 @@ export function FAQSchema({ faqs }: { faqs: { question: string; answer: string }
 
   return null;
 }
+
+// Store schema for individual store pages
+interface StoreSchemaProps {
+  name: string;
+  description?: string;
+  url: string;
+  image?: string;
+  rating?: number;
+  reviewCount?: number;
+}
+
+export function StoreSchema({ name, description, url, image, rating, reviewCount }: StoreSchemaProps) {
+  useEffect(() => {
+    const schema: Record<string, unknown> = {
+      '@context': 'https://schema.org',
+      '@type': 'Store',
+      name,
+      description: description || `${name} on Eclipse marketplace`,
+      url,
+      image: image || 'https://eclipserblx.com/pwa-512x512.png',
+      parentOrganization: {
+        '@type': 'Organization',
+        name: 'Eclipse',
+        url: 'https://eclipserblx.com',
+      },
+    };
+
+    if (rating && reviewCount) {
+      schema.aggregateRating = {
+        '@type': 'AggregateRating',
+        ratingValue: rating.toFixed(1),
+        reviewCount,
+        bestRating: '5',
+        worstRating: '1',
+      };
+    }
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = 'store-schema';
+    script.textContent = JSON.stringify(schema);
+
+    const existing = document.getElementById('store-schema');
+    if (existing) existing.remove();
+    document.head.appendChild(script);
+
+    return () => {
+      script.remove();
+    };
+  }, [name, description, url, image, rating, reviewCount]);
+
+  return null;
+}
