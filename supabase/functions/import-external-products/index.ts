@@ -213,22 +213,81 @@ function parseClearlyDevProduct(markdown: string, url: string, html?: string): E
 
   if (!name) return null;
   
-  const imageRegex = /!\[([^\]]*)\]\((https?:\/\/[^\)]+)\)/g;
+  // --- Extract product images from HTML first (more reliable), then fallback to markdown ---
   const images: string[] = [];
-  const skipImagePatterns = /\/(avatar|profile|favicon|logo|icon|clearlydev-logo|clearlydev_logo|clearlydev|clearly-dev|brand|banner)\b/i;
-  const skipImageDomains = /\b(rbxcdn\.com|roblox\.com|tr\.rbxcdn\.com|thumbs\.roblox\.com)\b/i;
-  const skipAltTextPatterns = /\b(clearlydev|clearly\s*dev|clearly\.dev|store\s*logo|seller\s*avatar|platform\s*logo|store\s*banner|builtbybit|built\s*by\s*bit|marketplace\s*logo)\b/i;
-  const skipUrlBrandingPatterns = /clearlydev\.(com|io|dev)\/.*\/(logo|brand|banner|icon)/i;
-  let imgMatch;
-  while ((imgMatch = imageRegex.exec(markdown)) !== null) {
-    const imgAlt = imgMatch[1] || '';
-    const imgUrl = imgMatch[2];
-    if (skipImagePatterns.test(imgUrl)) continue;
-    if (skipImageDomains.test(imgUrl)) continue;
-    if (skipAltTextPatterns.test(imgAlt)) continue;
-    if (skipUrlBrandingPatterns.test(imgUrl)) continue;
-    if (!images.includes(imgUrl)) {
-      images.push(imgUrl);
+
+  // Skip patterns for branding / platform images
+  const skipImageUrl = /\/(avatar|profile|favicon|logo|icon|clearlydev|clearly-dev|brand|site-logo|navbar|footer|header|sprite|placeholder)\b/i;
+  const skipImageDomains = /\b(rbxcdn\.com|roblox\.com|tr\.rbxcdn\.com|thumbs\.roblox\.com|googletagmanager\.com|google-analytics\.com|facebook\.com|twitter\.com)\b/i;
+  const skipAltText = /\b(clearlydev|clearly\s*dev|store\s*logo|seller\s*avatar|platform|marketplace|builtbybit|built\s*by\s*bit|navbar|footer|header)\b/i;
+  // Skip tiny UI images (base64 data URIs under ~500 bytes, 1x1 tracking pixels)
+  const skipTinyDataUri = /^data:image\/[^;]+;base64,.{0,700}$/;
+  // Skip known ClearlyDev static asset paths
+  const skipClearlyDevAssets = /clearlydev\.com\/(_next\/static|_next\/image|images\/|assets\/|static\/)/i;
+  // Skip images that are likely site-wide (appear in nav/footer)
+  const skipSiteWideImages = /\.(svg|ico)(\?|$)/i;
+
+  function isProductImage(imgUrl: string, imgAlt: string): boolean {
+    if (!imgUrl || imgUrl.length < 10) return false;
+    if (skipTinyDataUri.test(imgUrl)) return false;
+    if (skipImageUrl.test(imgUrl)) return false;
+    if (skipImageDomains.test(imgUrl)) return false;
+    if (skipAltText.test(imgAlt)) return false;
+    if (skipClearlyDevAssets.test(imgUrl)) return false;
+    if (skipSiteWideImages.test(imgUrl)) return false;
+    // Must be http(s)
+    if (!imgUrl.startsWith('http://') && !imgUrl.startsWith('https://')) return false;
+    return true;
+  }
+
+  // Try to extract images from the product-specific HTML section first
+  if (html) {
+    // Look for product gallery / main image containers
+    const productImagePatterns = [
+      // OG image (usually the hero product image)
+      /<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i,
+      // Product gallery images in common container patterns
+      /<img[^>]*(?:class|id)="[^"]*(?:product|gallery|showcase|preview|main-image|hero)[^"]*"[^>]*src="([^"]+)"/gi,
+      // Images inside product description / content area
+      /(?:<div[^>]*class="[^"]*(?:product|gallery|content|description)[^"]*"[^>]*>[\s\S]*?)<img[^>]*src="([^"]+)"/gi,
+    ];
+
+    // Get OG image first — it's almost always the correct product image
+    const ogMatch = html.match(productImagePatterns[0]);
+    if (ogMatch && ogMatch[1] && isProductImage(ogMatch[1], '')) {
+      images.push(ogMatch[1]);
+    }
+
+    // Then get all <img> tags from the HTML but filter aggressively
+    const allImgTags = html.matchAll(/<img[^>]*\bsrc="([^"]+)"[^>]*(?:alt="([^"]*)")?[^>]*>/gi);
+    for (const m of allImgTags) {
+      const src = m[1];
+      const alt = m[2] || '';
+      if (isProductImage(src, alt) && !images.includes(src)) {
+        images.push(src);
+      }
+    }
+    // Also check srcset/data-src patterns
+    const lazySrcTags = html.matchAll(/<img[^>]*\bdata-src="([^"]+)"[^>]*(?:alt="([^"]*)")?[^>]*>/gi);
+    for (const m of lazySrcTags) {
+      const src = m[1];
+      const alt = m[2] || '';
+      if (isProductImage(src, alt) && !images.includes(src)) {
+        images.push(src);
+      }
+    }
+  }
+
+  // Fallback: extract from markdown if HTML yielded nothing
+  if (images.length === 0) {
+    const imageRegex = /!\[([^\]]*)\]\((https?:\/\/[^\)]+)\)/g;
+    let imgMatch;
+    while ((imgMatch = imageRegex.exec(markdown)) !== null) {
+      const imgAlt = imgMatch[1] || '';
+      const imgUrl = imgMatch[2];
+      if (isProductImage(imgUrl, imgAlt) && !images.includes(imgUrl)) {
+        images.push(imgUrl);
+      }
     }
   }
   
@@ -254,18 +313,15 @@ function parseClearlyDevProduct(markdown: string, url: string, html?: string): E
   }
   
   const categorySlug = suggestCategory(name, description);
-  
-  const cleanedImages = images.length > 3 
-    ? images.slice(1, -2)
-    : images.length > 2 
-      ? images.slice(0, -2) 
-      : images;
+
+  // Limit to max 8 product images (no blind slicing)
+  const finalImages = images.slice(0, 8);
 
   return {
     name,
     description,
     price,
-    images: cleanedImages,
+    images: finalImages,
     sourceUrl: url,
     platform: 'clearlydev',
     suggestedCategoryId: categorySlug,
@@ -380,12 +436,18 @@ async function downloadAndUploadImage(
       return null;
     }
     
-    const extension = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
+    const extension = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : contentType.includes('gif') ? 'gif' : 'jpg';
     const blob = await response.blob();
     
     // Reject suspiciously large files (>10MB)
     if (blob.size > 10 * 1024 * 1024) {
       console.log(`Skipping oversized image: ${blob.size} bytes`);
+      return null;
+    }
+    
+    // Skip tiny images likely to be logos/icons/tracking pixels (under 5KB)
+    if (blob.size < 5 * 1024) {
+      console.log(`Skipping tiny image (likely logo/icon): ${blob.size} bytes - ${imageUrl}`);
       return null;
     }
     
