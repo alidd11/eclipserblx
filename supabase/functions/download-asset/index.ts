@@ -6,6 +6,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Input validation
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const TOKEN_REGEX = /^[0-9a-f]{64}$/i;
+
 // Rate limits
 const MAX_DOWNLOADS_PER_PRODUCT_PER_DAY = 5;
 const MAX_DOWNLOADS_PER_HOUR_GLOBAL = 15;
@@ -89,6 +93,10 @@ serve(async (req) => {
 
     // If token is provided, this is a download redemption request (GET)
     if (tokenParam && req.method === "GET") {
+      if (!TOKEN_REGEX.test(tokenParam)) {
+        return new Response(JSON.stringify({ error: "Invalid token format" }), 
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
       return await handleTokenRedemption(tokenParam, req);
     }
 
@@ -123,9 +131,16 @@ serve(async (req) => {
 
     console.log("Download request:", { productId, orderItemId, userId: user.id, ip: clientIp });
 
-    if (!productId) {
+    if (!productId || !UUID_REGEX.test(productId)) {
       return new Response(
-        JSON.stringify({ error: "Product ID is required" }),
+        JSON.stringify({ error: "Valid Product ID is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (orderItemId && !UUID_REGEX.test(orderItemId)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid order item ID format" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

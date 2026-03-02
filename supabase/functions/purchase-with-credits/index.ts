@@ -162,22 +162,27 @@ serve(async (req) => {
 
     logStep("Validated items", { totalPrice, itemCount: validatedItems.length });
 
-    // Check user's credit balance
-    const { data: creditBalance } = await supabaseClient
-      .from('credit_balances')
-      .select('balance')
-      .eq('user_id', userId)
-      .single();
+    // === DEDUCT CREDITS FIRST (before creating order/seller transactions) ===
+    // This prevents the race condition where seller balances update but credit deduction fails
+    const { data: spendResult, error: spendError } = await supabaseClient
+      .rpc('spend_credits', {
+        p_user_id: userId,
+        p_amount: totalPrice,
+        p_description: `Purchase: ${validatedItems.map(i => i.name).join(', ')}`,
+      });
 
-    const currentBalance = creditBalance?.balance || 0;
-    
-    if (currentBalance < totalPrice) {
-      throw new Error(`Insufficient credit balance. Required: £${totalPrice.toFixed(2)}, Available: £${currentBalance.toFixed(2)}`);
+    if (spendError) {
+      logStep("Credit spend error", spendError);
+      throw new Error("Failed to deduct credits");
     }
 
-    logStep("Credit balance verified", { currentBalance, required: totalPrice });
+    if (!spendResult) {
+      throw new Error("Insufficient credit balance");
+    }
 
-    // Create order
+    logStep("Credits deducted upfront", { amount: totalPrice });
+
+    // Create order (credits already deducted — safe to proceed)
     const { data: order, error: orderError } = await supabaseClient
       .from("orders")
       .insert({
@@ -350,31 +355,14 @@ serve(async (req) => {
       }
     }
 
-    // Deduct credits from user's balance
-    const { data: spendResult, error: spendError } = await supabaseClient
-      .rpc('spend_credits', {
-        p_user_id: userId,
-        p_amount: totalPrice,
-        p_description: `Purchase: ${validatedItems.map(i => i.name).join(', ')}`,
-        p_order_id: order.id,
-      });
-
-    if (spendError) {
-      logStep("Credit spend error", spendError);
-      // Rollback: Delete order and order items
-      await supabaseClient.from("order_items").delete().eq("order_id", order.id);
-      await supabaseClient.from("orders").delete().eq("id", order.id);
-      throw new Error("Failed to deduct credits");
-    }
-
-    if (!spendResult) {
-      // Rollback: Delete order and order items
-      await supabaseClient.from("order_items").delete().eq("order_id", order.id);
-      await supabaseClient.from("orders").delete().eq("id", order.id);
-      throw new Error("Insufficient credit balance");
-    }
-
-    logStep("Credits deducted", { amount: totalPrice, orderId: order.id });
+    // Link credit transaction to order (credits already deducted upfront)
+    await supabaseClient.rpc('add_credits', {
+      p_user_id: userId,
+      p_amount: 0,
+      p_type: 'spend',
+      p_description: `Order linked: ${order.id}`,
+      p_order_id: order.id,
+    }).then(() => logStep("Credit transaction linked to order")).catch(() => {});
 
     // Clear user's cart
     await supabaseClient

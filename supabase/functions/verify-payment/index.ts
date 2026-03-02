@@ -37,6 +37,14 @@ serve(async (req) => {
       throw new Error("Session ID or Payment Intent ID is required");
     }
 
+    // Validate Stripe ID formats to prevent injection
+    if (sessionId && !/^cs_[a-zA-Z0-9_]+$/.test(sessionId)) {
+      throw new Error("Invalid session ID format");
+    }
+    if (paymentIntentId && !/^pi_[a-zA-Z0-9_]+$/.test(paymentIntentId)) {
+      throw new Error("Invalid payment intent ID format");
+    }
+
     logStep("Starting verification", { sessionId, paymentIntentId });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
