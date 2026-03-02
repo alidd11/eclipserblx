@@ -10,6 +10,9 @@ const SITE_URL = "https://eclipserblx.com";
 const FALLBACK_IMAGE = "https://storage.googleapis.com/gpt-engineer-file-uploads/6XoLGVy9Aseup6dIxodIWS9uGsS2/social-images/social-1770521924890-IMG_4300.png";
 const SITE_NAME = "Eclipse";
 
+// Validate slug format: alphanumeric, hyphens, underscores only
+const SLUG_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9\-_]{0,200}$/;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -18,8 +21,8 @@ Deno.serve(async (req) => {
   const url = new URL(req.url);
   const slug = url.searchParams.get("slug");
 
-  if (!slug) {
-    return new Response("Missing slug parameter", { status: 400 });
+  if (!slug || !SLUG_REGEX.test(slug)) {
+    return new Response("Invalid or missing slug parameter", { status: 400 });
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -43,14 +46,14 @@ Deno.serve(async (req) => {
     });
   }
 
-  const title = `${product.name} | ${SITE_NAME}`;
+  const title = `${escapeHtml(product.name)} | ${SITE_NAME}`;
   const storeName = (product.stores as any)?.name;
   const rawDesc = product.description
     ? product.description.replace(/<[^>]*>/g, "").slice(0, 200)
     : `Check out ${product.name} on Eclipse`;
   const description = storeName
-    ? `By ${storeName} — ${rawDesc}`
-    : rawDesc;
+    ? `By ${escapeHtml(storeName)} — ${escapeHtml(rawDesc)}`
+    : escapeHtml(rawDesc);
 
   // Use first product image, fall back to site default
   const ogImage = product.images?.[0] || FALLBACK_IMAGE;
@@ -60,14 +63,14 @@ Deno.serve(async (req) => {
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>${escapeHtml(title)}</title>
-  <meta name="description" content="${escapeHtml(description)}" />
+  <title>${title}</title>
+  <meta name="description" content="${description}" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="product" />
   <meta property="og:site_name" content="${SITE_NAME}" />
-  <meta property="og:title" content="${escapeHtml(title)}" />
-  <meta property="og:description" content="${escapeHtml(description)}" />
+  <meta property="og:title" content="${title}" />
+  <meta property="og:description" content="${description}" />
   <meta property="og:image" content="${escapeHtml(ogImage)}" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -77,8 +80,8 @@ Deno.serve(async (req) => {
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="${escapeHtml(title)}" />
-  <meta name="twitter:description" content="${escapeHtml(description)}" />
+  <meta name="twitter:title" content="${title}" />
+  <meta name="twitter:description" content="${description}" />
   <meta name="twitter:image" content="${escapeHtml(ogImage)}" />
 
   <!-- Redirect humans to the real page -->

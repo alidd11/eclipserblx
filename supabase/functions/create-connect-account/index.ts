@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,16 +13,24 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[CREATE-CONNECT-ACCOUNT] ${step}${detailsStr}`);
 };
 
+// Allowed origins for redirect URLs
+const ALLOWED_ORIGINS = ["https://eclipserblx.com", "https://www.eclipserblx.com"];
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Rate limiting
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.WRITE, identifier: clientIp, action: 'create-connect-account' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     logStep("Function started");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+    if (!stripeKey) throw new Error("Payment service not configured");
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -34,15 +43,21 @@ serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
+    if (userError) throw new Error("Authentication failed");
     
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    logStep("User authenticated", { userId: user.id });
 
     // Get the store for this user - support optional store_id param
     let body: { store_id?: string } = {};
     try { body = await req.json(); } catch { /* no body */ }
+
+    // Validate store_id format if provided
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (body.store_id && !UUID_REGEX.test(body.store_id)) {
+      throw new Error("Invalid store ID format");
+    }
 
     let storeQuery = supabaseClient
       .from('stores')
@@ -59,7 +74,7 @@ serve(async (req) => {
       throw new Error("No store found for this user");
     }
     const store = stores[0];
-    logStep("Found store", { storeId: store.id, storeName: store.name });
+    logStep("Found store", { storeId: store.id });
 
     // Get existing payment details
     const { data: paymentDetails } = await supabaseClient
@@ -103,16 +118,19 @@ serve(async (req) => {
         });
 
       if (updateError) {
-        logStep("Warning: Failed to save stripe_account_id", { error: updateError.message });
+        logStep("Warning: Failed to save account ID", { error: updateError.message });
       }
 
-      logStep("Created Connect account", { accountId });
+      logStep("Created Connect account");
     } else {
-      logStep("Using existing Connect account", { accountId });
+      logStep("Using existing Connect account");
     }
 
-    // Create account link for onboarding
-    const origin = req.headers.get("origin") || "https://eclipserblx.com";
+    // Validate origin for redirect URLs
+    const rawOrigin = req.headers.get("origin");
+    const origin = rawOrigin && ALLOWED_ORIGINS.some(o => rawOrigin.startsWith(o))
+      ? rawOrigin
+      : "https://eclipserblx.com";
     
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
@@ -121,19 +139,23 @@ serve(async (req) => {
       type: 'account_onboarding',
     });
 
-    logStep("Created account link", { url: accountLink.url });
+    logStep("Created account link");
 
+    // Return URL only — do NOT expose Stripe account IDs to client
     return new Response(JSON.stringify({ 
       url: accountLink.url,
-      accountId 
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorMessage = error instanceof Error ? error.message : "An error occurred";
     logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    // Mask internal errors
+    const safeMessage = errorMessage.includes("STRIPE") || errorMessage.includes("stripe")
+      ? "Payment service error"
+      : errorMessage;
+    return new Response(JSON.stringify({ error: safeMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

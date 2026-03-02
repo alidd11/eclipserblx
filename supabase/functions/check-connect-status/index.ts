@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,10 +19,15 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limiting
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.API, identifier: clientIp, action: 'check-connect-status' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     logStep("Function started");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+    if (!stripeKey) throw new Error("Payment service not configured");
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -34,7 +40,7 @@ serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
+    if (userError) throw new Error("Authentication failed");
     
     const user = userData.user;
     if (!user?.id) throw new Error("User not authenticated");
@@ -47,7 +53,7 @@ serve(async (req) => {
       .eq('owner_id', user.id)
       .limit(1);
 
-    if (storeError) throw new Error(`Store lookup error: ${storeError.message}`);
+    if (storeError) throw new Error("Store lookup failed");
     const store = stores?.[0];
     if (!store) {
       logStep("No store found");
@@ -56,7 +62,6 @@ serve(async (req) => {
         isOnboarded: false,
         canReceivePayments: false,
         chargesEnabled: false,
-        accountId: null,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -70,7 +75,7 @@ serve(async (req) => {
       .eq('store_id', store.id)
       .maybeSingle();
 
-    if (paymentError) throw new Error(`Payment details lookup error: ${paymentError.message}`);
+    if (paymentError) throw new Error("Payment details lookup failed");
 
     if (!paymentDetails?.stripe_account_id) {
       logStep("No Connect account found");
@@ -79,7 +84,6 @@ serve(async (req) => {
         isOnboarded: false,
         canReceivePayments: false,
         chargesEnabled: false,
-        accountId: null,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -90,8 +94,7 @@ serve(async (req) => {
 
     // Get account details
     const account = await stripe.accounts.retrieve(paymentDetails.stripe_account_id);
-    logStep("Retrieved account", { 
-      accountId: account.id, 
+    logStep("Retrieved account status", { 
       chargesEnabled: account.charges_enabled,
       payoutsEnabled: account.payouts_enabled,
       detailsSubmitted: account.details_submitted
@@ -110,20 +113,24 @@ serve(async (req) => {
       logStep('Warning: failed to sync payouts_enabled', { message: String(syncErr) });
     }
 
+    // Do NOT expose Stripe account IDs to the client
     return new Response(JSON.stringify({ 
       hasAccount: true,
       isOnboarded: account.details_submitted,
       canReceivePayments: account.payouts_enabled,
       chargesEnabled: account.charges_enabled,
-      accountId: account.id,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorMessage = error instanceof Error ? error.message : "An error occurred";
     logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    // Mask internal errors
+    const safeMessage = errorMessage.includes("Stripe") || errorMessage.includes("stripe")
+      ? "Payment service error"
+      : errorMessage;
+    return new Response(JSON.stringify({ error: safeMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
