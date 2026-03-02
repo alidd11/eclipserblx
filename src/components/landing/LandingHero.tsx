@@ -5,6 +5,8 @@ import { HeroBanner } from './HeroBanner';
 import { useTranslation } from 'react-i18next';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { StatsCard } from '@/components/home/StatsCard';
+import { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const POPULAR_SEARCHES = [
   'scripts',
@@ -20,6 +22,16 @@ export function LandingHero() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { isSeller } = useSellerStatus();
+
+  const rotatingWords = ['Roblox', 'Discord'];
+  const [wordIndex, setWordIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setWordIndex((prev) => (prev + 1) % rotatingWords.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [rotatingWords.length]);
 
   const handleSearchClick = (term: string) => {
     navigate(`/products?q=${encodeURIComponent(term)}`);
@@ -39,9 +51,23 @@ export function LandingHero() {
             </p>
 
             <h1 className="font-display text-3xl lg:text-[2.5rem] font-bold leading-[1.1] tracking-tight mb-4 max-w-lg">
-              Premium assets built by
-              <br />
-              top developers.
+              {t('landing.headline')}{' '}
+              <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em' }}>
+                <span className="invisible">{rotatingWords.reduce((a, b) => a.length > b.length ? a : b)}</span>
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={wordIndex}
+                    initial={{ y: '100%', opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: '-100%', opacity: 0 }}
+                    transition={{ duration: 0.4, ease: 'easeInOut' }}
+                    className="absolute left-0"
+                  >
+                    {rotatingWords[wordIndex]}
+                  </motion.span>
+                </AnimatePresence>
+              </span>{' '}
+              Experience.
             </h1>
 
             <p className="text-sm text-muted-foreground max-w-md mb-6 leading-relaxed">
@@ -101,7 +127,23 @@ export function LandingHero() {
         <div className="lg:hidden w-full flex flex-col items-center">
           <div className="text-center max-w-md">
             <h1 className="font-display text-2xl sm:text-3xl font-bold leading-[1.15] tracking-tight mb-3">
-              Premium assets built by top developers.
+              {t('landing.headline')}{' '}
+              <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em' }}>
+                <span className="invisible">{rotatingWords.reduce((a, b) => a.length > b.length ? a : b)}</span>
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={wordIndex}
+                    initial={{ y: '100%', opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: '-100%', opacity: 0 }}
+                    transition={{ duration: 0.4, ease: 'easeInOut' }}
+                    className="absolute left-0"
+                  >
+                    {rotatingWords[wordIndex]}
+                  </motion.span>
+                </AnimatePresence>
+              </span>{' '}
+              Experience.
             </h1>
             <p className="text-sm text-muted-foreground mx-auto mb-5 leading-relaxed">
               {t('landing.description')}
