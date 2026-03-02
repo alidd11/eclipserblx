@@ -817,12 +817,17 @@ export default function SellerProducts() {
                   <Label htmlFor="name">Name *</Label>
                   <Input
                     id="name"
-                    value={form.name}
+                   value={form.name}
                     onChange={(e) => setForm({ 
                       ...form, 
-                      name: e.target.value, 
-                      slug: form.slug || generateSlug(e.target.value)
+                      name: e.target.value,
                     })}
+                    onBlur={() => {
+                      // Auto-generate slug from full name when field loses focus (only for new products)
+                      if (!form.id && !form.slug && form.name.trim()) {
+                        setForm(prev => ({ ...prev, slug: generateSlug(prev.name) }));
+                      }
+                    }}
                     required
                   />
                 </div>
