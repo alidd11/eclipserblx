@@ -14,6 +14,7 @@ interface InviteInfo {
   role: string;
   inviteId: string;
   storeId: string;
+  invitedBy: string;
 }
 
 export default function AcceptTeamInvite() {
@@ -47,7 +48,7 @@ export default function AcceptTeamInvite() {
       // Look up invite by token
       const { data: invite, error } = await supabase
         .from('store_team_invites')
-        .select('id, store_id, email, role, expires_at')
+        .select('id, store_id, email, role, expires_at, invited_by')
         .eq('token', token)
         .maybeSingle();
 
@@ -93,6 +94,7 @@ export default function AcceptTeamInvite() {
         role: invite.role,
         inviteId: invite.id,
         storeId: invite.store_id,
+        invitedBy: invite.invited_by,
       });
       setStatus('valid');
     } catch {
@@ -112,7 +114,7 @@ export default function AcceptTeamInvite() {
           store_id: inviteInfo.storeId,
           user_id: user.id,
           role: inviteInfo.role as 'manager' | 'editor' | 'viewer',
-          invited_by: user.id,
+          invited_by: inviteInfo.invitedBy,
           accepted_at: new Date().toISOString(),
         });
 
