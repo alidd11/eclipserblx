@@ -14,9 +14,11 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 import { formatDistanceToNow } from 'date-fns';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 export default function Featured() {
   usePageTracking({ pagePath: '/featured' });
+  usePageMeta({ title: 'Featured Products', description: 'Discover featured and trending Roblox assets on Eclipse. Hand-picked premium scripts, vehicles, maps and more.', canonicalPath: '/featured' });
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const { formatPrice } = useCurrency();
 
