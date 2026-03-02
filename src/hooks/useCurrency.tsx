@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode, forwardRef } from 'react';
 import { safeStorage } from '@/lib/safeStorage';
 
 export type CurrencyCode = 'GBP' | 'USD' | 'EUR';
@@ -36,7 +36,7 @@ const STORAGE_KEY = 'eclipse_currency';
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
-export function CurrencyProvider({ children }: { children: ReactNode }) {
+export const CurrencyProvider = forwardRef<HTMLDivElement, { children: ReactNode }>(function CurrencyProvider({ children }, _ref) {
   const [currency, setCurrencyState] = useState<CurrencyCode>(() => {
     const stored = safeStorage.getItem(STORAGE_KEY);
     if (stored && stored in CURRENCIES) {
@@ -71,7 +71,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       {children}
     </CurrencyContext.Provider>
   );
-}
+});
 
 export function useCurrency() {
   const context = useContext(CurrencyContext);

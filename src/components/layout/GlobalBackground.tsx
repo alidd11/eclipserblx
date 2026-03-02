@@ -1,9 +1,11 @@
+import { forwardRef } from 'react';
+
 /**
  * GlobalBackground - Fixed subtle texture background layer
  * Renders behind all content for a premium, immersive dark aesthetic
  * Inspired by Vino store's subtle banner feel
  */
-export function GlobalBackground() {
+export const GlobalBackground = forwardRef<HTMLDivElement>(function GlobalBackground(_props, _ref) {
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
       {/* Solid background base */}
@@ -26,4 +28,4 @@ export function GlobalBackground() {
       />
     </div>
   );
-}
+});
