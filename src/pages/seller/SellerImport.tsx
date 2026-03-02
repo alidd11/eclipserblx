@@ -24,6 +24,7 @@ export default function SellerImport() {
   const [importUrls, setImportUrls] = useState<string[]>([]);
   const [downloadImages, setDownloadImages] = useState(true);
   const [importResults, setImportResults] = useState<ProductImportStatus[]>([]);
+  const [categoryOverrides, setCategoryOverrides] = useState<Record<string, string> | undefined>();
 
   const resetImport = () => {
     setStep('setup');
@@ -31,6 +32,7 @@ export default function SellerImport() {
     setPlatform(null);
     setImportUrls([]);
     setImportResults([]);
+    setCategoryOverrides(undefined);
   };
 
   const handleProductsFound = (found: ExternalProduct[], plat: string | null) => {
@@ -39,9 +41,10 @@ export default function SellerImport() {
     setStep('select');
   };
 
-  const handleImport = (urls: string[], dlImages: boolean) => {
+  const handleImport = (urls: string[], dlImages: boolean, catOverrides?: Record<string, string>) => {
     setImportUrls(urls);
     setDownloadImages(dlImages);
+    setCategoryOverrides(catOverrides);
     setStep('importing');
   };
 
@@ -133,6 +136,7 @@ export default function SellerImport() {
                     urls={importUrls}
                     products={products}
                     downloadImages={downloadImages}
+                    categoryOverrides={categoryOverrides}
                     onComplete={handleImportComplete}
                   />
                 )}
