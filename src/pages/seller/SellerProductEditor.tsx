@@ -188,11 +188,15 @@ export default function SellerProductEditor() {
     return `${base}-${suffix}`;
   };
 
+  // Track whether the slug was auto-generated (vs manually edited)
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+
   const handleNameChange = (name: string) => {
     setFormData(prev => ({
       ...prev,
       name,
-      slug: prev.slug || generateSlug(name),
+      // Only auto-update slug if user hasn't manually edited it and we're creating (not editing)
+      slug: (!slugManuallyEdited && !isEditing) ? generateSlug(name) : prev.slug,
     }));
   };
 
@@ -615,6 +619,7 @@ export default function SellerProductEditor() {
                   value={formData.slug}
                   onChange={(e) => {
                     const sanitized = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                    setSlugManuallyEdited(true);
                     setFormData({ ...formData, slug: sanitized });
                   }}
                   placeholder="auto-generated-from-name"
