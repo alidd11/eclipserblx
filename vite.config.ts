@@ -71,6 +71,8 @@ export default defineConfig(({ mode }) => ({
         // Bump this to force workbox to invalidate its precache on next deploy
         cacheId: 'eclipse-v3',
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
+        // Ensure OAuth redirects always hit the network
+        navigateFallbackDenylist: [/^\/~oauth/],
         // Import custom service worker for push notifications
         importScripts: ["/custom-sw.js"],
         runtimeCaching: [

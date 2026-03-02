@@ -9089,6 +9089,8 @@ export type Database = {
         Args: { _product_id: string; _user_id: string }
         Returns: boolean
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       soft_delete: {
         Args: { p_record_id: string; p_table_name: string }
         Returns: boolean
