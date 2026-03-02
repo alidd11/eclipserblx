@@ -1037,7 +1037,7 @@ Deno.serve(async (req) => {
       const originalImageCount = product.images.length;
       if (downloadImages && product.images.length > 0) {
         console.log(`Downloading ${product.images.length} images in parallel...`);
-        const productSlug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30);
+        const productSlug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30) + '-' + crypto.randomUUID().slice(0, 6);
         
         const uploadPromises = product.images.map((imgUrl, i) =>
           downloadAndUploadImage(imgUrl, store.id, productSlug, i, supabaseAdmin)
@@ -1067,6 +1067,7 @@ Deno.serve(async (req) => {
           slug: uniqueSlug,
           description: stripBlockedUrls(product.description) || null,
           price: product.price || 0,
+          seller_price: product.price || 0,
           images: product.images.length > 0 ? product.images : [],
           store_id: store.id,
           is_seller_product: true,
@@ -1195,7 +1196,7 @@ Deno.serve(async (req) => {
 
           const originalImageCount = product.images.length;
           if (downloadImages && product.images.length > 0) {
-            const productSlug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30);
+            const productSlug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30) + '-' + crypto.randomUUID().slice(0, 6);
             
             const uploadPromises = product.images.map((imgUrl, i) =>
               downloadAndUploadImage(imgUrl, store.id, productSlug, i, supabaseAdmin)
@@ -1225,6 +1226,7 @@ Deno.serve(async (req) => {
               slug: uniqueSlug,
               description: stripBlockedUrls(product.description) || null,
               price: product.price || 0,
+              seller_price: product.price || 0,
               images: product.images.length > 0 ? product.images : [],
               store_id: store.id,
               is_seller_product: true,
