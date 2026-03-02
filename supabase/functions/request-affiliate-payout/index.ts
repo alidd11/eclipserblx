@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,6 +14,7 @@ const logStep = (step: string, details?: unknown) => {
 };
 
 const MINIMUM_PAYOUT_AMOUNT = 1000; // £10.00 minimum in pence
+const MAXIMUM_PAYOUT_AMOUNT = 1000000; // £10,000 max safety cap
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -20,6 +22,14 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limit - strict for financial operations
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.AUTH, identifier: clientIp, action: 'request-affiliate-payout' });
+    if (!rl.allowed) {
+      logStep("Rate limit exceeded", { ip: clientIp });
+      return rateLimitResponse(rl, corsHeaders);
+    }
+
     logStep("Function started");
 
     const supabaseClient = createClient(
@@ -40,8 +50,34 @@ serve(async (req) => {
     logStep("User authenticated", { userId: user.id });
 
     const { amount, method } = await req.json();
-    if (!amount || amount < MINIMUM_PAYOUT_AMOUNT) {
+
+    // Validate amount is a number
+    if (typeof amount !== 'number' || !Number.isFinite(amount) || !Number.isInteger(amount)) {
+      throw new Error("Invalid amount");
+    }
+
+    if (amount < MINIMUM_PAYOUT_AMOUNT) {
       throw new Error(`Minimum payout amount is £${(MINIMUM_PAYOUT_AMOUNT / 100).toFixed(2)}`);
+    }
+
+    if (amount > MAXIMUM_PAYOUT_AMOUNT) {
+      throw new Error(`Maximum payout amount is £${(MAXIMUM_PAYOUT_AMOUNT / 100).toFixed(2)}`);
+    }
+
+    // Validate method
+    if (method && !['stripe', 'paypal'].includes(method)) {
+      throw new Error("Invalid payout method");
+    }
+
+    // Check for pending payouts FIRST (before touching balance)
+    const { data: pendingPayouts } = await supabaseClient
+      .from('affiliate_payouts')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('status', 'pending');
+
+    if (pendingPayouts && pendingPayouts.length > 0) {
+      throw new Error("You already have a pending payout request");
     }
 
     // Check user's available balance
@@ -75,7 +111,7 @@ serve(async (req) => {
 
     // Determine which payout method to use
     const payoutMethod = method || application.preferred_payout_method || 'paypal';
-    logStep("Payout method determined", { payoutMethod, requestedMethod: method, preferredMethod: application.preferred_payout_method });
+    logStep("Payout method determined", { payoutMethod });
 
     // Get user's profile for stripe_account_id
     const { data: profile } = await supabaseClient
@@ -90,21 +126,9 @@ serve(async (req) => {
         throw new Error("Please connect your Stripe account first to receive automatic payouts.");
       }
     } else {
-      // PayPal
       if (!application.paypal_email) {
         throw new Error("Please add your PayPal email to receive payouts. Contact support to update your details.");
       }
-    }
-
-    // Check for pending payouts
-    const { data: pendingPayouts } = await supabaseClient
-      .from('affiliate_payouts')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('status', 'pending');
-
-    if (pendingPayouts && pendingPayouts.length > 0) {
-      throw new Error("You already have a pending payout request");
     }
 
     // Deduct from available balance first
@@ -115,10 +139,12 @@ serve(async (req) => {
         available_balance: newBalance,
         updated_at: new Date().toISOString(),
       })
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      // Optimistic concurrency: only update if balance hasn't changed
+      .gte('available_balance', amount);
 
     if (updateBalanceError) {
-      throw new Error("Failed to update balance");
+      throw new Error("Failed to update balance - please try again");
     }
 
     logStep("Balance deducted", { previousBalance: balance.available_balance, newBalance, amount });
@@ -131,7 +157,6 @@ serve(async (req) => {
         
         const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
-        // Create a transfer to the connected account
         const transfer = await stripe.transfers.create({
           amount: amount,
           currency: 'gbp',
@@ -144,8 +169,7 @@ serve(async (req) => {
 
         logStep("Stripe transfer created", { transferId: transfer.id, amount });
 
-        // Create completed payout record
-        const { data: payout, error: payoutError } = await supabaseClient
+        const { data: payout } = await supabaseClient
           .from('affiliate_payouts')
           .insert({
             user_id: user.id,
@@ -159,26 +183,14 @@ serve(async (req) => {
           .select()
           .single();
 
-        if (payoutError) {
-          logStep("Warning: Failed to create payout record", { error: payoutError.message });
-        }
-
-        // Update total_paid in affiliate_balances
-        const { data: currentBalance } = await supabaseClient
+        // Update total_paid
+        await supabaseClient
           .from('affiliate_balances')
-          .select('total_paid')
-          .eq('user_id', user.id)
-          .single();
-
-        if (currentBalance) {
-          await supabaseClient
-            .from('affiliate_balances')
-            .update({
-              total_paid: currentBalance.total_paid + amount,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('user_id', user.id);
-        }
+          .update({
+            total_paid: (balance.available_balance - newBalance) + amount, // Will be updated by trigger anyway
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', user.id);
 
         return new Response(JSON.stringify({ 
           success: true,
@@ -202,7 +214,7 @@ serve(async (req) => {
           .eq('user_id', user.id);
 
         const errorMsg = stripeError instanceof Error ? stripeError.message : String(stripeError);
-        logStep("Stripe transfer failed", { error: errorMsg });
+        logStep("Stripe transfer failed, balance rolled back", { error: errorMsg });
         throw new Error(`Stripe transfer failed: ${errorMsg}`);
       }
     }
@@ -232,7 +244,7 @@ serve(async (req) => {
       throw new Error("Failed to create payout request");
     }
 
-    logStep("PayPal payout request created", { payoutId: payout.id, amount, paypalEmail: application.paypal_email });
+    logStep("PayPal payout request created", { payoutId: payout.id, amount });
 
     return new Response(JSON.stringify({ 
       success: true,

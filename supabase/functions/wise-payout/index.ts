@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -70,6 +71,14 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Rate limit - strict for financial operations
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.EXPENSIVE, identifier: clientIp, action: 'wise-payout' });
+    if (!rl.allowed) {
+      logStep("Rate limit exceeded", { ip: clientIp });
+      return rateLimitResponse(rl, corsHeaders);
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const wiseApiKey = Deno.env.get('WISE_API_KEY')!;
@@ -112,7 +121,17 @@ Deno.serve(async (req) => {
     }
 
     const { action, ...params } = await req.json();
-    logStep(`Action: ${action}`, params);
+    
+    // Validate action
+    const validActions = ['get-profile', 'get-balance', 'create-quote', 'create-recipient', 'get-recipient-requirements', 'create-transfer', 'fund-transfer', 'get-transfer-status', 'process-seller-payout'];
+    if (!action || typeof action !== 'string' || !validActions.includes(action)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid action' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    logStep(`Action: ${action}`);
 
     const wiseHeaders = {
       'Authorization': `Bearer ${wiseApiKey}`,
