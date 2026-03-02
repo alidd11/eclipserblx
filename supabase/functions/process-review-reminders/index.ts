@@ -40,6 +40,12 @@ serve(async (req) => {
     let notificationsSent = 0;
 
     for (const reminder of reminders || []) {
+      // Skip reminders with missing user_id or product_id
+      if (!reminder.user_id || !reminder.product_id) {
+        logStep("Skipping reminder with missing user_id or product_id", { reminderId: reminder.id });
+        continue;
+      }
+
       const createdAt = new Date(reminder.created_at);
       const hoursSincePurchase = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
 
