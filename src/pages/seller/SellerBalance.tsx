@@ -74,26 +74,18 @@ export default function SellerBalance() {
   const requestPayout = useMutation({
     mutationFn: async () => {
       if (!store?.id || !user?.id) throw new Error('Missing store or user');
+      if (!balance?.available_balance || balance.available_balance < 25) {
+        throw new Error('Insufficient balance for payout (minimum £25)');
+      }
       
-      const { error } = await supabase
-        .from('seller_payouts')
-        .insert({
-          store_id: store.id,
-          seller_id: user.id,
-          amount: balance?.available_balance || 0,
-          status: 'pending',
-        });
+      // Use atomic database function to prevent race conditions
+      const { data, error } = await supabase.rpc('request_seller_payout', {
+        p_store_id: store.id,
+        p_seller_id: user.id,
+        p_amount: balance.available_balance,
+      });
 
       if (error) throw error;
-
-      // Update balance
-      await supabase
-        .from('seller_balances')
-        .update({
-          available_balance: 0,
-          pending_balance: (balance?.pending_balance || 0) + (balance?.available_balance || 0),
-        })
-        .eq('user_id', user.id);
     },
     onSuccess: () => {
       toast.success('Payout request submitted successfully');
