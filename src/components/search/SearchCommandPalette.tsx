@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
-  HelpCircle, Mail, FileQuestion, Activity, FileText, Shield, 
-  RotateCcw, ShoppingCart, User, Home, Search, Sparkles, Loader2,
+  Package, Search, Sparkles, Loader2,
   Clock, X, TrendingUp, ArrowRight
 } from 'lucide-react';
 import {
@@ -34,30 +32,6 @@ interface SearchCommandPaletteProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const navigationItems = [
-  { title: 'Home', icon: Home, href: '/', keywords: ['home', 'main', 'start'] },
-  { title: 'All Products', icon: Package, href: '/products', keywords: ['products', 'shop', 'store', 'items'] },
-  { title: 'Categories', icon: Grid3X3, href: '/categories', keywords: ['categories', 'browse', 'types'] },
-  { title: 'Featured', icon: Star, href: '/featured', keywords: ['featured', 'popular', 'best'] },
-  { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus', keywords: ['eclipse plus', 'subscription', 'premium', 'membership'] },
-  { title: 'Forum', icon: MessageSquare, href: '/forum', keywords: ['forum', 'community', 'discuss', 'chat'] },
-  { title: 'Jobs', icon: Briefcase, href: '/jobs', keywords: ['jobs', 'careers', 'work', 'hiring'] },
-  { title: 'Cart', icon: ShoppingCart, href: '/cart', keywords: ['cart', 'basket', 'checkout'] },
-  { title: 'Account', icon: User, href: '/account', keywords: ['account', 'profile', 'settings', 'my'] },
-];
-
-const supportItems = [
-  { title: 'Help Center', icon: HelpCircle, href: '/support', keywords: ['help', 'support', 'assistance'] },
-  { title: 'Contact Us', icon: Mail, href: '/contact', keywords: ['contact', 'email', 'message', 'reach'] },
-  { title: 'FAQ', icon: FileQuestion, href: '/faq', keywords: ['faq', 'questions', 'answers'] },
-  { title: 'System Status', icon: Activity, href: '/status', keywords: ['status', 'uptime', 'system'] },
-];
-
-const legalItems = [
-  { title: 'Terms of Service', icon: FileText, href: '/terms', keywords: ['terms', 'tos', 'legal'] },
-  { title: 'Privacy Policy', icon: Shield, href: '/privacy', keywords: ['privacy', 'data', 'policy'] },
-  { title: 'Refund Policy', icon: RotateCcw, href: '/refunds', keywords: ['refund', 'return', 'money back'] },
-];
 
 export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPaletteProps>(function SearchCommandPalette({ open, onOpenChange }, _ref) {
   const navigate = useNavigate();
@@ -317,57 +291,6 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
           </CommandGroup>
         )}
 
-        {/* Quick Navigation — collapsed when searching */}
-        {!hasQuery && (
-          <>
-            <CommandSeparator />
-            <CommandGroup heading="Navigation">
-              {navigationItems.map((item) => (
-                <CommandItem
-                  key={item.href}
-                  value={`${item.title} ${item.keywords.join(' ')}`}
-                  onSelect={() => handleSelect(item.href)}
-                  className="cursor-pointer"
-                >
-                  <item.icon className="mr-2 h-4 w-4" />
-                  <span>{item.title}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-
-            <CommandSeparator />
-
-            <CommandGroup heading="Support">
-              {supportItems.map((item) => (
-                <CommandItem
-                  key={item.href}
-                  value={`${item.title} ${item.keywords.join(' ')}`}
-                  onSelect={() => handleSelect(item.href)}
-                  className="cursor-pointer"
-                >
-                  <item.icon className="mr-2 h-4 w-4" />
-                  <span>{item.title}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-
-            <CommandSeparator />
-
-            <CommandGroup heading="Legal">
-              {legalItems.map((item) => (
-                <CommandItem
-                  key={item.href}
-                  value={`${item.title} ${item.keywords.join(' ')}`}
-                  onSelect={() => handleSelect(item.href)}
-                  className="cursor-pointer"
-                >
-                  <item.icon className="mr-2 h-4 w-4" />
-                  <span>{item.title}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </>
-        )}
       </CommandList>
 
       {/* Footer hint */}
