@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -44,6 +45,11 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limit
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.WRITE, identifier: clientIp, action: 'purchase-ad-pings' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     const { herePings = 0, everyonePings = 0 } = await req.json();
 
     // Validate inputs
@@ -163,8 +169,8 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email!,
       line_items: lineItems,
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/advertise?pings_purchased=true&here=${herePingsCount}&everyone=${everyonePingsCount}`,
-      cancel_url: `${req.headers.get("origin")}/advertise?pings_cancelled=true`,
+      success_url: `https://eclipserblx.com/advertise?pings_purchased=true&here=${herePingsCount}&everyone=${everyonePingsCount}`,
+      cancel_url: `https://eclipserblx.com/advertise?pings_cancelled=true`,
       metadata: {
         type: "ad_ping_purchase",
         user_id: user.id,

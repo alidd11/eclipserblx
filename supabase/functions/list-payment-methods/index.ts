@@ -82,7 +82,7 @@ serve(async (req) => {
     }));
 
     return new Response(
-      JSON.stringify({ paymentMethods: formattedMethods, customerId }),
+      JSON.stringify({ paymentMethods: formattedMethods }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   } catch (error) {

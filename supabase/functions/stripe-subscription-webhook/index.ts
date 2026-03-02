@@ -62,7 +62,7 @@ serve(async (req) => {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       logStep("ERROR: Signature verification failed", { message });
-      return new Response(`Webhook signature verification failed: ${message}`, { status: 400 });
+      return new Response(`Webhook signature verification failed`, { status: 400 });
     }
 
     // IP Shield price IDs
