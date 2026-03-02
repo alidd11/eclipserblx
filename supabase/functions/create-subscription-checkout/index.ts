@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,21 +13,30 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[CREATE-SUBSCRIPTION-CHECKOUT] ${step}${detailsStr}`);
 };
 
+const ALLOWED_TIERS = ['pro', 'premium', 'starter'];
+const ALLOWED_PERIODS = ['monthly', 'annual'];
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-  );
-
   try {
+    // Rate limit
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.WRITE, identifier: clientIp, action: 'create-subscription-checkout' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     logStep("Function started");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
@@ -37,12 +47,15 @@ serve(async (req) => {
     
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    logStep("User authenticated", { userId: user.id });
 
-    // Parse request body for tier and billing period
+    // Parse and validate request body
     const body = await req.json().catch(() => ({}));
-    const tier = body.tier || 'pro'; // Default to pro tier
-    const billingPeriod = body.billingPeriod || 'monthly'; // Default to monthly
+    const tier = body.tier || 'pro';
+    const billingPeriod = body.billingPeriod || 'monthly';
+
+    if (!ALLOWED_TIERS.includes(tier)) throw new Error("Invalid subscription tier");
+    if (!ALLOWED_PERIODS.includes(billingPeriod)) throw new Error("Invalid billing period");
 
     logStep("Subscription request", { tier, billingPeriod });
 
@@ -63,7 +76,7 @@ serve(async (req) => {
       : tierData.stripe_monthly_price_id;
 
     if (!priceId) {
-      throw new Error(`No Stripe price configured for ${tier} ${billingPeriod}. Please configure the Stripe price IDs in the subscription_tiers table.`);
+      throw new Error(`No Stripe price configured for ${tier} ${billingPeriod}.`);
     }
 
     logStep("Using price", { tier, billingPeriod, priceId });
@@ -90,39 +103,39 @@ serve(async (req) => {
       }
     }
 
-    const origin = req.headers.get("origin") || "https://eclipserblx.com";
+    // Validate origin
+    const origin = req.headers.get("origin");
+    const allowedOrigins = ["https://eclipserblx.com", "https://www.eclipserblx.com"];
+    const returnOrigin = origin && allowedOrigins.some(o => origin.startsWith(o))
+      ? origin
+      : "https://eclipserblx.com";
 
     // Create checkout session for subscription
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       customer_creation: customerId ? undefined : 'always',
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      success_url: `${origin}/account?subscription=success&tier=${tier}`,
-      cancel_url: `${origin}/eclipse-plus?canceled=true`,
+      success_url: `${returnOrigin}/account?subscription=success&tier=${tier}`,
+      cancel_url: `${returnOrigin}/eclipse-plus?canceled=true`,
       metadata: {
         user_id: user.id,
         user_email: user.email,
-        tier: tier,
+        tier,
         billing_period: billingPeriod,
       },
       subscription_data: {
         metadata: {
           user_id: user.id,
           user_email: user.email,
-          tier: tier,
+          tier,
           billing_period: billingPeriod,
         },
       },
     });
 
-    logStep("Checkout session created", { sessionId: session.id, url: session.url });
+    logStep("Checkout session created", { sessionId: session.id });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
