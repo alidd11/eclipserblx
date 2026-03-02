@@ -38,7 +38,7 @@ export default function AdminGiftCredits() {
       const { data, error } = await supabase
         .from('profiles')
         .select('user_id, display_name, email, avatar_url, username, customer_id')
-        .or(`display_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%,username.ilike.%${searchQuery}%,customer_id.ilike.%${searchQuery}%`)
+        .or(`display_name.ilike.%${debouncedSearch}%,email.ilike.%${debouncedSearch}%,username.ilike.%${debouncedSearch}%,customer_id.ilike.%${debouncedSearch}%`)
         .limit(10);
       
       if (error) throw error;
@@ -50,7 +50,7 @@ export default function AdminGiftCredits() {
         customer_id: p.customer_id,
       }));
     },
-    enabled: searchQuery.length >= 2,
+    enabled: debouncedSearch.length >= 2,
   });
 
   // Get selected user's balance
