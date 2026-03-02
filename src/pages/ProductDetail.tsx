@@ -7,6 +7,7 @@ import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { VideoThumbnail } from '@/components/ui/VideoThumbnail';
 import { ImageZoomModal } from '@/components/ui/ImageZoomModal';
 import { FreeProductClaim } from '@/components/subscription/FreeProductClaim';
@@ -286,15 +287,28 @@ export default function ProductDetail() {
   if (isLoading || adminLoading) {
     return (
       <MainLayout>
-        <div className="container py-8 animate-pulse space-y-8">
-          <div className="h-6 bg-muted rounded w-48" />
+        <div className="container py-8 space-y-8" aria-busy="true" aria-label="Loading product details">
+          <Skeleton className="h-6 w-48" />
           <div className="grid lg:grid-cols-2 gap-8">
-            <div className="aspect-video bg-muted rounded-xl" />
+            <Skeleton className="aspect-video w-full rounded-xl" />
             <div className="space-y-4">
-              <div className="h-8 bg-muted rounded w-3/4" />
-              <div className="h-6 bg-muted rounded w-1/4" />
-              <div className="h-24 bg-muted rounded" />
+              <Skeleton className="h-8 w-3/4" />
+              <Skeleton className="h-6 w-1/4" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-10 w-40" />
+              <div className="flex gap-2 pt-2">
+                <Skeleton className="h-8 w-20 rounded-full" />
+                <Skeleton className="h-8 w-20 rounded-full" />
+                <Skeleton className="h-8 w-20 rounded-full" />
+              </div>
             </div>
+          </div>
+          {/* Related products skeleton */}
+          <Skeleton className="h-6 w-36 mt-8" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <Skeleton key={i} className="h-48 rounded-lg" />
+            ))}
           </div>
         </div>
       </MainLayout>
