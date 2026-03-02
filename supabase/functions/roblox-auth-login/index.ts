@@ -1,9 +1,29 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+// Whitelist of allowed redirect origins
+const ALLOWED_REDIRECT_ORIGINS = [
+  'https://eclipserblx.com',
+  'https://www.eclipserblx.com',
+  'http://localhost:5173',
+  'http://localhost:8080',
+];
+
+function isValidRedirectUri(uri: string | undefined | null): boolean {
+  if (!uri || typeof uri !== 'string') return false;
+  try {
+    const parsed = new URL(uri);
+    return ALLOWED_REDIRECT_ORIGINS.some(o => uri.startsWith(o)) ||
+      parsed.hostname.endsWith('.lovable.app');
+  } catch {
+    return false;
+  }
+}
 
 interface RobloxTokenResponse {
   access_token: string;
@@ -15,12 +35,12 @@ interface RobloxTokenResponse {
 }
 
 interface RobloxUserInfo {
-  sub: string; // Roblox user ID
-  name?: string; // Display name
-  nickname?: string; // Username
+  sub: string;
+  name?: string;
+  nickname?: string;
   preferred_username?: string;
-  profile?: string; // Profile URL
-  picture?: string; // Avatar URL
+  profile?: string;
+  picture?: string;
 }
 
 Deno.serve(async (req) => {
@@ -29,14 +49,30 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Rate limit - auth endpoints are critical
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.AUTH, identifier: clientIp, action: 'roblox-auth-login' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     const { code, redirect_uri, code_verifier } = await req.json();
 
-    if (!code) {
+    // Input validation
+    if (!code || typeof code !== 'string' || code.length > 500) {
       return new Response(
-        JSON.stringify({ error: 'Authorization code is required' }),
+        JSON.stringify({ error: 'Valid authorization code is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    if (code_verifier && (typeof code_verifier !== 'string' || code_verifier.length > 500)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid code verifier' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate redirect_uri
+    const safeRedirectUri = isValidRedirectUri(redirect_uri) ? redirect_uri : '';
 
     const clientId = Deno.env.get('ROBLOX_CLIENT_ID');
     const clientSecret = Deno.env.get('ROBLOX_CLIENT_SECRET');
@@ -56,7 +92,7 @@ Deno.serve(async (req) => {
       client_secret: clientSecret,
       grant_type: 'authorization_code',
       code,
-      redirect_uri: redirect_uri || '',
+      redirect_uri: safeRedirectUri,
     };
 
     if (code_verifier) {
@@ -65,15 +101,12 @@ Deno.serve(async (req) => {
 
     const tokenResponse = await fetch('https://apis.roblox.com/oauth/v1/token', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams(tokenParams),
     });
 
     if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text();
-      console.error('Roblox token exchange failed:', errorText);
+      console.error('Roblox token exchange failed:', tokenResponse.status);
       return new Response(
         JSON.stringify({ error: 'Failed to authenticate with Roblox' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -83,11 +116,9 @@ Deno.serve(async (req) => {
     const tokens: RobloxTokenResponse = await tokenResponse.json();
     console.log('Roblox tokens received, fetching user info...');
 
-    // Get Roblox user info via OIDC userinfo endpoint
+    // Get Roblox user info
     const userResponse = await fetch('https://apis.roblox.com/oauth/v1/userinfo', {
-      headers: {
-        Authorization: `Bearer ${tokens.access_token}`,
-      },
+      headers: { Authorization: `Bearer ${tokens.access_token}` },
     });
 
     if (!userResponse.ok) {
@@ -100,8 +131,17 @@ Deno.serve(async (req) => {
 
     const robloxUser: RobloxUserInfo = await userResponse.json();
     const robloxUserId = robloxUser.sub;
-    const robloxUsername = robloxUser.preferred_username || robloxUser.nickname || robloxUser.name || `roblox_${robloxUserId}`;
-    const robloxDisplayName = robloxUser.name || robloxUsername;
+
+    // Validate Roblox user ID
+    if (!robloxUserId || typeof robloxUserId !== 'string' || !/^\d{1,20}$/.test(robloxUserId)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid Roblox user data' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const robloxUsername = (robloxUser.preferred_username || robloxUser.nickname || robloxUser.name || `roblox_${robloxUserId}`).slice(0, 100);
+    const robloxDisplayName = (robloxUser.name || robloxUsername).slice(0, 100);
     const robloxAvatar = robloxUser.picture || `https://www.roblox.com/headshot-thumbnail/image?userId=${robloxUserId}&width=150&height=150&format=png`;
 
     console.log(`Roblox user authenticated: ${robloxUsername} (${robloxUserId})`);
@@ -110,10 +150,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
+      auth: { autoRefreshToken: false, persistSession: false },
     });
 
     // Check if a profile exists with this Roblox user ID
@@ -131,12 +168,9 @@ Deno.serve(async (req) => {
     let isNewUser = false;
 
     if (existingProfile?.user_id) {
-      // User exists with this Roblox ID - sign them in
       console.log(`Found existing user with Roblox ID: ${existingProfile.user_id}`);
       userId = existingProfile.user_id;
     } else {
-      // No account linked to this Roblox ID - create new account
-      // Roblox OAuth doesn't provide email, so we generate a placeholder
       isNewUser = true;
       console.log('Creating new user account for Roblox user...');
 
@@ -165,7 +199,6 @@ Deno.serve(async (req) => {
       userId = authData.user.id;
       console.log(`Created new auth user: ${userId}`);
 
-      // Update profile with Roblox info
       await supabase
         .from('profiles')
         .update({
@@ -179,10 +212,9 @@ Deno.serve(async (req) => {
         .eq('user_id', userId);
     }
 
-    // Generate a Supabase session for the user
+    // Generate a Supabase session
     console.log(`Generating session for user: ${userId}`);
 
-    // Get user email for magic link
     const { data: profileData } = await supabase
       .from('profiles')
       .select('email')
@@ -190,7 +222,6 @@ Deno.serve(async (req) => {
       .single();
 
     const userEmail = profileData?.email;
-
     if (!userEmail) {
       return new Response(
         JSON.stringify({ error: 'Failed to retrieve user email' }),
@@ -198,7 +229,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Generate magic link to create session
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email: userEmail,
@@ -213,7 +243,6 @@ Deno.serve(async (req) => {
     }
 
     const tokenHash = linkData.properties?.hashed_token;
-
     if (!tokenHash) {
       return new Response(
         JSON.stringify({ error: 'Failed to generate authentication token' }),
@@ -221,7 +250,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Verify the OTP to get a session
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const verifyResponse = await fetch(`${supabaseUrl}/auth/v1/verify`, {
       method: 'POST',
@@ -236,8 +264,7 @@ Deno.serve(async (req) => {
     });
 
     if (!verifyResponse.ok) {
-      const verifyError = await verifyResponse.text();
-      console.error('Token verification failed:', verifyError);
+      console.error('Token verification failed');
       return new Response(
         JSON.stringify({ error: 'Failed to create session' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -84,55 +84,40 @@ Deno.serve(async (req) => {
     // Check if IP is a VPN/proxy or from a hosting provider (datacenter)
     const isVpn = data.proxy === true || data.hosting === true;
 
-    console.log(`IP ${clientIp} - VPN/Proxy: ${data.proxy}, Hosting: ${data.hosting}, isVpn: ${isVpn}`);
+    console.log(`VPN check result: isVpn=${isVpn}`);
 
     // Log VPN detection to audit_logs for security monitoring
     if (isVpn) {
       try {
-        const { error: logError } = await supabase
+        await supabase
           .from('audit_logs')
           .insert({
-            user_id: '00000000-0000-0000-0000-000000000000', // System user for unauthenticated actions
+            user_id: '00000000-0000-0000-0000-000000000000',
             action: 'vpn_signup_blocked',
             resource: 'auth',
             ip_address: clientIp,
             details: {
               proxy: data.proxy,
               hosting: data.hosting,
-              country: data.country,
-              city: data.city,
-              isp: data.isp,
               blocked_at: new Date().toISOString(),
             }
           });
-
-        if (logError) {
-          console.error('Failed to log VPN detection to audit_logs:', logError);
-        } else {
-          console.log('VPN detection logged to audit_logs');
-        }
       } catch (logErr) {
         console.error('Error logging VPN detection:', logErr);
       }
     }
 
+    // Don't return IP or detailed info to client
     return new Response(
-      JSON.stringify({
-        isVpn,
-        ip: clientIp,
-        details: {
-          proxy: data.proxy,
-          hosting: data.hosting,
-        }
-      }),
+      JSON.stringify({ isVpn }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Unexpected error in check-vpn:', error);
-    // Fail open - don't block users due to errors
+    // Fail open
     return new Response(
-      JSON.stringify({ isVpn: false, error: 'Check failed' }),
+      JSON.stringify({ isVpn: false }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

@@ -1,9 +1,12 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -11,18 +14,45 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Rate limit
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.AUTH, identifier: clientIp, action: 'roblox-link-callback' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     const { code, redirect_uri, code_verifier, user_id } = await req.json();
 
-    if (!code || !redirect_uri || !code_verifier || !user_id) {
+    // Input validation
+    if (!code || typeof code !== 'string' || code.length > 500) {
       return new Response(
-        JSON.stringify({ error: 'Missing required parameters' }),
+        JSON.stringify({ error: 'Valid authorization code is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!redirect_uri || typeof redirect_uri !== 'string' || redirect_uri.length > 500) {
+      return new Response(
+        JSON.stringify({ error: 'Valid redirect URI is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!code_verifier || typeof code_verifier !== 'string' || code_verifier.length > 500) {
+      return new Response(
+        JSON.stringify({ error: 'Valid code verifier is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!user_id || typeof user_id !== 'string' || !UUID_REGEX.test(user_id)) {
+      return new Response(
+        JSON.stringify({ error: 'Valid user ID is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // Verify the caller is authenticated and matches user_id
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -33,7 +63,7 @@ Deno.serve(async (req) => {
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    // Verify the user's JWT
+    // Verify the user's JWT matches user_id
     const userClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -71,8 +101,7 @@ Deno.serve(async (req) => {
     });
 
     if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text();
-      console.error('Token exchange failed:', errorText);
+      console.error('Token exchange failed:', tokenResponse.status);
       return new Response(
         JSON.stringify({ error: 'Failed to exchange authorization code' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -95,14 +124,16 @@ Deno.serve(async (req) => {
 
     const robloxUser = await userResponse.json();
     const robloxUserId = robloxUser.sub;
-    const robloxUsername = robloxUser.preferred_username || robloxUser.name || `User${robloxUserId}`;
 
-    if (!robloxUserId) {
+    // Validate Roblox user ID
+    if (!robloxUserId || typeof robloxUserId !== 'string' || !/^\d{1,20}$/.test(robloxUserId)) {
       return new Response(
-        JSON.stringify({ error: 'Could not determine Roblox user ID' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Invalid Roblox user data' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const robloxUsername = (robloxUser.preferred_username || robloxUser.name || `User${robloxUserId}`).slice(0, 100);
 
     // Check if this Roblox account is already linked to another user
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);

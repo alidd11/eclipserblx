@@ -1,17 +1,22 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Rate limit
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.READ, identifier: clientIp, action: 'list-staff' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -24,7 +29,7 @@ serve(async (req) => {
       });
     }
 
-    // Validate the caller using the user's token
+    // Validate the caller
     const userClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -38,19 +43,20 @@ serve(async (req) => {
     }
 
     const requesterId = userData.user.id;
-
-    // Use service role for staff directory queries
     const service = createClient(supabaseUrl, supabaseServiceKey);
 
     // Ensure requester is staff
     const { data: requesterRoles, error: requesterRolesError } = await service
       .from("user_roles")
       .select("role")
-      .eq("user_id", requesterId)
-      .limit(1);
+      .eq("user_id", requesterId);
 
     if (requesterRolesError) throw requesterRolesError;
-    if (!requesterRoles || requesterRoles.length === 0) {
+
+    const statusOnlyRoles = ['eclipse_plus_member', 'seller', 'customer'];
+    const requesterIsStaff = (requesterRoles ?? []).some(r => !statusOnlyRoles.includes(r.role));
+
+    if (!requesterIsStaff) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -64,9 +70,6 @@ serve(async (req) => {
 
     if (allRolesError) throw allRolesError;
 
-    // Status-based roles that don't qualify as "staff"
-    const statusOnlyRoles = ['eclipse_plus_member', 'seller', 'customer'];
-    
     // Group roles by user
     const userRolesMap = new Map<string, string[]>();
     (allRoles ?? []).forEach(r => {
@@ -99,7 +102,7 @@ serve(async (req) => {
     });
   } catch (err) {
     console.error("list-staff error:", err);
-    return new Response(JSON.stringify({ error: (err as Error).message }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
