@@ -15,6 +15,30 @@ interface ImportSetupStepProps {
   onProductsFound: (products: ExternalProduct[], platform: string | null) => void;
 }
 
+const URL_PATTERNS = [
+  { pattern: /clearlydev\.com\/store\/.+/i, platform: 'clearlydev' },
+  { pattern: /builtbybit\.com\/members\/.+/i, platform: 'builtbybit' },
+];
+
+function validateStoreUrl(url: string): { valid: boolean; error?: string } {
+  const trimmed = url.trim();
+  if (!trimmed) return { valid: false, error: 'Please enter a store URL' };
+
+  try {
+    const parsed = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
+    const matchesPlatform = URL_PATTERNS.some(({ pattern }) => pattern.test(parsed.href));
+    if (!matchesPlatform) {
+      return {
+        valid: false,
+        error: 'URL doesn\'t match a supported platform. Use a ClearlyDev or BuiltByBit store URL.',
+      };
+    }
+    return { valid: true };
+  } catch {
+    return { valid: false, error: 'Please enter a valid URL' };
+  }
+}
+
 export function ImportSetupStep({ onProductsFound }: ImportSetupStepProps) {
   const [storeUrl, setStoreUrl] = useState('');
   const [ownershipConfirmed, setOwnershipConfirmed] = useState(false);
@@ -24,8 +48,9 @@ export function ImportSetupStep({ onProductsFound }: ImportSetupStepProps) {
   const supportedPlatforms = productImportApi.getSupportedPlatforms();
 
   const handleSearch = async () => {
-    if (!storeUrl.trim()) {
-      setError('Please enter a store URL');
+    const validation = validateStoreUrl(storeUrl);
+    if (!validation.valid) {
+      setError(validation.error!);
       return;
     }
 
@@ -47,11 +72,18 @@ export function ImportSetupStep({ onProductsFound }: ImportSetupStepProps) {
         onProductsFound(found, result.platform || null);
       }
     } catch {
-      setError('An unexpected error occurred');
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Live URL hint
+  const urlHint = storeUrl.trim()
+    ? validateStoreUrl(storeUrl).valid
+      ? null
+      : validateStoreUrl(storeUrl).error
+    : null;
 
   return (
     <div className="space-y-5">
@@ -105,32 +137,40 @@ export function ImportSetupStep({ onProductsFound }: ImportSetupStepProps) {
             ))}
           </div>
 
-          <div className="flex gap-2">
-            <Input
-              placeholder="https://clearlydev.com/store/your-store"
-              value={storeUrl}
-              onChange={(e) => setStoreUrl(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && ownershipConfirmed && handleSearch()}
-              disabled={isLoading || !ownershipConfirmed}
-              className="font-mono text-sm"
-            />
-            <Button
-              onClick={handleSearch}
-              disabled={isLoading || !ownershipConfirmed || !storeUrl.trim()}
-              className="gap-2 shrink-0"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Scanning…
-                </>
-              ) : (
-                <>
-                  <Search className="h-4 w-4" />
-                  Find Products
-                </>
-              )}
-            </Button>
+          <div className="space-y-1.5">
+            <div className="flex gap-2">
+              <Input
+                placeholder="https://clearlydev.com/store/your-store"
+                value={storeUrl}
+                onChange={(e) => { setStoreUrl(e.target.value); setError(null); }}
+                onKeyDown={(e) => e.key === 'Enter' && ownershipConfirmed && handleSearch()}
+                disabled={isLoading || !ownershipConfirmed}
+                className={`font-mono text-sm ${urlHint && storeUrl.length > 10 ? 'border-warning focus-visible:ring-warning' : ''}`}
+              />
+              <Button
+                onClick={handleSearch}
+                disabled={isLoading || !ownershipConfirmed || !storeUrl.trim()}
+                className="gap-2 shrink-0"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Scanning…
+                  </>
+                ) : (
+                  <>
+                    <Search className="h-4 w-4" />
+                    Find Products
+                  </>
+                )}
+              </Button>
+            </div>
+            {urlHint && storeUrl.length > 10 && !error && (
+              <p className="text-xs text-warning flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {urlHint}
+              </p>
+            )}
           </div>
 
           {error && (
