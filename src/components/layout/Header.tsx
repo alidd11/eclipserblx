@@ -104,6 +104,8 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
                   setMobileMenuOpen(!mobileMenuOpen);
                 }
               }}
+              aria-label={!onMenuClick && mobileMenuOpen ? t('common.closeMenu', 'Close menu') : t('common.openMenu', 'Open menu')}
+              aria-expanded={!onMenuClick ? mobileMenuOpen : undefined}
             >
               {!onMenuClick && mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
