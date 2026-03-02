@@ -34,12 +34,14 @@ export function SellerHeroBanner() {
           .select('net_amount')
           .eq('store_id', store.id)
           .eq('type', 'sale')
+          .is('refunded_at', null)
           .gte('created_at', thisMonthStart),
         supabase
           .from('seller_transactions')
           .select('net_amount')
           .eq('store_id', store.id)
           .eq('type', 'sale')
+          .is('refunded_at', null)
           .gte('created_at', lastMonthStart)
           .lt('created_at', thisMonthStart),
       ]);
