@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, ReactNode, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, ReactNode, useCallback, forwardRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { RefreshCw, WifiOff, Wifi, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,7 +15,7 @@ interface PWAWrapperProps {
   children: ReactNode;
 }
 
-export function PWAWrapper({ children }: PWAWrapperProps) {
+export const PWAWrapper = forwardRef<HTMLDivElement, PWAWrapperProps>(function PWAWrapper({ children }, _ref) {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   
@@ -289,4 +289,4 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
       </div>
     </>
   );
-}
+});

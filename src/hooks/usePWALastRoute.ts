@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, forwardRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { safeStorage } from '@/lib/safeStorage';
 
@@ -40,7 +40,7 @@ export function usePWALastRoute() {
 }
 
 // Component to handle route restoration on PWA launch
-export function PWARouteRestorer() {
+export const PWARouteRestorer = forwardRef<HTMLDivElement>(function PWARouteRestorer(_, _ref) {
   const location = useLocation();
   const navigate = useNavigate();
   const hasAttemptedRestore = useRef(false);
@@ -67,4 +67,4 @@ export function PWARouteRestorer() {
   }, [location.pathname, navigate]);
 
   return null;
-}
+});

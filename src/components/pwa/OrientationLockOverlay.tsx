@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef } from 'react';
 import { RotateCcw } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 
@@ -9,7 +9,7 @@ import { Capacitor } from '@capacitor/core';
  * NOTE: On native Capacitor apps, true orientation locking is handled by the
  * @capacitor/screen-orientation plugin, so this overlay is not needed.
  */
-export function OrientationLockOverlay() {
+export const OrientationLockOverlay = forwardRef<HTMLDivElement>(function OrientationLockOverlay(_, _ref) {
   const [showOverlay, setShowOverlay] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
 
@@ -103,4 +103,4 @@ export function OrientationLockOverlay() {
       </p>
     </div>
   );
-}
+});

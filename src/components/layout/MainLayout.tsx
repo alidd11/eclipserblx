@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect, useCallback, useRef } from 'react';
+import { ReactNode, useState, useEffect, useCallback, useRef, forwardRef } from 'react';
 import { PageTransition } from './PageTransition';
 import { Header } from './Header';
 import { Footer } from './Footer';
@@ -20,7 +20,7 @@ interface MainLayoutProps {
 const EDGE_THRESHOLD = 30; // pixels from left edge to trigger swipe
 const MIN_SWIPE_DISTANCE = 50;
 
-function MainLayoutContent({ children }: MainLayoutProps) {
+const MainLayoutContent = forwardRef<HTMLDivElement, MainLayoutProps>(function MainLayoutContent({ children }, _ref) {
   const location = useLocation();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
@@ -206,12 +206,12 @@ function MainLayoutContent({ children }: MainLayoutProps) {
       <SearchCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
     </>
   );
-}
+})
 
-export function MainLayout({ children }: MainLayoutProps) {
+export const MainLayout = forwardRef<HTMLDivElement, MainLayoutProps>(function MainLayout({ children }, _ref) {
   return (
     <SearchCommandProvider>
       <MainLayoutContent>{children}</MainLayoutContent>
     </SearchCommandProvider>
   );
-}
+});
