@@ -469,12 +469,26 @@ export default function SellerProductEditor() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name.trim()) {
+    const name = formData.name.trim();
+    if (!name) {
       toast.error('Please enter a product name');
+      return;
+    }
+    if (name.length > 200) {
+      toast.error('Product name must be under 200 characters');
+      return;
+    }
+    if (formData.slug && formData.slug.length > 200) {
+      toast.error('URL slug must be under 200 characters');
       return;
     }
     if (!formData.is_pay_what_you_want && (!formData.price || parseFloat(formData.price) <= 0)) {
       toast.error('Please enter a valid price');
+      return;
+    }
+    const price = parseFloat(formData.price);
+    if (price > 50000) {
+      toast.error('Price cannot exceed £50,000');
       return;
     }
     if (formData.is_pay_what_you_want) {
@@ -495,6 +509,10 @@ export default function SellerProductEditor() {
     const plainDesc = formData.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
     if (plainDesc.length < 100) {
       toast.error(`Description must be at least 100 characters (currently ${plainDesc.length})`);
+      return;
+    }
+    if (plainDesc.length > 10000) {
+      toast.error('Description must be under 10,000 characters');
       return;
     }
 

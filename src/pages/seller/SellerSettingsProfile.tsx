@@ -99,6 +99,48 @@ export default function SellerSettingsProfile() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Input validation
+    const name = formData.name.trim();
+    if (!name || name.length < 2) {
+      toast.error('Store name must be at least 2 characters');
+      return;
+    }
+    if (name.length > 100) {
+      toast.error('Store name must be under 100 characters');
+      return;
+    }
+    if (formData.description && formData.description.length > 2000) {
+      toast.error('Description must be under 2,000 characters');
+      return;
+    }
+    if (formData.bio && formData.bio.length > 500) {
+      toast.error('Bio must be under 500 characters');
+      return;
+    }
+    if (formData.about_content && formData.about_content.length > 10000) {
+      toast.error('About content must be under 10,000 characters');
+      return;
+    }
+
+    // Validate social URLs
+    const urlPattern = /^https?:\/\/.+/;
+    const socialFields = [
+      { value: formData.twitter_url, label: 'Twitter/X URL' },
+      { value: formData.youtube_url, label: 'YouTube URL' },
+      { value: formData.tiktok_url, label: 'TikTok URL' },
+    ];
+    for (const field of socialFields) {
+      if (field.value && !urlPattern.test(field.value.trim())) {
+        toast.error(`${field.label} must be a valid URL starting with http:// or https://`);
+        return;
+      }
+      if (field.value && field.value.length > 500) {
+        toast.error(`${field.label} must be under 500 characters`);
+        return;
+      }
+    }
+
     updateStore.mutate(formData);
   };
 
