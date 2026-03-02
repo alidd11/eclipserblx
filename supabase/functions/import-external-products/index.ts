@@ -78,7 +78,54 @@ function isAllowedScrapeUrl(url: string): boolean {
   }
 }
 
-// Parse ClearlyDev store page
+// ─── Image filtering helpers ───────────────────────────────────────────────────
+
+// Patterns that indicate a branding / UI image rather than a product image
+const SKIP_IMAGE_PATH = /\/(avatar|profile|favicon|icon|brand|site-logo|navbar|footer|header|sprite|placeholder)\b/i;
+const SKIP_IMAGE_DOMAIN = /\b(rbxcdn\.com|roblox\.com|tr\.rbxcdn\.com|thumbs\.roblox\.com|googletagmanager\.com|google-analytics\.com|facebook\.com|twitter\.com)\b/i;
+const SKIP_ALT_TEXT = /\b(clearlydev|clearly\s*dev|store\s*logo|seller\s*avatar|platform|marketplace|builtbybit|built\s*by\s*bit|navbar|footer|header)\b/i;
+const SKIP_TINY_DATA_URI = /^data:image\/[^;]+;base64,.{0,700}$/;
+const SKIP_SITE_WIDE = /\.(svg|ico)(\?|$)/i;
+
+// ClearlyDev uses Next.js — product images are served via /_next/image?url=<encoded>&w=&q=
+// We must NOT block /_next/image (that's where the actual product images live)
+// We only block /_next/static (JS/CSS bundles)
+const SKIP_CLEARLYDEV_STATIC = /clearlydev\.com\/_next\/static/i;
+
+/**
+ * Resolve a Next.js /_next/image proxy URL to the underlying image URL.
+ * e.g. /_next/image?url=https%3A%2F%2Fcdn.clearlydev.com%2Fimage.png&w=1200&q=75
+ *   → https://cdn.clearlydev.com/image.png
+ */
+function resolveNextImageUrl(imgUrl: string): string {
+  try {
+    const parsed = new URL(imgUrl);
+    if (parsed.pathname === '/_next/image' && parsed.searchParams.has('url')) {
+      const inner = parsed.searchParams.get('url')!;
+      // The inner URL may be absolute or relative
+      if (inner.startsWith('http')) return inner;
+      // Relative — prepend origin
+      return `${parsed.origin}${inner.startsWith('/') ? '' : '/'}${inner}`;
+    }
+  } catch { /* not a valid URL, return as-is */ }
+  return imgUrl;
+}
+
+function isProductImage(imgUrl: string, imgAlt: string): boolean {
+  if (!imgUrl || imgUrl.length < 10) return false;
+  if (SKIP_TINY_DATA_URI.test(imgUrl)) return false;
+  if (SKIP_IMAGE_PATH.test(imgUrl)) return false;
+  if (SKIP_IMAGE_DOMAIN.test(imgUrl)) return false;
+  if (SKIP_ALT_TEXT.test(imgAlt)) return false;
+  if (SKIP_CLEARLYDEV_STATIC.test(imgUrl)) return false;
+  if (SKIP_SITE_WIDE.test(imgUrl)) return false;
+  // Must be http(s) or a Next.js image proxy path
+  if (!imgUrl.startsWith('http://') && !imgUrl.startsWith('https://') && !imgUrl.startsWith('/_next/image')) return false;
+  return true;
+}
+
+// ─── Store page parsers ────────────────────────────────────────────────────────
+
 function parseClearlyDevStore(markdown: string, storeUrl: string, links?: string[]): ExternalProduct[] {
   const products: ExternalProduct[] = [];
   const seenUrls = new Set<string>();
@@ -176,7 +223,37 @@ function extractHtmlDescription(html: string): string {
   return '';
 }
 
-// Parse ClearlyDev product page for full details
+// ─── Price parsing ─────────────────────────────────────────────────────────────
+
+/** Extract price from markdown, supporting $, £, and "Free" */
+function extractPrice(markdown: string): number {
+  // Check for explicit "Free" badge
+  if (/\bfree\b/i.test(markdown.substring(0, 500))) {
+    // Only treat as free if there's no price nearby
+    const priceNearby = /[\$£]\d+/.test(markdown.substring(0, 500));
+    if (!priceNearby) return 0;
+  }
+
+  // Try GBP first (£)
+  const gbpMatch = markdown.match(/£(\d+(?:\.\d{1,2})?)/);
+  if (gbpMatch) return parseFloat(gbpMatch[1]);
+
+  // Then USD ($) — convert to GBP estimate (0.79 rate)
+  const usdMatch = markdown.match(/\$(\d+(?:\.\d{1,2})?)/);
+  if (usdMatch) {
+    const usd = parseFloat(usdMatch[1]);
+    return Math.round(usd * 0.79 * 100) / 100;
+  }
+
+  // Try plain number after "Price" label
+  const labelMatch = markdown.match(/price[:\s]+(\d+(?:\.\d{1,2})?)/i);
+  if (labelMatch) return parseFloat(labelMatch[1]);
+
+  return 0;
+}
+
+// ─── Product page parsers ──────────────────────────────────────────────────────
+
 function parseClearlyDevProduct(markdown: string, url: string, html?: string): ExternalProduct | null {
   let name = '';
 
@@ -202,6 +279,16 @@ function parseClearlyDevProduct(markdown: string, url: string, html?: string): E
   }
 
   if (!name) {
+    // Try og:title from HTML
+    if (html) {
+      const ogTitle = html.match(/<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i);
+      if (ogTitle && ogTitle[1] && ogTitle[1].length >= 3) {
+        name = ogTitle[1].replace(/\s*[-|].*$/, '').trim();
+      }
+    }
+  }
+
+  if (!name) {
     const slugMatch = url.match(/\/product\/([^\/\?#]+)/);
     if (slugMatch) {
       name = slugMatch[1]
@@ -213,68 +300,68 @@ function parseClearlyDevProduct(markdown: string, url: string, html?: string): E
 
   if (!name) return null;
   
-  // --- Extract product images from HTML first (more reliable), then fallback to markdown ---
+  // ─── Extract product images ────────────────────────────────────────────────
   const images: string[] = [];
+  const seenImageUrls = new Set<string>();
 
-  // Skip patterns for branding / platform images
-  const skipImageUrl = /\/(avatar|profile|favicon|logo|icon|clearlydev|clearly-dev|brand|site-logo|navbar|footer|header|sprite|placeholder)\b/i;
-  const skipImageDomains = /\b(rbxcdn\.com|roblox\.com|tr\.rbxcdn\.com|thumbs\.roblox\.com|googletagmanager\.com|google-analytics\.com|facebook\.com|twitter\.com)\b/i;
-  const skipAltText = /\b(clearlydev|clearly\s*dev|store\s*logo|seller\s*avatar|platform|marketplace|builtbybit|built\s*by\s*bit|navbar|footer|header)\b/i;
-  // Skip tiny UI images (base64 data URIs under ~500 bytes, 1x1 tracking pixels)
-  const skipTinyDataUri = /^data:image\/[^;]+;base64,.{0,700}$/;
-  // Skip known ClearlyDev static asset paths
-  const skipClearlyDevAssets = /clearlydev\.com\/(_next\/static|_next\/image|images\/|assets\/|static\/)/i;
-  // Skip images that are likely site-wide (appear in nav/footer)
-  const skipSiteWideImages = /\.(svg|ico)(\?|$)/i;
+  const addImage = (rawUrl: string, alt: string = '') => {
+    if (!isProductImage(rawUrl, alt)) return;
+    // Resolve Next.js /_next/image proxy to underlying URL
+    const resolved = resolveNextImageUrl(rawUrl);
+    // Deduplicate by resolved URL
+    if (seenImageUrls.has(resolved)) return;
+    seenImageUrls.add(resolved);
+    // Use the original URL for downloading (it will redirect/serve properly)
+    images.push(rawUrl.startsWith('http') ? rawUrl : `https://clearlydev.com${rawUrl}`);
+  };
 
-  function isProductImage(imgUrl: string, imgAlt: string): boolean {
-    if (!imgUrl || imgUrl.length < 10) return false;
-    if (skipTinyDataUri.test(imgUrl)) return false;
-    if (skipImageUrl.test(imgUrl)) return false;
-    if (skipImageDomains.test(imgUrl)) return false;
-    if (skipAltText.test(imgAlt)) return false;
-    if (skipClearlyDevAssets.test(imgUrl)) return false;
-    if (skipSiteWideImages.test(imgUrl)) return false;
-    // Must be http(s)
-    if (!imgUrl.startsWith('http://') && !imgUrl.startsWith('https://')) return false;
-    return true;
-  }
-
-  // Try to extract images from the product-specific HTML section first
   if (html) {
-    // Look for product gallery / main image containers
-    const productImagePatterns = [
-      // OG image (usually the hero product image)
-      /<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i,
-      // Product gallery images in common container patterns
-      /<img[^>]*(?:class|id)="[^"]*(?:product|gallery|showcase|preview|main-image|hero)[^"]*"[^>]*src="([^"]+)"/gi,
-      // Images inside product description / content area
-      /(?:<div[^>]*class="[^"]*(?:product|gallery|content|description)[^"]*"[^>]*>[\s\S]*?)<img[^>]*src="([^"]+)"/gi,
-    ];
-
-    // Get OG image first — it's almost always the correct product image
-    const ogMatch = html.match(productImagePatterns[0]);
-    if (ogMatch && ogMatch[1] && isProductImage(ogMatch[1], '')) {
-      images.push(ogMatch[1]);
+    // 1) OG image — usually the primary product hero
+    const ogMatch = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i);
+    if (ogMatch?.[1]) {
+      addImage(ogMatch[1]);
     }
 
-    // Then get all <img> tags from the HTML but filter aggressively
-    const allImgTags = html.matchAll(/<img[^>]*\bsrc="([^"]+)"[^>]*(?:alt="([^"]*)")?[^>]*>/gi);
+    // 2) Twitter card image (backup)
+    const twitterMatch = html.match(/<meta[^>]*name="twitter:image"[^>]*content="([^"]+)"/i);
+    if (twitterMatch?.[1]) {
+      addImage(twitterMatch[1]);
+    }
+
+    // 3) All <img> tags — prioritize those inside product containers
+    const allImgTags = [...html.matchAll(/<img[^>]*?\bsrc="([^"]+)"[^>]*?(?:alt="([^"]*)")?[^>]*?>/gi)];
+    // Also capture reversed attribute order (alt before src)
+    const altFirstTags = [...html.matchAll(/<img[^>]*?\balt="([^"]*)"[^>]*?\bsrc="([^"]+)"[^>]*?>/gi)];
+
     for (const m of allImgTags) {
-      const src = m[1];
-      const alt = m[2] || '';
-      if (isProductImage(src, alt) && !images.includes(src)) {
-        images.push(src);
+      addImage(m[1], m[2] || '');
+    }
+    for (const m of altFirstTags) {
+      addImage(m[2], m[1] || '');
+    }
+
+    // 4) data-src for lazy-loaded images
+    const lazySrcTags = [...html.matchAll(/<img[^>]*?\bdata-src="([^"]+)"[^>]*?(?:alt="([^"]*)")?[^>]*?>/gi)];
+    for (const m of lazySrcTags) {
+      addImage(m[1], m[2] || '');
+    }
+
+    // 5) srcset entries (pick the largest)
+    const srcsetTags = [...html.matchAll(/<img[^>]*?\bsrcset="([^"]+)"[^>]*?>/gi)];
+    for (const m of srcsetTags) {
+      const entries = m[1].split(',').map(e => e.trim());
+      // Pick last entry (usually the largest)
+      if (entries.length > 0) {
+        const lastEntry = entries[entries.length - 1];
+        const srcFromSet = lastEntry.split(/\s+/)[0];
+        if (srcFromSet) addImage(srcFromSet);
       }
     }
-    // Also check srcset/data-src patterns
-    const lazySrcTags = html.matchAll(/<img[^>]*\bdata-src="([^"]+)"[^>]*(?:alt="([^"]*)")?[^>]*>/gi);
-    for (const m of lazySrcTags) {
-      const src = m[1];
-      const alt = m[2] || '';
-      if (isProductImage(src, alt) && !images.includes(src)) {
-        images.push(src);
-      }
+
+    // 6) Background images in style attributes
+    const bgImages = [...html.matchAll(/style="[^"]*background-image:\s*url\((['"]?)([^)'"]+)\1\)/gi)];
+    for (const m of bgImages) {
+      addImage(m[2]);
     }
   }
 
@@ -283,16 +370,11 @@ function parseClearlyDevProduct(markdown: string, url: string, html?: string): E
     const imageRegex = /!\[([^\]]*)\]\((https?:\/\/[^\)]+)\)/g;
     let imgMatch;
     while ((imgMatch = imageRegex.exec(markdown)) !== null) {
-      const imgAlt = imgMatch[1] || '';
-      const imgUrl = imgMatch[2];
-      if (isProductImage(imgUrl, imgAlt) && !images.includes(imgUrl)) {
-        images.push(imgUrl);
-      }
+      addImage(imgMatch[2], imgMatch[1] || '');
     }
   }
   
-  const priceMatch = markdown.match(/\$(\d+(?:\.\d{2})?)/);
-  const price = priceMatch ? parseFloat(priceMatch[1]) : 0;
+  const price = extractPrice(markdown);
   
   let description = '';
   if (html) {
@@ -314,7 +396,7 @@ function parseClearlyDevProduct(markdown: string, url: string, html?: string): E
   
   const categorySlug = suggestCategory(name, description);
 
-  // Limit to max 8 product images (no blind slicing)
+  // Limit to max 8 product images
   const finalImages = images.slice(0, 8);
 
   return {
@@ -361,41 +443,166 @@ function parseBuiltByBitStore(markdown: string, storeUrl: string): ExternalProdu
   return products;
 }
 
-// Scrape a single URL using Firecrawl
-async function scrapeUrl(url: string, apiKey: string): Promise<{ success: boolean; markdown?: string; html?: string; links?: string[]; error?: string }> {
-  console.log(`Scraping: ${url}`);
-  
-  const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      url,
-      formats: ['markdown', 'html', 'links'],
-      onlyMainContent: false,
-      waitFor: 15000,
-    }),
-  });
-  
-  const data = await response.json();
-  
-  if (!response.ok) {
-    console.error('Firecrawl error:', data);
-    return { success: false, error: data.error || `Failed with status ${response.status}` };
+// Parse BuiltByBit product detail page
+function parseBuiltByBitProduct(markdown: string, url: string, html?: string): ExternalProduct | null {
+  let name = '';
+
+  // Try og:title
+  if (html) {
+    const ogTitle = html.match(/<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i);
+    if (ogTitle?.[1]) {
+      name = ogTitle[1].replace(/\s*[-|].*BuiltByBit.*$/i, '').trim();
+    }
   }
-  
-  const markdown = data.data?.markdown || data.markdown || '';
-  const html = data.data?.html || data.html || '';
-  const links = data.data?.links || data.links || [];
-  
-  console.log(`Scraped ${markdown.length} chars markdown, ${html.length} chars html, ${links.length} links`);
-  
-  return { success: true, markdown, html, links };
+
+  if (!name) {
+    // Try markdown headings
+    const headingMatch = markdown.match(/^#{1,2}\s+(.+)/m);
+    if (headingMatch) {
+      const candidate = headingMatch[1].replace(/\s*\|.*$/, '').trim();
+      if (candidate.length >= 3) name = candidate;
+    }
+  }
+
+  if (!name) {
+    const slugMatch = url.match(/\/resources\/([^\/\?#\.]+)/);
+    if (slugMatch) {
+      name = slugMatch[1]
+        .replace(/\.\d+$/, '') // remove trailing .12345
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase())
+        .trim();
+    }
+  }
+
+  if (!name) return null;
+
+  // Images
+  const images: string[] = [];
+  const seenImageUrls = new Set<string>();
+
+  if (html) {
+    const ogImg = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i);
+    if (ogImg?.[1] && isProductImage(ogImg[1], '')) {
+      images.push(ogImg[1]);
+      seenImageUrls.add(ogImg[1]);
+    }
+
+    const allImgs = [...html.matchAll(/<img[^>]*?\bsrc="([^"]+)"[^>]*?(?:alt="([^"]*)")?[^>]*?>/gi)];
+    for (const m of allImgs) {
+      const src = m[1];
+      const alt = m[2] || '';
+      if (isProductImage(src, alt) && !seenImageUrls.has(src)) {
+        seenImageUrls.add(src);
+        images.push(src);
+      }
+    }
+  }
+
+  if (images.length === 0) {
+    const imgRegex = /!\[([^\]]*)\]\((https?:\/\/[^\)]+)\)/g;
+    let m;
+    while ((m = imgRegex.exec(markdown)) !== null) {
+      if (isProductImage(m[2], m[1]) && !seenImageUrls.has(m[2])) {
+        seenImageUrls.add(m[2]);
+        images.push(m[2]);
+      }
+    }
+  }
+
+  const price = extractPrice(markdown);
+
+  // Description
+  let description = '';
+  const descMatch = markdown.match(/(?:Overview|Description|About)[:\s]*([\s\S]*?)(?=\n#{1,3}\s|\n---|\$\{|$)/i);
+  if (descMatch?.[1]) {
+    description = descMatch[1]
+      .replace(/!\[.*?\]\([^\)]+\)/g, '')
+      .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+      .slice(0, 2000);
+  }
+
+  const categorySlug = suggestCategory(name, description);
+
+  return {
+    name,
+    description,
+    price,
+    images: images.slice(0, 8),
+    sourceUrl: url,
+    platform: 'builtbybit',
+    suggestedCategoryId: categorySlug,
+  };
 }
 
-// Download image and upload to Supabase storage
+// ─── Scraping with retry ───────────────────────────────────────────────────────
+
+async function scrapeUrl(
+  url: string,
+  apiKey: string,
+  retries = 2,
+): Promise<{ success: boolean; markdown?: string; html?: string; links?: string[]; error?: string }> {
+  console.log(`Scraping: ${url}`);
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url,
+          formats: ['markdown', 'html', 'links'],
+          onlyMainContent: false,
+          waitFor: 15000,
+        }),
+      });
+
+      if (response.status === 429 || response.status >= 500) {
+        // Retryable error
+        if (attempt < retries) {
+          const delay = 1000 * (attempt + 1);
+          console.log(`Retrying in ${delay}ms (attempt ${attempt + 1}/${retries})...`);
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('Firecrawl error:', data);
+        return { success: false, error: data.error || `Failed with status ${response.status}` };
+      }
+
+      const markdown = data.data?.markdown || data.markdown || '';
+      const html = data.data?.html || data.html || '';
+      const links = data.data?.links || data.links || [];
+
+      console.log(`Scraped ${markdown.length} chars markdown, ${html.length} chars html, ${links.length} links`);
+
+      return { success: true, markdown, html, links };
+    } catch (err) {
+      if (attempt < retries) {
+        const delay = 1000 * (attempt + 1);
+        console.log(`Scrape error, retrying in ${delay}ms: ${err}`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      console.error('Scrape failed after retries:', err);
+      return { success: false, error: `Network error: ${err}` };
+    }
+  }
+
+  return { success: false, error: 'Failed after retries' };
+}
+
+// ─── Image download & upload ───────────────────────────────────────────────────
+
 async function downloadAndUploadImage(
   imageUrl: string, 
   storeId: string, 
@@ -404,33 +611,42 @@ async function downloadAndUploadImage(
   supabaseAdmin: ReturnType<typeof createClient>
 ): Promise<string | null> {
   try {
-    // Validate image URL - only allow HTTP(S) URLs
+    // Resolve Next.js image proxy URLs to the underlying image
+    const resolvedUrl = resolveNextImageUrl(imageUrl);
+    const downloadUrl = resolvedUrl.startsWith('http') ? resolvedUrl : imageUrl;
+
+    // Validate image URL — only allow HTTP(S)
     try {
-      const parsed = new URL(imageUrl);
+      const parsed = new URL(downloadUrl);
       if (!['http:', 'https:'].includes(parsed.protocol)) {
-        console.log(`Skipping non-HTTP image URL: ${imageUrl}`);
+        console.log(`Skipping non-HTTP image URL: ${downloadUrl}`);
         return null;
       }
     } catch {
       return null;
     }
 
-    console.log(`Downloading image: ${imageUrl}`);
+    console.log(`Downloading image: ${downloadUrl}`);
     
-    const response = await fetch(imageUrl);
+    const response = await fetch(downloadUrl, {
+      headers: {
+        // Some CDNs require a browser-like User-Agent
+        'User-Agent': 'Mozilla/5.0 (compatible; EclipseImporter/1.0)',
+        'Accept': 'image/*,*/*',
+      },
+    });
     if (!response.ok) {
       console.error(`Failed to download image: ${response.status}`);
       return null;
     }
 
-    const finalUrl = response.url || imageUrl;
+    const finalUrl = response.url || downloadUrl;
     if (/\b(rbxcdn\.com|roblox\.com)\b/i.test(finalUrl)) {
       console.log(`Skipping Roblox placeholder image: ${finalUrl}`);
       return null;
     }
     
     const contentType = response.headers.get('content-type') || 'image/jpeg';
-    // Validate content type is actually an image
     if (!contentType.startsWith('image/')) {
       console.log(`Skipping non-image content type: ${contentType}`);
       return null;
@@ -439,15 +655,15 @@ async function downloadAndUploadImage(
     const extension = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : contentType.includes('gif') ? 'gif' : 'jpg';
     const blob = await response.blob();
     
-    // Reject suspiciously large files (>10MB)
+    // Reject oversized files (>10MB)
     if (blob.size > 10 * 1024 * 1024) {
       console.log(`Skipping oversized image: ${blob.size} bytes`);
       return null;
     }
     
-    // Skip tiny images likely to be logos/icons/tracking pixels (under 5KB)
+    // Skip tiny images (< 5KB) — likely logos, icons, tracking pixels
     if (blob.size < 5 * 1024) {
-      console.log(`Skipping tiny image (likely logo/icon): ${blob.size} bytes - ${imageUrl}`);
+      console.log(`Skipping tiny image (likely logo/icon): ${blob.size} bytes - ${downloadUrl}`);
       return null;
     }
     
@@ -471,6 +687,7 @@ async function downloadAndUploadImage(
       .from('product-images')
       .getPublicUrl(filePath);
     
+    console.log(`Uploaded image ${imageIndex}: ${urlData.publicUrl} (${(blob.size / 1024).toFixed(1)}KB)`);
     return urlData.publicUrl;
   } catch (err) {
     console.error('Image download error:', err);
@@ -547,14 +764,13 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Check if user is admin (allows importing for other stores)
+    // Check if user is admin
     const { data: userRoles } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id);
     const isAdmin = userRoles?.some(r => r.role === 'admin') ?? false;
 
-    // Skip Discord check for admins importing on behalf of another store
     if (!isAdmin) {
       const { data: profile } = await supabaseAdmin
         .from('profiles')
@@ -604,7 +820,7 @@ serve(async (req) => {
     
     const categoryMap = new Map(categories?.map(c => [c.slug, c.id]) || []);
 
-    // Action: List products from external store
+    // ─── Action: List products from external store ─────────────────────────────
     if (action === 'list') {
       if (!storeUrl || typeof storeUrl !== 'string') {
         return new Response(
@@ -613,7 +829,6 @@ serve(async (req) => {
         );
       }
 
-      // SSRF prevention: only allow known marketplace domains
       if (!isAllowedScrapeUrl(storeUrl)) {
         return new Response(
           JSON.stringify({ success: false, error: "Unsupported platform. Use ClearlyDev or BuiltByBit URLs." }),
@@ -668,7 +883,6 @@ serve(async (req) => {
 
       console.log(`Found ${products.length} products`);
 
-      // Do NOT include rawMarkdown in response - prevents information leakage
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -679,7 +893,7 @@ serve(async (req) => {
       );
     }
 
-    // Action: Fetch full product details
+    // ─── Action: Fetch full product details ────────────────────────────────────
     if (action === 'details') {
       if (!productUrl || typeof productUrl !== 'string') {
         return new Response(
@@ -688,7 +902,6 @@ serve(async (req) => {
         );
       }
 
-      // SSRF prevention
       if (!isAllowedScrapeUrl(productUrl)) {
         return new Response(
           JSON.stringify({ success: false, error: "Unsupported platform URL" }),
@@ -715,6 +928,8 @@ serve(async (req) => {
       let product: ExternalProduct | null = null;
       if (detectedPlatform === 'clearlydev') {
         product = parseClearlyDevProduct(scrapeResult.markdown!, productUrl, scrapeResult.html);
+      } else if (detectedPlatform === 'builtbybit') {
+        product = parseBuiltByBitProduct(scrapeResult.markdown!, productUrl, scrapeResult.html);
       }
 
       if (!product) {
@@ -744,6 +959,7 @@ serve(async (req) => {
         }
         
         product.images = uploadedImages.length > 0 ? uploadedImages : product.images;
+        console.log(`Successfully uploaded ${uploadedImages.length}/${product.images.length} images`);
       }
 
       product.suggestedCategoryId = product.suggestedCategoryId 
@@ -799,7 +1015,7 @@ serve(async (req) => {
       );
     }
 
-    // Action: Bulk import multiple products
+    // ─── Action: Bulk import multiple products ─────────────────────────────────
     if (action === 'bulk-details') {
       if (!productUrls || !Array.isArray(productUrls) || productUrls.length === 0) {
         return new Response(
@@ -808,7 +1024,6 @@ serve(async (req) => {
         );
       }
 
-      // Cap at 50 and validate all URLs
       const safeUrls = productUrls.slice(0, 50).filter((u: any) => typeof u === 'string' && isAllowedScrapeUrl(u));
 
       console.log(`Bulk importing ${safeUrls.length} products (${productUrls.length - safeUrls.length} rejected)...`);
@@ -840,6 +1055,8 @@ serve(async (req) => {
         let product: ExternalProduct | null = null;
         if (detectedPlatform === 'clearlydev') {
           product = parseClearlyDevProduct(scrapeResult.markdown!, url, scrapeResult.html);
+        } else if (detectedPlatform === 'builtbybit') {
+          product = parseBuiltByBitProduct(scrapeResult.markdown!, url, scrapeResult.html);
         }
 
         if (!product) {
@@ -935,7 +1152,7 @@ serve(async (req) => {
       );
     }
 
-    // Action: Get import history
+    // ─── Action: Get import history ────────────────────────────────────────────
     if (action === 'history') {
       const { data: imports, error: historyError } = await supabaseAdmin
         .from('product_imports')
