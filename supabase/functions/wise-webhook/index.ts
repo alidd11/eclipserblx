@@ -1,9 +1,15 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createHmac } from "https://deno.land/std@0.177.0/node/crypto.ts";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-signature-sha256',
+};
+
+const LOG = (step: string, d?: unknown) => {
+  const s = d ? ` - ${JSON.stringify(d)}` : '';
+  console.log(`[WISE-WEBHOOK] ${step}${s}`);
 };
 
 interface WiseWebhookPayload {
@@ -27,81 +33,122 @@ function verifySignature(payload: string, signature: string, secret: string): bo
   const hmac = createHmac('sha256', secret);
   hmac.update(payload);
   const expectedSignature = hmac.digest('base64');
-  return signature === expectedSignature;
+  // Constant-time comparison
+  if (signature.length !== expectedSignature.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < signature.length; i++) {
+    mismatch |= signature.charCodeAt(i) ^ expectedSignature.charCodeAt(i);
+  }
+  return mismatch === 0;
 }
+
+const VALID_WISE_STATES = new Set([
+  'outgoing_payment_sent', 'funds_converted', 'processing',
+  'bounced_back', 'cancelled', 'charged_back', 'funds_refunded',
+]);
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  // Rate limiting
+  const clientIp = getClientIp(req);
+  const rl = checkRateLimit({ ...RATE_LIMITS.WRITE, identifier: clientIp, action: 'wise-webhook' });
+  if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const webhookSecret = Deno.env.get('WISE_WEBHOOK_SECRET');
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Get raw body for signature verification
-    const rawBody = await req.text();
-    console.log('Wise webhook received:', rawBody);
-
-    // Verify signature if secret is configured
-    if (webhookSecret) {
-      const signature = req.headers.get('x-signature-sha256');
-      if (!signature) {
-        console.error('Missing signature header');
-        return new Response(
-          JSON.stringify({ error: 'Missing signature' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      if (!verifySignature(rawBody, signature, webhookSecret)) {
-        console.error('Invalid signature');
-        return new Response(
-          JSON.stringify({ error: 'Invalid signature' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+    if (!webhookSecret) {
+      LOG('ERROR: WISE_WEBHOOK_SECRET not configured');
+      return new Response(
+        JSON.stringify({ error: 'Webhook not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    const payload: WiseWebhookPayload = JSON.parse(rawBody);
-    console.log('Parsed webhook payload:', payload);
+    const rawBody = await req.text();
+
+    // Verify signature (required, not optional)
+    const signature = req.headers.get('x-signature-sha256');
+    if (!signature) {
+      LOG('Missing signature header');
+      return new Response(
+        JSON.stringify({ error: 'Missing signature' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!verifySignature(rawBody, signature, webhookSecret)) {
+      LOG('Invalid signature');
+      return new Response(
+        JSON.stringify({ error: 'Invalid signature' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    let payload: WiseWebhookPayload;
+    try {
+      payload = JSON.parse(rawBody);
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    LOG('Webhook received', { event_type: payload.event_type });
 
     // Only process transfer state changes
     if (payload.event_type !== 'transfers#state-change') {
-      console.log('Ignoring non-transfer event:', payload.event_type);
       return new Response(
         JSON.stringify({ success: true, message: 'Event ignored' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const transferId = payload.data.resource.id.toString();
+    // Validate payload structure
+    if (!payload.data?.resource?.id || !payload.data?.current_state) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid payload structure' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const transferId = String(payload.data.resource.id);
     const newState = payload.data.current_state;
-    const previousState = payload.data.previous_state;
 
-    console.log(`Transfer ${transferId} changed from ${previousState} to ${newState}`);
+    // Validate state is known
+    if (!VALID_WISE_STATES.has(newState)) {
+      LOG('Unknown transfer state', { newState });
+      return new Response(
+        JSON.stringify({ success: true, message: 'Unhandled state' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    // Find the payout record with this transfer ID
+    LOG(`Transfer ${transferId} → ${newState}`);
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Find payout record
     const { data: payout, error: fetchError } = await supabase
       .from('seller_payouts')
-      .select('*')
+      .select('id, status, store_id, amount')
       .eq('wise_transfer_id', transferId)
-      .single();
+      .maybeSingle();
 
     if (fetchError || !payout) {
-      console.log('No payout found for transfer:', transferId);
+      LOG('No payout found for transfer', { transferId });
       return new Response(
         JSON.stringify({ success: true, message: 'No matching payout found' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Found payout:', payout.id);
-
-    // Map Wise states to our payout statuses
+    // Map Wise states
     let newStatus: string | null = null;
     let shouldUpdateBalance = false;
 
@@ -120,12 +167,9 @@ Deno.serve(async (req) => {
       case 'funds_refunded':
         newStatus = 'failed';
         break;
-      default:
-        console.log('Unhandled transfer state:', newState);
     }
 
     if (newStatus && newStatus !== payout.status) {
-      // Update payout status
       const { error: updateError } = await supabase
         .from('seller_payouts')
         .update({
@@ -136,55 +180,49 @@ Deno.serve(async (req) => {
         .eq('id', payout.id);
 
       if (updateError) {
-        console.error('Failed to update payout:', updateError);
-        throw updateError;
+        LOG('Failed to update payout', { error: updateError.message });
+        throw new Error('Failed to update payout status');
       }
 
-      console.log(`Payout ${payout.id} status updated to ${newStatus}`);
+      LOG(`Payout ${payout.id} → ${newStatus}`);
 
       // Update seller balance if completed
       if (shouldUpdateBalance && payout.store_id) {
         const { error: balanceError } = await supabase
           .from('seller_balances')
           .update({
-            total_paid: supabase.rpc('increment_total_paid', { 
-              p_store_id: payout.store_id, 
-              p_amount: payout.amount 
+            total_paid: supabase.rpc('increment_total_paid', {
+              p_store_id: payout.store_id,
+              p_amount: payout.amount,
             }),
-            available_balance: supabase.rpc('decrement_available_balance', { 
-              p_store_id: payout.store_id, 
-              p_amount: payout.amount 
+            available_balance: supabase.rpc('decrement_available_balance', {
+              p_store_id: payout.store_id,
+              p_amount: payout.amount,
             }),
             updated_at: new Date().toISOString(),
           })
           .eq('store_id', payout.store_id);
 
         if (balanceError) {
-          console.error('Failed to update seller balance:', balanceError);
-          // Don't throw - payout status is already updated
-        } else {
-          console.log(`Seller balance updated for store ${payout.store_id}`);
+          LOG('Failed to update seller balance', { error: balanceError.message });
         }
       }
 
-      // If failed, we might need to refund/reverse the balance deduction
+      // If failed, refund the balance deduction
       if (newStatus === 'failed' && payout.store_id) {
-        // Add the amount back to available balance
         const { error: refundError } = await supabase
           .from('seller_balances')
           .update({
-            available_balance: supabase.rpc('increment_available_balance', { 
-              p_store_id: payout.store_id, 
-              p_amount: payout.amount 
+            available_balance: supabase.rpc('increment_available_balance', {
+              p_store_id: payout.store_id,
+              p_amount: payout.amount,
             }),
             updated_at: new Date().toISOString(),
           })
           .eq('store_id', payout.store_id);
 
         if (refundError) {
-          console.error('Failed to refund seller balance:', refundError);
-        } else {
-          console.log(`Seller balance refunded for store ${payout.store_id}`);
+          LOG('Failed to refund seller balance', { error: refundError.message });
         }
       }
     }
@@ -193,11 +231,10 @@ Deno.serve(async (req) => {
       JSON.stringify({ success: true }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-
   } catch (error) {
-    console.error('Wise webhook error:', error);
+    LOG('ERROR', { message: error instanceof Error ? error.message : String(error) });
     return new Response(
-      JSON.stringify({ error: error.message || 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

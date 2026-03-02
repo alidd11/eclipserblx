@@ -331,9 +331,8 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message });
-    return new Response(JSON.stringify({ error: message }), {
+    logStep("ERROR", { message: error instanceof Error ? error.message : String(error) });
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       headers: { "Content-Type": "application/json" },
       status: 500,
     });
@@ -490,7 +489,7 @@ async function handleIpShieldSubscription(
     .eq("user_id", userId)
     .maybeSingle();
 
-  const displayName = profile?.display_name || profile?.username || customerEmail;
+  const displayName = (profile?.display_name || profile?.username || customerEmail).replace(/[<>"'&]/g, '');
 
   // 1. Send email notification to legal team
   if (isActivation) {

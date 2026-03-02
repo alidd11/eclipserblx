@@ -1,8 +1,14 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-webhook-secret",
+};
+
+const LOG = (step: string, d?: unknown) => {
+  const s = d ? ` - ${JSON.stringify(d)}` : '';
+  console.log(`[DISCORD-MODMAIL-WEBHOOK] ${step}${s}`);
 };
 
 interface ModmailPayload {
@@ -14,18 +20,37 @@ interface ModmailPayload {
   attachments?: { url: string; filename: string }[];
 }
 
+// Input validation
+const isValidDiscordId = (id: string): boolean =>
+  typeof id === 'string' && /^\d{17,20}$/.test(id);
+
+const sanitizeString = (str: string, maxLen: number): string =>
+  typeof str === 'string' ? str.slice(0, maxLen) : '';
+
+const isValidUrl = (url: string): boolean => {
+  try {
+    const u = new URL(url);
+    return u.protocol === 'https:' || u.protocol === 'http:';
+  } catch { return false; }
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Rate limiting
+  const clientIp = getClientIp(req);
+  const rl = checkRateLimit({ ...RATE_LIMITS.WRITE, identifier: clientIp, action: 'modmail-webhook' });
+  if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
   try {
     // Verify webhook secret
     const webhookSecret = req.headers.get("x-webhook-secret");
     const expectedSecret = Deno.env.get("DISCORD_WEBHOOK_SECRET");
-    
+
     if (!expectedSecret || webhookSecret !== expectedSecret) {
-      console.error("Invalid or missing webhook secret");
+      LOG("Invalid or missing webhook secret");
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -33,21 +58,49 @@ Deno.serve(async (req) => {
     }
 
     const payload: ModmailPayload = await req.json();
-    console.log("Received modmail webhook:", JSON.stringify(payload));
 
-    // Validate required fields
-    if (!payload.discord_user_id || !payload.discord_username || !payload.content) {
+    // Validate discord_user_id format
+    if (!isValidDiscordId(payload.discord_user_id)) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields: discord_user_id, discord_username, content" }),
+        JSON.stringify({ error: "Invalid discord_user_id format" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Validate required fields
+    if (!payload.discord_username || typeof payload.discord_username !== 'string' || payload.discord_username.length > 100) {
+      return new Response(
+        JSON.stringify({ error: "Invalid discord_username" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!payload.content || typeof payload.content !== 'string' || payload.content.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Missing content" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Sanitize inputs
+    const sanitizedContent = sanitizeString(payload.content, 4000);
+    const sanitizedUsername = sanitizeString(payload.discord_username, 100);
+    const sanitizedAvatarUrl = payload.discord_avatar_url && isValidUrl(payload.discord_avatar_url)
+      ? payload.discord_avatar_url : undefined;
+
+    // Validate attachments
+    const sanitizedAttachments = (payload.attachments || [])
+      .filter(a => a.url && isValidUrl(a.url) && a.filename && a.filename.length <= 255)
+      .slice(0, 10) // Max 10 attachments
+      .map(a => ({ url: a.url, filename: sanitizeString(a.filename, 255) }));
+
+    LOG("Received modmail", { discord_user_id: payload.discord_user_id, contentLen: sanitizedContent.length });
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check if there's an open ticket for this user
+    // Check for existing open ticket
     const { data: existingTicket, error: ticketError } = await supabase
       .from("discord_modmail_tickets")
       .select("id")
@@ -57,69 +110,54 @@ Deno.serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    if (ticketError) {
-      console.error("Error checking existing ticket:", ticketError);
-      throw ticketError;
-    }
+    if (ticketError) throw ticketError;
 
     let ticketId: string;
     let isNewTicket = false;
 
     if (existingTicket) {
-      // Add message to existing ticket
       ticketId = existingTicket.id;
-      console.log("Adding to existing ticket:", ticketId);
     } else {
-      // Create new ticket
       const { data: newTicket, error: createError } = await supabase
         .from("discord_modmail_tickets")
         .insert({
           discord_user_id: payload.discord_user_id,
-          discord_username: payload.discord_username,
-          discord_avatar_url: payload.discord_avatar_url,
-          subject: payload.content.substring(0, 100),
+          discord_username: sanitizedUsername,
+          discord_avatar_url: sanitizedAvatarUrl,
+          subject: sanitizedContent.substring(0, 100),
         })
         .select("id")
         .single();
 
-      if (createError) {
-        console.error("Error creating ticket:", createError);
-        throw createError;
-      }
-
+      if (createError) throw createError;
       ticketId = newTicket.id;
       isNewTicket = true;
-      console.log("Created new ticket:", ticketId);
     }
 
-    // Insert the message
+    // Insert message
     const { data: newMessage, error: messageError } = await supabase
       .from("discord_modmail_messages")
       .insert({
         ticket_id: ticketId,
-        content: payload.content,
+        content: sanitizedContent,
         is_staff_reply: false,
-        discord_message_id: payload.discord_message_id,
-        attachments: payload.attachments || [],
+        discord_message_id: payload.discord_message_id?.slice(0, 30),
+        attachments: sanitizedAttachments,
       })
       .select("id")
       .single();
 
-    if (messageError) {
-      console.error("Error inserting message:", messageError);
-      throw messageError;
-    }
+    if (messageError) throw messageError;
 
-    // Update ticket's updated_at
+    // Update ticket timestamp
     await supabase
       .from("discord_modmail_tickets")
       .update({ updated_at: new Date().toISOString() })
       .eq("id", ticketId);
 
-    // Post notification to Discord channel ONLY for new tickets
+    // Discord notification for new tickets only
     if (isNewTicket) {
       try {
-        // Fetch modmail settings
         const { data: settingsData } = await supabase
           .from("settings")
           .select("key, value")
@@ -136,72 +174,38 @@ Deno.serve(async (req) => {
         const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
 
         if (channelId && botToken) {
-          // Build the embed for new ticket only
           const embed = {
-            color: 0x22c55e, // Green for new ticket
+            color: 0x22c55e,
             author: {
-              name: payload.discord_username,
-              icon_url: payload.discord_avatar_url || `https://cdn.discordapp.com/embed/avatars/0.png`,
+              name: sanitizedUsername,
+              icon_url: sanitizedAvatarUrl || `https://cdn.discordapp.com/embed/avatars/0.png`,
             },
             title: "📩 New Support Ticket",
-            description: payload.content.length > 500 
-              ? payload.content.substring(0, 500) + "..." 
-              : payload.content,
+            description: sanitizedContent.length > 500
+              ? sanitizedContent.substring(0, 500) + "..."
+              : sanitizedContent,
             fields: [
-              {
-                name: "🔖 Ticket ID",
-                value: `\`${ticketId.substring(0, 8)}\``,
-                inline: true,
-              },
-              {
-                name: "📊 Status",
-                value: "Open",
-                inline: true,
-              },
+              { name: "🔖 Ticket ID", value: `\`${ticketId.substring(0, 8)}\``, inline: true },
+              { name: "📊 Status", value: "Open", inline: true },
             ],
-            footer: {
-              text: "Eclipse Support • Click below to view",
-              icon_url: "https://eclipserblx.com/favicon.ico",
-            },
+            footer: { text: "Eclipse Support", icon_url: "https://eclipserblx.com/favicon.ico" },
             timestamp: new Date().toISOString(),
           };
 
-          // Build message payload with role ping and button
-          const messagePayload: {
-            content?: string;
-            embeds: typeof embed[];
-            components: Array<{
-              type: number;
-              components: Array<{
-                type: number;
-                style: number;
-                label: string;
-                url: string;
-              }>;
-            }>;
-          } = {
+          const messagePayload: any = {
             embeds: [embed],
-            components: [
-              {
-                type: 1, // Action Row
-                components: [
-                  {
-                    type: 2, // Button
-                    style: 5, // Link style
-                    label: "📋 View Ticket",
-                    url: "https://eclipserblx.com/admin/discord-modmail",
-                  },
-                ],
-              },
-            ],
+            components: [{
+              type: 1,
+              components: [{
+                type: 2, style: 5,
+                label: "📋 View Ticket",
+                url: "https://eclipserblx.com/admin/discord-modmail",
+              }],
+            }],
           };
 
-          // Add role ping if configured
-          if (roleId) {
-            messagePayload.content = `<@&${roleId}>`;
-          }
+          if (roleId) messagePayload.content = `<@&${roleId}>`;
 
-          // Send to Discord channel
           const discordResponse = await fetch(
             `https://discord.com/api/v10/channels/${channelId}/messages`,
             {
@@ -214,22 +218,17 @@ Deno.serve(async (req) => {
             }
           );
 
-          if (discordResponse.ok) {
-            console.log("Posted new ticket notification to Discord channel:", channelId);
-          } else {
+          if (!discordResponse.ok) {
             const errorText = await discordResponse.text();
-            console.error("Failed to post to Discord channel:", discordResponse.status, errorText);
+            LOG("Failed to post to Discord", { status: discordResponse.status });
           }
         }
       } catch (discordError) {
-        // Don't fail the webhook if Discord notification fails
-        console.error("Error posting Discord notification:", discordError);
+        LOG("Discord notification error (non-fatal)", { error: String(discordError) });
       }
-    } else {
-      console.log("Skipping Discord channel notification for follow-up message on ticket:", ticketId);
     }
 
-    // Send push notification to staff (admin and support_agent roles)
+    // Push notifications to staff
     try {
       const { data: staffUsers } = await supabase
         .from("user_roles")
@@ -238,53 +237,38 @@ Deno.serve(async (req) => {
 
       if (staffUsers && staffUsers.length > 0) {
         const userIds = staffUsers.map((u) => u.user_id);
-        
-        // Use unique tag to prevent collapsing
-        const notificationTag = isNewTicket 
-          ? `modmail-new-${ticketId}` 
+        const notificationTag = isNewTicket
+          ? `modmail-new-${ticketId}`
           : `modmail-msg-${ticketId}-${newMessage.id}`;
-        
-        const notificationPayload = {
-          user_ids: userIds,
-          title: isNewTicket ? "New Discord Modmail" : "New Modmail Message",
-          body: `${payload.discord_username}: ${payload.content.substring(0, 100)}${payload.content.length > 100 ? "..." : ""}`,
-          tag: notificationTag,
-          url: "/admin/discord-modmail",
-          data: {
-            ticket_id: ticketId,
-            message_id: newMessage.id,
-            type: "modmail",
-          },
-        };
 
-        const pushResponse = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+        await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${supabaseServiceKey}`,
           },
-          body: JSON.stringify(notificationPayload),
+          body: JSON.stringify({
+            user_ids: userIds,
+            title: isNewTicket ? "New Discord Modmail" : "New Modmail Message",
+            body: `${sanitizedUsername}: ${sanitizedContent.substring(0, 100)}`,
+            tag: notificationTag,
+            url: "/admin/discord-modmail",
+            data: { ticket_id: ticketId, message_id: newMessage.id, type: "modmail" },
+          }),
         });
-
-        const pushResult = await pushResponse.text();
-        console.log("Push notification result:", pushResult);
       }
-    } catch (pushError) {
-      // Don't fail the webhook if push fails
-      console.error("Error sending push notification:", pushError);
+    } catch {
+      // Non-fatal
     }
-
-    console.log("Successfully processed modmail message for ticket:", ticketId);
 
     return new Response(
       JSON.stringify({ success: true, ticket_id: ticketId, is_new_ticket: isNewTicket }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
-    console.error("Error processing modmail webhook:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
+    LOG("ERROR", { message: error instanceof Error ? error.message : "Unknown error" });
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
