@@ -6,6 +6,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 // Categories that get a custom styled banner instead of product images
 const CUSTOM_BANNER_CATEGORIES = new Set(['bots']);
@@ -264,6 +265,7 @@ function CategorySkeleton() {
 }
 
 export default function Categories() {
+  usePageMeta({ title: 'Categories', description: 'Browse Roblox asset categories on Eclipse — police vehicles, civilian cars, maps, scripts, bots and more.', canonicalPath: '/categories' });
   usePageTracking({ pagePath: '/categories' });
   const [searchParams] = useSearchParams();
   const sourceFilter = searchParams.get('source');

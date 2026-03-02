@@ -1,13 +1,34 @@
-import { useLocation, Link } from "react-router-dom";
-import { useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Search, ShoppingBag, Store, HelpCircle, Briefcase } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { usePageMeta } from "@/hooks/usePageMeta";
+
+const suggestedLinks = [
+  { to: "/products", label: "Browse Products", icon: ShoppingBag },
+  { to: "/stores", label: "All Stores", icon: Store },
+  { to: "/faq", label: "FAQ", icon: HelpCircle },
+  { to: "/contact", label: "Contact Us", icon: Briefcase },
+];
 
 const NotFound = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+
+  usePageMeta({ title: "Page Not Found" });
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
   }, [location.pathname]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (search.trim()) {
+      navigate(`/products?search=${encodeURIComponent(search.trim())}`);
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -27,6 +48,33 @@ const NotFound = () => {
         <p className="text-sm text-muted-foreground mb-8 leading-relaxed max-w-xs">
           The page at <code className="text-foreground bg-muted px-1.5 py-0.5 rounded text-xs font-mono">{location.pathname}</code> doesn't exist or has been moved.
         </p>
+
+        {/* Search bar */}
+        <form onSubmit={handleSearch} className="flex gap-2 mb-8">
+          <Input
+            placeholder="Search products…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-9 text-sm"
+          />
+          <Button type="submit" size="sm" variant="secondary" className="h-9 px-3">
+            <Search className="h-3.5 w-3.5" />
+          </Button>
+        </form>
+
+        {/* Suggested links */}
+        <div className="grid grid-cols-2 gap-2 mb-8">
+          {suggestedLinks.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              className="flex items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+            >
+              <link.icon className="h-3.5 w-3.5 flex-shrink-0" />
+              {link.label}
+            </Link>
+          ))}
+        </div>
 
         <Link
           to="/"

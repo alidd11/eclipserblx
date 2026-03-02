@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Bell, Award, Tag, ShoppingCart, MessageCircle, Trophy, Percent, Check, CheckCheck } from 'lucide-react';
+import { Bell, Award, Tag, ShoppingCart, MessageCircle, Trophy, Percent, Check, CheckCheck, Inbox } from 'lucide-react';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { EclipseLogo } from '@/components/ui/EclipseLogo';
 import { hapticTap } from '@/lib/haptics';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 interface Notification {
   id: string;
@@ -30,6 +32,7 @@ const notificationIcons: Record<string, React.ReactNode> = {
 };
 
 export default function Messages() {
+  usePageMeta({ title: 'Notifications', description: 'View your Eclipse notifications, order updates and badge awards.', canonicalPath: '/messages' });
   const { user } = useAuth();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -157,13 +160,13 @@ export default function Messages() {
               <p className="text-sm">Loading messages...</p>
             </div>
           ) : notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <Bell className="h-12 w-12 mb-3 opacity-50" />
-              <p className="font-medium">No messages yet</p>
-              <p className="text-sm mt-1 text-center px-4">
-                You'll receive notifications about orders, badges, discounts, and more here.
-              </p>
-            </div>
+            <EmptyState
+              icon={Inbox}
+              title="No messages yet"
+              description="You'll receive notifications about orders, badges, discounts, and more here."
+              actionLabel="Browse Products"
+              actionTo="/products"
+            />
           ) : (
             <div className="divide-y divide-border">
               {notifications.map((notification) => (

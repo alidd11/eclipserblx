@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { toast } from 'sonner';
 
 // Wallet components
@@ -21,6 +22,7 @@ import { EmbeddedPaymentModal } from '@/components/payments/EmbeddedPaymentModal
 
 export default function Credits() {
   usePageTracking({ pagePath: '/credits' });
+  usePageMeta({ title: 'Store Credits', description: 'Manage your Eclipse store credits. Top up your wallet and pay for products instantly.', canonicalPath: '/credits' });
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

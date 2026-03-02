@@ -1,4 +1,5 @@
 import { ReactNode, useState, useEffect, useCallback, useRef } from 'react';
+import { PageTransition } from './PageTransition';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { CustomerSidebar } from './CustomerSidebar';
@@ -192,7 +193,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
           <Header showDesktopNav={false} onMenuClick={() => setMobileDrawerOpen(true)} />
           <UniversalBreadcrumb />
           <main id="main-content" role="main" className="flex-1 overflow-y-auto overflow-x-hidden" style={{ paddingBottom: 'var(--chat-safe-bottom, env(safe-area-inset-bottom))' }}>
-            {children}
+            <PageTransition>{children}</PageTransition>
             <Footer />
           </main>
         </div>
