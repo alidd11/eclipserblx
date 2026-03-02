@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, forwardRef } from 'react';
+import { useState, useEffect, useCallback, forwardRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Package, Search, Sparkles, Loader2,
-  Clock, X, TrendingUp, ArrowRight
+  Clock, X, TrendingUp, ArrowRight, Keyboard
 } from 'lucide-react';
 import {
   CommandDialog,
@@ -31,7 +31,6 @@ interface SearchCommandPaletteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
 
 export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPaletteProps>(function SearchCommandPalette({ open, onOpenChange }, _ref) {
   const navigate = useNavigate();
@@ -102,13 +101,25 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
       }
     };
 
-    const debounce = setTimeout(fetchProducts, 150); // faster debounce
+    const debounce = setTimeout(fetchProducts, 150);
     return () => clearTimeout(debounce);
   }, [searchQuery, open, useAI]);
 
   const displayProducts = useAI && smartResults.length > 0 ? smartResults : products;
   const displayLoading = useAI ? isSmartSearching : isLoading;
   const hasQuery = searchQuery.length >= 2;
+
+  // Highlight matching text in product names
+  const highlightMatch = useCallback((text: string, query: string) => {
+    if (!query || query.length < 2) return text;
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+    return parts.map((part, i) =>
+      regex.test(part) ? (
+        <span key={i} className="text-primary font-semibold">{part}</span>
+      ) : part
+    );
+  }, []);
 
   const handleSelect = useCallback((href: string) => {
     hapticTap();
@@ -129,36 +140,14 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
     setSearchQuery(query);
   }, []);
 
-  // Product thumbnail component
-  const ProductThumb = ({ product }: { product: Product }) => {
-    const img = product.images?.[0];
-    return (
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        {img ? (
-          <img
-            src={img}
-            alt=""
-            className="h-8 w-8 rounded-md object-cover bg-muted shrink-0"
-            loading="lazy"
-          />
-        ) : (
-          <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center shrink-0">
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </div>
-        )}
-        <span className="truncate flex-1">{product.name}</span>
-        <span className="text-xs font-medium text-muted-foreground tabular-nums shrink-0">
-          {formatPrice(product.price)}
-        </span>
-      </div>
-    );
-  };
+  const resultCount = useMemo(() => displayProducts.length, [displayProducts]);
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
+      {/* Search Input Area */}
       <div className="relative">
         <CommandInput 
-          placeholder="Search products, pages, help..." 
+          placeholder="Search products..." 
           value={searchQuery}
           onValueChange={(val) => {
             setSearchQuery(val);
@@ -167,9 +156,9 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
           {useAI && isSmartSearching && (
-            <div className="flex items-center gap-1 text-xs text-primary">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              <span>AI searching...</span>
+            <div className="flex items-center gap-1.5 text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              <span className="font-medium">AI</span>
             </div>
           )}
           {searchQuery.length >= 3 && !useAI && (
@@ -179,43 +168,53 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
                 setUseAI(true);
                 smartSearch(searchQuery);
               }}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors px-2 py-1 rounded-md hover:bg-accent"
+              className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors px-2 py-1 rounded-md hover:bg-primary/5 border border-transparent hover:border-primary/20"
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3 w-3" />
               <span>AI</span>
             </button>
           )}
         </div>
       </div>
-      <CommandList className="max-h-[min(60vh,400px)]">
+
+      <CommandList className="max-h-[min(60vh,420px)] scrollbar-thin">
         <CommandEmpty>
           {displayLoading ? (
-            <div className="flex items-center justify-center gap-2 py-6">
-              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">{useAI ? 'AI is searching...' : 'Searching...'}</span>
+            <div className="flex flex-col items-center gap-3 py-10">
+              <div className="relative">
+                <div className="h-10 w-10 rounded-full border-2 border-muted" />
+                <Loader2 className="h-10 w-10 animate-spin text-primary absolute inset-0" />
+              </div>
+              <span className="text-xs text-muted-foreground font-medium">
+                {useAI ? 'AI is searching...' : 'Searching...'}
+              </span>
             </div>
           ) : hasQuery ? (
-            <div className="py-8 text-center space-y-3">
-              <Search className="h-10 w-10 mx-auto text-muted-foreground/40" />
+            <div className="py-10 text-center space-y-3">
+              <div className="h-12 w-12 rounded-xl bg-muted/50 flex items-center justify-center mx-auto">
+                <Search className="h-5 w-5 text-muted-foreground/40" />
+              </div>
               <div>
-                <p className="text-sm font-medium">No results for "{searchQuery}"</p>
-                <p className="text-xs text-muted-foreground mt-1">Try different keywords or browse categories</p>
+                <p className="text-sm font-medium text-foreground">No results found</p>
+                <p className="text-xs text-muted-foreground mt-1">Try different keywords or browse all products</p>
               </div>
               <button
                 onClick={handleViewAllResults}
-                className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors mt-1"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
               >
                 Search all products <ArrowRight className="h-3 w-3" />
               </button>
             </div>
           ) : (
-            'Type to search...'
+            <div className="py-10 text-center">
+              <p className="text-xs text-muted-foreground">Type to search products...</p>
+            </div>
           )}
         </CommandEmpty>
 
-        {/* Recent Searches — shown when no query */}
+        {/* Recent Searches */}
         {!hasQuery && recentSearches.length > 0 && (
-          <CommandGroup heading="Recent Searches">
+          <CommandGroup heading="RECENT">
             {recentSearches.slice(0, 4).map((query) => (
               <CommandItem
                 key={query}
@@ -223,14 +222,14 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
                 onSelect={() => handleRecentSearchClick(query)}
                 className="cursor-pointer group"
               >
-                <Clock className="mr-2 h-3.5 w-3.5 text-muted-foreground/60" />
-                <span className="flex-1 text-muted-foreground">{query}</span>
+                <Clock className="mr-2.5 h-3.5 w-3.5 text-muted-foreground/50" />
+                <span className="flex-1 text-sm text-muted-foreground group-data-[selected=true]:text-foreground transition-colors">{query}</span>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     removeSearch(query);
                   }}
-                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-muted transition-all"
+                  className="opacity-0 group-hover:opacity-100 group-data-[selected=true]:opacity-100 p-0.5 rounded hover:bg-muted transition-all"
                 >
                   <X className="h-3 w-3 text-muted-foreground" />
                 </button>
@@ -239,20 +238,20 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
           </CommandGroup>
         )}
 
-        {/* Trending — shown when no query */}
+        {/* Trending */}
         {!hasQuery && trendingProducts.length > 0 && (
           <>
-            <CommandSeparator />
-            <CommandGroup heading="Trending">
+            {recentSearches.length > 0 && <CommandSeparator />}
+            <CommandGroup heading="TRENDING">
               {trendingProducts.map((product) => (
                 <CommandItem
                   key={product.id}
                   value={`trending-${product.name}`}
                   onSelect={() => handleSelect(`/products/${product.slug}`)}
-                  className="cursor-pointer"
+                  className="cursor-pointer group"
                 >
-                  <TrendingUp className="mr-2 h-3.5 w-3.5 text-primary/60" />
-                  <ProductThumb product={product} />
+                  <TrendingUp className="mr-2.5 h-3.5 w-3.5 text-primary/50 group-data-[selected=true]:text-primary transition-colors" />
+                  <ProductThumb product={product} formatPrice={formatPrice} />
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -261,52 +260,106 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
 
         {/* Search Results */}
         {displayProducts.length > 0 && (
-          <CommandGroup heading={useAI ? "AI Results" : "Products"}>
-            {displayProducts.map((product) => (
-              <CommandItem
-                key={product.id}
-                value={product.name}
-                onSelect={() => {
-                  addSearch(searchQuery);
-                  handleSelect(`/products/${product.slug}`);
-                }}
-                className="cursor-pointer"
-              >
-                {useAI && <Sparkles className="mr-2 h-3.5 w-3.5 text-primary shrink-0" />}
-                <ProductThumb product={product} />
-              </CommandItem>
-            ))}
-            {/* View all results link */}
-            <CommandItem
-              value="view-all-search-results"
-              onSelect={handleViewAllResults}
-              className="cursor-pointer"
-            >
-              <Search className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-              <span className="flex-1 text-muted-foreground">
-                View all results for "{searchQuery}"
+          <>
+            <CommandGroup heading={
+              <span className="flex items-center gap-2">
+                {useAI ? 'AI RESULTS' : 'PRODUCTS'}
+                <span className="text-[10px] font-normal text-muted-foreground/60 tabular-nums">
+                  {resultCount}
+                </span>
               </span>
-              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-            </CommandItem>
-          </CommandGroup>
+            }>
+              {displayProducts.map((product) => (
+                <CommandItem
+                  key={product.id}
+                  value={product.name}
+                  onSelect={() => {
+                    addSearch(searchQuery);
+                    handleSelect(`/products/${product.slug}`);
+                  }}
+                  className="cursor-pointer group"
+                >
+                  {useAI && <Sparkles className="mr-2.5 h-3.5 w-3.5 text-primary/60 group-data-[selected=true]:text-primary shrink-0 transition-colors" />}
+                  <ProductThumb product={product} formatPrice={formatPrice} highlightMatch={hasQuery ? (text: string) => highlightMatch(text, searchQuery) : undefined} />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandSeparator />
+            <CommandGroup>
+              <CommandItem
+                value="view-all-search-results"
+                onSelect={handleViewAllResults}
+                className="cursor-pointer group"
+              >
+                <Search className="mr-2.5 h-3.5 w-3.5 text-muted-foreground/50" />
+                <span className="flex-1 text-sm text-muted-foreground group-data-[selected=true]:text-foreground transition-colors">
+                  View all results for "<span className="font-medium">{searchQuery}</span>"
+                </span>
+                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 group-data-[selected=true]:text-foreground transition-colors" />
+              </CommandItem>
+            </CommandGroup>
+          </>
         )}
-
       </CommandList>
 
-      {/* Footer hint */}
-      {hasQuery && (
-        <div className="border-t border-border px-3 py-2 flex items-center justify-between">
-          <span className="text-[10px] text-muted-foreground">
-            Press <kbd className="px-1 py-0.5 rounded bg-muted text-[10px] font-mono">↵</kbd> to select
+      {/* Footer */}
+      <div className="border-t border-border/50 px-3 py-2 flex items-center justify-between bg-muted/30">
+        <div className="flex items-center gap-3 text-[10px] text-muted-foreground/60">
+          <span className="flex items-center gap-1">
+            <kbd className="px-1 py-0.5 rounded bg-muted text-[10px] font-mono border border-border/50">↑↓</kbd>
+            navigate
           </span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1 py-0.5 rounded bg-muted text-[10px] font-mono border border-border/50">↵</kbd>
+            select
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1 py-0.5 rounded bg-muted text-[10px] font-mono border border-border/50">esc</kbd>
+            close
+          </span>
+        </div>
+        {hasQuery && (
           <button
             onClick={handleViewAllResults}
-            className="text-[10px] text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+            className="text-[10px] font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
           >
-            Full search page <ArrowRight className="h-2.5 w-2.5" />
+            Full results <ArrowRight className="h-2.5 w-2.5" />
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </CommandDialog>
   );
 });
+
+/* ── Product thumbnail sub-component ── */
+function ProductThumb({ product, formatPrice, highlightMatch }: { 
+  product: Product; 
+  formatPrice: (price: number) => string;
+  highlightMatch?: (text: string) => React.ReactNode;
+}) {
+  const img = product.images?.[0];
+  return (
+    <div className="flex items-center gap-3 flex-1 min-w-0">
+      {img ? (
+        <img
+          src={img}
+          alt=""
+          className="h-9 w-9 rounded-lg object-cover bg-muted shrink-0 ring-1 ring-border/50"
+          loading="lazy"
+        />
+      ) : (
+        <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0 ring-1 ring-border/50">
+          <Package className="h-4 w-4 text-muted-foreground/40" />
+        </div>
+      )}
+      <div className="flex-1 min-w-0">
+        <span className="text-sm truncate block group-data-[selected=true]:text-foreground transition-colors">
+          {highlightMatch ? highlightMatch(product.name) : product.name}
+        </span>
+      </div>
+      <span className="text-xs font-medium text-muted-foreground tabular-nums shrink-0 bg-muted/50 px-1.5 py-0.5 rounded">
+        {formatPrice(product.price)}
+      </span>
+    </div>
+  );
+}
