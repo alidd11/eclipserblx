@@ -9,9 +9,14 @@ const corsHeaders = {
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string)
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_VERIFY_ATTEMPTS = 5; // Lock after 5 failed attempts
+
 // Generate Eclipse branded HTML email template for password reset
 function generatePasswordResetEmailHtml(token: string): string {
-  // Create individual digit cells for the 4-digit code
+  // Validate token is exactly 4 digits before rendering
+  if (!/^\d{4}$/.test(token)) return '';
+  
   const digitCells = token.split('').map(digit => `
     <td style="width: 48px; height: 56px; background: #1a1520; border: 2px solid #a855f7; border-radius: 8px; text-align: center; vertical-align: middle; margin: 0 4px;">
       <span style="font-size: 28px; font-weight: 700; color: #a855f7; font-family: 'Courier New', Courier, monospace;">${digit}</span>
@@ -31,14 +36,11 @@ function generatePasswordResetEmailHtml(token: string): string {
     <tr>
       <td align="center" style="padding: 32px 16px;">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 420px; background: linear-gradient(180deg, #151518 0%, #0d0d10 100%); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; overflow: hidden;">
-          
-          <!-- Header with gradient accent -->
           <tr>
             <td style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.05) 100%); padding: 24px 24px 20px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td align="center">
-                    <!-- Eclipse Logo -->
                     <table role="presentation" cellspacing="0" cellpadding="0">
                       <tr>
                         <td style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); width: 40px; height: 40px; border-radius: 10px; text-align: center; vertical-align: middle;">
@@ -54,8 +56,6 @@ function generatePasswordResetEmailHtml(token: string): string {
               </table>
             </td>
           </tr>
-          
-          <!-- Lock Icon -->
           <tr>
             <td align="center" style="padding: 20px 24px 12px;">
               <table role="presentation" cellspacing="0" cellpadding="0">
@@ -67,29 +67,21 @@ function generatePasswordResetEmailHtml(token: string): string {
               </table>
             </td>
           </tr>
-          
-          <!-- Heading -->
           <tr>
             <td align="center" style="padding: 0 24px 8px;">
               <h1 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 0; font-family: Georgia, serif;">Reset Your Password</h1>
             </td>
           </tr>
-          
-          <!-- Body Text -->
           <tr>
             <td align="center" style="padding: 0 24px 24px;">
               <p style="font-size: 14px; line-height: 22px; color: #a3a3a3; margin: 0;">Enter the code below to reset your password. If you did not request this, please ignore this email.</p>
             </td>
           </tr>
-          
-          <!-- Code Label -->
           <tr>
             <td align="center" style="padding: 0 24px 8px;">
               <p style="font-size: 11px; color: #737373; margin: 0; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Your verification code</p>
             </td>
           </tr>
-          
-          <!-- Code Digits -->
           <tr>
             <td align="center" style="padding: 0 24px 20px;">
               <table role="presentation" cellspacing="0" cellpadding="0">
@@ -99,8 +91,6 @@ function generatePasswordResetEmailHtml(token: string): string {
               </table>
             </td>
           </tr>
-          
-          <!-- Timer notice -->
           <tr>
             <td align="center" style="padding: 0 24px 24px;">
               <table role="presentation" cellspacing="0" cellpadding="0">
@@ -112,8 +102,6 @@ function generatePasswordResetEmailHtml(token: string): string {
               </table>
             </td>
           </tr>
-          
-          <!-- Divider -->
           <tr>
             <td style="padding: 0 24px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
@@ -123,8 +111,6 @@ function generatePasswordResetEmailHtml(token: string): string {
               </table>
             </td>
           </tr>
-          
-          <!-- Footer -->
           <tr>
             <td align="center" style="padding: 20px 24px 24px;">
               <p style="font-size: 12px; color: #525252; margin: 0 0 14px 0;">If you didn't request this email, you can safely ignore it.</p>
@@ -144,7 +130,6 @@ function generatePasswordResetEmailHtml(token: string): string {
               <p style="font-size: 10px; color: #404040; margin: 16px 0 0 0;">&copy; 2025 Eclipse. Premium Roblox assets for UK roleplay.</p>
             </td>
           </tr>
-          
         </table>
       </td>
     </tr>
@@ -154,18 +139,19 @@ function generatePasswordResetEmailHtml(token: string): string {
   `.trim()
 }
 
-// Generate a 4-digit code
+// Generate a cryptographically stronger 6-digit code
 function generateCode(): string {
-  return Math.floor(1000 + Math.random() * 9000).toString()
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  return String(100000 + (array[0] % 900000)); // 6 digits: 100000-999999
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
-  // Rate limiting: 5 requests per minute (auth endpoint - strict)
+  // Rate limiting
   const clientIp = getClientIp(req);
   const rateLimitResult = checkRateLimit({
     ...RATE_LIMITS.AUTH,
@@ -180,7 +166,7 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  
+
   const supabase = createClient(supabaseUrl, supabaseServiceKey, {
     auth: { persistSession: false }
   })
@@ -188,28 +174,36 @@ Deno.serve(async (req) => {
   const url = new URL(req.url)
   const action = url.pathname.split('/').pop()
 
+  // Only allow known actions
+  if (action !== 'request' && action !== 'verify') {
+    return new Response(
+      JSON.stringify({ error: 'Invalid action' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
   try {
     if (action === 'request') {
-      // Request password reset - generate OTP and send email
       const { email } = await req.json()
-      
-      if (!email) {
+
+      if (!email || typeof email !== 'string' || !EMAIL_REGEX.test(email) || email.length > 255) {
         return new Response(
-          JSON.stringify({ error: 'Email is required' }),
+          JSON.stringify({ error: 'Valid email is required' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
-      console.log(`Password reset requested for: ${email}`)
+      const normalizedEmail = email.trim().toLowerCase();
+      console.log(`Password reset requested for: ${normalizedEmail}`)
 
-      // Check if user exists by looking up in profiles
+      // Check if user exists
       const { data: profile } = await supabase
         .from('profiles')
         .select('email')
-        .eq('email', email.toLowerCase())
+        .eq('email', normalizedEmail)
         .single()
 
-      // Always return success even if user doesn't exist (security best practice)
+      // Always return success (security best practice - don't reveal if email exists)
       if (!profile) {
         console.log('User not found, returning success anyway for security')
         return new Response(
@@ -222,18 +216,17 @@ Deno.serve(async (req) => {
       await supabase
         .from('password_reset_codes')
         .update({ used: true })
-        .eq('email', email.toLowerCase())
+        .eq('email', normalizedEmail)
         .eq('used', false)
 
-      // Generate new code
+      // Generate 6-digit code with crypto RNG
       const code = generateCode()
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
 
-      // Store the code
       const { error: insertError } = await supabase
         .from('password_reset_codes')
         .insert({
-          email: email.toLowerCase(),
+          email: normalizedEmail,
           code,
           expires_at: expiresAt.toISOString(),
         })
@@ -243,11 +236,10 @@ Deno.serve(async (req) => {
         throw new Error('Failed to process request')
       }
 
-      // Send the email
       const html = generatePasswordResetEmailHtml(code)
       const { error: emailError } = await resend.emails.send({
         from: 'Eclipse <noreply@eclipserblx.com>',
-        to: [email],
+        to: [normalizedEmail],
         subject: 'Reset your Eclipse password',
         html,
       })
@@ -264,39 +256,77 @@ Deno.serve(async (req) => {
       )
 
     } else if (action === 'verify') {
-      // Verify OTP and reset password
       const { email, code, newPassword } = await req.json()
 
-      if (!email || !code || !newPassword) {
+      if (!email || typeof email !== 'string' || !EMAIL_REGEX.test(email) || email.length > 255) {
         return new Response(
-          JSON.stringify({ error: 'Email, code, and new password are required' }),
+          JSON.stringify({ error: 'Valid email is required' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
-      // Validate password strength
-      if (typeof newPassword !== 'string' || newPassword.length < 8 || newPassword.length > 128) {
-        return new Response(
-          JSON.stringify({ error: 'Password must be between 8 and 128 characters' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      }
-
-      // Validate code format (4 digits)
-      if (typeof code !== 'string' || !/^\d{4}$/.test(code)) {
+      if (!code || typeof code !== 'string' || !/^\d{6}$/.test(code)) {
         return new Response(
           JSON.stringify({ error: 'Invalid code format' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
-      console.log(`Verifying password reset for: ${email}`)
+      if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 8 || newPassword.length > 128) {
+        return new Response(
+          JSON.stringify({ error: 'Password must be between 8 and 128 characters' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
 
-      // Find valid code
+      const normalizedEmail = email.trim().toLowerCase();
+      console.log(`Verifying password reset for: ${normalizedEmail}`)
+
+      // Check attempt count on the most recent unused code for this email
+      const { data: recentCode } = await supabase
+        .from('password_reset_codes')
+        .select('id, attempts')
+        .eq('email', normalizedEmail)
+        .eq('used', false)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!recentCode) {
+        return new Response(
+          JSON.stringify({ error: 'No active reset code found. Please request a new one.' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Check if max attempts exceeded - invalidate code
+      const currentAttempts = (recentCode as any).attempts ?? 0;
+      if (currentAttempts >= MAX_VERIFY_ATTEMPTS) {
+        // Burn the code
+        await supabase
+          .from('password_reset_codes')
+          .update({ used: true })
+          .eq('id', recentCode.id);
+
+        console.warn(`[custom-password-reset] Max attempts exceeded for ${normalizedEmail}`);
+        return new Response(
+          JSON.stringify({ error: 'Too many failed attempts. Please request a new code.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Increment attempt counter BEFORE checking code (prevents timing attacks)
+      await supabase
+        .from('password_reset_codes')
+        .update({ attempts: currentAttempts + 1 })
+        .eq('id', recentCode.id);
+
+      // Now verify the code
       const { data: resetCode, error: fetchError } = await supabase
         .from('password_reset_codes')
         .select('*')
-        .eq('email', email.toLowerCase())
+        .eq('email', normalizedEmail)
         .eq('code', code)
         .eq('used', false)
         .gt('expires_at', new Date().toISOString())
@@ -318,26 +348,23 @@ Deno.serve(async (req) => {
         .update({ used: true })
         .eq('id', resetCode.id)
 
-      // Get user by email from profiles, then use admin API
+      // Get user by email
       const { data: userProfile } = await supabase
         .from('profiles')
         .select('user_id')
-        .eq('email', email.toLowerCase())
+        .eq('email', normalizedEmail)
         .single()
 
-      const user = userProfile ? { id: userProfile.user_id, email: email.toLowerCase() } : null
-
-      if (!user) {
-        console.error('User not found in auth.users')
+      if (!userProfile) {
         return new Response(
           JSON.stringify({ error: 'User not found' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
-      // Update the user's password
+      // Update password
       const { error: updateError } = await supabase.auth.admin.updateUserById(
-        user.id,
+        userProfile.user_id,
         { password: newPassword }
       )
 
@@ -346,19 +373,25 @@ Deno.serve(async (req) => {
         throw new Error('Failed to update password')
       }
 
+      // Audit log
+      await supabase.from('audit_logs').insert({
+        user_id: userProfile.user_id,
+        action: 'password_reset',
+        resource: 'auth',
+        details: { method: 'otp_code' },
+      });
+
       console.log('Password reset successful')
       return new Response(
         JSON.stringify({ success: true }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
-
-    } else {
-      return new Response(
-        JSON.stringify({ error: 'Invalid action' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
     }
 
+    return new Response(
+      JSON.stringify({ error: 'Invalid action' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   } catch (error) {
     console.error('Error in custom-password-reset:', error)
     return new Response(
