@@ -109,13 +109,16 @@ Deno.serve(async (req) => {
     const resolvedSlots = new Set((existingAuctions || []).map((a: any) => a.slot_type));
 
     if (resolvedSlots.has('featured') && resolvedSlots.has('store_spotlight')) {
-      // If both single-winner slots are resolved, likely fully done
       console.log(`Auction for ${auctionDate} already resolved, skipping.`);
       return new Response(
         JSON.stringify({ success: true, skipped: true, reason: 'already_resolved' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Track results at the top level so they're always accessible
+    let featuredWinnerCount = 0;
+    let storeSpotlightWinnerCount = 0;
 
     // ── FEATURED SLOT (1 winner, fall-through) ──
     if (!resolvedSlots.has('featured')) {
@@ -129,6 +132,8 @@ Deno.serve(async (req) => {
       const featured = await awardSlots(
         supabase, featuredBids || [], 1, auctionDate, 'Featured slot'
       );
+
+      featuredWinnerCount = featured.winnerIds.length;
 
       const featuredOutbid = (featuredBids || []).filter(b => featured.outbidIds.includes(b.id));
       await notifyOutbidSellers(supabase, featuredOutbid, 'Featured slot');
@@ -188,6 +193,8 @@ Deno.serve(async (req) => {
         supabase, storeSpotlightBids || [], 1, auctionDate, 'Store Spotlight'
       );
 
+      storeSpotlightWinnerCount = storeResult.winnerIds.length;
+
       const storeOutbid = (storeSpotlightBids || []).filter(b => storeResult.outbidIds.includes(b.id));
       await notifyOutbidSellers(supabase, storeOutbid, 'Store Spotlight');
 
@@ -209,15 +216,16 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        featured_winners: featured.winnerIds.length,
-        store_spotlight_winners: storeResult.winnerIds.length,
+        featured_winners: featuredWinnerCount,
+        store_spotlight_winners: storeSpotlightWinnerCount,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     console.error('Auction resolution error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
