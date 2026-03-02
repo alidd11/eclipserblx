@@ -20,46 +20,49 @@ export function RevenueSummaryStats() {
       const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
       const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59).toISOString();
 
-      // Today's revenue
+      // Today's revenue (exclude refunded)
       const { data: todaySales } = await supabase
         .from('seller_transactions')
         .select('net_amount')
         .eq('store_id', store.id)
         .eq('type', 'sale')
+        .is('refunded_at', null)
         .gte('created_at', startOfToday);
 
       const todayRevenue = todaySales?.reduce((sum, t) => sum + (t.net_amount || 0), 0) || 0;
 
-      // This month revenue
+      // This month revenue (exclude refunded)
       const { data: monthSales } = await supabase
         .from('seller_transactions')
         .select('net_amount')
         .eq('store_id', store.id)
         .eq('type', 'sale')
+        .is('refunded_at', null)
         .gte('created_at', startOfThisMonth);
 
       const thisMonthRevenue = monthSales?.reduce((sum, t) => sum + (t.net_amount || 0), 0) || 0;
       const thisMonthOrders = monthSales?.length || 0;
 
-      // Last month revenue (for comparison)
+      // Last month revenue for comparison (exclude refunded)
       const { data: lastMonthSales } = await supabase
         .from('seller_transactions')
         .select('net_amount')
         .eq('store_id', store.id)
         .eq('type', 'sale')
+        .is('refunded_at', null)
         .gte('created_at', startOfLastMonth)
         .lte('created_at', endOfLastMonth);
 
       const lastMonthRevenue = lastMonthSales?.reduce((sum, t) => sum + (t.net_amount || 0), 0) || 0;
 
-      // Total all-time
-      const { data: allTimeSales } = await supabase
-        .from('seller_transactions')
-        .select('net_amount')
+      // All-time: use seller_balances.total_earned (avoids 1000-row limit)
+      const { data: balanceData } = await supabase
+        .from('seller_balances')
+        .select('total_earned')
         .eq('store_id', store.id)
-        .eq('type', 'sale');
+        .maybeSingle();
 
-      const totalRevenue = allTimeSales?.reduce((sum, t) => sum + (t.net_amount || 0), 0) || 0;
+      const totalRevenue = balanceData?.total_earned || 0;
 
       return { todayRevenue, thisMonthRevenue, lastMonthRevenue, thisMonthOrders, totalRevenue };
     },

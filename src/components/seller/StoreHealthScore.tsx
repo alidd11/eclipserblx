@@ -26,60 +26,47 @@ interface HealthMetric {
 export function StoreHealthScore() {
   const { store } = useSellerStatus();
 
-  // Fetch health metrics
   const { data: healthData, isLoading } = useQuery({
     queryKey: ['store-health', store?.id],
     queryFn: async () => {
       if (!store?.id) return null;
 
-      // Get products count
+      // Get active product count (head-only, no large payload)
       const { count: productCount } = await supabase
         .from('products')
         .select('id', { count: 'exact', head: true })
         .eq('store_id', store.id)
         .eq('is_active', true);
 
-      // Get reviews for this store's products
-      const { data: products } = await supabase
-        .from('products')
-        .select('id')
-        .eq('store_id', store.id);
+      // Get review stats via aggregate — count + avg rating
+      // Use store_id-scoped product subquery to avoid large .in() arrays
+      const { data: reviewStats } = await supabase
+        .from('reviews')
+        .select('rating, product_id, products!inner(store_id)')
+        .eq('products.store_id', store.id)
+        .eq('is_approved', true);
 
-      const productIds = products?.map(p => p.id) || [];
-      
-      let avgRating = 0;
-      let reviewCount = 0;
-      
-      if (productIds.length > 0) {
-        const { data: reviews } = await supabase
-          .from('reviews')
-          .select('rating')
-          .in('product_id', productIds)
-          .eq('is_approved', true);
-        
-        reviewCount = reviews?.length || 0;
-        avgRating = reviewCount > 0 
-          ? reviews!.reduce((sum, r) => sum + r.rating, 0) / reviewCount 
-          : 0;
-      }
+      const reviewCount = reviewStats?.length || 0;
+      const avgRating = reviewCount > 0
+        ? reviewStats!.reduce((sum, r) => sum + r.rating, 0) / reviewCount
+        : 0;
 
-      // Get response time from messages (sender_type = 'seller' means store replied)
-      const { data: messages } = await supabase
+      // Response time (simplified: check if store has replied to any messages)
+      const { count: replyCount } = await supabase
         .from('store_messages')
-        .select('created_at, conversation_id')
+        .select('id', { count: 'exact', head: true })
         .eq('store_id', store.id)
-        .eq('sender_type', 'seller')
-        .order('created_at', { ascending: false })
-        .limit(10);
+        .eq('sender_type', 'seller');
 
-      const responseTimeScore = (messages as any[])?.length ? 85 : 50; // Simplified
+      const responseTimeScore = (replyCount || 0) > 0 ? 85 : 50;
 
-      // Get order fulfillment rate
+      // Fulfillment rate from seller_transactions (exclude refunded)
       const { data: transactions } = await supabase
         .from('seller_transactions')
-        .select('status')
+        .select('status, refunded_at')
         .eq('store_id', store.id)
-        .eq('type', 'sale');
+        .eq('type', 'sale')
+        .is('refunded_at', null);
 
       const totalOrders = transactions?.length || 0;
       const completedOrders = transactions?.filter(t => t.status === 'completed' || t.status === 'pending').length || 0;
@@ -187,18 +174,9 @@ export function StoreHealthScore() {
         <div className="text-center py-2">
           <div className="relative inline-flex items-center justify-center">
             <svg className="h-20 w-20 transform -rotate-90">
+              <circle cx="40" cy="40" r="36" strokeWidth="6" className="fill-none stroke-muted" />
               <circle
-                cx="40"
-                cy="40"
-                r="36"
-                strokeWidth="6"
-                className="fill-none stroke-muted"
-              />
-              <circle
-                cx="40"
-                cy="40"
-                r="36"
-                strokeWidth="6"
+                cx="40" cy="40" r="36" strokeWidth="6"
                 strokeDasharray={`${(overallScore / 100) * 226} 226`}
                 className={cn(
                   'fill-none transition-all duration-500',

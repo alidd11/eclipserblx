@@ -40,6 +40,8 @@ export function useRealtimeOrders() {
             queryClient.invalidateQueries({ queryKey: ['seller-top-products'] });
             queryClient.invalidateQueries({ queryKey: ['seller-notifications'] });
             queryClient.invalidateQueries({ queryKey: ['seller-product-stats'] });
+            queryClient.invalidateQueries({ queryKey: ['seller-balance'] });
+            queryClient.invalidateQueries({ queryKey: ['seller-payout-timeline'] });
           }
         }
       )

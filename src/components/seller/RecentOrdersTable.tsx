@@ -16,9 +16,10 @@ export function RecentOrdersTable() {
       if (!store?.id) return [];
       const { data } = await supabase
         .from('seller_transactions')
-        .select('id, created_at, description, net_amount, gross_amount, status')
+        .select('id, created_at, description, net_amount, gross_amount, status, refunded_at')
         .eq('store_id', store.id)
         .eq('type', 'sale')
+        .is('refunded_at', null)
         .order('created_at', { ascending: false })
         .limit(5);
       return data || [];

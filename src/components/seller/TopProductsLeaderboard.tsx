@@ -13,7 +13,18 @@ export function TopProductsLeaderboard() {
     queryFn: async () => {
       if (!store?.id) return [];
 
-      // Get all active products for this store
+      // Use seller_transactions to count sales per product — avoids large .in() arrays
+      // and naturally excludes refunded transactions
+      const { data: salesData } = await supabase
+        .from('seller_transactions')
+        .select('order_item_id, description, net_amount')
+        .eq('store_id', store.id)
+        .eq('type', 'sale')
+        .is('refunded_at', null);
+
+      if (!salesData || salesData.length === 0) return [];
+
+      // Get products for this store (just what we need for display)
       const { data: products } = await supabase
         .from('products')
         .select('id, name, images, price')
@@ -23,21 +34,20 @@ export function TopProductsLeaderboard() {
 
       if (!products || products.length === 0) return [];
 
-      // Count actual sales from order_items joined with paid/completed orders
-      const { data: salesData } = await supabase
+      // Count sales per product from order_items
+      const { data: orderItems } = await supabase
         .from('order_items')
-        .select('product_id, orders!inner(status)')
-        .in('product_id', products.map(p => p.id))
-        .in('orders.status', ['paid', 'completed']);
+        .select('product_id')
+        .in('id', salesData.map(s => s.order_item_id).filter(Boolean) as string[]);
 
-      // Tally sales per product
       const salesMap = new Map<string, number>();
-      (salesData || []).forEach((item: any) => {
-        const pid = item.product_id;
-        salesMap.set(pid, (salesMap.get(pid) || 0) + 1);
+      (orderItems || []).forEach((item: any) => {
+        if (item.product_id) {
+          salesMap.set(item.product_id, (salesMap.get(item.product_id) || 0) + 1);
+        }
       });
 
-      // Attach sales count and sort
+      // Enrich and sort
       const enriched = products.map(p => ({
         ...p,
         sales_count: salesMap.get(p.id) || 0,

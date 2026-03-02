@@ -23,6 +23,7 @@ export function RevenueChart() {
         .select('created_at, net_amount')
         .eq('store_id', store.id)
         .eq('type', 'sale')
+        .is('refunded_at', null)
         .gte('created_at', startDate)
         .order('created_at', { ascending: true });
 
