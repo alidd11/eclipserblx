@@ -648,12 +648,13 @@ export default function SellerProductEditor() {
                   <Label htmlFor="category">Category</Label>
                   <Select
                     value={formData.category_id}
-                    onValueChange={(value) => setFormData({ ...formData, category_id: value })}
+                    onValueChange={(value) => setFormData({ ...formData, category_id: value === '__none__' ? '' : value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="__none__" className="text-muted-foreground">No category</SelectItem>
                       {categories?.map((cat: any) => (
                         <SelectItem key={cat.id} value={cat.id}>
                           {cat.name}

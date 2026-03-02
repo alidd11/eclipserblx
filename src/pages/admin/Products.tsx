@@ -345,10 +345,22 @@ export default function AdminProducts() {
       const originalProduct = isEditing ? products?.find(p => p.id === data.id) : null;
       const isSellerProduct = originalProduct?.is_seller_product === true;
 
+      const priceVal = parseFloat(data.price);
+      
+      // Ensure slug has uniqueness suffix for new products
+      let slug = data.slug;
+      if (!data.id && slug) {
+        // Only add suffix if it doesn't already have one (8-char hex at end)
+        if (!/^.+-[a-f0-9]{8}$/.test(slug)) {
+          slug = slug + '-' + crypto.randomUUID().slice(0, 8);
+        }
+      }
+
       const payload: Record<string, any> = {
         name: data.name,
-        slug: data.slug,
-        price: parseFloat(data.price),
+        slug,
+        price: priceVal,
+        seller_price: priceVal,
         description: data.description || null,
         category_id: data.category_id || null,
         is_active: data.is_active,
@@ -391,7 +403,12 @@ export default function AdminProducts() {
 
       } else {
         const { data: newProduct, error } = await supabase.from('products').insert(payload as any).select().single();
-        if (error) throw error;
+        if (error) {
+          if (error.code === '23505' || error.message?.includes('duplicate')) {
+            throw new Error('A product with this URL slug already exists. Please change the slug.');
+          }
+          throw error;
+        }
 
         // Translate new product in background
         if (newProduct) {
