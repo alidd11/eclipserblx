@@ -281,7 +281,7 @@ export const AppRoutes = forwardRef<HTMLDivElement>(function AppRoutes(_, _ref) 
         <Route path="/bot-dashboard" element={<BotDashboard />} />
         <Route path="/notifications" element={<NotificationPreferences />} />
         <Route path="/eclipse-plus" element={<EclipsePlus />} />
-        <Route path="/marketplace" element={<Navigate to="/" replace />} />
+        <Route path="/marketplace" element={<Products />} />
         <Route path="/stores" element={<AllStores />} />
         <Route path="/affiliate" element={<Affiliate />} />
         <Route path="/recruiter" element={<Recruiter />} />
