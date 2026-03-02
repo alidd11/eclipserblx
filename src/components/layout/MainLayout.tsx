@@ -3,7 +3,6 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { CustomerSidebar } from './CustomerSidebar';
 import { UniversalBreadcrumb } from './UniversalBreadcrumb';
-import { safeStorage } from '@/lib/safeStorage';
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
 import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
