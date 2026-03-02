@@ -1,40 +1,41 @@
+import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useRealtimeOrders } from '@/hooks/useRealtimeOrders';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { StoreHealthScore } from '@/components/seller/StoreHealthScore';
-import { NotificationCenter } from '@/components/seller/NotificationCenter';
 import { FileReviewConsentBanner } from '@/components/seller/FileReviewConsentBanner';
 import { SellerHeroBanner } from '@/components/seller/SellerHeroBanner';
 import { StoreSetupChecklist } from '@/components/seller/StoreSetupChecklist';
 import { SellerOnboardingWizard } from '@/components/seller/SellerOnboardingWizard';
 import { RevenueChart } from '@/components/seller/RevenueChart';
-import { TopProductsLeaderboard } from '@/components/seller/TopProductsLeaderboard';
-import { CustomerDemographics } from '@/components/seller/CustomerDemographics';
-import { PayoutTimeline } from '@/components/seller/PayoutTimeline';
-import { StorePreviewCard } from '@/components/seller/StorePreviewCard';
+import { RevenueSummaryStats } from '@/components/seller/RevenueSummaryStats';
+import { ProductHealthDonut } from '@/components/seller/ProductHealthDonut';
+import { RecentOrdersTable } from '@/components/seller/RecentOrdersTable';
+import { TosBanner, NonCompliantBanner, PendingReviewBanner } from '@/components/seller/banners';
+import { DashboardCardSkeleton, StatRowSkeleton } from '@/components/seller/DashboardSkeletons';
 import { motion } from 'framer-motion';
 import { 
-  Package, 
-  ShoppingCart, 
-  Plus,
-  Clock,
-  Scale,
-  AlertTriangle,
-  BarChart3,
-  Tag,
-  DollarSign,
-  LayoutGrid,
-  Megaphone
+  Package, ShoppingCart, Plus, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone
 } from 'lucide-react';
+
+// Lazy-load below-fold heavy widgets
+const TopProductsLeaderboard = lazy(() => import('@/components/seller/TopProductsLeaderboard').then(m => ({ default: m.TopProductsLeaderboard })));
+const NotificationCenter = lazy(() => import('@/components/seller/NotificationCenter').then(m => ({ default: m.NotificationCenter })));
+const StoreHealthScore = lazy(() => import('@/components/seller/StoreHealthScore').then(m => ({ default: m.StoreHealthScore })));
+const CustomerDemographics = lazy(() => import('@/components/seller/CustomerDemographics').then(m => ({ default: m.CustomerDemographics })));
+const PayoutTimeline = lazy(() => import('@/components/seller/PayoutTimeline').then(m => ({ default: m.PayoutTimeline })));
+const StorePreviewCard = lazy(() => import('@/components/seller/StorePreviewCard').then(m => ({ default: m.StorePreviewCard })));
 
 const CURRENT_TOS_VERSION = "1.0";
 
 export default function SellerDashboard() {
   const { store } = useSellerStatus();
+
+  // Real-time order notifications
+  useRealtimeOrders();
 
   // Check if TOS is signed
   const { data: hasSignedTos, isLoading: tosLoading } = useQuery({
@@ -91,71 +92,18 @@ export default function SellerDashboard() {
   return (
     <SellerLayout>
       <div className="max-w-6xl mx-auto space-y-5">
-        {/* TOS Warning Banner */}
-        {!tosLoading && !hasSignedTos && (
-          <Card className="border-amber-500/50 bg-amber-500/5">
-            <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-4 py-4">
-              <div className="flex items-center gap-3 flex-1">
-                <div className="p-2 rounded-lg bg-amber-500/10">
-                  <AlertTriangle className="h-5 w-5 text-amber-500" />
-                </div>
-                <div>
-                  <p className="font-semibold text-amber-600 dark:text-amber-400">
-                    Store Inactive - Agreement Required
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Your store is not visible until you sign the Seller Terms of Service.
-                  </p>
-                </div>
-              </div>
-              <Button asChild className="w-full sm:w-auto">
-                <Link to="/seller/documents/terms">
-                  <Scale className="h-4 w-4 mr-2" />
-                  Sign Agreement
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* File Review Consent Banners */}
+        {/* ── Banners ── */}
+        <TosBanner isLoading={tosLoading} hasSigned={!!hasSignedTos} />
         <FileReviewConsentBanner />
+        <NonCompliantBanner count={productStats?.nonCompliant || 0} />
 
-        {/* Non-compliant Products Banner */}
-        {productStats && productStats.nonCompliant > 0 && (
-          <Card className="border-destructive/50 bg-destructive/5">
-            <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-4 py-4">
-              <div className="flex items-center gap-3 flex-1">
-                <div className="p-2 rounded-lg bg-destructive/10">
-                  <AlertTriangle className="h-5 w-5 text-destructive" />
-                </div>
-                <div>
-                  <p className="font-semibold text-destructive">
-                    {productStats.nonCompliant} Product{productStats.nonCompliant > 1 ? 's' : ''} Need Attention
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Some products are missing a file or have a description under 100 characters. Please update them.
-                  </p>
-                </div>
-              </div>
-              <Button variant="destructive" size="sm" asChild>
-                <Link to="/seller/products">
-                  <Package className="h-4 w-4 mr-2" />
-                  Fix Products
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* ── Onboarding Wizard (modal, shows once for new sellers) ── */}
+        {/* ── Onboarding ── */}
         <SellerOnboardingWizard />
-
-        {/* ── Hero Banner ── */}
         <SellerHeroBanner />
-
-        {/* ── Store Setup Checklist (soft nudge) ── */}
         <StoreSetupChecklist />
+
+        {/* ── Revenue Summary Stats ── */}
+        <RevenueSummaryStats />
 
         {/* ── Quick Actions Grid ── */}
         <Card>
@@ -163,8 +111,8 @@ export default function SellerDashboard() {
             <CardTitle className="text-base font-medium">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="grid grid-cols-4 lg:grid-cols-7 gap-2">
-              {quickActions.map((action, i) => (
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+              {quickActions.map((action) => (
                 <Link key={action.href} to={action.href}>
                   <motion.div
                     whileHover={{ y: -2, scale: 1.02 }}
@@ -186,42 +134,46 @@ export default function SellerDashboard() {
           </CardContent>
         </Card>
 
-        {/* ── Revenue Chart + Top Products ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <RevenueChart />
-          <TopProductsLeaderboard />
+        {/* ── Revenue Chart + Product Health ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div className="lg:col-span-2">
+            <RevenueChart />
+          </div>
+          <ProductHealthDonut />
         </div>
 
-        {/* ── Activity Feed + Store Health ── */}
+        {/* ── Recent Orders Table ── */}
+        <RecentOrdersTable />
+
+        {/* ── Top Products + Activity Feed ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <NotificationCenter />
-          <StoreHealthScore />
+          <Suspense fallback={<DashboardCardSkeleton />}>
+            <TopProductsLeaderboard />
+          </Suspense>
+          <Suspense fallback={<DashboardCardSkeleton />}>
+            <NotificationCenter />
+          </Suspense>
         </div>
 
-        {/* ── Demographics + Payout Timeline + Store Preview ── */}
+        {/* ── Store Health + Demographics + Payout + Preview ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <CustomerDemographics />
-          <PayoutTimeline />
-          <StorePreviewCard />
+          <Suspense fallback={<DashboardCardSkeleton />}>
+            <StoreHealthScore />
+          </Suspense>
+          <Suspense fallback={<DashboardCardSkeleton />}>
+            <CustomerDemographics />
+          </Suspense>
+          <Suspense fallback={<DashboardCardSkeleton />}>
+            <PayoutTimeline />
+          </Suspense>
         </div>
 
-        {/* Pending Items Alert */}
-        {productStats && productStats.pending > 0 && (
-          <Card className="border-yellow-500/50 bg-yellow-500/5">
-            <CardContent className="flex items-center gap-4 py-4">
-              <Clock className="h-8 w-8 text-yellow-500" />
-              <div className="flex-1">
-                <p className="font-medium">Products Pending Review</p>
-                <p className="text-sm text-muted-foreground">
-                  You have {productStats.pending} product(s) awaiting moderation approval.
-                </p>
-              </div>
-              <Button variant="outline" asChild>
-                <Link to="/seller/products">View Products</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        <Suspense fallback={<DashboardCardSkeleton />}>
+          <StorePreviewCard />
+        </Suspense>
+
+        {/* ── Pending Review Banner ── */}
+        <PendingReviewBanner count={productStats?.pending || 0} />
       </div>
     </SellerLayout>
   );
