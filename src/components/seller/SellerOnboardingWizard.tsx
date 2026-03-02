@@ -41,10 +41,13 @@ interface Step {
 
 export function SellerOnboardingWizard() {
   const { store } = useSellerStatus();
-  const [dismissed, setDismissed] = useState(() => {
-    if (!store?.id) return true;
-    return safeStorage.getItem(`${ONBOARDING_DISMISSED_KEY}-${store.id}`) === 'true';
-  });
+  const [dismissed, setDismissed] = useState(false);
+
+  // Sync dismissed state when store loads
+  const storeId = store?.id;
+  const isDismissedInStorage = storeId
+    ? safeStorage.getItem(`${ONBOARDING_DISMISSED_KEY}-${storeId}`) === 'true'
+    : false;
 
   const { data: setupData, isLoading } = useQuery({
     queryKey: ['seller-onboarding-wizard', store?.id],
@@ -85,7 +88,7 @@ export function SellerOnboardingWizard() {
         hasSocials,
       };
     },
-    enabled: !!store?.id && !dismissed,
+    enabled: !!store?.id && !isDismissedInStorage && !dismissed,
   });
 
   const handleDismiss = () => {
@@ -95,7 +98,7 @@ export function SellerOnboardingWizard() {
     setDismissed(true);
   };
 
-  if (dismissed || isLoading || !setupData || !store) return null;
+  if (dismissed || isDismissedInStorage || isLoading || !setupData || !store) return null;
 
   const steps: Step[] = [
     {
@@ -156,7 +159,7 @@ export function SellerOnboardingWizard() {
   const nextStep = steps.find((s) => !s.completed);
 
   return (
-    <Dialog open={!dismissed} onOpenChange={(open) => !open && handleDismiss()}>
+    <Dialog open={!dismissed && !isDismissedInStorage} onOpenChange={(open) => !open && handleDismiss()}>
       <DialogContent className="sm:max-w-lg max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
