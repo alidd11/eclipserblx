@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,6 +31,11 @@ serve(async (req) => {
   );
 
   try {
+    // Rate limit
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.WRITE, identifier: clientIp, action: 'claim-free-product' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     logStep("Function started");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
@@ -48,7 +54,12 @@ serve(async (req) => {
 
     // Get product ID from request
     const { productId } = await req.json();
-    if (!productId) throw new Error("Product ID is required");
+    
+    // Validate productId is a valid UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!productId || typeof productId !== 'string' || !uuidRegex.test(productId)) {
+      throw new Error("Invalid product ID");
+    }
     logStep("Product ID received", { productId });
 
     // Verify the user has an active Eclipse+ subscription
