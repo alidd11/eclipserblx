@@ -9060,6 +9060,10 @@ export type Database = {
         Args: { p_action_type: string; p_identifier: string }
         Returns: undefined
       }
+      request_seller_payout: {
+        Args: { p_amount: number; p_seller_id: string; p_store_id: string }
+        Returns: string
+      }
       restore_deleted: {
         Args: { p_record_id: string; p_table_name: string }
         Returns: boolean
