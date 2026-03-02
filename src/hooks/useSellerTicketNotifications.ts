@@ -60,7 +60,6 @@ export function useSellerTicketNotifications() {
           event: 'UPDATE',
           schema: 'public',
           table: 'seller_support_tickets',
-          filter: 'escalated_at=neq.null',
         },
         async (payload) => {
           const ticket = payload.new as TicketUpdate;
