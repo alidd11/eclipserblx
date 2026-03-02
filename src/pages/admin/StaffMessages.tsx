@@ -589,7 +589,19 @@ function StaffMessagesContent() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'staff_chat_messages' },
-        () => queryClient.invalidateQueries({ queryKey: ['staff-chat-messages'] })
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ['staff-chat-messages'] });
+          // Push notification when window is hidden and message is from someone else
+          if (document.hidden && payload.eventType === 'INSERT' && payload.new?.user_id !== user?.id) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('New Staff Message', {
+                body: (payload.new as any)?.message?.substring(0, 100) || 'New message',
+                tag: `staff-chat-${payload.new?.id}`,
+                icon: '/favicon.ico',
+              });
+            }
+          }
+        }
       )
       .on(
         'postgres_changes',
@@ -603,7 +615,7 @@ function StaffMessagesContent() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, user?.id]);
 
   // Presence for typing indicators
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Mail, Trash2, Eye, MessageSquare, Search, Filter, CheckCircle, Clock, AlertCircle, Send, Loader2, FileText, User, Reply } from 'lucide-react';
@@ -171,6 +171,27 @@ export default function ContactMessages() {
 
   // Staff should only see customer name, not email
   const displayCustomerInfo = (msg: ContactMessage) => msg.name;
+
+  // Realtime subscription for auto-refresh
+  useEffect(() => {
+    const channel = supabase
+      .channel('contact-messages-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'contact_messages' },
+        () => queryClient.invalidateQueries({ queryKey: ['contact-messages'] })
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'contact_message_replies' },
+        () => queryClient.invalidateQueries({ queryKey: ['contact-message-replies'] })
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ['contact-messages'],

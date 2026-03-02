@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { EclipseLogo } from '@/components/ui/EclipseLogo';
 import { hapticTap } from '@/lib/haptics';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 
 interface Notification {
   id: string;
@@ -35,6 +36,7 @@ export default function Messages() {
   usePageMeta({ title: 'Notifications', description: 'View your Eclipse notifications, order updates and badge awards.', canonicalPath: '/messages' });
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { playSound } = useNotificationSound();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -60,6 +62,15 @@ export default function Messages() {
         },
         () => {
           fetchNotifications();
+          playSound();
+          // Push notification when window is hidden
+          if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+            new Notification('New Message', {
+              body: 'You have a new notification',
+              tag: 'messages-page-update',
+              icon: '/favicon.ico',
+            });
+          }
         }
       )
       .subscribe();

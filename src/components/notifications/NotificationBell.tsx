@@ -13,6 +13,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Badge, Award, Tag, ShoppingCart, MessageCircle, Trophy, Percent } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 
 interface Notification {
   id: string;
@@ -35,6 +36,7 @@ const notificationIcons: Record<string, React.ReactNode> = {
 export function NotificationBell() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { playSound } = useNotificationSound();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -60,6 +62,16 @@ export function NotificationBell() {
           const newNotification = payload.new as Notification;
           setNotifications((prev) => [newNotification, ...prev]);
           setUnreadCount((prev) => prev + 1);
+          
+          // Play sound and send browser push notification
+          playSound();
+          if ('Notification' in window && window.Notification.permission === 'granted' && document.hidden) {
+            new window.Notification(newNotification.title, {
+              body: newNotification.message,
+              tag: `notification-${newNotification.id}`,
+              icon: '/favicon.ico',
+            });
+          }
         }
       )
       .subscribe();
