@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Coins, Megaphone } from 'lucide-react';
+import { Coins, Megaphone, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface CreatePromotionDialogProps {
@@ -58,6 +58,27 @@ export function CreatePromotionDialog({ open, onOpenChange }: CreatePromotionDia
     enabled: open && !!store?.id,
   });
 
+  // Check for existing pending bids to prevent duplicates
+  const { data: existingBids } = useQuery({
+    queryKey: ['seller-existing-bids', user?.id, productId, slotType],
+    queryFn: async () => {
+      if (!user || !productId) return [];
+      const { data, error } = await supabase
+        .from('product_promotions')
+        .select('id, slot_type, max_bid')
+        .eq('user_id', user.id)
+        .eq('product_id', productId)
+        .eq('slot_type', slotType)
+        .eq('status', 'pending_auction');
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: open && !!user && !!productId,
+  });
+
+  const hasDuplicateBid = (existingBids?.length ?? 0) > 0;
+  const insufficientBalance = bidAmount > balance;
+
   const selectedProduct = products?.find(p => p.id === productId);
 
   const createPromotion = useMutation({
@@ -65,6 +86,8 @@ export function CreatePromotionDialog({ open, onOpenChange }: CreatePromotionDia
       if (!user || !store) throw new Error('Not authenticated');
       if (bidAmount < 5) throw new Error('Minimum bid is 5 credits');
       if (!productId) throw new Error('Select a product');
+      if (insufficientBalance) throw new Error(`Insufficient credits. You need £${bidAmount} but only have £${balance.toFixed(2)}.`);
+      if (hasDuplicateBid) throw new Error('You already have a pending bid for this product in this slot. Cancel it first or wait for resolution.');
 
       const { error } = await supabase.from('product_promotions').insert({
         store_id: store.id,
@@ -80,6 +103,7 @@ export function CreatePromotionDialog({ open, onOpenChange }: CreatePromotionDia
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seller-promotions'] });
+      queryClient.invalidateQueries({ queryKey: ['seller-existing-bids'] });
       toast.success('Promotion bid created! It will be processed in the next weekly auction.');
       onOpenChange(false);
       setProductId('');
@@ -170,13 +194,27 @@ export function CreatePromotionDialog({ open, onOpenChange }: CreatePromotionDia
               Highest bidder wins. Credits are deducted when you win a weekly auction slot.
             </p>
           </div>
+
+          {/* Warnings */}
+          {insufficientBalance && (
+            <div className="flex items-start gap-2 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs">
+              <AlertTriangle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+              <span>Insufficient credits. You need £{bidAmount} but only have £{balance.toFixed(2)}. <Link to="/wallet" className="underline font-medium">Top up</Link></span>
+            </div>
+          )}
+          {hasDuplicateBid && (
+            <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs">
+              <AlertTriangle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+              <span>You already have a pending bid for this product in this slot. Cancel it first or wait for the auction.</span>
+            </div>
+          )}
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button
             onClick={() => createPromotion.mutate()}
-            disabled={!productId || bidAmount < 5 || createPromotion.isPending}
+            disabled={!productId || bidAmount < 5 || createPromotion.isPending || insufficientBalance || hasDuplicateBid}
           >
             {createPromotion.isPending ? 'Creating...' : 'Place Bid'}
           </Button>
