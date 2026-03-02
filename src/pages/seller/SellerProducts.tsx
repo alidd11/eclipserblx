@@ -177,10 +177,12 @@ export default function SellerProducts() {
         releaseAt = new Date(data.release_at).toISOString();
       }
 
+      const priceVal = parseFloat(data.price) || 0;
       const productData: Record<string, any> = {
         name: data.name,
         slug: data.slug,
-        price: parseFloat(data.price) || 0,
+        price: priceVal,
+        seller_price: priceVal,
         description: data.description,
         category_id: data.category_id || null,
         is_active: data.is_active,
@@ -479,6 +481,11 @@ export default function SellerProducts() {
     }
     if (!form.price || parseFloat(form.price) <= 0) {
       toast.error('Please enter a valid price');
+      return;
+    }
+    // Validate slug format if manually entered
+    if (form.slug && !/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(form.slug) && form.slug.length > 1) {
+      toast.error('URL slug can only contain lowercase letters, numbers, and hyphens');
       return;
     }
     if (!form.asset_file_url) {
