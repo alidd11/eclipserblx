@@ -12,11 +12,24 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[TRACK-AD-CLICK] ${step}${detailsStr}`);
 };
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // Parse user agent for device type
 const getDeviceType = (ua: string): string => {
   if (/tablet|ipad|playbook|silk/i.test(ua)) return 'tablet';
   if (/mobile|iphone|ipod|android|blackberry|opera mini|iemobile/i.test(ua)) return 'mobile';
   return 'desktop';
+};
+
+// Validate URL to prevent open redirect
+const isValidRedirectUrl = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    // Only allow http/https protocols
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
 };
 
 serve(async (req) => {
@@ -36,29 +49,23 @@ serve(async (req) => {
     return rateLimitResponse(rateLimitResult, corsHeaders);
   }
 
+  const FALLBACK_URL = "https://eclipserblx.com/";
+
   try {
     logStep("Function started");
 
     const url = new URL(req.url);
     const adId = url.searchParams.get('id');
     
-    if (!adId) {
-      logStep("Missing ad ID");
-      return new Response("Missing advertisement ID", { status: 400 });
+    if (!adId || !UUID_REGEX.test(adId)) {
+      logStep("Invalid ad ID");
+      return new Response(null, { status: 302, headers: { ...corsHeaders, "Location": FALLBACK_URL } });
     }
-
-    // Validate UUID format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(adId)) {
-      logStep("Invalid ad ID format");
-      return new Response("Invalid advertisement ID", { status: 400 });
-    }
-
-    logStep("Processing click for ad", { adId });
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
     );
 
     // Get the advertisement and its redirect URL
@@ -68,15 +75,8 @@ serve(async (req) => {
       .eq("id", adId)
       .maybeSingle();
 
-    if (adError || !ad) {
-      logStep("Advertisement not found", { adId, error: adError });
-      return new Response("Advertisement not found", { status: 404 });
-    }
-
-    // Only track clicks for posted ads
-    if (ad.status !== 'posted') {
-      logStep("Ad not in posted status", { status: ad.status });
-      return new Response("Advertisement not active", { status: 404 });
+    if (adError || !ad || ad.status !== 'posted') {
+      return new Response(null, { status: 302, headers: { ...corsHeaders, "Location": FALLBACK_URL } });
     }
 
     // Extract visitor info
@@ -84,8 +84,8 @@ serve(async (req) => {
     const referrer = req.headers.get("referer") || null;
     const deviceType = getDeviceType(userAgent);
     
-    // Generate a simple visitor ID from user agent + date (for unique click tracking)
-    const visitorId = btoa(userAgent + new Date().toDateString()).substring(0, 32);
+    // Generate visitor ID from IP + user agent + date (for unique click tracking)
+    const visitorId = btoa(clientIp + userAgent.substring(0, 100) + new Date().toDateString()).substring(0, 32);
 
     // Check if this is a unique click (same visitor hasn't clicked today)
     const { data: existingClick } = await supabaseAdmin
@@ -104,26 +104,21 @@ serve(async (req) => {
       .insert({
         advertisement_id: adId,
         visitor_id: visitorId,
-        referrer: referrer,
-        user_agent: userAgent.substring(0, 500), // Limit length
+        referrer: referrer ? referrer.substring(0, 500) : null,
+        user_agent: userAgent.substring(0, 500),
         device_type: deviceType,
       });
 
-    // Atomic increment via database function to prevent race conditions
+    // Atomic increment via database function
     await supabaseAdmin.rpc('increment_ad_clicks', {
       p_ad_id: adId,
       p_is_unique: isUniqueClick,
     });
 
-    logStep("Click recorded successfully", { 
-      adId, 
-      isUniqueClick, 
-      deviceType,
-      redirectTo: ad.link_url 
-    });
+    logStep("Click recorded", { adId, isUniqueClick, deviceType });
 
-    // Redirect to the advertisement's link URL or a fallback
-    const redirectUrl = ad.link_url || "https://eclipserblx.com/";
+    // Validate redirect URL to prevent open redirect attacks
+    const redirectUrl = ad.link_url && isValidRedirectUrl(ad.link_url) ? ad.link_url : FALLBACK_URL;
 
     return new Response(null, {
       status: 302,
@@ -134,16 +129,10 @@ serve(async (req) => {
       },
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message: errorMessage });
-    
-    // On error, redirect to home page
+    logStep("ERROR", { message: error instanceof Error ? error.message : String(error) });
     return new Response(null, {
       status: 302,
-      headers: {
-        ...corsHeaders,
-        "Location": "/",
-      },
+      headers: { ...corsHeaders, "Location": FALLBACK_URL },
     });
   }
 });

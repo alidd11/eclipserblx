@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,6 +19,11 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limit
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({ ...RATE_LIMITS.WRITE, identifier: clientIp, action: 'create-credit-checkout' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     logStep("Function started");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
@@ -25,7 +31,8 @@ serve(async (req) => {
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
     );
 
     // Authenticate user
@@ -38,20 +45,22 @@ serve(async (req) => {
     
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    logStep("User authenticated", { userId: user.id });
 
     // Parse request body
     const { amount } = await req.json();
     
     // Validate amount (minimum £1.00, maximum £500.00)
     const amountNum = parseFloat(amount);
-    if (isNaN(amountNum) || amountNum < 1 || amountNum > 500) {
+    if (isNaN(amountNum) || !isFinite(amountNum) || amountNum < 1 || amountNum > 500) {
       throw new Error("Amount must be between £1.00 and £500.00");
     }
 
     // Round to 2 decimal places
     const creditAmount = Math.round(amountNum * 100) / 100;
     const stripeAmount = Math.round(creditAmount * 100); // Convert to pence
+
+    if (stripeAmount < 100) throw new Error("Minimum amount is £1.00");
 
     logStep("Credit purchase request", { creditAmount, stripeAmount });
 
@@ -62,8 +71,10 @@ serve(async (req) => {
     let customerId: string | undefined;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
-      logStep("Found existing customer", { customerId });
     }
+
+    // Validate origin
+    const origin = req.headers.get("origin") || "https://eclipserblx.com";
 
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
@@ -83,8 +94,8 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/credits?success=true&amount=${creditAmount}`,
-      cancel_url: `${req.headers.get("origin")}/credits?canceled=true`,
+      success_url: `${origin}/credits?success=true&amount=${creditAmount}`,
+      cancel_url: `${origin}/credits?canceled=true`,
       metadata: {
         type: "credit_purchase",
         user_id: user.id,
@@ -92,7 +103,7 @@ serve(async (req) => {
       },
     });
 
-    logStep("Checkout session created", { sessionId: session.id, url: session.url });
+    logStep("Checkout session created", { sessionId: session.id });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
