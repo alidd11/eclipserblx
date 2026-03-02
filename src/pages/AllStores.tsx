@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 // ---------- Types ----------
 
@@ -252,6 +253,7 @@ function StoreSkeleton({ large }: { large?: boolean }) {
 // ---------- Page ----------
 
 export default function AllStores() {
+  usePageMeta({ title: 'All Stores', description: 'Discover verified stores on Eclipse marketplace. Find trusted sellers of Roblox scripts, vehicles, maps and game assets.', canonicalPath: '/stores' });
   const { data: stores, isLoading } = useAllStores();
   const { data: categories } = useStoreCategories();
   const [search, setSearch] = useState('');

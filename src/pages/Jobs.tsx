@@ -14,6 +14,7 @@ import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNoti
 import { MainLayout } from '@/components/layout/MainLayout';
 import { jobApplicationSchema, emailCheckSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 interface JobChannel {
   id: string;
@@ -356,6 +357,7 @@ function ApplicationStatusCheck() {
 }
 
 export default function Jobs() {
+  usePageMeta({ title: 'Jobs', description: 'Join the Eclipse team. View open positions and apply to help build the best Roblox asset marketplace.', canonicalPath: '/jobs' });
   const [openDialog, setOpenDialog] = useState<string | null>(null);
 
   // Fetch job channels from database

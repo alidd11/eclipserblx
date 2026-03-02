@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { useQuery } from '@tanstack/react-query';
 import { 
   Download, 
@@ -112,6 +113,7 @@ const formatPaymentMethod = (method: string | null): string => {
 const formatOrderId = (id: string): string => `#${id.slice(-6).toUpperCase()}`;
 
 export default function MyPurchases() {
+  usePageMeta({ title: 'My Purchases', description: 'View and download your purchased products on Eclipse.', canonicalPath: '/purchases' });
   usePageTracking({ pagePath: '/purchases' });
   const { user, session } = useAuth();
   const { formatPrice } = useCurrency();

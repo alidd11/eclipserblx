@@ -14,6 +14,7 @@ import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNoti
 import { PaymentMethodDisplay } from '@/components/payments/PaymentMethodDisplay';
 import { EmbeddedPaymentModal } from '@/components/payments/EmbeddedPaymentModal';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { useTranslation } from 'react-i18next';
 
 interface AppliedDiscount {
@@ -26,6 +27,7 @@ interface AppliedDiscount {
 
 export default function Checkout() {
   usePageTracking({ pagePath: '/checkout' });
+  usePageMeta({ title: 'Checkout', canonicalPath: '/checkout' });
   const { t } = useTranslation();
   const { items, total, clearCart } = useCart();
   const { user, session, loading } = useAuth();

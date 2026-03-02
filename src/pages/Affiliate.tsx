@@ -20,10 +20,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { format } from 'date-fns';
 import { Link, useSearchParams } from 'react-router-dom';
 
 export default function Affiliate() {
+  usePageMeta({ title: 'Affiliate Programme', description: 'Earn commissions by referring customers to Eclipse marketplace. Join our affiliate programme today.', canonicalPath: '/affiliate' });
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();

@@ -34,6 +34,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { useProductTranslation } from '@/hooks/useProductTranslation';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { BreadcrumbSchema } from '@/components/seo/StructuredData';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -114,6 +115,18 @@ export default function ProductDetail() {
         : undefined,
     canonicalPath: slug ? `/products/${slug}` : undefined,
   });
+
+  // Breadcrumb structured data for rich results
+  const breadcrumbItems = useMemo(() => {
+    const items = [{ name: 'Home', url: 'https://eclipserblx.com/' }];
+    if (product?.categories?.name && product?.categories?.slug) {
+      items.push({ name: product.categories.name, url: `https://eclipserblx.com/products?category=${product.categories.slug}` });
+    }
+    if (product?.name) {
+      items.push({ name: product.name, url: `https://eclipserblx.com/products/${slug}` });
+    }
+    return items;
+  }, [product?.categories?.name, product?.categories?.slug, product?.name, slug]);
 
   const { data: relatedProducts } = useQuery({
     queryKey: ['related-products', product?.category_id, isStaff],
@@ -384,6 +397,7 @@ export default function ProductDetail() {
 
   return (
     <MainLayout>
+      {product && breadcrumbItems.length > 1 && <BreadcrumbSchema items={breadcrumbItems} />}
       <PullToRefresh onRefresh={handleRefresh}>
         <div className="container py-8 space-y-8 overflow-x-hidden max-w-full">
         

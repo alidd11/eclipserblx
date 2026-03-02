@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { AdSlotPicker, SelectedSlot } from '@/components/ads/AdSlotPicker';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 import { EmbeddedPaymentModal } from '@/components/payments/EmbeddedPaymentModal';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-GB', {
@@ -44,6 +45,7 @@ const tierColors: Record<string, string> = {
 };
 
 export default function Advertise() {
+  usePageMeta({ title: 'Advertise', description: 'Promote your products and Discord server on Eclipse. Reach thousands of Roblox roleplay enthusiasts.', canonicalPath: '/advertise' });
   const { user, loading: authLoading, session } = useAuth();
   const [searchParams] = useSearchParams();
   

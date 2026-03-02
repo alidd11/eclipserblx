@@ -7,13 +7,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Heart, ShoppingBag, Trash2, Store, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useCurrency } from '@/hooks/useCurrency';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 const WISHLIST_ITEMS_PER_PAGE = 10;
 
 export default function Wishlist() {
+  usePageMeta({ title: 'My Wishlist', description: 'Your saved products on Eclipse. Keep track of items you love and buy them when ready.', canonicalPath: '/wishlist' });
   const { user } = useAuth();
   const navigate = useNavigate();
   const { data: wishlistItems, isLoading } = useWishlistItems();
@@ -71,21 +74,13 @@ export default function Wishlist() {
             ))}
           </div>
         ) : !wishlistItems || wishlistItems.length === 0 ? (
-          <Card>
-            <CardContent className="py-16 text-center">
-              <Heart className="h-16 w-16 mx-auto mb-6 text-muted-foreground opacity-40" />
-              <h2 className="text-xl font-semibold mb-2">Your wishlist is empty</h2>
-              <p className="text-muted-foreground mb-6">
-                Browse products and click the heart icon to save them here.
-              </p>
-              <Button asChild>
-                <Link to="/products">
-                  <ShoppingBag className="h-4 w-4 mr-2" />
-                  Browse Products
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={Heart}
+            title="Your wishlist is empty"
+            description="Browse products and click the heart icon to save them here."
+            actionLabel="Browse Products"
+            actionTo="/products"
+          />
         ) : (
           <div className="space-y-4">
             {paginatedItems.map((item) => {

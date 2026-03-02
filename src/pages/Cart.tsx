@@ -8,10 +8,12 @@ import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useCurrency } from '@/hooks/useCurrency';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { useTranslation } from 'react-i18next';
 
 export default function Cart() {
   usePageTracking({ pagePath: '/cart' });
+  usePageMeta({ title: 'Your Cart', description: 'Review items in your Eclipse cart before checkout. Secure payments, instant delivery.', canonicalPath: '/cart' });
   const { t } = useTranslation();
   const { items, removeItem, clearCart, total } = useCart();
   const { isSubscribed, getMemberPrice, isEligibleForDiscount, getDiscountPercent, isLoading: subscriptionLoading } = useSubscription();

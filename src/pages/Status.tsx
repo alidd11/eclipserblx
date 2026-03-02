@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { format, formatDistanceToNow } from 'date-fns';
 
 interface Incident {
@@ -100,6 +101,7 @@ const severityConfig = {
 };
 
 export default function Status() {
+  usePageMeta({ title: 'System Status', description: 'Check the current status of Eclipse services including payments, authentication, database and CDN.', canonicalPath: '/status' });
   const [services, setServices] = useState<ServiceStatus[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [overallStatus, setOverallStatus] = useState<StatusLevel>('checking');
