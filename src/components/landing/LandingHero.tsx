@@ -77,7 +77,7 @@ export function LandingHero() {
             {/* CTA hierarchy: one primary, rest are text links */}
             <div className="flex items-center gap-6 mb-6">
               <Link to="/products">
-                <Button size="sm" className="h-9 px-5 text-xs font-semibold">
+                <Button size="sm" className="h-9 px-5 text-xs font-semibold uppercase tracking-wide">
                   Browse Marketplace
                   <ArrowRight className="ml-2 h-3.5 w-3.5" />
                 </Button>
@@ -151,7 +151,7 @@ export function LandingHero() {
 
             <div className="mb-5">
               <Link to="/products" className="block">
-                <Button size="sm" className="w-full h-10 text-sm font-semibold">
+                <Button size="sm" className="w-full h-10 text-sm font-semibold uppercase tracking-wide">
                   Browse Marketplace
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
