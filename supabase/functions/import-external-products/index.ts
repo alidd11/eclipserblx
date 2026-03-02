@@ -547,16 +547,54 @@ function parseBuiltByBitProduct(markdown: string, url: string, html?: string): E
   };
 }
 
+// ─── Error categorisation ──────────────────────────────────────────────────────
+
+/** Returns true for errors that are worth retrying (network, timeout, 429, 5xx) */
+function isRetryableError(error: string | undefined): boolean {
+  if (!error) return false;
+  const lower = error.toLowerCase();
+  return (
+    lower.includes('timeout') ||
+    lower.includes('abort') ||
+    lower.includes('network') ||
+    lower.includes('econnreset') ||
+    lower.includes('429') ||
+    lower.includes('rate limit') ||
+    /\b5\d{2}\b/.test(lower) || // 5xx status codes
+    lower.includes('failed to fetch') ||
+    lower.includes('failed after retries')
+  );
+}
+
+/** Convert raw error strings into user-friendly messages */
+function friendlyErrorMessage(raw: string): string {
+  const lower = raw.toLowerCase();
+  if (lower.includes('already imported')) return 'Already imported';
+  if (lower.includes('could not parse')) return 'Could not read product details from page';
+  if (lower.includes('timeout') || lower.includes('abort')) return 'Request timed out — the page took too long to load';
+  if (lower.includes('429') || lower.includes('rate limit')) return 'Rate limited — too many requests, try again shortly';
+  if (/\b5\d{2}\b/.test(lower)) return 'Server error — the external site had an issue';
+  if (lower.includes('network') || lower.includes('failed to fetch')) return 'Network error — could not reach the page';
+  if (lower.includes('not configured')) return 'Import service not configured';
+  if (lower.includes('db error')) return 'Database error while saving product';
+  return raw;
+}
+
 // ─── Scraping with retry ───────────────────────────────────────────────────────
+
+const SCRAPE_TIMEOUT_MS = 30_000; // 30 seconds per scrape attempt
 
 async function scrapeUrl(
   url: string,
   apiKey: string,
   retries = 2,
-): Promise<{ success: boolean; markdown?: string; html?: string; links?: string[]; error?: string }> {
+): Promise<{ success: boolean; markdown?: string; html?: string; links?: string[]; error?: string; retryable?: boolean }> {
   console.log(`Scraping: ${url}`);
 
   for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), SCRAPE_TIMEOUT_MS);
+
     try {
       const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
         method: 'POST',
@@ -570,23 +608,27 @@ async function scrapeUrl(
           onlyMainContent: false,
           waitFor: 5000,
         }),
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
+
       if (response.status === 429 || response.status >= 500) {
-        // Retryable error
         if (attempt < retries) {
           const delay = 1000 * (attempt + 1);
           console.log(`Retrying in ${delay}ms (attempt ${attempt + 1}/${retries})...`);
           await new Promise(r => setTimeout(r, delay));
           continue;
         }
+        const errText = `HTTP ${response.status}`;
+        return { success: false, error: friendlyErrorMessage(errText), retryable: true };
       }
 
       const data = await response.json();
 
       if (!response.ok) {
         console.error('Firecrawl error:', data);
-        return { success: false, error: data.error || `Failed with status ${response.status}` };
+        return { success: false, error: friendlyErrorMessage(data.error || `Failed with status ${response.status}`), retryable: false };
       }
 
       const markdown = data.data?.markdown || data.markdown || '';
@@ -596,19 +638,23 @@ async function scrapeUrl(
       console.log(`Scraped ${markdown.length} chars markdown, ${html.length} chars html, ${links.length} links`);
 
       return { success: true, markdown, html, links };
-    } catch (err) {
+    } catch (err: unknown) {
+      clearTimeout(timeoutId);
+      const errMsg = err instanceof Error ? err.message : String(err);
+      const isAbort = errMsg.toLowerCase().includes('abort');
+
       if (attempt < retries) {
         const delay = 1000 * (attempt + 1);
-        console.log(`Scrape error, retrying in ${delay}ms: ${err}`);
+        console.log(`Scrape error (${isAbort ? 'timeout' : 'network'}), retrying in ${delay}ms: ${errMsg}`);
         await new Promise(r => setTimeout(r, delay));
         continue;
       }
-      console.error('Scrape failed after retries:', err);
-      return { success: false, error: `Network error: ${err}` };
+      console.error('Scrape failed after retries:', errMsg);
+      return { success: false, error: friendlyErrorMessage(isAbort ? 'Timeout' : `Network error: ${errMsg}`), retryable: true };
     }
   }
 
-  return { success: false, error: 'Failed after retries' };
+  return { success: false, error: 'Failed after retries', retryable: true };
 }
 
 // ─── Image download & upload ───────────────────────────────────────────────────
@@ -965,7 +1011,7 @@ Deno.serve(async (req) => {
 
       if (!product) {
         return new Response(
-          JSON.stringify({ success: false, error: "Could not parse product details" }),
+          JSON.stringify({ success: false, error: "Could not read product details from page", retryable: true }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -982,7 +1028,7 @@ Deno.serve(async (req) => {
 
       if (existingImport) {
         return new Response(
-          JSON.stringify({ success: false, error: "This product has already been imported" }),
+          JSON.stringify({ success: false, error: "This product has already been imported", retryable: false }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -1046,7 +1092,7 @@ Deno.serve(async (req) => {
           metadata: { images_downloaded: downloadImages, image_count: originalImageCount },
         });
         return new Response(
-          JSON.stringify({ success: false, error: `Failed to create product: ${createError.message}` }),
+          JSON.stringify({ success: false, error: friendlyErrorMessage(`DB error: ${createError.message}`), retryable: false }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }

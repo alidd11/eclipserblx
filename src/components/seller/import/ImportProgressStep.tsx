@@ -13,6 +13,7 @@ export interface ProductImportStatus {
   status: 'pending' | 'importing' | 'success' | 'failed' | 'cancelled';
   error?: string;
   duration?: number;
+  retried?: boolean;
 }
 
 interface ImportProgressStepProps {
@@ -103,26 +104,102 @@ export function ImportProgressStep({
               break;
             }
 
-            const updated: ProductImportStatus = {
-              url,
-              name: result.product?.name || products.find(p => p.sourceUrl === url)?.name || 'Unknown',
-              status: result.success ? 'success' : 'failed',
-              error: result.error,
-              duration,
-            };
-            finalStatuses[i] = updated;
-            setStatuses(prev => prev.map((s, idx) => (idx === i ? updated : s)));
+            if (result.success) {
+              const updated: ProductImportStatus = {
+                url,
+                name: result.product?.name || products.find(p => p.sourceUrl === url)?.name || 'Unknown',
+                status: 'success',
+                duration,
+              };
+              finalStatuses[i] = updated;
+              setStatuses(prev => prev.map((s, idx) => (idx === i ? updated : s)));
+            } else {
+              // Check if the error is retryable (transient) — auto-retry once
+              const isRetryable = result.error
+                ? /timeout|timed out|network|rate limit|server error|5\d{2}/i.test(result.error)
+                : false;
+
+              if (isRetryable && !cancelledRef.current) {
+                console.log(`Auto-retrying ${url} after transient error: ${result.error}`);
+                setStatuses(prev =>
+                  prev.map((s, idx) => (idx === i ? { ...s, status: 'importing' as const } : s))
+                );
+                // Wait 2 seconds before retry
+                await new Promise(r => setTimeout(r, 2000));
+
+                const retryResult = await productImportApi.getProductDetails(url, downloadImages, categoryOverrides?.[url]);
+                const retryDuration = Date.now() - itemStart;
+
+                const updated: ProductImportStatus = {
+                  url,
+                  name: retryResult.product?.name || products.find(p => p.sourceUrl === url)?.name || 'Unknown',
+                  status: retryResult.success ? 'success' : 'failed',
+                  error: retryResult.success ? undefined : retryResult.error,
+                  duration: retryDuration,
+                  retried: true,
+                };
+                finalStatuses[i] = updated;
+                setStatuses(prev => prev.map((s, idx) => (idx === i ? updated : s)));
+              } else {
+                const updated: ProductImportStatus = {
+                  url,
+                  name: result.product?.name || products.find(p => p.sourceUrl === url)?.name || 'Unknown',
+                  status: 'failed',
+                  error: result.error,
+                  duration,
+                };
+                finalStatuses[i] = updated;
+                setStatuses(prev => prev.map((s, idx) => (idx === i ? updated : s)));
+              }
+            }
           } catch {
             const duration = Date.now() - itemStart;
-            const updated: ProductImportStatus = {
-              url,
-              name: products.find(p => p.sourceUrl === url)?.name || 'Unknown',
-              status: cancelledRef.current ? 'cancelled' : 'failed',
-              error: cancelledRef.current ? 'Cancelled' : 'Request failed',
-              duration,
-            };
-            finalStatuses[i] = updated;
-            setStatuses(prev => prev.map((s, idx) => (idx === i ? updated : s)));
+            
+            // Network-level errors are retryable — auto-retry once
+            if (!cancelledRef.current) {
+              console.log(`Auto-retrying ${url} after catch error`);
+              setStatuses(prev =>
+                prev.map((s, idx) => (idx === i ? { ...s, status: 'importing' as const } : s))
+              );
+              await new Promise(r => setTimeout(r, 2000));
+
+              try {
+                const retryResult = await productImportApi.getProductDetails(url, downloadImages, categoryOverrides?.[url]);
+                const retryDuration = Date.now() - itemStart;
+                const updated: ProductImportStatus = {
+                  url,
+                  name: retryResult.product?.name || products.find(p => p.sourceUrl === url)?.name || 'Unknown',
+                  status: retryResult.success ? 'success' : 'failed',
+                  error: retryResult.success ? undefined : retryResult.error,
+                  duration: retryDuration,
+                  retried: true,
+                };
+                finalStatuses[i] = updated;
+                setStatuses(prev => prev.map((s, idx) => (idx === i ? updated : s)));
+              } catch {
+                const retryDuration = Date.now() - itemStart;
+                const updated: ProductImportStatus = {
+                  url,
+                  name: products.find(p => p.sourceUrl === url)?.name || 'Unknown',
+                  status: 'failed',
+                  error: 'Request failed after retry',
+                  duration: retryDuration,
+                  retried: true,
+                };
+                finalStatuses[i] = updated;
+                setStatuses(prev => prev.map((s, idx) => (idx === i ? updated : s)));
+              }
+            } else {
+              const updated: ProductImportStatus = {
+                url,
+                name: products.find(p => p.sourceUrl === url)?.name || 'Unknown',
+                status: 'cancelled',
+                error: 'Cancelled',
+                duration,
+              };
+              finalStatuses[i] = updated;
+              setStatuses(prev => prev.map((s, idx) => (idx === i ? updated : s)));
+            }
           }
         }
       };
@@ -245,7 +322,13 @@ export function ImportProgressStep({
                 {item.status === 'success' && item.duration && (
                   <span className="text-[10px] text-muted-foreground">
                     {(item.duration / 1000).toFixed(1)}s
+                    {item.retried && ' (retried)'}
                   </span>
+                )}
+                {item.retried && item.status === 'failed' && (
+                  <Badge variant="outline" className="text-[10px] text-warning border-warning/40">
+                    Retried
+                  </Badge>
                 )}
                 {item.error && item.status !== 'cancelled' && (
                   <span className="text-[10px] text-destructive truncate max-w-[120px]">
