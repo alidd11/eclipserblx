@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Store, ArrowRight, Percent, Coins, Shield } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { useCallback, useEffect, useState } from 'react';
@@ -16,8 +16,6 @@ export function PromotionCarousel() {
   const promotions = [
     {
       id: 'ip-shield',
-      icon: Shield,
-      label: 'IP SHIELD',
       title: 'Protect Your Creations with IP Shield',
       description: 'DMCA takedowns, copy detection & ownership monitoring for Roblox creators.',
       cta: 'Learn More',
@@ -26,8 +24,6 @@ export function PromotionCarousel() {
     },
     {
       id: 'affiliate',
-      icon: Percent,
-      label: 'AFFILIATES',
       title: t('landing.affiliateTitle'),
       description: t('landing.affiliateDesc'),
       cta: t('landing.affiliateCta'),
@@ -36,8 +32,6 @@ export function PromotionCarousel() {
     },
     {
       id: 'seller',
-      icon: Store,
-      label: 'SELLERS',
       title: t('landing.sellerTitle'),
       description: t('landing.sellerDesc'),
       cta: t('landing.sellerCta'),
@@ -46,8 +40,6 @@ export function PromotionCarousel() {
     },
     {
       id: 'credits',
-      icon: Coins,
-      label: 'CREDITS',
       title: 'Save on Fees with Eclipse Credits',
       description: 'Pay with credits to skip transaction fees and check out instantly.',
       cta: 'Top Up',
@@ -79,12 +71,8 @@ export function PromotionCarousel() {
 
   const renderSlide = (promo: typeof promotions[0]) => (
     <div className="flex items-center justify-between gap-4 px-5 py-4">
-      <div className="flex items-center gap-4 min-w-0">
-        {/* Left accent bar + icon */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className={`w-0.5 h-10 ${promo.accentClass} rounded-full`} />
-          <promo.icon className="h-5 w-5 text-muted-foreground" />
-        </div>
+      <div className="flex items-center gap-3 min-w-0">
+        <div className={`w-0.5 h-10 ${promo.accentClass} rounded-full shrink-0`} />
         <div className="min-w-0">
           <h3 className="font-semibold text-sm text-foreground truncate">{promo.title}</h3>
           <p className="text-xs text-muted-foreground line-clamp-1 max-w-xs mt-0.5">{promo.description}</p>
