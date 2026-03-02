@@ -21,6 +21,21 @@ const NotFound = () => {
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+
+    // Tell search engines not to index this soft-404 page
+    let meta = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
+    const existed = !!meta;
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.name = 'robots';
+      document.head.appendChild(meta);
+    }
+    meta.content = 'noindex';
+
+    return () => {
+      if (!existed && meta) meta.remove();
+      else if (meta) meta.content = 'index, follow';
+    };
   }, [location.pathname]);
 
   const handleSearch = (e: React.FormEvent) => {
