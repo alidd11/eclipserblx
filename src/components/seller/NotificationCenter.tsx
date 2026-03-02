@@ -4,10 +4,9 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Bell, 
   ShoppingCart, 
@@ -15,9 +14,7 @@ import {
   DollarSign,
   MessageCircle,
   Package,
-  Clock,
   CheckCircle,
-  ArrowRight
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -36,7 +33,6 @@ export function NotificationCenter() {
   const { store } = useSellerStatus();
   const [activeTab, setActiveTab] = useState('all');
 
-  // Fetch recent activities
   const { data: notifications, isLoading } = useQuery({
     queryKey: ['seller-notifications', store?.id],
     queryFn: async () => {
@@ -44,12 +40,13 @@ export function NotificationCenter() {
 
       const results: Notification[] = [];
 
-      // Recent orders
+      // Recent orders (exclude refunded)
       const { data: orders } = await supabase
         .from('seller_transactions')
         .select('id, created_at, description, amount, status')
         .eq('store_id', store.id)
         .eq('type', 'sale')
+        .is('refunded_at', null)
         .order('created_at', { ascending: false })
         .limit(5);
 
@@ -65,35 +62,28 @@ export function NotificationCenter() {
         });
       });
 
-      // Recent reviews for store products
-      const { data: products } = await supabase
-        .from('products')
-        .select('id')
-        .eq('store_id', store.id);
+      // Recent reviews — use inner join on products to scope by store_id
+      // instead of fetching all product IDs then using .in()
+      const { data: reviews } = await supabase
+        .from('reviews')
+        .select('id, created_at, rating, content, product_id, products!inner(store_id)')
+        .eq('products.store_id', store.id)
+        .eq('is_approved', true)
+        .order('created_at', { ascending: false })
+        .limit(5);
 
-      const productIds = products?.map(p => p.id) || [];
-
-      if (productIds.length > 0) {
-        const { data: reviews } = await supabase
-          .from('reviews')
-          .select('id, created_at, rating, content, product_id')
-          .in('product_id', productIds)
-          .eq('is_approved', true)
-          .order('created_at', { ascending: false })
-          .limit(5);
-
-        reviews?.forEach(review => {
-          results.push({
-            id: `review-${review.id}`,
-            type: 'review',
-            title: `${review.rating}★ Review`,
-            description: review.content?.substring(0, 60) + (review.content?.length > 60 ? '...' : ''),
-            timestamp: new Date(review.created_at),
-            read: true,
-            link: '/seller/reviews',
-          });
+      reviews?.forEach((review: any) => {
+        const content = review.content || '';
+        results.push({
+          id: `review-${review.id}`,
+          type: 'review',
+          title: `${review.rating}★ Review`,
+          description: content.substring(0, 60) + (content.length > 60 ? '...' : ''),
+          timestamp: new Date(review.created_at),
+          read: true,
+          link: '/seller/reviews',
         });
-      }
+      });
 
       // Recent payouts
       const { data: payouts } = await supabase
@@ -115,7 +105,7 @@ export function NotificationCenter() {
         });
       });
 
-      // Recent messages (sender_type = 'customer' means customer sent it)
+      // Recent messages
       const { data: messages } = await supabase
         .from('store_messages')
         .select('id, created_at, message, sender_type, is_read')
@@ -125,18 +115,18 @@ export function NotificationCenter() {
         .limit(3);
 
       (messages as any[])?.forEach((msg: any) => {
+        const msgText = msg.message || '';
         results.push({
           id: `message-${msg.id}`,
           type: 'message',
           title: 'New Message',
-          description: msg.message?.substring(0, 50) + (msg.message?.length > 50 ? '...' : ''),
+          description: msgText.substring(0, 50) + (msgText.length > 50 ? '...' : ''),
           timestamp: new Date(msg.created_at),
           read: msg.is_read,
           link: '/seller/messages',
         });
       });
 
-      // Sort by timestamp
       return results.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
     },
     enabled: !!store?.id,
