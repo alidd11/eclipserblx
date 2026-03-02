@@ -74,7 +74,11 @@ serve(async (req) => {
     }
 
     // Validate origin
-    const origin = req.headers.get("origin") || "https://eclipserblx.com";
+    const rawOrigin = req.headers.get("origin");
+    const allowedOrigins = ["https://eclipserblx.com", "https://www.eclipserblx.com"];
+    const origin = rawOrigin && allowedOrigins.some(o => rawOrigin.startsWith(o))
+      ? rawOrigin
+      : "https://eclipserblx.com";
 
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
