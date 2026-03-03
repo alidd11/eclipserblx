@@ -1,6 +1,6 @@
-import { useRobloxSettings } from './useRobloxSettings';
+import { useRobloxSettings } from '@/hooks/useRobloxSettings';
 
 export function useRobloxGameUrl() {
   const { settings } = useRobloxSettings();
-  return { robloxUrl: settings?.roblox_game_url || '' };
+  return { robloxUrl: settings.roblox_game_url || null };
 }
