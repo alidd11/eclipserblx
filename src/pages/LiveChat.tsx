@@ -824,7 +824,7 @@ const LiveChatPage = () => {
                       setNewMessage(e.target.value);
                       handleTyping();
                     }}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyPress}
                     onPointerDown={(e) => {
                       // iOS PWA can ignore the first tap; force focus synchronously
                       const input = e.currentTarget;
