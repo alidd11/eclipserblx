@@ -40,8 +40,9 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" media="print" onload="this.media='all'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" /></noscript>
 
-    <!-- Preload LCP hero image — desktop only; mobile uses CSS gradient -->
+    <!-- Preload LCP hero image — responsive -->
     <link rel="preload" href="/hero-bg.webp" as="image" type="image/webp" fetchpriority="high" media="(min-width: 768px)" />
+    <link rel="preload" href="/hero-bg-mobile.webp" as="image" type="image/webp" fetchpriority="high" media="(max-width: 767px)" />
 
     <!-- Inline critical CSS to eliminate render-blocking for above-the-fold content -->
     <style>

@@ -1,30 +1,24 @@
 import { useState } from 'react';
 
-// Hero image served from public/ so the browser can discover it from the initial HTML
-const heroBg = '/hero-bg.webp';
+const heroBgDesktop = '/hero-bg.webp';
+const heroBgMobile = '/hero-bg-mobile.webp';
 
 export function HeroBanner() {
-  // Sync mobile detection to prevent hero image request on first render.
-  // useState initializer runs synchronously before first paint.
   const [isMobile] = useState(() => 
     typeof window !== 'undefined' && window.innerWidth < 768
   );
 
   return (
     <div className="absolute inset-x-0 top-0 h-[420px] sm:h-[480px] overflow-hidden">
-      {isMobile ? (
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-card to-background" />
-      ) : (
-        <img
-          src={heroBg}
-          alt=""
-          width={1920}
-          height={480}
-          fetchPriority="high"
-          decoding="sync"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-      )}
+      <img
+        src={isMobile ? heroBgMobile : heroBgDesktop}
+        alt=""
+        width={isMobile ? 768 : 1920}
+        height={isMobile ? 432 : 480}
+        fetchPriority="high"
+        decoding="sync"
+        className="absolute inset-0 w-full h-full object-cover"
+      />
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-background/55" />
