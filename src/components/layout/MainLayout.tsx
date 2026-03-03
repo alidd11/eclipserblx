@@ -1,4 +1,4 @@
-import { ReactNode, forwardRef } from 'react';
+import { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { LayoutShell } from './LayoutShell';
 import { PageTransition } from './PageTransition';
@@ -10,7 +10,7 @@ interface MainLayoutProps {
   children: ReactNode;
 }
 
-const MainLayoutContent = forwardRef<HTMLDivElement, MainLayoutProps>(function MainLayoutContent({ children }, _ref) {
+function MainLayoutContent({ children }: MainLayoutProps) {
   const location = useLocation();
 
   // Check for scheduled product releases periodically
@@ -40,8 +40,8 @@ const MainLayoutContent = forwardRef<HTMLDivElement, MainLayoutProps>(function M
       <PageTransition>{children}</PageTransition>
     </LayoutShell>
   );
-});
+}
 
-export const MainLayout = forwardRef<HTMLDivElement, MainLayoutProps>(function MainLayout({ children }, _ref) {
+export function MainLayout({ children }: MainLayoutProps) {
   return <MainLayoutContent>{children}</MainLayoutContent>;
-});
+}
