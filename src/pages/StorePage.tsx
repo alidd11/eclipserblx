@@ -92,10 +92,7 @@ const PRODUCTS_PER_PAGE_DESKTOP = 8;
 export default function StorePage() {
   const { storeSlug } = useParams<{ storeSlug: string }>();
   usePageTracking({ pagePath: `/store/${storeSlug}` });
-  usePageMeta({
-    title: storeSlug ? `${storeSlug} Store` : 'Store',
-    canonicalPath: storeSlug ? `/store/${storeSlug}` : undefined,
-  });
+  
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -320,6 +317,18 @@ export default function StorePage() {
       setCurrentProductPage((prev) => (prev - 1 + totalProductPages) % totalProductPages);
     }
   }, [totalProductPages]);
+
+  // Dynamic SEO meta — reactively updates when store data loads
+  usePageMeta({
+    title: store?.name ? `${store.name} Store` : storeSlug ? `${storeSlug} Store` : 'Store',
+    description: store?.description
+      ? store.description.slice(0, 155)
+      : store?.name
+        ? `Browse products from ${store.name} on Eclipse marketplace`
+        : undefined,
+    canonicalPath: storeSlug ? `/store/${storeSlug}` : undefined,
+    ogImage: store?.logo_url || store?.banner_url || undefined,
+  });
 
   const swipeHandlers = useSwipeGesture({
     onSwipeLeft: goToNextPage,

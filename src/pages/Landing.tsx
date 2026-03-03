@@ -8,6 +8,7 @@ import { ActiveOffersCard } from '@/components/home/ActiveOffersCard';
 import { OrganizationSchema, WebsiteSearchSchema } from '@/components/seo/StructuredData';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
+import { ScrollReveal } from '@/components/ui/ScrollReveal';
 
 const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
   usePageMeta({ canonicalPath: '/' });
@@ -23,23 +24,35 @@ const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
 
       {/* Promotions + Discord — side by side on desktop for density */}
       <SectionErrorBoundary section="promotions" compact>
-        <div className="px-4 sm:px-6 lg:px-8 -mt-10 relative z-20 space-y-3">
-          <div className="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
-            <PromotionCarousel />
-            <PWADiscordBanner />
+        <ScrollReveal direction="up" distance={20} duration={0.4}>
+          <div className="px-4 sm:px-6 lg:px-8 -mt-10 relative z-20 space-y-3">
+            <div className="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
+              <ScrollReveal delay={0.05} direction="up" distance={16} duration={0.35}>
+                <PromotionCarousel />
+              </ScrollReveal>
+              <ScrollReveal delay={0.12} direction="up" distance={16} duration={0.35}>
+                <PWADiscordBanner />
+              </ScrollReveal>
+            </div>
+            <ScrollReveal delay={0.18} direction="up" distance={12} duration={0.3}>
+              <ActiveOffersCard />
+            </ScrollReveal>
           </div>
-          <ActiveOffersCard />
-        </div>
+        </ScrollReveal>
       </SectionErrorBoundary>
 
       {/* Section rule */}
-      <div className="px-4 sm:px-6 lg:px-8 mt-8 mb-2 flex items-center gap-4">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">Marketplace</span>
-        <div className="flex-1 h-px bg-border" />
-      </div>
+      <ScrollReveal direction="none" duration={0.4}>
+        <div className="px-4 sm:px-6 lg:px-8 mt-8 mb-2 flex items-center gap-4">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">Marketplace</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+      </ScrollReveal>
 
       <SectionErrorBoundary section="marketplace">
-        <MarketplaceSection />
+        <ScrollReveal direction="up" distance={20} duration={0.5} delay={0.1}>
+          <MarketplaceSection />
+        </ScrollReveal>
       </SectionErrorBoundary>
     </MainLayout>
   );

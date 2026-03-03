@@ -621,6 +621,7 @@
     @apply bg-background text-foreground;
     overscroll-behavior: none;
     background-color: hsl(var(--background));
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   
   body {
@@ -638,6 +639,7 @@
     background-color: hsl(var(--background));
     padding-bottom: 0;
     box-sizing: border-box;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   
   /* Allow text selection in inputs and textareas */
