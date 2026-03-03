@@ -9,6 +9,8 @@ export function HeroBanner() {
         alt=""
         width={1920}
         height={480}
+        fetchPriority="high"
+        decoding="sync"
         className="absolute inset-0 w-full h-full object-cover"
       />
 
