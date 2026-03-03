@@ -9,6 +9,7 @@ import { OrganizationSchema, WebsiteSearchSchema, SiteNavigationSchema } from '@
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { LazySection } from '@/components/ui/LazySection';
 
 const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
   usePageMeta({ canonicalPath: '/' });
@@ -42,17 +43,19 @@ const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
         </ScrollReveal>
       </SectionErrorBoundary>
 
-      {/* Section rule */}
-      <ScrollReveal direction="none" duration={0.4}>
-        <div className="px-4 sm:px-6 lg:px-8 mt-8 mb-2 flex items-center gap-4">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Marketplace</span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-      </ScrollReveal>
+      {/* Marketplace — lazy-loaded since it's below the fold and data-heavy */}
+      <LazySection minHeight="600px" rootMargin="300px">
+        <ScrollReveal direction="none" duration={0.4}>
+          <div className="px-4 sm:px-6 lg:px-8 mt-8 mb-2 flex items-center gap-4">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Marketplace</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+        </ScrollReveal>
 
-      <SectionErrorBoundary section="marketplace">
-        <MarketplaceSection />
-      </SectionErrorBoundary>
+        <SectionErrorBoundary section="marketplace">
+          <MarketplaceSection />
+        </SectionErrorBoundary>
+      </LazySection>
     </MainLayout>
   );
 });

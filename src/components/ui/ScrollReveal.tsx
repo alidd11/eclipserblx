@@ -1,20 +1,15 @@
 import { forwardRef, ReactNode } from 'react';
 import { motion, type Variants } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface ScrollRevealProps {
   children: ReactNode;
   className?: string;
-  /** Delay in seconds */
   delay?: number;
-  /** Animation direction */
   direction?: 'up' | 'down' | 'left' | 'right' | 'none';
-  /** Distance in pixels */
   distance?: number;
-  /** Duration in seconds */
   duration?: number;
-  /** How much of the element should be visible before animating (0–1) */
   threshold?: number;
-  /** Whether to animate only once */
   once?: boolean;
 }
 
@@ -53,6 +48,17 @@ export const ScrollReveal = forwardRef<HTMLDivElement, ScrollRevealProps>(functi
   },
   ref
 ) {
+  const reducedMotion = useReducedMotion();
+
+  // On mobile / reduced-motion: render children immediately without animation overhead
+  if (reducedMotion) {
+    return (
+      <div ref={ref} className={className}>
+        {children}
+      </div>
+    );
+  }
+
   const variants = getVariants(direction, distance);
 
   return (
