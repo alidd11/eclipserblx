@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { useGlobalGuardDomain } from './useGlobalGuardDomain';
 
 /**
  * Dynamically injects and switches the PWA manifest for Global Guard subdomain.
@@ -7,7 +6,7 @@ import { useGlobalGuardDomain } from './useGlobalGuardDomain';
  * - Updates theme color and app name meta tags
  */
 export function useGlobalGuardManifest() {
-  const { isGlobalGuardDomain } = useGlobalGuardDomain();
+  const isGlobalGuardDomain = typeof window !== 'undefined' && window.location.hostname.startsWith('guard.');
 
   useEffect(() => {
     if (!isGlobalGuardDomain) return;
