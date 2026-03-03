@@ -282,15 +282,13 @@ export default function SellerProducts() {
     },
   });
 
-  // Generate slug from name with unique suffix to prevent collisions
+  // Generate clean slug from name (no random suffix for cleaner URLs)
   const generateSlug = (name: string) => {
-    const base = name
+    return name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '')
       .slice(0, 60);
-    const suffix = crypto.randomUUID().slice(0, 8);
-    return `${base}-${suffix}`;
   };
 
   // Helper function to format datetime for input
