@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Send, Paperclip, Loader2, ShieldCheck, Minimize2, Maximize2, Clock, Bot, User, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, Send, Paperclip, Loader2, ShieldCheck, Minimize2, Maximize2, Clock, Bot, User, CheckCircle, AlertCircle, HelpCircle, Ticket } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { SecureCodeInput } from './SecureCodeInput';
@@ -739,6 +739,36 @@ export function ChatSidePanel() {
                       'Start Conversation'
                     )}
                   </Button>
+
+                  {/* Support info links */}
+                  <div className="border-t border-border pt-3 space-y-2">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Clock className="h-3.5 w-3.5 shrink-0" />
+                      <span>
+                        {openingStatus.isOpen
+                          ? 'Human support available now'
+                          : 'AI support 24/7 · Human hours Mon–Sat 9AM–7PM'}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Link
+                        to="/faq"
+                        onClick={closeChat}
+                        className="flex-1 flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-1.5 rounded-md hover:bg-muted"
+                      >
+                        <HelpCircle className="h-3.5 w-3.5" />
+                        <span>FAQ</span>
+                      </Link>
+                      <Link
+                        to="/support/tickets"
+                        onClick={closeChat}
+                        className="flex-1 flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-1.5 rounded-md hover:bg-muted"
+                      >
+                        <Ticket className="h-3.5 w-3.5" />
+                        <span>My Tickets</span>
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               ) : isChatClosed ? (
                 // Chat closed state
