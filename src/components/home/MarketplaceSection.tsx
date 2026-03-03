@@ -68,7 +68,7 @@ const StoreCard = memo(forwardRef<HTMLAnchorElement, { store: StoreData; showTes
               <img 
                 src={optimizeImageUrl(store.logo_url, 56)} 
                 alt={store.name}
-                className="h-14 w-14 rounded-lg object-cover bg-background shadow-md flex-shrink-0"
+                className="h-14 w-14 rounded-lg object-contain bg-card border border-border shadow-md flex-shrink-0 p-1"
               />
             ) : (
               <div 
