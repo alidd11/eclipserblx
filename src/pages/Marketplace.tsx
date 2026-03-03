@@ -2,6 +2,8 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Store, ChevronRight, ShieldCheck, Award, Users, Search, X, Package, FlaskConical } from 'lucide-react';
+import { PageTransition } from '@/components/ui/PageTransition';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -334,7 +336,7 @@ export default function Marketplace() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-6 sm:py-8 space-y-8">
+      <PageTransition className="container mx-auto px-4 py-6 sm:py-8 space-y-8">
         {/* Hero Section */}
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
@@ -398,11 +400,11 @@ export default function Marketplace() {
             )}
 
             {filteredStores.length === 0 && (!searchProducts || searchProducts.length === 0) && !searchProductsLoading && (
-              <div className="text-center py-12">
-                <Search className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <p className="text-muted-foreground">No stores or products found for "{debouncedQuery}"</p>
-                <p className="text-sm text-muted-foreground/70 mt-1">Try a different search term</p>
-              </div>
+              <EmptyState
+                icon={Search}
+                title={`No results for "${debouncedQuery}"`}
+                description="Try a different search term or browse stores and products below."
+              />
             )}
           </div>
         )}
@@ -423,10 +425,14 @@ export default function Marketplace() {
                     <StoreCard key={store.id} store={store} showTestingBadge={isAdmin} />
                   ))
                 ) : (
-                  <div className="col-span-full text-center py-12">
-                    <Store className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                    <p className="text-muted-foreground">No stores available yet.</p>
-                    <p className="text-sm text-muted-foreground/70 mt-1">Check back soon for amazing sellers!</p>
+                  <div className="col-span-full">
+                    <EmptyState
+                      icon={Store}
+                      title="No stores yet"
+                      description="Check back soon — amazing sellers are setting up shop!"
+                      actionLabel="Browse Products"
+                      actionTo="/products"
+                    />
                   </div>
                 )}
               </div>
@@ -457,8 +463,12 @@ export default function Marketplace() {
                     <MarketplaceProductCard key={product.id} product={product} />
                   ))
                 ) : (
-                  <div className="col-span-full text-center py-12 text-muted-foreground">
-                    No products available yet.
+                  <div className="col-span-full">
+                    <EmptyState
+                      icon={Package}
+                      title="No products yet"
+                      description="Products will appear here once sellers list them."
+                    />
                   </div>
                 )}
               </div>
@@ -485,7 +495,7 @@ export default function Marketplace() {
             </div>
           </section>
         )}
-      </div>
+      </PageTransition>
     </MainLayout>
   );
 }

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Trash2, ShoppingBag, ArrowRight, ShieldCheck, Zap, CreditCard, Sparkles } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { PageTransition } from '@/components/ui/PageTransition';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -35,31 +36,33 @@ export default function Cart() {
   if (items.length === 0) {
     return (
       <MainLayout>
-        <div className="container py-16 max-w-lg mx-auto">
-          <Card className="bg-card border-border text-center">
-            <CardContent className="pt-12 pb-8 space-y-6">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted mx-auto">
-                <ShoppingBag className="h-10 w-10 text-muted-foreground" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-display font-bold mb-2">{t('cart.cartEmpty')}</h1>
-                <p className="text-muted-foreground max-w-sm mx-auto">
-                  {t('cart.cartEmptyDesc')}
-                </p>
-              </div>
-              <Button asChild className="gradient-button border-0">
-                <Link to="/products">{t('common.browseProducts')}</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        <PageTransition>
+          <div className="container py-16 max-w-lg mx-auto">
+            <Card className="bg-card border-border text-center">
+              <CardContent className="pt-12 pb-8 space-y-6">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted mx-auto">
+                  <ShoppingBag className="h-10 w-10 text-muted-foreground" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-display font-bold mb-2">{t('cart.cartEmpty')}</h1>
+                  <p className="text-muted-foreground max-w-sm mx-auto">
+                    {t('cart.cartEmptyDesc')}
+                  </p>
+                </div>
+                <Button asChild className="gradient-button border-0">
+                  <Link to="/products">{t('common.browseProducts')}</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </PageTransition>
       </MainLayout>
     );
   }
 
   return (
     <MainLayout>
-      <div className="container py-8 space-y-8">
+      <PageTransition className="container py-8 space-y-8">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl md:text-4xl font-display font-bold">{t('cart.yourCart')}</h1>
           <Button variant="ghost" size="sm" onClick={clearCart} className="text-destructive hover:text-destructive">
@@ -200,7 +203,7 @@ export default function Cart() {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </PageTransition>
     </MainLayout>
   );
 }
