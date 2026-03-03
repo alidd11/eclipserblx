@@ -527,7 +527,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         .from('notifications') as any)
         .select('id', { count: 'exact', head: true })
         .eq('user_id', user!.id)
-        .eq('read', false);
+        .eq('is_read', false);
       if (error) return 0;
       return (count as number) || 0;
     },
