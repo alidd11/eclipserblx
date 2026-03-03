@@ -43,7 +43,7 @@ export function LandingHero() {
   };
 
   return (
-    <section className="relative overflow-hidden" style={{ minHeight: '380px' }}>
+    <section aria-labelledby="hero-heading" className="relative overflow-hidden" style={{ minHeight: '380px' }}>
       <HeroBanner />
 
       <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-10 relative z-10">
@@ -55,7 +55,7 @@ export function LandingHero() {
               Roblox & Discord Marketplace
             </p>
 
-            <h1 className="font-display text-3xl lg:text-[2.5rem] font-bold leading-[1.1] tracking-tight mb-4 max-w-lg">
+            <h1 id="hero-heading" className="font-display text-3xl lg:text-[2.5rem] font-bold leading-[1.1] tracking-tight mb-4 max-w-lg">
               {t('landing.headline')}{' '}
               <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em' }}>
                 <span className="invisible">{rotatingWords.reduce((a, b) => a.length > b.length ? a : b)}</span>
@@ -139,7 +139,7 @@ export function LandingHero() {
         {/* Mobile: centered layout (keep existing feel) */}
         <div className="lg:hidden w-full flex flex-col items-center">
           <div className="text-center max-w-md">
-            <h1 className="font-display text-2xl sm:text-3xl font-bold leading-[1.15] tracking-tight mb-3">
+            <h1 aria-hidden="true" className="font-display text-2xl sm:text-3xl font-bold leading-[1.15] tracking-tight mb-3">
               {t('landing.headline')}{' '}
               <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em' }}>
                 <span className="invisible">{rotatingWords.reduce((a, b) => a.length > b.length ? a : b)}</span>

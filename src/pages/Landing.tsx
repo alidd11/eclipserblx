@@ -47,8 +47,8 @@ const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
       <LazySection minHeight="600px" rootMargin="300px">
         <ScrollReveal direction="none" duration={0.4}>
           <div className="px-4 sm:px-6 lg:px-8 mt-8 mb-2 flex items-center gap-4">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Marketplace</span>
-            <div className="flex-1 h-px bg-border" />
+            <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Marketplace</h2>
+            <div className="flex-1 h-px bg-border" aria-hidden="true" />
           </div>
         </ScrollReveal>
 
