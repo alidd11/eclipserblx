@@ -24,6 +24,12 @@ interface LayoutShellProps {
   extra?: ReactNode;
   /** Custom main padding style */
   mainStyle?: React.CSSProperties;
+  /** CSS class applied to the content wrapper inside <main> */
+  contentClassName?: string;
+  /** CSS class applied to the outer wrapper div */
+  wrapperClassName?: string;
+  /** CSS class applied to <main> */
+  mainClassName?: string;
 }
 
 function LayoutShellInner({
@@ -33,6 +39,9 @@ function LayoutShellInner({
   headerProps = {},
   extra,
   mainStyle,
+  contentClassName,
+  wrapperClassName,
+  mainClassName,
 }: LayoutShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
@@ -53,7 +62,7 @@ function LayoutShellInner({
         Skip to main content
       </a>
 
-      <div className="min-h-[100dvh] flex w-full overflow-x-hidden relative">
+      <div className={wrapperClassName ?? "min-h-[100dvh] flex w-full overflow-x-hidden relative"}>
         {/* Desktop Sidebar */}
         <div className="hidden md:flex">{desktopSidebar}</div>
 
@@ -81,10 +90,14 @@ function LayoutShellInner({
           <main
             id="main-content"
             role="main"
-            className="flex-1 overflow-y-auto overflow-x-hidden"
+            className={mainClassName ?? "flex-1 overflow-y-auto overflow-x-hidden"}
             style={mainStyle ?? { paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
-            {children}
+            {contentClassName ? (
+              <div className={contentClassName}>{children}</div>
+            ) : (
+              children
+            )}
             <Footer />
           </main>
         </div>
