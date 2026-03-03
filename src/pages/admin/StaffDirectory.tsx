@@ -159,8 +159,9 @@ export default function StaffDirectory() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('staff_id_logs')
-        .select('*')
-        .order('assigned_at', { ascending: false });
+        .select('id, user_id, staff_id, assigned_at, notes')
+        .order('assigned_at', { ascending: false })
+        .limit(100);
 
       if (error) throw error;
 
@@ -384,7 +385,7 @@ export default function StaffDirectory() {
                           {log.staff_id}
                         </Badge>
                         <span className="text-sm font-medium">
-                          {log.display_name || 'Unknown User'}
+                          {(log as any).display_name || 'Unknown User'}
                         </span>
                         <span className="text-xs text-muted-foreground flex-1">
                           {log.notes}

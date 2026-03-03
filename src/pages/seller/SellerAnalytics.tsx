@@ -54,11 +54,12 @@ export default function SellerAnalytics() {
 
       const { data, error } = await supabase
         .from('seller_analytics')
-        .select('*')
+        .select('event_type, product_id, visitor_id, device_type, referrer, country, created_at')
         .eq('store_id', store.id)
         .gte('created_at', start.toISOString())
         .lte('created_at', end.toISOString())
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
+        .limit(1000);
 
       if (error) throw error;
       return data;

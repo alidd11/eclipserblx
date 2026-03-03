@@ -46,9 +46,10 @@ export default function Subscribers() {
       // Fetch subscriptions - only those subscribed to at least one category
       const { data: subscriptions, error } = await supabase
         .from('email_subscriptions')
-        .select('*')
+        .select('id, email, user_id, subscribed_to_updates, subscribed_to_discounts, subscribed_to_newsletters, created_at, updated_at')
         .or('subscribed_to_updates.eq.true,subscribed_to_discounts.eq.true,subscribed_to_newsletters.eq.true')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(500);
 
       if (error) throw error;
 

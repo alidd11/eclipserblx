@@ -62,7 +62,14 @@
    const queryClient = useQueryClient();
    const [search, setSearch] = useState('');
    const [statusFilter, setStatusFilter] = useState<string>('all');
- 
+   const [currentPage, setCurrentPage] = useState(1);
+   const TICKETS_PER_PAGE = 25;
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, search]);
+
   // Realtime subscription for auto-refresh
   useEffect(() => {
     const channel = supabase
@@ -84,25 +91,33 @@
     };
   }, [queryClient]);
 
-  // Fetch active tickets only (exclude resolved/closed - they go to transcripts)
-  const { data: tickets, isLoading } = useQuery({
-    queryKey: ['admin-customer-tickets', statusFilter],
+  // Fetch active tickets with pagination
+  const { data: ticketsData, isLoading } = useQuery({
+    queryKey: ['admin-customer-tickets', statusFilter, currentPage],
     queryFn: async () => {
+      const from = (currentPage - 1) * TICKETS_PER_PAGE;
+      const to = from + TICKETS_PER_PAGE - 1;
+
       let query = supabase
         .from('support_tickets')
-        .select('*')
+        .select('id, ticket_number, user_id, customer_email, subject, status, priority, category, assigned_to, created_at, updated_at', { count: 'exact' })
         .not('status', 'in', '("resolved","closed")')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
       if (statusFilter !== 'all') {
         query = query.eq('status', statusFilter);
       }
 
-      const { data, error } = await query;
+      const { data, error, count } = await query;
       if (error) throw error;
-      return data as SupportTicket[];
+      return { tickets: data as SupportTicket[], totalCount: count || 0 };
     },
   });
+
+  const tickets = ticketsData?.tickets;
+  const totalCount = ticketsData?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / TICKETS_PER_PAGE);
  
    // Fetch customer profiles
    const { data: profiles } = useQuery({
@@ -323,10 +338,23 @@
                    </CardContent>
                  </Card>
                );
-             })
-           )}
-         </div>
-       </div>
-     </AdminLayout>
-   );
- }
+              })
+            )}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4">
+              <p className="text-sm text-muted-foreground">
+                Showing {((currentPage - 1) * TICKETS_PER_PAGE) + 1}–{Math.min(currentPage * TICKETS_PER_PAGE, totalCount)} of {totalCount}
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</Button>
+                <Button variant="outline" size="sm" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </AdminLayout>
+    );
+  }

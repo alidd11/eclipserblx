@@ -60,9 +60,10 @@ export default function SellerBalance() {
       
       const { data, error } = await supabase
         .from('seller_payouts')
-        .select('*')
+        .select('id, amount, status, created_at, processed_at, notes')
         .eq('store_id', store.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       if (error) throw error;
       return data || [];

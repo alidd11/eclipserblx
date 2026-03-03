@@ -86,9 +86,10 @@ export default function Messages() {
     setIsLoading(true);
     const { data, error } = await supabase
       .from('notifications')
-      .select('*')
+      .select('id, type, title, message, link, is_read, created_at')
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(200);
 
     if (!error && data) {
       setNotifications(data);

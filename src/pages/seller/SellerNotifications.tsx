@@ -47,7 +47,7 @@ export default function SellerNotifications() {
       if (!user?.id) return [];
       const { data, error } = await supabase
         .from('seller_notifications')
-        .select('*')
+        .select('id, type, title, message, action_url, read_at, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(100);
