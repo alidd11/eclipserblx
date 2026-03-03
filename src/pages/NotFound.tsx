@@ -2,6 +2,7 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Search, ShoppingBag, Store, HelpCircle, Briefcase } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { PageTransition } from "@/components/ui/PageTransition";
 import { Button } from "@/components/ui/button";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
@@ -47,7 +48,7 @@ const NotFound = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md w-full">
+      <PageTransition className="max-w-md w-full">
         {/* Rule */}
         <div className="w-12 h-0.5 bg-primary mb-8" />
 
@@ -98,7 +99,7 @@ const NotFound = () => {
           <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
           Back to home
         </Link>
-      </div>
+      </PageTransition>
     </div>
   );
 };
