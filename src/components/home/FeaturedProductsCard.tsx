@@ -213,12 +213,14 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
             <button
               onClick={goToPrev}
               className="w-6 h-6 rounded-md bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+              aria-label="Previous featured products"
             >
               <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
             <button
               onClick={goToNext}
               className="w-6 h-6 rounded-md bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+              aria-label="Next featured products"
             >
               <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
@@ -256,18 +258,20 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
 
       {/* Progress dots */}
       <div className="flex items-center justify-between mt-4">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" role="tablist" aria-label="Featured products pages">
           {Array.from({ length: totalPages }).map((_, i) => (
             <button
               key={i}
               onClick={() => setPageIndex(i)}
+              role="tab"
+              aria-selected={i === pageIndex}
               className={cn(
                 "h-1.5 rounded-full transition-all duration-300",
                 i === pageIndex
                   ? "w-4 bg-primary"
-                  : "w-1.5 bg-muted hover:bg-muted-foreground/50"
+                  : "w-1.5 bg-muted-foreground/40 hover:bg-muted-foreground/60"
               )}
-              aria-label={`View page ${i + 1}`}
+              aria-label={`Page ${i + 1} of ${totalPages}`}
             />
           ))}
         </div>
