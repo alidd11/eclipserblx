@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => ({
           'ui-motion': ['framer-motion'],
           'supabase': ['@supabase/supabase-js'],
           'forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
-          'charts': ['recharts'],
+          // recharts removed from manual chunks — lazy-loaded with dashboard routes
           'editor': ['@tiptap/react', '@tiptap/starter-kit', '@tiptap/extension-placeholder'],
           'stripe': ['@stripe/stripe-js', '@stripe/react-stripe-js'],
           'i18n': ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
