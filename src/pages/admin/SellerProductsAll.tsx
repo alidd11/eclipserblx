@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import DOMPurify from "dompurify";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import {
   Package, Search, FileCheck, FileX, ChevronDown, ScanSearch,
   ShieldAlert, AlertTriangle, ExternalLink, Pencil, Eye,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
 import {
   Dialog,
@@ -29,9 +30,13 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
+const ADMIN_PRODUCTS_PER_PAGE = 25;
+
 export default function SellerProductsAll() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterStore, setFilterStore] = useState<string>("all");
   const [editProduct, setEditProduct] = useState<any>(null);
@@ -39,10 +44,28 @@ export default function SellerProductsAll() {
   const [editPrice, setEditPrice] = useState<string>("");
   const [viewProduct, setViewProduct] = useState<any>(null);
 
-  // Fetch all seller products
-  const { data: products, isLoading } = useQuery({
-    queryKey: ["seller-products-all", filterStatus, filterStore],
+  // Debounce search
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(value);
+      setCurrentPage(1);
+    }, 300);
+  };
+
+  // Reset page on filter change
+  const handleFilterStatus = (v: string) => { setFilterStatus(v); setCurrentPage(1); };
+  const handleFilterStore = (v: string) => { setFilterStore(v); setCurrentPage(1); };
+
+  // Fetch all seller products with pagination
+  const { data: productsData, isLoading } = useQuery({
+    queryKey: ["seller-products-all", filterStatus, filterStore, currentPage, debouncedSearch],
     queryFn: async () => {
+      const from = (currentPage - 1) * ADMIN_PRODUCTS_PER_PAGE;
+      const to = from + ADMIN_PRODUCTS_PER_PAGE - 1;
+
       let query = supabase
         .from("products")
         .select(`
@@ -54,7 +77,7 @@ export default function SellerProductsAll() {
             slug
           ),
           categories (id, name, slug)
-        `)
+        `, { count: 'exact' })
         .eq("is_seller_product", true)
         .order("created_at", { ascending: false });
 
@@ -64,12 +87,19 @@ export default function SellerProductsAll() {
       if (filterStore !== "all") {
         query = query.eq("store_id", filterStore);
       }
+      if (debouncedSearch) {
+        query = query.ilike("name", `%${debouncedSearch}%`);
+      }
 
-      const { data, error } = await query;
+      const { data, error, count } = await query.range(from, to);
       if (error) throw error;
-      return data;
+      return { products: data || [], totalCount: count || 0 };
     },
   });
+
+  const products = productsData?.products || [];
+  const totalCount = productsData?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / ADMIN_PRODUCTS_PER_PAGE);
 
   // Fetch categories for editing
   const { data: categories } = useQuery({
@@ -140,16 +170,7 @@ export default function SellerProductsAll() {
     updateMutation.mutate({ productId: editProduct.id, updates });
   };
 
-  // Filter by search
-  const filteredProducts = products?.filter((p: any) => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      p.name?.toLowerCase().includes(q) ||
-      p.stores?.name?.toLowerCase().includes(q) ||
-      p.categories?.name?.toLowerCase().includes(q)
-    );
-  });
+  const filteredProducts = products;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -179,11 +200,11 @@ export default function SellerProductsAll() {
             <Input
               placeholder="Search products, stores..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-9"
             />
           </div>
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <Select value={filterStatus} onValueChange={handleFilterStatus}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -194,7 +215,7 @@ export default function SellerProductsAll() {
               <SelectItem value="rejected">Rejected</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={filterStore} onValueChange={setFilterStore}>
+          <Select value={filterStore} onValueChange={handleFilterStore}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Store" />
             </SelectTrigger>
@@ -209,8 +230,8 @@ export default function SellerProductsAll() {
 
         {/* Stats */}
         <div className="flex gap-4 text-sm text-muted-foreground">
-          <span>{filteredProducts?.length || 0} products</span>
-          {searchQuery && <span>· filtered by "{searchQuery}"</span>}
+          <span>{totalCount} products</span>
+          {debouncedSearch && <span>· filtered by "{debouncedSearch}"</span>}
         </div>
 
         {/* Products Table-like List */}
@@ -376,6 +397,24 @@ export default function SellerProductsAll() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Showing {((currentPage - 1) * ADMIN_PRODUCTS_PER_PAGE) + 1}–{Math.min(currentPage * ADMIN_PRODUCTS_PER_PAGE, totalCount)} of {totalCount}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                <ChevronLeft className="h-4 w-4" /> Previous
+              </Button>
+              <span className="text-sm font-medium px-2">{currentPage} / {totalPages}</span>
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                Next <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         )}
 
