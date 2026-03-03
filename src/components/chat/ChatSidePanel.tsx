@@ -157,6 +157,24 @@ export function ChatSidePanel() {
 
   // Start new conversation after closing
   const handleStartNewConversation = useCallback(() => {
+    // Clean up existing channels before resetting state
+    if (typingChannelRef.current) {
+      supabase.removeChannel(typingChannelRef.current);
+      typingChannelRef.current = null;
+    }
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+      inactivityTimerRef.current = null;
+    }
+    if (warningTimerRef.current) {
+      clearTimeout(warningTimerRef.current);
+      warningTimerRef.current = null;
+    }
+
     setConversation(null);
     setMessages([]);
     setIsChatClosed(false);
@@ -164,6 +182,8 @@ export function ChatSidePanel() {
     setInactivityWarning(false);
     setIssueCategory('');
     setIssueDescription('');
+    setIsAgentTyping(false);
+    setIsAiResponding(false);
   }, []);
 
   // Clean up timers on unmount

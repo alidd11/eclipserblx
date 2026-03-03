@@ -1,7 +1,7 @@
 import { ReactNode, useEffect } from 'react';
 import { LayoutShell } from '@/components/layout/LayoutShell';
 import { StoreSidebar } from './StoreSidebar';
-import { ChatWidget } from '@/components/chat/ChatWidget';
+
 import { useRecentStores } from '@/hooks/useRecentStores';
 
 interface StoreTab {
@@ -86,7 +86,6 @@ export function StoreLayout({
         <StoreSidebar {...sidebarProps} onNavigate={onClose} isMobileDrawer />
       )}
       headerProps={{ hideBrandName: true }}
-      extra={<ChatWidget />}
     >
       {children}
     </LayoutShell>
