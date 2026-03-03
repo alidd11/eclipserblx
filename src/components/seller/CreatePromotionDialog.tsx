@@ -133,7 +133,7 @@ export function CreatePromotionDialog({ open, onOpenChange }: CreatePromotionDia
               <span className="font-bold">£{balance.toFixed(2)}</span>
               {balance < 5 && (
                 <Button variant="link" size="sm" className="h-auto p-0 text-xs" asChild>
-                  <Link to="/wallet">Top up</Link>
+                  <Link to="/credits">Top up</Link>
                 </Button>
               )}
             </div>
@@ -199,7 +199,7 @@ export function CreatePromotionDialog({ open, onOpenChange }: CreatePromotionDia
           {insufficientBalance && (
             <div className="flex items-start gap-2 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs">
               <AlertTriangle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
-              <span>Insufficient credits. You need £{bidAmount} but only have £{balance.toFixed(2)}. <Link to="/wallet" className="underline font-medium">Top up</Link></span>
+              <span>Insufficient credits. You need £{bidAmount} but only have £{balance.toFixed(2)}. <Link to="/credits" className="underline font-medium">Top up</Link></span>
             </div>
           )}
           {hasDuplicateBid && (
