@@ -394,7 +394,7 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
                             {/* Store strip */}
                             <div className="h-7 flex items-center gap-1.5 px-2.5 bg-muted/60">
                               {spotlight.stores?.logo_url && (
-                                <img src={spotlight.stores.logo_url} alt="" loading="lazy" decoding="async" className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0" />
+                                <img src={optimizeImageUrl(spotlight.stores.logo_url, 14, 14, 'contain')} alt="" width={14} height={14} loading="lazy" decoding="async" className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0" />
                               )}
                               <span className="text-[10px] text-muted-foreground font-medium truncate">{spotlight.stores?.name}</span>
                               {spotlight.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
