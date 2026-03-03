@@ -107,9 +107,11 @@ export function PromotionCarousel() {
           <button
             key={index}
             onClick={() => scrollTo(index)}
-            className={`h-0.5 rounded-full transition-all duration-300 ${
-              index === selectedIndex ? 'bg-foreground w-5' : 'bg-border w-2'
-            }`}
+            className="h-0.5 w-5 rounded-full transition-colors duration-300"
+            style={{
+              backgroundColor: index === selectedIndex ? 'hsl(var(--foreground))' : 'hsl(var(--border))',
+              opacity: index === selectedIndex ? 1 : 0.5,
+            }}
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
