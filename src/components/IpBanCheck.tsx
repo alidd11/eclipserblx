@@ -38,12 +38,8 @@ export const IpBanCheck = forwardRef<HTMLDivElement, { children: React.ReactNode
     checkIpBan();
   }, []);
 
-  // Show minimal loading state while checking (prevents null response in PWA/Safari)
-  if (isChecking) {
-    return (
-      <div className="min-h-screen bg-background" />
-    );
-  }
+  // Render children immediately while ban check runs in background
+  // This prevents the IP ban check from blocking FCP/LCP
 
   // Show banned screen if IP is banned
   if (banInfo?.banned) {

@@ -34,6 +34,7 @@ export function EclipseLogo({ className, size = 'md' }: EclipseLogoProps) {
         height={sizePx[size]}
         loading="lazy"
         decoding="async"
+        fetchPriority="low"
         className="w-full h-full object-contain"
       />
     </div>
