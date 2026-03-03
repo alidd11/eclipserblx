@@ -18,7 +18,7 @@ import { AdminManifestHandler } from "@/components/pwa/AdminManifestHandler";
 import { ConnectionErrorBoundary } from "@/components/ConnectionErrorBoundary";
 import { PWARouteRestorer } from "@/hooks/usePWALastRoute";
 import { GlobalBackground } from "@/components/layout/GlobalBackground";
-import { AppRoutes } from "@/components/AppRoutes";
+const AppRoutes = lazy(() => import("@/components/AppRoutes").then(m => ({ default: m.AppRoutes })));
 import { EmailGuard } from "@/components/auth/EmailGuard";
 
 // Lazy-load heavy components that aren't needed on initial render
