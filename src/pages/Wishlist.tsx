@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PageTransition } from '@/components/ui/PageTransition';
+
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useWishlistItems, useWishlist } from '@/hooks/useWishlist';
@@ -57,7 +57,7 @@ export default function Wishlist() {
 
   return (
     <MainLayout>
-      <PageTransition className="container max-w-4xl py-8">
+      <div className="container max-w-4xl py-8">
         <div className="flex items-center gap-3 mb-8">
           <Heart className="h-8 w-8 text-primary" />
           <div>
@@ -212,7 +212,7 @@ export default function Wishlist() {
             )}
           </div>
         )}
-      </PageTransition>
+      </div>
     </MainLayout>
   );
 }

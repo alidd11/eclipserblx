@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { InlineLoading } from '@/components/ui/InlineLoading';
 import { Link } from 'react-router-dom';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { useQuery } from '@tanstack/react-query';
@@ -405,7 +406,7 @@ export default function MyPurchases() {
           {/* Products Tab */}
           <TabsContent value="products" className="space-y-4">
             {isLoading ? (
-              <div className="text-center py-12 text-muted-foreground">Loading...</div>
+              <InlineLoading message="Loading products…" />
             ) : downloadableItems.length === 0 ? (
               <Card className="border-border bg-card">
                 <CardContent className="py-12 text-center space-y-4">
@@ -593,7 +594,7 @@ export default function MyPurchases() {
 
             {/* Orders List */}
             {isLoading ? (
-              <div className="text-center py-12 text-muted-foreground">Loading...</div>
+              <InlineLoading message="Loading orders…" />
             ) : filteredOrders.length === 0 ? (
               <Card className="border-border bg-card">
                 <CardContent className="py-12 text-center space-y-4">

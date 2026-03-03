@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Trash2, ShoppingBag, ArrowRight, ShieldCheck, Zap, CreditCard, Sparkles } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { PageTransition } from '@/components/ui/PageTransition';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,7 +36,7 @@ export default function Cart() {
   if (items.length === 0) {
     return (
       <MainLayout>
-        <PageTransition>
+        
           <div className="container py-16 max-w-lg mx-auto">
             <Card className="bg-card border-border text-center">
               <CardContent className="pt-12 pb-8 space-y-6">
@@ -55,14 +55,13 @@ export default function Cart() {
               </CardContent>
             </Card>
           </div>
-        </PageTransition>
       </MainLayout>
     );
   }
 
   return (
     <MainLayout>
-      <PageTransition className="container py-8 space-y-8">
+      <div className="container py-8 space-y-8">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl md:text-4xl font-display font-bold">{t('cart.yourCart')}</h1>
           <Button variant="ghost" size="sm" onClick={clearCart} className="text-destructive hover:text-destructive">
@@ -203,7 +202,7 @@ export default function Cart() {
             </CardContent>
           </Card>
         </div>
-      </PageTransition>
+      </div>
     </MainLayout>
   );
 }

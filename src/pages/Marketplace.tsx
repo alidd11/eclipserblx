@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo } from 'react';
+import { InlineLoading } from '@/components/ui/InlineLoading';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Store, ChevronRight, ShieldCheck, Award, Users, Search, X, Package, FlaskConical } from 'lucide-react';
-import { PageTransition } from '@/components/ui/PageTransition';
+
 import { EmptyState } from '@/components/ui/EmptyState';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -294,9 +295,7 @@ export default function Marketplace() {
     return (
       <MainLayout>
         <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center min-h-[50vh]">
-            <div className="animate-pulse text-muted-foreground">Loading...</div>
-          </div>
+          <InlineLoading message="Loading marketplace…" />
         </div>
       </MainLayout>
     );
@@ -336,7 +335,7 @@ export default function Marketplace() {
 
   return (
     <MainLayout>
-      <PageTransition className="container mx-auto px-4 py-6 sm:py-8 space-y-8">
+      <div className="container mx-auto px-4 py-6 sm:py-8 space-y-8">
         {/* Hero Section */}
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
@@ -495,7 +494,7 @@ export default function Marketplace() {
             </div>
           </section>
         )}
-      </PageTransition>
+      </div>
     </MainLayout>
   );
 }

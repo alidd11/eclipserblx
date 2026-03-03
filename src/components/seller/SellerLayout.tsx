@@ -1,4 +1,5 @@
 import { ReactNode, useLayoutEffect } from 'react';
+import { PageTransition } from '@/components/layout/PageTransition';
 import { Navigate, useLocation } from 'react-router-dom';
 import { SellerSidebar } from './SellerSidebar';
 import { useAuth } from '@/hooks/useAuth';
@@ -99,7 +100,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
       )}
       contentClassName="p-4 md:p-6 lg:p-8"
     >
-      {children}
+      <PageTransition>{children}</PageTransition>
     </LayoutShell>
   );
 }

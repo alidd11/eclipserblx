@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import { InlineLoading } from '@/components/ui/InlineLoading';
+import { CardEmptyState } from '@/components/ui/CardEmptyState';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -332,9 +334,7 @@ export default function ChatHistory() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="container py-12 flex justify-center">
-          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
-        </div>
+        <InlineLoading message="Loading support history…" />
       </MainLayout>
     );
   }
@@ -624,15 +624,15 @@ export default function ChatHistory() {
 
           <TabsContent value="chats" className="space-y-4">
             {isLoading ? (
-              <div className="text-center py-12 text-muted-foreground">Loading...</div>
+              <InlineLoading message="Loading chats…" />
             ) : conversations.length === 0 ? (
               <Card>
-                <CardContent className="py-12 text-center">
-                  <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">No live chat history yet</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Start a conversation using the chat widget
-                  </p>
+                <CardContent className="p-0">
+                  <CardEmptyState
+                    icon={MessageSquare}
+                    title="No live chat history yet"
+                    description="Start a conversation using the chat widget"
+                  />
                 </CardContent>
               </Card>
             ) : (
@@ -670,15 +670,15 @@ export default function ChatHistory() {
 
           <TabsContent value="tickets" className="space-y-4">
             {isLoading ? (
-              <div className="text-center py-12 text-muted-foreground">Loading...</div>
+              <InlineLoading message="Loading tickets…" />
             ) : tickets.length === 0 ? (
               <Card>
-                <CardContent className="py-12 text-center">
-                  <Ticket className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">No support tickets yet</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Submit a ticket through the support page
-                  </p>
+                <CardContent className="p-0">
+                  <CardEmptyState
+                    icon={Ticket}
+                    title="No support tickets yet"
+                    description="Submit a ticket through the support page"
+                  />
                 </CardContent>
               </Card>
             ) : (
