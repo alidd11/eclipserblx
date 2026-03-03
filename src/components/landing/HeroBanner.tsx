@@ -1,5 +1,5 @@
 // Hero image served from public/ so the browser can discover it from the initial HTML
-const heroBg = '/hero-bg.jpeg';
+const heroBg = '/hero-bg.webp';
 
 export function HeroBanner() {
   return (

@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { BackgroundVideo } from '@/components/ui/BackgroundVideo';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 import { useSubscription } from '@/hooks/useSubscription';
 import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -321,7 +322,7 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
             />
           ) : (
             <img 
-              src={displayMedia} 
+              src={optimizeImageUrl(displayMedia, 400, 300)} 
               alt={product.name}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Megaphone, Plus, Trash2, AlertCircle, AlertTriangle, Info, Shield, TrendingUp, TrendingDown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import marketplaceLogo from '@/assets/marketplace-logo-icon.png';
+import marketplaceLogo from '@/assets/marketplace-logo-icon.webp';
 import { motion } from 'framer-motion';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

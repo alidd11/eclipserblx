@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { SITE_NAME } from '@/lib/constants';
-import marketplaceLogo from '@/assets/marketplace-logo-icon.png';
+import marketplaceLogo from '@/assets/marketplace-logo-icon.webp';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
