@@ -129,17 +129,30 @@ export default function StoreApplications() {
       if (updateError) throw updateError;
 
       // 2. Create the store with discord server invite
-      const slug = application.store_name
+      const baseSlug = application.store_name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
+
+      // Check if slug already exists, only add suffix if collision
+      let slug = baseSlug;
+      const { data: existing } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('slug', baseSlug)
+        .maybeSingle();
+      
+      if (existing) {
+        // Add short 4-char suffix only on collision
+        slug = `${baseSlug}-${Date.now().toString(36).slice(-4)}`;
+      }
 
       const { data: store, error: storeError } = await supabase
         .from('stores')
         .insert({
           owner_id: application.user_id,
           name: application.store_name,
-          slug: `${slug}-${Date.now().toString(36)}`,
+          slug,
           description: application.store_description,
           discord_url: application.discord_server_invite,
           status: 'approved',
