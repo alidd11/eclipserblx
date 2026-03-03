@@ -90,11 +90,11 @@ export function PromotionCarousel() {
   };
 
   return (
-    <div className="border border-border bg-card rounded-md overflow-hidden">
+    <div className="border border-border bg-card rounded-md overflow-hidden" role="region" aria-roledescription="carousel" aria-label="Promotions">
       <div ref={emblaRef} className="overflow-hidden">
-        <div className="flex">
-          {promotions.map((promo) => (
-            <div key={promo.id} className="flex-[0_0_100%] min-w-0">
+        <div className="flex" aria-live="off">
+          {promotions.map((promo, i) => (
+            <div key={promo.id} className="flex-[0_0_100%] min-w-0" role="group" aria-roledescription="slide" aria-label={`Slide ${i + 1} of ${promotions.length}: ${promo.title}`}>
               {renderSlide(promo)}
             </div>
           ))}

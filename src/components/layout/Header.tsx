@@ -226,8 +226,11 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
             WebkitOverflowScrolling: 'touch',
             touchAction: 'pan-y'
           }}
+          id="mobile-nav-menu"
+          role="navigation"
+          aria-label="Mobile navigation"
         >
-        <nav className="flex flex-col gap-1 p-2">
+        <div className="flex flex-col gap-1 p-2">
             {/* Main Navigation */}
             {navLinks.map((link) => (
               <NavLink
@@ -401,7 +404,7 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
                 </button>
               </>
             )}
-          </nav>
+          </div>
         </div>
       </nav>
 
