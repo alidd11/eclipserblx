@@ -1,3 +1,5 @@
+// Sentry must be imported first to capture all errors
+import "./lib/sentry";
 import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "next-themes";
 import App from "./App.tsx";
