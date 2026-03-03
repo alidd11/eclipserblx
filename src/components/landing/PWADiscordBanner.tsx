@@ -20,22 +20,30 @@ export function PWADiscordBanner() {
       href={discordUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex items-center justify-between border border-border bg-card hover:border-[#5865F2]/50 transition-colors duration-200 rounded-md overflow-hidden"
+      className="group block border border-border bg-card hover:border-[#5865F2]/50 active:bg-muted/40 transition-colors duration-200 rounded-md overflow-hidden"
     >
-      <div className="flex items-center gap-4 min-w-0 px-5 py-4">
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="w-0.5 h-10 bg-[#5865F2] rounded-full" />
-          <DiscordLogo className="h-5 w-5 text-muted-foreground" />
-        </div>
-        <div className="min-w-0">
-          <h3 className="font-semibold text-[13px] text-foreground uppercase tracking-wide">{t('discord.joinDiscord')}</h3>
-          <p className="text-xs text-muted-foreground line-clamp-1 max-w-xs mt-0.5">{t('discord.joinDiscordDesc')}</p>
-        </div>
-      </div>
+      <div className="px-4 sm:px-5 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+          <div className="flex items-start sm:items-center gap-3 min-w-0">
+            <div className="flex items-center gap-2.5 shrink-0">
+              <div className="w-0.5 h-10 bg-[#5865F2] rounded-full" />
+              <DiscordLogo className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-semibold text-[13px] text-foreground uppercase tracking-wide">
+                {t('discord.joinDiscord')}
+              </h3>
+              <p className="text-xs text-muted-foreground line-clamp-2 sm:line-clamp-1 max-w-xs mt-0.5">
+                {t('discord.joinDiscordDesc')}
+              </p>
+            </div>
+          </div>
 
-      <div className="shrink-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors pr-5">
-        {t('discord.join')}
-        <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+          <div className="shrink-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#5865F2] sm:text-muted-foreground group-hover:text-foreground transition-colors pl-[calc(0.125rem+0.75rem+1.75rem)] sm:pl-0">
+            {t('discord.join')}
+            <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+          </div>
+        </div>
       </div>
     </a>
   );
