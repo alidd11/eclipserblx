@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
-import marketplaceLogo from '@/assets/marketplace-logo-icon.png';
+import marketplaceLogo from '@/assets/marketplace-logo-icon.webp';
 
 interface EclipseLogoProps {
   className?: string;
