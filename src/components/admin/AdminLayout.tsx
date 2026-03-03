@@ -1,4 +1,5 @@
 import { ReactNode, useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
+import { useIOSChatKeyboard } from '@/hooks/useIOSChatKeyboard';
 import { Navigate, useLocation } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminInstallPrompt } from './AdminInstallPrompt';
@@ -134,102 +135,8 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
     };
   }, [isChatPage]);
 
-  // Manage `--chat-safe-bottom` and `--chat-vvh` for iOS PWA keyboard handling.
-  // On iOS PWA, we need to explicitly set container height based on visualViewport
-  // because 100dvh doesn't always update correctly when the keyboard animates.
-  useEffect(() => {
-    const html = document.documentElement;
-
-    // Cleanup immediately if we're not on a chat page
-    if (!isChatPage) {
-      html.style.removeProperty('--chat-safe-bottom');
-      html.style.removeProperty('--chat-vvh');
-      delete html.dataset.chatKeyboard;
-      return;
-    }
-
-    // Start with safe-area padding (keyboard closed state)
-    html.style.setProperty('--chat-safe-bottom', 'calc(env(safe-area-inset-bottom) + 4px)');
-    html.style.setProperty('--chat-vvh', '100dvh');
-    html.dataset.chatKeyboard = 'closed';
-
-    let disposed = false;
-    let baseVvHeight = window.visualViewport?.height ?? window.innerHeight;
-    let timers: number[] = [];
-
-    const updateViewport = () => {
-      if (disposed) return;
-
-      const vv = window.visualViewport;
-      const vvHeight = vv?.height ?? window.innerHeight;
-
-      // Check if any input is focused
-      const activeEl = document.activeElement;
-      const isInputFocused =
-        !!activeEl &&
-        (activeEl.tagName === 'INPUT' ||
-          activeEl.tagName === 'TEXTAREA' ||
-          (activeEl as HTMLElement).isContentEditable);
-
-      // Update baseline when keyboard is closed (no input focused)
-      if (!isInputFocused) {
-        baseVvHeight = Math.max(baseVvHeight, vvHeight);
-      }
-
-      // Detect keyboard open: significant height reduction while input focused
-      const keyboardHeight = Math.max(0, baseVvHeight - vvHeight);
-      const keyboardOpen = isInputFocused && keyboardHeight > 80;
-
-      // Set the visual viewport height as a CSS variable for the chat container
-      // This ensures the container shrinks when the keyboard opens on iOS PWA
-      html.style.setProperty('--chat-vvh', `${vvHeight}px`);
-
-      // When keyboard is open, add a small padding (8px) to prevent the iOS keyboard
-      // accessory bar from overlapping the input. When closed, use safe-area inset
-      // to fill the home indicator region.
-      html.style.setProperty(
-        '--chat-safe-bottom',
-        keyboardOpen ? '8px' : 'calc(env(safe-area-inset-bottom) + 4px)'
-      );
-      html.dataset.chatKeyboard = keyboardOpen ? 'open' : 'closed';
-    };
-
-    // Staggered updates for reliable first-open detection
-    const updateStaggered = () => {
-      timers.forEach(t => clearTimeout(t));
-      updateViewport();
-      timers = [
-        window.setTimeout(updateViewport, 50),
-        window.setTimeout(updateViewport, 150),
-        window.setTimeout(updateViewport, 300),
-        window.setTimeout(updateViewport, 500),
-      ];
-    };
-
-    updateStaggered();
-
-    const vv = window.visualViewport;
-    vv?.addEventListener('resize', updateViewport);
-    vv?.addEventListener('scroll', updateViewport);
-    document.addEventListener('focusin', updateStaggered);
-    document.addEventListener('focusout', updateStaggered);
-
-    return () => {
-      disposed = true;
-      timers.forEach(t => clearTimeout(t));
-      vv?.removeEventListener('resize', updateViewport);
-      vv?.removeEventListener('scroll', updateViewport);
-      document.removeEventListener('focusin', updateStaggered);
-      document.removeEventListener('focusout', updateStaggered);
-
-      html.style.removeProperty('--chat-safe-bottom');
-      html.style.removeProperty('--chat-vvh');
-      delete html.dataset.chatKeyboard;
-    };
-  }, [isChatPage]);
-
-  // Note: We rely on 100dvh + interactive-widget=resizes-content (set in index.html)
-  // to handle iOS keyboard resizing. No custom --chat-vvh logic needed.
+  // iOS PWA keyboard handling for chat pages (deduplicated via shared hook)
+  useIOSChatKeyboard(isChatPage);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);

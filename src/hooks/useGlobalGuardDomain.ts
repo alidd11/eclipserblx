@@ -1,14 +1,8 @@
-import { useMemo } from 'react';
-
 /**
- * Detects if the app is running on the Global Guard subdomain (guard.eclipserblx.com)
- * Used to conditionally render the Global Guard dashboard instead of the main app
+ * Detects if the current hostname is the Global Guard subdomain.
  */
 export function useGlobalGuardDomain() {
-  const isGlobalGuardDomain = useMemo(() => {
-    const hostname = window.location.hostname;
-    return hostname.startsWith('guard.') || hostname === 'guard.eclipserblx.com';
-  }, []);
-
+  const hostname = window.location.hostname;
+  const isGlobalGuardDomain = hostname.startsWith('guard.') || hostname === 'guard.eclipserblx.com';
   return { isGlobalGuardDomain };
 }
