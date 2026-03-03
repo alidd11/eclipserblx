@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Shield, Users, Store, Coins } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { useCallback, useEffect, useState } from 'react';
@@ -20,6 +20,7 @@ export function PromotionCarousel() {
       description: 'DMCA takedowns, copy detection & ownership monitoring for Roblox creators.',
       cta: 'Learn More',
       link: '/ip-shield',
+      icon: Shield,
       accentClass: 'bg-primary',
     },
     {
@@ -28,6 +29,7 @@ export function PromotionCarousel() {
       description: t('landing.affiliateDesc'),
       cta: t('landing.affiliateCta'),
       link: '/affiliate',
+      icon: Users,
       accentClass: 'bg-primary',
     },
     {
@@ -36,6 +38,7 @@ export function PromotionCarousel() {
       description: t('landing.sellerDesc'),
       cta: t('landing.sellerCta'),
       link: '/account',
+      icon: Store,
       accentClass: 'bg-primary',
     },
     {
@@ -44,6 +47,7 @@ export function PromotionCarousel() {
       description: 'Pay with credits to skip transaction fees and check out instantly.',
       cta: 'Top Up',
       link: '/wallet',
+      icon: Coins,
       accentClass: 'bg-primary',
     },
   ];
@@ -69,24 +73,37 @@ export function PromotionCarousel() {
     [emblaApi]
   );
 
-  const renderSlide = (promo: typeof promotions[0]) => (
-    <div className="flex items-center justify-between gap-4 px-5 py-4">
-      <div className="flex items-center gap-3 min-w-0">
-        <div className={`w-0.5 h-10 ${promo.accentClass} rounded-full shrink-0`} />
-        <div className="min-w-0">
-          <h3 className="font-semibold text-[13px] text-foreground uppercase tracking-wide leading-snug">{promo.title}</h3>
-          <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{promo.description}</p>
-        </div>
-      </div>
+  const renderSlide = (promo: typeof promotions[0]) => {
+    const Icon = promo.icon;
+    return (
       <Link
         to={promo.link}
-        className="shrink-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+        className="block px-4 sm:px-5 py-4 sm:py-4 active:bg-muted/40 transition-colors"
       >
-        {promo.cta}
-        <ArrowRight className="h-3.5 w-3.5" />
+        {/* Mobile: stacked layout, Desktop: horizontal */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+          <div className="flex items-start sm:items-center gap-3 min-w-0">
+            <div className={`w-0.5 self-stretch sm:h-10 ${promo.accentClass} rounded-full shrink-0`} />
+            <div className="flex items-center gap-2.5 shrink-0">
+              <Icon className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-semibold text-[13px] text-foreground uppercase tracking-wide leading-snug">
+                {promo.title}
+              </h3>
+              <p className="text-xs text-muted-foreground line-clamp-2 sm:line-clamp-1 mt-0.5">
+                {promo.description}
+              </p>
+            </div>
+          </div>
+          <div className="shrink-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary sm:text-muted-foreground pl-[calc(0.125rem+0.75rem+2.5rem)] sm:pl-0">
+            {promo.cta}
+            <ArrowRight className="h-3.5 w-3.5" />
+          </div>
+        </div>
       </Link>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="border border-border bg-card rounded-md overflow-hidden">
