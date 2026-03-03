@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Store, ChevronRight, ShieldCheck, Award, Users, Search, Package, FlaskConical, Crown, Car, Code, Bot, Layout, Box, Palette, Wrench, Gamepad2, Map, Shirt, Plane, ArrowRight } from 'lucide-react';
 import { usePrefetchProduct } from '@/hooks/usePrefetchProduct';
 import { useTranslation } from 'react-i18next';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -46,7 +47,7 @@ const StoreCard = memo(forwardRef<HTMLAnchorElement, { store: StoreData; showTes
           className="h-20 relative overflow-hidden"
           style={{ 
             background: store.banner_url 
-              ? `url(${store.banner_url}) center/cover` 
+              ? `url(${optimizeImageUrl(store.banner_url, 540, 80)}) center/cover` 
               : `linear-gradient(135deg, ${accentColor}40, ${accentColor}20)`
           }}
         >
@@ -65,7 +66,7 @@ const StoreCard = memo(forwardRef<HTMLAnchorElement, { store: StoreData; showTes
           <div className="flex items-start gap-3 mb-1">
             {store.logo_url ? (
               <img 
-                src={store.logo_url} 
+                src={optimizeImageUrl(store.logo_url, 56)} 
                 alt={store.name}
                 className="h-14 w-14 rounded-lg object-contain bg-background shadow-md flex-shrink-0"
               />
