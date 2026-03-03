@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { CATEGORIES } from '@/lib/constants';
 import { FeaturedProductsCard } from '@/components/home/FeaturedProductsCard';
+import { CollectionSchema } from '@/components/seo/CollectionSchema';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { usePageTracking } from '@/hooks/usePageTracking';
@@ -170,6 +171,12 @@ export default function Products() {
   return (
     <MainLayout>
       <PullToRefresh onRefresh={handleRefresh}>
+        <CollectionSchema
+          name={activeCategory ? activeCategory.name : 'All Products'}
+          description={activeCategory?.description || 'Browse premium Roblox scripts, vehicles, maps and game assets on Eclipse marketplace.'}
+          url={`https://eclipserblx.com/products${categorySlug ? `?category=${categorySlug}` : ''}`}
+          itemCount={productsData?.totalCount ?? 0}
+        />
         <div className="container py-8 space-y-6">
         <Card className="bg-card border-border">
           <CardContent className="p-4 space-y-3">

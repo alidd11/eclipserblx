@@ -1,5 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -11,7 +9,7 @@ const SEARCH_ENGINES = [
   'https://www.bing.com/indexnow',
 ];
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -26,7 +24,6 @@ serve(async (req) => {
       );
     }
 
-    // Ensure all URLs are properly formatted
     const formattedUrls = urls.map((url: string) =>
       url.startsWith('http') ? url : `https://eclipserblx.com${url}`
     );
@@ -38,17 +35,22 @@ serve(async (req) => {
       urlList: formattedUrls,
     };
 
-    // Submit to all IndexNow endpoints in parallel
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
     const results = await Promise.allSettled(
       SEARCH_ENGINES.map(async (engine) => {
         const res = await fetch(engine, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
+          signal: controller.signal,
         });
         return { engine, status: res.status, ok: res.ok };
       })
     );
+
+    clearTimeout(timeout);
 
     const summary = results.map((r) =>
       r.status === 'fulfilled' ? r.value : { engine: 'unknown', error: r.reason?.message }
