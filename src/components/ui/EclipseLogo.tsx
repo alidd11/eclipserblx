@@ -123,6 +123,7 @@ export function EclipseLogo({ className, size = 'md', removeWhiteBackground }: E
         alt="Eclipse Logo"
         width={sizePx[size]}
         height={sizePx[size]}
+        loading="lazy"
         decoding="async"
         className="w-full h-full object-contain"
       />
