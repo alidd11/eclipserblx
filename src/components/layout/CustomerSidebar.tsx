@@ -342,7 +342,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
           )}
         </div>
         {!isCollapsed && (
-          <span className="min-w-0 leading-tight flex-1">{item.title}</span>
+          <span className="min-w-0 flex-1 leading-tight break-words [overflow-wrap:anywhere]">{item.title}</span>
         )}
         {!isCollapsed && item.showStatusDot && (
           <Circle className={cn('h-2.5 w-2.5 fill-current shrink-0', statusConfig[systemStatus].color)} />
@@ -360,8 +360,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       "text-[13px] font-medium select-none",
       "transition-colors duration-100",
       isCollapsed
-        ? "flex items-center justify-center py-1.5 rounded-md"
-        : "flex flex-row flex-wrap items-start gap-2.5 px-2.5 py-1.5 ml-3 rounded-md",
+        ? "flex w-full max-w-full items-center justify-center py-1.5 rounded-md overflow-hidden"
+        : "flex w-full max-w-full min-w-0 flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3 rounded-md overflow-hidden",
       isActive
         ? "border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none pl-[calc(0.625rem-2px)]"
         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -702,7 +702,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-1.5 py-1.5 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
+      <nav className="flex-1 px-1.5 py-1.5 overflow-y-auto overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
         <div className="space-y-0.5">
           {navGroups.map((group) => (
             <div key={group.id}>
