@@ -8,6 +8,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PromotedBadge } from '@/components/marketplace/PromotedBadge';
 import { cn } from '@/lib/utils';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 interface FeaturedProduct {
   id: string;
@@ -121,8 +122,10 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
           <div className="aspect-[2.5/1] sm:aspect-[3/1] relative overflow-hidden bg-black/20">
             {displayProduct.images?.[0] ? (
               <img
-                src={displayProduct.images[0]}
+                src={optimizeImageUrl(displayProduct.images[0], 540, 180)}
                 alt={displayProduct.name}
+                width={540}
+                height={180}
                 loading="lazy"
                 decoding="async"
                 className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
@@ -177,7 +180,7 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
           <div className="h-8 relative flex items-center gap-1.5 px-3 overflow-hidden bg-muted/60">
             <div className="flex items-center gap-1.5 min-w-0">
               {displayProduct.stores?.logo_url ? (
-                <img src={displayProduct.stores.logo_url} alt="" className="h-4 w-4 rounded-sm object-cover flex-shrink-0" />
+                <img src={optimizeImageUrl(displayProduct.stores.logo_url, 16, 16, 'contain')} alt="" width={16} height={16} loading="lazy" decoding="async" className="h-4 w-4 rounded-sm object-cover flex-shrink-0" />
               ) : (
                 <div className="h-4 w-4 rounded-sm bg-muted flex-shrink-0" />
               )}

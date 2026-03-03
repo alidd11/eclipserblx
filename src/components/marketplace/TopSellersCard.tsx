@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 interface TopSeller {
   id: string;
@@ -78,8 +79,12 @@ export function TopSellersCard() {
                   )}
                   {seller.logo_url ? (
                     <img 
-                      src={seller.logo_url} 
+                      src={optimizeImageUrl(seller.logo_url, 40, 40, 'contain')} 
                       alt={seller.name}
+                      width={40}
+                      height={40}
+                      loading="lazy"
+                      decoding="async"
                       className="h-10 w-10 rounded-lg object-contain bg-background"
                     />
                   ) : (

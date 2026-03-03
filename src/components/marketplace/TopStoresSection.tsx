@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 interface TopStore {
   id: string;
   name: string;
@@ -137,7 +138,7 @@ export const TopStoresSection = forwardRef<HTMLDivElement>(function TopStoresSec
           className="relative w-full aspect-[3/1] rounded-xl overflow-hidden border border-border"
           style={{
             background: store!.banner_url
-              ? `url(${store!.banner_url}) center/cover`
+              ? `url(${optimizeImageUrl(store!.banner_url, 540, 180)}) center/cover`
               : `linear-gradient(135deg, ${accentColor}40, ${accentColor}20)`,
           }}
         >
@@ -176,8 +177,12 @@ export const TopStoresSection = forwardRef<HTMLDivElement>(function TopStoresSec
             <div className="flex items-center gap-2.5 mb-2">
               {store!.logo_url ? (
                 <img
-                  src={store!.logo_url}
+                  src={optimizeImageUrl(store!.logo_url, 40, 40, 'contain')}
                   alt={store!.name}
+                  width={40}
+                  height={40}
+                  loading="lazy"
+                  decoding="async"
                   className="h-10 w-10 rounded-lg object-contain bg-white/10 backdrop-blur-sm border border-white/20 flex-shrink-0"
                 />
               ) : (
