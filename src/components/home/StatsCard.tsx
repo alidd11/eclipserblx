@@ -22,34 +22,16 @@ export const StatsCard = memo(forwardRef<HTMLDivElement>(function StatsCard(_, r
   const { data: stats } = useQuery({
     queryKey: ['homepage-stats'],
     queryFn: async () => {
-      const now = new Date().toISOString();
-      
-      const nonStaffRoles = ['eclipse_plus_member', 'seller', 'customer'];
-      const { data: staffRoles } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .not('role', 'in', `(${nonStaffRoles.join(',')})`);
-      
-      const staffUserIds = [...new Set((staffRoles ?? []).map(r => r.user_id))];
-      
-      let customersQuery = supabase
-        .from('profiles')
-        .select('id', { count: 'exact', head: true });
-      
-      if (staffUserIds.length > 0) {
-        customersQuery = customersQuery.not('user_id', 'in', `(${staffUserIds.join(',')})`);
+      const { data, error } = await supabase.rpc('get_homepage_stats');
+      if (error) {
+        console.error('[StatsCard] Failed to fetch stats:', error);
+        return { products: 0, downloads: BASE_STATS.downloads, users: BASE_STATS.users };
       }
-      
-      const [products, downloads, customers] = await Promise.all([
-        supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true).or(`release_at.is.null,release_at.lte.${now}`),
-        supabase.from('download_logs').select('id', { count: 'exact', head: true }),
-        customersQuery,
-      ]);
-
+      const result = data as { products_count: number; downloads_count: number; users_count: number };
       return {
-        products: products.count ?? 0,
-        downloads: BASE_STATS.downloads + (downloads.count ?? 0),
-        users: BASE_STATS.users + (customers.count ?? 0),
+        products: result.products_count ?? 0,
+        downloads: BASE_STATS.downloads + (result.downloads_count ?? 0),
+        users: BASE_STATS.users + (result.users_count ?? 0),
       };
     },
     staleTime: 1000 * 60 * 5,

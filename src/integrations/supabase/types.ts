@@ -9014,6 +9014,7 @@ export type Database = {
           max_servers: number
         }[]
       }
+      get_homepage_stats: { Args: never; Returns: Json }
       get_next_download_time: { Args: { _user_id: string }; Returns: string }
       get_store_qualification_progress: {
         Args: { p_store_id: string }
