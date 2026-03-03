@@ -54,6 +54,7 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
+      injectRegister: "script-defer",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "pwa-192x192.png", "pwa-512x512.png", "custom-sw.js", "manifest.webmanifest", "manifest-admin.json"],
       // Disable automatic manifest injection - we handle this dynamically in useAdminManifest
       manifest: false,

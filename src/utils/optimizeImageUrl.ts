@@ -10,6 +10,7 @@ export function optimizeImageUrl(
   url: string | null | undefined,
   width: number,
   height?: number,
+  resize: 'cover' | 'contain' | 'fill' = 'cover',
 ): string {
   if (!url) return '';
 
@@ -28,7 +29,7 @@ export function optimizeImageUrl(
   if (height) params.set('height', String(height * 2));
   // Don't set format — Supabase auto-negotiates WebP via Accept header
   params.set('quality', '80');
-  params.set('resize', 'cover');
+  params.set('resize', resize);
 
   const separator = transformed.includes('?') ? '&' : '?';
   return `${transformed}${separator}${params.toString()}`;
