@@ -124,8 +124,8 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
             <CurrencySelector compact />
             <LanguageSwitcher compact />
             <NotificationBell />
-            <Link to="/cart">
-              <Button variant="ghost" size="icon" className="relative h-7 w-7 min-h-0 min-w-0 text-muted-foreground hover:text-foreground" aria-label={t('nav.shoppingCart')}>
+            <Link to="/cart" aria-label={t('nav.shoppingCart')}>
+              <Button variant="ghost" size="icon" className="relative h-9 w-9 min-h-[44px] min-w-[44px] text-muted-foreground hover:text-foreground" aria-label={t('nav.shoppingCart')}>
                 <ShoppingCart className="h-4 w-4" />
                 {itemCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-primary text-[8px] font-medium text-primary-foreground flex items-center justify-center">
@@ -136,13 +136,13 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
             </Link>
             {user ? (
               <Link to="/account">
-                <Button variant="ghost" size="icon" className="h-7 w-7 min-h-0 min-w-0 text-muted-foreground hover:text-foreground" aria-label={t('nav.myAccount')}>
+                <Button variant="ghost" size="icon" className="h-9 w-9 min-h-[44px] min-w-[44px] text-muted-foreground hover:text-foreground" aria-label={t('nav.myAccount')}>
                   <User className="h-4 w-4" />
                 </Button>
               </Link>
             ) : (
-              <Link to="/auth">
-                <Button variant="ghost" size="icon" className="h-7 w-7 min-h-0 min-w-0 text-muted-foreground hover:text-foreground" aria-label={t('common.signIn')}>
+              <Link to="/auth" aria-label={t('common.signIn')}>
+                <Button variant="ghost" size="icon" className="h-9 w-9 min-h-[44px] min-w-[44px] text-muted-foreground hover:text-foreground" aria-label={t('common.signIn')}>
                   <User className="h-4 w-4" />
                 </Button>
               </Link>
