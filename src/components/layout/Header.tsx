@@ -90,7 +90,7 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background border-b border-border pt-[env(safe-area-inset-top)]">
-      <div className="px-4 pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))]">
+      <nav className="px-4 pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))]" aria-label="Main navigation">
         {/* Mobile header row */}
         <div className="flex md:hidden h-14 items-center gap-1.5">
           {/* Left section: Menu + Logo (fixed width) */}
@@ -403,7 +403,7 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
             )}
           </nav>
         </div>
-      </div>
+      </nav>
 
       {/* Sign Out Confirmation Dialog */}
       <SignOutConfirmDialog

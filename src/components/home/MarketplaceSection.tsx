@@ -285,7 +285,7 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
     return (
       <section className="container mx-auto px-4 py-6 sm:py-8 space-y-8">
         <div className="border-t border-border pt-6">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-3">Eclipse Marketplace</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Eclipse Marketplace</p>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3">Coming Soon</h2>
           <p className="text-muted-foreground max-w-xl text-sm leading-relaxed">
             The Eclipse Marketplace is preparing for launch. Want to be one of our first sellers?
@@ -332,7 +332,7 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
               ))
             ) : (
               <div className="col-span-full py-12 border-t border-b border-border">
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground/50 mb-2">{t('marketplace.marketplace')}</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">{t('marketplace.marketplace')}</p>
                 <p className="text-lg font-bold text-foreground">{t('marketplace.noStoresYet')}</p>
                 <p className="text-sm text-muted-foreground mt-1">{t('marketplace.checkBackSoon')}</p>
               </div>

@@ -101,8 +101,8 @@ export function LandingHero() {
             </div>
 
             {/* Search tags — flush left, inline */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[10px] text-muted-foreground/60 mr-1">
+            <div className="flex items-center gap-1.5 flex-wrap" role="navigation" aria-label="Trending searches">
+              <span className="text-[10px] text-muted-foreground mr-1">
                 Trending:
               </span>
               {POPULAR_SEARCHES.map((term) => (
@@ -158,9 +158,9 @@ export function LandingHero() {
               </Link>
             </div>
 
-            <div className="flex items-center justify-center gap-1.5 overflow-hidden">
+            <div className="flex items-center justify-center gap-1.5 overflow-hidden" role="navigation" aria-label="Trending searches">
               <span className="text-[11px] text-muted-foreground flex items-center gap-1 flex-shrink-0">
-                <Search className="h-3 w-3" />
+                <Search className="h-3 w-3" aria-hidden="true" />
                 Trending
               </span>
               {POPULAR_SEARCHES.map((term) => (
