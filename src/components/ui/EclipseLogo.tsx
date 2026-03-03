@@ -120,7 +120,10 @@ export function EclipseLogo({ className, size = 'md', removeWhiteBackground }: E
     >
       <img 
         src={processedSrc ?? rawSrc}
-        alt="Eclipse Logo" 
+        alt="Eclipse Logo"
+        width={sizePx[size]}
+        height={sizePx[size]}
+        decoding="async"
         className="w-full h-full object-contain"
       />
     </div>
