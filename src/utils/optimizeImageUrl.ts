@@ -9,29 +9,12 @@
  */
 export function optimizeImageUrl(
   url: string | null | undefined,
-  width: number,
-  height?: number,
-  format: 'webp' | 'origin' = 'webp'
+  _width?: number,
+  _height?: number,
+  _format?: 'webp' | 'origin'
 ): string {
   if (!url) return '';
-
-  // Only transform Supabase storage URLs
-  if (!url.includes('.supabase.co/storage/v1/object/public/')) return url;
-
-  // Use /render/image/ endpoint for transforms
-  const transformed = url.replace(
-    '/storage/v1/object/public/',
-    '/storage/v1/render/image/public/'
-  );
-
-  const params = new URLSearchParams();
-  // 2x for retina displays
-  params.set('width', String(width * 2));
-  if (height) params.set('height', String(height * 2));
-  params.set('format', format);
-  params.set('quality', '80');
-  params.set('resize', 'cover');
-
-  const separator = transformed.includes('?') ? '&' : '?';
-  return `${transformed}${separator}${params.toString()}`;
+  // Return original URL directly — Supabase image transforms
+  // are not available on this project's storage tier.
+  return url;
 }
