@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { useCurrency } from '@/hooks/useCurrency';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 interface NewProduct {
   id: string;
@@ -84,8 +85,10 @@ export function NewArrivalsCard() {
               <div className="relative flex-shrink-0">
                 {product.images && product.images[0] ? (
                   <img 
-                    src={product.images[0]} 
+                    src={optimizeImageUrl(product.images[0], 48, 48)} 
                     alt={product.name}
+                    width={48}
+                    height={48}
                     loading="lazy"
                     decoding="async"
                     className="h-12 w-12 rounded-lg object-cover bg-muted"
