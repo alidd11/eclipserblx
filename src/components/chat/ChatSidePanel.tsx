@@ -214,7 +214,7 @@ export function ChatSidePanel() {
         // Load existing conversation
         const { data: existingConv, error } = await supabase
           .from('chat_conversations')
-          .select('*')
+          .select('id, status, issue_category, created_at')
           .eq('user_id', user.id)
           .eq('status', 'active')
           .order('created_at', { ascending: false })
@@ -316,7 +316,7 @@ export function ChatSidePanel() {
   const loadMessages = async (conversationId: string) => {
     const { data, error } = await supabase
       .from('chat_messages')
-      .select('*')
+      .select('id, message, sender_type, created_at, attachment_url, message_type, secure_data')
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true });
 

@@ -32,7 +32,7 @@ export function useBadges() {
   const loadBadges = useCallback(async () => {
     const { data } = await supabase
       .from('badges')
-      .select('*')
+      .select('id, name, description, icon, color, category, requirement_type, requirement_value, display_order')
       .order('display_order', { ascending: true });
 
     if (data) {
@@ -87,7 +87,7 @@ export function useBadges() {
         const newBadgeIds = data.map((ub: { badge_id: string }) => ub.badge_id);
         const { data: badgeDetails } = await supabase
           .from('badges')
-          .select('*')
+          .select('id, name, description, icon, color, category, requirement_type, requirement_value, display_order')
           .in('id', newBadgeIds);
 
         if (badgeDetails) {

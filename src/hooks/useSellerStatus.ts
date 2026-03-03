@@ -135,8 +135,6 @@ export interface StoreApplication {
   reviewed_at?: string;
   reviewed_by?: string;
   rejection_reason?: string;
-  accepted_terms?: boolean;
-  accepted_commission?: boolean;
 }
 
 export interface SellerBalance {
@@ -199,7 +197,7 @@ export function useSellerStatus() {
       
       const { data, error } = await supabase
         .from('store_applications')
-        .select('*')
+        .select('id, user_id, store_name, status, created_at, reviewed_at, reviewed_by, rejection_reason')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -219,7 +217,7 @@ export function useSellerStatus() {
       
       const { data, error } = await supabase
         .from('seller_balances')
-        .select('*')
+        .select('available_balance, pending_balance, total_earned, total_paid')
         .eq('user_id', user.id)
         .maybeSingle();
 

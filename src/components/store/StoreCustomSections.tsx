@@ -14,7 +14,7 @@ export function StoreCustomSections({ storeId, accentColor }: StoreCustomSection
     queryFn: async () => {
       const { data, error } = await supabase
         .from('store_custom_sections')
-        .select('*')
+        .select('id, title, section_type, content, display_order')
         .eq('store_id', storeId)
         .eq('is_visible', true)
         .order('display_order', { ascending: true });
