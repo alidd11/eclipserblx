@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { InlineLoading } from '@/components/ui/InlineLoading';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
@@ -115,9 +116,9 @@ export default function SellerTransactionHistory() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={7}><InlineLoading compact message="Loading transactions…" /></TableCell></TableRow>
                 ) : filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No transactions found</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={7}><InlineLoading compact message="No transactions found" /></TableCell></TableRow>
                 ) : filtered.map((t: any) => (
                   <TableRow key={t.id}>
                     <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{format(new Date(t.created_at), 'dd MMM yyyy HH:mm')}</TableCell>

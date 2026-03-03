@@ -2,7 +2,7 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Search, ShoppingBag, Store, HelpCircle, Briefcase } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { PageTransition } from "@/components/ui/PageTransition";
+import { PageTransition } from "@/components/layout/PageTransition";
 import { Button } from "@/components/ui/button";
 import { usePageMeta } from "@/hooks/usePageMeta";
 

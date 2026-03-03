@@ -13,19 +13,21 @@ const pageTransition: Transition = {
 
 interface PageTransitionProps {
   children: ReactNode;
+  className?: string;
 }
 
 /**
  * Lightweight page enter animation.
  * Wrap around route content for a smooth fade+slide on mount.
  */
-export function PageTransition({ children }: PageTransitionProps) {
+export function PageTransition({ children, className }: PageTransitionProps) {
   return (
     <motion.div
       initial="initial"
       animate="animate"
       variants={pageVariants}
       transition={pageTransition}
+      className={className}
     >
       {children}
     </motion.div>

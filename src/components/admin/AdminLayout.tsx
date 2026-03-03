@@ -1,4 +1,5 @@
 import { ReactNode, useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
+import { PageTransition } from '@/components/layout/PageTransition';
 import { useIOSChatKeyboard } from '@/hooks/useIOSChatKeyboard';
 import { Navigate, useLocation } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
@@ -465,7 +466,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
                   : 'p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
               )}
             >
-              {children}
+              <PageTransition>{children}</PageTransition>
             </div>
           </main>
         </div>
