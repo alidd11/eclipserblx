@@ -275,7 +275,8 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
   });
 
   if (accessLoading) {
-    return null;
+    // Return a placeholder with min-height to prevent CLS (footer shifting)
+    return <section className="min-h-[600px]" aria-hidden="true" />;
   }
 
   // Coming soon for non-admin non-public
@@ -300,7 +301,7 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
   }
 
   if (!hasAccess && isMarketplacePublic) {
-    return null;
+    return <section className="min-h-[600px]" aria-hidden="true" />;
   }
 
   const storesList = stores || [];
