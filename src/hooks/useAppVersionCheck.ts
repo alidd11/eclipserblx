@@ -281,7 +281,7 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
     try {
       const { data, error } = await supabase
         .from('app_version')
-        .select('*')
+        .select('id, version, force_update, updated_at')
         .eq('id', 'current')
         .single();
 

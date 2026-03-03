@@ -26,7 +26,7 @@ export function useSubscriptionTiers() {
     queryFn: async (): Promise<TierData[]> => {
       const { data, error } = await supabase
         .from('subscription_tiers')
-        .select('*')
+        .select('id, tier, name, description, discount_percentage, free_products_per_month, monthly_price_gbp, annual_price_gbp, stripe_monthly_price_id, stripe_annual_price_id, features, display_order, is_active')
         .eq('is_active', true)
         .order('display_order', { ascending: true });
       
