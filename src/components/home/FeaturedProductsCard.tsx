@@ -379,8 +379,12 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
           <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground mb-1 relative z-10">
             {product.stores.logo_url ? (
               <img 
-                src={product.stores.logo_url} 
+                src={optimizeImageUrl(product.stores.logo_url, 14, 14, 'contain')} 
                 alt={product.stores.name}
+                width={14}
+                height={14}
+                loading="lazy"
+                decoding="async"
                 className="h-3.5 w-3.5 rounded object-contain bg-background flex-shrink-0"
               />
             ) : (
