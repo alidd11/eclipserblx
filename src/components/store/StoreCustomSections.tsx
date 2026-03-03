@@ -22,6 +22,7 @@ export function StoreCustomSections({ storeId, accentColor }: StoreCustomSection
       return data || [];
     },
     enabled: !!storeId,
+    staleTime: 5 * 60 * 1000, // 5 minutes - custom sections rarely change
   });
 
   if (!sections || sections.length === 0) return null;

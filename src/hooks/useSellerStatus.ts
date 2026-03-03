@@ -166,19 +166,19 @@ export function useSellerStatus() {
       if (storeError) throw storeError;
       if (!storeData) return null;
 
-      // Fetch credentials from separate secure table
-      const { data: credentialsData } = await supabase
-        .from('store_credentials')
-        .select('discord_webhook_url, review_discord_webhook_url, discord_bot_token, discord_guild_id, discord_role_id, product_drops_role_id, early_product_drops_role_id')
-        .eq('store_id', storeData.id)
-        .maybeSingle();
-
-      // Fetch payment details from separate secure table
-      const { data: paymentData } = await supabase
-        .from('store_payment_details')
-        .select('stripe_account_id, paypal_email, payout_method, payouts_enabled, bank_name, bank_account_holder, bank_account_number, bank_routing_number, bank_swift_bic, bank_country')
-        .eq('store_id', storeData.id)
-        .maybeSingle();
+      // Fetch credentials and payment details in parallel
+      const [{ data: credentialsData }, { data: paymentData }] = await Promise.all([
+        supabase
+          .from('store_credentials')
+          .select('discord_webhook_url, review_discord_webhook_url, discord_bot_token, discord_guild_id, discord_role_id, product_drops_role_id, early_product_drops_role_id')
+          .eq('store_id', storeData.id)
+          .maybeSingle(),
+        supabase
+          .from('store_payment_details')
+          .select('stripe_account_id, paypal_email, payout_method, payouts_enabled, bank_name, bank_account_holder, bank_account_number, bank_routing_number, bank_swift_bic, bank_country')
+          .eq('store_id', storeData.id)
+          .maybeSingle(),
+      ]);
 
       return {
         ...storeData,
@@ -187,6 +187,7 @@ export function useSellerStatus() {
       } as Store;
     },
     enabled: !!user?.id,
+    staleTime: 60 * 1000, // 1 minute - store data rarely changes mid-session
   });
 
   // Check if user has a pending application
@@ -207,6 +208,7 @@ export function useSellerStatus() {
       return data as StoreApplication | null;
     },
     enabled: !!user?.id,
+    staleTime: 2 * 60 * 1000, // 2 minutes - application status changes infrequently
   });
 
   // Get seller balance if they have an approved store
@@ -225,6 +227,7 @@ export function useSellerStatus() {
       return data as SellerBalance | null;
     },
     enabled: !!user?.id && store?.status === 'approved',
+    staleTime: 30 * 1000, // 30 seconds - balance can change with sales
   });
 
   const isSeller = store?.status === 'approved';
