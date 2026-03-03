@@ -5,7 +5,7 @@ import { PromotionCarousel } from '@/components/home/PromotionCarousel';
 import { MarketplaceSection } from '@/components/home/MarketplaceSection';
 import { PWADiscordBanner } from '@/components/landing/PWADiscordBanner';
 import { ActiveOffersCard } from '@/components/home/ActiveOffersCard';
-import { OrganizationSchema, WebsiteSearchSchema } from '@/components/seo/StructuredData';
+import { OrganizationSchema, WebsiteSearchSchema, SiteNavigationSchema } from '@/components/seo/StructuredData';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
@@ -17,6 +17,7 @@ const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
     <MainLayout>
       <OrganizationSchema />
       <WebsiteSearchSchema />
+      <SiteNavigationSchema />
 
       <SectionErrorBoundary section="hero" compact>
         <LandingHero />
