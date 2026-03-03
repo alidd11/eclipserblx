@@ -55,7 +55,7 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: "script-defer",
-      includeAssets: ["favicon.ico", "apple-touch-icon.png", "pwa-192x192.png", "pwa-512x512.png", "custom-sw.js", "manifest.webmanifest", "manifest-admin.json"],
+      includeAssets: ["favicon.ico", "apple-touch-icon.png", "pwa-192x192.png", "pwa-512x512.png", "custom-sw.js", "manifest.webmanifest", "manifest-admin.json", "offline.html"],
       // Disable automatic manifest injection - we handle this dynamically in useAdminManifest
       manifest: false,
       workbox: {
@@ -63,8 +63,10 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         // Bump this to force workbox to invalidate its precache on next deploy
-        cacheId: 'eclipse-v3',
+        cacheId: 'eclipse-v4',
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
+        // Show branded offline page when network is unavailable
+        navigateFallback: '/offline.html',
         // Ensure OAuth redirects always hit the network
         navigateFallbackDenylist: [/^\/~oauth/],
         // Import custom service worker for push notifications
