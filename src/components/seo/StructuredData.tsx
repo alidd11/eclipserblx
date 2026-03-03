@@ -24,6 +24,20 @@ interface BreadcrumbItem {
   url: string;
 }
 
+// Helper to inject/replace a JSON-LD script tag
+function injectJsonLd(id: string, data: Record<string, unknown>) {
+  const script = document.createElement('script');
+  script.type = 'application/ld+json';
+  script.id = id;
+  script.textContent = JSON.stringify(data);
+
+  const existing = document.getElementById(id);
+  if (existing) existing.remove();
+  document.head.appendChild(script);
+
+  return script;
+}
+
 // Organization schema for the main site
 export function OrganizationSchema({
   name = 'Eclipse',
@@ -32,16 +46,24 @@ export function OrganizationSchema({
   description = 'Premium UK Roleplay Assets marketplace for Roblox. The best alternative platform for buying and selling Roblox scripts, vehicles, maps, and game assets with lower fees and GBP payments.',
 }: OrganizationSchemaProps) {
   useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.id = 'organization-schema';
-    script.textContent = JSON.stringify({
+    const script = injectJsonLd('organization-schema', {
       '@context': 'https://schema.org',
       '@type': 'Organization',
       name,
+      alternateName: ['Eclipse Marketplace', 'EclipseRblx', 'Eclipse Roblox'],
       url,
-      logo,
+      logo: {
+        '@type': 'ImageObject',
+        url: logo,
+        width: 512,
+        height: 512,
+      },
       description,
+      foundingDate: '2024',
+      areaServed: {
+        '@type': 'Place',
+        name: 'Worldwide',
+      },
       sameAs: [
         'https://discord.gg/eclipse',
         'https://twitter.com/EclipseRblx',
@@ -50,16 +72,11 @@ export function OrganizationSchema({
         '@type': 'ContactPoint',
         contactType: 'customer service',
         availableLanguage: 'English',
+        email: 'support@eclipserblx.com',
       },
     });
 
-    const existing = document.getElementById('organization-schema');
-    if (existing) existing.remove();
-    document.head.appendChild(script);
-
-    return () => {
-      script.remove();
-    };
+    return () => { script.remove(); };
   }, [name, url, logo, description]);
 
   return null;
@@ -104,18 +121,8 @@ export function ProductSchema({
       };
     }
 
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.id = 'product-schema';
-    script.textContent = JSON.stringify(schema);
-
-    const existing = document.getElementById('product-schema');
-    if (existing) existing.remove();
-    document.head.appendChild(script);
-
-    return () => {
-      script.remove();
-    };
+    const script = injectJsonLd('product-schema', schema);
+    return () => { script.remove(); };
   }, [name, description, image, price, currency, availability, seller, rating, reviewCount]);
 
   return null;
@@ -124,10 +131,7 @@ export function ProductSchema({
 // Breadcrumb schema for navigation
 export function BreadcrumbSchema({ items }: { items: BreadcrumbItem[] }) {
   useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.id = 'breadcrumb-schema';
-    script.textContent = JSON.stringify({
+    const script = injectJsonLd('breadcrumb-schema', {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: items.map((item, index) => ({
@@ -138,47 +142,67 @@ export function BreadcrumbSchema({ items }: { items: BreadcrumbItem[] }) {
       })),
     });
 
-    const existing = document.getElementById('breadcrumb-schema');
-    if (existing) existing.remove();
-    document.head.appendChild(script);
-
-    return () => {
-      script.remove();
-    };
+    return () => { script.remove(); };
   }, [items]);
 
   return null;
 }
 
-// Website search schema
+// Website search schema — tells Google about the search box
 export function WebsiteSearchSchema() {
   useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.id = 'website-schema';
-    script.textContent = JSON.stringify({
+    const script = injectJsonLd('website-schema', {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       name: 'Eclipse',
+      alternateName: ['Eclipse Marketplace', 'EclipseRblx'],
       url: 'https://eclipserblx.com',
-      description: 'Premium Roblox asset marketplace - the best alternative for UK roleplay scripts, vehicles, and game assets',
+      description: 'Premium Roblox asset marketplace — the best alternative for UK roleplay scripts, vehicles, and game assets',
       potentialAction: {
         '@type': 'SearchAction',
         target: {
           '@type': 'EntryPoint',
-          urlTemplate: 'https://eclipserblx.com/products?search={search_term_string}',
+          urlTemplate: 'https://eclipserblx.com/search?q={search_term_string}',
         },
         'query-input': 'required name=search_term_string',
       },
     });
 
-    const existing = document.getElementById('website-schema');
-    if (existing) existing.remove();
-    document.head.appendChild(script);
+    return () => { script.remove(); };
+  }, []);
 
-    return () => {
-      script.remove();
-    };
+  return null;
+}
+
+/**
+ * SiteNavigationElement schema — encourages Google to show sitelinks
+ * by declaring the site's main navigation sections.
+ */
+export function SiteNavigationSchema() {
+  useEffect(() => {
+    const navItems = [
+      { name: 'Roblox Assets', url: 'https://eclipserblx.com/products' },
+      { name: 'Categories', url: 'https://eclipserblx.com/categories' },
+      { name: 'Featured Products', url: 'https://eclipserblx.com/featured' },
+      { name: 'Stores', url: 'https://eclipserblx.com/stores' },
+      { name: 'Eclipse+ Membership', url: 'https://eclipserblx.com/eclipse-plus' },
+      { name: 'FAQ', url: 'https://eclipserblx.com/faq' },
+      { name: 'Support', url: 'https://eclipserblx.com/support' },
+      { name: 'Contact', url: 'https://eclipserblx.com/contact' },
+    ];
+
+    const script = injectJsonLd('site-navigation-schema', {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      itemListElement: navItems.map((item, index) => ({
+        '@type': 'SiteNavigationElement',
+        position: index + 1,
+        name: item.name,
+        url: item.url,
+      })),
+    });
+
+    return () => { script.remove(); };
   }, []);
 
   return null;
@@ -187,10 +211,7 @@ export function WebsiteSearchSchema() {
 // FAQ schema for FAQ pages
 export function FAQSchema({ faqs }: { faqs: { question: string; answer: string }[] }) {
   useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.id = 'faq-schema';
-    script.textContent = JSON.stringify({
+    const script = injectJsonLd('faq-schema', {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
       mainEntity: faqs.map((faq) => ({
@@ -203,13 +224,7 @@ export function FAQSchema({ faqs }: { faqs: { question: string; answer: string }
       })),
     });
 
-    const existing = document.getElementById('faq-schema');
-    if (existing) existing.remove();
-    document.head.appendChild(script);
-
-    return () => {
-      script.remove();
-    };
+    return () => { script.remove(); };
   }, [faqs]);
 
   return null;
@@ -251,18 +266,8 @@ export function StoreSchema({ name, description, url, image, rating, reviewCount
       };
     }
 
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.id = 'store-schema';
-    script.textContent = JSON.stringify(schema);
-
-    const existing = document.getElementById('store-schema');
-    if (existing) existing.remove();
-    document.head.appendChild(script);
-
-    return () => {
-      script.remove();
-    };
+    const script = injectJsonLd('store-schema', schema);
+    return () => { script.remove(); };
   }, [name, description, url, image, rating, reviewCount]);
 
   return null;
