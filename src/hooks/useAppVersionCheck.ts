@@ -322,44 +322,16 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
       checkForUpdate();
     }, 100);
 
-    // Step 3: Set up realtime subscription for instant updates
-    const channel = supabase
-      .channel('app-version-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'app_version',
-        },
-        async (payload) => {
-          console.log('[AppVersion] Realtime update received:', payload);
-          
-          // Skip if recently updated
-          if (wasRecentlyUpdated()) {
-            console.log('[AppVersion] Skipping realtime update - recently updated');
-            return;
-          }
-
-          const newVersion = payload.new as AppVersion;
-          const localVersion = await getLocalVersion();
-
-          if (newVersion.force_update && newVersion.version !== localVersion) {
-            await forceAppUpdate(newVersion.version);
-          }
-        }
-      )
-      .subscribe();
-
-    // Step 4: Periodic check as fallback
+    // Step 3: Periodic polling for version updates
+    // Note: We use polling instead of Realtime WebSocket to avoid console errors
+    // from WebSocket connections failing in environments like Lighthouse audits.
     const interval = setInterval(checkForUpdate, UPDATE_CHECK_INTERVAL);
 
     return () => {
       clearTimeout(initialCheckTimeout);
-      supabase.removeChannel(channel);
       clearInterval(interval);
     };
-  }, [bootstrapVersionFromUrl, checkForUpdate, forceAppUpdate]);
+  }, [bootstrapVersionFromUrl, checkForUpdate]);
 
   return { checkForUpdate, forceAppUpdate };
 }
