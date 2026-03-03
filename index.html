@@ -43,6 +43,18 @@
     <!-- Preload LCP hero image so it's discoverable from the initial HTML -->
     <link rel="preload" href="/hero-bg.webp" as="image" type="image/webp" fetchpriority="high" />
 
+    <!-- Inline critical CSS to eliminate render-blocking for above-the-fold content -->
+    <style>
+      *,*::before,*::after{box-sizing:border-box;border-width:0;border-style:solid}
+      html{line-height:1.5;-webkit-text-size-adjust:100%;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif}
+      body{margin:0;line-height:inherit;background-color:#0f1012;color:#edeeef;overscroll-behavior:none}
+      .dark{--background:220 8% 6%;--foreground:210 8% 93%;--card:220 7% 10%;--card-foreground:210 8% 93%;--primary:235 86% 60%;--primary-foreground:0 0% 100%}
+      #root{min-height:100dvh;display:flex;flex-direction:column}
+      img,video{max-width:100%;height:auto}
+      a{color:inherit;text-decoration:inherit}
+      .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}
+    </style>
+
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#151617" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -83,10 +95,10 @@
   <meta name="twitter:description" content="Eclipse is the best Roblox asset marketplace alternative.Buy premium roleplay scripts, vehicles, maps &amp; game assets. Lower fees than competitors, instant delivery.">
 </head>
 
-  <body style="margin: 0; overscroll-behavior: none; background-color: #151617;">
+  <body>
     <!-- Skip to main content link for accessibility -->
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:outline-none">Skip to main content</a>
-    <div id="root" style="min-height: 100dvh;"></div>
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
