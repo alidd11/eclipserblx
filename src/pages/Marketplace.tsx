@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { InlineLoading } from '@/components/ui/InlineLoading';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Store, ChevronRight, ShieldCheck, Award, Users, Search, X, Package, FlaskConical } from 'lucide-react';
@@ -56,7 +57,7 @@ function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingB
           className="h-20 relative overflow-hidden"
           style={{ 
             background: store.banner_url 
-              ? `url(${store.banner_url}) center/cover` 
+              ? `url(${optimizeImageUrl(store.banner_url, 540, 80)}) center/cover` 
               : `linear-gradient(135deg, ${accentColor}40, ${accentColor}20)`
           }}
         >
@@ -75,7 +76,7 @@ function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingB
           <div className="flex items-start gap-3 mb-3">
             {store.logo_url ? (
               <img 
-                src={store.logo_url} 
+                src={optimizeImageUrl(store.logo_url, 56)} 
                 alt={store.name}
                 className="h-14 w-14 rounded-lg object-contain bg-background shadow-md flex-shrink-0"
               />

@@ -1,4 +1,5 @@
-import heroBg from '@/assets/hero-bg.jpeg';
+// Hero image served from public/ so the browser can discover it from the initial HTML
+const heroBg = '/hero-bg.jpeg';
 
 export function HeroBanner() {
   return (
