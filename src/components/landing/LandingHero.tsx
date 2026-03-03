@@ -28,6 +28,9 @@ export function LandingHero() {
   const reducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
 
+  // On mobile, skip framer-motion entirely for hero word rotation
+  const skipAnimation = reducedMotion || isMobile;
+
   const rotatingWords = ['Roblox', 'Discord'];
   const [wordIndex, setWordIndex] = useState(0);
 
@@ -59,7 +62,7 @@ export function LandingHero() {
               {t('landing.headline')}{' '}
               <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em' }}>
                 <span className="invisible">{rotatingWords.reduce((a, b) => a.length > b.length ? a : b)}</span>
-                {reducedMotion ? (
+                {skipAnimation ? (
                   <span className="absolute left-0">{rotatingWords[wordIndex]}</span>
                 ) : (
                   <AnimatePresence mode="wait">
@@ -143,7 +146,7 @@ export function LandingHero() {
               {t('landing.headline')}{' '}
               <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em' }}>
                 <span className="invisible">{rotatingWords.reduce((a, b) => a.length > b.length ? a : b)}</span>
-                {reducedMotion ? (
+                {skipAnimation ? (
                   <span className="absolute left-0">{rotatingWords[wordIndex]}</span>
                 ) : (
                   <AnimatePresence mode="wait">
