@@ -7,6 +7,7 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { StatsCard } from '@/components/home/StatsCard';
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 const POPULAR_SEARCHES = [
   'scripts',
@@ -22,6 +23,7 @@ export function LandingHero() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { isSeller } = useSellerStatus();
+  const reducedMotion = useReducedMotion();
 
   const rotatingWords = ['Roblox', 'Discord'];
   const [wordIndex, setWordIndex] = useState(0);
@@ -54,18 +56,22 @@ export function LandingHero() {
               {t('landing.headline')}{' '}
               <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em' }}>
                 <span className="invisible">{rotatingWords.reduce((a, b) => a.length > b.length ? a : b)}</span>
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={wordIndex}
-                    initial={{ y: '100%', opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: '-100%', opacity: 0 }}
-                    transition={{ duration: 0.4, ease: 'easeInOut' }}
-                    className="absolute left-0"
-                  >
-                    {rotatingWords[wordIndex]}
-                  </motion.span>
-                </AnimatePresence>
+                {reducedMotion ? (
+                  <span className="absolute left-0">{rotatingWords[wordIndex]}</span>
+                ) : (
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={wordIndex}
+                      initial={{ y: '100%', opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: '-100%', opacity: 0 }}
+                      transition={{ duration: 0.4, ease: 'easeInOut' }}
+                      className="absolute left-0"
+                    >
+                      {rotatingWords[wordIndex]}
+                    </motion.span>
+                  </AnimatePresence>
+                )}
               </span>{' '}
               Experience.
             </h1>
@@ -130,18 +136,22 @@ export function LandingHero() {
               {t('landing.headline')}{' '}
               <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em' }}>
                 <span className="invisible">{rotatingWords.reduce((a, b) => a.length > b.length ? a : b)}</span>
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={wordIndex}
-                    initial={{ y: '100%', opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: '-100%', opacity: 0 }}
-                    transition={{ duration: 0.4, ease: 'easeInOut' }}
-                    className="absolute left-0"
-                  >
-                    {rotatingWords[wordIndex]}
-                  </motion.span>
-                </AnimatePresence>
+                {reducedMotion ? (
+                  <span className="absolute left-0">{rotatingWords[wordIndex]}</span>
+                ) : (
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={wordIndex}
+                      initial={{ y: '100%', opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: '-100%', opacity: 0 }}
+                      transition={{ duration: 0.4, ease: 'easeInOut' }}
+                      className="absolute left-0"
+                    >
+                      {rotatingWords[wordIndex]}
+                    </motion.span>
+                  </AnimatePresence>
+                )}
               </span>{' '}
               Experience.
             </h1>
