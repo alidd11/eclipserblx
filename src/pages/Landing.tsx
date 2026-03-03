@@ -51,9 +51,7 @@ const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
       </ScrollReveal>
 
       <SectionErrorBoundary section="marketplace">
-        <ScrollReveal direction="up" distance={20} duration={0.5} delay={0.1}>
-          <MarketplaceSection />
-        </ScrollReveal>
+        <MarketplaceSection />
       </SectionErrorBoundary>
     </MainLayout>
   );
