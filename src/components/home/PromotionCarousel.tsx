@@ -102,18 +102,22 @@ export function PromotionCarousel() {
       </div>
 
       {/* Dots */}
-      <div className="flex justify-center gap-1.5 pb-3">
+      <div className="flex justify-center gap-1 pb-2">
         {promotions.map((_, index) => (
           <button
             key={index}
             onClick={() => scrollTo(index)}
-            className="h-0.5 w-5 rounded-full transition-colors duration-300"
-            style={{
-              backgroundColor: index === selectedIndex ? 'hsl(var(--foreground))' : 'hsl(var(--border))',
-              opacity: index === selectedIndex ? 1 : 0.5,
-            }}
+            className="p-2.5 touch-manipulation"
             aria-label={`Go to slide ${index + 1}`}
-          />
+          >
+            <span
+              className="block h-1 w-5 rounded-full transition-colors duration-300"
+              style={{
+                backgroundColor: index === selectedIndex ? 'hsl(var(--foreground))' : 'hsl(var(--border))',
+                opacity: index === selectedIndex ? 1 : 0.5,
+              }}
+            />
+          </button>
         ))}
       </div>
     </div>
