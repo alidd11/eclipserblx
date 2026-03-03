@@ -20,21 +20,13 @@ export default defineConfig(({ mode }) => ({
           'router': ['react-router-dom'],
           'query': ['@tanstack/react-query'],
           'ui-core': ['lucide-react'],
-          'ui-motion': ['framer-motion'],
-          'supabase': ['@supabase/supabase-js'],
+          // framer-motion, supabase, and radix removed from manual chunks
+          // to allow Vite to tree-shake and code-split them per-route,
+          // reducing unused JavaScript on initial page load
           'forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
-          // recharts removed from manual chunks — lazy-loaded with dashboard routes
           'editor': ['@tiptap/react', '@tiptap/starter-kit', '@tiptap/extension-placeholder'],
           'stripe': ['@stripe/stripe-js', '@stripe/react-stripe-js'],
           'i18n': ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
-          'radix': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-popover',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-tooltip',
-            '@radix-ui/react-select',
-          ],
         },
       },
     },
