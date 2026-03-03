@@ -48,7 +48,7 @@ export function CreditsCard() {
           </div>
         </div>
 
-        <Button className="w-full" variant="outline" onClick={() => navigate('/wallet')}>
+        <Button className="w-full" variant="outline" onClick={() => navigate('/credits')}>
           <Coins className="h-4 w-4 mr-2" />
           Top Up Credits
           <ArrowRight className="h-4 w-4 ml-auto" />

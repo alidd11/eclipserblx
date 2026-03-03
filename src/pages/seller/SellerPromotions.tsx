@@ -103,7 +103,7 @@ export default function SellerPromotions() {
                 <p className="text-lg font-bold">£{balance.toFixed(0)}</p>
                 <p className="text-[10px] text-muted-foreground">
                   Credits{' '}
-                  <Link to="/wallet" className="text-primary hover:underline">Top up</Link>
+                  <Link to="/credits" className="text-primary hover:underline">Top up</Link>
                 </p>
               </div>
             </CardContent>
