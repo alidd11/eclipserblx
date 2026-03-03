@@ -1,4 +1,4 @@
-// Sentry must be imported first to capture all errors
+// Sentry loads lazily via requestIdleCallback — self-initializing module
 import "./lib/sentry";
 import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "next-themes";

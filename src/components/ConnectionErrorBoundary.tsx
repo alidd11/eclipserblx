@@ -1,7 +1,7 @@
 import { Component, ReactNode } from 'react';
 import { RefreshCw, WifiOff, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sentry } from '@/lib/sentry';
+import { captureException } from '@/lib/sentry';
 
 interface Props {
   children: ReactNode;
@@ -39,7 +39,7 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('[ConnectionErrorBoundary] Caught error:', error, errorInfo);
-    Sentry.captureException(error, { extra: { componentStack: errorInfo.componentStack } });
+    captureException(error, { componentStack: errorInfo.componentStack });
   }
 
   handleRetry = () => {

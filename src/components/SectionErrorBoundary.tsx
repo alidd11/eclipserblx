@@ -1,7 +1,7 @@
 import { Component, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sentry } from '@/lib/sentry';
+import { captureException } from '@/lib/sentry';
 
 interface Props {
   children: ReactNode;
@@ -34,7 +34,7 @@ export class SectionErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error(`[SectionErrorBoundary] ${this.props.section || 'Unknown section'} crashed:`, error, info.componentStack);
-    Sentry.captureException(error, { extra: { section: this.props.section, componentStack: info.componentStack } });
+    captureException(error, { section: this.props.section, componentStack: info.componentStack });
   }
 
   handleRetry = () => {
