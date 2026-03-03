@@ -34,7 +34,7 @@ export function LandingHero() {
   }, [rotatingWords.length]);
 
   const handleSearchClick = (term: string) => {
-    navigate(`/products?q=${encodeURIComponent(term)}`);
+    navigate(`/search?q=${encodeURIComponent(term)}`);
   };
 
   return (
