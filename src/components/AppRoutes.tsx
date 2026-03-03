@@ -6,10 +6,10 @@ import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 // Lazy load Global Guard router for /guard path
 const GlobalGuardRouter = lazy(() => import("@/components/global-guard/GlobalGuardRouter").then(m => ({ default: m.GlobalGuardRouter })));
 
-// Eagerly loaded - critical path
-import Index from "@/pages/Index";
-import Auth from "@/pages/Auth";
-import NotFound from "@/pages/NotFound";
+// Lazy loaded - critical path (keeps initial bundle small)
+const Index = lazy(() => import("@/pages/Index"));
+const Auth = lazy(() => import("@/pages/Auth"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
 
 // Lazy loaded - OAuth callbacks
 const AuthDiscordCallback = lazy(() => import("@/pages/AuthDiscordCallback"));
