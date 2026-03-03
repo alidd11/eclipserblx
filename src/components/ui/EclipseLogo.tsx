@@ -9,24 +9,24 @@ interface EclipseLogoProps {
 }
 
 const sizeClasses: Record<string, string> = {
-  xs: 'h-5 w-5',
-  sm: 'h-7 w-7',
-  md: 'h-8 w-8',
-  lg: 'h-10 w-10',
-  xl: 'h-14 w-14',
+  xs: 'h-4 w-4',
+  sm: 'h-6 w-6',
+  md: 'h-7 w-7',
+  lg: 'h-9 w-9',
+  xl: 'h-12 w-12',
 };
 
 const sizePx: Record<string, number> = {
-  xs: 20,
-  sm: 28,
-  md: 32,
-  lg: 40,
-  xl: 56,
+  xs: 16,
+  sm: 24,
+  md: 28,
+  lg: 36,
+  xl: 48,
 };
 
 export function EclipseLogo({ className, size = 'md' }: EclipseLogoProps) {
   return (
-    <div className={cn('relative flex-shrink-0', sizeClasses[size], className)}>
+    <div className={cn('relative flex-shrink-0 rounded-md overflow-hidden', sizeClasses[size], className)}>
       <img
         src={marketplaceLogo}
         alt="Eclipse Logo"
@@ -35,7 +35,7 @@ export function EclipseLogo({ className, size = 'md' }: EclipseLogoProps) {
         loading="lazy"
         decoding="async"
         fetchPriority="low"
-        className="w-full h-full object-contain"
+        className="w-full h-full object-cover"
       />
     </div>
   );
