@@ -676,37 +676,21 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               </div>
 
               <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-9 w-9">
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => handleTabChange('preferences')}>
-                      <Settings className="h-4 w-4 mr-2" />
-                      Preferences
-                    </DropdownMenuItem>
-                    {!adminLoading && isStaff && (
-                      <DropdownMenuItem onClick={() => navigate('/admin')}>
-                        <Shield className="h-4 w-4 mr-2" />
-                        Admin Dashboard
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setShowSignOutDialog(true)}>
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign Out
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => setShowDeleteDialog(true)}
-                      className="text-destructive focus:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Account
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9"
+                        onClick={() => setShowSignOutDialog(true)}
+                      >
+                        <LogOut className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Sign Out</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
 
