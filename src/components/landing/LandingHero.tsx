@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import { HeroBanner } from './HeroBanner';
 import { useTranslation } from 'react-i18next';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
-import { StatsCard } from '@/components/home/StatsCard';
-import { useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+const StatsCard = lazy(() => import('@/components/home/StatsCard').then(m => ({ default: m.StatsCard })));
 
 const POPULAR_SEARCHES = [
   'scripts',
@@ -24,6 +26,7 @@ export function LandingHero() {
   const { t } = useTranslation();
   const { isSeller } = useSellerStatus();
   const reducedMotion = useReducedMotion();
+  const isMobile = useIsMobile();
 
   const rotatingWords = ['Roblox', 'Discord'];
   const [wordIndex, setWordIndex] = useState(0);
@@ -123,9 +126,13 @@ export function LandingHero() {
             </div>
           </div>
 
-          {/* Right — stats sidebar, offset down for visual weight */}
+          {/* Right — stats sidebar, offset down for visual weight. Only rendered on desktop. */}
           <div className="pt-8">
-            <StatsCard />
+            {!isMobile && (
+              <Suspense fallback={<div className="h-[200px] rounded-md border border-border bg-card/80 animate-pulse" />}>
+                <StatsCard />
+              </Suspense>
+            )}
           </div>
         </div>
 

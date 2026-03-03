@@ -35,13 +35,13 @@
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- Fonts: preloaded for faster FCP -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700;800&display=swap" as="style" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700;800&display=swap" media="print" onload="this.media='all'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700;800&display=swap" /></noscript>
+    <!-- Fonts: preloaded for faster FCP (reduced weight range for mobile perf) -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" as="style" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" /></noscript>
 
-    <!-- Preload LCP hero image so it's discoverable from the initial HTML -->
-    <link rel="preload" href="/hero-bg.webp" as="image" type="image/webp" fetchpriority="high" />
+    <!-- Preload LCP hero image — desktop only; mobile uses CSS gradient -->
+    <link rel="preload" href="/hero-bg.webp" as="image" type="image/webp" fetchpriority="high" media="(min-width: 768px)" />
 
     <!-- Inline critical CSS to eliminate render-blocking for above-the-fold content -->
     <style>
