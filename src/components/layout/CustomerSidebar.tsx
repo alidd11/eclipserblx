@@ -342,7 +342,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
           )}
         </div>
         {!isCollapsed && (
-          <span className="min-w-0 truncate leading-none flex-1">{item.title}</span>
+          <span className="min-w-0 leading-tight flex-1">{item.title}</span>
         )}
         {!isCollapsed && item.showStatusDot && (
           <Circle className={cn('h-2.5 w-2.5 fill-current shrink-0', statusConfig[systemStatus].color)} />
