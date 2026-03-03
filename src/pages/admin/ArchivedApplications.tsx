@@ -29,21 +29,31 @@ interface ArchivedApplication {
 export default function AdminArchivedApplications() {
   const [search, setSearch] = useState('');
   const [selectedApplication, setSelectedApplication] = useState<ArchivedApplication | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 25;
 
-  // Fetch applications that have been responded to (accepted or rejected)
-  const { data: applications, isLoading } = useQuery({
-    queryKey: ['archived-applications'],
+  // Fetch applications with pagination
+  const { data: applicationsData, isLoading } = useQuery({
+    queryKey: ['archived-applications', currentPage],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const from = (currentPage - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+
+      const { data, error, count } = await supabase
         .from('job_applications')
-        .select('*')
+        .select('id, position, applicant_name, applicant_email, discord_username, portfolio_url, experience, message, status, notes, reviewed_at, created_at', { count: 'exact' })
         .in('status', ['accepted', 'rejected'])
-        .order('reviewed_at', { ascending: false });
+        .order('reviewed_at', { ascending: false })
+        .range(from, to);
       
       if (error) throw error;
-      return data as ArchivedApplication[];
+      return { applications: data as ArchivedApplication[], totalCount: count || 0 };
     },
   });
+
+  const applications = applicationsData?.applications;
+  const totalCount = applicationsData?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
   const filteredApplications = applications?.filter(app => {
     if (!search) return true;
@@ -195,6 +205,19 @@ export default function AdminArchivedApplications() {
                   </Table>
                 </div>
               </>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of {totalCount}
+                </p>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</Button>
+                  <Button variant="outline" size="sm" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</Button>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>

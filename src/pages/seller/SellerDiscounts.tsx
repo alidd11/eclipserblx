@@ -77,9 +77,10 @@ export default function SellerDiscounts() {
       
       const { data, error } = await supabase
         .from('seller_discount_codes')
-        .select('*')
+        .select('id, store_id, code, discount_type, discount_value, min_order_amount, max_uses, current_uses, expires_at, is_active, created_at')
         .eq('store_id', store.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (error) throw error;
       return data as DiscountCode[];
