@@ -125,7 +125,7 @@ export function useFeaturedProducts({
         .eq('stores.is_testing', false)
         .or(`release_at.is.null,release_at.lte.${now}`)
         .order('created_at', { ascending: false })
-        .limit(100); // Fetch a pool to score from
+        .limit(50); // Fetch a smaller pool — only ~11 are displayed
 
       if (error) throw error;
       const all = data as unknown as ScoredProduct[];
