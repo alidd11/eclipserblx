@@ -68,7 +68,9 @@ import {
   Calendar,
   Save,
   Lock,
-  ShieldCheck
+  ShieldCheck,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
@@ -107,10 +109,14 @@ const INITIAL_FORM: ProductForm = {
   release_at: '',
 };
 
+const PRODUCTS_PER_PAGE = 20;
+
 export default function SellerProducts() {
   const queryClient = useQueryClient();
   const { store } = useSellerStatus();
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   
@@ -121,6 +127,17 @@ export default function SellerProducts() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  // Debounce search to avoid excessive queries
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(value);
+      setCurrentPage(1); // Reset to page 1 on new search
+    }, 300);
+  };
 
   // Fetch categories with hierarchy
   const { data: categories } = useQuery({
@@ -147,24 +164,37 @@ export default function SellerProducts() {
     }
   });
 
-  // Fetch seller's products with caching
-  const { data: products, isLoading: productsLoading } = useQuery({
-    queryKey: ['seller-products', store?.id],
+  // Fetch seller's products with server-side pagination
+  const { data: productsData, isLoading: productsLoading } = useQuery({
+    queryKey: ['seller-products', store?.id, currentPage, debouncedSearch],
     queryFn: async () => {
-      if (!store?.id) return [];
+      if (!store?.id) return { products: [], totalCount: 0 };
       
-      const { data, error } = await supabase
+      const from = (currentPage - 1) * PRODUCTS_PER_PAGE;
+      const to = from + PRODUCTS_PER_PAGE - 1;
+
+      let query = supabase
         .from('products')
-        .select('*, categories(name)')
+        .select('*, categories(name)', { count: 'exact' })
         .eq('store_id', store.id)
         .order('created_at', { ascending: false });
 
+      if (debouncedSearch) {
+        query = query.ilike('name', `%${debouncedSearch}%`);
+      }
+
+      const { data, error, count } = await query.range(from, to);
+
       if (error) throw error;
-      return data || [];
+      return { products: data || [], totalCount: count || 0 };
     },
     enabled: !!store?.id,
     staleTime: 30000,
   });
+
+  const products = productsData?.products || [];
+  const totalCount = productsData?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / PRODUCTS_PER_PAGE);
 
   // Save product mutation
   const saveProduct = useMutation({
@@ -505,9 +535,7 @@ export default function SellerProducts() {
     saveProduct.mutate(submissionForm);
   };
 
-  const filteredProducts = products?.filter((product: any) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const filteredProducts = products;
 
   const getModerationBadge = (status: string | null) => {
     switch (status) {
@@ -563,7 +591,7 @@ export default function SellerProducts() {
               <Input
                 placeholder="Search products..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="pl-10"
               />
             </div>
@@ -661,7 +689,7 @@ export default function SellerProducts() {
         {/* Products Table - Desktop */}
         <Card className="hidden md:block">
           <CardHeader>
-            <CardTitle>Products ({filteredProducts.length})</CardTitle>
+            <CardTitle>Products ({totalCount})</CardTitle>
             <CardDescription>
               Click a product to view and edit all details
             </CardDescription>
@@ -794,7 +822,38 @@ export default function SellerProducts() {
           </CardContent>
         </Card>
 
-        {/* Moderation Info */}
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4">
+            <p className="text-sm text-muted-foreground">
+              Showing {((currentPage - 1) * PRODUCTS_PER_PAGE) + 1}–{Math.min(currentPage * PRODUCTS_PER_PAGE, totalCount)} of {totalCount} products
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+              <span className="text-sm font-medium px-2">
+                {currentPage} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         <Card className="mt-6 border-blue-500/50 bg-blue-500/5">
           <CardContent className="flex items-start gap-4 py-4">
             <AlertCircle className="h-6 w-6 text-blue-500 mt-0.5" />

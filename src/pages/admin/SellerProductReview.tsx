@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { Check, X, Eye, Package, Trash2, AlertTriangle, ShieldAlert, Clock, Lock, ImageMinus, FileCheck, FileX, ChevronDown, ScanSearch } from "lucide-react";
+import { Check, X, Eye, Package, Trash2, AlertTriangle, ShieldAlert, Clock, Lock, ImageMinus, FileCheck, FileX, ChevronDown, ScanSearch, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,17 +35,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+const REVIEW_PER_PAGE = 25;
+
 export default function SellerProducts() {
   const queryClient = useQueryClient();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [moderationNotes, setModerationNotes] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("flagged");
+  const [currentPage, setCurrentPage] = useState(1);
   const [productToDelete, setProductToDelete] = useState<any>(null);
   const [deleteStep, setDeleteStep] = useState<1 | 2>(1);
 
-  const { data: products, isLoading } = useQuery({
-    queryKey: ["seller-products-moderation", filterStatus],
+  const handleFilterChange = (v: string) => { setFilterStatus(v); setCurrentPage(1); };
+
+  const { data: productsData, isLoading } = useQuery({
+    queryKey: ["seller-products-moderation", filterStatus, currentPage],
     queryFn: async () => {
+      const from = (currentPage - 1) * REVIEW_PER_PAGE;
+      const to = from + REVIEW_PER_PAGE - 1;
+
       let query = supabase
         .from("products")
         .select(`
@@ -56,22 +64,25 @@ export default function SellerProducts() {
             owner_id
           ),
           categories (name)
-        `)
+        `, { count: 'exact' })
         .eq("is_seller_product", true)
         .order("created_at", { ascending: false });
 
       if (filterStatus === "flagged") {
-        // Show only products that were flagged by security/moderation checks
         query = query.eq("moderation_status", "pending").not("moderation_flags", "is", null);
       } else if (filterStatus !== "all") {
         query = query.eq("moderation_status", filterStatus);
       }
 
-      const { data, error } = await query;
+      const { data, error, count } = await query.range(from, to);
       if (error) throw error;
-      return data;
+      return { products: data || [], totalCount: count || 0 };
     },
   });
+
+  const products = productsData?.products || [];
+  const totalCount = productsData?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / REVIEW_PER_PAGE);
 
   const moderateMutation = useMutation({
     mutationFn: async ({ productId, status, notes }: { productId: string; status: string; notes: string }) => {
@@ -286,7 +297,7 @@ export default function SellerProducts() {
             <h1 className="text-3xl font-bold">Product Review</h1>
             <p className="text-muted-foreground">Review and moderate seller product submissions</p>
           </div>
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <Select value={filterStatus} onValueChange={handleFilterChange}>
             <SelectTrigger className="w-48">
               <SelectValue />
             </SelectTrigger>
@@ -536,6 +547,24 @@ export default function SellerProducts() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Showing {((currentPage - 1) * REVIEW_PER_PAGE) + 1}–{Math.min(currentPage * REVIEW_PER_PAGE, totalCount)} of {totalCount}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                <ChevronLeft className="h-4 w-4" /> Previous
+              </Button>
+              <span className="text-sm font-medium px-2">{currentPage} / {totalPages}</span>
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                Next <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         )}
 
