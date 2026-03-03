@@ -7,6 +7,7 @@ import { Sparkles, Tag, Clock, Gift, Check, LogIn, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { format } from 'date-fns';
 
 import { useAuth } from '@/hooks/useAuth';
@@ -43,6 +44,7 @@ export function ActiveOffersCard() {
   const { user, loading: authLoading, session } = useAuth();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const reducedMotion = useReducedMotion();
   const [claimingPromoId, setClaimingPromoId] = useState<string | null>(null);
   const [benefitIndex, setBenefitIndex] = useState(0);
 
@@ -169,12 +171,15 @@ export function ActiveOffersCard() {
     return t('offers.amountOff', { amount: code.discount_value.toFixed(2) });
   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3, duration: 0.4 }}
-    >
+    const Wrapper = reducedMotion ? 'div' : motion.div;
+    const wrapperProps = reducedMotion ? {} : {
+      initial: { opacity: 0, y: 10 },
+      animate: { opacity: 1, y: 0 },
+      transition: { delay: 0.3, duration: 0.4 },
+    };
+
+    return (
+      <Wrapper {...wrapperProps as any}>
         <div className="rounded-lg border border-border bg-card p-4 md:p-5">
           <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 mb-3">
             <div className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center">
@@ -219,19 +224,26 @@ export function ActiveOffersCard() {
                             )}
                             {/* Sliding benefits */}
                             <div className="h-4 mt-1 overflow-hidden">
-                              <AnimatePresence mode="wait">
-                                <motion.p
-                                  key={benefitIndex}
-                                  initial={{ y: 10, opacity: 0 }}
-                                  animate={{ y: 0, opacity: 1 }}
-                                  exit={{ y: -10, opacity: 0 }}
-                                  transition={{ duration: 0.3 }}
-                                  className="text-[11px] text-muted-foreground flex items-center gap-1"
-                                >
+                              {reducedMotion ? (
+                                <p className="text-[11px] text-muted-foreground flex items-center gap-1">
                                   <Check className="h-3 w-3 text-amber-500 flex-shrink-0" />
                                   {t(PROMO_BENEFIT_KEYS[benefitIndex])}
-                                </motion.p>
-                              </AnimatePresence>
+                                </p>
+                              ) : (
+                                <AnimatePresence mode="wait">
+                                  <motion.p
+                                    key={benefitIndex}
+                                    initial={{ y: 10, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    exit={{ y: -10, opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="text-[11px] text-muted-foreground flex items-center gap-1"
+                                  >
+                                    <Check className="h-3 w-3 text-amber-500 flex-shrink-0" />
+                                    {t(PROMO_BENEFIT_KEYS[benefitIndex])}
+                                  </motion.p>
+                                </AnimatePresence>
+                              )}
                             </div>
                             {promo.ends_at && (
                               <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground">
@@ -328,6 +340,6 @@ export function ActiveOffersCard() {
             </div>
 
         </div>
-    </motion.div>
-  );
+      </Wrapper>
+    );
 }
