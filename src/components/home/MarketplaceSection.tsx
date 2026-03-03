@@ -66,8 +66,9 @@ const StoreCard = memo(forwardRef<HTMLAnchorElement, { store: StoreData; showTes
           <div className="flex items-start gap-3 mb-1">
             {store.logo_url ? (
               <img 
-                src={optimizeImageUrl(store.logo_url, 56)} 
+                src={store.logo_url} 
                 alt={store.name}
+                loading="lazy"
                 className="h-14 w-14 rounded-lg object-contain bg-card border border-border shadow-md flex-shrink-0 p-1"
               />
             ) : (
