@@ -28,6 +28,7 @@ import { AffiliateCard } from '@/components/account/AffiliateCard';
 import { NotificationSettingsCard } from '@/components/account/NotificationSettingsCard';
 import { SoundCustomizationCard } from '@/components/account/SoundCustomizationCard';
 import { ThemeSettingsCard } from '@/components/account/ThemeSettingsCard';
+import { AccountStatsBar } from '@/components/account/AccountStatsBar';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
@@ -213,7 +214,7 @@ const StatusBadgesSection = ({
 
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   usePageTracking({ pagePath: '/account' });
-  const { user, signOut, loading: authLoading } = useAuth();
+  const { user, session, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
   const { badges, userBadges } = useBadges();
   const { isSubscribed } = useSubscription();
@@ -446,7 +447,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     queryFn: async () => {
       if (!user?.id && !user?.email) return [];
       
-      // Query by user_id first
       let { data, error } = await supabase
         .from('orders')
         .select(`
@@ -469,7 +469,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       
       if (error) throw error;
       
-      // Also query by email to catch orders where user_id wasn't set
       if (user?.email) {
         const { data: emailOrders, error: emailError } = await supabase
           .from('orders')
@@ -493,7 +492,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
           .order('created_at', { ascending: false });
         
         if (!emailError && emailOrders) {
-          // Merge and deduplicate
           const allOrders = [...(data || []), ...emailOrders];
           const uniqueOrders = allOrders.filter((order, index, self) =>
             index === self.findIndex((o) => o.id === order.id)
@@ -506,6 +504,44 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     },
     enabled: !!(user?.id || user?.email),
   });
+
+  // Wallet balance for quick link count
+  const { data: walletData } = useQuery({
+    queryKey: ['wallet-balance-quick', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('get-credit-balance', {
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+      });
+      if (error) return { balance: 0 };
+      return data;
+    },
+    enabled: !!user?.id && !!session?.access_token,
+    staleTime: 1000 * 60 * 2,
+  });
+
+  // Unread notifications count
+  const { data: unreadCount } = useQuery({
+    queryKey: ['unread-notifications-count', user?.id],
+    queryFn: async () => {
+      const { count, error } = await (supabase
+        .from('notifications') as any)
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user!.id)
+        .eq('read', false);
+      if (error) return 0;
+      return (count as number) || 0;
+    },
+    enabled: !!user?.id,
+    staleTime: 1000 * 30,
+  });
+
+  // Compute account stats
+  const totalSpent = useMemo(() => {
+    if (!orders) return 0;
+    return orders
+      .filter((o: any) => o.status === 'paid' || o.status === 'completed')
+      .reduce((sum: number, o: any) => sum + Number(o.total || 0), 0);
+  }, [orders]);
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
@@ -690,34 +726,49 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors"
               >
                 <Download className="h-4 w-4 text-primary mb-1" />
-                <span className="text-[10px] sm:text-xs text-muted-foreground">Purchases</span>
+                <span className="text-xs font-bold">{orders?.length ?? '–'}</span>
+                <span className="text-[10px] text-muted-foreground">Purchases</span>
               </Link>
               <Link
                 to="/credits"
                 className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors"
               >
                 <CreditCard className="h-4 w-4 text-primary mb-1" />
-                <span className="text-[10px] sm:text-xs text-muted-foreground">Wallet</span>
+                <span className="text-xs font-bold">£{walletData?.balance != null ? Number(walletData.balance).toFixed(2) : '–'}</span>
+                <span className="text-[10px] text-muted-foreground">Wallet</span>
               </Link>
               <Link
                 to="/chat-history"
                 className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors"
               >
                 <MessageSquare className="h-4 w-4 text-primary mb-1" />
-                <span className="text-[10px] sm:text-xs text-muted-foreground">Support</span>
+                <span className="text-[10px] text-muted-foreground">Support</span>
               </Link>
               <Link
                 to="/notifications"
-                className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors"
+                className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors relative"
               >
                 <Bell className="h-4 w-4 text-primary mb-1" />
-                <span className="text-[10px] sm:text-xs text-muted-foreground">Alerts</span>
+                {(unreadCount ?? 0) > 0 && (
+                  <span className="absolute top-2 right-1/4 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+                <span className="text-[10px] text-muted-foreground">Alerts</span>
               </Link>
             </div>
           </CardContent>
         </Card>
 
         {/* Eclipse+ Subscription Card */}
+
+        {/* Account Stats */}
+        <AccountStatsBar
+          totalOrders={orders?.filter((o: any) => o.status === 'paid' || o.status === 'completed').length ?? 0}
+          totalSpent={totalSpent}
+          memberSince={user.created_at}
+          isLoading={ordersLoading}
+        />
 
         {/* Tabbed Content */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
