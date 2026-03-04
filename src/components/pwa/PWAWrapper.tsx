@@ -7,7 +7,7 @@ import { useAppVersionCheck } from '@/hooks/useAppVersionCheck';
 import { useNetworkQuality } from '@/hooks/useNetworkQuality';
 import { useSwipePrevent } from '@/hooks/useSwipePrevent';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { OrientationLockOverlay } from '@/components/pwa/OrientationLockOverlay';
+
 import { toast } from 'sonner';
 import { recalculatePWAViewport, isStandalonePWA } from '@/lib/externalBrowser';
 
@@ -224,9 +224,6 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
 
   return (
     <>
-      {/* Orientation lock overlay - blocks landscape mode in PWA (skip admin routes to avoid chat keyboard conflicts) */}
-      {!isAdminRoute && <OrientationLockOverlay />}
-      
       {/* Pull-to-refresh indicator */}
       <AnimatePresence>
         {pullDistance > 10 && isStandalone && (
