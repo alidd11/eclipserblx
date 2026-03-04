@@ -1,5 +1,6 @@
 import { Wallet, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface WalletBalanceCardProps {
   balance: number;
