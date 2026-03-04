@@ -402,8 +402,10 @@ function StaffMessagesContent() {
       setShowMentionSuggestions(false);
       queryClient.invalidateQueries({ queryKey: ['staff-chat-messages'] });
     },
-    onError: () => {
+    onError: (error: any) => {
       hapticError();
+      console.error('Staff message send error:', error);
+      toast.error('Failed to send message', { description: error?.message || 'Please try again' });
     },
   });
 
