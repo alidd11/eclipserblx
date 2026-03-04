@@ -35,7 +35,9 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
   const isMobile = useIsMobile();
   const location = useLocation();
   const isChatPage =
-    location.pathname === '/admin/admin-chat' || location.pathname === '/admin/staff-messages' || location.pathname === '/admin/live-chat';
+    location.pathname.startsWith('/admin/admin-chat') ||
+    location.pathname.startsWith('/admin/staff-messages') ||
+    location.pathname.startsWith('/admin/live-chat');
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);

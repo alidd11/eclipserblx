@@ -1045,11 +1045,12 @@ export default function AdminLiveChat() {
                         }}
                         onKeyPress={handleKeyPress}
                         onPointerDown={(e) => {
-                          // iOS PWA: force focus on tap
                           const input = e.currentTarget;
-                          if (document.activeElement !== input) {
-                            input.focus();
-                          }
+                          if (document.activeElement !== input) input.focus();
+                        }}
+                        onTouchStart={(e) => {
+                          const input = e.currentTarget;
+                          if (document.activeElement !== input) input.focus();
                         }}
                         className="text-base"
                         style={{ touchAction: 'manipulation', fontSize: '16px' }}
