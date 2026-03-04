@@ -307,7 +307,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
               "focus:outline-none",
               hasActiveItem
                 ? "text-foreground"
-                : "text-muted-foreground/50 hover:text-muted-foreground"
+                : "text-muted-foreground/70 hover:text-muted-foreground"
             )}
           >
             <span className="flex-1 text-left truncate">{group.title}</span>
