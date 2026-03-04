@@ -11,11 +11,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { subDays, format, isAfter, startOfDay, startOfWeek, startOfMonth } from 'date-fns';
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
 
-const trendChartConfig = {
-  commission: { label: 'Platform Commission', color: 'hsl(var(--primary))' },
-  sellerNet: { label: 'Seller Earnings', color: 'hsl(200 80% 45%)' },
-};
-
 export function SellerEarningsTab() {
   // 1. Seller transactions aggregate
   const { data: txData, isLoading: txLoading, isError: txError, refetch: refetchTx } = useQuery({
