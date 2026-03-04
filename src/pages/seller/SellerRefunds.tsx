@@ -88,7 +88,7 @@ export default function SellerRefunds() {
 
   return (
     <SellerLayout>
-      <div className="max-w-5xl mx-auto">
+      <div>
         <div className="mb-6">
          <h1 className="text-3xl font-bold">Disputes</h1>
           <p className="text-muted-foreground">

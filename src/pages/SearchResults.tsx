@@ -177,7 +177,7 @@ export default function SearchResults() {
 
   return (
     <MainLayout>
-      <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto space-y-5">
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
         {/* Search Header */}
         <div className="space-y-3">
           <div className="flex items-center gap-3">
