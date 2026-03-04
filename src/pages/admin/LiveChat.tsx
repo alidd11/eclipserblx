@@ -499,9 +499,10 @@ export default function AdminLiveChat() {
         .eq('id', selectedConversation!.id);
 
       if (updateError) throw updateError;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
       hapticError();
+      toast.error('Failed to send message', { description: error?.message || 'Please try again' });
       // Mark as failed
       setMessages((prev) =>
         prev.map((m) => (m._tempId === tempId ? { ...m, _status: 'failed' } : m))
