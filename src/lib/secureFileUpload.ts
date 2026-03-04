@@ -121,11 +121,19 @@ function isLuaFile(fileName: string): boolean {
 }
 
 /**
- * Check if file is a Roblox asset file
+ * Check if file is a binary Roblox asset file
  */
-function isRobloxFile(fileName: string): boolean {
+function isRobloxBinaryFile(fileName: string): boolean {
   const ext = getFileExtension(fileName);
-  return ROBLOX_FILE_EXTENSIONS.includes(ext);
+  return ROBLOX_BINARY_EXTENSIONS.includes(ext);
+}
+
+/**
+ * Check if file is a text/XML Roblox asset file
+ */
+function isRobloxTextFile(fileName: string): boolean {
+  const ext = getFileExtension(fileName);
+  return ROBLOX_TEXT_EXTENSIONS.includes(ext);
 }
 
 /**
