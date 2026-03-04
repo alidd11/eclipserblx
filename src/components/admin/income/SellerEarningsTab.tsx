@@ -158,7 +158,10 @@ export function SellerEarningsTab() {
       dailyMap[date] = { commission: 0, sellerNet: 0 };
     }
     txData.forEach(t => {
-      const date = format(new Date(t.created_at ?? ''), 'yyyy-MM-dd');
+      if (!t.created_at) return;
+      const parsed = new Date(t.created_at);
+      if (isNaN(parsed.getTime())) return;
+      const date = format(parsed, 'yyyy-MM-dd');
       if (dailyMap[date]) {
         dailyMap[date].commission += t.platform_fee ?? 0;
         dailyMap[date].sellerNet += t.net_amount ?? 0;
