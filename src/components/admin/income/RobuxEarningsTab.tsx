@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Gamepad2, Calendar, TrendingUp, Package, CheckCircle2, XCircle, ExternalLink } from 'lucide-react';
+import { IncomeErrorState } from './IncomeErrorState';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
