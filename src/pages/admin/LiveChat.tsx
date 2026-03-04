@@ -993,7 +993,7 @@ export default function AdminLiveChat() {
                       className="hidden"
                       accept="image/*,.pdf,.doc,.docx,.txt"
                     />
-                    <div className="flex gap-1 lg:gap-2">
+                    <div data-gesture-exempt="true" className="flex gap-1 lg:gap-2">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button type="button" size="icon" variant="ghost" title="Canned responses" className="h-9 w-9 lg:h-10 lg:w-10 shrink-0">
