@@ -21,21 +21,21 @@ export function IpBanCheck({ children }: { children: React.ReactNode }) {
         
         if (error) {
           console.error('Error checking IP ban:', error);
-          // Fail open - allow access if check fails
           setBanInfo({ banned: false });
         } else {
           setBanInfo(data);
         }
       } catch (err) {
         console.error('Failed to check IP ban:', err);
-        // Fail open
         setBanInfo({ banned: false });
       } finally {
         setIsChecking(false);
       }
     };
 
-    checkIpBan();
+    // Defer IP ban check to avoid blocking the critical rendering path
+    const timer = setTimeout(checkIpBan, 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   // Render children immediately while ban check runs in background
