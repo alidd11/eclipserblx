@@ -7,7 +7,7 @@ import { useAppVersionCheck } from '@/hooks/useAppVersionCheck';
 import { useNetworkQuality } from '@/hooks/useNetworkQuality';
 import { useSwipePrevent } from '@/hooks/useSwipePrevent';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { OrientationLockOverlay } from '@/components/pwa/OrientationLockOverlay';
+
 import { toast } from 'sonner';
 import { recalculatePWAViewport, isStandalonePWA } from '@/lib/externalBrowser';
 
