@@ -38,9 +38,6 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
   // Network quality monitoring
   const { status, isOffline, isDegraded, justRecovered, forceCheck } = useNetworkQuality();
 
-  // Prevent swipe navigation in PWA
-  useSwipePrevent();
-
   // Dynamic theme color for PWA
   useThemeColor();
 
