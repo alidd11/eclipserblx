@@ -79,25 +79,52 @@ export default function SellerSettingsProfile() {
   const updateStore = useMutation({
     mutationFn: async (data: typeof formData) => {
       if (!store?.id) throw new Error('No store found');
+
+      // Check if name changed → regenerate slug
+      let newSlug: string | undefined;
+      if (data.name.trim() !== (store.name || '').trim()) {
+        const baseSlug = generateSlug(data.name);
+        if (baseSlug) {
+          // Check for collision
+          const { data: existing } = await supabase
+            .from('stores')
+            .select('id')
+            .eq('slug', baseSlug)
+            .neq('id', store.id)
+            .maybeSingle();
+
+          newSlug = existing ? `${baseSlug}-${Math.random().toString(36).substring(2, 6)}` : baseSlug;
+        }
+      }
+
+      const updatePayload: Record<string, unknown> = {
+        name: data.name,
+        description: data.description,
+        logo_url: data.logo_url || null,
+        banner_url: data.banner_url || null,
+        bio: data.bio || null,
+        about_content: data.about_content || null,
+        twitter_url: data.twitter_url || null,
+        youtube_url: data.youtube_url || null,
+        tiktok_url: data.tiktok_url || null,
+        pwyw_enabled: data.pwyw_enabled,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (newSlug) {
+        updatePayload.slug = newSlug;
+      }
       
       const { error } = await supabase
         .from('stores')
-        .update({
-          name: data.name,
-          description: data.description,
-          logo_url: data.logo_url || null,
-          banner_url: data.banner_url || null,
-          bio: data.bio || null,
-          about_content: data.about_content || null,
-          twitter_url: data.twitter_url || null,
-          youtube_url: data.youtube_url || null,
-          tiktok_url: data.tiktok_url || null,
-          pwyw_enabled: data.pwyw_enabled,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updatePayload)
         .eq('id', store.id);
 
       if (error) throw error;
+
+      if (newSlug) {
+        toast.info(`Store URL updated to: /store/${newSlug}`);
+      }
     },
     onSuccess: () => {
       toast.success('Profile updated successfully');
