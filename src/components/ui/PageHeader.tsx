@@ -24,7 +24,7 @@ export function PageHeader({ title, description, badge, actions, centered = fals
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={cn(
-        'mb-5 sm:mb-8',
+        'mb-4 sm:mb-6',
         centered ? 'text-center' : 'flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3',
         className,
       )}

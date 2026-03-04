@@ -643,9 +643,9 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       data-gesture-exempt="true"
     >
       {/* Header */}
-      <div className="px-3 py-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] border-b border-border">
+      <div className="px-3 py-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] border-b border-border">
         {!isCollapsed && (
-          <h1 className="font-display font-bold text-base text-foreground truncate tracking-wide">
+          <h1 className="font-display font-bold text-sm text-foreground truncate tracking-wide">
             ECLIPSE
           </h1>
         )}
