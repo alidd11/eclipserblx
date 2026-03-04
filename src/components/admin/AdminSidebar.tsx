@@ -540,7 +540,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
             variant="ghost"
             size="sm"
             className={cn(
-              "w-full text-muted-foreground hover:text-foreground hover:bg-muted/60",
+              "w-full text-foreground/80 hover:text-foreground hover:bg-muted/60",
               isCollapsed ? "justify-center px-2" : "justify-start"
             )}
             onClick={onToggle}
