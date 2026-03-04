@@ -26,6 +26,8 @@ export function RobuxEarningsTab() {
       if (error) throw error;
       return data ?? [];
     },
+    staleTime: 60000,
+    retry: 2,
   });
 
   const { data: productsWithRobuxStatus, isLoading: productsLoading } = useQuery({

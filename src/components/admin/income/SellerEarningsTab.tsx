@@ -24,6 +24,8 @@ export function SellerEarningsTab() {
       if (error) throw error;
       return data ?? [];
     },
+    staleTime: 60000,
+    retry: 2,
   });
 
   // 2. Seller balances aggregate
@@ -132,7 +134,12 @@ export function SellerEarningsTab() {
       { label: 'All Time', filter: () => true },
     ];
     return periods.map(p => {
-      const filtered = txData.filter(t => p.filter(t.created_at ?? ''));
+      const filtered = txData.filter(t => {
+        if (!t.created_at) return false;
+        const d = new Date(t.created_at);
+        if (isNaN(d.getTime())) return false;
+        return p.filter(t.created_at);
+      });
       return {
         label: p.label,
         commission: filtered.reduce((s, t) => s + (t.platform_fee ?? 0), 0),
@@ -151,7 +158,10 @@ export function SellerEarningsTab() {
       dailyMap[date] = { commission: 0, sellerNet: 0 };
     }
     txData.forEach(t => {
-      const date = format(new Date(t.created_at ?? ''), 'yyyy-MM-dd');
+      if (!t.created_at) return;
+      const parsed = new Date(t.created_at);
+      if (isNaN(parsed.getTime())) return;
+      const date = format(parsed, 'yyyy-MM-dd');
       if (dailyMap[date]) {
         dailyMap[date].commission += t.platform_fee ?? 0;
         dailyMap[date].sellerNet += t.net_amount ?? 0;

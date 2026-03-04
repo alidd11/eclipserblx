@@ -42,6 +42,8 @@ export function CreditsAnalyticsTab() {
         profile: profileMap.get(tx.user_id) || null,
       }));
     },
+    staleTime: 60000,
+    retry: 2,
   });
 
   // Fetch credit balances summary
@@ -115,7 +117,10 @@ export function CreditsAnalyticsTab() {
     }
 
     creditTransactions.forEach((tx) => {
-      const date = format(new Date(tx.created_at), 'yyyy-MM-dd');
+      if (!tx.created_at) return;
+      const parsed = new Date(tx.created_at);
+      if (isNaN(parsed.getTime())) return;
+      const date = format(parsed, 'yyyy-MM-dd');
       if (dailyData[date] !== undefined) {
         if (tx.type === 'purchase') {
           dailyData[date].purchases += Number(tx.amount);

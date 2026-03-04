@@ -182,19 +182,19 @@ export function StripeBalanceTab() {
                         <div className="space-y-1 text-sm">
                           <div className="flex justify-between gap-4">
                             <span className="text-muted-foreground">Gross:</span>
-                            <span>£{data.gross.toFixed(2)}</span>
+                            <span>£{(Number(data.gross) || 0).toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between gap-4">
                             <span className="text-muted-foreground">Fees:</span>
-                            <span className="text-destructive">-£{data.fees.toFixed(2)}</span>
+                            <span className="text-destructive">-£{(Number(data.fees) || 0).toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between gap-4 border-t pt-1">
                             <span className="font-medium">Net:</span>
-                            <span className="text-green-600 font-medium">£{data.net.toFixed(2)}</span>
+                            <span className="text-green-600 font-medium">£{(Number(data.net) || 0).toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between gap-4 text-xs text-muted-foreground">
                             <span>Transactions:</span>
-                            <span>{data.count}</span>
+                            <span>{data.count ?? 0}</span>
                           </div>
                         </div>
                       </div>
