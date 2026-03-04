@@ -1,5 +1,6 @@
 import { Wallet, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface WalletBalanceCardProps {
   balance: number;
@@ -16,6 +17,7 @@ export function WalletBalanceCard({
   totalSpent, 
   isLoading 
 }: WalletBalanceCardProps) {
+  const { formatPrice } = useCurrency();
   return (
     <Card className="relative overflow-hidden w-full max-w-full">
       <div className="absolute top-0 left-0 right-0 h-1 bg-border" />
@@ -31,7 +33,7 @@ export function WalletBalanceCard({
           {isLoading ? (
             <Loader2 className="h-8 w-8 animate-spin" />
           ) : (
-            `£${balance.toFixed(2)}`
+            formatPrice(balance)
           )}
         </CardTitle>
       </CardHeader>
@@ -40,15 +42,15 @@ export function WalletBalanceCard({
         <div className="grid grid-cols-3 gap-3 text-sm">
           <div className="p-2.5 rounded-lg bg-muted/50 text-center">
             <div className="text-muted-foreground text-xs">Purchased</div>
-            <div className="font-semibold">£{totalPurchased.toFixed(2)}</div>
+            <div className="font-semibold">{formatPrice(totalPurchased)}</div>
           </div>
           <div className="p-2.5 rounded-lg bg-muted/50 text-center">
             <div className="text-muted-foreground text-xs">Gifted</div>
-            <div className="font-semibold">£{totalGifted.toFixed(2)}</div>
+            <div className="font-semibold">{formatPrice(totalGifted)}</div>
           </div>
           <div className="p-2.5 rounded-lg bg-muted/50 text-center">
             <div className="text-muted-foreground text-xs">Spent</div>
-            <div className="font-semibold">£{totalSpent.toFixed(2)}</div>
+            <div className="font-semibold">{formatPrice(totalSpent)}</div>
           </div>
         </div>
       </CardContent>

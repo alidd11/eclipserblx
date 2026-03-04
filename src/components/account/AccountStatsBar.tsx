@@ -1,5 +1,6 @@
-import { Package, PoundSterling, Calendar } from 'lucide-react';
+import { Package, Wallet, Calendar } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface AccountStatsBarProps {
   totalOrders: number;
@@ -9,11 +10,12 @@ interface AccountStatsBarProps {
 }
 
 export function AccountStatsBar({ totalOrders, totalSpent, memberSince, isLoading }: AccountStatsBarProps) {
+  const { formatPrice } = useCurrency();
   const memberDuration = formatDistanceToNow(new Date(memberSince), { addSuffix: false });
 
   const stats = [
     { label: 'Orders', value: isLoading ? '–' : String(totalOrders), icon: Package },
-    { label: 'Spent', value: isLoading ? '–' : `£${totalSpent.toFixed(2)}`, icon: PoundSterling },
+    { label: 'Spent', value: isLoading ? '–' : formatPrice(totalSpent), icon: Wallet },
     { label: 'Member', value: memberDuration, icon: Calendar },
   ];
 
