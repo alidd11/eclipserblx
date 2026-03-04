@@ -160,6 +160,14 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
   // Handle swipe from left edge to open sidebar (high sensitivity, but scroll-safe)
   const handleTouchStart = useCallback(
     (e: TouchEvent) => {
+      // Never intercept edge swipes on chat pages (live chat needs native gestures)
+      if (isChatPage) {
+        isEdgeSwipe.current = false;
+        touchStartX.current = null;
+        touchStartY.current = null;
+        return;
+      }
+
       // When the drawer is open, do NOT treat touches as an "edge swipe".
       // This prevents us from blocking vertical scrolling inside the sidebar.
       if (mobileOpen) {
@@ -185,13 +193,20 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
       // Mark as edge swipe if starting near left edge (expanded zone)
       isEdgeSwipe.current = touch.clientX < EDGE_SWIPE_ZONE_PX;
     },
-    [mobileOpen]
+    [mobileOpen, isChatPage]
   );
 
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
+      // Never intercept gestures on chat pages.
+      if (isChatPage) return;
+
       // Only intercept gestures when the drawer is CLOSED.
       if (mobileOpen) return;
+
+      const target = e.target as Element | null;
+      if (target?.closest?.('[data-gesture-exempt="true"]')) return;
+
       if (!isEdgeSwipe.current || touchStartX.current === null) return;
 
       const touch = e.touches[0];
@@ -205,7 +220,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
         e.stopPropagation();
       }
     },
-    [mobileOpen]
+    [mobileOpen, isChatPage]
   );
 
   const handleTouchEnd = useCallback(
@@ -236,7 +251,8 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
 
   // Add edge swipe listener for mobile - capture phase to intercept before browser
   useEffect(() => {
-    if (!isMobile) return;
+    // Disable global edge-swipe interception on chat pages to avoid breaking chat input/scroll.
+    if (!isMobile || isChatPage) return;
     
     // Use capture phase to intercept gestures before browser handles them
     document.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
@@ -248,7 +264,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
       document.removeEventListener('touchmove', handleTouchMove, { capture: true });
       document.removeEventListener('touchend', handleTouchEnd, { capture: true });
     };
-  }, [isMobile, handleTouchStart, handleTouchMove, handleTouchEnd]);
+  }, [isMobile, isChatPage, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
   // Enable support ticket notifications for all admin pages
   useSupportTicketNotifications();
