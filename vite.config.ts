@@ -6,6 +6,13 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  define: {
+    // Tree-shake Sentry Replay, Feedback & debug code (~60 KiB savings)
+    __SENTRY_DEBUG__: false,
+    __RRWEB_EXCLUDE_IFRAME__: true,
+    __RRWEB_EXCLUDE_SHADOW_DOM__: true,
+    __SENTRY_EXCLUDE_REPLAY_WORKER__: true,
+  },
   server: {
     host: "::",
     port: 8080,
