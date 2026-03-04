@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useServiceWorkerUpdate } from '@/hooks/useServiceWorkerUpdate';
 import { useAppVersionCheck } from '@/hooks/useAppVersionCheck';
 import { useNetworkQuality } from '@/hooks/useNetworkQuality';
-import { useSwipePrevent } from '@/hooks/useSwipePrevent';
+
 import { useThemeColor } from '@/hooks/useThemeColor';
 
 import { toast } from 'sonner';
@@ -37,9 +37,6 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
   
   // Network quality monitoring
   const { status, isOffline, isDegraded, justRecovered, forceCheck } = useNetworkQuality();
-
-  // Prevent swipe navigation in PWA
-  useSwipePrevent();
 
   // Dynamic theme color for PWA
   useThemeColor();
