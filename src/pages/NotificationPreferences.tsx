@@ -23,7 +23,7 @@ export default function NotificationPreferences() {
   // Local state for preferences
   const [productAlerts, setProductAlerts] = useState(true);
   const [discountAlerts, setDiscountAlerts] = useState(true);
-  const [forumAlerts, setForumAlerts] = useState(true);
+  const [newsletterAlerts, setNewsletterAlerts] = useState(true);
   const [supportReplies, setSupportReplies] = useState(true);
   const [testingPush, setTestingPush] = useState(false);
 
@@ -48,7 +48,7 @@ export default function NotificationPreferences() {
     if (subscription) {
       setProductAlerts(subscription.subscribed_to_updates);
       setDiscountAlerts(subscription.subscribed_to_discounts);
-      setForumAlerts(subscription.subscribed_to_newsletters);
+      setNewsletterAlerts(subscription.subscribed_to_newsletters);
       setSupportReplies(subscription.subscribed_to_support_replies ?? true);
     }
   }, [subscription]);
@@ -102,7 +102,7 @@ export default function NotificationPreferences() {
     updateMutation.mutate({
       subscribed_to_updates: productAlerts,
       subscribed_to_discounts: discountAlerts,
-      subscribed_to_newsletters: forumAlerts,
+      subscribed_to_newsletters: newsletterAlerts,
       subscribed_to_support_replies: supportReplies,
     });
   };
@@ -126,7 +126,7 @@ export default function NotificationPreferences() {
   const handleDisableAll = () => {
     setProductAlerts(false);
     setDiscountAlerts(false);
-    setForumAlerts(false);
+    setNewsletterAlerts(false);
     setSupportReplies(false);
     updateMutation.mutate({
       subscribed_to_updates: false,
@@ -174,7 +174,7 @@ export default function NotificationPreferences() {
   const hasChanges = subscription
     ? (productAlerts !== subscription.subscribed_to_updates ||
        discountAlerts !== subscription.subscribed_to_discounts ||
-       forumAlerts !== subscription.subscribed_to_newsletters ||
+       newsletterAlerts !== subscription.subscribed_to_newsletters ||
        supportReplies !== (subscription.subscribed_to_support_replies ?? true))
     : true;
 
@@ -309,14 +309,14 @@ export default function NotificationPreferences() {
                   <div className="flex items-center gap-3">
                     <MessageCircle className="h-5 w-5 text-primary" />
                     <div>
-                      <Label htmlFor="forum-alerts" className="font-medium cursor-pointer">Newsletter</Label>
+                      <Label htmlFor="newsletter-alerts" className="font-medium cursor-pointer">Newsletter</Label>
                       <p className="text-sm text-muted-foreground">Community updates and newsletters</p>
                     </div>
                   </div>
                   <Switch
-                    id="forum-alerts"
-                    checked={forumAlerts}
-                    onCheckedChange={setForumAlerts}
+                    id="newsletter-alerts"
+                    checked={newsletterAlerts}
+                    onCheckedChange={setNewsletterAlerts}
                   />
                 </div>
 
@@ -355,7 +355,7 @@ export default function NotificationPreferences() {
                   <Button
                     variant="outline"
                     onClick={handleDisableAll}
-                    disabled={updateMutation.isPending || (!productAlerts && !discountAlerts && !forumAlerts && !supportReplies)}
+                    disabled={updateMutation.isPending || (!productAlerts && !discountAlerts && !newsletterAlerts && !supportReplies)}
                   >
                     <BellOff className="mr-2 h-4 w-4" />
                     Disable All Alerts

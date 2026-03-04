@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
   reviewSchema,
-  forumThreadSchema,
   chatMessageSchema,
   contactFormSchema,
   validateWithSchema,
@@ -27,18 +26,6 @@ describe("reviewSchema", () => {
   it("allows optional title", () => {
     const result = reviewSchema.safeParse({ content: "This is a valid review", rating: 3, title: "Nice" });
     expect(result.success).toBe(true);
-  });
-});
-
-describe("forumThreadSchema", () => {
-  it("accepts valid thread", () => {
-    const result = forumThreadSchema.safeParse({ title: "Help needed", content: "I need help with something important" });
-    expect(result.success).toBe(true);
-  });
-
-  it("rejects short title", () => {
-    const result = forumThreadSchema.safeParse({ title: "Hi", content: "Valid content here..." });
-    expect(result.success).toBe(false);
   });
 });
 
