@@ -298,6 +298,8 @@ export const AppRoutes = forwardRef<HTMLDivElement>(function AppRoutes(_, _ref) 
         <Route path="/account/ad-analytics" element={<AdAnalyticsPage />} />
         <Route path="/account/following" element={<FollowingPage />} />
         <Route path="/support/chat" element={<LiveChat />} />
+        {/* Legacy compatibility redirect */}
+        <Route path="/live-chat" element={<Navigate to="/support/chat" replace />} />
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/store-messages" element={<StoreMessages />} />
         {/* Seller routes */}
@@ -356,6 +358,8 @@ export const AppRoutes = forwardRef<HTMLDivElement>(function AppRoutes(_, _ref) 
         <Route path="/admin/staff-activity" element={<AdminStaffActivity />} />
         <Route path="/admin/staff-messages" element={<AdminStaffMessages />} />
         <Route path="/admin/admin-chat" element={<AdminChat />} />
+        {/* Legacy compatibility redirect */}
+        <Route path="/admin/chat" element={<Navigate to="/admin/admin-chat" replace />} />
         <Route path="/admin/products" element={<AdminProducts />} />
         <Route path="/admin/categories" element={<AdminCategories />} />
         <Route path="/admin/promotions" element={<AdminPromotions />} />
