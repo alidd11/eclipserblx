@@ -42,6 +42,8 @@ export function CreditsAnalyticsTab() {
         profile: profileMap.get(tx.user_id) || null,
       }));
     },
+    staleTime: 60000,
+    retry: 2,
   });
 
   // Fetch credit balances summary
