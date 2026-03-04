@@ -836,6 +836,7 @@ function StaffMessagesContent() {
 
   return (
     <div 
+      data-gesture-exempt="true"
       className="flex-1 flex flex-col min-h-0 bg-card"
       style={{ overscrollBehavior: 'none' }}
     >
@@ -849,6 +850,7 @@ function StaffMessagesContent() {
 
       {/* Messages area - fills available space */}
       <div
+        data-gesture-exempt="true"
         ref={scrollRef} 
         className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 sm:px-4"
         style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
@@ -976,7 +978,10 @@ function StaffMessagesContent() {
       )}
 
       {/* Input bar - iMessage style */}
-      <div className="px-3 py-2 sm:px-4 sm:py-3 flex-shrink-0 bg-card pb-[var(--chat-safe-bottom,0px)] relative">
+      <div
+        data-gesture-exempt="true"
+        className="px-3 py-2 sm:px-4 sm:py-3 flex-shrink-0 bg-card pb-[var(--chat-safe-bottom,0px)] relative"
+      >
         {/* Mention suggestions */}
         {showMentionSuggestions && (
           <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover text-popover-foreground border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto z-[100]">
@@ -1066,7 +1071,7 @@ function StaffMessagesContent() {
         )}
 
         {/* Modern input bar */}
-        <div className="flex gap-2 items-center">
+        <div data-gesture-exempt="true" className="flex gap-2 items-center">
           {/* Plus/Attachment button */}
           <Button
             variant="ghost"
@@ -1080,6 +1085,7 @@ function StaffMessagesContent() {
 
           {/* Input pill */}
           <div 
+            data-gesture-exempt="true"
             className="flex-1 min-w-0 relative"
             style={{ touchAction: 'manipulation' }}
           >
@@ -1123,8 +1129,9 @@ function StaffMessagesContent() {
                 });
               }}
               placeholder="Message..."
-              className="w-full rounded-full bg-muted/50 border-0 focus-visible:ring-1 pr-10"
+              className="w-full rounded-full bg-muted/50 border-0 focus-visible:ring-1 pr-10 text-base"
               disabled={isUploading}
+              style={{ fontSize: '16px' }}
             />
           </div>
 

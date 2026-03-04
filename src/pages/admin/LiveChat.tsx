@@ -168,6 +168,7 @@ export default function AdminLiveChat() {
   const [showOrderHistory, setShowOrderHistory] = useState(false);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messageInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const typingChannelRef = useRef<any>(null);
@@ -1036,6 +1037,7 @@ export default function AdminLiveChat() {
                         )}
                       </Button>
                       <Input
+                        ref={messageInputRef}
                         data-gesture-exempt="true"
                         placeholder="Type your reply..."
                         value={newMessage}
@@ -1051,6 +1053,18 @@ export default function AdminLiveChat() {
                         onTouchStart={(e) => {
                           const input = e.currentTarget;
                           if (document.activeElement !== input) input.focus();
+                        }}
+                        onFocus={() => {
+                          const keepVisible = () => {
+                            scrollToBottom();
+                            messageInputRef.current?.scrollIntoView({ block: 'end', behavior: 'instant' });
+                          };
+                          requestAnimationFrame(() => {
+                            keepVisible();
+                            setTimeout(keepVisible, 120);
+                            setTimeout(keepVisible, 280);
+                            setTimeout(keepVisible, 520);
+                          });
                         }}
                         className="text-base"
                         style={{ touchAction: 'manipulation', fontSize: '16px' }}
