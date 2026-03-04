@@ -78,7 +78,7 @@ export function LandingHero() {
             Experience.
           </h1>
 
-          <p className="text-sm text-muted-foreground max-w-md mb-6 leading-relaxed">
+          <p className="text-sm text-foreground/70 max-w-md mb-6 leading-relaxed">
             {t('landing.description')}
           </p>
 
@@ -93,7 +93,7 @@ export function LandingHero() {
             {!isSeller && (
               <Link
                 to="/seller"
-                className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+                className="text-xs font-medium text-foreground/70 hover:text-foreground transition-colors flex items-center gap-1.5"
               >
                 <Store className="h-3.5 w-3.5" />
                 Start selling
@@ -110,14 +110,14 @@ export function LandingHero() {
 
           {/* Search tags */}
           <div className="flex items-center gap-1.5 flex-wrap justify-center" role="navigation" aria-label="Trending searches">
-            <span className="text-[10px] text-muted-foreground mr-1">
+            <span className="text-[10px] text-foreground/60 mr-1">
               Trending:
             </span>
             {POPULAR_SEARCHES.map((term) => (
               <button
                 key={term}
                 onClick={() => handleSearchClick(term)}
-                className="text-[11px] px-2 py-0.5 rounded-sm border border-border/50 text-muted-foreground hover:text-foreground hover:border-border transition-colors"
+                className="text-[11px] px-2 py-0.5 rounded-sm border border-border/50 text-foreground/70 hover:text-foreground hover:border-border transition-colors"
               >
                 {term}
               </button>
@@ -151,7 +151,7 @@ export function LandingHero() {
               </span>{' '}
               Experience.
             </h1>
-            <p className="text-sm text-muted-foreground mx-auto mb-5 leading-relaxed">
+            <p className="text-sm text-foreground/70 mx-auto mb-5 leading-relaxed">
               {t('landing.description')}
             </p>
 
@@ -165,7 +165,7 @@ export function LandingHero() {
             </div>
 
             <div className="flex items-center justify-center gap-1.5 overflow-hidden" role="navigation" aria-label="Trending searches">
-              <span className="text-[11px] text-muted-foreground flex items-center gap-1 flex-shrink-0">
+              <span className="text-[11px] text-foreground/60 flex items-center gap-1 flex-shrink-0">
                 <Search className="h-3 w-3" aria-hidden="true" />
                 Trending
               </span>
@@ -173,7 +173,7 @@ export function LandingHero() {
                 <button
                   key={term}
                   onClick={() => handleSearchClick(term)}
-                  className="text-[11px] px-1.5 py-0.5 rounded bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+                  className="text-[11px] px-1.5 py-0.5 rounded bg-muted/50 hover:bg-muted text-foreground/70 hover:text-foreground transition-colors flex-shrink-0"
                 >
                   {term}
                 </button>
