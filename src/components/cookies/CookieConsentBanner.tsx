@@ -32,7 +32,7 @@ export function CookieConsentBanner() {
               <div className="flex items-center gap-3 shrink-0">
                 <button
                   onClick={rejectNonEssential}
-                  className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+                  className="text-[10px] uppercase tracking-wider font-bold text-foreground/70 hover:text-foreground transition-colors whitespace-nowrap"
                 >
                   {t('cookies.rejectNonEssential')}
                 </button>
