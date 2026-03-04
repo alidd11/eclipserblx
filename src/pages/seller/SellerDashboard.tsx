@@ -65,9 +65,18 @@ export default function SellerDashboard() {
         .eq('store_id', store.id);
       if (error) throw error;
       const products = data || [];
+
+      // Fetch bot product IDs so we skip the file requirement for them
+      const { data: botProducts } = await supabase
+        .from('bot_products')
+        .select('product_id')
+        .in('product_id', products.map(p => p.id));
+      const botProductIds = new Set((botProducts || []).map(bp => bp.product_id));
+
       const nonCompliant = products.filter(p => {
         const plainDesc = (p.description || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
-        return plainDesc.length < 100 || !p.asset_file_url;
+        const needsFile = !botProductIds.has(p.id);
+        return plainDesc.length < 100 || (needsFile && !p.asset_file_url);
       });
       return {
         total: products.length,
