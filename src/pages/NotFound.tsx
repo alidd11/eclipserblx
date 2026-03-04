@@ -66,12 +66,13 @@ const NotFound = () => {
         </p>
 
         {/* Search bar */}
-        <form onSubmit={handleSearch} className="flex gap-2 mb-8">
+        <form onSubmit={handleSearch} className="flex gap-2 mb-8" role="search" aria-label="Search products">
           <Input
             placeholder="Search products…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-9 text-sm"
+            aria-label="Search products"
           />
           <Button type="submit" size="sm" variant="secondary" className="h-9 px-3">
             <Search className="h-3.5 w-3.5" />

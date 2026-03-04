@@ -142,7 +142,7 @@ export function LandingHero() {
         {/* Mobile: centered layout (keep existing feel) */}
         <div className="lg:hidden w-full flex flex-col items-center">
           <div className="text-center max-w-md">
-            <h1 aria-hidden="true" className="font-display text-2xl sm:text-3xl font-bold leading-[1.15] tracking-tight mb-3">
+            <h1 className="font-display text-2xl sm:text-3xl font-bold leading-[1.15] tracking-tight mb-3">
               {t('landing.headline')}{' '}
               <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em' }}>
                 <span className="invisible">{rotatingWords.reduce((a, b) => a.length > b.length ? a : b)}</span>
