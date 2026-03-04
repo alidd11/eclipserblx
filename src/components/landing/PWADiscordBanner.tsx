@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
+import { useDiscordStats } from '@/hooks/useDiscordStats';
 import { Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -12,8 +13,15 @@ const DiscordLogo = forwardRef<SVGSVGElement, { className?: string }>(function D
   );
 });
 
+function formatCount(count: number | null): string {
+  if (count === null) return '—';
+  if (count >= 1000) return `${(count / 1000).toFixed(1).replace(/\.0$/, '')}k`;
+  return count.toLocaleString();
+}
+
 export function PWADiscordBanner() {
   const { discordUrl } = useDiscordUrl();
+  const { memberCount, onlineCount, isLoading } = useDiscordStats();
   const { t } = useTranslation();
 
   return (
@@ -48,7 +56,9 @@ export function PWADiscordBanner() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
               </span>
-              <span className="font-medium">Online Now</span>
+              <span className="font-medium">
+                {isLoading ? '...' : onlineCount !== null ? `${formatCount(onlineCount)} Online` : 'Online Now'}
+              </span>
             </div>
 
             <span className="text-border">•</span>
@@ -56,7 +66,9 @@ export function PWADiscordBanner() {
             {/* Member count */}
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Users className="h-3 w-3" />
-              <span className="font-medium">525+ Members</span>
+              <span className="font-medium">
+                {isLoading ? '...' : memberCount !== null ? `${formatCount(memberCount)} Members` : '500+ Members'}
+              </span>
             </div>
           </div>
 
