@@ -198,8 +198,15 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
 
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
+      // Never intercept gestures on chat pages.
+      if (isChatPage) return;
+
       // Only intercept gestures when the drawer is CLOSED.
       if (mobileOpen) return;
+
+      const target = e.target as Element | null;
+      if (target?.closest?.('[data-gesture-exempt="true"]')) return;
+
       if (!isEdgeSwipe.current || touchStartX.current === null) return;
 
       const touch = e.touches[0];
@@ -213,7 +220,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
         e.stopPropagation();
       }
     },
-    [mobileOpen]
+    [mobileOpen, isChatPage]
   );
 
   const handleTouchEnd = useCallback(
