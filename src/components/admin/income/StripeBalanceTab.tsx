@@ -25,7 +25,7 @@ interface StripeBalanceData {
 }
 
 export function StripeBalanceTab() {
-  const { data: stripeBalance, isLoading, refetch } = useQuery<StripeBalanceData>({
+  const { data: stripeBalance, isLoading, isError, error, refetch } = useQuery<StripeBalanceData>({
     queryKey: ['admin-stripe-balance'],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('get-stripe-balance');
@@ -33,6 +33,7 @@ export function StripeBalanceTab() {
       return data as StripeBalanceData;
     },
     staleTime: 60000,
+    retry: 2,
   });
 
   const chartData = useMemo(() => {

@@ -14,7 +14,7 @@ import { RevolutLineChart } from '@/components/ui/revolut-chart';
 const ROBUX_TO_GBP_RATE = 0.00275;
 
 export function RobuxEarningsTab() {
-  const { data: robuxTransactions } = useQuery({
+  const { data: robuxTransactions, isLoading: robuxLoading, isError: robuxError, refetch: refetchRobux } = useQuery({
     queryKey: ['admin-robux-transactions'],
     queryFn: async () => {
       const { data, error } = await supabase

@@ -13,7 +13,7 @@ import { RevolutLineChart } from '@/components/ui/revolut-chart';
 
 export function CreditsAnalyticsTab() {
   // Fetch all credit transactions
-  const { data: creditTransactions, isLoading, refetch } = useQuery({
+  const { data: creditTransactions, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-credit-transactions'],
     queryFn: async () => {
       const { data, error } = await supabase

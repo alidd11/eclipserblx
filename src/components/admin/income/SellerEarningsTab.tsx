@@ -17,7 +17,7 @@ const trendChartConfig = {
 
 export function SellerEarningsTab() {
   // 1. Seller transactions aggregate
-  const { data: txData, isLoading: txLoading } = useQuery({
+  const { data: txData, isLoading: txLoading, isError: txError, refetch: refetchTx } = useQuery({
     queryKey: ['admin-seller-tx-summary'],
     queryFn: async () => {
       const { data, error } = await supabase

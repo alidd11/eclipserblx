@@ -35,7 +35,7 @@ export function GrossRevenueTab() {
     },
   });
 
-  const { data: incomeTrend, isLoading: trendLoading } = useQuery({
+  const { data: incomeTrend, isLoading: trendLoading, isError: trendError, refetch: refetchTrend } = useQuery({
     queryKey: ['admin-income-trend'],
     queryFn: async () => {
       const { data, error } = await supabase
