@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { usePageMeta } from '@/hooks/usePageMeta';
 
 // ---------- Types ----------
@@ -325,15 +326,11 @@ export default function AllStores() {
   return (
     <MainLayout>
       <div className="w-full max-w-5xl mx-auto px-4 py-6 space-y-6">
-          {/* Page header */}
-          <div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-              All Stores
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Discover creators and sellers across the marketplace
-            </p>
-          </div>
+          <PageHeader
+            title="All Stores"
+            description="Discover creators and sellers across the marketplace"
+            className="mb-0"
+          />
 
           {/* Search + Sort bar */}
           <div className="flex items-center gap-3">

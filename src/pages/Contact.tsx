@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -168,16 +169,16 @@ export default function Contact() {
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-12 max-w-5xl">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6">
-            <Mail className="w-8 h-8 text-primary" />
-          </div>
-          <h1 className="text-4xl font-display font-bold mb-4">Contact Us</h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Have a question or need help? We're here for you. Choose your preferred way to get in touch.
-          </p>
-        </div>
+        <PageHeader
+          title="Contact Us"
+          description="Have a question or need help? We're here for you. Choose your preferred way to get in touch."
+          centered
+          badge={
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10">
+              <Mail className="w-7 h-7 text-primary" />
+            </div>
+          }
+        />
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Contact Methods */}

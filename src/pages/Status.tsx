@@ -22,6 +22,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { format, formatDistanceToNow } from 'date-fns';
 
 interface Incident {
@@ -273,22 +274,21 @@ export default function Status() {
     <MainLayout>
       <div className="container py-8 space-y-8 max-w-4xl">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-display font-bold">System Status</h1>
-            <p className="text-muted-foreground mt-1">
-              Real-time health monitoring of all services
-            </p>
-          </div>
-          <Button 
-            variant="outline" 
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-          >
-            <RefreshCw className={cn("h-4 w-4 mr-2", isRefreshing && "animate-spin")} />
-            Refresh
-          </Button>
-        </div>
+        <PageHeader
+          title="System Status"
+          description="Real-time health monitoring of all services"
+          className="mb-0"
+          actions={
+            <Button 
+              variant="outline" 
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={cn("h-4 w-4 mr-2", isRefreshing && "animate-spin")} />
+              Refresh
+            </Button>
+          }
+        />
 
         {/* Overall Status Banner */}
         <Card className={cn(
