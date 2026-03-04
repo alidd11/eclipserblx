@@ -50,6 +50,7 @@ Deno.serve(async (req) => {
   <url><loc>${SITE_URL}/stores</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>${SITE_URL}/eclipse-plus</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>${SITE_URL}/faq</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>${SITE_URL}/help-center</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>${SITE_URL}/contact</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>${SITE_URL}/support</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>${SITE_URL}/jobs</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>

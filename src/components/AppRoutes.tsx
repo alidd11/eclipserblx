@@ -37,6 +37,7 @@ const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
 const DMCA = lazy(() => import("@/pages/DMCA"));
 const FAQ = lazy(() => import("@/pages/FAQ"));
+const HelpCenter = lazy(() => import("@/pages/HelpCenter"));
 const Support = lazy(() => import("@/pages/Support"));
 const Contact = lazy(() => import("@/pages/Contact"));
 const Status = lazy(() => import("@/pages/Status"));
@@ -274,6 +275,7 @@ export const AppRoutes = forwardRef<HTMLDivElement>(function AppRoutes(_, _ref) 
         <Route path="/ip-staff/custom-plans" element={<IPStaffCustomPlans />} />
         <Route path="/ip-staff/inbox" element={<IPStaffInbox />} />
         <Route path="/faq" element={<FAQ />} />
+        <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/support" element={<Support />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/status" element={<Status />} />
