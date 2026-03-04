@@ -15,6 +15,17 @@ async function loadSentry() {
     tracesSampleRate: import.meta.env.PROD ? 0.2 : 1.0,
     enabled: import.meta.env.PROD,
     environment: import.meta.env.MODE,
+
+    // Strip heavy unused integrations (~69 KiB savings)
+    replaysSessionSampleRate: 0,
+    replaysOnErrorSampleRate: 0,
+    integrations(defaults) {
+      return defaults.filter(
+        (i) =>
+          !["Replay", "Feedback", "BrowserProfiling"].includes(i.name)
+      );
+    },
+
     ignoreErrors: [
       "ResizeObserver loop",
       "ResizeObserver loop completed with undelivered notifications",
