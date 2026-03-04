@@ -37,21 +37,37 @@ export const OrientationLockOverlay = forwardRef<HTMLDivElement>(function Orient
     if (isNative || !isStandalone) return;
 
     const checkOrientation = () => {
-      // Multiple detection methods for reliability
-      const isLandscape = 
-        window.matchMedia('(orientation: landscape)').matches ||
-        window.innerWidth > window.innerHeight ||
-        (typeof window.orientation === 'number' && (window.orientation === 90 || window.orientation === -90));
-      
-      // Check if this is actually a mobile/touch device, not just a small screen
+      // Avoid false landscape detection when iOS keyboard shrinks viewport height.
+      const active = document.activeElement as HTMLElement | null;
+      const isTextInputFocused =
+        !!active &&
+        (active.tagName === 'INPUT' ||
+          active.tagName === 'TEXTAREA' ||
+          active.isContentEditable);
+
+      const vv = window.visualViewport;
+      const keyboardLikelyOpen =
+        isTextInputFocused &&
+        !!vv &&
+        window.innerHeight - vv.height > 90;
+
+      // Use stable orientation signals (do NOT use width>height here; keyboard can break it)
+      const mediaLandscape = window.matchMedia('(orientation: landscape)').matches;
+      const screenLandscape =
+        typeof window.screen?.orientation?.angle === 'number' &&
+        Math.abs(window.screen.orientation.angle) === 90;
+      const legacyLandscape =
+        typeof window.orientation === 'number' &&
+        (window.orientation === 90 || window.orientation === -90);
+
+      const isLandscape = mediaLandscape || screenLandscape || legacyLandscape;
+
+      // Check if this is actually a mobile/touch device, not desktop
       const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
       const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       const isMobileDevice = isTouchDevice && isMobileUA;
-      
-      // Only block on actual mobile devices in landscape (not desktop browsers)
-      const isMobileSize = window.innerWidth < 1024 || window.innerHeight < 1024;
-      
-      setShowOverlay(isLandscape && isMobileSize && isMobileDevice);
+
+      setShowOverlay(isMobileDevice && isLandscape && !keyboardLikelyOpen);
     };
 
     // Check immediately
