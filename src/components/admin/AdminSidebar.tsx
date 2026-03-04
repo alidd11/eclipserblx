@@ -444,7 +444,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
               "focus:outline-none",
               hasActiveItem
                 ? "text-foreground"
-                : "text-muted-foreground/50 hover:text-muted-foreground"
+                : "text-muted-foreground/70 hover:text-muted-foreground"
             )}
           >
             <group.icon className="h-3.5 w-3.5 shrink-0" />
