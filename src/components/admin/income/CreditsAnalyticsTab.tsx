@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Coins, TrendingUp, TrendingDown, Gift, ShoppingCart, RefreshCw, Users } from 'lucide-react';
+import { IncomeErrorState } from './IncomeErrorState';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,7 @@ import { RevolutLineChart } from '@/components/ui/revolut-chart';
 
 export function CreditsAnalyticsTab() {
   // Fetch all credit transactions
-  const { data: creditTransactions, isLoading, refetch } = useQuery({
+  const { data: creditTransactions, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-credit-transactions'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -26,12 +27,15 @@ export function CreditsAnalyticsTab() {
       
       // Fetch user profiles separately
       const userIds = [...new Set((data ?? []).map(t => t.user_id))];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, username')
-        .in('user_id', userIds);
+      let profileMap = new Map<string, { user_id: string; display_name: string | null; username: string | null }>();
       
-      const profileMap = new Map((profiles ?? []).map(p => [p.user_id, p]));
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, username')
+          .in('user_id', userIds);
+        profileMap = new Map((profiles ?? []).map(p => [p.user_id, p]));
+      }
       
       return (data ?? []).map(tx => ({
         ...tx,
@@ -156,6 +160,10 @@ export function CreditsAnalyticsTab() {
       default: return type;
     }
   };
+
+  if (isError) {
+    return <IncomeErrorState title="Failed to load credit data" onRetry={() => refetch()} />;
+  }
 
   return (
     <div className="space-y-6">

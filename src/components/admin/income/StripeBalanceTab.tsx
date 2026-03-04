@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Wallet, Clock, TrendingUp, Percent, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { IncomeErrorState } from './IncomeErrorState';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,7 +26,7 @@ interface StripeBalanceData {
 }
 
 export function StripeBalanceTab() {
-  const { data: stripeBalance, isLoading, refetch } = useQuery<StripeBalanceData>({
+  const { data: stripeBalance, isLoading, isError, error, refetch } = useQuery<StripeBalanceData>({
     queryKey: ['admin-stripe-balance'],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('get-stripe-balance');
@@ -33,6 +34,7 @@ export function StripeBalanceTab() {
       return data as StripeBalanceData;
     },
     staleTime: 60000,
+    retry: 2,
   });
 
   const chartData = useMemo(() => {
@@ -48,6 +50,10 @@ export function StripeBalanceTab() {
     { label: 'Last 7 Days', data: stripeBalance?.summary.last7Days },
     { label: 'Last 30 Days', data: stripeBalance?.summary.last30Days },
   ];
+
+  if (isError) {
+    return <IncomeErrorState title="Failed to load Stripe data" message={error?.message || 'Could not connect to the payment processor.'} onRetry={() => refetch()} />;
+  }
 
   return (
     <div className="space-y-6">

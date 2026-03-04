@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Calendar, TrendingUp } from 'lucide-react';
+import { IncomeErrorState } from './IncomeErrorState';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AdminStatCard } from '@/components/admin/AdminStatCard';
@@ -9,7 +10,7 @@ import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter, subDays, f
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
 
 export function GrossRevenueTab() {
-  const { data: incomeBreakdown, isLoading: breakdownLoading } = useQuery({
+  const { data: incomeBreakdown, isLoading: breakdownLoading, isError: breakdownError, refetch: refetchBreakdown } = useQuery({
     queryKey: ['admin-income-breakdown'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -35,7 +36,7 @@ export function GrossRevenueTab() {
     },
   });
 
-  const { data: incomeTrend, isLoading: trendLoading } = useQuery({
+  const { data: incomeTrend, isLoading: trendLoading, isError: trendError, refetch: refetchTrend } = useQuery({
     queryKey: ['admin-income-trend'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -78,6 +79,10 @@ export function GrossRevenueTab() {
     { label: 'This Year', value: incomeBreakdown?.yearly.gross, color: 'yellow' as const },
     { label: 'All Time', value: incomeBreakdown?.allTime.gross, color: 'default' as const },
   ];
+
+  if (breakdownError || trendError) {
+    return <IncomeErrorState title="Failed to load revenue data" onRetry={() => { refetchBreakdown(); refetchTrend(); }} />;
+  }
 
   return (
     <div className="space-y-6">

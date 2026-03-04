@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Gamepad2, Calendar, TrendingUp, Package, CheckCircle2, XCircle, ExternalLink } from 'lucide-react';
+import { IncomeErrorState } from './IncomeErrorState';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,7 +15,7 @@ import { RevolutLineChart } from '@/components/ui/revolut-chart';
 const ROBUX_TO_GBP_RATE = 0.00275;
 
 export function RobuxEarningsTab() {
-  const { data: robuxTransactions } = useQuery({
+  const { data: robuxTransactions, isLoading: robuxLoading, isError: robuxError, refetch: refetchRobux } = useQuery({
     queryKey: ['admin-robux-transactions'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -93,6 +94,10 @@ export function RobuxEarningsTab() {
     { label: 'This Year', value: breakdown?.yearly, color: 'yellow' as const },
     { label: 'All Time', value: breakdown?.allTime, color: 'default' as const },
   ];
+
+  if (robuxError) {
+    return <IncomeErrorState title="Failed to load Robux data" onRetry={() => refetchRobux()} />;
+  }
 
   return (
     <div className="space-y-6">

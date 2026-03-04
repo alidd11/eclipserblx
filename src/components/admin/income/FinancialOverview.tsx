@@ -8,6 +8,7 @@ import { startOfMonth, subMonths, startOfDay, subDays, format, isAfter } from 'd
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { RevolutAreaChart } from '@/components/ui/revolut-chart';
 import { cn } from '@/lib/utils';
+import { IncomeErrorState } from './IncomeErrorState';
 
 const ROBUX_TO_GBP_RATE = 0.00275;
 
@@ -76,7 +77,7 @@ function MetricCard({
 
 export function FinancialOverview() {
   // Stripe balance
-  const { data: stripeBalance, isLoading: stripeLoading } = useQuery<StripeBalanceData>({
+  const { data: stripeBalance, isLoading: stripeLoading, isError: stripeError } = useQuery<StripeBalanceData>({
     queryKey: ['admin-stripe-balance'],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('get-stripe-balance');
@@ -84,6 +85,7 @@ export function FinancialOverview() {
       return data as StripeBalanceData;
     },
     staleTime: 60000,
+    retry: 2,
   });
 
   // Orders for revenue
@@ -170,6 +172,7 @@ export function FinancialOverview() {
   });
 
   const isLoading = stripeLoading || ordersLoading || adsLoading || subsLoading || commLoading || creditsLoading || robuxLoading;
+  const hasError = stripeError;
 
   const metrics = useMemo(() => {
     const now = new Date();

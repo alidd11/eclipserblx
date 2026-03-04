@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Store, ArrowUpDown, CreditCard, Banknote, PiggyBank, TrendingUp, Percent } from 'lucide-react';
+import { IncomeErrorState } from './IncomeErrorState';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -10,14 +11,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { subDays, format, isAfter, startOfDay, startOfWeek, startOfMonth } from 'date-fns';
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
 
-const trendChartConfig = {
-  commission: { label: 'Platform Commission', color: 'hsl(var(--primary))' },
-  sellerNet: { label: 'Seller Earnings', color: 'hsl(200 80% 45%)' },
-};
-
 export function SellerEarningsTab() {
   // 1. Seller transactions aggregate
-  const { data: txData, isLoading: txLoading } = useQuery({
+  const { data: txData, isLoading: txLoading, isError: txError, refetch: refetchTx } = useQuery({
     queryKey: ['admin-seller-tx-summary'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -65,10 +61,11 @@ export function SellerEarningsTab() {
       // Get store names
       const storeIds = Object.keys(storeMap);
       if (storeIds.length === 0) return [];
-      const { data: stores } = await supabase
+      const { data: stores, error: storeErr } = await supabase
         .from('stores')
         .select('id, name')
         .in('id', storeIds);
+      if (storeErr) throw storeErr;
 
       const nameMap: Record<string, string> = {};
       (stores ?? []).forEach(s => { nameMap[s.id] = s.name; });
@@ -176,6 +173,10 @@ export function SellerEarningsTab() {
     completed: 'bg-green-500/10 text-green-600',
     rejected: 'bg-red-500/10 text-red-600',
   };
+
+  if (txError) {
+    return <IncomeErrorState title="Failed to load seller earnings" onRetry={() => refetchTx()} />;
+  }
 
   return (
     <div className="space-y-6">
