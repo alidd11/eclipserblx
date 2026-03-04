@@ -1,0 +1,1 @@
+DELETE FROM ai_response_cache WHERE id = 'fe1ef104-664f-4200-bfcc-8f19cac700c4';
