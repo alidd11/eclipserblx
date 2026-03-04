@@ -8,8 +8,8 @@
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://maps.googleapis.com;
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      font-src 'self' https://fonts.gstatic.com;
+      style-src 'self' 'unsafe-inline';
+      font-src 'self';
       img-src 'self' data: blob: https: http:;
       connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://js.stripe.com https://*.googleapis.com https://ipapi.co https://storage.googleapis.com;
       frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://discord.com;
@@ -31,19 +31,20 @@
     <link rel="dns-prefetch" href="https://qlnbergwjfrmgkjhrbkj.supabase.co" />
 
 
-    <!-- Fonts: preloaded for faster FCP (reduced weight range for mobile perf) -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Source+Sans+3:wght@400;600&display=swap" as="style" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Source+Sans+3:wght@400;600&display=swap" media="print" onload="this.media='all'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Source+Sans+3:wght@400;600&display=swap" /></noscript>
-
+    <!-- Preload self-hosted fonts -->
+    <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/source-sans-3-latin.woff2" as="font" type="font/woff2" crossorigin />
     <!-- Preload LCP hero image — responsive -->
     <link rel="preload" href="/hero-bg.webp" as="image" type="image/webp" fetchpriority="high" media="(min-width: 768px)" />
     <link rel="preload" href="/hero-bg-mobile.webp" as="image" type="image/webp" fetchpriority="high" media="(max-width: 767px)" imagesizes="100vw" />
 
     <!-- Inline critical CSS to eliminate render-blocking for above-the-fold content -->
     <style>
+      @font-face{font-family:'Sora';font-style:normal;font-weight:600 700;font-display:swap;src:url(/fonts/sora-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+      @font-face{font-family:'Source Sans 3';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/source-sans-3-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+      @font-face{font-family:'Source Sans 3';font-style:normal;font-weight:600;font-display:swap;src:url(/fonts/source-sans-3-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
       *,*::before,*::after{box-sizing:border-box;border-width:0;border-style:solid}
-      html{line-height:1.5;-webkit-text-size-adjust:100%;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif}
+      html{line-height:1.5;-webkit-text-size-adjust:100%;tab-size:4;font-family:'Source Sans 3',ui-sans-serif,system-ui,sans-serif}
       body{margin:0;line-height:inherit;background-color:#0f1012;color:#edeeef;overscroll-behavior:none}
       .dark{--background:220 8% 6%;--foreground:210 8% 93%;--card:220 7% 10%;--card-foreground:210 8% 93%;--primary:235 86% 60%;--primary-foreground:0 0% 100%}
       #root{min-height:100dvh;display:flex;flex-direction:column}
