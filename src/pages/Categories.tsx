@@ -284,7 +284,7 @@ export default function Categories() {
 
   return (
     <MainLayout>
-      <div className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 max-w-7xl mx-auto">
+      <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <PageHeader
           title="Browse Categories"
           description="Explore our full catalogue of assets, scripts, vehicles, and more."
