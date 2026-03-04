@@ -9,7 +9,7 @@ import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter, subDays, f
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
 
 export function GrossRevenueTab() {
-  const { data: incomeBreakdown, isLoading: breakdownLoading } = useQuery({
+  const { data: incomeBreakdown, isLoading: breakdownLoading, isError: breakdownError, refetch: refetchBreakdown } = useQuery({
     queryKey: ['admin-income-breakdown'],
     queryFn: async () => {
       const { data, error } = await supabase
