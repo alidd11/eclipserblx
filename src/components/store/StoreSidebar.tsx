@@ -213,7 +213,7 @@ export function StoreSidebar({
         : "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3",
       isActive
         ? "border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none pl-[calc(0.625rem-2px)]"
-        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+        : "text-foreground/80 hover:text-foreground hover:bg-muted/50"
     );
 
     // Button action (scroll anchors)
@@ -292,7 +292,7 @@ export function StoreSidebar({
                   "focus:outline-none focus-visible:outline-none",
                   hasActiveItem
                     ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    : "text-foreground/80 hover:text-foreground hover:bg-muted"
                 )}
                 onClick={() => toggleGroup(group.id)}
               >
@@ -362,7 +362,7 @@ export function StoreSidebar({
               "focus:outline-none focus-visible:outline-none",
               hasActiveItem
                 ? "text-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-foreground/80 hover:text-foreground"
             )}
           >
             <span className="flex-1 text-left truncate">{group.title}</span>
@@ -396,7 +396,7 @@ export function StoreSidebar({
                   "focus:outline-none focus-visible:outline-none",
                   isBrowseActive
                     ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    : "text-foreground/80 hover:text-foreground hover:bg-muted"
                 )}
               >
                 <Package className={cn(
@@ -455,7 +455,7 @@ export function StoreSidebar({
               "focus:outline-none focus-visible:outline-none",
               isBrowseActive
                 ? "text-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-foreground/80 hover:text-foreground"
             )}
           >
             <span className="flex-1 text-left truncate">Browse</span>
@@ -475,7 +475,7 @@ export function StoreSidebar({
                 "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3",
                 isAllProductsActive
                   ? "border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none pl-[calc(0.625rem-2px)]"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  : "text-foreground/80 hover:text-foreground hover:bg-muted/50"
               )}
             >
             <LayoutGrid className={cn(ICON_SIZE, ICON_STROKE_DEFAULT, "shrink-0")} />
@@ -494,7 +494,7 @@ export function StoreSidebar({
                 "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3",
                 activeTab === tab.slug
                   ? "border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none pl-[calc(0.625rem-2px)]"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  : "text-foreground/80 hover:text-foreground hover:bg-muted/50"
               )}
             >
               <Package className={cn(ICON_SIZE, ICON_STROKE_DEFAULT, "shrink-0")} />
@@ -550,7 +550,7 @@ export function StoreSidebar({
                 <h1 className="font-display font-bold text-sm text-foreground truncate">
                   {storeName}
                 </h1>
-                <p className="text-[11px] text-muted-foreground/60 leading-none mt-0.5">Store</p>
+                <p className="text-[11px] text-foreground/70 leading-none mt-0.5">Store</p>
               </div>
             </div>
           </>

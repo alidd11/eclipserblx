@@ -64,7 +64,7 @@ export function GlobalGuardSidebar({ className, isMobile, onNavigate }: GlobalGu
                 "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
                 active 
                   ? "bg-primary/15 text-primary border border-primary/30" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  : "text-foreground/80 hover:text-foreground hover:bg-accent"
               )}
             >
               <Icon className="w-5 h-5" />
@@ -79,7 +79,7 @@ export function GlobalGuardSidebar({ className, isMobile, onNavigate }: GlobalGu
         <Link 
           to="/"
           onClick={onNavigate}
-          className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-2 text-xs text-foreground/80 hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-3 h-3" />
           Back to Eclipse

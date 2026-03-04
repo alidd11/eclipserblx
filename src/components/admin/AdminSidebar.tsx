@@ -327,7 +327,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
         : "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-[7px]",
       isActive
         ? "bg-primary text-primary-foreground shadow-sm"
-        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+        : "text-foreground/80 hover:text-foreground hover:bg-muted/60"
     );
 
     const navElement = !isCollapsed ? (
@@ -395,7 +395,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
                   "focus:outline-none",
                   hasActiveItem
                     ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                    : "text-foreground/80 hover:text-foreground hover:bg-muted/60"
                 )}
                 onClick={() => toggleGroup(group.id)}
               >
@@ -482,7 +482,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="font-display font-bold text-sm text-foreground truncate">{SITE_NAME}</h1>
-              <p className="text-[11px] text-muted-foreground/60 leading-none mt-0.5">Admin Dashboard</p>
+              <p className="text-[11px] text-foreground/70 leading-none mt-0.5">Admin Dashboard</p>
             </div>
           </div>
         )}
@@ -540,7 +540,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
             variant="ghost"
             size="sm"
             className={cn(
-              "w-full text-muted-foreground hover:text-foreground hover:bg-muted/60",
+              "w-full text-foreground/80 hover:text-foreground hover:bg-muted/60",
               isCollapsed ? "justify-center px-2" : "justify-start"
             )}
             onClick={onToggle}

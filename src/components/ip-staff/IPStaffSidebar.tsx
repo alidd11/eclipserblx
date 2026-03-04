@@ -79,7 +79,7 @@ export function IPStaffSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer
         : "flex items-center gap-2.5 px-2.5 py-1.5",
       isActive
         ? "border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none pl-[calc(0.625rem-2px)]"
-        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+        : "text-foreground/80 hover:text-foreground hover:bg-muted/60"
     );
 
     if (isCollapsed) {
@@ -127,7 +127,7 @@ export function IPStaffSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="font-display font-bold text-sm text-foreground truncate">IP Shield Staff</h1>
-              <p className="text-[11px] text-muted-foreground/60 leading-none mt-0.5">Management Dashboard</p>
+              <p className="text-[11px] text-foreground/70 leading-none mt-0.5">Management Dashboard</p>
             </div>
             {isMobileDrawer ? (
               <Button
@@ -183,7 +183,7 @@ export function IPStaffSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer
               <Link
                 to="/ip-shield"
                 onClick={handleNavClick}
-                className="flex items-center justify-center p-2.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all"
+                className="flex items-center justify-center p-2.5 rounded-md text-foreground/80 hover:text-foreground hover:bg-muted/60 transition-all"
               >
                 <ExternalLink className="h-4 w-4" />
               </Link>
@@ -194,7 +194,7 @@ export function IPStaffSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer
           <Link
             to="/ip-shield"
             onClick={handleNavClick}
-            className="flex items-center gap-2.5 px-2.5 py-[7px] rounded-md text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all"
+            className="flex items-center gap-2.5 px-2.5 py-[7px] rounded-md text-[13px] font-medium text-foreground/80 hover:text-foreground hover:bg-muted/60 transition-all"
           >
             <ExternalLink className="h-4 w-4" />
             <span>View Public Page</span>
