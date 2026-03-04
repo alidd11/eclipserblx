@@ -534,7 +534,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                     "w-full flex items-center gap-2.5 px-2.5 py-1.5 ml-3 rounded-md text-[13px] font-medium select-none",
                     "transition-colors duration-100",
                     "focus:outline-none focus-visible:outline-none",
-                    "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    "text-foreground/80 hover:text-foreground hover:bg-muted/50"
                   )}
                 >
                   <RobloxIcon className={cn(ICON_SIZE)} />
