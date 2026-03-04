@@ -38,9 +38,8 @@ export function PWADiscordBanner() {
             </div>
           </div>
 
-          <div className="shrink-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#5865F2] group-hover:text-[#5865F2] transition-colors pl-[calc(0.875rem+2.5rem+0.875rem)] sm:pl-0">
-            {t('discord.join')}
-            <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+          <div className="shrink-0 flex items-center pl-[calc(0.875rem+2.5rem+0.875rem)] sm:pl-0">
+            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
           </div>
         </div>
       </div>
