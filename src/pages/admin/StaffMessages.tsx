@@ -978,7 +978,10 @@ function StaffMessagesContent() {
       )}
 
       {/* Input bar - iMessage style */}
-      <div className="px-3 py-2 sm:px-4 sm:py-3 flex-shrink-0 bg-card pb-[var(--chat-safe-bottom,0px)] relative">
+      <div
+        data-gesture-exempt="true"
+        className="px-3 py-2 sm:px-4 sm:py-3 flex-shrink-0 bg-card pb-[var(--chat-safe-bottom,0px)] relative"
+      >
         {/* Mention suggestions */}
         {showMentionSuggestions && (
           <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover text-popover-foreground border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto z-[100]">
@@ -1068,7 +1071,7 @@ function StaffMessagesContent() {
         )}
 
         {/* Modern input bar */}
-        <div className="flex gap-2 items-center">
+        <div data-gesture-exempt="true" className="flex gap-2 items-center">
           {/* Plus/Attachment button */}
           <Button
             variant="ghost"
@@ -1082,6 +1085,7 @@ function StaffMessagesContent() {
 
           {/* Input pill */}
           <div 
+            data-gesture-exempt="true"
             className="flex-1 min-w-0 relative"
             style={{ touchAction: 'manipulation' }}
           >
