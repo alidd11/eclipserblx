@@ -45,14 +45,14 @@ export const CurrencySelector = React.forwardRef<HTMLDivElement, CurrencySelecto
           >
             <span className={cn(
               "font-semibold",
-              compact ? "text-sm text-muted-foreground" : "text-base"
+              compact ? "text-sm text-foreground/70" : "text-base"
             )}>
               {currencyInfo.symbol}
             </span>
             {!compact && (
               <>
-                <span className="text-muted-foreground">{currency}</span>
-                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-foreground/70">{currency}</span>
+                <ChevronDown className="h-3.5 w-3.5 text-foreground/70" />
               </>
             )}
           </button>
