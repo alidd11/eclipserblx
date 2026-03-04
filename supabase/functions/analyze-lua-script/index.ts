@@ -54,25 +54,30 @@ serve(async (req) => {
       );
     }
 
-    // Skip AI analysis for binary Roblox model files (.rbxm, .rbxmx, .rbxl, .rbxlx)
-    // These are binary containers, not scripts — the AI misinterprets binary data as obfuscation
-    const binaryExtensions = ['.rbxm', '.rbxmx', '.rbxl', '.rbxlx'];
     const lowerFileName = (fileName || '').toLowerCase();
-    const isBinaryModel = binaryExtensions.some(ext => lowerFileName.endsWith(ext));
-    
-    if (isBinaryModel) {
-      console.log(`Skipping AI analysis for binary Roblox model: ${fileName} — performing basic Lua extraction analysis`);
-      // For binary models, only flag if we can detect dangerous patterns in any embedded text
-      return performBasicAnalysis(scriptContent, fileName);
+    const fileExt = lowerFileName.includes('.') ? lowerFileName.slice(lowerFileName.lastIndexOf('.')) : '';
+
+    // Treat binary Roblox containers as non-text assets to avoid recurring false positives
+    // Binary: .rbxm/.rbxl | Text/XML: .rbxmx/.rbxlx
+    const binaryRobloxExtensions = new Set(['.rbxm', '.rbxl']);
+    const isBinaryRobloxContainer = binaryRobloxExtensions.has(fileExt);
+    const isLikelyBinary = isLikelyBinaryContent(scriptContent);
+
+    if (isBinaryRobloxContainer || isLikelyBinary) {
+      console.log(`Skipping script heuristics for binary container: ${fileName}`);
+      return new Response(
+        JSON.stringify({ isSafe: true, riskLevel: "low", concerns: [] }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Check cache by script hash
+    // Check cache by script hash (versioned to prevent stale false-positive reuse)
     const contentHash = await hashContent(scriptContent);
-    const cacheKey = `lua_analysis:${contentHash}`;
+    const cacheKey = `lua_analysis:v2:${fileExt || 'unknown'}:${contentHash}`;
 
     const { data: cached } = await supabase
       .from("ai_response_cache")
@@ -273,6 +278,18 @@ Respond ONLY with a JSON object (no markdown, no extra text):
     );
   }
 });
+
+function isLikelyBinaryContent(content: string): boolean {
+  if (!content) return false;
+
+  // Null bytes are a strong binary indicator
+  if (content.includes("\u0000")) return true;
+
+  // Heuristic: too many replacement/control chars usually means binary decoded as text
+  const sample = content.slice(0, 4096);
+  const suspiciousChars = sample.match(/[\uFFFD\x00-\x08\x0E-\x1F]/g)?.length ?? 0;
+  return suspiciousChars / Math.max(sample.length, 1) > 0.02;
+}
 
 // Basic pattern matching fallback when AI is unavailable
 function performBasicAnalysis(scriptContent: string, fileName: string): Response {

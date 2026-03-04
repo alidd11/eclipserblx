@@ -39,7 +39,8 @@ interface NsfwCheckResponse {
 }
 
 const LUA_EXTENSIONS = [".lua", ".luau"];
-const ROBLOX_FILE_EXTENSIONS = [".rbxm", ".rbxmx", ".rbxl", ".rbxlx"];
+const ROBLOX_BINARY_EXTENSIONS = [".rbxm", ".rbxl"];
+const ROBLOX_TEXT_EXTENSIONS = [".rbxmx", ".rbxlx"];
 const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"];
 
 /**
@@ -120,11 +121,19 @@ function isLuaFile(fileName: string): boolean {
 }
 
 /**
- * Check if file is a Roblox asset file
+ * Check if file is a binary Roblox asset file
  */
-function isRobloxFile(fileName: string): boolean {
+function isRobloxBinaryFile(fileName: string): boolean {
   const ext = getFileExtension(fileName);
-  return ROBLOX_FILE_EXTENSIONS.includes(ext);
+  return ROBLOX_BINARY_EXTENSIONS.includes(ext);
+}
+
+/**
+ * Check if file is a text/XML Roblox asset file
+ */
+function isRobloxTextFile(fileName: string): boolean {
+  const ext = getFileExtension(fileName);
+  return ROBLOX_TEXT_EXTENSIONS.includes(ext);
 }
 
 /**
@@ -341,18 +350,10 @@ export async function performSecurityScan(
     }
   }
 
-  // Step 2: Lua script analysis (for .lua files)
-  if (!skipLuaAnalysis && (isLuaFile(fileName) || isRobloxFile(fileName))) {
+  // Step 2: Lua/script analysis (for text scripts and text Roblox XML containers)
+  if (!skipLuaAnalysis && (isLuaFile(fileName) || isRobloxTextFile(fileName))) {
     try {
-      let scriptContent: string;
-      
-      if (isLuaFile(fileName)) {
-        scriptContent = await fileToText(file);
-      } else {
-        // For Roblox files, they're XML-based, so we can still analyze them
-        scriptContent = await fileToText(file);
-      }
-
+      const scriptContent = await fileToText(file);
       const luaResult = await analyzeLuaScript(scriptContent, fileName);
 
       if (luaResult.riskLevel === "high") {
