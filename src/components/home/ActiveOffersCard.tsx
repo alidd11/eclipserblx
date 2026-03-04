@@ -91,7 +91,8 @@ export function ActiveOffersCard() {
       return data.map(claim => claim.promotion_id);
     },
     enabled: !authLoading && !!user,
-    staleTime: 30_000,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
 
   // Fetch active discount codes
