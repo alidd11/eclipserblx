@@ -30,7 +30,8 @@ async function checkStatus() {
 
 function startPolling() {
   if (intervalId) return;
-  checkStatus();
+  // Defer first check to avoid blocking the critical rendering path
+  setTimeout(checkStatus, 3000);
   intervalId = setInterval(checkStatus, 60_000);
 }
 
