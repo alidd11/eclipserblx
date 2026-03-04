@@ -27,12 +27,15 @@ export function CreditsAnalyticsTab() {
       
       // Fetch user profiles separately
       const userIds = [...new Set((data ?? []).map(t => t.user_id))];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, username')
-        .in('user_id', userIds);
+      let profileMap = new Map<string, { user_id: string; display_name: string | null; username: string | null }>();
       
-      const profileMap = new Map((profiles ?? []).map(p => [p.user_id, p]));
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, username')
+          .in('user_id', userIds);
+        profileMap = new Map((profiles ?? []).map(p => [p.user_id, p]));
+      }
       
       return (data ?? []).map(tx => ({
         ...tx,

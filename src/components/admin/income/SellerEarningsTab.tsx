@@ -61,10 +61,11 @@ export function SellerEarningsTab() {
       // Get store names
       const storeIds = Object.keys(storeMap);
       if (storeIds.length === 0) return [];
-      const { data: stores } = await supabase
+      const { data: stores, error: storeErr } = await supabase
         .from('stores')
         .select('id, name')
         .in('id', storeIds);
+      if (storeErr) throw storeErr;
 
       const nameMap: Record<string, string> = {};
       (stores ?? []).forEach(s => { nameMap[s.id] = s.name; });

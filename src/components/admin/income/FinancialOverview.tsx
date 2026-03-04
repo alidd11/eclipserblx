@@ -172,6 +172,7 @@ export function FinancialOverview() {
   });
 
   const isLoading = stripeLoading || ordersLoading || adsLoading || subsLoading || commLoading || creditsLoading || robuxLoading;
+  const hasError = stripeError;
 
   const metrics = useMemo(() => {
     const now = new Date();
