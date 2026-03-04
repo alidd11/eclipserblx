@@ -168,6 +168,7 @@ export default function AdminLiveChat() {
   const [showOrderHistory, setShowOrderHistory] = useState(false);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messageInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const typingChannelRef = useRef<any>(null);
