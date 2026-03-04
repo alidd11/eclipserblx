@@ -1,6 +1,7 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight } from 'lucide-react';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { motion } from 'framer-motion';
 import { categoryIconMap, PackageIcon } from '@/components/icons/CategoryIcons';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -284,20 +285,10 @@ export default function Categories() {
   return (
     <MainLayout>
       <div className="px-3 sm:px-6 lg:px-8 py-5 sm:py-8 max-w-6xl mx-auto">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="mb-5 sm:mb-8"
-        >
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight">
-            Browse Categories
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2 max-w-lg">
-            Explore our full catalogue of assets, scripts, vehicles, and more.
-          </p>
-        </motion.div>
+        <PageHeader
+          title="Browse Categories"
+          description="Explore our full catalogue of assets, scripts, vehicles, and more."
+        />
 
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
