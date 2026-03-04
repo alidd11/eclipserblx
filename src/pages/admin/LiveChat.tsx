@@ -1042,28 +1042,14 @@ export default function AdminLiveChat() {
                         }}
                         onKeyPress={handleKeyPress}
                         onPointerDown={(e) => {
-                          // iOS PWA can ignore the first tap; force focus synchronously within the gesture.
+                          // iOS PWA: force focus on tap
                           const input = e.currentTarget;
-                          if (document.activeElement === input) return;
-                          try {
-                            input.focus({ preventScroll: true });
-                          } catch {
-                            input.focus();
-                          }
-                        }}
-                        onTouchStart={(e) => {
-                          // Force focus on first touch to work around iOS PWA tap-blocking.
-                          // NOTE: must be synchronous (no rAF/setTimeout) to count as a user gesture.
-                          const input = e.currentTarget;
-                          if (document.activeElement === input) return;
-                          try {
-                            input.focus({ preventScroll: true });
-                          } catch {
+                          if (document.activeElement !== input) {
                             input.focus();
                           }
                         }}
                         className="text-base"
-                        style={{ touchAction: 'manipulation' }}
+                        style={{ touchAction: 'manipulation', fontSize: '16px' }}
                       />
                       <Button onClick={() => sendMessage()} disabled={!newMessage.trim()} className="h-9 lg:h-10 shrink-0 px-3">
                         <Send className="h-4 w-4" />
