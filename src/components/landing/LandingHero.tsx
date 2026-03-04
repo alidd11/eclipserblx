@@ -78,7 +78,7 @@ export function LandingHero() {
             Experience.
           </h1>
 
-          <p className="text-sm text-muted-foreground max-w-md mb-6 leading-relaxed">
+          <p className="text-sm text-foreground/70 max-w-md mb-6 leading-relaxed">
             {t('landing.description')}
           </p>
 
