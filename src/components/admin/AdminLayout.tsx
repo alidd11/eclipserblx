@@ -251,7 +251,8 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
 
   // Add edge swipe listener for mobile - capture phase to intercept before browser
   useEffect(() => {
-    if (!isMobile) return;
+    // Disable global edge-swipe interception on chat pages to avoid breaking chat input/scroll.
+    if (!isMobile || isChatPage) return;
     
     // Use capture phase to intercept gestures before browser handles them
     document.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
@@ -263,7 +264,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
       document.removeEventListener('touchmove', handleTouchMove, { capture: true });
       document.removeEventListener('touchend', handleTouchEnd, { capture: true });
     };
-  }, [isMobile, handleTouchStart, handleTouchMove, handleTouchEnd]);
+  }, [isMobile, isChatPage, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
   // Enable support ticket notifications for all admin pages
   useSupportTicketNotifications();

@@ -58,6 +58,7 @@ export function useSwipePrevent() {
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      if (isGestureExemptTarget(e.target)) return;
       if (!touchStartX) return;
 
       const touch = e.touches[0];
