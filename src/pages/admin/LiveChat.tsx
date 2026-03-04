@@ -1037,6 +1037,7 @@ export default function AdminLiveChat() {
                         )}
                       </Button>
                       <Input
+                        ref={messageInputRef}
                         data-gesture-exempt="true"
                         placeholder="Type your reply..."
                         value={newMessage}
@@ -1052,6 +1053,18 @@ export default function AdminLiveChat() {
                         onTouchStart={(e) => {
                           const input = e.currentTarget;
                           if (document.activeElement !== input) input.focus();
+                        }}
+                        onFocus={() => {
+                          const keepVisible = () => {
+                            scrollToBottom();
+                            messageInputRef.current?.scrollIntoView({ block: 'end', behavior: 'instant' });
+                          };
+                          requestAnimationFrame(() => {
+                            keepVisible();
+                            setTimeout(keepVisible, 120);
+                            setTimeout(keepVisible, 280);
+                            setTimeout(keepVisible, 520);
+                          });
                         }}
                         className="text-base"
                         style={{ touchAction: 'manipulation', fontSize: '16px' }}
