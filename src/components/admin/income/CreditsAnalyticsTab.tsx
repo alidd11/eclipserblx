@@ -121,6 +121,7 @@ export function CreditsAnalyticsTab() {
       const parsed = new Date(tx.created_at);
       if (isNaN(parsed.getTime())) return;
       const date = format(parsed, 'yyyy-MM-dd');
+      if (dailyData[date] !== undefined) {
         if (tx.type === 'purchase') {
           dailyData[date].purchases += Number(tx.amount);
         } else if (tx.type === 'spend') {
