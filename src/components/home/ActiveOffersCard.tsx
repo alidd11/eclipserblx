@@ -148,7 +148,8 @@ export function ActiveOffersCard() {
   const isInitialLoading = authLoading || promotionsLoading || discountCodesLoading;
   const hasOffers = promotions.length > 0 || discountCodes.length > 0;
 
-  if (!hasOffers && !isInitialLoading) return null;
+  // Hide entirely while loading OR when there are no offers — prevents empty-card flicker
+  if (isInitialLoading || !hasOffers) return null;
 
   const getPromotionIcon = (type: string, isClaimed: boolean) => {
     if (isClaimed) {
