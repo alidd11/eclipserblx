@@ -8,6 +8,7 @@ import { startOfMonth, subMonths, startOfDay, subDays, format, isAfter } from 'd
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { RevolutAreaChart } from '@/components/ui/revolut-chart';
 import { cn } from '@/lib/utils';
+import { IncomeErrorState } from './IncomeErrorState';
 
 const ROBUX_TO_GBP_RATE = 0.00275;
 
