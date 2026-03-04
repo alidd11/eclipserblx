@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { InlineLoading } from '@/components/ui/InlineLoading';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 import { useNavigate, Link } from 'react-router-dom';
@@ -47,7 +47,7 @@ interface ProductResult {
   stores: { name: string; slug: string } | null;
 }
 
-function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingBadge?: boolean }) {
+const StoreCard = memo(function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingBadge?: boolean }) {
   const accentColor = store.accent_color || '#8B5CF6';
   
   return (
@@ -129,7 +129,7 @@ function StoreCard({ store, showTestingBadge }: { store: StoreData; showTestingB
       </Card>
     </Link>
   );
-}
+});
 
 function StoreCardSkeleton() {
   return (
@@ -150,7 +150,7 @@ function StoreCardSkeleton() {
   );
 }
 
-function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
+const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
 
@@ -202,7 +202,7 @@ function MarketplaceProductCard({ product }: { product: { id: string; name: stri
       </div>
     </Link>
   );
-}
+});
 
 export default function Marketplace() {
   const navigate = useNavigate();
