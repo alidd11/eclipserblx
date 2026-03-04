@@ -151,12 +151,19 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
 
   // Pull-to-refresh for PWA
   useEffect(() => {
-    if (!isStandalone) return;
+    if (!isStandalone || isAdminRoute) return;
 
     let startY = 0;
     let currentY = 0;
 
+    const isGestureExemptTarget = (target: EventTarget | null) => {
+      const el = target as Element | null;
+      return !!el?.closest?.('[data-gesture-exempt="true"]');
+    };
+
     const handleTouchStart = (e: TouchEvent) => {
+      if (isGestureExemptTarget(e.target)) return;
+
       if (window.scrollY === 0) {
         startY = e.touches[0].clientY;
         setIsPulling(true);
@@ -164,6 +171,7 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      if (isGestureExemptTarget(e.target)) return;
       if (!isPulling || startY === 0) return;
       
       currentY = e.touches[0].clientY;
@@ -195,7 +203,7 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [isStandalone, isPulling, pullDistance]);
+  }, [isStandalone, isAdminRoute, isPulling, pullDistance]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);

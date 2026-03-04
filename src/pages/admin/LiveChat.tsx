@@ -1035,6 +1035,7 @@ export default function AdminLiveChat() {
                         )}
                       </Button>
                       <Input
+                        data-gesture-exempt="true"
                         placeholder="Type your reply..."
                         value={newMessage}
                         onChange={(e) => {
