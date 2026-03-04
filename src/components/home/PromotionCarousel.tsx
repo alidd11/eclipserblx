@@ -138,39 +138,16 @@ export function PromotionCarousel() {
         </div>
       </div>
 
-      {/* Bottom bar: progress + dots */}
-      <div className="relative">
-        {/* Progress track */}
-        <div className="h-[2px] bg-border/50">
-          <div
-            className="h-full transition-[width] duration-100 ease-linear rounded-r-full"
-            style={{
-              width: `${progress}%`,
-              backgroundColor: `var(--foreground)`,
-              opacity: 0.3,
-            }}
-          />
-        </div>
-
-        {/* Dots */}
-        <div className="flex justify-center gap-1 py-2">
-          {promotions.map((promo, index) => (
-            <button
-              key={index}
-              onClick={() => scrollTo(index)}
-              className="p-1.5 touch-manipulation"
-              aria-label={`Go to slide ${index + 1}`}
-            >
-              <span
-                className={`block h-1.5 rounded-full transition-all duration-300 ${
-                  index === selectedIndex
-                    ? `w-6 ${promo.dotColor}`
-                    : 'w-1.5 bg-muted-foreground/25'
-                }`}
-              />
-            </button>
-          ))}
-        </div>
+      {/* Progress track */}
+      <div className="h-[2px] bg-border/50">
+        <div
+          className="h-full transition-[width] duration-100 ease-linear rounded-r-full"
+          style={{
+            width: `${progress}%`,
+            backgroundColor: `var(--foreground)`,
+            opacity: 0.3,
+          }}
+        />
       </div>
     </div>
   );
