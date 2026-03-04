@@ -877,6 +877,7 @@ export default function AdminLiveChat() {
 
                 {/* Messages - use native scroll for iOS PWA compatibility */}
                 <div 
+                  data-gesture-exempt="true"
                   className="flex-1 min-h-0 p-3 lg:p-4 overflow-y-auto overscroll-contain -webkit-overflow-scrolling-touch" 
                   ref={scrollRef}
                   style={{ WebkitOverflowScrolling: 'touch' }}
@@ -992,7 +993,7 @@ export default function AdminLiveChat() {
                       className="hidden"
                       accept="image/*,.pdf,.doc,.docx,.txt"
                     />
-                    <div className="flex gap-1 lg:gap-2">
+                    <div data-gesture-exempt="true" className="flex gap-1 lg:gap-2">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button type="button" size="icon" variant="ghost" title="Canned responses" className="h-9 w-9 lg:h-10 lg:w-10 shrink-0">
@@ -1034,6 +1035,7 @@ export default function AdminLiveChat() {
                         )}
                       </Button>
                       <Input
+                        data-gesture-exempt="true"
                         placeholder="Type your reply..."
                         value={newMessage}
                         onChange={(e) => {
