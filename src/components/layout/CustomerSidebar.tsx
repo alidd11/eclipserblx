@@ -433,7 +433,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                   "focus:outline-none focus-visible:outline-none",
                   hasActiveItem
                     ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    : "text-foreground/80 hover:text-foreground hover:bg-muted"
                 )}
                 onClick={() => toggleGroup(group.id)}
               >
