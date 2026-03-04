@@ -78,7 +78,7 @@ export function PromotionCarousel() {
           <div className="min-w-0">
             <h2 className="font-semibold text-[13px] text-foreground uppercase tracking-wide leading-snug">
               {promo.title}
-            </h3>
+            </h2>
             <p className="text-xs text-muted-foreground line-clamp-2 sm:line-clamp-1 mt-0.5">
               {promo.description}
             </p>
