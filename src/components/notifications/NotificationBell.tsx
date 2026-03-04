@@ -28,7 +28,7 @@ interface Notification {
 const notificationIcons: Record<string, React.ReactNode> = {
   badge_earned: <Award className="h-4 w-4 text-yellow-500" />,
   discount_code: <Percent className="h-4 w-4 text-green-500" />,
-  forum_milestone: <Trophy className="h-4 w-4 text-purple-500" />,
+  milestone: <Trophy className="h-4 w-4 text-purple-500" />,
   order_update: <ShoppingCart className="h-4 w-4 text-blue-500" />,
   system: <MessageCircle className="h-4 w-4 text-muted-foreground" />,
 };

@@ -131,7 +131,7 @@ export function DeleteProfileDialog({
               <li>Your profile and account information</li>
               <li>All order history and purchase records</li>
               <li>All download history and access to purchased assets</li>
-              <li>All reviews, forum posts, and messages</li>
+              <li>All reviews and messages</li>
               <li>All support tickets and chat history</li>
             </ul>
           </div>
