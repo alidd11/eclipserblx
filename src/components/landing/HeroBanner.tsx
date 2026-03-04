@@ -14,7 +14,7 @@ export function HeroBanner() {
         src={isMobile ? heroBgMobile : heroBgDesktop}
         alt=""
         width={isMobile ? 768 : 1920}
-        height={isMobile ? 432 : 480}
+        height={isMobile ? 420 : 480}
         fetchPriority="high"
         decoding="sync"
         className="absolute inset-0 w-full h-full object-cover"
