@@ -54,6 +54,18 @@ serve(async (req) => {
       );
     }
 
+    // Skip AI analysis for binary Roblox model files (.rbxm, .rbxmx, .rbxl, .rbxlx)
+    // These are binary containers, not scripts — the AI misinterprets binary data as obfuscation
+    const binaryExtensions = ['.rbxm', '.rbxmx', '.rbxl', '.rbxlx'];
+    const lowerFileName = (fileName || '').toLowerCase();
+    const isBinaryModel = binaryExtensions.some(ext => lowerFileName.endsWith(ext));
+    
+    if (isBinaryModel) {
+      console.log(`Skipping AI analysis for binary Roblox model: ${fileName} — performing basic Lua extraction analysis`);
+      // For binary models, only flag if we can detect dangerous patterns in any embedded text
+      return performBasicAnalysis(scriptContent, fileName);
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
