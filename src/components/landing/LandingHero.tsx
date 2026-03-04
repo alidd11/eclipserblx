@@ -173,7 +173,7 @@ export function LandingHero() {
                 <button
                   key={term}
                   onClick={() => handleSearchClick(term)}
-                  className="text-[11px] px-1.5 py-0.5 rounded bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+                  className="text-[11px] px-1.5 py-0.5 rounded bg-muted/50 hover:bg-muted text-foreground/70 hover:text-foreground transition-colors flex-shrink-0"
                 >
                   {term}
                 </button>
