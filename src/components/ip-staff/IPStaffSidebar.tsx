@@ -127,7 +127,7 @@ export function IPStaffSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="font-display font-bold text-sm text-foreground truncate">IP Shield Staff</h1>
-              <p className="text-[11px] text-muted-foreground/60 leading-none mt-0.5">Management Dashboard</p>
+              <p className="text-[11px] text-foreground/70 leading-none mt-0.5">Management Dashboard</p>
             </div>
             {isMobileDrawer ? (
               <Button

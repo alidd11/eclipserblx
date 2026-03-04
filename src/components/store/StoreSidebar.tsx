@@ -550,7 +550,7 @@ export function StoreSidebar({
                 <h1 className="font-display font-bold text-sm text-foreground truncate">
                   {storeName}
                 </h1>
-                <p className="text-[11px] text-muted-foreground/60 leading-none mt-0.5">Store</p>
+                <p className="text-[11px] text-foreground/70 leading-none mt-0.5">Store</p>
               </div>
             </div>
           </>

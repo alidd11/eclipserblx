@@ -79,7 +79,7 @@ export function GlobalGuardSidebar({ className, isMobile, onNavigate }: GlobalGu
         <Link 
           to="/"
           onClick={onNavigate}
-          className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-2 text-xs text-foreground/80 hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-3 h-3" />
           Back to Eclipse

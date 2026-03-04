@@ -128,7 +128,7 @@ export function IPShieldSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="font-display font-bold text-sm text-foreground truncate">IP Shield</h1>
-              <p className="text-[11px] text-muted-foreground/60 leading-none mt-0.5">DMCA Protection</p>
+              <p className="text-[11px] text-foreground/70 leading-none mt-0.5">DMCA Protection</p>
             </div>
             {isMobileDrawer ? (
               <Button
