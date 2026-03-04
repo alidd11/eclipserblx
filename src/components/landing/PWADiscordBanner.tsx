@@ -1,7 +1,8 @@
 import { forwardRef } from 'react';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
-import { ArrowRight } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
 
 const DiscordLogo = forwardRef<SVGSVGElement, { className?: string }>(function DiscordLogo({ className }, ref) {
   return (
@@ -22,22 +23,49 @@ export function PWADiscordBanner() {
       rel="noopener noreferrer"
       className="group block border border-border bg-card hover:border-[#5865F2]/40 transition-all duration-300 rounded-lg overflow-hidden shadow-sm h-full"
     >
-      <div className="px-5 py-5 bg-gradient-to-r from-[#5865F2]/10 to-transparent h-full flex flex-col justify-center">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-[#5865F2]/10 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110">
-              <DiscordLogo className="h-5 w-5 text-[#5865F2]" />
+      <div className="px-5 py-5 bg-gradient-to-r from-[#5865F2]/10 to-transparent h-full flex flex-col justify-center gap-4">
+        {/* Header */}
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-[#5865F2]/15 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110">
+            <DiscordLogo className="h-5 w-5 text-[#5865F2]" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="font-semibold text-[13px] text-foreground tracking-wide">
+              {t('discord.joinDiscord')}
+            </h3>
+            <p className="text-xs text-muted-foreground line-clamp-1 max-w-xs mt-0.5">
+              {t('discord.joinDiscordDesc')}
+            </p>
+          </div>
+        </div>
+
+        {/* Social proof + CTA */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            {/* Online indicator */}
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+              </span>
+              <span className="font-medium">Online Now</span>
             </div>
-            <div className="min-w-0">
-              <h3 className="font-semibold text-[13px] text-foreground tracking-wide">
-                {t('discord.joinDiscord')}
-              </h3>
-              <p className="text-xs text-muted-foreground line-clamp-1 max-w-xs mt-0.5">
-                {t('discord.joinDiscordDesc')}
-              </p>
+
+            <span className="text-border">•</span>
+
+            {/* Member count */}
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Users className="h-3 w-3" />
+              <span className="font-medium">525+ Members</span>
             </div>
           </div>
 
+          <Button
+            size="sm"
+            className="h-7 px-3 text-[11px] font-bold uppercase tracking-wider bg-[#5865F2] hover:bg-[#4752C4] text-white border-0 shrink-0"
+          >
+            Join Server
+          </Button>
         </div>
       </div>
     </a>
