@@ -73,7 +73,8 @@ export function ActiveOffersCard() {
       return data as Promotion[];
     },
     enabled: !authLoading,
-    staleTime: 30_000,
+    staleTime: 1000 * 60 * 5, // 5 min — promotions rarely change mid-session
+    refetchOnWindowFocus: false,
   });
 
   // Fetch user's claimed promotions
