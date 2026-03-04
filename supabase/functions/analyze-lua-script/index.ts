@@ -292,6 +292,7 @@ function isLikelyBinaryContent(content: string): boolean {
 }
 
 // Basic pattern matching fallback when AI is unavailable
+function performBasicAnalysis(scriptContent: string, fileName: string): Response {
   console.log(`Performing basic pattern analysis for: ${fileName}`);
   
   const concerns: string[] = [];
