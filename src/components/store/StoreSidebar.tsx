@@ -396,7 +396,7 @@ export function StoreSidebar({
                   "focus:outline-none focus-visible:outline-none",
                   isBrowseActive
                     ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    : "text-foreground/80 hover:text-foreground hover:bg-muted"
                 )}
               >
                 <Package className={cn(
