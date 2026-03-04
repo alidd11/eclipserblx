@@ -33,7 +33,7 @@ export function WalletBalanceCard({
           {isLoading ? (
             <Loader2 className="h-8 w-8 animate-spin" />
           ) : (
-            `£${balance.toFixed(2)}`
+            formatPrice(balance)
           )}
         </CardTitle>
       </CardHeader>
