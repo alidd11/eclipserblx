@@ -134,7 +134,12 @@ export function SellerEarningsTab() {
       { label: 'All Time', filter: () => true },
     ];
     return periods.map(p => {
-      const filtered = txData.filter(t => p.filter(t.created_at ?? ''));
+      const filtered = txData.filter(t => {
+        if (!t.created_at) return false;
+        const d = new Date(t.created_at);
+        if (isNaN(d.getTime())) return false;
+        return p.filter(t.created_at);
+      });
       return {
         label: p.label,
         commission: filtered.reduce((s, t) => s + (t.platform_fee ?? 0), 0),
