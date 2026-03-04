@@ -24,14 +24,15 @@ export const HeaderSearchBar = forwardRef<HTMLButtonElement, HeaderSearchBarProp
         }}
         className={cn(
           "flex items-center gap-2 w-full h-10 px-3 rounded-xl",
-          "bg-muted/50 border border-border hover:border-primary/50",
-          "text-muted-foreground hover:text-foreground",
+          "bg-muted/70 border border-border hover:border-primary/50",
+          "text-foreground/90 hover:text-foreground",
           "transition-all duration-200 cursor-text",
           "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background",
           compact && [
             "h-8 px-3 rounded-md",
-            "bg-muted",
-            "border-border hover:border-primary/40",
+            "bg-background",
+            "border-border/80 hover:border-primary/50",
+            "text-foreground",
             "active:scale-[0.98]",
           ],
           className
@@ -39,11 +40,11 @@ export const HeaderSearchBar = forwardRef<HTMLButtonElement, HeaderSearchBarProp
       >
         <Search className={cn(
           "shrink-0 transition-colors",
-          compact ? "h-3.5 w-3.5 text-muted-foreground" : "h-4 w-4"
+          compact ? "h-3.5 w-3.5 text-foreground/80" : "h-4 w-4"
         )} />
         <span className={cn(
           "flex-1 text-left truncate",
-          compact ? "text-xs text-muted-foreground" : "text-sm"
+          compact ? "text-xs text-foreground/90" : "text-sm"
         )}>
           {compact ? t('common.search') + "..." : t('search.placeholder')}
         </span>
