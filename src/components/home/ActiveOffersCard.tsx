@@ -73,7 +73,8 @@ export function ActiveOffersCard() {
       return data as Promotion[];
     },
     enabled: !authLoading,
-    staleTime: 30_000,
+    staleTime: 1000 * 60 * 5, // 5 min — promotions rarely change mid-session
+    refetchOnWindowFocus: false,
   });
 
   // Fetch user's claimed promotions
@@ -90,7 +91,8 @@ export function ActiveOffersCard() {
       return data.map(claim => claim.promotion_id);
     },
     enabled: !authLoading && !!user,
-    staleTime: 30_000,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
 
   // Fetch active discount codes
@@ -110,7 +112,8 @@ export function ActiveOffersCard() {
       return data as DiscountCode[];
     },
     enabled: !authLoading,
-    staleTime: 30_000,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
 
   const handleClaimPromotion = async () => {
