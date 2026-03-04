@@ -215,7 +215,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
         : "flex items-center gap-2.5 px-2.5 py-1.5",
       isActive
         ? "border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none pl-[calc(0.625rem-2px)]"
-        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+        : "text-foreground/80 hover:text-foreground hover:bg-muted/60"
     );
 
     if (isCollapsed) {

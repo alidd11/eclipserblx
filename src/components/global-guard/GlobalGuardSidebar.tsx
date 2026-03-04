@@ -64,7 +64,7 @@ export function GlobalGuardSidebar({ className, isMobile, onNavigate }: GlobalGu
                 "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
                 active 
                   ? "bg-primary/15 text-primary border border-primary/30" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  : "text-foreground/80 hover:text-foreground hover:bg-accent"
               )}
             >
               <Icon className="w-5 h-5" />

@@ -327,7 +327,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
         : "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-[7px]",
       isActive
         ? "bg-primary text-primary-foreground shadow-sm"
-        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+        : "text-foreground/80 hover:text-foreground hover:bg-muted/60"
     );
 
     const navElement = !isCollapsed ? (
