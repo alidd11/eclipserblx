@@ -184,7 +184,7 @@ export function IPShieldSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               <Link
                 to="/ip-shield"
                 onClick={handleNavClick}
-                className="flex items-center justify-center p-2.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all"
+                className="flex items-center justify-center p-2.5 rounded-md text-foreground/80 hover:text-foreground hover:bg-muted/60 transition-all"
               >
                 <ExternalLink className="h-4 w-4" />
               </Link>

@@ -395,7 +395,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
                   "focus:outline-none",
                   hasActiveItem
                     ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                    : "text-foreground/80 hover:text-foreground hover:bg-muted/60"
                 )}
                 onClick={() => toggleGroup(group.id)}
               >
