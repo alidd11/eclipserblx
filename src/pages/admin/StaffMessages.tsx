@@ -836,6 +836,7 @@ function StaffMessagesContent() {
 
   return (
     <div 
+      data-gesture-exempt="true"
       className="flex-1 flex flex-col min-h-0 bg-card"
       style={{ overscrollBehavior: 'none' }}
     >
@@ -849,6 +850,7 @@ function StaffMessagesContent() {
 
       {/* Messages area - fills available space */}
       <div
+        data-gesture-exempt="true"
         ref={scrollRef} 
         className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 sm:px-4"
         style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
