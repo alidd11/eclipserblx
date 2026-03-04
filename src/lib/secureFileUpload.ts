@@ -350,18 +350,10 @@ export async function performSecurityScan(
     }
   }
 
-  // Step 2: Lua script analysis (for .lua files)
-  if (!skipLuaAnalysis && (isLuaFile(fileName) || isRobloxFile(fileName))) {
+  // Step 2: Lua/script analysis (for text scripts and text Roblox XML containers)
+  if (!skipLuaAnalysis && (isLuaFile(fileName) || isRobloxTextFile(fileName))) {
     try {
-      let scriptContent: string;
-      
-      if (isLuaFile(fileName)) {
-        scriptContent = await fileToText(file);
-      } else {
-        // For Roblox files, they're XML-based, so we can still analyze them
-        scriptContent = await fileToText(file);
-      }
-
+      const scriptContent = await fileToText(file);
       const luaResult = await analyzeLuaScript(scriptContent, fileName);
 
       if (luaResult.riskLevel === "high") {
