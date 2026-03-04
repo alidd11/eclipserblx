@@ -162,44 +162,6 @@ export function usePurchasePingsConfig() {
   return { validatePingPurchase };
 }
 
-// Legacy hook for backward compatibility - still redirects to Stripe
-export function usePurchasePings() {
-  const { session } = useAuth();
-  
-  return useMutation({
-    mutationFn: async ({ 
-      herePings = 0, 
-      everyonePings = 0 
-    }: { 
-      herePings?: number;
-      everyonePings?: number;
-    }) => {
-      if (!session?.access_token) {
-        throw new Error('Please sign in to purchase pings');
-      }
-      
-      const { data, error } = await supabase.functions.invoke('purchase-ad-pings', {
-        body: { herePings, everyonePings },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-      
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
-      
-      return data;
-    },
-    onSuccess: async (data) => {
-      if (data.url) {
-        await openExternalUrl(data.url);
-      }
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to start checkout');
-    },
-  });
-}
 
 export function calculateAdAnnualSavings(monthlyPrice: number, annualPrice: number): number {
   const yearlyAtMonthlyRate = monthlyPrice * 12;

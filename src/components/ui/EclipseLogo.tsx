@@ -4,8 +4,6 @@ import marketplaceLogo from '@/assets/marketplace-logo-icon.webp';
 interface EclipseLogoProps {
   className?: string;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  /** @deprecated No longer used — canvas processing removed for performance */
-  removeWhiteBackground?: boolean;
 }
 
 const sizeClasses: Record<string, string> = {
