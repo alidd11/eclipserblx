@@ -63,8 +63,8 @@ export default defineConfig(({ mode }) => ({
     // Defer render-blocking CSS to improve LCP/FCP
     {
       name: 'defer-css',
-      enforce: 'post',
-      transformIndexHtml(html) {
+      enforce: 'post' as const,
+      transformIndexHtml(html: string) {
         return html.replace(
           /<link rel="stylesheet" crossorigin href="(\/assets\/[^"]+\.css)">/g,
           '<link rel="stylesheet" crossorigin href="$1" media="print" onload="this.media=\'all\'">' +
