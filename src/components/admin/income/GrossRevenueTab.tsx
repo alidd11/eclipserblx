@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Calendar, TrendingUp } from 'lucide-react';
+import { IncomeErrorState } from './IncomeErrorState';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AdminStatCard } from '@/components/admin/AdminStatCard';
