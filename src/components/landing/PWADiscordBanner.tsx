@@ -38,9 +38,6 @@ export function PWADiscordBanner() {
             </div>
           </div>
 
-          <div className="shrink-0 flex items-center pl-[calc(0.875rem+2.5rem+0.875rem)] sm:pl-0">
-            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
-          </div>
         </div>
       </div>
     </a>
