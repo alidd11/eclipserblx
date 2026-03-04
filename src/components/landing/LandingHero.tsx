@@ -110,7 +110,7 @@ export function LandingHero() {
 
           {/* Search tags */}
           <div className="flex items-center gap-1.5 flex-wrap justify-center" role="navigation" aria-label="Trending searches">
-            <span className="text-[10px] text-muted-foreground mr-1">
+            <span className="text-[10px] text-foreground/60 mr-1">
               Trending:
             </span>
             {POPULAR_SEARCHES.map((term) => (
