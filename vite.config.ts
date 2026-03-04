@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => ({
     // Enable minification
     minify: 'esbuild',
     // Target modern browsers
-    target: 'es2020',
+    target: 'esnext',
   },
   // Optimize dependencies
   optimizeDeps: {
