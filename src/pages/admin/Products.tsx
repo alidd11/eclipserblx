@@ -51,7 +51,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { applyProductWatermark } from '@/lib/watermark';
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
-import { ECLIPSE_STORE_ID, VINO_STORE_ID } from '@/lib/constants';
+import { QUANTIS_STORE_ID, VINO_STORE_ID } from '@/lib/constants';
 
 interface ProductForm {
   id?: string;
@@ -382,7 +382,7 @@ export default function AdminProducts() {
       // This prevents overwriting seller product metadata when admins edit them
       if (!isSellerProduct) {
         payload.store_id = data.marketplace_store === 'quantis' 
-          ? ECLIPSE_STORE_ID 
+          ? QUANTIS_STORE_ID 
           : data.marketplace_store === 'vino' 
             ? VINO_STORE_ID 
             : null;
@@ -599,7 +599,7 @@ export default function AdminProducts() {
       robux_enabled: !!product.robux_enabled,
       robux_product_id: product.robux_product_id || '',
       robux_price: product.robux_price ? String(product.robux_price) : '',
-      marketplace_store: product.store_id === ECLIPSE_STORE_ID 
+      marketplace_store: product.store_id === QUANTIS_STORE_ID 
         ? 'quantis' 
         : product.store_id === VINO_STORE_ID 
           ? 'vino' 

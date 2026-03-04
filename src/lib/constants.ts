@@ -6,8 +6,6 @@ export const ROBLOX_GAME_URL = "https://www.roblox.com/games/YOUR_GAME_ID";
 // Quantis Store - the main marketplace store managed by admins only
 // Products linked to this store are READ-ONLY in the seller dashboard
 export const QUANTIS_STORE_ID = '83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a';
-/** @deprecated Use QUANTIS_STORE_ID instead */
-export const ECLIPSE_STORE_ID = QUANTIS_STORE_ID;
 
 // Vino Store - second admin-controlled marketplace store
 export const VINO_STORE_ID = '9b842052-e1fd-4dfe-99bf-c7625df3e17d';
