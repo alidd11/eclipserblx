@@ -455,7 +455,7 @@ export function StoreSidebar({
               "focus:outline-none focus-visible:outline-none",
               isBrowseActive
                 ? "text-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-foreground/80 hover:text-foreground"
             )}
           >
             <span className="flex-1 text-left truncate">Browse</span>
