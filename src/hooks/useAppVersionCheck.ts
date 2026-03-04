@@ -7,7 +7,7 @@ const LOCAL_VERSION_KEY = 'app_installed_version';
 const LAST_UPDATE_KEY = 'app_last_force_update';
 const PENDING_VERSION_PARAM = '__v';
 const UPDATE_TIME_PARAM = '__t';
-const UPDATE_CHECK_INTERVAL = 24 * 60 * 60 * 1000; // Check every 24 hours
+const UPDATE_CHECK_INTERVAL = 30 * 1000; // Check every 30 seconds for fast force-update rollout
 const GRACE_PERIOD = 60000; // 60 seconds grace period after update
 
 interface AppVersion {
@@ -322,14 +322,24 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
       checkForUpdate();
     }, 100);
 
-    // Step 3: Periodic polling for version updates
-    // Note: We use polling instead of Realtime WebSocket to avoid console errors
-    // from WebSocket connections failing in environments like Lighthouse audits.
+    // Step 3: Periodic polling for version updates (fast interval for force updates)
     const interval = setInterval(checkForUpdate, UPDATE_CHECK_INTERVAL);
+
+    // Step 4: Also re-check when app becomes visible/focused (user returns to PWA)
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        checkForUpdate();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('focus', handleVisibilityOrFocus);
 
     return () => {
       clearTimeout(initialCheckTimeout);
       clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.removeEventListener('focus', handleVisibilityOrFocus);
     };
   }, [bootstrapVersionFromUrl, checkForUpdate]);
 
