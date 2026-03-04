@@ -7,7 +7,7 @@ const LOCAL_VERSION_KEY = 'app_installed_version';
 const LAST_UPDATE_KEY = 'app_last_force_update';
 const PENDING_VERSION_PARAM = '__v';
 const UPDATE_TIME_PARAM = '__t';
-const UPDATE_CHECK_INTERVAL = 24 * 60 * 60 * 1000; // Check every 24 hours
+const UPDATE_CHECK_INTERVAL = 30 * 1000; // Check every 30 seconds for fast force-update rollout
 const GRACE_PERIOD = 60000; // 60 seconds grace period after update
 
 interface AppVersion {
