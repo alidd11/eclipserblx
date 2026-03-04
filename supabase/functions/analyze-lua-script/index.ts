@@ -279,8 +279,19 @@ Respond ONLY with a JSON object (no markdown, no extra text):
   }
 });
 
+function isLikelyBinaryContent(content: string): boolean {
+  if (!content) return false;
+
+  // Null bytes are a strong binary indicator
+  if (content.includes("\u0000")) return true;
+
+  // Heuristic: too many replacement/control chars usually means binary decoded as text
+  const sample = content.slice(0, 4096);
+  const suspiciousChars = sample.match(/[\uFFFD\x00-\x08\x0E-\x1F]/g)?.length ?? 0;
+  return suspiciousChars / Math.max(sample.length, 1) > 0.02;
+}
+
 // Basic pattern matching fallback when AI is unavailable
-function performBasicAnalysis(scriptContent: string, fileName: string): Response {
   console.log(`Performing basic pattern analysis for: ${fileName}`);
   
   const concerns: string[] = [];
