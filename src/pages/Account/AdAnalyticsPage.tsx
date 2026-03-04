@@ -65,7 +65,7 @@ export default function AdAnalyticsPage() {
   if (authLoading || isLoading) {
     return (
       <MainLayout>
-        <div className="container max-w-6xl py-8">
+        <div className="px-4 sm:px-6 lg:px-8 py-8">
           <Skeleton className="h-8 w-48 mb-6" />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
             {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
@@ -82,7 +82,7 @@ export default function AdAnalyticsPage() {
 
   return (
     <MainLayout>
-      <div className="container max-w-6xl py-8 space-y-6">
+      <div className="px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">

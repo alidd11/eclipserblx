@@ -37,7 +37,7 @@ export default function SellerOrders() {
 
   return (
     <SellerLayout>
-      <div className="max-w-6xl mx-auto">
+      <div>
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Orders & Transactions</h1>
           <p className="text-muted-foreground">Track your sales, orders, and transaction history</p>

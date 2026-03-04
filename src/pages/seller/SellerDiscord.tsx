@@ -11,7 +11,7 @@ import { Settings } from 'lucide-react';
 export default function SellerDiscord() {
   return (
     <SellerLayout>
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Discord Integration</h1>
           <p className="text-muted-foreground text-sm">

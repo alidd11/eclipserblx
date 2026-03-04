@@ -558,7 +558,7 @@ export default function SellerProducts() {
 
   return (
     <SellerLayout>
-      <div className="max-w-6xl mx-auto">
+      <div>
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>

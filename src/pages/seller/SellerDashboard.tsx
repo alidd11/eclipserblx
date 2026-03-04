@@ -100,7 +100,7 @@ export default function SellerDashboard() {
 
   return (
     <SellerLayout>
-      <div className="max-w-6xl mx-auto space-y-5">
+      <div className="space-y-5">
         {/* ── Banners ── */}
         <TosBanner isLoading={tosLoading} hasSigned={!!hasSignedTos} />
         <FileReviewConsentBanner />

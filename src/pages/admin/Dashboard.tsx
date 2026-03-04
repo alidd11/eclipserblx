@@ -398,7 +398,7 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <div className="max-w-6xl mx-auto space-y-5">
+      <div className="space-y-5">
         {/* Hero Banner */}
         <Card className="overflow-hidden border-border bg-card">
           {/* Banner area with branding */}

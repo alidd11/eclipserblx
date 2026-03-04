@@ -51,7 +51,7 @@ export function LandingHero() {
 
       <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-10 relative z-10">
         {/* Desktop: asymmetric two-column layout */}
-        <div className="hidden lg:grid lg:grid-cols-[1fr,320px] lg:gap-12 lg:items-start lg:max-w-5xl lg:mx-auto">
+        <div className="hidden lg:grid lg:grid-cols-[1fr,320px] lg:gap-12 lg:items-start">
           {/* Left — editorial text block */}
           <div className="pt-2">
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/80 mb-3">

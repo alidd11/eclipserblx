@@ -994,7 +994,7 @@ export default function IPShield() {
           </div>
         </div>
 
-        <div className="container -mt-12 relative z-10 pb-16 max-w-5xl pt-0">
+        <div className="px-4 sm:px-6 lg:px-8 -mt-12 relative z-10 pb-16 pt-0">
 
           <div className="grid sm:grid-cols-2 gap-5 mb-16">
             {highlights.map((h) => (
@@ -1085,7 +1085,7 @@ export default function IPShield() {
   if (!isSubscribed) {
     return (
       <MainLayout>
-        <div className="container py-16 max-w-5xl">
+        <div className="px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center mb-10">
             <Crown className="h-14 w-14 mx-auto text-primary/60 mb-4" />
             <h1 className="text-3xl font-display font-bold mb-2">IP Shield</h1>

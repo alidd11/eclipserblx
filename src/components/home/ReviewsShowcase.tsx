@@ -145,7 +145,7 @@ export function ReviewsShowcase() {
           </p>
         </div>
 
-        <div className="max-w-5xl mx-auto">
+        <div className="w-full">
         <Carousel
           opts={{
             align: 'start',

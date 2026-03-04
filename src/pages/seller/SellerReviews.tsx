@@ -145,7 +145,7 @@ export default function SellerReviews() {
 
   return (
     <SellerLayout>
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Star className="h-6 w-6 text-yellow-500" />

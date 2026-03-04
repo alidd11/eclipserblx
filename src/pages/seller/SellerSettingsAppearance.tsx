@@ -167,7 +167,7 @@ export default function SellerSettingsAppearance() {
 
   return (
     <SellerLayout>
-      <div className="max-w-6xl mx-auto">
+      <div>
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Store Appearance</h1>
           <p className="text-muted-foreground">
