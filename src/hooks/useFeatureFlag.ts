@@ -79,30 +79,21 @@ export function useMarketplaceAccess() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [hasApprovedStore, setHasApprovedStore] = useState(false);
   const [roleLoading, setRoleLoading] = useState(true);
-  const [isMarketplacePublic, setIsMarketplacePublic] = useState(false);
-  const [publicLoading, setPublicLoading] = useState(true);
-
-  // Check if marketplace is public
-  useEffect(() => {
-    async function checkPublicStatus() {
-      try {
-        const { data } = await supabase
-          .from('settings')
-          .select('value')
-          .eq('key', 'marketplace_public')
-          .maybeSingle();
-        
-        const val = data?.value;
-        setIsMarketplacePublic(val === true || val === 'true');
-      } catch (err) {
-        console.error('Error checking marketplace public status:', err);
-      } finally {
-        setPublicLoading(false);
-      }
-    }
-
-    checkPublicStatus();
-  }, []);
+  // Check if marketplace is public — cached via React Query to avoid duplicate requests
+  const { data: isMarketplacePublic = false, isLoading: publicLoading } = useQuery({
+    queryKey: ['marketplace-public-status'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'marketplace_public')
+        .maybeSingle();
+      const val = data?.value;
+      return val === true || val === 'true';
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes — rarely changes
+    refetchOnWindowFocus: false,
+  });
 
   useEffect(() => {
     if (authLoading || !user) {

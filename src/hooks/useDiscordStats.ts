@@ -19,8 +19,10 @@ export function useDiscordStats() {
       }
       return data;
     },
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    staleTime: 1000 * 60 * 10, // Cache for 10 minutes — non-critical data
+    gcTime: 1000 * 60 * 15,
     refetchOnWindowFocus: false,
+    refetchOnMount: false, // Prevent refetch on every component mount
   });
 
   return {

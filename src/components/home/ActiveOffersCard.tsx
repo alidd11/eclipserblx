@@ -112,7 +112,8 @@ export function ActiveOffersCard() {
       return data as DiscountCode[];
     },
     enabled: !authLoading,
-    staleTime: 30_000,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
 
   const handleClaimPromotion = async () => {
