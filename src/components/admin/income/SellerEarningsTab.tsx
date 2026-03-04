@@ -24,6 +24,8 @@ export function SellerEarningsTab() {
       if (error) throw error;
       return data ?? [];
     },
+    staleTime: 60000,
+    retry: 2,
   });
 
   // 2. Seller balances aggregate
