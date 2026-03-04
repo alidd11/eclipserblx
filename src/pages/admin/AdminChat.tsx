@@ -372,7 +372,7 @@ function AdminChatContent() {
             title: `${senderName} mentioned you in Admin Chat`,
             body: message.length > 100 ? message.substring(0, 100) + '...' : message,
             tag: `admin-chat-mention-${Date.now()}`,
-            url: '/admin/chat',
+            url: '/admin/admin-chat',
             requireInteraction: true,
           },
         },
