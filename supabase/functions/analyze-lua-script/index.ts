@@ -99,14 +99,24 @@ serve(async (req) => {
 
     const systemPrompt = `You are a Roblox Lua script security analyzer. Analyze the provided script for malicious patterns.
 
+## SAFE PATTERNS (DO NOT FLAG):
+- **DataStoreService** usage (GetAsync, SetAsync, UpdateAsync, IncrementAsync) — standard persistence
+- **player.UserId / player.Name** used for DataStore keys or leaderboards — standard player identification
+- **RemoteFunction / RemoteEvent / BindableFunction / BindableEvent** — standard Roblox networking
+- **game:BindToClose** — standard shutdown handling
+- **RunService.Heartbeat / Stepped** — standard game loops (only flag if combined with while true + heavy operations)
+- **ReplicatedStorage / ServerScriptService** — standard service usage
+- **pcall / xpcall** — standard error handling
+- **task.spawn / task.wait / task.delay** — standard async patterns
+- **math.clamp / math.floor / tostring / tonumber** — standard utility calls
+
 ## CRITICAL DANGEROUS PATTERNS (HIGH RISK - BLOCK):
 1. **loadstring()** - Dynamic code execution, often used for obfuscation
 2. **getfenv/setfenv** - Environment manipulation, sandbox escape attempts
 3. **rawget/rawset on _G** - Global table manipulation for persistence
 4. **string.dump** - Bytecode dumping for obfuscation
 5. **debug library abuse** - debug.getinfo, debug.setmetatable for exploits
-6. **require() with URLs** - Loading external malicious modules
-7. **RunService.Heartbeat with heavy loops** - Lag exploits
+6. **require() with URLs or numeric asset IDs from unknown sources** - Loading external malicious modules
 
 ## OBFUSCATION INDICATORS (HIGH RISK):
 - Excessive string.char() chains (>10 calls)
@@ -121,13 +131,12 @@ serve(async (req) => {
 - Discord webhook URLs (discord.com/api/webhooks)
 - Pastebin, hastebin, rentry URLs
 - Unknown external domains
-- Sending player.UserId, player.Name to external servers
+- Sending player.UserId, player.Name to external servers via HTTP
 
 ## DATA EXFILTRATION (HIGH RISK):
-- Collecting player chat messages
-- Accessing player position/movement patterns
-- Reading DataStore keys without authorization
-- Gathering server information (game.PlaceId, game.JobId)
+- Collecting player chat messages AND sending via HTTP
+- Reading DataStore keys AND sending via HTTP to external servers
+- Gathering server information AND exfiltrating it externally
 
 ## PRIVILEGE ESCALATION (HIGH RISK):
 - TeleportService without proper validation
@@ -143,11 +152,11 @@ Respond ONLY with a JSON object (no markdown, no extra text):
   "obfuscationScore": number
 }
 
-- isSafe: false if any medium/high risk patterns found
+- isSafe: false if any medium/high risk patterns found. Standard DataStore/XP/currency scripts with no HTTP calls are SAFE.
 - riskLevel: "high" for loadstring/getfenv/obfuscation, "medium" for suspicious network/data patterns, "low" for safe scripts
 - concerns: Array of specific security concerns found (max 5, be concise)
-- dangerousAPIs: Array of dangerous API calls found (loadstring, getfenv, etc)
-- obfuscationScore: 0-100 score where 0=clear code, 100=heavily obfuscated`;
+- dangerousAPIs: Array of dangerous API calls found (loadstring, getfenv, etc). Do NOT include standard Roblox APIs.
+- obfuscationScore: 0-100 score where 0=clear code, 100=heavily obfuscated. Well-commented readable code = 0.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
