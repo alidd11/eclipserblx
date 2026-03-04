@@ -6,7 +6,7 @@ const VALID_ROUTES = [
   '/categories',
   '/featured',
   '/eclipse-plus',
-  '/forum',
+  
   '/jobs',
   '/cart',
   '/account',

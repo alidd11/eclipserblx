@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
-  Inbox, Mail, Ticket, MessageSquare, Flag, Search, 
+  Inbox, Mail, Ticket, MessageSquare, Search, 
   ChevronDown, ChevronUp, User, Calendar, Loader2, FileText
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -162,28 +162,6 @@ export default function Transcripts() {
     },
   });
 
-  // Fetch resolved forum reports
-  const { data: forumReportTranscripts = [], isLoading: forumReportsLoading } = useQuery({
-    queryKey: ['transcripts-forum-reports'],
-    queryFn: async () => {
-      const { data: reports, error } = await supabase
-        .from('forum_reports')
-        .select('*')
-        .eq('status', 'resolved')
-        .order('resolved_at', { ascending: false })
-        .limit(100);
-      
-      if (error) throw error;
-      
-      return (reports || []).map(report => ({
-        id: report.id,
-        title: `Report: ${report.reason}`,
-        subtitle: report.details || 'No details provided',
-        created_at: report.created_at,
-        closed_at: report.resolved_at,
-      })) as Transcript[];
-    },
-  });
 
   // Load messages for expanded transcript
   const { data: transcriptMessages = [], isLoading: messagesLoading } = useQuery({
@@ -276,33 +254,6 @@ export default function Transcripts() {
           created_at: m.created_at,
           sender_name: m.sender_type === 'staff' ? 'Staff' : 'Customer',
         }));
-      } else if (activeTab === 'forum-reports') {
-        // Forum reports show the report details as a single "message"
-        const { data: report } = await supabase
-          .from('forum_reports')
-          .select('id, reason, details, staff_response, created_at, resolved_at')
-          .eq('id', expandedTranscript)
-          .single();
-        
-        if (report) {
-          messages.push({
-            id: `${report.id}-report`,
-            message: `**Reason:** ${report.reason}\n\n${report.details || 'No additional details provided.'}`,
-            sender_type: 'customer',
-            created_at: report.created_at,
-            sender_name: 'Reporter',
-          });
-          
-          if (report.staff_response) {
-            messages.push({
-              id: `${report.id}-response`,
-              message: report.staff_response,
-              sender_type: 'staff',
-              created_at: report.resolved_at || report.created_at,
-              sender_name: 'Staff',
-            });
-          }
-        }
       }
       
       return messages;
@@ -326,7 +277,7 @@ export default function Transcripts() {
     { id: 'seller-tickets', label: 'Seller Tickets', icon: Ticket, count: sellerTicketTranscripts.length, loading: sellerTicketsLoading },
     { id: 'customer-tickets', label: 'Customer Tickets', icon: MessageSquare, count: customerTicketTranscripts.length, loading: customerTicketsLoading },
     { id: 'contact', label: 'Contact Messages', icon: Mail, count: contactTranscripts.length, loading: contactLoading },
-    { id: 'forum-reports', label: 'Forum Reports', icon: Flag, count: forumReportTranscripts.length, loading: forumReportsLoading },
+    
   ];
 
   const getActiveTranscripts = (): Transcript[] => {
@@ -336,7 +287,7 @@ export default function Transcripts() {
       case 'seller-tickets': return filterTranscripts(sellerTicketTranscripts);
       case 'customer-tickets': return filterTranscripts(customerTicketTranscripts);
       case 'contact': return filterTranscripts(contactTranscripts);
-      case 'forum-reports': return filterTranscripts(forumReportTranscripts);
+      
       default: return [];
     }
   };
@@ -348,7 +299,7 @@ export default function Transcripts() {
       case 'seller-tickets': return sellerTicketsLoading;
       case 'customer-tickets': return customerTicketsLoading;
       case 'contact': return contactLoading;
-      case 'forum-reports': return forumReportsLoading;
+      
       default: return false;
     }
   };

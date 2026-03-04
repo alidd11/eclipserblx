@@ -29,7 +29,7 @@ const routeLabels: Record<string, string> = {
   purchases: 'Purchases',
   wishlist: 'Wishlist',
   messages: 'Notifications',
-  forum: 'Forum',
+  
   jobs: 'Jobs',
   support: 'Help Center',
   contact: 'Contact',
@@ -47,7 +47,7 @@ const routeLabels: Record<string, string> = {
   store: 'Store',
   admin: 'Admin',
   following: 'Following',
-  general: 'General Chat',
+  
   // Seller dashboard sub-pages
   analytics: 'Analytics',
   balance: 'Balance',

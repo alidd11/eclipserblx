@@ -304,12 +304,12 @@ export default function NotificationPreferences() {
                   />
                 </div>
 
-                {/* Forum Alerts */}
+                {/* Newsletter Alerts */}
                 <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
                   <div className="flex items-center gap-3">
                     <MessageCircle className="h-5 w-5 text-primary" />
                     <div>
-                      <Label htmlFor="forum-alerts" className="font-medium cursor-pointer">Forum & Newsletter</Label>
+                      <Label htmlFor="forum-alerts" className="font-medium cursor-pointer">Newsletter</Label>
                       <p className="text-sm text-muted-foreground">Community updates and newsletters</p>
                     </div>
                   </div>
