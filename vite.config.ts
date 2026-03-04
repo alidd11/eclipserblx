@@ -20,7 +20,8 @@ export default defineConfig(({ mode }) => ({
           'react-vendor': ['react', 'react-dom'],
           'router': ['react-router-dom'],
           'query': ['@tanstack/react-query'],
-          'ui-core': ['lucide-react'],
+          // lucide-react removed from manual chunks to allow per-route tree-shaking,
+          // reducing unused JavaScript on initial page load
           // framer-motion, supabase, and radix removed from manual chunks
           // to allow Vite to tree-shake and code-split them per-route,
           // reducing unused JavaScript on initial page load
