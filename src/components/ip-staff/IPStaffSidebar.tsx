@@ -194,7 +194,7 @@ export function IPStaffSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer
           <Link
             to="/ip-shield"
             onClick={handleNavClick}
-            className="flex items-center gap-2.5 px-2.5 py-[7px] rounded-md text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all"
+            className="flex items-center gap-2.5 px-2.5 py-[7px] rounded-md text-[13px] font-medium text-foreground/80 hover:text-foreground hover:bg-muted/60 transition-all"
           >
             <ExternalLink className="h-4 w-4" />
             <span>View Public Page</span>
