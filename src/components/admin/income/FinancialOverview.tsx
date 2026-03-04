@@ -77,7 +77,7 @@ function MetricCard({
 
 export function FinancialOverview() {
   // Stripe balance
-  const { data: stripeBalance, isLoading: stripeLoading } = useQuery<StripeBalanceData>({
+  const { data: stripeBalance, isLoading: stripeLoading, isError: stripeError } = useQuery<StripeBalanceData>({
     queryKey: ['admin-stripe-balance'],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('get-stripe-balance');
@@ -85,6 +85,7 @@ export function FinancialOverview() {
       return data as StripeBalanceData;
     },
     staleTime: 60000,
+    retry: 2,
   });
 
   // Orders for revenue
