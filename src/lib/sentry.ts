@@ -1,6 +1,8 @@
-// Lazy-load Sentry to avoid blocking initial render (~236KB)
+// Lazy-load Sentry to avoid blocking initial render
+// Only essential integrations are imported — Replay, Feedback, Profiling are excluded
+// and tree-shaken via define flags in vite.config.ts (~60 KiB savings)
 
-let sentryModule: typeof import("@sentry/react") | null = null;
+let captureFn: ((error: Error, extra?: Record<string, unknown>) => void) | null = null;
 const errorQueue: Array<{ error: Error; extra?: Record<string, unknown> }> = [];
 let loading = false;
 
@@ -16,9 +18,8 @@ async function loadSentry() {
     enabled: import.meta.env.PROD,
     environment: import.meta.env.MODE,
 
-    // Strip heavy unused integrations (~69 KiB savings)
-    replaysSessionSampleRate: 0,
-    replaysOnErrorSampleRate: 0,
+    // Only keep essential integrations — Replay/Feedback/Profiling are tree-shaken
+    // via __RRWEB_EXCLUDE_* and __SENTRY_EXCLUDE_* define flags
     integrations(defaults) {
       return defaults.filter(
         (i) =>
@@ -45,11 +46,11 @@ async function loadSentry() {
     },
   });
 
-  sentryModule = Sentry;
+  captureFn = (error, extra) => Sentry.captureException(error, { extra });
 
   // Flush queued errors
   for (const { error, extra } of errorQueue) {
-    Sentry.captureException(error, { extra });
+    captureFn(error, extra);
   }
   errorQueue.length = 0;
 }
@@ -58,8 +59,8 @@ async function loadSentry() {
  * Capture an exception — queues it if Sentry hasn't loaded yet.
  */
 export function captureException(error: Error, extra?: Record<string, unknown>) {
-  if (sentryModule) {
-    sentryModule.captureException(error, { extra });
+  if (captureFn) {
+    captureFn(error, extra);
   } else {
     errorQueue.push({ error, extra });
   }
