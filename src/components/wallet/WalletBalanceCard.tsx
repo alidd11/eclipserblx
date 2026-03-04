@@ -42,15 +42,15 @@ export function WalletBalanceCard({
         <div className="grid grid-cols-3 gap-3 text-sm">
           <div className="p-2.5 rounded-lg bg-muted/50 text-center">
             <div className="text-muted-foreground text-xs">Purchased</div>
-            <div className="font-semibold">£{totalPurchased.toFixed(2)}</div>
+            <div className="font-semibold">{formatPrice(totalPurchased)}</div>
           </div>
           <div className="p-2.5 rounded-lg bg-muted/50 text-center">
             <div className="text-muted-foreground text-xs">Gifted</div>
-            <div className="font-semibold">£{totalGifted.toFixed(2)}</div>
+            <div className="font-semibold">{formatPrice(totalGifted)}</div>
           </div>
           <div className="p-2.5 rounded-lg bg-muted/50 text-center">
             <div className="text-muted-foreground text-xs">Spent</div>
-            <div className="font-semibold">£{totalSpent.toFixed(2)}</div>
+            <div className="font-semibold">{formatPrice(totalSpent)}</div>
           </div>
         </div>
       </CardContent>
