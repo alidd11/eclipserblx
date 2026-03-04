@@ -98,7 +98,7 @@ const StoreCard = memo(forwardRef<HTMLAnchorElement, { store: StoreData; showTes
                 </span>
               )}
               {store.is_trusted && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-400 border border-amber-400/30 px-1.5 py-0.5">
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-foreground border border-border bg-muted/60 px-1.5 py-0.5">
                   <Award className="h-2.5 w-2.5" />
                   Trusted
                 </span>

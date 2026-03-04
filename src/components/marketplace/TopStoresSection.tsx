@@ -160,13 +160,13 @@ export const TopStoresSection = forwardRef<HTMLDivElement>(function TopStoresSec
             {/* Badges */}
             <div className="flex items-center gap-1.5 mb-2">
               {store!.is_trusted && (
-                <Badge className="text-[10px] px-1.5 py-0.5 gap-0.5 bg-amber-500 text-white border-0">
+                <Badge className="text-[10px] px-1.5 py-0.5 gap-0.5 bg-accent text-accent-foreground border-0">
                   <Award className="h-2.5 w-2.5" />
                   Trusted Seller
                 </Badge>
               )}
               {store!.is_verified && !store!.is_trusted && (
-                <Badge className="text-[10px] px-1.5 py-0.5 gap-0.5 bg-blue-500/80 text-white border-0">
+                <Badge className="text-[10px] px-1.5 py-0.5 gap-0.5 bg-primary text-primary-foreground border-0">
                   <ShieldCheck className="h-2.5 w-2.5" />
                   Verified
                 </Badge>
@@ -201,7 +201,7 @@ export const TopStoresSection = forwardRef<HTMLDivElement>(function TopStoresSec
             </div>
 
             <Button
-              variant="secondary"
+              variant="default"
               size="sm"
               className="w-fit text-xs"
               tabIndex={-1}
