@@ -22,7 +22,7 @@ export function CookieConsentBanner() {
             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
             <div className="px-4 py-3 space-y-2.5 sm:space-y-0 sm:flex sm:items-center sm:gap-3">
-              <p className="text-[11px] text-muted-foreground leading-relaxed sm:flex-1 sm:min-w-0">
+              <p className="text-[11px] text-foreground/70 leading-relaxed sm:flex-1 sm:min-w-0">
                 {t('cookies.description')}{' '}
                 <Link to="/privacy" className="text-foreground hover:text-primary underline underline-offset-2 transition-colors">
                   {t('auth.privacyPolicy')}
