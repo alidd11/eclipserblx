@@ -17,9 +17,9 @@ export function useSwipePrevent() {
       (window.navigator as any).standalone === true;
 
     // Never block gestures on admin pages (live chat needs native touch + keyboard behavior)
-    const isAdminRoute = window.location.pathname.startsWith('/admin');
+    const isAdminRoute = () => window.location.pathname.startsWith('/admin');
 
-    if (!isStandalone || isAdminRoute) return;
+    if (!isStandalone || isAdminRoute()) return;
 
     // Strategy 1: Push extra history entry to trap back navigation
     // This prevents the back gesture from leaving the app
@@ -30,7 +30,9 @@ export function useSwipePrevent() {
     };
     pushState();
 
-    const handlePopState = (e: PopStateEvent) => {
+    const handlePopState = (_e: PopStateEvent) => {
+      // Never trap history while on admin routes
+      if (isAdminRoute()) return;
       // Re-push the state to trap the user in the app
       pushState();
     };
@@ -49,6 +51,12 @@ export function useSwipePrevent() {
     };
 
     const handleTouchStart = (e: TouchEvent) => {
+      if (isAdminRoute()) {
+        touchStartX = 0;
+        touchStartY = 0;
+        isHorizontalSwipe = false;
+        return;
+      }
       if (isGestureExemptTarget(e.target)) return;
 
       const touch = e.touches[0];
@@ -58,6 +66,7 @@ export function useSwipePrevent() {
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      if (isAdminRoute()) return;
       if (isGestureExemptTarget(e.target)) return;
       if (!touchStartX) return;
 
