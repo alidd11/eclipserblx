@@ -1,5 +1,6 @@
-import { Package, PoundSterling, Calendar } from 'lucide-react';
+import { Package, Wallet, Calendar } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface AccountStatsBarProps {
   totalOrders: number;
