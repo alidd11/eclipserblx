@@ -740,6 +740,7 @@ export default function AdminLiveChat() {
 
           {/* Chat Area - Full width on mobile, flex-1 on desktop */}
           <div 
+            data-gesture-exempt="true"
             className={cn(
               "border border-border rounded-lg bg-card flex flex-col overflow-hidden flex-1 min-w-0 min-h-0 relative transition-colors",
               selectedConversation ? "flex" : "hidden lg:flex",
