@@ -151,7 +151,7 @@ export function LandingHero() {
               </span>{' '}
               Experience.
             </h1>
-            <p className="text-sm text-muted-foreground mx-auto mb-5 leading-relaxed">
+            <p className="text-sm text-foreground/70 mx-auto mb-5 leading-relaxed">
               {t('landing.description')}
             </p>
 
