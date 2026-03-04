@@ -146,7 +146,7 @@ function CategoryCard({ category, sourceParam, index }: { category: CategoryData
         }`}
       >
         {/* Hero Image Area — taller on mobile for better touch targets */}
-        <div className="relative overflow-hidden h-40 sm:h-48 lg:h-52">
+        <div className="relative overflow-hidden h-40 sm:h-48 lg:h-56">
           {isCustomBanner && category.slug === 'bots' ? (
             <>
               <div className="absolute inset-0 bg-[#5865F2]" />
@@ -259,7 +259,7 @@ function CategoryCard({ category, sourceParam, index }: { category: CategoryData
 function CategorySkeleton() {
   return (
     <div className="rounded-xl border border-border/30 bg-card overflow-hidden">
-      <Skeleton className="h-40 sm:h-48 lg:h-52 rounded-none" />
+      <Skeleton className="h-40 sm:h-48 lg:h-56 rounded-none" />
       <div className="px-3 py-2 space-y-1.5 border-t border-border/30">
         <Skeleton className="h-2.5 w-16" />
         <div className="flex sm:grid sm:grid-cols-4 gap-1.5">
@@ -284,7 +284,7 @@ export default function Categories() {
 
   return (
     <MainLayout>
-      <div className="px-3 sm:px-6 lg:px-8 py-5 sm:py-8 max-w-6xl mx-auto">
+      <div className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 max-w-7xl mx-auto">
         <PageHeader
           title="Browse Categories"
           description="Explore our full catalogue of assets, scripts, vehicles, and more."
