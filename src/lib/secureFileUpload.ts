@@ -39,7 +39,8 @@ interface NsfwCheckResponse {
 }
 
 const LUA_EXTENSIONS = [".lua", ".luau"];
-const ROBLOX_FILE_EXTENSIONS = [".rbxm", ".rbxmx", ".rbxl", ".rbxlx"];
+const ROBLOX_BINARY_EXTENSIONS = [".rbxm", ".rbxl"];
+const ROBLOX_TEXT_EXTENSIONS = [".rbxmx", ".rbxlx"];
 const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"];
 
 /**
