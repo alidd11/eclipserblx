@@ -4,7 +4,7 @@ import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -678,7 +678,7 @@ export default function AdminLiveChat() {
             <div className="p-2.5 lg:p-4 border-b border-border bg-muted/50 shrink-0">
               <h3 className="font-medium text-sm">Active Conversations</h3>
             </div>
-            <ScrollArea className="flex-1 min-h-0">
+            <div data-gesture-exempt="true" className="flex-1 min-h-0 overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
               {isLoading ? (
                 <div className="p-4 text-center text-muted-foreground">Loading...</div>
               ) : conversations.filter(c => c.status !== 'closed').length === 0 ? (
@@ -735,11 +735,12 @@ export default function AdminLiveChat() {
                   ))}
                 </div>
               )}
-            </ScrollArea>
+            </div>
           </div>
 
           {/* Chat Area - Full width on mobile, flex-1 on desktop */}
           <div 
+            data-gesture-exempt="true"
             className={cn(
               "border border-border rounded-lg bg-card flex flex-col overflow-hidden flex-1 min-w-0 min-h-0 relative transition-colors",
               selectedConversation ? "flex" : "hidden lg:flex",
@@ -985,7 +986,7 @@ export default function AdminLiveChat() {
 
                 {/* Input */}
                 {selectedConversation.status !== 'closed' && (
-                  <div className="p-2 lg:p-4 border-t border-border space-y-2 pb-[var(--chat-safe-bottom,8px)] lg:pb-4">
+                  <div className="shrink-0 p-2 lg:p-4 border-t border-border space-y-2 pb-[var(--chat-safe-bottom,8px)] lg:pb-4">
                     <input
                       type="file"
                       ref={fileInputRef}
@@ -1044,11 +1045,12 @@ export default function AdminLiveChat() {
                         }}
                         onKeyPress={handleKeyPress}
                         onPointerDown={(e) => {
-                          // iOS PWA: force focus on tap
                           const input = e.currentTarget;
-                          if (document.activeElement !== input) {
-                            input.focus();
-                          }
+                          if (document.activeElement !== input) input.focus();
+                        }}
+                        onTouchStart={(e) => {
+                          const input = e.currentTarget;
+                          if (document.activeElement !== input) input.focus();
                         }}
                         className="text-base"
                         style={{ touchAction: 'manipulation', fontSize: '16px' }}
