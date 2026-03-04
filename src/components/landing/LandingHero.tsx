@@ -4,12 +4,10 @@ import { Button } from '@/components/ui/button';
 import { HeroBanner } from './HeroBanner';
 import { useTranslation } from 'react-i18next';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
-import { lazy, Suspense, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useIsMobile } from '@/hooks/use-mobile';
-
-const StatsCard = lazy(() => import('@/components/home/StatsCard').then(m => ({ default: m.StatsCard })));
 
 const POPULAR_SEARCHES = [
   'scripts',
@@ -50,96 +48,84 @@ export function LandingHero() {
       <HeroBanner />
 
       <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-10 relative z-10">
-        {/* Desktop: asymmetric two-column layout */}
-        <div className="hidden lg:grid lg:grid-cols-[1fr,320px] lg:gap-12 lg:items-start">
-          {/* Left — editorial text block */}
-          <div className="pt-2">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/80 mb-3">
-              Roblox & Discord Marketplace
-            </p>
+        {/* Desktop: centered layout */}
+        <div className="hidden lg:flex lg:flex-col lg:items-center lg:text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/80 mb-3">
+            Roblox & Discord Marketplace
+          </p>
 
-            <h1 id="hero-heading" className="font-display text-3xl lg:text-[2.5rem] font-bold leading-[1.1] tracking-tight mb-4 max-w-lg">
-              {t('landing.headline')}{' '}
-              <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em' }}>
-                <span className="invisible">{rotatingWords.reduce((a, b) => a.length > b.length ? a : b)}</span>
-                {skipAnimation ? (
-                  <span className="absolute left-0">{rotatingWords[wordIndex]}</span>
-                ) : (
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={wordIndex}
-                      initial={{ y: '100%', opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: '-100%', opacity: 0 }}
-                      transition={{ duration: 0.4, ease: 'easeInOut' }}
-                      className="absolute left-0"
-                    >
-                      {rotatingWords[wordIndex]}
-                    </motion.span>
-                  </AnimatePresence>
-                )}
-              </span>{' '}
-              Experience.
-            </h1>
-
-            <p className="text-sm text-muted-foreground max-w-md mb-6 leading-relaxed">
-              {t('landing.description')}
-            </p>
-
-            {/* CTA hierarchy: one primary, rest are text links */}
-            <div className="flex items-center gap-6 mb-6">
-              <Link to="/products">
-                <Button size="sm" className="h-9 px-5 text-xs font-semibold uppercase tracking-wide">
-                  Browse Marketplace
-                  <ArrowRight className="ml-2 h-3.5 w-3.5" />
-                </Button>
-              </Link>
-              {!isSeller && (
-                <Link
-                  to="/seller"
-                  className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
-                >
-                  <Store className="h-3.5 w-3.5" />
-                  Start selling
-                </Link>
+          <h1 id="hero-heading" className="font-display text-3xl lg:text-[2.5rem] font-bold leading-[1.1] tracking-tight mb-4 max-w-2xl">
+            {t('landing.headline')}{' '}
+            <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em' }}>
+              <span className="invisible">{rotatingWords.reduce((a, b) => a.length > b.length ? a : b)}</span>
+              {skipAnimation ? (
+                <span className="absolute left-0">{rotatingWords[wordIndex]}</span>
+              ) : (
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={wordIndex}
+                    initial={{ y: '100%', opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: '-100%', opacity: 0 }}
+                    transition={{ duration: 0.4, ease: 'easeInOut' }}
+                    className="absolute left-0"
+                  >
+                    {rotatingWords[wordIndex]}
+                  </motion.span>
+                </AnimatePresence>
               )}
-              <Link
-                to="/eclipse-plus"
-                className="text-xs font-medium text-amber-500/80 hover:text-amber-400 transition-colors flex items-center gap-1.5"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                Eclipse+
-              </Link>
-            </div>
+            </span>{' '}
+            Experience.
+          </h1>
 
-            {/* Search tags — flush left, inline */}
-            <div className="flex items-center gap-1.5 flex-wrap" role="navigation" aria-label="Trending searches">
-              <span className="text-[10px] text-muted-foreground mr-1">
-                Trending:
-              </span>
-              {POPULAR_SEARCHES.map((term) => (
-                <button
-                  key={term}
-                  onClick={() => handleSearchClick(term)}
-                  className="text-[11px] px-2 py-0.5 rounded-sm border border-border/50 text-muted-foreground hover:text-foreground hover:border-border transition-colors"
-                >
-                  {term}
-                </button>
-              ))}
-            </div>
+          <p className="text-sm text-muted-foreground max-w-md mb-6 leading-relaxed">
+            {t('landing.description')}
+          </p>
+
+          {/* CTA hierarchy */}
+          <div className="flex items-center gap-6 mb-6">
+            <Link to="/products">
+              <Button size="sm" className="h-9 px-5 text-xs font-semibold uppercase tracking-wide">
+                Browse Marketplace
+                <ArrowRight className="ml-2 h-3.5 w-3.5" />
+              </Button>
+            </Link>
+            {!isSeller && (
+              <Link
+                to="/seller"
+                className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+              >
+                <Store className="h-3.5 w-3.5" />
+                Start selling
+              </Link>
+            )}
+            <Link
+              to="/eclipse-plus"
+              className="text-xs font-medium text-amber-500/80 hover:text-amber-400 transition-colors flex items-center gap-1.5"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Eclipse+
+            </Link>
           </div>
 
-          {/* Right — stats sidebar, offset down for visual weight. Only rendered on desktop. */}
-          <div className="pt-8">
-            {!isMobile && (
-              <Suspense fallback={<div className="h-[200px] rounded-md border border-border bg-card/80 animate-pulse" />}>
-                <StatsCard />
-              </Suspense>
-            )}
+          {/* Search tags */}
+          <div className="flex items-center gap-1.5 flex-wrap justify-center" role="navigation" aria-label="Trending searches">
+            <span className="text-[10px] text-muted-foreground mr-1">
+              Trending:
+            </span>
+            {POPULAR_SEARCHES.map((term) => (
+              <button
+                key={term}
+                onClick={() => handleSearchClick(term)}
+                className="text-[11px] px-2 py-0.5 rounded-sm border border-border/50 text-muted-foreground hover:text-foreground hover:border-border transition-colors"
+              >
+                {term}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Mobile: centered layout (keep existing feel) */}
+        {/* Mobile: centered layout */}
         <div className="lg:hidden w-full flex flex-col items-center">
           <div className="text-center max-w-md">
             <h1 className="font-display text-2xl sm:text-3xl font-bold leading-[1.15] tracking-tight mb-3">
