@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Coins, TrendingUp, TrendingDown, Gift, ShoppingCart, RefreshCw, Users } from 'lucide-react';
+import { IncomeErrorState } from './IncomeErrorState';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
