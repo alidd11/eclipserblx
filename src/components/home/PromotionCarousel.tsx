@@ -111,7 +111,7 @@ export function PromotionCarousel() {
             <h2 className="font-semibold text-[13px] text-foreground tracking-wide leading-snug">
               {promo.title}
             </h2>
-            <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5 max-w-sm">
+            <p className="text-xs text-foreground/70 line-clamp-1 mt-0.5 max-w-sm">
               {promo.description}
             </p>
           </div>

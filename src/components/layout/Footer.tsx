@@ -62,11 +62,11 @@ export function Footer() {
 
         {/* Bottom copyright */}
         <div className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground/70">
             © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
           </p>
-          <p className="text-sm text-muted-foreground">Made with care for the Roblox community</p>
-          <p className="text-sm text-muted-foreground">Secure payments powered by Stripe</p>
+          <p className="text-sm text-foreground/70">Made with care for the Roblox community</p>
+          <p className="text-sm text-foreground/70">Secure payments powered by Stripe</p>
         </div>
       </div>
     </footer>
