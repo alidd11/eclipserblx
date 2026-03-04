@@ -678,7 +678,7 @@ export default function AdminLiveChat() {
             <div className="p-2.5 lg:p-4 border-b border-border bg-muted/50 shrink-0">
               <h3 className="font-medium text-sm">Active Conversations</h3>
             </div>
-            <ScrollArea className="flex-1 min-h-0">
+            <div data-gesture-exempt="true" className="flex-1 min-h-0 overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
               {isLoading ? (
                 <div className="p-4 text-center text-muted-foreground">Loading...</div>
               ) : conversations.filter(c => c.status !== 'closed').length === 0 ? (
@@ -735,7 +735,7 @@ export default function AdminLiveChat() {
                   ))}
                 </div>
               )}
-            </ScrollArea>
+            </div>
           </div>
 
           {/* Chat Area - Full width on mobile, flex-1 on desktop */}
