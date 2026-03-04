@@ -9,16 +9,6 @@ export const reviewSchema = z.object({
   rating: z.number().int().min(1).max(5),
 });
 
-// Forum thread validation
-export const forumThreadSchema = z.object({
-  title: z.string()
-    .min(3, 'Title must be at least 3 characters')
-    .max(200, 'Title must be less than 200 characters'),
-  content: z.string()
-    .min(10, 'Content must be at least 10 characters')
-    .max(10000, 'Content must be less than 10000 characters'),
-});
-
 // Chat message validation
 export const chatMessageSchema = z.object({
   message: z.string()
