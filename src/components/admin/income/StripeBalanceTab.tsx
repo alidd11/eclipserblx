@@ -51,6 +51,10 @@ export function StripeBalanceTab() {
     { label: 'Last 30 Days', data: stripeBalance?.summary.last30Days },
   ];
 
+  if (isError) {
+    return <IncomeErrorState title="Failed to load Stripe data" message={error?.message || 'Could not connect to the payment processor.'} onRetry={() => refetch()} />;
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}

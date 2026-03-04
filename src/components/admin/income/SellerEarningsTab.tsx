@@ -178,6 +178,10 @@ export function SellerEarningsTab() {
     rejected: 'bg-red-500/10 text-red-600',
   };
 
+  if (txError) {
+    return <IncomeErrorState title="Failed to load seller earnings" onRetry={() => refetchTx()} />;
+  }
+
   return (
     <div className="space-y-6">
       {/* Summary Cards */}

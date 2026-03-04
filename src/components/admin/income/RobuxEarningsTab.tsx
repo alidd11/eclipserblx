@@ -95,6 +95,10 @@ export function RobuxEarningsTab() {
     { label: 'All Time', value: breakdown?.allTime, color: 'default' as const },
   ];
 
+  if (robuxError) {
+    return <IncomeErrorState title="Failed to load Robux data" onRetry={() => refetchRobux()} />;
+  }
+
   return (
     <div className="space-y-6">
       {/* DevEx Info */}

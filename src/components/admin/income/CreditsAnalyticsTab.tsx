@@ -158,6 +158,10 @@ export function CreditsAnalyticsTab() {
     }
   };
 
+  if (isError) {
+    return <IncomeErrorState title="Failed to load credit data" onRetry={() => refetch()} />;
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}

@@ -80,6 +80,10 @@ export function GrossRevenueTab() {
     { label: 'All Time', value: incomeBreakdown?.allTime.gross, color: 'default' as const },
   ];
 
+  if (breakdownError || trendError) {
+    return <IncomeErrorState title="Failed to load revenue data" onRetry={() => { refetchBreakdown(); refetchTrend(); }} />;
+  }
+
   return (
     <div className="space-y-6">
       {/* Period Cards */}
