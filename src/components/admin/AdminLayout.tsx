@@ -160,6 +160,14 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
   // Handle swipe from left edge to open sidebar (high sensitivity, but scroll-safe)
   const handleTouchStart = useCallback(
     (e: TouchEvent) => {
+      // Never intercept edge swipes on chat pages (live chat needs native gestures)
+      if (isChatPage) {
+        isEdgeSwipe.current = false;
+        touchStartX.current = null;
+        touchStartY.current = null;
+        return;
+      }
+
       // When the drawer is open, do NOT treat touches as an "edge swipe".
       // This prevents us from blocking vertical scrolling inside the sidebar.
       if (mobileOpen) {
@@ -185,7 +193,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
       // Mark as edge swipe if starting near left edge (expanded zone)
       isEdgeSwipe.current = touch.clientX < EDGE_SWIPE_ZONE_PX;
     },
-    [mobileOpen]
+    [mobileOpen, isChatPage]
   );
 
   const handleTouchMove = useCallback(
