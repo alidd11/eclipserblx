@@ -848,12 +848,12 @@ export default function AdminProducts() {
                           </div>
                           <div className="flex items-center gap-1.5 flex-wrap">
                             {isScheduledForFuture(product.release_at) ? (
-                              <Badge className="bg-amber-500/20 text-amber-400 border-0 text-xs px-2 py-0.5 hover:bg-amber-500/20" title={`Releases: ${new Date(product.release_at).toLocaleString()}`}>
+                               <Badge variant="warning" className="border-0 text-xs px-2 py-0.5" title={`Releases: ${new Date(product.release_at).toLocaleString()}`}>
                                 <Clock className="h-3 w-3 mr-1" />
                                 Scheduled
                               </Badge>
                             ) : product.is_active ? (
-                              <Badge className="bg-green-500/20 text-green-400 border-0 text-xs px-2 py-0.5 hover:bg-green-500/20">Active</Badge>
+                              <Badge variant="success" className="border-0 text-xs px-2 py-0.5">Active</Badge>
                             ) : (
                               <Badge variant="outline" className="text-muted-foreground text-xs px-2 py-0.5">Inactive</Badge>
                             )}
@@ -936,12 +936,12 @@ export default function AdminProducts() {
                         <TableCell>
                           <div className="flex gap-2 flex-wrap">
                             {isScheduledForFuture(product.release_at) ? (
-                              <Badge variant="outline" className="text-amber-500 border-amber-500/30" title={`Releases: ${new Date(product.release_at).toLocaleString()}`}>
+                              <Badge variant="outline" className="text-warning border-warning/30" title={`Releases: ${new Date(product.release_at).toLocaleString()}`}>
                                 <Clock className="h-3 w-3 mr-1" />
                                 {new Date(product.release_at).toLocaleDateString()}
                               </Badge>
                             ) : product.is_active ? (
-                              <Badge variant="outline" className="text-green-500 border-green-500/30">Active</Badge>
+                              <Badge variant="outline" className="text-success border-success/30">Active</Badge>
                             ) : (
                               <Badge variant="outline" className="text-muted-foreground">Inactive</Badge>
                             )}
@@ -1131,7 +1131,7 @@ export default function AdminProducts() {
               />
               {form.asset_file_url ? (
                 <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/50">
-                  <FileCheck className="h-5 w-5 text-green-500" />
+                  <FileCheck className="h-5 w-5 text-success" />
                   <span className="flex-1 text-sm truncate">{form.asset_file_url}</span>
                   <Button
                     type="button"
@@ -1202,8 +1202,8 @@ export default function AdminProducts() {
             {/* Schedule Release Date/Time */}
             {form.schedule_enabled && (
               <div className="space-y-4">
-                <div className="space-y-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5">
-                  <Label htmlFor="release_at" className="flex items-center gap-2 text-amber-500">
+                <div className="space-y-2 p-3 rounded-lg border border-warning/30 bg-warning/5">
+                  <Label htmlFor="release_at" className="flex items-center gap-2 text-warning">
                     <Calendar className="h-4 w-4" />
                     Release Date & Time
                   </Label>
@@ -1221,10 +1221,10 @@ export default function AdminProducts() {
                 </div>
 
                 {/* Early Product Drops Section */}
-                <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/5 space-y-3">
+                <div className="p-3 rounded-lg border border-warning/30 bg-warning/5 space-y-3">
                   <div className="flex items-center gap-3">
-                    <div className="p-1.5 rounded-md bg-amber-500/20">
-                      <Crown className="h-4 w-4 text-amber-500" />
+                    <div className="p-1.5 rounded-md bg-warning/20">
+                      <Crown className="h-4 w-4 text-warning" />
                     </div>
                     <div>
                       <Label className="text-sm font-medium">Early Product Drops</Label>
@@ -1253,7 +1253,7 @@ export default function AdminProducts() {
                   </div>
 
                   {form.early_access_enabled && (
-                    <div className="space-y-2 pt-2 border-t border-amber-500/20">
+                    <div className="space-y-2 pt-2 border-t border-warning/20">
                       <Label htmlFor="early_access_hours" className="flex items-center gap-2 text-sm">
                         <Clock className="h-4 w-4 text-muted-foreground" />
                         Custom Early Access Window (optional)
