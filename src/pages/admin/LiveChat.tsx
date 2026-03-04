@@ -875,8 +875,12 @@ export default function AdminLiveChat() {
                   </div>
                 )}
 
-                {/* Messages */}
-                <ScrollArea className="flex-1 min-h-0 p-3 lg:p-4" ref={scrollRef}>
+                {/* Messages - use native scroll for iOS PWA compatibility */}
+                <div 
+                  className="flex-1 min-h-0 p-3 lg:p-4 overflow-y-auto overscroll-contain -webkit-overflow-scrolling-touch" 
+                  ref={scrollRef}
+                  style={{ WebkitOverflowScrolling: 'touch' }}
+                >
                   <div>
                     {messages.map((msg, index) => {
                       const prevMsg = index > 0 ? messages[index - 1] : null;
@@ -976,7 +980,7 @@ export default function AdminLiveChat() {
                       </div>
                     )}
                   </div>
-                </ScrollArea>
+                </div>
 
                 {/* Input */}
                 {selectedConversation.status !== 'closed' && (
