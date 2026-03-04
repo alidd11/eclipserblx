@@ -17,6 +17,7 @@ export function WalletBalanceCard({
   totalSpent, 
   isLoading 
 }: WalletBalanceCardProps) {
+  const { formatPrice } = useCurrency();
   return (
     <Card className="relative overflow-hidden w-full max-w-full">
       <div className="absolute top-0 left-0 right-0 h-1 bg-border" />
