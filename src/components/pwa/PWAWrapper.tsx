@@ -224,9 +224,6 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
 
   return (
     <>
-      {/* Orientation lock overlay - blocks landscape mode in PWA (skip admin routes to avoid chat keyboard conflicts) */}
-      {!isAdminRoute && <OrientationLockOverlay />}
-      
       {/* Pull-to-refresh indicator */}
       <AnimatePresence>
         {pullDistance > 10 && isStandalone && (
