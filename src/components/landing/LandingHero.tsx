@@ -165,7 +165,7 @@ export function LandingHero() {
             </div>
 
             <div className="flex items-center justify-center gap-1.5 overflow-hidden" role="navigation" aria-label="Trending searches">
-              <span className="text-[11px] text-muted-foreground flex items-center gap-1 flex-shrink-0">
+              <span className="text-[11px] text-foreground/60 flex items-center gap-1 flex-shrink-0">
                 <Search className="h-3 w-3" aria-hidden="true" />
                 Trending
               </span>
