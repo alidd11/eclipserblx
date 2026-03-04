@@ -16,10 +16,9 @@ export function ShimmerSkeleton({ className }: ShimmerSkeletonProps) {
       )}
     >
       <div
-        className="absolute inset-0 animate-shimmer"
+        className="absolute inset-0 -translate-x-full animate-[shimmer_1.6s_infinite]"
         style={{
           backgroundImage: 'linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.04), transparent)',
-          backgroundSize: '200% 100%',
         }}
       />
     </div>
