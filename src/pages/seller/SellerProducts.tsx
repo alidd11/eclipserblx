@@ -94,6 +94,7 @@ interface ProductForm {
   asset_file_url: string;
   schedule_enabled: boolean;
   release_at: string;
+  is_pay_what_you_want: boolean;
 }
 
 const INITIAL_FORM: ProductForm = {
@@ -107,6 +108,7 @@ const INITIAL_FORM: ProductForm = {
   asset_file_url: '',
   schedule_enabled: false,
   release_at: '',
+  is_pay_what_you_want: false,
 };
 
 const PRODUCTS_PER_PAGE = 20;
@@ -361,6 +363,7 @@ export default function SellerProducts() {
       asset_file_url: product.asset_file_url || '',
       schedule_enabled: hasSchedule,
       release_at: formatDateTimeForInput(product.release_at),
+      is_pay_what_you_want: product.is_pay_what_you_want ?? false,
     });
     setIsDialogOpen(true);
   };
@@ -507,7 +510,7 @@ export default function SellerProducts() {
       toast.error('Please enter a product name');
       return;
     }
-    if (!form.price || parseFloat(form.price) <= 0) {
+    if (!form.is_pay_what_you_want && (!form.price || parseFloat(form.price) <= 0)) {
       toast.error('Please enter a valid price');
       return;
     }
