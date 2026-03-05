@@ -35,6 +35,7 @@ import { usePageTracking } from '@/hooks/usePageTracking';
 import { useProductTranslation } from '@/hooks/useProductTranslation';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { BreadcrumbSchema, ProductSchema } from '@/components/seo/StructuredData';
+import { ReviewSchema } from '@/components/seo/ReviewSchema';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { RecentlyViewedProducts } from '@/components/product/RecentlyViewedProducts';
 
