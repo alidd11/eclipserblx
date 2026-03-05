@@ -510,7 +510,7 @@ export default function SellerProducts() {
       toast.error('Please enter a product name');
       return;
     }
-    if (!(form as any).is_pay_what_you_want && (!form.price || parseFloat(form.price) <= 0)) {
+    if (!form.is_pay_what_you_want && (!form.price || parseFloat(form.price) <= 0)) {
       toast.error('Please enter a valid price');
       return;
     }
