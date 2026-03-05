@@ -243,6 +243,8 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
   const { hasAccess, isAdmin, isMarketplacePublic, loading: accessLoading } = useMarketplaceAccess();
   const { isSeller } = useSellerStatus();
   const [browseMode, setBrowseMode] = useState<'stores' | 'products' | 'categories'>('stores');
+  const [storePage, setStorePage] = useState(0);
+  const STORES_PER_PAGE = 9;
   const { formatPrice } = useCurrency();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
@@ -313,6 +315,8 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
   const topStoresData = queryClient.getQueryData<{ id: string }[]>(['top-stores-featured']);
   const spotlightStoreId = topStoresData?.[0]?.id;
   const allStores = spotlightStoreId ? storesList.filter(s => s.id !== spotlightStoreId) : storesList;
+  const totalStorePages = Math.ceil(allStores.length / STORES_PER_PAGE);
+  const pagedStores = allStores.slice(storePage * STORES_PER_PAGE, (storePage + 1) * STORES_PER_PAGE);
 
   return (
     <section ref={ref} className="container mx-auto px-4 py-6 sm:py-8 space-y-8">
@@ -329,8 +333,8 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
               Array.from({ length: 9 }).map((_, i) => (
                 <StoreCardSkeleton key={i} />
               ))
-            ) : allStores.length > 0 ? (
-              allStores.map((store) => (
+            ) : pagedStores.length > 0 ? (
+              pagedStores.map((store) => (
                 <StoreCard key={store.id} store={store} showTestingBadge={isAdmin} />
               ))
             ) : (
@@ -341,6 +345,30 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
               </div>
             )}
           </div>
+          {/* Pagination */}
+          {totalStorePages > 1 && (
+            <div className="flex items-center justify-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={storePage === 0}
+                onClick={() => setStorePage(p => p - 1)}
+              >
+                Previous
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                {storePage + 1} / {totalStorePages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={storePage >= totalStorePages - 1}
+                onClick={() => setStorePage(p => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </>
       )}
 
