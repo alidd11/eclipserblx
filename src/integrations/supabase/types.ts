@@ -8758,6 +8758,7 @@ export type Database = {
       }
       cleanup_expired_download_tokens: { Args: never; Returns: undefined }
       cleanup_expired_link_codes: { Args: never; Returns: undefined }
+      cleanup_expired_tracking_data: { Args: never; Returns: Json }
       escalate_unanswered_tickets: { Args: never; Returns: number }
       generate_affiliate_id: { Args: never; Returns: string }
       generate_customer_id: { Args: never; Returns: string }
