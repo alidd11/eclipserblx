@@ -363,6 +363,7 @@ export default function SellerProducts() {
       asset_file_url: product.asset_file_url || '',
       schedule_enabled: hasSchedule,
       release_at: formatDateTimeForInput(product.release_at),
+      is_pay_what_you_want: product.is_pay_what_you_want ?? false,
     });
     setIsDialogOpen(true);
   };
