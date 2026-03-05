@@ -18,11 +18,11 @@
       base-uri 'self';
       form-action 'self' https://hooks.stripe.com;
       upgrade-insecure-requests;
+      frame-ancestors 'none';
     " />
     
-    <!-- Security Headers -->
+    <!-- Security Headers (X-Frame-Options removed — only valid as HTTP header; frame-ancestors in CSP handles it) -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-    <meta http-equiv="X-Frame-Options" content="DENY" />
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
     <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(self https://js.stripe.com)" />
     
