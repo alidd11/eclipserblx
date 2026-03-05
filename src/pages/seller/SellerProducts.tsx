@@ -94,6 +94,7 @@ interface ProductForm {
   asset_file_url: string;
   schedule_enabled: boolean;
   release_at: string;
+  is_pay_what_you_want: boolean;
 }
 
 const INITIAL_FORM: ProductForm = {
@@ -107,6 +108,7 @@ const INITIAL_FORM: ProductForm = {
   asset_file_url: '',
   schedule_enabled: false,
   release_at: '',
+  is_pay_what_you_want: false,
 };
 
 const PRODUCTS_PER_PAGE = 20;
