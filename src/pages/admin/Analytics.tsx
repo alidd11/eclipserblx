@@ -897,9 +897,11 @@ export default function AdminAnalytics() {
                   ) : (
                     <RevolutDonutChart
                       data={categoryStats || []}
-                      height={250}
-                      showLabels
-                      showLegend={false}
+                      height={320}
+                      showLabels={false}
+                      showLegend
+                      innerRadius={50}
+                      outerRadius={85}
                     />
                   )}
                 </CardContent>
