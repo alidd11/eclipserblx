@@ -4759,6 +4759,7 @@ export type Database = {
           display_name: string | null
           display_name_changed_at: string | null
           email: string
+          hide_from_leaderboard: boolean
           id: string
           last_seen: string | null
           paypal_email: string | null
@@ -4785,6 +4786,7 @@ export type Database = {
           display_name?: string | null
           display_name_changed_at?: string | null
           email: string
+          hide_from_leaderboard?: boolean
           id?: string
           last_seen?: string | null
           paypal_email?: string | null
@@ -4811,6 +4813,7 @@ export type Database = {
           display_name?: string | null
           display_name_changed_at?: string | null
           email?: string
+          hide_from_leaderboard?: boolean
           id?: string
           last_seen?: string | null
           paypal_email?: string | null
@@ -8824,6 +8827,16 @@ export type Database = {
         Returns: boolean
       }
       is_username_available: { Args: { username: string }; Returns: boolean }
+      log_sensitive_access: {
+        Args: {
+          p_action?: string
+          p_details?: Json
+          p_record_count?: number
+          p_table_name: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       product_file_review_consented: {
         Args: { file_path: string }
         Returns: boolean
