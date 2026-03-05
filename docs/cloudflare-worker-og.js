@@ -8,7 +8,7 @@
  * Deploy this as a Cloudflare Worker on your domain.
  */
 
-const SUPABASE_FUNCTION_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/product-og";
+const SUPABASE_FUNCTION_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy";
 
 // Bot user-agent patterns
 const BOT_PATTERNS = [
@@ -33,10 +33,9 @@ export default {
     const url = new URL(request.url);
     const userAgent = request.headers.get("User-Agent") || "";
 
-    // Only intercept /products/<slug> paths
-    const productMatch = url.pathname.match(/^\/products\/([^/?#]+)/);
-    if (!productMatch) {
-      // Not a product page — pass through to origin (your Lovable app)
+    // Intercept dynamic pages: /products/<slug> and /store/<slug>
+    const isDynamicPage = /^\/(products|store)\/[^/?#]+/.test(url.pathname);
+    if (!isDynamicPage) {
       return fetch(request);
     }
 
@@ -46,22 +45,17 @@ export default {
     );
 
     if (!isBot) {
-      // Human visitor — serve the normal SPA
       return fetch(request);
     }
 
-    // Bot detected — proxy to the product-og edge function
-    const slug = decodeURIComponent(productMatch[1]);
-    const ogUrl = `${SUPABASE_FUNCTION_URL}?slug=${encodeURIComponent(slug)}`;
+    // Bot detected — proxy to the og-proxy edge function
+    const ogUrl = `${SUPABASE_FUNCTION_URL}?path=${encodeURIComponent(url.pathname)}`;
 
     try {
       const ogResponse = await fetch(ogUrl, {
-        headers: {
-          "User-Agent": userAgent,
-        },
+        headers: { "User-Agent": userAgent },
       });
 
-      // Return the OG HTML to the bot
       return new Response(ogResponse.body, {
         status: ogResponse.status,
         headers: {
@@ -70,7 +64,6 @@ export default {
         },
       });
     } catch (error) {
-      // If edge function fails, fall back to normal page
       return fetch(request);
     }
   },
