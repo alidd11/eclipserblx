@@ -315,7 +315,7 @@ railway init
 
 # Add environment variables
 railway variables set DISCORD_CUSTOMER_BOT_TOKEN=your_token_here
-railway variables set SUPABASE_URL=https://qlnbergwjfrmgkjhrbkj.supabase.co
+railway variables set SUPABASE_URL=your_supabase_url
 railway variables set SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 railway variables set DISCORD_WEBHOOK_URL=your_webhook_url
 
