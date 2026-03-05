@@ -108,7 +108,7 @@ export function PromotionCarousel() {
             <Icon className={`h-4.5 w-4.5 ${promo.iconColor}`} />
           </div>
           <div className="min-w-0">
-            <h2 className="font-semibold text-[13px] text-foreground tracking-wide leading-snug">
+            <h2 className="font-semibold text-[13px] text-foreground tracking-wide leading-snug uppercase">
               {promo.title}
             </h2>
             <p className="text-xs text-foreground/70 line-clamp-1 mt-0.5 max-w-sm">

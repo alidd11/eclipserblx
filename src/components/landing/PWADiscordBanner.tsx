@@ -38,7 +38,7 @@ export function PWADiscordBanner() {
             <DiscordLogo className="h-5 w-5 text-[#5865F2]" />
           </div>
           <div className="min-w-0">
-            <h3 className="font-semibold text-[13px] text-foreground tracking-wide">
+            <h3 className="font-semibold text-[13px] text-foreground tracking-wide uppercase">
               {t('discord.joinDiscord')}
             </h3>
             <p className="text-xs text-muted-foreground line-clamp-1 max-w-xs mt-0.5">
