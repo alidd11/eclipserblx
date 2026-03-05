@@ -422,8 +422,13 @@ export default function ProductDetail() {
           image={product.images?.[0] || ''}
           price={product.price}
           seller={product.stores?.name || 'Eclipse'}
+          sellerUrl={product.stores?.slug ? `https://eclipserblx.com/store/${product.stores.slug}` : undefined}
           rating={averageRating || undefined}
           reviewCount={reviewCount || undefined}
+          sku={product.id}
+          slug={product.slug}
+          brand={product.stores?.name || 'Eclipse'}
+          category={(product as any).categories?.name}
         />
       )}
       <PullToRefresh onRefresh={handleRefresh}>
