@@ -32,42 +32,43 @@ export function PWADiscordBanner() {
       className="group block border border-border bg-card hover:border-[#5865F2]/40 transition-all duration-300 rounded-lg overflow-hidden shadow-sm h-full"
     >
       <div className="px-5 py-5 bg-gradient-to-r from-[#5865F2]/10 to-transparent h-full flex flex-col justify-center gap-4">
-        {/* Header + Stats on one line */}
+        {/* Header */}
         <div className="flex items-center gap-3.5">
           <div className="w-10 h-10 rounded-xl bg-[#5865F2]/15 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110">
             <DiscordLogo className="h-5 w-5 text-[#5865F2]" />
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="font-semibold text-[13px] text-foreground tracking-wide">
-                {t('discord.joinDiscord')}
-              </h3>
-              <div className="flex items-center gap-2.5 shrink-0">
-                {/* Online indicator — stable dot */}
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <span className="inline-flex rounded-full h-2 w-2 bg-green-500" />
-                  <span className="font-medium">
-                    {isLoading ? '...' : onlineCount !== null ? `${formatCount(onlineCount)} Online` : 'Online Now'}
-                  </span>
-                </div>
-                <span className="text-border">•</span>
-                {/* Member count */}
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Users className="h-3 w-3" />
-                  <span className="font-medium">
-                    {isLoading ? '...' : memberCount !== null ? `${formatCount(memberCount)} Members` : '500+ Members'}
-                  </span>
-                </div>
-              </div>
-            </div>
+          <div className="min-w-0">
+            <h3 className="font-semibold text-[13px] text-foreground tracking-wide">
+              {t('discord.joinDiscord')}
+            </h3>
             <p className="text-xs text-muted-foreground line-clamp-1 max-w-xs mt-0.5">
               {t('discord.joinDiscordDesc')}
             </p>
           </div>
         </div>
 
-        {/* CTA */}
-        <div className="flex items-center justify-end">
+        {/* Stats + CTA — aligned with text above (offset past the logo) */}
+        <div className="flex items-center justify-between gap-3 pl-[3.375rem]">
+          <div className="flex items-center gap-3">
+            {/* Online indicator — stable dot */}
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="inline-flex rounded-full h-2 w-2 bg-green-500" />
+              <span className="font-medium">
+                {isLoading ? '...' : onlineCount !== null ? `${formatCount(onlineCount)} Online` : 'Online Now'}
+              </span>
+            </div>
+
+            <span className="text-border">•</span>
+
+            {/* Member count */}
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Users className="h-3 w-3" />
+              <span className="font-medium">
+                {isLoading ? '...' : memberCount !== null ? `${formatCount(memberCount)} Members` : '500+ Members'}
+              </span>
+            </div>
+          </div>
+
           <span className="text-[10px] font-semibold uppercase tracking-wider text-[#5865F2] group-hover:underline shrink-0">
             Join →
           </span>
