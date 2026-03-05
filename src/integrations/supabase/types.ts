@@ -442,6 +442,13 @@ export type Database = {
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "affiliate_commissions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_seller_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       affiliate_payouts: {
@@ -798,6 +805,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bot_installation_codes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_seller_view"
             referencedColumns: ["id"]
           },
           {
@@ -1275,6 +1289,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_seller_view"
             referencedColumns: ["id"]
           },
         ]
@@ -4105,6 +4126,13 @@ export type Database = {
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "order_disputes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_seller_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       order_items: {
@@ -4138,6 +4166,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_seller_view"
             referencedColumns: ["id"]
           },
           {
@@ -5477,6 +5512,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "referrals_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_seller_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "referrals_referred_id_fkey"
             columns: ["referred_id"]
             isOneToOne: false
@@ -5562,6 +5604,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "refund_requests_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_seller_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "refund_requests_order_item_id_fkey"
             columns: ["order_item_id"]
             isOneToOne: false
@@ -5630,6 +5679,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_reminders_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_seller_view"
             referencedColumns: ["id"]
           },
           {
@@ -6573,6 +6629,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "seller_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_seller_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "seller_transactions_order_item_id_fkey"
             columns: ["order_item_id"]
             isOneToOne: false
@@ -7170,6 +7233,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "store_conversations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_seller_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "store_conversations_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
@@ -7382,6 +7452,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_messages_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_seller_view"
             referencedColumns: ["id"]
           },
           {
@@ -7913,6 +7990,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_free_claims_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_seller_view"
             referencedColumns: ["id"]
           },
           {
@@ -8477,6 +8561,68 @@ export type Database = {
         }
         Relationships: []
       }
+      orders_seller_view: {
+        Row: {
+          created_at: string | null
+          customer_email: string | null
+          discount_amount: number | null
+          discount_code_id: string | null
+          id: string | null
+          payment_id: string | null
+          payment_method: string | null
+          refund_amount: number | null
+          refund_id: string | null
+          refunded_at: string | null
+          status: string | null
+          subtotal: number | null
+          total: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_email?: never
+          discount_amount?: number | null
+          discount_code_id?: string | null
+          id?: string | null
+          payment_id?: string | null
+          payment_method?: string | null
+          refund_amount?: number | null
+          refund_id?: string | null
+          refunded_at?: string | null
+          status?: string | null
+          subtotal?: number | null
+          total?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_email?: never
+          discount_amount?: number | null
+          discount_code_id?: string | null
+          id?: string | null
+          payment_id?: string | null
+          payment_method?: string | null
+          refund_amount?: number | null
+          refund_id?: string | null
+          refunded_at?: string | null
+          status?: string | null
+          subtotal?: number | null
+          total?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_discount_code_id_fkey"
+            columns: ["discount_code_id"]
+            isOneToOne: false
+            referencedRelation: "discount_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores_public: {
         Row: {
           about_content: string | null
@@ -8837,6 +8983,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      mask_email: { Args: { email: string }; Returns: string }
       product_file_review_consented: {
         Args: { file_path: string }
         Returns: boolean

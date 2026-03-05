@@ -315,7 +315,7 @@ railway init
 
 # Add environment variables
 railway variables set DISCORD_CUSTOMER_BOT_TOKEN=your_token_here
-railway variables set SUPABASE_URL=https://qlnbergwjfrmgkjhrbkj.supabase.co
+railway variables set SUPABASE_URL=your_supabase_url
 railway variables set SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 railway variables set DISCORD_WEBHOOK_URL=your_webhook_url
 
@@ -350,7 +350,7 @@ Then set secrets:
 
 \`\`\`bash
 fly secrets set DISCORD_CUSTOMER_BOT_TOKEN=your_token_here
-fly secrets set SUPABASE_URL=https://qlnbergwjfrmgkjhrbkj.supabase.co
+fly secrets set SUPABASE_URL=your_supabase_url
 fly secrets set SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 fly secrets set DISCORD_WEBHOOK_URL=your_webhook_url
 \`\`\`
@@ -374,7 +374,7 @@ npm install
 
 # Set environment variables
 export DISCORD_CUSTOMER_BOT_TOKEN=your_token
-export SUPABASE_URL=https://qlnbergwjfrmgkjhrbkj.supabase.co
+export SUPABASE_URL=your_supabase_url
 export SUPABASE_SERVICE_ROLE_KEY=your_key
 export DISCORD_WEBHOOK_URL=your_webhook
 
