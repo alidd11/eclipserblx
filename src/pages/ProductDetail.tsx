@@ -432,6 +432,17 @@ export default function ProductDetail() {
           category={(product as any).categories?.name}
         />
       )}
+      {product && productReviews && productReviews.length > 0 && (
+        <ReviewSchema
+          productName={product.name}
+          reviews={productReviews.map(r => ({
+            rating: r.rating,
+            reviewBody: r.comment || undefined,
+            authorName: r.profile?.display_name || r.profile?.username || 'Eclipse User',
+            datePublished: r.created_at,
+          }))}
+        />
+      )}
       <PullToRefresh onRefresh={handleRefresh}>
         <div className="container py-8 space-y-8 overflow-x-hidden max-w-full">
         
