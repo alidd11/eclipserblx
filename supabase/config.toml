@@ -355,3 +355,9 @@ verify_jwt = false
 
 [functions.roblox-link-callback]
 verify_jwt = false
+
+[functions.cleanup-tracking-data]
+verify_jwt = false
+
+[functions.create-identity-verification]
+verify_jwt = false
