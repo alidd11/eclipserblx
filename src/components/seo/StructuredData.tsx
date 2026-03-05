@@ -96,8 +96,13 @@ export function ProductSchema({
   currency = 'GBP',
   availability = 'InStock',
   seller = 'Eclipse',
+  sellerUrl,
   rating,
   reviewCount,
+  sku,
+  slug,
+  brand,
+  category,
 }: ProductSchemaProps) {
   useEffect(() => {
     const schema: Record<string, unknown> = {
@@ -106,14 +111,20 @@ export function ProductSchema({
       name,
       description,
       image,
+      ...(sku && { sku }),
+      ...(slug && { url: `https://eclipserblx.com/products/${slug}` }),
+      ...(brand && { brand: { '@type': 'Brand', name: brand } }),
+      ...(category && { category }),
       offers: {
         '@type': 'Offer',
         price: price.toFixed(2),
         priceCurrency: currency,
         availability: `https://schema.org/${availability}`,
+        url: slug ? `https://eclipserblx.com/products/${slug}` : undefined,
         seller: {
           '@type': 'Organization',
           name: seller,
+          ...(sellerUrl && { url: sellerUrl }),
         },
       },
     };
@@ -123,12 +134,14 @@ export function ProductSchema({
         '@type': 'AggregateRating',
         ratingValue: rating.toFixed(1),
         reviewCount,
+        bestRating: '5',
+        worstRating: '1',
       };
     }
 
     const script = injectJsonLd('product-schema', schema);
     return () => { script.remove(); };
-  }, [name, description, image, price, currency, availability, seller, rating, reviewCount]);
+  }, [name, description, image, price, currency, availability, seller, sellerUrl, rating, reviewCount, sku, slug, brand, category]);
 
   return null;
 }

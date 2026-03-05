@@ -19,19 +19,22 @@ interface PageMeta {
 async function getProductMeta(slug: string, supabase: ReturnType<typeof createClient>): Promise<PageMeta | null> {
   const { data } = await supabase
     .from('products')
-    .select('name, description, images, price, slug, stores(name)')
+    .select('name, description, images, price, slug, stores(name, slug)')
     .eq('slug', slug)
     .eq('is_active', true)
     .single();
 
   if (!data) return null;
 
-  const desc = data.description
+  const storeName = (data.stores as any)?.name;
+  const rawDesc = data.description
     ? data.description.replace(/<[^>]*>/g, '').slice(0, 155)
     : `Buy ${data.name} on Eclipse marketplace`;
+  const desc = storeName ? `By ${storeName} — ${rawDesc}` : rawDesc;
+  const priceTag = data.price != null ? ` · £${Number(data.price).toFixed(2)}` : '';
 
   return {
-    title: `${data.name} | ${SITE_NAME}`,
+    title: `${data.name}${priceTag} | ${SITE_NAME}`,
     description: desc,
     image: data.images?.[0] || DEFAULT_OG_IMAGE,
     url: `${SITE_URL}/products/${data.slug}`,
