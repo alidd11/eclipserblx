@@ -374,7 +374,7 @@ npm install
 
 # Set environment variables
 export DISCORD_CUSTOMER_BOT_TOKEN=your_token
-export SUPABASE_URL=https://qlnbergwjfrmgkjhrbkj.supabase.co
+export SUPABASE_URL=your_supabase_url
 export SUPABASE_SERVICE_ROLE_KEY=your_key
 export DISCORD_WEBHOOK_URL=your_webhook
 
