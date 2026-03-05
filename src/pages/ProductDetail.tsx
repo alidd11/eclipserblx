@@ -437,8 +437,8 @@ export default function ProductDetail() {
           productName={product.name}
           reviews={productReviews.map(r => ({
             rating: r.rating,
-            reviewBody: r.comment || undefined,
-            authorName: r.profile?.display_name || r.profile?.username || 'Eclipse User',
+            reviewBody: r.content || undefined,
+            authorName: r.profile?.display_name || 'Eclipse User',
             datePublished: r.created_at,
           }))}
         />
