@@ -35,6 +35,7 @@ import { usePageTracking } from '@/hooks/usePageTracking';
 import { useProductTranslation } from '@/hooks/useProductTranslation';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { BreadcrumbSchema, ProductSchema } from '@/components/seo/StructuredData';
+import { ReviewSchema } from '@/components/seo/ReviewSchema';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { RecentlyViewedProducts } from '@/components/product/RecentlyViewedProducts';
 
@@ -429,6 +430,17 @@ export default function ProductDetail() {
           slug={product.slug}
           brand={product.stores?.name || 'Eclipse'}
           category={(product as any).categories?.name}
+        />
+      )}
+      {product && productReviews && productReviews.length > 0 && (
+        <ReviewSchema
+          productName={product.name}
+          reviews={productReviews.map(r => ({
+            rating: r.rating,
+            reviewBody: r.content || undefined,
+            authorName: r.profile?.display_name || 'Eclipse User',
+            datePublished: r.created_at,
+          }))}
         />
       )}
       <PullToRefresh onRefresh={handleRefresh}>

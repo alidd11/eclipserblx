@@ -28,14 +28,23 @@ const BOT_PATTERNS = [
   "Pinterestbot",
 ];
 
+// Static pages that should also get OG tags for bots
+const STATIC_OG_PATHS = new Set([
+  '/', '/products', '/stores', '/categories', '/featured',
+  '/eclipse-plus', '/faq', '/help-center', '/sell', '/contact',
+  '/affiliate', '/advertise', '/jobs',
+]);
+
 export default {
   async fetch(request) {
     const url = new URL(request.url);
     const userAgent = request.headers.get("User-Agent") || "";
 
-    // Intercept dynamic pages: /products/<slug> and /store/<slug>
+    // Check if this is a dynamic page or a known static page
     const isDynamicPage = /^\/(products|store)\/[^/?#]+/.test(url.pathname);
-    if (!isDynamicPage) {
+    const isStaticOgPage = STATIC_OG_PATHS.has(url.pathname);
+
+    if (!isDynamicPage && !isStaticOgPage) {
       return fetch(request);
     }
 

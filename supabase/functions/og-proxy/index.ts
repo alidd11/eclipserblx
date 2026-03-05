@@ -112,19 +112,27 @@ Deno.serve(async (req) => {
       meta = await getStoreMeta(storeMatch[1], supabase);
     }
 
-    // Fallback for known static pages
+    // Fallback — covers static pages and unknown paths
     if (!meta) {
       const staticMeta: Record<string, Partial<PageMeta>> = {
-        '/': { title: 'Eclipse - Roblox Asset Marketplace', description: 'Premium UK Roleplay Assets marketplace for Roblox. Lower fees, instant delivery.' },
-        '/products': { title: 'Browse Products | Eclipse', description: 'Browse premium Roblox scripts, vehicles, maps and game assets.' },
+        '/': { title: 'Eclipse — Roblox Asset Marketplace', description: 'Premium UK Roleplay Assets marketplace for Roblox. Lower fees, instant delivery.' },
+        '/products': { title: 'Browse Products | Eclipse', description: 'Browse premium Roblox scripts, vehicles, maps and game assets on Eclipse marketplace.' },
         '/stores': { title: 'All Stores | Eclipse', description: 'Discover trusted stores selling Roblox assets on Eclipse.' },
-        '/categories': { title: 'Categories | Eclipse', description: 'Browse Roblox assets by category on Eclipse marketplace.' },
-        '/featured': { title: 'Featured Products | Eclipse', description: 'Hand-picked premium Roblox assets on Eclipse.' },
+        '/categories': { title: 'Categories | Eclipse', description: 'Browse Roblox assets by category — vehicles, scripts, maps, bots and more.' },
+        '/featured': { title: 'Featured Products | Eclipse', description: 'Hand-picked premium Roblox assets on Eclipse marketplace.' },
+        '/eclipse-plus': { title: 'Eclipse+ Membership | Eclipse', description: 'Get exclusive discounts, free claims, and premium perks with Eclipse+ membership.' },
+        '/faq': { title: 'FAQ | Eclipse', description: 'Frequently asked questions about buying, selling, and using Eclipse marketplace.' },
+        '/help-center': { title: 'Help Center | Eclipse', description: 'Get help with purchases, downloads, payments, refunds, and account security.' },
+        '/sell': { title: 'Start Selling | Eclipse', description: 'Open your store on Eclipse marketplace. Lower fees, instant payouts, growing community.' },
+        '/contact': { title: 'Contact Us | Eclipse', description: 'Get in touch with the Eclipse team for support, partnerships, or feedback.' },
+        '/affiliate': { title: 'Affiliate Programme | Eclipse', description: 'Earn commission by referring new users to Eclipse marketplace.' },
+        '/advertise': { title: 'Advertise | Eclipse', description: 'Promote your Roblox products to thousands of active buyers on Eclipse.' },
+        '/jobs': { title: 'Careers | Eclipse', description: 'Join the Eclipse team. View open positions and apply today.' },
       };
 
       const staticPage = staticMeta[path];
       meta = {
-        title: staticPage?.title || `Eclipse - Roblox Asset Marketplace`,
+        title: staticPage?.title || `Eclipse — Roblox Asset Marketplace`,
         description: staticPage?.description || 'Premium Roblox asset marketplace with lower fees and instant delivery.',
         image: DEFAULT_OG_IMAGE,
         url: `${SITE_URL}${path}`,
