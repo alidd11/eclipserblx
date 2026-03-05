@@ -50,7 +50,7 @@ export function PromotionCarousel() {
     },
     {
       id: 'credits',
-      title: 'Save on Fees with Eclipse Credits',
+      title: 'SAVE ON FEES WITH ECLIPSE CREDITS',
       description: 'Pay with credits to skip transaction fees and check out instantly.',
       link: '/credits',
       icon: Coins,
