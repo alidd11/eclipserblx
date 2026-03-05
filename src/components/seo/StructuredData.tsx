@@ -15,8 +15,13 @@ interface ProductSchemaProps {
   currency?: string;
   availability?: 'InStock' | 'OutOfStock';
   seller?: string;
+  sellerUrl?: string;
   rating?: number;
   reviewCount?: number;
+  sku?: string;
+  slug?: string;
+  brand?: string;
+  category?: string;
 }
 
 interface BreadcrumbItem {
