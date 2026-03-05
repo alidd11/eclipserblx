@@ -484,7 +484,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
                   : 'p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
               )}
             >
-              <PageTransition>{children}</PageTransition>
+              <PageTransition className={isChatPage ? 'flex-1 flex flex-col min-h-0 overflow-hidden' : undefined}>{children}</PageTransition>
             </div>
           </main>
         </div>
