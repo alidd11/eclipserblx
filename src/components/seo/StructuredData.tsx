@@ -139,12 +139,8 @@ export function ProductSchema({
         hasMerchantReturnPolicy: {
           '@type': 'MerchantReturnPolicy',
           applicableCountry: 'GB',
-          returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-          merchantReturnDays: 14,
-          returnMethod: 'https://schema.org/ReturnByMail',
-          returnFees: 'https://schema.org/FreeReturn',
-          refundType: 'https://schema.org/FullRefund',
-          returnPolicySeasonalOverride: undefined,
+          returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
+          returnPolicyUrl: 'https://eclipserblx.com/refunds',
         },
       },
     };
