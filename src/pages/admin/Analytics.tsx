@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PercentChange } from '@/components/admin/analytics/PercentChange';
-import { LiveStatsCards } from '@/components/admin/dashboard/LiveStatsCards';
+
 import { exportToCSV } from '@/lib/export-csv';
 
 export default function AdminAnalytics() {
