@@ -79,6 +79,7 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
     if (!open) {
       setSearchQuery('');
       setUseAI(false);
+      setStoreResults([]);
       return;
     }
 
