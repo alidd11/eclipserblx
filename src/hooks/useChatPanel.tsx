@@ -11,7 +11,7 @@ interface ChatPanelContextType {
 
 const ChatPanelContext = createContext<ChatPanelContextType | undefined>(undefined);
 
-export const ChatPanelProvider = forwardRef<HTMLDivElement, { children: ReactNode }>(function ChatPanelProvider({ children }, _ref) {
+export function ChatPanelProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const { unreadCount } = useUnreadChatMessages(isOpen);
 
