@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GlobalGuardLayout, GlobalGuardHeader } from '@/components/global-guard/GlobalGuardLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -7,20 +7,41 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
+const STORAGE_KEY = 'global-guard-settings';
+
+interface GuardSettings {
+  autoSyncNewServers: boolean;
+  notifyOnSyncFailure: boolean;
+  defaultBanReason: string;
+}
+
+const defaultSettings: GuardSettings = {
+  autoSyncNewServers: true,
+  notifyOnSyncFailure: true,
+  defaultBanReason: '',
+};
+
 export default function GlobalGuardSettings() {
-  const [settings, setSettings] = useState({
-    autoSyncNewServers: true,
-    notifyOnSyncFailure: true,
-    defaultBanReason: '',
+  const [settings, setSettings] = useState<GuardSettings>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? { ...defaultSettings, ...JSON.parse(stored) } : defaultSettings;
+    } catch {
+      return defaultSettings;
+    }
   });
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
-    // TODO: Implement settings save
-    await new Promise(resolve => setTimeout(resolve, 500));
-    toast.success('Settings saved');
-    setIsSaving(false);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+      toast.success('Settings saved');
+    } catch {
+      toast.error('Failed to save settings');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
