@@ -24,7 +24,7 @@ export function ChatPanelProvider({ children }: { children: ReactNode }) {
       {children}
     </ChatPanelContext.Provider>
   );
-});
+}
 
 export function useChatPanel() {
   const context = useContext(ChatPanelContext);

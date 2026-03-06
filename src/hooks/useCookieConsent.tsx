@@ -139,7 +139,7 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
       {children}
     </CookieConsentContext.Provider>
   );
-});
+}
 
 export function useCookieConsent() {
   const context = useContext(CookieConsentContext);
