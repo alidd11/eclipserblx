@@ -130,6 +130,7 @@ const AdminRecruiters = lazy(() => import("@/pages/admin/Recruiters"));
 const AdminRecruiterApplications = lazy(() => import("@/pages/admin/RecruiterApplications"));
 const AdminRecruiterPayouts = lazy(() => import("@/pages/admin/RecruiterPayouts"));
 const AdminRecruiterCommissions = lazy(() => import("@/pages/admin/RecruiterCommissions"));
+const AdminGDPRCompliance = lazy(() => import("@/pages/admin/GDPRCompliance"));
 
 // Recruiter page
 const Recruiter = lazy(() => import("@/pages/Recruiter"));
