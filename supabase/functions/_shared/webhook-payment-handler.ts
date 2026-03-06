@@ -223,21 +223,26 @@ async function processSellerEarnings(
     const earnings = Math.max(0, netBefore * (1 - rate / 100));
     const platformFee = netBefore - earnings;
 
+    // 3-day escrow hold
+    const escrowHoldUntil = new Date();
+    escrowHoldUntil.setDate(escrowHoldUntil.getDate() + 3);
+
     await supabase.from("seller_transactions").insert({
       seller_id: sellerId, store_id: product.store_id, order_id: orderId, order_item_id: orderItemId,
       gross_amount: gross, stripe_fee: fee, net_before_commission: netBefore, platform_fee: platformFee,
       net_amount: earnings, amount: earnings, type: "sale", status: "completed",
+      escrow_hold_until: escrowHoldUntil.toISOString(),
     });
 
-    // Update balance
-    const { data: bal } = await supabase.from("seller_balances").select("available_balance, total_earned").eq("user_id", sellerId).single();
+    // Update balance — put earnings in pending_balance (escrow hold)
+    const { data: bal } = await supabase.from("seller_balances").select("pending_balance, total_earned").eq("user_id", sellerId).single();
     if (bal) {
       await supabase.from("seller_balances").update({
-        available_balance: ((bal as any).available_balance || 0) + earnings,
+        pending_balance: ((bal as any).pending_balance || 0) + earnings,
         total_earned: ((bal as any).total_earned || 0) + earnings,
       }).eq("user_id", sellerId);
     } else {
-      await supabase.from("seller_balances").insert({ user_id: sellerId, store_id: product.store_id, available_balance: earnings, total_earned: earnings });
+      await supabase.from("seller_balances").insert({ user_id: sellerId, store_id: product.store_id, pending_balance: earnings, available_balance: 0, total_earned: earnings });
     }
 
     // Seller Discord webhook
