@@ -236,8 +236,8 @@ function CategoryCard({ category, sourceParam, index }: { category: CategoryData
                     </div>
                   );
                 })}
-                {/* Fill empty slots on desktop only */}
-                {Array.from({ length: Math.max(0, 4 - category.topProducts.length) }).map((_, i) => (
+                {/* Fill empty slots on desktop only — only if at least 2 products */}
+                {category.topProducts.length >= 2 && Array.from({ length: Math.max(0, 4 - category.topProducts.length) }).map((_, i) => (
                   <div key={`empty-${i}`} className="hidden sm:block rounded-md border border-border/30 aspect-[4/3] bg-muted/20" />
                 ))}
               </div>
