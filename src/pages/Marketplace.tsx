@@ -264,7 +264,7 @@ export default function Marketplace() {
         .eq('stores.is_active', true)
         .not('store_id', 'is', null)
         .or(`release_at.is.null,release_at.lte.${now}`)
-        .ilike('name', `%${debouncedQuery}%`)
+        .or(`name.ilike.%${debouncedQuery}%,description.ilike.%${debouncedQuery}%`)
         .limit(10);
       
       if (error) throw error;

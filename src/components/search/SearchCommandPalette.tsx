@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, forwardRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Package, Search, Sparkles, Loader2,
-  Clock, X, TrendingUp, ArrowRight, Keyboard
+  Clock, X, TrendingUp, ArrowRight, Keyboard, Store
 } from 'lucide-react';
 import {
   CommandDialog,
@@ -27,6 +27,14 @@ interface Product {
   images?: string[];
 }
 
+interface StoreResult {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  is_verified: boolean;
+}
+
 interface SearchCommandPaletteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -36,6 +44,7 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
   const [products, setProducts] = useState<Product[]>([]);
+  const [storeResults, setStoreResults] = useState<StoreResult[]>([]);
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -70,6 +79,7 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
     if (!open) {
       setSearchQuery('');
       setUseAI(false);
+      setStoreResults([]);
       return;
     }
 
@@ -78,24 +88,39 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
     const fetchProducts = async () => {
       if (searchQuery.length < 2) {
         setProducts([]);
+        setStoreResults([]);
         return;
       }
 
       setIsLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('id, name, slug, price, images, stores (is_active)')
-          .eq('is_active', true)
-          .ilike('name', `%${searchQuery}%`)
-          .limit(10);
+        // Search products by name OR description, plus search stores
+        const [productRes, storeRes] = await Promise.all([
+          supabase
+            .from('products')
+            .select('id, name, slug, price, images, stores!inner (is_active)')
+            .eq('is_active', true)
+            .eq('stores.is_active', true)
+            .or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)
+            .order('total_sales', { ascending: false })
+            .limit(8),
+          supabase
+            .from('stores')
+            .select('id, name, slug, logo_url, is_verified')
+            .eq('status', 'approved')
+            .eq('is_active', true)
+            .ilike('name', `%${searchQuery}%`)
+            .limit(4),
+        ]);
 
-        if (!error && data) {
-          const filtered = data.filter((p: any) => p.stores?.is_active === true);
-          setProducts(filtered.slice(0, 5));
+        if (!productRes.error && productRes.data) {
+          setProducts(productRes.data.slice(0, 5));
+        }
+        if (!storeRes.error && storeRes.data) {
+          setStoreResults(storeRes.data as StoreResult[]);
         }
       } catch {
-        console.error('Error fetching products');
+        console.error('Error fetching search results');
       } finally {
         setIsLoading(false);
       }
@@ -284,6 +309,40 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
                 </CommandItem>
               ))}
             </CommandGroup>
+
+            {/* Store Results */}
+            {storeResults.length > 0 && (
+              <>
+                <CommandSeparator />
+                <CommandGroup heading="STORES">
+                  {storeResults.map((store) => (
+                    <CommandItem
+                      key={store.id}
+                      value={`store-${store.name}`}
+                      onSelect={() => handleSelect(`/store/${store.slug}`)}
+                      className="cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        {store.logo_url ? (
+                          <img src={store.logo_url} alt="" className="h-8 w-8 rounded-lg object-cover bg-muted shrink-0 ring-1 ring-border/50" loading="lazy" />
+                        ) : (
+                          <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0 ring-1 ring-border/50">
+                            <Store className="h-4 w-4 text-muted-foreground/40" />
+                          </div>
+                        )}
+                        <span className="text-sm truncate group-data-[selected=true]:text-foreground transition-colors">
+                          {highlightMatch(store.name, searchQuery)}
+                        </span>
+                        {store.is_verified && (
+                          <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full shrink-0">Verified</span>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </>
+            )}
+
             <CommandSeparator />
             <CommandGroup>
               <CommandItem
