@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
-import { Shield, FileText, Database, Globe, Clock, Users, AlertTriangle } from 'lucide-react';
+import { Shield, FileText, Database, Globe, Clock, Users, AlertTriangle, Receipt, Building2, Landmark } from 'lucide-react';
 import { format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -201,6 +201,76 @@ const RETENTION_SCHEDULE = [
   { dataType: 'Rate limit records', retention: '24 hours', method: 'Probabilistic cleanup', legal: 'Legitimate interest' },
 ];
 
+// ─── Tax & HMRC Obligations ───
+const TAX_OBLIGATIONS = [
+  {
+    obligation: 'VAT Registration',
+    description: 'Register for VAT if annual taxable turnover (commission revenue) exceeds £90,000',
+    status: 'Monitor',
+    hmrcRef: 'VAT Notice 700',
+    notes: 'Only commission revenue counts — not gross transaction volume. Current model: destination charges via Stripe Connect.',
+  },
+  {
+    obligation: 'Corporation Tax / Self Assessment',
+    description: 'Report all platform commission income to HMRC annually',
+    status: 'Required',
+    hmrcRef: 'CT600 / SA100',
+    notes: 'Financial year-end filing. Commission = gross sale × commission rate. Stripe fees are a deductible expense.',
+  },
+  {
+    obligation: 'Digital Services VAT',
+    description: 'B2C digital services supplied to UK consumers are VAT-applicable once VAT-registered',
+    status: 'Monitor',
+    hmrcRef: 'VAT Notice 741A',
+    notes: 'As a UK marketplace, standard UK VAT rules apply. No OSS/MOSS needed for domestic supply. Cross-border B2C may trigger obligations.',
+  },
+  {
+    obligation: 'Marketplace Deemed Supplier',
+    description: 'Under certain conditions, HMRC may treat the marketplace as the deemed supplier for VAT',
+    status: 'Not Applicable (currently)',
+    hmrcRef: 'VAT Notice 700/1',
+    notes: 'Applies if marketplace "sets terms and conditions" AND "authorises payment". Currently sellers set their own prices — monitor if model changes.',
+  },
+  {
+    obligation: 'Financial Records Retention',
+    description: 'Retain all financial records (orders, transactions, payouts, commissions) for 7 years',
+    status: 'Implemented',
+    hmrcRef: 'HMRC Record Keeping',
+    notes: 'Enforced via database retention policy. Orders, seller_transactions, seller_payouts tables retained for 7 years.',
+  },
+  {
+    obligation: 'Seller Tax Responsibility',
+    description: 'Each seller is independently responsible for their own income tax on earnings',
+    status: 'Documented',
+    hmrcRef: 'SA guidelines',
+    notes: 'Platform does NOT withhold tax from seller payouts. Sellers must self-report. Documented in Seller ToS.',
+  },
+  {
+    obligation: 'Annual Earnings Summaries',
+    description: 'Provide sellers with downloadable annual earnings statements for their tax returns',
+    status: 'Implemented',
+    hmrcRef: 'Best Practice',
+    notes: 'Available in seller dashboard at /seller/tax-summary. Shows gross sales, commissions, net earnings by tax year.',
+  },
+  {
+    obligation: 'Anti-Money Laundering (AML)',
+    description: 'Stripe Connect handles KYC/AML verification for seller onboarding',
+    status: 'Delegated to Stripe',
+    hmrcRef: 'MLR 2017',
+    notes: 'Stripe verifies seller identity during Connect onboarding. Platform does not handle fiat directly.',
+  },
+];
+
+const PLATFORM_TAX_POSITION = {
+  model: 'Commission-Based Marketplace (Destination Charges)',
+  taxableRevenue: 'Commission fees (typically 10-15% of net sales)',
+  vatStatus: 'Monitor — register when commission revenue exceeds £90,000/year',
+  jurisdiction: 'England & Wales',
+  paymentProcessor: 'Stripe Connect (Destination Charges)',
+  sellerTaxModel: 'Independent — sellers self-report income',
+  recordsRetention: '7 years (HMRC requirement)',
+};
+
 export default function GDPRCompliance() {
   const { user, loading: authLoading } = useAuth();
   const [consentSearch, setConsentSearch] = useState('');
@@ -226,9 +296,9 @@ export default function GDPRCompliance() {
         <div className="flex items-center gap-3">
           <Shield className="h-8 w-8 text-primary" />
           <div>
-            <h1 className="text-2xl font-bold text-foreground">GDPR Compliance Registry</h1>
+            <h1 className="text-2xl font-bold text-foreground">GDPR & Tax Compliance Registry</h1>
             <p className="text-muted-foreground text-sm">
-              Records of Processing Activities (Art. 30) · Sub-Processor Registry (Art. 28) · Retention Schedule
+              ROPA (Art. 30) · Sub-Processors (Art. 28) · Retention · HMRC Tax Obligations
             </p>
           </div>
         </div>
@@ -246,13 +316,18 @@ export default function GDPRCompliance() {
             <Clock className="h-3 w-3 mr-1" />
             Last Reviewed: {format(new Date(), 'dd MMM yyyy')}
           </Badge>
+          <Badge variant="outline" className="text-xs">
+            <Landmark className="h-3 w-3 mr-1" />
+            Tax Authority: HMRC (UK)
+          </Badge>
         </div>
 
         <Tabs defaultValue="ropa">
-          <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+          <TabsList className="grid grid-cols-5 w-full max-w-3xl">
             <TabsTrigger value="ropa">ROPA</TabsTrigger>
             <TabsTrigger value="processors">Sub-Processors</TabsTrigger>
             <TabsTrigger value="retention">Retention</TabsTrigger>
+            <TabsTrigger value="tax">Tax & HMRC</TabsTrigger>
             <TabsTrigger value="consent-log">Consent Log</TabsTrigger>
           </TabsList>
 
@@ -402,7 +477,131 @@ export default function GDPRCompliance() {
             </Card>
           </TabsContent>
 
-          {/* ─── Tab 4: Consent Records (Live from DB) ─── */}
+          {/* ─── Tab 4: Tax & HMRC ─── */}
+          <TabsContent value="tax" className="space-y-4">
+            {/* Platform Tax Position Summary */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Platform Tax Position
+                </CardTitle>
+                <CardDescription>
+                  Summary of Eclipse's tax model and HMRC obligations as a UK digital marketplace.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(PLATFORM_TAX_POSITION).map(([key, value]) => (
+                    <div key={key} className="p-3 rounded-lg bg-muted/30 border border-border">
+                      <p className="text-xs text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                      <p className="text-sm font-medium mt-1">{value}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Detailed Obligations */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Receipt className="h-5 w-5" />
+                  HMRC Tax Obligations Checklist
+                </CardTitle>
+                <CardDescription>
+                  All tax obligations for Eclipse as a commission-based digital marketplace operating under UK law.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="min-w-[160px]">Obligation</TableHead>
+                        <TableHead className="min-w-[200px]">Description</TableHead>
+                        <TableHead className="min-w-[100px]">Status</TableHead>
+                        <TableHead className="min-w-[120px]">HMRC Reference</TableHead>
+                        <TableHead className="min-w-[250px]">Notes</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {TAX_OBLIGATIONS.map((item, i) => (
+                        <TableRow key={i}>
+                          <TableCell className="font-medium text-sm">{item.obligation}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{item.description}</TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={
+                                item.status === 'Implemented' || item.status === 'Documented' ? 'default' :
+                                item.status === 'Required' ? 'destructive' :
+                                'secondary'
+                              } 
+                              className="text-xs whitespace-nowrap"
+                            >
+                              {item.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm font-mono text-xs">{item.hmrcRef}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{item.notes}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Key Tax Rules */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Landmark className="h-5 w-5" />
+                  Key Tax Rules for UK Digital Marketplaces
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-4 rounded-lg bg-muted/30 border border-border">
+                  <h4 className="font-semibold mb-1">VAT on Commission Revenue</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Eclipse earns commission (10-15%) on seller sales. Only this commission is taxable turnover 
+                    for VAT purposes — NOT the full transaction value. The £90,000 VAT registration threshold 
+                    applies to your commission income, not gross marketplace volume.
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg bg-muted/30 border border-border">
+                  <h4 className="font-semibold mb-1">Destination Charges Model</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Under Stripe Connect destination charges, Eclipse receives the full payment and transfers 
+                    the seller's share. HMRC may view Eclipse as "receiving" the payment. Clear record-keeping 
+                    of commissions vs. seller payouts is critical for accurate tax reporting.
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg bg-muted/30 border border-border">
+                  <h4 className="font-semibold mb-1">Seller Independence</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Sellers are independent contractors, not employees. Eclipse does NOT withhold income tax 
+                    from seller payouts. Each seller is responsible for their own Self Assessment / Corporation 
+                    Tax filing. This is documented in the Seller Terms of Service.
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                  <h4 className="font-semibold mb-1 text-amber-500 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    Deemed Supplier Warning
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    If HMRC determines Eclipse "sets the terms and conditions" of sale AND "authorises payment 
+                    charging", Eclipse could be treated as the "deemed supplier" for VAT. This would mean 
+                    charging VAT on the FULL sale price, not just commission. Currently not applicable as 
+                    sellers set their own prices. Review if pricing model changes.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ─── Tab 5: Consent Records (Live from DB) ─── */}
           <TabsContent value="consent-log" className="space-y-4">
             <ConsentRecordsTab search={consentSearch} onSearchChange={setConsentSearch} />
           </TabsContent>

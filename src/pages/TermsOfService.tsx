@@ -157,6 +157,17 @@ export default function TermsOfService() {
               the payment method provided.
             </p>
 
+            <h3 className="font-semibold text-lg mt-6 mb-3">Tax Responsibilities</h3>
+            <p className="text-muted-foreground mb-4">
+              {SITE_NAME} operates as a commission-based marketplace. The platform charges a commission 
+              on sales made through its marketplace. <strong>As a buyer</strong>, all prices displayed 
+              include any applicable UK VAT. <strong>As a seller</strong>, you are independently 
+              responsible for reporting your earnings to HMRC and paying any applicable income tax, 
+              National Insurance contributions, or VAT on your sales. {SITE_NAME} does not withhold 
+              tax from seller payouts. An annual earnings summary is available in your seller dashboard 
+              for your tax records.
+            </p>
+
             <h3 className="font-semibold text-lg mt-6 mb-3">Eclipse+ Membership Discounts</h3>
             <p className="text-muted-foreground mb-4">
               Eclipse+ members receive automatic discounts on eligible products (30% on standard products, 

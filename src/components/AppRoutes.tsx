@@ -178,6 +178,7 @@ const SellerDiscord = lazy(() => import("@/pages/seller/SellerDiscord"));
 const SellerBots = lazy(() => import("@/pages/seller/SellerBots"));
 const SellerImport = lazy(() => import("@/pages/seller/SellerImport"));
 const SellerPromotions = lazy(() => import("@/pages/seller/SellerPromotions"));
+const SellerTaxSummary = lazy(() => import("@/pages/seller/SellerTaxSummary"));
 
 // Standalone pages
 const IPShield = lazy(() => import("@/pages/IPShield"));
@@ -334,6 +335,7 @@ export const AppRoutes = forwardRef<HTMLDivElement>(function AppRoutes(_, _ref) 
         <Route path="/seller/documents/integrations" element={<IntegrationsGuide />} />
         <Route path="/seller/documents/community-guidelines" element={<CommunityGuidelines />} />
         <Route path="/seller/documents/faq" element={<SellerFAQ />} />
+        <Route path="/seller/tax-summary" element={<SellerTaxSummary />} />
         <Route path="/seller/settings/profile" element={<SellerSettingsProfile />} />
         <Route path="/seller/settings/appearance" element={<SellerSettingsAppearance />} />
         <Route path="/seller/settings/team" element={<SellerSettingsTeam />} />

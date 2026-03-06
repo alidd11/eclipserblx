@@ -126,8 +126,9 @@ export default function PrivacyPolicy() {
                   <div className="p-4 rounded-lg bg-muted/30 border border-border">
                     <h4 className="font-semibold mb-1">Legal Obligation (Art. 6(1)(c))</h4>
                     <p className="text-sm text-muted-foreground">
-                      Retaining financial records (orders, transactions) for 7 years as required by 
-                      UK tax legislation (HMRC requirements).
+                      Retaining financial records (orders, transactions, seller earnings, commission data) 
+                      for 7 years as required by UK tax legislation (HMRC requirements). This includes 
+                      seller transaction records and payout histories needed for tax compliance.
                     </p>
                   </div>
                 </div>
@@ -313,6 +314,11 @@ export default function PrivacyPolicy() {
                       </tr>
                       <tr className="border-b border-border/50">
                         <td className="py-3 px-4">Order &amp; transaction records</td>
+                        <td className="py-3 px-4">7 years</td>
+                        <td className="py-3 px-4">Legal obligation (HMRC)</td>
+                      </tr>
+                      <tr className="border-b border-border/50">
+                        <td className="py-3 px-4">Seller earnings &amp; payout records</td>
                         <td className="py-3 px-4">7 years</td>
                         <td className="py-3 px-4">Legal obligation (HMRC)</td>
                       </tr>
