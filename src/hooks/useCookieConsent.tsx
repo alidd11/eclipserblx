@@ -20,6 +20,18 @@ const defaultPreferences: CookiePreferences = {
   marketing: false,
 };
 
+interface CookieConsentContextType {
+  hasConsented: boolean;
+  preferences: CookiePreferences;
+  showBanner: boolean;
+  showSettings: boolean;
+  acceptAll: () => void;
+  rejectNonEssential: () => void;
+  updatePreferences: (prefs: Partial<Omit<CookiePreferences, 'essential'>>) => void;
+  openSettings: () => void;
+  closeSettings: () => void;
+}
+
 const CookieConsentContext = createContext<CookieConsentContextType | undefined>(undefined);
 
 export const CookieConsentProvider = forwardRef<HTMLDivElement, { children: React.ReactNode }>(function CookieConsentProvider({ children }, _ref) {
