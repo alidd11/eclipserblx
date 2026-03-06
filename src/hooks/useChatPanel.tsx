@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, forwardRef } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 import { useUnreadChatMessages } from './useUnreadChatMessages';
 
 interface ChatPanelContextType {
