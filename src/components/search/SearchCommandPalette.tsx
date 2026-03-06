@@ -44,6 +44,7 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
   const [products, setProducts] = useState<Product[]>([]);
+  const [storeResults, setStoreResults] = useState<StoreResult[]>([]);
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
