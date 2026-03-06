@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, forwardRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { safeStorage } from '@/lib/safeStorage';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -34,7 +34,7 @@ interface CookieConsentContextType {
 
 const CookieConsentContext = createContext<CookieConsentContextType | undefined>(undefined);
 
-export const CookieConsentProvider = forwardRef<HTMLDivElement, { children: React.ReactNode }>(function CookieConsentProvider({ children }, _ref) {
+export function CookieConsentProvider({ children }: { children: React.ReactNode }) {
   const [hasConsented, setHasConsented] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>(defaultPreferences);
   const [showBanner, setShowBanner] = useState(false);
@@ -139,7 +139,7 @@ export const CookieConsentProvider = forwardRef<HTMLDivElement, { children: Reac
       {children}
     </CookieConsentContext.Provider>
   );
-});
+}
 
 export function useCookieConsent() {
   const context = useContext(CookieConsentContext);
