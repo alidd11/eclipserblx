@@ -402,6 +402,12 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       <div className="space-y-5">
+        {/* Live Stats */}
+        <LiveStatsCards />
+
+        {/* System Alerts */}
+        <SystemAlerts />
+
         {/* Hero Banner */}
         <Card className="overflow-hidden border-border bg-card">
           {/* Banner area with branding */}
