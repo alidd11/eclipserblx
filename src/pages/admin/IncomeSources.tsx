@@ -520,7 +520,7 @@ export default function AdminIncomeSources() {
                     series={areaSeries}
                     height={320}
                     yFormatter={(v) => `£${v}`}
-                    tooltipFormatter={(v) => [`£${Number(v).toFixed(2)}`]}
+                    tooltipFormatter={(v) => [`£${Number(v).toFixed(2)}`, 'Revenue']}
                   />
                 )}
               </CardContent>
