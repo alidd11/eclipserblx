@@ -88,24 +88,39 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
     const fetchProducts = async () => {
       if (searchQuery.length < 2) {
         setProducts([]);
+        setStoreResults([]);
         return;
       }
 
       setIsLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('id, name, slug, price, images, stores (is_active)')
-          .eq('is_active', true)
-          .ilike('name', `%${searchQuery}%`)
-          .limit(10);
+        // Search products by name OR description, plus search stores
+        const [productRes, storeRes] = await Promise.all([
+          supabase
+            .from('products')
+            .select('id, name, slug, price, images, stores!inner (is_active)')
+            .eq('is_active', true)
+            .eq('stores.is_active', true)
+            .or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)
+            .order('total_sales', { ascending: false })
+            .limit(8),
+          supabase
+            .from('stores')
+            .select('id, name, slug, logo_url, is_verified')
+            .eq('status', 'approved')
+            .eq('is_active', true)
+            .ilike('name', `%${searchQuery}%`)
+            .limit(4),
+        ]);
 
-        if (!error && data) {
-          const filtered = data.filter((p: any) => p.stores?.is_active === true);
-          setProducts(filtered.slice(0, 5));
+        if (!productRes.error && productRes.data) {
+          setProducts(productRes.data.slice(0, 5));
+        }
+        if (!storeRes.error && storeRes.data) {
+          setStoreResults(storeRes.data as StoreResult[]);
         }
       } catch {
-        console.error('Error fetching products');
+        console.error('Error fetching search results');
       } finally {
         setIsLoading(false);
       }
