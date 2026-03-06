@@ -688,8 +688,10 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Duty Logs - side by side */}
+        {/* Activity Feed + Duty Logs */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <ActivityFeed />
+
         {/* My Recent Duty Logs */}
         <Card className="bg-card border-border">
           <CardHeader>
