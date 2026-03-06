@@ -81,7 +81,7 @@ export default function SearchResults() {
       .eq('stores.is_active', true);
 
     if (debouncedQuery.length >= 2) {
-      q = q.ilike('name', `%${debouncedQuery}%`);
+      q = q.or(`name.ilike.%${debouncedQuery}%,description.ilike.%${debouncedQuery}%`);
     }
 
     if (categorySlug) {
