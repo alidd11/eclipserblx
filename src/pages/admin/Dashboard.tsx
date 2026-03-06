@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Megaphone, Plus, Trash2, AlertCircle, AlertTriangle, Info, Shield, TrendingUp, TrendingDown } from 'lucide-react';
-import { LiveStatsCards } from '@/components/admin/dashboard/LiveStatsCards';
 import { SystemAlerts } from '@/components/admin/dashboard/SystemAlerts';
 import { ActivityFeed } from '@/components/admin/dashboard/ActivityFeed';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -402,9 +401,6 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       <div className="space-y-5">
-        {/* Live Stats */}
-        <LiveStatsCards />
-
         {/* System Alerts */}
         <SystemAlerts />
 
