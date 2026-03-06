@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, forwardRef } from 'react';
 import { safeStorage } from '@/lib/safeStorage';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface CookiePreferences {
   essential: true; // Always true, cannot be disabled
@@ -7,19 +8,11 @@ export interface CookiePreferences {
   marketing: boolean;
 }
 
-interface CookieConsentContextType {
-  hasConsented: boolean;
-  preferences: CookiePreferences;
-  showBanner: boolean;
-  showSettings: boolean;
-  acceptAll: () => void;
-  rejectNonEssential: () => void;
-  updatePreferences: (prefs: Partial<Omit<CookiePreferences, 'essential'>>) => void;
-  openSettings: () => void;
-  closeSettings: () => void;
-}
+// Increment this when the privacy policy changes materially to trigger re-consent
+export const CONSENT_VERSION = '1.0';
 
 const STORAGE_KEY = 'eclipse_cookie_consent';
+const CONSENT_VERSION_KEY = 'eclipse_consent_version';
 
 const defaultPreferences: CookiePreferences = {
   essential: true,
