@@ -245,11 +245,12 @@ export default function AdminIncomeSources() {
     (commissionData ?? []).forEach(c => {
       const platformFee = c.platform_fee ?? 0;
       if (platformFee <= 0) return;
+      const storeName = (c as any).stores?.name ?? 'Unknown Store';
       txns.push({
         id: `comm-${c.id}`, source: 'commission',
-        description: `Commission on £${(c.gross_amount ?? 0).toFixed(2)} sale`,
+        description: `Commission on £${(c.gross_amount ?? 0).toFixed(2)} sale · ${storeName}`,
         amount: platformFee, currency: '£', status: c.status ?? 'completed', date: c.created_at,
-        metadata: `Seller earned £${(c.net_amount ?? 0).toFixed(2)} · Stripe fee £${(c.stripe_fee ?? 0).toFixed(2)}`,
+        metadata: `${storeName} · Seller earned £${(c.net_amount ?? 0).toFixed(2)} · Stripe fee £${(c.stripe_fee ?? 0).toFixed(2)}`,
       });
     });
 
