@@ -131,6 +131,7 @@ const AdminRecruiterApplications = lazy(() => import("@/pages/admin/RecruiterApp
 const AdminRecruiterPayouts = lazy(() => import("@/pages/admin/RecruiterPayouts"));
 const AdminRecruiterCommissions = lazy(() => import("@/pages/admin/RecruiterCommissions"));
 const AdminGDPRCompliance = lazy(() => import("@/pages/admin/GDPRCompliance"));
+const AdminPlatformLedger = lazy(() => import("@/pages/admin/PlatformLedger"));
 
 // Recruiter page
 const Recruiter = lazy(() => import("@/pages/Recruiter"));
@@ -426,6 +427,7 @@ export const AppRoutes = forwardRef<HTMLDivElement>(function AppRoutes(_, _ref) 
         <Route path="/admin/recruiter-payouts" element={<AdminRecruiterPayouts />} />
         <Route path="/admin/recruiter-commissions" element={<AdminRecruiterCommissions />} />
         <Route path="/admin/gdpr-compliance" element={<AdminGDPRCompliance />} />
+        <Route path="/admin/platform-ledger" element={<AdminPlatformLedger />} />
         {/* Global Guard routes (path-based instead of subdomain) */}
         <Route path="/guard/*" element={<GlobalGuardRouter />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
