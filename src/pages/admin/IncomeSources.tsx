@@ -176,7 +176,7 @@ export default function AdminIncomeSources() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('seller_transactions')
-        .select('id, order_id, seller_id, store_id, gross_amount, platform_fee, net_amount, stripe_fee, type, status, description, created_at')
+        .select('id, order_id, seller_id, store_id, gross_amount, platform_fee, net_amount, stripe_fee, type, status, description, created_at, stores(name)')
         .eq('type', 'sale')
         .order('created_at', { ascending: false })
         .limit(500);
