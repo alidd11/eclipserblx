@@ -354,6 +354,10 @@ Deno.serve(async (req) => {
               .maybeSingle();
 
             // Create transaction record with full fee breakdown
+            // 3-day escrow hold
+            const escrowHoldUntil = new Date();
+            escrowHoldUntil.setDate(escrowHoldUntil.getDate() + 3);
+
             const { error: txError } = await supabaseClient
               .from("seller_transactions")
               .insert({
@@ -369,15 +373,16 @@ Deno.serve(async (req) => {
                 amount: sellerEarnings,
                 type: "sale",
                 status: "completed",
+                escrow_hold_until: escrowHoldUntil.toISOString(),
               });
 
             if (txError) {
               logStep("Seller transaction error (non-fatal)", txError);
             } else {
-              // Update seller balance
+              // Update seller balance — escrow hold: put in pending_balance
               const { data: currentBalance } = await supabaseClient
                 .from("seller_balances")
-                .select("available_balance, pending_balance, total_earned")
+                .select("pending_balance, total_earned")
                 .eq("user_id", sellerId)
                 .single();
 
@@ -385,18 +390,18 @@ Deno.serve(async (req) => {
                 await supabaseClient
                   .from("seller_balances")
                   .update({
-                    available_balance: (currentBalance.available_balance || 0) + sellerEarnings,
+                    pending_balance: (currentBalance.pending_balance || 0) + sellerEarnings,
                     total_earned: (currentBalance.total_earned || 0) + sellerEarnings,
                   })
                   .eq("user_id", sellerId);
               } else {
-                // Create new balance record
                 await supabaseClient
                   .from("seller_balances")
                   .insert({
                     user_id: sellerId,
                     store_id: product.store_id,
-                    available_balance: sellerEarnings,
+                    pending_balance: sellerEarnings,
+                    available_balance: 0,
                     total_earned: sellerEarnings,
                   });
               }

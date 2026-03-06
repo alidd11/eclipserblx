@@ -245,6 +245,10 @@ serve(async (req) => {
         const matchingOrderItem = insertedItems?.find(oi => oi.product_id === item.id);
 
         // Create seller transaction record
+        // 3-day escrow hold
+        const escrowHoldUntil = new Date();
+        escrowHoldUntil.setDate(escrowHoldUntil.getDate() + 3);
+
         const { error: txError } = await supabaseClient
           .from("seller_transactions")
           .insert({
@@ -253,23 +257,24 @@ serve(async (req) => {
             order_id: order.id,
             order_item_id: matchingOrderItem?.id || null,
             gross_amount: grossAmount,
-            stripe_fee: 0, // No Stripe fee for credit purchases
-            net_before_commission: grossAmount, // Full amount since no Stripe fee
+            stripe_fee: 0,
+            net_before_commission: grossAmount,
             platform_fee: platformFee,
             net_amount: sellerEarnings,
             amount: sellerEarnings,
             type: "sale",
             status: "completed",
             description: "Credit purchase - no payment processing fees",
+            escrow_hold_until: escrowHoldUntil.toISOString(),
           });
 
         if (txError) {
           logStep("Seller transaction error (non-fatal)", { message: txError.message, details: txError.details, code: txError.code });
         } else {
-          // Update seller balance
+          // Update seller balance — escrow hold: put in pending_balance
           const { data: currentSellerBalance } = await supabaseClient
             .from("seller_balances")
-            .select("available_balance, total_earned")
+            .select("pending_balance, total_earned")
             .eq("user_id", item.seller_id)
             .single();
 
@@ -277,7 +282,7 @@ serve(async (req) => {
             await supabaseClient
               .from("seller_balances")
               .update({
-                available_balance: (currentSellerBalance.available_balance || 0) + sellerEarnings,
+                pending_balance: (currentSellerBalance.pending_balance || 0) + sellerEarnings,
                 total_earned: (currentSellerBalance.total_earned || 0) + sellerEarnings,
               })
               .eq("user_id", item.seller_id);
@@ -287,7 +292,8 @@ serve(async (req) => {
               .insert({
                 user_id: item.seller_id,
                 store_id: item.store_id,
-                available_balance: sellerEarnings,
+                pending_balance: sellerEarnings,
+                available_balance: 0,
                 total_earned: sellerEarnings,
               });
           }

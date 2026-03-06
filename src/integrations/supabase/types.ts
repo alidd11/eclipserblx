@@ -6564,6 +6564,9 @@ export type Database = {
           amount: number
           created_at: string | null
           description: string | null
+          escrow_frozen: boolean
+          escrow_hold_until: string | null
+          escrow_released_at: string | null
           gross_amount: number | null
           id: string
           metadata: Json | null
@@ -6584,6 +6587,9 @@ export type Database = {
           amount: number
           created_at?: string | null
           description?: string | null
+          escrow_frozen?: boolean
+          escrow_hold_until?: string | null
+          escrow_released_at?: string | null
           gross_amount?: number | null
           id?: string
           metadata?: Json | null
@@ -6604,6 +6610,9 @@ export type Database = {
           amount?: number
           created_at?: string | null
           description?: string | null
+          escrow_frozen?: boolean
+          escrow_hold_until?: string | null
+          escrow_released_at?: string | null
           gross_amount?: number | null
           id?: string
           metadata?: Json | null
@@ -8991,6 +9000,13 @@ export type Database = {
       record_rate_limit: {
         Args: { p_action_type: string; p_identifier: string }
         Returns: undefined
+      }
+      release_escrow_funds: {
+        Args: never
+        Returns: {
+          released_count: number
+          total_released: number
+        }[]
       }
       request_seller_payout: {
         Args: { p_amount: number; p_seller_id: string; p_store_id: string }
