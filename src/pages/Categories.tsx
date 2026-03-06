@@ -297,13 +297,33 @@ export default function Categories() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {Array.from({ length: 9 }).map((_, i) => <CategorySkeleton key={i} />)}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {categories?.map((category, index) => (
-              <CategoryCard key={category.id} category={category} sourceParam={sourceParam} index={index} />
-            ))}
-          </div>
-        )}
+        ) : (() => {
+          const active = categories?.filter(c => c.product_count > 0) || [];
+          const empty = categories?.filter(c => c.product_count === 0) || [];
+          return (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {active.map((category, index) => (
+                  <CategoryCard key={category.id} category={category} sourceParam={sourceParam} index={index} />
+                ))}
+              </div>
+              {empty.length > 0 && (
+                <>
+                  <div className="flex items-center gap-3 mt-8 mb-4">
+                    <div className="h-px flex-1 bg-border/40" />
+                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Coming Soon</span>
+                    <div className="h-px flex-1 bg-border/40" />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                    {empty.map((category, index) => (
+                      <CategoryCard key={category.id} category={category} sourceParam={sourceParam} index={active.length + index} />
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          );
+        })()}
       </div>
     </MainLayout>
   );
