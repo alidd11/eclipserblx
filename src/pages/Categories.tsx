@@ -107,7 +107,10 @@ function useCategoriesWithProducts(sourceFilter: string | null) {
         })
       );
 
+      // Sort: non-empty categories first by sort order, then empty ones at the end
       results.sort((a, b) => {
+        if (a.product_count > 0 && b.product_count === 0) return -1;
+        if (a.product_count === 0 && b.product_count > 0) return 1;
         const orderA = CATEGORY_SORT_ORDER[a.slug] ?? 99;
         const orderB = CATEGORY_SORT_ORDER[b.slug] ?? 99;
         return orderA - orderB;
