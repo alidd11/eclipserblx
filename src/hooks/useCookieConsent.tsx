@@ -78,13 +78,13 @@ export const CookieConsentProvider = forwardRef<HTMLDivElement, { children: Reac
 
     // Record consent server-side for GDPR accountability (fire-and-forget)
     const visitorId = safeStorage.getItem('eclipse_visitor_id') || 'unknown';
-    supabase.from('consent_records').insert({
+    supabase.from('consent_records').insert([{
       visitor_id: visitorId,
       consent_version: CONSENT_VERSION,
       preferences: prefs as unknown as Record<string, unknown>,
       action: prefs.analytics || prefs.marketing ? 'granted' : 'rejected_non_essential',
       user_agent: navigator.userAgent.substring(0, 500),
-    }).then(({ error }) => {
+    }]).then(({ error }) => {
       if (error) console.error('Failed to record consent:', error);
     });
   }, []);
