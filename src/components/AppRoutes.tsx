@@ -178,6 +178,7 @@ const SellerDiscord = lazy(() => import("@/pages/seller/SellerDiscord"));
 const SellerBots = lazy(() => import("@/pages/seller/SellerBots"));
 const SellerImport = lazy(() => import("@/pages/seller/SellerImport"));
 const SellerPromotions = lazy(() => import("@/pages/seller/SellerPromotions"));
+const SellerTaxSummary = lazy(() => import("@/pages/seller/SellerTaxSummary"));
 
 // Standalone pages
 const IPShield = lazy(() => import("@/pages/IPShield"));
