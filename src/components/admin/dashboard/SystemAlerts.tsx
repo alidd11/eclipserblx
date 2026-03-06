@@ -55,7 +55,7 @@ export function SystemAlerts() {
           count: pendingModeration.count || 0,
           severity: 'warning',
           icon: Package,
-          href: '/admin/products',
+          href: '/admin/seller-product-review',
         });
       }
 
