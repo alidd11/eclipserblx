@@ -28,7 +28,7 @@ export function SystemAlerts() {
         pendingSellerProducts,
       ] = await Promise.all([
         supabase.from('products').select('id', { count: 'exact', head: true }).eq('moderation_status', 'pending'),
-        supabase.from('order_disputes').select('id', { count: 'exact', head: true }).eq('status', 'open'),
+        supabase.from('refund_requests').select('id', { count: 'exact', head: true }).in('status', ['pending', 'escalated']),
         supabase.from('store_applications').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
         supabase.from('job_applications').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
         supabase.from('support_tickets').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress']),
