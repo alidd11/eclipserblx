@@ -53,7 +53,7 @@ export default function SellerTaxSummary() {
       // Fetch all transactions in the tax year
       const { data: transactions, error } = await supabase
         .from('seller_transactions')
-        .select('gross_amount, net_amount, commission_amount, stripe_fee, created_at, type, refunded_at')
+        .select('gross_amount, net_amount, platform_fee, stripe_fee, created_at, type, refunded_at')
         .eq('store_id', store.id)
         .eq('type', 'sale')
         .gte('created_at', selectedTaxYear.startDate + 'T00:00:00Z')
@@ -66,7 +66,7 @@ export default function SellerTaxSummary() {
       const refundedSales = (transactions || []).filter(t => t.refunded_at);
 
       const totalGross = validSales.reduce((sum, t) => sum + (t.gross_amount || 0), 0);
-      const totalCommission = validSales.reduce((sum, t) => sum + (t.commission_amount || 0), 0);
+      const totalCommission = validSales.reduce((sum, t) => sum + (t.platform_fee || 0), 0);
       const totalStripeFees = validSales.reduce((sum, t) => sum + (t.stripe_fee || 0), 0);
       const totalNet = validSales.reduce((sum, t) => sum + (t.net_amount || 0), 0);
       const totalRefunded = refundedSales.reduce((sum, t) => sum + (t.gross_amount || 0), 0);
@@ -74,12 +74,12 @@ export default function SellerTaxSummary() {
       // Monthly breakdown
       const monthlyData: Record<string, { gross: number; commission: number; fees: number; net: number; count: number }> = {};
       validSales.forEach(t => {
-        const month = format(new Date(t.created_at), 'yyyy-MM');
+        const month = format(new Date(t.created_at!), 'yyyy-MM');
         if (!monthlyData[month]) {
           monthlyData[month] = { gross: 0, commission: 0, fees: 0, net: 0, count: 0 };
         }
         monthlyData[month].gross += t.gross_amount || 0;
-        monthlyData[month].commission += t.commission_amount || 0;
+        monthlyData[month].commission += t.platform_fee || 0;
         monthlyData[month].fees += t.stripe_fee || 0;
         monthlyData[month].net += t.net_amount || 0;
         monthlyData[month].count += 1;
