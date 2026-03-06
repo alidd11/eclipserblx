@@ -309,6 +309,40 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
                 </CommandItem>
               ))}
             </CommandGroup>
+
+            {/* Store Results */}
+            {storeResults.length > 0 && (
+              <>
+                <CommandSeparator />
+                <CommandGroup heading="STORES">
+                  {storeResults.map((store) => (
+                    <CommandItem
+                      key={store.id}
+                      value={`store-${store.name}`}
+                      onSelect={() => handleSelect(`/store/${store.slug}`)}
+                      className="cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        {store.logo_url ? (
+                          <img src={store.logo_url} alt="" className="h-8 w-8 rounded-lg object-cover bg-muted shrink-0 ring-1 ring-border/50" loading="lazy" />
+                        ) : (
+                          <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0 ring-1 ring-border/50">
+                            <Store className="h-4 w-4 text-muted-foreground/40" />
+                          </div>
+                        )}
+                        <span className="text-sm truncate group-data-[selected=true]:text-foreground transition-colors">
+                          {highlightMatch(store.name, searchQuery)}
+                        </span>
+                        {store.is_verified && (
+                          <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full shrink-0">Verified</span>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </>
+            )}
+
             <CommandSeparator />
             <CommandGroup>
               <CommandItem
