@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode, forwardRef } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { safeStorage } from '@/lib/safeStorage';
 
 export type CurrencyCode = 'GBP' | 'USD' | 'EUR';
