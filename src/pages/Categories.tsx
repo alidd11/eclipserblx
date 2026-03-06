@@ -107,7 +107,10 @@ function useCategoriesWithProducts(sourceFilter: string | null) {
         })
       );
 
+      // Sort: non-empty categories first by sort order, then empty ones at the end
       results.sort((a, b) => {
+        if (a.product_count > 0 && b.product_count === 0) return -1;
+        if (a.product_count === 0 && b.product_count > 0) return 1;
         const orderA = CATEGORY_SORT_ORDER[a.slug] ?? 99;
         const orderB = CATEGORY_SORT_ORDER[b.slug] ?? 99;
         return orderA - orderB;
@@ -175,7 +178,7 @@ function CategoryCard({ category, sourceParam, index }: { category: CategoryData
           {/* Product count badge */}
           {!isEmpty && (
             <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-card/80 backdrop-blur-sm border border-border/50 text-[10px] sm:text-[11px] font-bold text-foreground tabular-nums">
-              {category.product_count} products
+              {category.product_count} {category.product_count === 1 ? 'product' : 'products'}
             </div>
           )}
 
@@ -236,8 +239,8 @@ function CategoryCard({ category, sourceParam, index }: { category: CategoryData
                     </div>
                   );
                 })}
-                {/* Fill empty slots on desktop only */}
-                {Array.from({ length: Math.max(0, 4 - category.topProducts.length) }).map((_, i) => (
+                {/* Fill empty slots on desktop only — only if at least 2 products */}
+                {category.topProducts.length >= 2 && Array.from({ length: Math.max(0, 4 - category.topProducts.length) }).map((_, i) => (
                   <div key={`empty-${i}`} className="hidden sm:block rounded-md border border-border/30 aspect-[4/3] bg-muted/20" />
                 ))}
               </div>
@@ -294,13 +297,33 @@ export default function Categories() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {Array.from({ length: 9 }).map((_, i) => <CategorySkeleton key={i} />)}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {categories?.map((category, index) => (
-              <CategoryCard key={category.id} category={category} sourceParam={sourceParam} index={index} />
-            ))}
-          </div>
-        )}
+        ) : (() => {
+          const active = categories?.filter(c => c.product_count > 0) || [];
+          const empty = categories?.filter(c => c.product_count === 0) || [];
+          return (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {active.map((category, index) => (
+                  <CategoryCard key={category.id} category={category} sourceParam={sourceParam} index={index} />
+                ))}
+              </div>
+              {empty.length > 0 && (
+                <>
+                  <div className="flex items-center gap-3 mt-8 mb-4">
+                    <div className="h-px flex-1 bg-border/40" />
+                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Coming Soon</span>
+                    <div className="h-px flex-1 bg-border/40" />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                    {empty.map((category, index) => (
+                      <CategoryCard key={category.id} category={category} sourceParam={sourceParam} index={active.length + index} />
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          );
+        })()}
       </div>
     </MainLayout>
   );
