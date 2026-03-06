@@ -335,6 +335,7 @@ export const AppRoutes = forwardRef<HTMLDivElement>(function AppRoutes(_, _ref) 
         <Route path="/seller/documents/integrations" element={<IntegrationsGuide />} />
         <Route path="/seller/documents/community-guidelines" element={<CommunityGuidelines />} />
         <Route path="/seller/documents/faq" element={<SellerFAQ />} />
+        <Route path="/seller/tax-summary" element={<SellerTaxSummary />} />
         <Route path="/seller/settings/profile" element={<SellerSettingsProfile />} />
         <Route path="/seller/settings/appearance" element={<SellerSettingsAppearance />} />
         <Route path="/seller/settings/team" element={<SellerSettingsTeam />} />
