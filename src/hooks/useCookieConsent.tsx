@@ -81,7 +81,7 @@ export const CookieConsentProvider = forwardRef<HTMLDivElement, { children: Reac
     supabase.from('consent_records').insert([{
       visitor_id: visitorId,
       consent_version: CONSENT_VERSION,
-      preferences: prefs as unknown as Record<string, unknown>,
+      preferences: JSON.parse(JSON.stringify(prefs)),
       action: prefs.analytics || prefs.marketing ? 'granted' : 'rejected_non_essential',
       user_agent: navigator.userAgent.substring(0, 500),
     }]).then(({ error }) => {
