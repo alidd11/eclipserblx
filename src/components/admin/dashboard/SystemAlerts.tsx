@@ -1,0 +1,165 @@
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { AlertTriangle, ShieldAlert, Clock, Package, MessageCircle, FileText } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+
+interface AlertItem {
+  id: string;
+  label: string;
+  count: number;
+  severity: 'critical' | 'warning' | 'info';
+  icon: React.ElementType;
+  href: string;
+}
+
+export function SystemAlerts() {
+  const { data: alerts, isLoading } = useQuery({
+    queryKey: ['admin-system-alerts'],
+    queryFn: async () => {
+      const [
+        pendingModeration,
+        openDisputes,
+        pendingStoreApps,
+        pendingJobApps,
+        unresolvedTickets,
+        pendingSellerProducts,
+      ] = await Promise.all([
+        supabase.from('products').select('id', { count: 'exact', head: true }).eq('moderation_status', 'pending'),
+        supabase.from('disputes').select('id', { count: 'exact', head: true }).eq('status', 'open'),
+        supabase.from('store_applications').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('job_applications').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('support_tickets').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress']),
+        supabase.from('developer_product_submissions').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+      ]);
+
+      const items: AlertItem[] = [];
+
+      if ((openDisputes.count || 0) > 0) {
+        items.push({
+          id: 'disputes',
+          label: 'Open Disputes',
+          count: openDisputes.count || 0,
+          severity: 'critical',
+          icon: ShieldAlert,
+          href: '/admin/disputes',
+        });
+      }
+
+      if ((pendingModeration.count || 0) > 0) {
+        items.push({
+          id: 'moderation',
+          label: 'Pending Moderation',
+          count: pendingModeration.count || 0,
+          severity: 'warning',
+          icon: Package,
+          href: '/admin/products',
+        });
+      }
+
+      if ((pendingSellerProducts.count || 0) > 0) {
+        items.push({
+          id: 'seller-products',
+          label: 'Seller Product Reviews',
+          count: pendingSellerProducts.count || 0,
+          severity: 'warning',
+          icon: FileText,
+          href: '/admin/seller-product-review',
+        });
+      }
+
+      if ((unresolvedTickets.count || 0) > 0) {
+        items.push({
+          id: 'tickets',
+          label: 'Unresolved Tickets',
+          count: unresolvedTickets.count || 0,
+          severity: 'info',
+          icon: MessageCircle,
+          href: '/admin/customer-tickets',
+        });
+      }
+
+      if ((pendingStoreApps.count || 0) > 0) {
+        items.push({
+          id: 'store-apps',
+          label: 'Store Applications',
+          count: pendingStoreApps.count || 0,
+          severity: 'info',
+          icon: Clock,
+          href: '/admin/store-applications',
+        });
+      }
+
+      if ((pendingJobApps.count || 0) > 0) {
+        items.push({
+          id: 'job-apps',
+          label: 'Job Applications',
+          count: pendingJobApps.count || 0,
+          severity: 'info',
+          icon: FileText,
+          href: '/admin/applications',
+        });
+      }
+
+      return items;
+    },
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  });
+
+  if (isLoading || !alerts?.length) return null;
+
+  const severityStyles = {
+    critical: 'border-destructive/30 bg-destructive/5 hover:bg-destructive/10',
+    warning: 'border-orange-500/30 bg-orange-500/5 hover:bg-orange-500/10',
+    info: 'border-primary/20 bg-primary/5 hover:bg-primary/10',
+  };
+
+  const severityBadge = {
+    critical: 'bg-destructive text-destructive-foreground',
+    warning: 'bg-orange-500 text-white',
+    info: 'bg-primary/20 text-primary',
+  };
+
+  const severityIconColor = {
+    critical: 'text-destructive',
+    warning: 'text-orange-500',
+    info: 'text-primary',
+  };
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base font-medium">
+          <AlertTriangle className="h-4 w-4 text-orange-500" />
+          Needs Attention
+          <Badge variant="secondary" className="ml-auto text-xs">
+            {alerts.length} {alerts.length === 1 ? 'item' : 'items'}
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {alerts.map((alert) => (
+            <Link key={alert.id} to={alert.href}>
+              <div className={cn(
+                'flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer',
+                severityStyles[alert.severity]
+              )}>
+                <alert.icon className={cn('h-4 w-4 shrink-0', severityIconColor[alert.severity])} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{alert.label}</p>
+                </div>
+                <Badge className={cn('shrink-0', severityBadge[alert.severity])}>
+                  {alert.count}
+                </Badge>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
