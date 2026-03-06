@@ -36,7 +36,7 @@ const STORAGE_KEY = 'eclipse_currency';
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
-export const CurrencyProvider = forwardRef<HTMLDivElement, { children: ReactNode }>(function CurrencyProvider({ children }, _ref) {
+export function CurrencyProvider({ children }: { children: ReactNode }) {
   const [currency, setCurrencyState] = useState<CurrencyCode>(() => {
     const stored = safeStorage.getItem(STORAGE_KEY);
     if (stored && stored in CURRENCIES) {
