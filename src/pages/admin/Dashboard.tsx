@@ -1,5 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Megaphone, Plus, Trash2, AlertCircle, AlertTriangle, Info, Shield, TrendingUp, TrendingDown } from 'lucide-react';
+import { LiveStatsCards } from '@/components/admin/dashboard/LiveStatsCards';
+import { SystemAlerts } from '@/components/admin/dashboard/SystemAlerts';
+import { ActivityFeed } from '@/components/admin/dashboard/ActivityFeed';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import marketplaceLogo from '@/assets/marketplace-logo-icon.webp';
 import { motion } from 'framer-motion';
@@ -399,6 +402,12 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       <div className="space-y-5">
+        {/* Live Stats */}
+        <LiveStatsCards />
+
+        {/* System Alerts */}
+        <SystemAlerts />
+
         {/* Hero Banner */}
         <Card className="overflow-hidden border-border bg-card">
           {/* Banner area with branding */}
@@ -679,51 +688,56 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Duty Logs - side by side */}
+        {/* Activity Feed + My Duty Logs */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* My Recent Duty Logs */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Timer className="h-5 w-5" />
-                My Recent Duty Logs
-              </div>
-              {user?.id && (
-                <Link 
-                  to={`/admin/staff-activity?staff=${user.id}`}
-                  className="text-xs text-primary hover:underline font-normal"
-                >
-                  View Full History
-                </Link>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {myDutyLogs?.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">No duty logs yet</p>
-            ) : (
-              <div className="space-y-2">
-                {myDutyLogs?.filter(log => log.clock_out).slice(0, 5).map((log) => (
-                  <div key={log.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">
-                        {format(new Date(log.clock_in), 'MMM d, yyyy')}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(log.clock_in), 'h:mm a')} - {format(new Date(log.clock_out!), 'h:mm a')}
-                      </p>
-                      {log.notes && (
-                        <p className="text-xs text-muted-foreground mt-1 italic">"{log.notes}"</p>
-                      )}
-                    </div>
-                    <Badge variant="secondary">{formatDuration(log.duration_minutes)}</Badge>
+          <ActivityFeed />
+
+          {/* My Recent Duty Logs */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Timer className="h-5 w-5" />
+                  My Recent Duty Logs
+                </div>
+                {user?.id && (
+                  <Link 
+                    to={`/admin/staff-activity?staff=${user.id}`}
+                    className="text-xs text-primary hover:underline font-normal"
+                  >
+                    View Full History
+                  </Link>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {myDutyLogs?.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">No duty logs yet</p>
+              ) : (
+                <ScrollArea className="h-[300px]">
+                  <div className="space-y-2">
+                    {myDutyLogs?.filter(log => log.clock_out).slice(0, 10).map((log) => (
+                      <div key={log.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">
+                            {format(new Date(log.clock_in), 'MMM d, yyyy')}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(log.clock_in), 'h:mm a')} - {format(new Date(log.clock_out!), 'h:mm a')}
+                          </p>
+                          {log.notes && (
+                            <p className="text-xs text-muted-foreground mt-1 italic">"{log.notes}"</p>
+                          )}
+                        </div>
+                        <Badge variant="secondary">{formatDuration(log.duration_minutes)}</Badge>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                </ScrollArea>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Admin: All Staff Duty Logs */}
         {isAdmin && (
@@ -769,7 +783,6 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         )}
-        </div>
 
       </div>
     </AdminLayout>
