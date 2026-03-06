@@ -34,7 +34,7 @@ interface CookieConsentContextType {
 
 const CookieConsentContext = createContext<CookieConsentContextType | undefined>(undefined);
 
-export const CookieConsentProvider = forwardRef<HTMLDivElement, { children: React.ReactNode }>(function CookieConsentProvider({ children }, _ref) {
+export function CookieConsentProvider({ children }: { children: React.ReactNode }) {
   const [hasConsented, setHasConsented] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>(defaultPreferences);
   const [showBanner, setShowBanner] = useState(false);
