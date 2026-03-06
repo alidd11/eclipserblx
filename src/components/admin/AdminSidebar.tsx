@@ -63,6 +63,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Income', icon: TrendingUp, href: '/admin/income', permissions: ['view_income'] },
       { title: 'Income Sources', icon: DollarSign, href: '/admin/income-sources', permissions: ['view_income'] },
+      { title: 'Platform Ledger', icon: DollarSign, href: '/admin/platform-ledger', permissions: ['view_income'] },
       { title: 'Seller Payouts', icon: TrendingUp, href: '/admin/seller-payouts', permissions: ['view_seller_payouts'] },
       { title: 'Developer Payments', icon: Wallet, href: '/admin/developer-payments', permissions: [], roles: ['admin', 'developer'] },
       { title: 'Manual Payouts', icon: TrendingUp, href: '/admin/manual-payouts', permissions: ['manage_affiliates'], dividerAfter: true },
