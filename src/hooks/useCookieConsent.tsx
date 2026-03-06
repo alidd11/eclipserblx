@@ -34,6 +34,14 @@ export const CookieConsentProvider = forwardRef<HTMLDivElement, { children: Reac
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as CookiePreferences;
+        const savedVersion = safeStorage.getItem(CONSENT_VERSION_KEY);
+        
+        // If consent version changed, re-show banner for re-consent
+        if (savedVersion !== CONSENT_VERSION) {
+          setShowBanner(true);
+          return;
+        }
+        
         setPreferences({ ...parsed, essential: true });
         setHasConsented(true);
         setShowBanner(false);
