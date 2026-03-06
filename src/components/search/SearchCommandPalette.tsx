@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, forwardRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Package, Search, Sparkles, Loader2,
-  Clock, X, TrendingUp, ArrowRight, Keyboard
+  Clock, X, TrendingUp, ArrowRight, Keyboard, Store
 } from 'lucide-react';
 import {
   CommandDialog,
@@ -25,6 +25,14 @@ interface Product {
   slug: string;
   price: number;
   images?: string[];
+}
+
+interface StoreResult {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  is_verified: boolean;
 }
 
 interface SearchCommandPaletteProps {
