@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode, useRef, forwardRef } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
 import { safeStorage } from '@/lib/safeStorage';
 import { supabase } from '@/integrations/supabase/client';
 
