@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Select,
   SelectContent,
@@ -33,19 +35,56 @@ import {
 } from '@/components/ui/table';
 import { 
   AlertTriangle, Search, Eye, Loader2, CheckCircle, XCircle, Clock, 
-  ShieldAlert, Shield, Snowflake, ArrowRight, User, Store, FileText,
-  Calendar, Banknote, MessageSquare
+  ShieldAlert, Shield, Snowflake, User, Store, FileText,
+  Calendar, Banknote, MessageSquare, ExternalLink, Timer, AlertCircle,
+  ArrowUpRight, ChevronLeft, ChevronRight
 } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, differenceInHours, addHours } from 'date-fns';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
+
+const SELLER_DEADLINE_HOURS = 48;
+const PAGE_SIZE = 20;
 
 const statusConfig: Record<string, { color: string; icon: typeof Clock; label: string }> = {
   pending: { color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20', icon: Clock, label: 'Pending (Seller)' },
   approved: { color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20', icon: CheckCircle, label: 'Approved' },
   denied: { color: 'bg-destructive/10 text-destructive border-destructive/20', icon: XCircle, label: 'Denied' },
   escalated: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: ShieldAlert, label: 'Escalated' },
-  resolved: { color: 'bg-blue-500/10 text-blue-500 border-blue-500/20', icon: Shield, label: 'Resolved' },
+  resolved: { color: 'bg-primary/10 text-primary border-primary/20', icon: Shield, label: 'Resolved' },
 };
+
+// Helper: get deadline info for a pending dispute
+function getDeadlineInfo(createdAt: string) {
+  const deadline = addHours(new Date(createdAt), SELLER_DEADLINE_HOURS);
+  const now = new Date();
+  const hoursLeft = differenceInHours(deadline, now);
+  const isOverdue = deadline < now;
+  return { deadline, hoursLeft, isOverdue };
+}
+
+// Build a timeline from dispute fields
+function buildTimeline(d: any) {
+  const events: { label: string; time: string; icon: typeof Clock; color: string }[] = [];
+  
+  events.push({ label: 'Dispute filed', time: d.created_at, icon: AlertTriangle, color: 'text-destructive' });
+  
+  if (d.seller_responded_at) {
+    const status = d.status === 'approved' ? 'approved refund' : d.status === 'denied' ? 'denied refund' : 'responded';
+    events.push({ label: `Seller ${status}`, time: d.seller_responded_at, icon: Store, color: 'text-muted-foreground' });
+  }
+  
+  if (d.escalated_at) {
+    events.push({ label: 'Escalated to Eclipse', time: d.escalated_at, icon: ShieldAlert, color: 'text-amber-500' });
+  }
+  
+  if (d.admin_resolved_at) {
+    events.push({ label: 'Admin resolved', time: d.admin_resolved_at, icon: Shield, color: 'text-primary' });
+  }
+  
+  return events.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+}
 
 export default function Disputes() {
   const queryClient = useQueryClient();
@@ -54,6 +93,7 @@ export default function Disputes() {
   const [selectedDispute, setSelectedDispute] = useState<any>(null);
   const [adminResponse, setAdminResponse] = useState('');
   const [newStatus, setNewStatus] = useState('');
+  const [page, setPage] = useState(0);
 
   const { data: disputes, isLoading } = useQuery({
     queryKey: ['admin-disputes', statusFilter],
@@ -74,7 +114,7 @@ export default function Disputes() {
       const storeIds = [...new Set((data || []).map((r: any) => r.store_id).filter(Boolean))];
       const orderIds = [...new Set((data || []).map((r: any) => r.order_id).filter(Boolean))];
 
-      const [profilesRes, storesRes, escrowRes] = await Promise.all([
+      const [profilesRes, storesRes, escrowRes, ticketsRes] = await Promise.all([
         customerIds.length > 0
           ? supabase.from('profiles').select('user_id, display_name, username, email, customer_id').in('user_id', customerIds)
           : { data: [] },
@@ -84,18 +124,36 @@ export default function Disputes() {
         orderIds.length > 0
           ? supabase.from('seller_transactions').select('order_id, escrow_hold_until, escrow_released_at, escrow_frozen').in('order_id', orderIds)
           : { data: [] },
+        // Find linked support tickets (auto-created with category=refund)
+        orderIds.length > 0
+          ? supabase.from('support_tickets').select('id, ticket_number, subject, status, category')
+            .eq('category', 'refund')
+            .order('created_at', { ascending: false })
+            .limit(100)
+          : { data: [] },
       ]);
 
-      const profileMap = Object.fromEntries((profilesRes.data || []).map(p => [p.user_id, p]));
-      const storeMap = Object.fromEntries((storesRes.data || []).map(s => [s.id, s]));
-      const escrowMap = Object.fromEntries((escrowRes.data || []).map(e => [e.order_id, e]));
+      const profileMap = Object.fromEntries((profilesRes.data || []).map((p: any) => [p.user_id, p]));
+      const storeMap = Object.fromEntries((storesRes.data || []).map((s: any) => [s.id, s]));
+      const escrowMap = Object.fromEntries((escrowRes.data || []).map((e: any) => [e.order_id, e]));
+      
+      // Try to match tickets to disputes by customer + order reference in subject
+      const ticketsBySubject = (ticketsRes.data || []) as any[];
 
-      return (data || []).map((r: any) => ({
-        ...r,
-        customer: profileMap[r.customer_id] || null,
-        store: storeMap[r.store_id] || null,
-        escrow: escrowMap[r.order_id] || null,
-      }));
+      return (data || []).map((r: any) => {
+        // Find matching ticket by checking if subject contains the order_id
+        const linkedTicket = ticketsBySubject.find((t: any) => 
+          t.subject?.includes(r.order_id?.substring(0, 8))
+        );
+        
+        return {
+          ...r,
+          customer: profileMap[r.customer_id] || null,
+          store: storeMap[r.store_id] || null,
+          escrow: escrowMap[r.order_id] || null,
+          linkedTicket: linkedTicket || null,
+        };
+      });
     },
   });
 
@@ -135,12 +193,20 @@ export default function Disputes() {
     );
   });
 
+  // Pagination
+  const totalPages = Math.ceil((filtered?.length || 0) / PAGE_SIZE);
+  const paginatedItems = filtered?.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
   const stats = {
     total: disputes?.length ?? 0,
     pending: disputes?.filter((d: any) => d.status === 'pending').length ?? 0,
     escalated: disputes?.filter((d: any) => d.status === 'escalated').length ?? 0,
     resolved: disputes?.filter((d: any) => ['resolved', 'approved', 'denied'].includes(d.status)).length ?? 0,
     frozen: disputes?.filter((d: any) => d.escrow?.escrow_frozen).length ?? 0,
+    overdue: disputes?.filter((d: any) => {
+      if (d.status !== 'pending') return false;
+      return getDeadlineInfo(d.created_at).isOverdue;
+    }).length ?? 0,
   };
 
   const getEscrowBadge = (d: any) => {
@@ -174,6 +240,33 @@ export default function Disputes() {
     return null;
   };
 
+  const getDeadlineBadge = (d: any) => {
+    if (d.status !== 'pending') return null;
+    const { hoursLeft, isOverdue } = getDeadlineInfo(d.created_at);
+    if (isOverdue) {
+      return (
+        <Tooltip>
+          <TooltipTrigger>
+            <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 gap-1">
+              <AlertCircle className="h-3 w-3" />
+              Overdue
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>Seller 48h window expired — consider escalation</TooltipContent>
+        </Tooltip>
+      );
+    }
+    if (hoursLeft <= 12) {
+      return (
+        <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 gap-1">
+          <Timer className="h-3 w-3" />
+          {hoursLeft}h left
+        </Badge>
+      );
+    }
+    return null;
+  };
+
   return (
     <AdminLayout requiredPermissions={['manage_orders']}>
       <div className="space-y-6">
@@ -192,11 +285,30 @@ export default function Disputes() {
           </div>
         </div>
 
+        {/* Overdue Alert Banner */}
+        {stats.overdue > 0 && (
+          <Card className="border-destructive/30 bg-destructive/5">
+            <CardContent className="flex items-center gap-3 py-3 px-4">
+              <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-destructive">
+                  {stats.overdue} dispute{stats.overdue > 1 ? 's' : ''} overdue — seller 48h window expired
+                </p>
+                <p className="text-xs text-muted-foreground">Consider escalating or resolving these directly.</p>
+              </div>
+              <Button size="sm" variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => setStatusFilter('pending')}>
+                View Pending
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
             { label: 'Total', value: stats.total, icon: FileText, color: 'text-foreground' },
             { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-yellow-500' },
+            { label: 'Overdue', value: stats.overdue, icon: AlertCircle, color: 'text-destructive' },
             { label: 'Escalated', value: stats.escalated, icon: ShieldAlert, color: 'text-amber-500' },
             { label: 'Resolved', value: stats.resolved, icon: CheckCircle, color: 'text-emerald-500' },
             { label: 'Funds Frozen', value: stats.frozen, icon: Snowflake, color: 'text-sky-400' },
@@ -205,9 +317,9 @@ export default function Disputes() {
               <CardContent className="pt-4 pb-3 px-4">
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
-                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                  <stat.icon className={cn('h-4 w-4', stat.color)} />
                 </div>
-                <p className={`text-2xl font-bold mt-1 ${stat.color}`}>{stat.value}</p>
+                <p className={cn('text-2xl font-bold mt-1', stat.color)}>{stat.value}</p>
               </CardContent>
             </Card>
           ))}
@@ -224,11 +336,11 @@ export default function Disputes() {
                   <Input
                     placeholder="Search customer, store..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) => { setSearch(e.target.value); setPage(0); }}
                     className="pl-9 w-full sm:w-[220px]"
                   />
                 </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0); }}>
                   <SelectTrigger className="w-[130px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -256,72 +368,97 @@ export default function Disputes() {
                 <p className="text-sm text-muted-foreground/60">All clear — no disputes match your filters.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto -mx-6">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Store</TableHead>
-                      <TableHead>Reason</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Escrow</TableHead>
-                      <TableHead>Filed</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filtered.map((d: any) => {
-                      const statusCfg = statusConfig[d.status] || statusConfig.pending;
-                      const StatusIcon = statusCfg.icon;
-                      return (
-                        <TableRow 
-                          key={d.id}
-                          className="cursor-pointer hover:bg-muted/50 transition-colors"
-                          onClick={() => {
-                            setSelectedDispute(d);
-                            setNewStatus(d.status);
-                            setAdminResponse(d.admin_response || '');
-                          }}
-                        >
-                          <TableCell>
-                            <div>
-                              <p className="font-medium text-sm">{d.customer?.display_name || 'Unknown'}</p>
-                              <p className="text-xs text-muted-foreground font-mono">{d.customer?.customer_id || '—'}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-sm">{d.store?.name || '—'}</TableCell>
-                          <TableCell className="text-sm max-w-[180px] truncate text-muted-foreground">{d.reason}</TableCell>
-                          <TableCell className="text-right font-medium tabular-nums">£{Number(d.amount).toFixed(2)}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={`${statusCfg.color} gap-1`}>
-                              <StatusIcon className="h-3 w-3" />
-                              {d.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{getEscrowBadge(d)}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                            {formatDistanceToNow(new Date(d.created_at), { addSuffix: true })}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSelectedDispute(d); setNewStatus(d.status); setAdminResponse(d.admin_response || ''); }}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
+              <>
+                <div className="overflow-x-auto -mx-6">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Store</TableHead>
+                        <TableHead>Reason</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Deadline</TableHead>
+                        <TableHead>Escrow</TableHead>
+                        <TableHead>Filed</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedItems?.map((d: any) => {
+                        const statusCfg = statusConfig[d.status] || statusConfig.pending;
+                        const StatusIcon = statusCfg.icon;
+                        const { isOverdue } = d.status === 'pending' ? getDeadlineInfo(d.created_at) : { isOverdue: false };
+                        return (
+                          <TableRow 
+                            key={d.id}
+                            className={cn(
+                              "cursor-pointer hover:bg-muted/50 transition-colors",
+                              isOverdue && "bg-destructive/[0.03]"
+                            )}
+                            onClick={() => {
+                              setSelectedDispute(d);
+                              setNewStatus(d.status);
+                              setAdminResponse(d.admin_response || '');
+                            }}
+                          >
+                            <TableCell>
+                              <div>
+                                <p className="font-medium text-sm">{d.customer?.display_name || 'Unknown'}</p>
+                                <p className="text-xs text-muted-foreground font-mono">{d.customer?.customer_id || '—'}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-sm">{d.store?.name || '—'}</TableCell>
+                            <TableCell className="text-sm max-w-[180px] truncate text-muted-foreground">{d.reason}</TableCell>
+                            <TableCell className="text-right font-medium tabular-nums">£{Number(d.amount).toFixed(2)}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={cn(statusCfg.color, 'gap-1')}>
+                                <StatusIcon className="h-3 w-3" />
+                                {d.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{getDeadlineBadge(d)}</TableCell>
+                            <TableCell>{getEscrowBadge(d)}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                              {formatDistanceToNow(new Date(d.created_at), { addSuffix: true })}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSelectedDispute(d); setNewStatus(d.status); setAdminResponse(d.admin_response || ''); }}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between pt-4 border-t mt-4">
+                    <p className="text-xs text-muted-foreground">
+                      Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} of {filtered.length}
+                    </p>
+                    <div className="flex gap-1">
+                      <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Dispute Detail Dialog — improved */}
+      {/* Dispute Detail Dialog */}
       <Dialog open={!!selectedDispute} onOpenChange={(open) => !open && setSelectedDispute(null)}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-destructive" />
@@ -332,192 +469,257 @@ export default function Disputes() {
             </DialogDescription>
           </DialogHeader>
           {selectedDispute && (
-            <div className="space-y-5">
-              {/* Quick info grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="rounded-lg border bg-muted/30 p-3">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <User className="h-3 w-3" /> Customer
+            <ScrollArea className="flex-1 -mx-6 px-6">
+              <div className="space-y-5 pb-2">
+                {/* Quick info grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="rounded-lg border bg-muted/30 p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <User className="h-3 w-3" /> Customer
+                    </div>
+                    <p className="text-sm font-medium truncate">{selectedDispute.customer?.display_name || 'Unknown'}</p>
+                    <p className="text-xs text-muted-foreground font-mono">{selectedDispute.customer?.customer_id || '—'}</p>
                   </div>
-                  <p className="text-sm font-medium truncate">{selectedDispute.customer?.display_name || 'Unknown'}</p>
-                  <p className="text-xs text-muted-foreground font-mono">{selectedDispute.customer?.customer_id || '—'}</p>
-                </div>
-                <div className="rounded-lg border bg-muted/30 p-3">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <Store className="h-3 w-3" /> Store
+                  <div className="rounded-lg border bg-muted/30 p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <Store className="h-3 w-3" /> Store
+                    </div>
+                    <p className="text-sm font-medium truncate">{selectedDispute.store?.name || '—'}</p>
                   </div>
-                  <p className="text-sm font-medium truncate">{selectedDispute.store?.name || '—'}</p>
-                </div>
-                <div className="rounded-lg border bg-muted/30 p-3">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <Banknote className="h-3 w-3" /> Amount
+                  <div className="rounded-lg border bg-muted/30 p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <Banknote className="h-3 w-3" /> Amount
+                    </div>
+                    <p className="text-sm font-bold">£{Number(selectedDispute.amount).toFixed(2)}</p>
                   </div>
-                  <p className="text-sm font-bold">£{Number(selectedDispute.amount).toFixed(2)}</p>
-                </div>
-                <div className="rounded-lg border bg-muted/30 p-3">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <Calendar className="h-3 w-3" /> Filed
+                  <div className="rounded-lg border bg-muted/30 p-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                      <Calendar className="h-3 w-3" /> Filed
+                    </div>
+                    <p className="text-sm font-medium">{format(new Date(selectedDispute.created_at), 'dd MMM yyyy')}</p>
+                    <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(selectedDispute.created_at), { addSuffix: true })}</p>
                   </div>
-                  <p className="text-sm font-medium">{format(new Date(selectedDispute.created_at), 'dd MMM yyyy')}</p>
-                  <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(selectedDispute.created_at), { addSuffix: true })}</p>
                 </div>
-              </div>
 
-              {/* Escrow Status Banner */}
-              {selectedDispute.escrow && (
-                <Card className={`border ${selectedDispute.escrow.escrow_frozen ? 'border-sky-500/30 bg-sky-500/5' : 'border-amber-500/20 bg-amber-500/5'}`}>
-                  <CardContent className="py-3 px-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {selectedDispute.escrow.escrow_frozen ? (
-                          <Snowflake className="h-4 w-4 text-sky-400" />
-                        ) : (
-                          <Clock className="h-4 w-4 text-amber-500" />
-                        )}
-                        <div>
-                          <p className="text-sm font-medium">
-                            {selectedDispute.escrow.escrow_frozen 
-                              ? 'Escrow Frozen — Funds locked until resolution'
-                              : selectedDispute.escrow.escrow_released_at 
-                                ? 'Escrow Released — Funds paid to seller'
-                                : `Escrow Hold — Releases ${formatDistanceToNow(new Date(selectedDispute.escrow.escrow_hold_until), { addSuffix: true })}`
-                            }
-                          </p>
+                {/* Deadline + Linked Ticket row */}
+                <div className="flex flex-wrap gap-2">
+                  {selectedDispute.status === 'pending' && (() => {
+                    const { hoursLeft, isOverdue } = getDeadlineInfo(selectedDispute.created_at);
+                    return (
+                      <Badge variant="outline" className={cn(
+                        'gap-1',
+                        isOverdue ? 'bg-destructive/10 text-destructive border-destructive/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                      )}>
+                        <Timer className="h-3 w-3" />
+                        {isOverdue ? 'Seller 48h window expired' : `${hoursLeft}h remaining for seller response`}
+                      </Badge>
+                    );
+                  })()}
+                  {selectedDispute.linkedTicket && (
+                    <Link to={`/admin/customer-tickets`} onClick={() => setSelectedDispute(null)}>
+                      <Badge variant="outline" className="gap-1 bg-primary/5 text-primary border-primary/20 cursor-pointer hover:bg-primary/10">
+                        <ExternalLink className="h-3 w-3" />
+                        Linked Ticket: {selectedDispute.linkedTicket.ticket_number}
+                      </Badge>
+                    </Link>
+                  )}
+                </div>
+
+                {/* Escrow Status Banner */}
+                {selectedDispute.escrow && (
+                  <Card className={cn('border', selectedDispute.escrow.escrow_frozen ? 'border-sky-500/30 bg-sky-500/5' : 'border-amber-500/20 bg-amber-500/5')}>
+                    <CardContent className="py-3 px-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {selectedDispute.escrow.escrow_frozen ? (
+                            <Snowflake className="h-4 w-4 text-sky-400" />
+                          ) : (
+                            <Clock className="h-4 w-4 text-amber-500" />
+                          )}
+                          <div>
+                            <p className="text-sm font-medium">
+                              {selectedDispute.escrow.escrow_frozen 
+                                ? 'Escrow Frozen — Funds locked until resolution'
+                                : selectedDispute.escrow.escrow_released_at 
+                                  ? 'Escrow Released — Funds paid to seller'
+                                  : `Escrow Hold — Releases ${formatDistanceToNow(new Date(selectedDispute.escrow.escrow_hold_until), { addSuffix: true })}`
+                              }
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {selectedDispute.escrow.escrow_frozen 
+                                ? 'Dispute triggered automatic freeze. Resolve dispute to release or refund.'
+                                : selectedDispute.escrow.escrow_released_at
+                                  ? 'Manual recovery from seller may be needed if refund is approved.'
+                                  : 'Funds will auto-release after hold period if dispute is resolved.'
+                              }
+                            </p>
+                          </div>
+                        </div>
+                        {getEscrowBadge(selectedDispute)}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Status */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Current Status:</span>
+                  {(() => {
+                    const cfg = statusConfig[selectedDispute.status] || statusConfig.pending;
+                    const Icon = cfg.icon;
+                    return (
+                      <Badge variant="outline" className={cn(cfg.color, 'gap-1')}>
+                        <Icon className="h-3 w-3" />
+                        {cfg.label}
+                      </Badge>
+                    );
+                  })()}
+                </div>
+
+                <Separator />
+
+                {/* Timeline */}
+                <div>
+                  <p className="text-sm font-medium mb-3 flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5" /> Timeline
+                  </p>
+                  <div className="relative pl-4 space-y-3 border-l-2 border-border ml-1">
+                    {buildTimeline(selectedDispute).map((event, i) => (
+                      <div key={i} className="relative">
+                        <div className={cn('absolute -left-[1.35rem] top-0.5 p-0.5 rounded-full bg-card border-2 border-border')}>
+                          <event.icon className={cn('h-2.5 w-2.5', event.color)} />
+                        </div>
+                        <div className="ml-2">
+                          <p className="text-sm font-medium">{event.label}</p>
                           <p className="text-xs text-muted-foreground">
-                            {selectedDispute.escrow.escrow_frozen 
-                              ? 'Dispute triggered automatic freeze. Resolve dispute to release or refund.'
-                              : selectedDispute.escrow.escrow_released_at
-                                ? 'Manual recovery from seller may be needed if refund is approved.'
-                                : 'Funds will auto-release after hold period if dispute is resolved.'
-                            }
+                            {format(new Date(event.time), 'dd MMM yyyy, h:mm a')} · {formatDistanceToNow(new Date(event.time), { addSuffix: true })}
                           </p>
                         </div>
                       </div>
-                      {getEscrowBadge(selectedDispute)}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Status */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Current Status:</span>
-                {(() => {
-                  const cfg = statusConfig[selectedDispute.status] || statusConfig.pending;
-                  const Icon = cfg.icon;
-                  return (
-                    <Badge variant="outline" className={`${cfg.color} gap-1`}>
-                      <Icon className="h-3 w-3" />
-                      {cfg.label}
-                    </Badge>
-                  );
-                })()}
-              </div>
-
-              <Separator />
-
-              {/* Reason */}
-              <div>
-                <p className="text-sm font-medium mb-1.5 flex items-center gap-1.5">
-                  <MessageSquare className="h-3.5 w-3.5" /> Customer Reason
-                </p>
-                <p className="text-sm text-foreground">{selectedDispute.reason}</p>
-              </div>
-
-              {selectedDispute.details && (
-                <div>
-                  <p className="text-sm font-medium mb-1.5">Additional Details</p>
-                  <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground leading-relaxed">
-                    {selectedDispute.details}
+                    ))}
                   </div>
                 </div>
-              )}
 
-              {/* Seller Response */}
-              {selectedDispute.seller_response && (
+                <Separator />
+
+                {/* Reason */}
                 <div>
                   <p className="text-sm font-medium mb-1.5 flex items-center gap-1.5">
-                    <Store className="h-3.5 w-3.5" /> Seller Response
-                    {selectedDispute.seller_responded_at && (
-                      <span className="text-xs text-muted-foreground font-normal">
-                        — {formatDistanceToNow(new Date(selectedDispute.seller_responded_at), { addSuffix: true })}
-                      </span>
-                    )}
+                    <MessageSquare className="h-3.5 w-3.5" /> Customer Reason
                   </p>
-                  <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground leading-relaxed">
-                    {selectedDispute.seller_response}
-                  </div>
+                  <p className="text-sm text-foreground">{selectedDispute.reason}</p>
                 </div>
-              )}
 
-              {/* Escalation */}
-              {selectedDispute.escalation_reason && (
-                <Card className="border-amber-500/20 bg-amber-500/5">
-                  <CardContent className="py-3 px-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <ShieldAlert className="h-4 w-4 text-amber-500" />
-                      <p className="text-sm font-medium text-amber-600">Escalation Reason</p>
+                {selectedDispute.details && (
+                  <div>
+                    <p className="text-sm font-medium mb-1.5">Additional Details</p>
+                    <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground leading-relaxed">
+                      {selectedDispute.details}
                     </div>
-                    <p className="text-sm text-muted-foreground">{selectedDispute.escalation_reason}</p>
-                    {selectedDispute.escalated_at && (
-                      <p className="text-xs text-muted-foreground/60 mt-1">
-                        Escalated {formatDistanceToNow(new Date(selectedDispute.escalated_at), { addSuffix: true })}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
+                  </div>
+                )}
 
-              <Separator />
+                {/* Seller Response */}
+                {selectedDispute.seller_response && (
+                  <div>
+                    <p className="text-sm font-medium mb-1.5 flex items-center gap-1.5">
+                      <Store className="h-3.5 w-3.5" /> Seller Response
+                      {selectedDispute.seller_responded_at && (
+                        <span className="text-xs text-muted-foreground font-normal">
+                          — {formatDistanceToNow(new Date(selectedDispute.seller_responded_at), { addSuffix: true })}
+                        </span>
+                      )}
+                    </p>
+                    <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground leading-relaxed">
+                      {selectedDispute.seller_response}
+                    </div>
+                  </div>
+                )}
 
-              {/* Admin Actions */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">Update Status</Label>
-                <Select value={newStatus} onValueChange={setNewStatus}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">
-                      <span className="flex items-center gap-2"><Clock className="h-3 w-3 text-yellow-500" /> Pending (Seller)</span>
-                    </SelectItem>
-                    <SelectItem value="escalated">
-                      <span className="flex items-center gap-2"><ShieldAlert className="h-3 w-3 text-amber-500" /> Escalated</span>
-                    </SelectItem>
-                    <SelectItem value="approved">
-                      <span className="flex items-center gap-2"><CheckCircle className="h-3 w-3 text-emerald-500" /> Approved (Refund)</span>
-                    </SelectItem>
-                    <SelectItem value="denied">
-                      <span className="flex items-center gap-2"><XCircle className="h-3 w-3 text-destructive" /> Denied</span>
-                    </SelectItem>
-                    <SelectItem value="resolved">
-                      <span className="flex items-center gap-2"><Shield className="h-3 w-3 text-blue-500" /> Resolved</span>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                {/* Escalation */}
+                {selectedDispute.escalation_reason && (
+                  <Card className="border-amber-500/20 bg-amber-500/5">
+                    <CardContent className="py-3 px-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <ShieldAlert className="h-4 w-4 text-amber-500" />
+                        <p className="text-sm font-medium text-amber-600">Escalation Reason</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{selectedDispute.escalation_reason}</p>
+                      {selectedDispute.escalated_at && (
+                        <p className="text-xs text-muted-foreground/60 mt-1">
+                          Escalated {formatDistanceToNow(new Date(selectedDispute.escalated_at), { addSuffix: true })}
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Previous admin response */}
+                {selectedDispute.admin_response && selectedDispute.admin_resolved_at && (
+                  <div>
+                    <p className="text-sm font-medium mb-1.5 flex items-center gap-1.5">
+                      <Shield className="h-3.5 w-3.5" /> Previous Admin Decision
+                      <span className="text-xs text-muted-foreground font-normal">
+                        — {formatDistanceToNow(new Date(selectedDispute.admin_resolved_at), { addSuffix: true })}
+                      </span>
+                    </p>
+                    <div className="rounded-lg border bg-primary/5 p-3 text-sm text-muted-foreground leading-relaxed">
+                      {selectedDispute.admin_response}
+                    </div>
+                  </div>
+                )}
+
+                <Separator />
+
+                {/* Admin Actions */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Update Status</Label>
+                  <Select value={newStatus} onValueChange={setNewStatus}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">
+                        <span className="flex items-center gap-2"><Clock className="h-3 w-3 text-yellow-500" /> Pending (Seller)</span>
+                      </SelectItem>
+                      <SelectItem value="escalated">
+                        <span className="flex items-center gap-2"><ShieldAlert className="h-3 w-3 text-amber-500" /> Escalated</span>
+                      </SelectItem>
+                      <SelectItem value="approved">
+                        <span className="flex items-center gap-2"><CheckCircle className="h-3 w-3 text-emerald-500" /> Approved (Refund)</span>
+                      </SelectItem>
+                      <SelectItem value="denied">
+                        <span className="flex items-center gap-2"><XCircle className="h-3 w-3 text-destructive" /> Denied</span>
+                      </SelectItem>
+                      <SelectItem value="resolved">
+                        <span className="flex items-center gap-2"><Shield className="h-3 w-3 text-primary" /> Resolved</span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Eclipse Admin Response</Label>
+                  <Textarea
+                    value={adminResponse}
+                    onChange={(e) => setAdminResponse(e.target.value)}
+                    placeholder="Add your response or resolution notes..."
+                    className="min-h-[80px] resize-none"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setSelectedDispute(null)}>Cancel</Button>
+                  <Button
+                    onClick={() => updateDispute.mutate({ id: selectedDispute.id, status: newStatus, response: adminResponse })}
+                    disabled={updateDispute.isPending || !newStatus}
+                  >
+                    {updateDispute.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Update Dispute
+                  </Button>
+                </div>
               </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Eclipse Admin Response</Label>
-                <Textarea
-                  value={adminResponse}
-                  onChange={(e) => setAdminResponse(e.target.value)}
-                  placeholder="Add your response or resolution notes..."
-                  className="min-h-[80px] resize-none"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => setSelectedDispute(null)}>Cancel</Button>
-                <Button
-                  onClick={() => updateDispute.mutate({ id: selectedDispute.id, status: newStatus, response: adminResponse })}
-                  disabled={updateDispute.isPending || !newStatus}
-                >
-                  {updateDispute.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Update Dispute
-                </Button>
-              </div>
-            </div>
+            </ScrollArea>
           )}
         </DialogContent>
       </Dialog>
