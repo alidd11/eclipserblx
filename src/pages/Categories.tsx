@@ -175,7 +175,7 @@ function CategoryCard({ category, sourceParam, index }: { category: CategoryData
           {/* Product count badge */}
           {!isEmpty && (
             <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-card/80 backdrop-blur-sm border border-border/50 text-[10px] sm:text-[11px] font-bold text-foreground tabular-nums">
-              {category.product_count} products
+              {category.product_count} {category.product_count === 1 ? 'product' : 'products'}
             </div>
           )}
 
