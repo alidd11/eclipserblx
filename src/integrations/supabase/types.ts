@@ -1073,6 +1073,42 @@ export type Database = {
           },
         ]
       }
+      consent_records: {
+        Row: {
+          action: string
+          consent_version: string
+          created_at: string
+          id: string
+          ip_address_hash: string | null
+          preferences: Json
+          user_agent: string | null
+          user_id: string | null
+          visitor_id: string
+        }
+        Insert: {
+          action?: string
+          consent_version?: string
+          created_at?: string
+          id?: string
+          ip_address_hash?: string | null
+          preferences: Json
+          user_agent?: string | null
+          user_id?: string | null
+          visitor_id: string
+        }
+        Update: {
+          action?: string
+          consent_version?: string
+          created_at?: string
+          id?: string
+          ip_address_hash?: string | null
+          preferences?: Json
+          user_agent?: string | null
+          user_id?: string | null
+          visitor_id?: string
+        }
+        Relationships: []
+      }
       contact_message_replies: {
         Row: {
           contact_message_id: string
