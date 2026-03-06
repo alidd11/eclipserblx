@@ -615,6 +615,9 @@ export default function AdminAnalytics() {
           </CardHeader>
         </Card>
 
+        {/* Live Stats */}
+        <LiveStatsCards />
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           {/* Mobile dropdown */}
           <div className="sm:hidden">
