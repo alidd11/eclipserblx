@@ -402,9 +402,6 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       <div className="space-y-5">
-        {/* Live Stats */}
-        <LiveStatsCards />
-
         {/* System Alerts */}
         <SystemAlerts />
 
