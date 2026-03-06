@@ -34,7 +34,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const CART_STORAGE_KEY = 'ukrp-cart';
 
-export const CartProvider = forwardRef<HTMLDivElement, { children: ReactNode }>(function CartProvider({ children }, _ref) {
+export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
     const saved = safeStorage.getItem(CART_STORAGE_KEY);
     if (!saved) return [];
