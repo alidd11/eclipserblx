@@ -1,11 +1,24 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, forwardRef } from 'react';
 import { safeStorage } from '@/lib/safeStorage';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface CookiePreferences {
   essential: true; // Always true, cannot be disabled
   analytics: boolean;
   marketing: boolean;
 }
+
+// Increment this when the privacy policy changes materially to trigger re-consent
+export const CONSENT_VERSION = '1.0';
+
+const STORAGE_KEY = 'eclipse_cookie_consent';
+const CONSENT_VERSION_KEY = 'eclipse_consent_version';
+
+const defaultPreferences: CookiePreferences = {
+  essential: true,
+  analytics: false,
+  marketing: false,
+};
 
 interface CookieConsentContextType {
   hasConsented: boolean;
@@ -18,14 +31,6 @@ interface CookieConsentContextType {
   openSettings: () => void;
   closeSettings: () => void;
 }
-
-const STORAGE_KEY = 'eclipse_cookie_consent';
-
-const defaultPreferences: CookiePreferences = {
-  essential: true,
-  analytics: false,
-  marketing: false,
-};
 
 const CookieConsentContext = createContext<CookieConsentContextType | undefined>(undefined);
 
@@ -41,6 +46,14 @@ export const CookieConsentProvider = forwardRef<HTMLDivElement, { children: Reac
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as CookiePreferences;
+        const savedVersion = safeStorage.getItem(CONSENT_VERSION_KEY);
+        
+        // If consent version changed, re-show banner for re-consent
+        if (savedVersion !== CONSENT_VERSION) {
+          setShowBanner(true);
+          return;
+        }
+        
         setPreferences({ ...parsed, essential: true });
         setHasConsented(true);
         setShowBanner(false);
@@ -57,10 +70,23 @@ export const CookieConsentProvider = forwardRef<HTMLDivElement, { children: Reac
 
   const savePreferences = useCallback((prefs: CookiePreferences) => {
     safeStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+    safeStorage.setItem(CONSENT_VERSION_KEY, CONSENT_VERSION);
     setPreferences(prefs);
     setHasConsented(true);
     setShowBanner(false);
     setShowSettings(false);
+
+    // Record consent server-side for GDPR accountability (fire-and-forget)
+    const visitorId = safeStorage.getItem('eclipse_visitor_id') || 'unknown';
+    supabase.from('consent_records').insert([{
+      visitor_id: visitorId,
+      consent_version: CONSENT_VERSION,
+      preferences: JSON.parse(JSON.stringify(prefs)),
+      action: prefs.analytics || prefs.marketing ? 'granted' : 'rejected_non_essential',
+      user_agent: navigator.userAgent.substring(0, 500),
+    }]).then(({ error }) => {
+      if (error) console.error('Failed to record consent:', error);
+    });
   }, []);
 
   const acceptAll = useCallback(() => {
