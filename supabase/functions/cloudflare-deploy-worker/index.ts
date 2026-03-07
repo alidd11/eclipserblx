@@ -214,6 +214,8 @@ Deno.serve(async (req) => {
               zone_id: CF_ZONE_ID,
               service: workerName,
               environment: 'production',
+              override_existing_dns_record: true,
+              override_existing_origin: true,
             }),
           }
         )
