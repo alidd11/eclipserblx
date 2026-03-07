@@ -8,7 +8,7 @@
  * Deploy this as a Cloudflare Worker on your domain.
  */
 
-const SUPABASE_FUNCTION_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy";
+const SUPABASE_FUNCTION_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy2";
 
 // Bot user-agent patterns
 const BOT_PATTERNS = [
