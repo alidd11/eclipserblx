@@ -26,7 +26,7 @@ export default {
     const url = new URL(request.url);
     const userAgent = request.headers.get("User-Agent") || "";
 
-    const isDynamicPage = /^\\/\\/(products|store)\\/[^/?#]+/.test(url.pathname);
+    const isDynamicPage = /^\\/(products|store)\\/[^/?#]+/.test(url.pathname);
     const isStaticOgPage = STATIC_OG_PATHS.has(url.pathname);
 
     if (!isDynamicPage && !isStaticOgPage) {
@@ -41,7 +41,7 @@ export default {
       return fetch(request);
     }
 
-    const ogUrl = \\\`\\\${SUPABASE_FUNCTION_URL}?path=\\\${encodeURIComponent(url.pathname)}\\\`;
+    const ogUrl = SUPABASE_FUNCTION_URL + "?path=" + encodeURIComponent(url.pathname);
 
     try {
       const ogResponse = await fetch(ogUrl, {
