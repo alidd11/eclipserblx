@@ -8,6 +8,7 @@ const corsHeaders = {
 // The worker script to deploy
 const WORKER_SCRIPT = `
 const SUPABASE_FUNCTION_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy2";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsbmJlcmd3amZybWdramhyYmtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NDY1NjIsImV4cCI6MjA4MzIyMjU2Mn0.4jHxaV7Mjlw2RbjDz9W8B07-SR_8Z7IeTTXMu8RUZ20";
 
 const BOT_PATTERNS = [
   "Discordbot", "Twitterbot", "facebookexternalhit", "LinkedInBot",
@@ -30,18 +31,25 @@ export default {
     const isStaticOgPage = STATIC_OG_PATHS.has(url.pathname);
 
     if (!isDynamicPage && !isStaticOgPage) {
-      return fetch(request);
+      const res = await fetch(request);
+      return new Response(res.body, {
+        status: res.status,
+        headers: new Headers([...res.headers.entries(), ["X-OG-Worker", "pass-no-match"]]),
+      });
     }
 
     const isBot = BOT_PATTERNS.some((bot) =>
       userAgent.toLowerCase().includes(bot.toLowerCase())
     );
 
-    // Manual debug switch to verify worker routing quickly
     const forceOg = url.searchParams.get('__ogtest') === '1';
 
     if (!isBot && !forceOg) {
-      return fetch(request);
+      const res = await fetch(request);
+      return new Response(res.body, {
+        status: res.status,
+        headers: new Headers([...res.headers.entries(), ["X-OG-Worker", "pass-not-bot"]]),
+      });
     }
 
     const ogUrl = SUPABASE_FUNCTION_URL + "?path=" + encodeURIComponent(url.pathname);
@@ -51,18 +59,38 @@ export default {
         headers: {
           "User-Agent": userAgent,
           "X-OG-Worker": "1",
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": "Bearer " + SUPABASE_ANON_KEY,
         },
       });
+
+      if (!ogResponse.ok) {
+        const errText = await ogResponse.text();
+        return new Response("OG proxy error: " + ogResponse.status + " " + errText, {
+          status: 502,
+          headers: {
+            "Content-Type": "text/plain",
+            "X-OG-Worker": "error-" + ogResponse.status,
+          },
+        });
+      }
 
       return new Response(ogResponse.body, {
         status: ogResponse.status,
         headers: {
           "Content-Type": "text/html; charset=utf-8",
           "Cache-Control": "public, max-age=300",
+          "X-OG-Worker": "served",
         },
       });
     } catch (error) {
-      return fetch(request);
+      return new Response("OG worker fetch failed: " + error.message, {
+        status: 502,
+        headers: {
+          "Content-Type": "text/plain",
+          "X-OG-Worker": "catch-error",
+        },
+      });
     }
   },
 };
