@@ -159,8 +159,8 @@ Deno.serve(async (req) => {
       },
       ratelimit: {
         characteristics: ['cf.colo.id', 'ip.src'],
-        period: 60,
-        requests_per_period: 60,
+        period: 10,
+        requests_per_period: 10,
         mitigation_timeout: 600,
       },
       expression: '(http.request.uri.path contains "/functions/v1/")',
