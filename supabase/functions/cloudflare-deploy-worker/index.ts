@@ -41,7 +41,7 @@ export default {
       return fetch(request);
     }
 
-    const ogUrl = \\\`\\\${SUPABASE_FUNCTION_URL}?path=\\\${encodeURIComponent(url.pathname)}\\\`;
+    const ogUrl = SUPABASE_FUNCTION_URL + "?path=" + encodeURIComponent(url.pathname);
 
     try {
       const ogResponse = await fetch(ogUrl, {
