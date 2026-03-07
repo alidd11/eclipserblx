@@ -91,6 +91,9 @@ Deno.serve(async (req) => {
   try {
     const requestUrl = new URL(req.url);
     const path = getRequestedPath(requestUrl);
+    const ua = req.headers.get("user-agent") || "";
+    const fromWorker = req.headers.get("x-og-worker") === "1";
+    console.log(`[og-proxy2] path=${path} worker=${fromWorker} ua=${ua.slice(0, 120)}`);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");

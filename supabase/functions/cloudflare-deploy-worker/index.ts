@@ -37,7 +37,10 @@ export default {
       userAgent.toLowerCase().includes(bot.toLowerCase())
     );
 
-    if (!isBot) {
+    // Manual debug switch to verify worker routing quickly
+    const forceOg = url.searchParams.get('__ogtest') === '1';
+
+    if (!isBot && !forceOg) {
       return fetch(request);
     }
 
@@ -45,7 +48,10 @@ export default {
 
     try {
       const ogResponse = await fetch(ogUrl, {
-        headers: { "User-Agent": userAgent },
+        headers: {
+          "User-Agent": userAgent,
+          "X-OG-Worker": "1",
+        },
       });
 
       return new Response(ogResponse.body, {
@@ -143,7 +149,14 @@ Deno.serve(async (req) => {
     const routeResults: Array<{ pattern: string; success: boolean; action: 'created' | 'updated' | 'skipped'; errors?: unknown }> = []
 
     if (CF_ZONE_ID) {
-      const routePatterns = ['eclipserblx.com/*', 'www.eclipserblx.com/*']
+      const routePatterns = [
+        'eclipserblx.com/products/*',
+        'eclipserblx.com/store/*',
+        'eclipserblx.com/*',
+        'www.eclipserblx.com/products/*',
+        'www.eclipserblx.com/store/*',
+        'www.eclipserblx.com/*',
+      ]
 
       const routesRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes`, {
         headers: { 'Authorization': `Bearer ${CF_API_TOKEN}`, 'Content-Type': 'application/json' },
