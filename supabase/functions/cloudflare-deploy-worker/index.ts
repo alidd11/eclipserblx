@@ -1,0 +1,186 @@
+import "https://esm.sh/@supabase/functions-js@2.4.1"
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+// The worker script to deploy
+const WORKER_SCRIPT = `
+const SUPABASE_FUNCTION_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy2";
+
+const BOT_PATTERNS = [
+  "Discordbot", "Twitterbot", "facebookexternalhit", "LinkedInBot",
+  "Slackbot", "TelegramBot", "WhatsApp", "Googlebot", "bingbot",
+  "Applebot", "Embedly", "Iframely", "vkShare", "Pinterestbot",
+];
+
+const STATIC_OG_PATHS = new Set([
+  '/', '/products', '/stores', '/categories', '/featured',
+  '/eclipse-plus', '/faq', '/help-center', '/sell', '/contact',
+  '/affiliate', '/advertise', '/jobs',
+]);
+
+export default {
+  async fetch(request) {
+    const url = new URL(request.url);
+    const userAgent = request.headers.get("User-Agent") || "";
+
+    const isDynamicPage = /^\\/\\/(products|store)\\/[^/?#]+/.test(url.pathname);
+    const isStaticOgPage = STATIC_OG_PATHS.has(url.pathname);
+
+    if (!isDynamicPage && !isStaticOgPage) {
+      return fetch(request);
+    }
+
+    const isBot = BOT_PATTERNS.some((bot) =>
+      userAgent.toLowerCase().includes(bot.toLowerCase())
+    );
+
+    if (!isBot) {
+      return fetch(request);
+    }
+
+    const ogUrl = \\\`\\\${SUPABASE_FUNCTION_URL}?path=\\\${encodeURIComponent(url.pathname)}\\\`;
+
+    try {
+      const ogResponse = await fetch(ogUrl, {
+        headers: { "User-Agent": userAgent },
+      });
+
+      return new Response(ogResponse.body, {
+        status: ogResponse.status,
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "public, max-age=300",
+        },
+      });
+    } catch (error) {
+      return fetch(request);
+    }
+  },
+};
+`
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
+  }
+
+  const CF_API_TOKEN = Deno.env.get('CLOUDFLARE_API_TOKEN')
+  const CF_ZONE_ID = Deno.env.get('CLOUDFLARE_ZONE_ID') // not used for Workers API but kept for reference
+
+  if (!CF_API_TOKEN) {
+    return new Response(JSON.stringify({ error: 'Missing Cloudflare API token' }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    })
+  }
+
+  // Parse optional worker name from request body
+  let workerName = 'eclipse-og-proxy'
+  let customScript: string | null = null
+  try {
+    const body = await req.json()
+    if (body.worker_name) workerName = body.worker_name
+    if (body.script) customScript = body.script
+  } catch {
+    // Use defaults
+  }
+
+  const scriptToUpload = customScript || WORKER_SCRIPT
+
+  // Get Cloudflare Account ID first
+  let accountId: string
+  try {
+    const accountRes = await fetch('https://api.cloudflare.com/client/v4/accounts', {
+      headers: { 'Authorization': `Bearer ${CF_API_TOKEN}` },
+    })
+    const accountData = await accountRes.json()
+    if (!accountData.success || !accountData.result?.length) {
+      return new Response(JSON.stringify({ error: 'Could not fetch Cloudflare account ID', details: accountData.errors }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+    accountId = accountData.result[0].id
+  } catch (e) {
+    return new Response(JSON.stringify({ error: 'Failed to get account', detail: String(e) }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    })
+  }
+
+  // Upload/update the worker script
+  try {
+    const formData = new FormData()
+    
+    // Worker metadata
+    const metadata = {
+      main_module: 'worker.js',
+    }
+    formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }))
+    formData.append('worker.js', new Blob([scriptToUpload], { type: 'application/javascript+module' }), 'worker.js')
+
+    const uploadRes = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}`,
+      {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${CF_API_TOKEN}` },
+        body: formData,
+      }
+    )
+    const uploadData = await uploadRes.json()
+
+    if (!uploadData.success) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Failed to upload worker',
+        details: uploadData.errors,
+      }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Now set the route for the worker on the zone
+    if (CF_ZONE_ID) {
+      try {
+        // List existing routes to check if one exists
+        const routesRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes`, {
+          headers: { 'Authorization': `Bearer ${CF_API_TOKEN}`, 'Content-Type': 'application/json' },
+        })
+        const routesData = await routesRes.json()
+        
+        const existingRoute = routesData.result?.find((r: { pattern: string }) => r.pattern === 'eclipserblx.com/*')
+
+        if (existingRoute) {
+          // Update existing route
+          await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes/${existingRoute.id}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${CF_API_TOKEN}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pattern: 'eclipserblx.com/*', script: workerName }),
+          })
+        } else {
+          // Create new route
+          await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${CF_API_TOKEN}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pattern: 'eclipserblx.com/*', script: workerName }),
+          })
+        }
+      } catch {
+        // Route setup is optional — worker is still uploaded
+      }
+    }
+
+    return new Response(JSON.stringify({
+      success: true,
+      message: `Worker "${workerName}" deployed successfully!`,
+      worker_id: uploadData.result?.id,
+    }), {
+      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    })
+
+  } catch (e) {
+    return new Response(JSON.stringify({ error: 'Worker deploy failed', detail: String(e) }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    })
+  }
+})
