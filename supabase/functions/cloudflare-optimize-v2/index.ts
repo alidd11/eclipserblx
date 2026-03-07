@@ -35,7 +35,6 @@ Deno.serve(async (req) => {
         headers,
         body: JSON.stringify({
           name: `Eclipse ${label}`,
-          phase,
           rules,
         }),
       })
