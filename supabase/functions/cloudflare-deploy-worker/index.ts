@@ -21,8 +21,8 @@ const STATIC_OG_PATHS = new Set([
   '/affiliate', '/advertise', '/jobs',
 ]);
 
-// Lovable origin IP
-const ORIGIN = "https://185.158.133.1";
+// Lovable origin - use the preview URL which doesn't redirect to custom domain
+const ORIGIN = "https://id-preview--d330fb3c-8e4c-4ae9-8517-806e609eff0f.lovable.app";
 
 export default {
   async fetch(request) {
