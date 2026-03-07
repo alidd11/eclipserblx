@@ -26,7 +26,7 @@ export default {
     const url = new URL(request.url);
     const userAgent = request.headers.get("User-Agent") || "";
 
-    const isDynamicPage = /^\\/\\/(products|store)\\/[^/?#]+/.test(url.pathname);
+    const isDynamicPage = /^\/(products|store)\/[^/?#]+/.test(url.pathname);
     const isStaticOgPage = STATIC_OG_PATHS.has(url.pathname);
 
     if (!isDynamicPage && !isStaticOgPage) {
