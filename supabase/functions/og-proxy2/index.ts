@@ -9,7 +9,7 @@ const SITE_URL = "https://eclipserblx.com";
 const SITE_NAME = "Eclipse";
 const DEFAULT_OG_IMAGE = "https://storage.googleapis.com/gpt-engineer-file-uploads/6XoLGVy9Aseup6dIxodIWS9uGsS2/social-images/social-1770521924890-IMG_4300.png";
 
-function esc(s) {
+function esc(s: unknown): string {
   return String(s || "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -18,11 +18,11 @@ function esc(s) {
     .replace(/'/g, "&#039;");
 }
 
-function textOnly(s) {
+function textOnly(s: unknown): string {
   return String(s || "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
 }
 
-function firstImage(images) {
+function firstImage(images: unknown): string {
   if (!Array.isArray(images)) return DEFAULT_OG_IMAGE;
   for (const url of images) {
     if (typeof url !== "string") continue;
@@ -34,7 +34,7 @@ function firstImage(images) {
   return DEFAULT_OG_IMAGE;
 }
 
-function page(meta) {
+function page(meta: { title: string; description: string; image: string; url: string }): string {
   const title = esc(meta.title);
   const description = esc(meta.description);
   const image = esc(meta.image);
@@ -64,6 +64,18 @@ function page(meta) {
 </html>`;
 }
 
+function getRequestedPath(requestUrl: URL): string {
+  // Prefer suffix path: /functions/v1/og-proxy2/products/some-slug
+  const suffixMatch = requestUrl.pathname.match(/\/functions\/v1\/og-proxy2(\/.*)?$/);
+  if (suffixMatch?.[1]) return suffixMatch[1];
+
+  // Backward compatibility if query is used
+  const queryPath = requestUrl.searchParams.get("path");
+  if (queryPath) return queryPath;
+
+  return "/";
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -71,13 +83,13 @@ Deno.serve(async (req) => {
 
   try {
     const requestUrl = new URL(req.url);
-    const path = requestUrl.searchParams.get("path") || "/";
+    const path = getRequestedPath(requestUrl);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const supabase = createClient(String(supabaseUrl), String(serviceKey));
 
-    let meta = null;
+    let meta: { title: string; description: string; image: string; url: string } | null = null;
 
     const productMatch = path.match(/^\/products\/([^/?#]+)$/);
     if (productMatch) {
@@ -90,7 +102,9 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (product) {
-        const raw = product.description ? textOnly(product.description).slice(0, 155) : `Buy ${product.name} on Eclipse marketplace`;
+        const raw = product.description
+          ? textOnly(product.description).slice(0, 155)
+          : `Buy ${product.name} on Eclipse marketplace`;
         const priceTag = product.price != null ? ` · £${Number(product.price).toFixed(2)}` : "";
         meta = {
           title: `${product.name}${priceTag} | ${SITE_NAME}`,
