@@ -120,11 +120,22 @@ export const TopStoresSection = forwardRef<HTMLDivElement>(function TopStoresSec
     <div ref={ref} className="col-span-full">
       <Link to={`/store/${store!.slug}`} className="group block">
         <div className="relative flex items-center gap-3 rounded-lg border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors duration-200 px-3 py-2.5">
-          {/* Subtle accent gradient background */}
-          <div 
-            className="absolute inset-0 opacity-[0.07] pointer-events-none"
-            style={{ background: `linear-gradient(135deg, ${accentColor}, transparent 60%)` }}
-          />
+          {/* Banner background */}
+          {store!.banner_url ? (
+            <div className="absolute inset-0 pointer-events-none">
+              <img
+                src={optimizeImageUrl(store!.banner_url, 800, 80)}
+                alt=""
+                className="w-full h-full object-cover opacity-15"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-card via-card/80 to-transparent" />
+            </div>
+          ) : (
+            <div 
+              className="absolute inset-0 opacity-[0.07] pointer-events-none"
+              style={{ background: `linear-gradient(135deg, ${accentColor}, transparent 60%)` }}
+            />
+          )}
 
           {/* Store logo */}
           <div className="relative flex-shrink-0">
