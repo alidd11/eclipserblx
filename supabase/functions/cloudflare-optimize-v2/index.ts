@@ -52,76 +52,73 @@ Deno.serve(async (req) => {
   // ═══════════════════════════════════════════════
   // 1. CACHE RULES
   // ═══════════════════════════════════════════════
-  const cacheRulesPromise = putPhaseRuleset('http_request_cache_settings', [
-    {
-      action: 'set_cache_settings',
-      action_parameters: {
-        cache: true,
-        edge_ttl: { mode: 'override_origin', default: 2592000 },
-        browser_ttl: { mode: 'override_origin', default: 31536000 },
-      },
-      expression: '(starts_with(http.request.uri.path, "/assets/")) or (http.request.uri.path.extension in {"js" "css" "woff2" "webp" "png" "jpg" "svg" "ico" "woff" "ttf"})',
-      description: 'Cache static assets aggressively (30d edge, 1yr browser)',
-      enabled: true,
-    },
-    {
-      action: 'set_cache_settings',
-      action_parameters: {
-        cache: true,
-        edge_ttl: { mode: 'override_origin', default: 31536000 },
-        browser_ttl: { mode: 'override_origin', default: 31536000 },
-      },
-      expression: 'starts_with(http.request.uri.path, "/fonts/")',
-      description: 'Cache fonts immutably (1yr)',
-      enabled: true,
-    },
-    {
-      action: 'set_cache_settings',
-      action_parameters: {
-        cache: false,
-        browser_ttl: { mode: 'bypass' },
-      },
-      expression: '(http.request.uri.path eq "/") or not (http.request.uri.path contains ".")',
-      description: 'Bypass cache for HTML/SPA routes',
-      enabled: true,
-    },
-  ], 'cache_rules')
+  // 1. PAGE RULES (Cache + Redirects via legacy API)
+  // ═══════════════════════════════════════════════
+  async function createPageRule(target: string, actions: unknown[], label: string) {
+    try {
+      // First delete existing page rules to avoid conflicts
+      const listRes = await fetch(`${baseUrl}/pagerules?status=active`, { headers })
+      const listData = await listRes.json()
+      
+      if (listData.success && listData.result) {
+        for (const rule of listData.result) {
+          if (rule.targets?.[0]?.constraint?.value === target) {
+            await fetch(`${baseUrl}/pagerules/${rule.id}`, { method: 'DELETE', headers })
+          }
+        }
+      }
 
-  // ═══════════════════════════════════════════════
-  // 2. REDIRECT RULES
-  // ═══════════════════════════════════════════════
-  const redirectRulesPromise = putPhaseRuleset('http_request_dynamic_redirect', [
-    {
-      action: 'redirect',
-      action_parameters: {
-        from_value: {
-          status_code: 301,
-          target_url: {
-            expression: 'concat("https://eclipserblx.com", http.request.uri.path)',
-          },
-          preserve_query_string: true,
-        },
-      },
-      expression: '(http.host eq "www.eclipserblx.com")',
-      description: 'www to root 301 redirect',
-      enabled: true,
-    },
-    {
-      action: 'redirect',
-      action_parameters: {
-        from_value: {
-          status_code: 301,
-          target_url: {
-            expression: 'regex_replace(http.request.uri.path, "(.+)/$", "${1}")',
-          },
-          preserve_query_string: true,
-        },
-      },
-      expression: '(http.request.uri.path ne "/") and (ends_with(http.request.uri.path, "/"))',
-      description: 'Remove trailing slash',
-      enabled: true,
-    },
-  ], 'redirect_rules')
+      const res = await fetch(`${baseUrl}/pagerules`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          targets: [{ target: 'url', constraint: { operator: 'matches', value: target } }],
+          actions,
+          priority: 1,
+          status: 'active',
+        }),
+      })
+      const data = await res.json()
+      if (!data.success) {
+        results[label] = { success: false, error: JSON.stringify(data.errors) }
+      } else {
+        results[label] = { success: true, detail: 'Page rule created' }
+      }
+    } catch (e) {
+      results[label] = { success: false, error: String(e) }
+    }
+  }
+
+  // Cache static assets aggressively
+  const cacheAssetsPromise = createPageRule(
+    'eclipserblx.com/assets/*',
+    [
+      { id: 'cache_level', value: 'cache_everything' },
+      { id: 'edge_cache_ttl', value: 2592000 }, // 30 days
+      { id: 'browser_cache_ttl', value: 31536000 }, // 1 year
+    ],
+    'cache_assets'
+  )
+
+  // Cache fonts immutably
+  const cacheFontsPromise = createPageRule(
+    'eclipserblx.com/fonts/*',
+    [
+      { id: 'cache_level', value: 'cache_everything' },
+      { id: 'edge_cache_ttl', value: 31536000 },
+      { id: 'browser_cache_ttl', value: 31536000 },
+    ],
+    'cache_fonts'
+  )
+
+  // www → root redirect
+  const wwwRedirectPromise = createPageRule(
+    'www.eclipserblx.com/*',
+    [
+      { id: 'forwarding_url', value: { url: 'https://eclipserblx.com/$1', status_code: 301 } },
+    ],
+    'www_redirect'
+  )
 
   // ═══════════════════════════════════════════════
   // 3. SECURITY RESPONSE HEADERS
