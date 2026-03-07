@@ -72,14 +72,23 @@ export const useStoreFollow = (storeId: string | undefined) => {
       
       if (error) throw error;
     },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['store-follow', storeId, user?.id] });
+      const previous = queryClient.getQueryData(['store-follow', storeId, user?.id]);
+      queryClient.setQueryData(['store-follow', storeId, user?.id], false);
+      return { previous };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store-follow', storeId] });
       queryClient.invalidateQueries({ queryKey: ['public-store', storeId] });
       queryClient.invalidateQueries({ queryKey: ['following-stores'] });
       toast.success('Unfollowed store');
     },
-    onError: (error: any) => {
+    onError: (error: any, _, context) => {
       console.error('Unfollow error:', error);
+      if (context?.previous !== undefined) {
+        queryClient.setQueryData(['store-follow', storeId, user?.id], context.previous);
+      }
       toast.error('Failed to unfollow store');
     },
   });
