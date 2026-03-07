@@ -139,34 +139,68 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Now set the route for the worker on the zone
+    // Now set the route(s) for the worker on the zone
+    const routeResults: Array<{ pattern: string; success: boolean; action: 'created' | 'updated' | 'skipped'; errors?: unknown }> = []
+
     if (CF_ZONE_ID) {
-      try {
-        // List existing routes to check if one exists
-        const routesRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes`, {
-          headers: { 'Authorization': `Bearer ${CF_API_TOKEN}`, 'Content-Type': 'application/json' },
+      const routePatterns = ['eclipserblx.com/*', 'www.eclipserblx.com/*']
+
+      const routesRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes`, {
+        headers: { 'Authorization': `Bearer ${CF_API_TOKEN}`, 'Content-Type': 'application/json' },
+      })
+      const routesData = await routesRes.json()
+
+      if (!routesData.success) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Failed to list existing worker routes',
+          details: routesData.errors,
+        }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
-        const routesData = await routesRes.json()
-        
-        const existingRoute = routesData.result?.find((r: { pattern: string }) => r.pattern === 'eclipserblx.com/*')
+      }
+
+      for (const pattern of routePatterns) {
+        const existingRoute = routesData.result?.find((r: { pattern: string }) => r.pattern === pattern)
 
         if (existingRoute) {
-          // Update existing route
-          await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes/${existingRoute.id}`, {
+          const updateRouteRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes/${existingRoute.id}`, {
             method: 'PUT',
             headers: { 'Authorization': `Bearer ${CF_API_TOKEN}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pattern: 'eclipserblx.com/*', script: workerName }),
+            body: JSON.stringify({ pattern, script: workerName }),
+          })
+          const updateRouteData = await updateRouteRes.json()
+          routeResults.push({
+            pattern,
+            success: !!updateRouteData.success,
+            action: 'updated',
+            errors: updateRouteData.success ? undefined : updateRouteData.errors,
           })
         } else {
-          // Create new route
-          await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes`, {
+          const createRouteRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${CF_API_TOKEN}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pattern: 'eclipserblx.com/*', script: workerName }),
+            body: JSON.stringify({ pattern, script: workerName }),
+          })
+          const createRouteData = await createRouteRes.json()
+          routeResults.push({
+            pattern,
+            success: !!createRouteData.success,
+            action: 'created',
+            errors: createRouteData.success ? undefined : createRouteData.errors,
           })
         }
-      } catch {
-        // Route setup is optional — worker is still uploaded
+      }
+
+      const routeFailure = routeResults.find((r) => !r.success)
+      if (routeFailure) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Worker uploaded but route binding failed',
+          route_results: routeResults,
+        }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
       }
     }
 
@@ -174,6 +208,7 @@ Deno.serve(async (req) => {
       success: true,
       message: `Worker "${workerName}" deployed successfully!`,
       worker_id: uploadData.result?.id,
+      route_results: routeResults,
     }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
