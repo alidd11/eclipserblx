@@ -100,6 +100,13 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
+        zone_info: {
+          id: zoneData.result?.id,
+          name: zoneData.result?.name,
+          status: zoneData.result?.status,
+          paused: zoneData.result?.paused,
+          name_servers: zoneData.result?.name_servers,
+        },
         records: targetRecords,
         updates,
       }),
