@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   build: {
-    sourcemap: true,
+    sourcemap: mode === 'production' ? 'hidden' : true,
     // Optimize chunk splitting
     rollupOptions: {
       output: {
