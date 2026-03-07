@@ -21,8 +21,8 @@ const STATIC_OG_PATHS = new Set([
   '/affiliate', '/advertise', '/jobs',
 ]);
 
-// Lovable origin IP
-const ORIGIN = "https://185.158.133.1";
+// Lovable origin - use the published .lovable.app domain to avoid SSL issues with raw IP
+const ORIGIN = "https://roleplay-hub-shop.lovable.app";
 
 export default {
   async fetch(request) {
