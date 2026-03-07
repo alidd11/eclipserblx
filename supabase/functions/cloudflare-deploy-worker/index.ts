@@ -48,7 +48,10 @@ export default {
 
     try {
       const ogResponse = await fetch(ogUrl, {
-        headers: { "User-Agent": userAgent },
+        headers: {
+          "User-Agent": userAgent,
+          "X-OG-Worker": "1",
+        },
       });
 
       return new Response(ogResponse.body, {
