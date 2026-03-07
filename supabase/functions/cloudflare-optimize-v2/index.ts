@@ -27,240 +27,181 @@ Deno.serve(async (req) => {
 
   const results: Record<string, { success: boolean; detail?: string; error?: string }> = {}
 
-  // Helper for rulesets API
-  async function listRulesets(): Promise<any[]> {
-    const res = await fetch(`${baseUrl}/rulesets`, { headers })
-    const data = await res.json()
-    return data.result || []
-  }
-
-  async function getOrCreateRuleset(phase: string): Promise<string | null> {
-    const rulesets = await listRulesets()
-    const existing = rulesets.find((r: any) => r.phase === phase)
-    if (existing) return existing.id
-
-    // Create new ruleset for this phase
-    const res = await fetch(`${baseUrl}/rulesets`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ name: `Eclipse ${phase}`, kind: 'zone', phase, rules: [] }),
-    })
-    const data = await res.json()
-    return data.result?.id || null
-  }
-
-  // ═══════════════════════════════════════════════
-  // 1. CACHE RULES (http_request_cache_settings)
-  // ═══════════════════════════════════════════════
-  try {
-    const rulesetId = await getOrCreateRuleset('http_request_cache_settings')
-    if (rulesetId) {
-      const cacheRules = [
-        {
-          action: 'set_cache_settings',
-          action_parameters: {
-            cache: true,
-            edge_ttl: { mode: 'override_origin', default: 2592000 }, // 30 days
-            browser_ttl: { mode: 'override_origin', default: 31536000 }, // 1 year
-          },
-          expression: '(starts_with(http.request.uri.path, "/assets/")) or (http.request.uri.path.extension in {"js" "css" "woff2" "webp" "png" "jpg" "svg" "ico" "woff" "ttf"})',
-          description: 'Cache static assets aggressively',
-          enabled: true,
-        },
-        {
-          action: 'set_cache_settings',
-          action_parameters: {
-            cache: true,
-            edge_ttl: { mode: 'override_origin', default: 31536000 }, // 1 year
-            browser_ttl: { mode: 'override_origin', default: 31536000 },
-          },
-          expression: 'starts_with(http.request.uri.path, "/fonts/")',
-          description: 'Cache fonts immutably',
-          enabled: true,
-        },
-        {
-          action: 'set_cache_settings',
-          action_parameters: {
-            cache: false,
-            browser_ttl: { mode: 'bypass' },
-          },
-          expression: '(http.request.uri.path eq "/") or not (http.request.uri.path contains ".")',
-          description: 'Bypass cache for HTML/SPA routes',
-          enabled: true,
-        },
-      ]
-
-      const res = await fetch(`${baseUrl}/rulesets/${rulesetId}`, {
+  // For zone-level rulesets, use the phase endpoint directly (PUT to create/replace)
+  async function putPhaseRuleset(phase: string, rules: unknown[], label: string) {
+    try {
+      const res = await fetch(`${baseUrl}/rulesets/phases/${phase}/entrypoint`, {
         method: 'PUT',
         headers,
-        body: JSON.stringify({ rules: cacheRules }),
+        body: JSON.stringify({
+          name: `Eclipse ${label}`,
+          kind: 'zone',
+          phase,
+          rules,
+        }),
       })
       const data = await res.json()
-      results['cache_rules'] = {
-        success: !!data.success,
-        detail: data.success ? `${cacheRules.length} rules applied` : JSON.stringify(data.errors),
+      if (!data.success) {
+        results[label] = { success: false, error: JSON.stringify(data.errors) }
+      } else {
+        results[label] = { success: true, detail: `${rules.length} rules applied` }
       }
+    } catch (e) {
+      results[label] = { success: false, error: String(e) }
     }
-  } catch (e) {
-    results['cache_rules'] = { success: false, error: String(e) }
   }
 
   // ═══════════════════════════════════════════════
-  // 2. REDIRECT RULES (http_request_dynamic_redirect)
+  // 1. CACHE RULES
   // ═══════════════════════════════════════════════
-  try {
-    const rulesetId = await getOrCreateRuleset('http_request_dynamic_redirect')
-    if (rulesetId) {
-      const redirectRules = [
-        {
-          action: 'redirect',
-          action_parameters: {
-            from_value: {
-              status_code: 301,
-              target_url: {
-                expression: 'concat("https://eclipserblx.com", http.request.uri.path)',
-              },
-              preserve_query_string: true,
-            },
-          },
-          expression: '(http.host eq "www.eclipserblx.com")',
-          description: 'www to root redirect',
-          enabled: true,
-        },
-        {
-          action: 'redirect',
-          action_parameters: {
-            from_value: {
-              status_code: 301,
-              target_url: {
-                expression: 'concat("https://eclipserblx.com", substring(http.request.uri.path, 0, len(http.request.uri.path) - 1))',
-              },
-              preserve_query_string: true,
-            },
-          },
-          expression: '(http.request.uri.path ne "/") and (ends_with(http.request.uri.path, "/"))',
-          description: 'Remove trailing slash',
-          enabled: true,
-        },
-      ]
+  const cacheRulesPromise = putPhaseRuleset('http_request_cache_settings', [
+    {
+      action: 'set_cache_settings',
+      action_parameters: {
+        cache: true,
+        edge_ttl: { mode: 'override_origin', default: 2592000 },
+        browser_ttl: { mode: 'override_origin', default: 31536000 },
+      },
+      expression: '(starts_with(http.request.uri.path, "/assets/")) or (http.request.uri.path.extension in {"js" "css" "woff2" "webp" "png" "jpg" "svg" "ico" "woff" "ttf"})',
+      description: 'Cache static assets aggressively (30d edge, 1yr browser)',
+      enabled: true,
+    },
+    {
+      action: 'set_cache_settings',
+      action_parameters: {
+        cache: true,
+        edge_ttl: { mode: 'override_origin', default: 31536000 },
+        browser_ttl: { mode: 'override_origin', default: 31536000 },
+      },
+      expression: 'starts_with(http.request.uri.path, "/fonts/")',
+      description: 'Cache fonts immutably (1yr)',
+      enabled: true,
+    },
+    {
+      action: 'set_cache_settings',
+      action_parameters: {
+        cache: false,
+        browser_ttl: { mode: 'bypass' },
+      },
+      expression: '(http.request.uri.path eq "/") or not (http.request.uri.path contains ".")',
+      description: 'Bypass cache for HTML/SPA routes',
+      enabled: true,
+    },
+  ], 'cache_rules')
 
-      const res = await fetch(`${baseUrl}/rulesets/${rulesetId}`, {
-        method: 'PUT',
+  // ═══════════════════════════════════════════════
+  // 2. REDIRECT RULES
+  // ═══════════════════════════════════════════════
+  const redirectRulesPromise = putPhaseRuleset('http_request_dynamic_redirect', [
+    {
+      action: 'redirect',
+      action_parameters: {
+        from_value: {
+          status_code: 301,
+          target_url: {
+            expression: 'concat("https://eclipserblx.com", http.request.uri.path)',
+          },
+          preserve_query_string: true,
+        },
+      },
+      expression: '(http.host eq "www.eclipserblx.com")',
+      description: 'www to root 301 redirect',
+      enabled: true,
+    },
+    {
+      action: 'redirect',
+      action_parameters: {
+        from_value: {
+          status_code: 301,
+          target_url: {
+            expression: 'regex_replace(http.request.uri.path, "(.+)/$", "${1}")',
+          },
+          preserve_query_string: true,
+        },
+      },
+      expression: '(http.request.uri.path ne "/") and (ends_with(http.request.uri.path, "/"))',
+      description: 'Remove trailing slash',
+      enabled: true,
+    },
+  ], 'redirect_rules')
+
+  // ═══════════════════════════════════════════════
+  // 3. SECURITY RESPONSE HEADERS
+  // ═══════════════════════════════════════════════
+  const securityHeadersPromise = putPhaseRuleset('http_response_headers_transform', [
+    {
+      action: 'rewrite',
+      action_parameters: {
+        headers: {
+          'X-Content-Type-Options': { operation: 'set', value: 'nosniff' },
+          'X-Frame-Options': { operation: 'set', value: 'SAMEORIGIN' },
+          'Referrer-Policy': { operation: 'set', value: 'strict-origin-when-cross-origin' },
+          'Permissions-Policy': { operation: 'set', value: 'camera=(), microphone=(), geolocation=(), payment=()' },
+          'X-XSS-Protection': { operation: 'set', value: '1; mode=block' },
+        },
+      },
+      expression: 'true',
+      description: 'Add security headers to all responses',
+      enabled: true,
+    },
+  ], 'security_headers')
+
+  // ═══════════════════════════════════════════════
+  // 4. RATE LIMITING
+  // ═══════════════════════════════════════════════
+  const rateLimitPromise = putPhaseRuleset('http_ratelimit', [
+    {
+      action: 'block',
+      action_parameters: {
+        response: {
+          status_code: 429,
+          content: '{"error":"Rate limit exceeded. Try again later."}',
+          content_type: 'application/json',
+        },
+      },
+      ratelimit: {
+        characteristics: ['ip.src'],
+        period: 60,
+        requests_per_period: 60,
+        mitigation_timeout: 600,
+      },
+      expression: '(http.request.uri.path contains "/functions/v1/")',
+      description: 'Rate limit edge functions - 60 req/min per IP',
+      enabled: true,
+    },
+  ], 'rate_limiting')
+
+  // ═══════════════════════════════════════════════
+  // 5. TIERED CACHE
+  // ═══════════════════════════════════════════════
+  const tieredCachePromise = (async () => {
+    try {
+      const res = await fetch(`${baseUrl}/argo/tiered_caching`, {
+        method: 'PATCH',
         headers,
-        body: JSON.stringify({ rules: redirectRules }),
+        body: JSON.stringify({ value: 'on' }),
       })
       const data = await res.json()
-      results['redirect_rules'] = {
+      results['tiered_cache'] = {
         success: !!data.success,
-        detail: data.success ? `${redirectRules.length} rules applied` : JSON.stringify(data.errors),
+        detail: data.success ? 'Enabled' : JSON.stringify(data.errors),
       }
+    } catch (e) {
+      results['tiered_cache'] = { success: false, error: String(e) }
     }
-  } catch (e) {
-    results['redirect_rules'] = { success: false, error: String(e) }
-  }
+  })()
+
+  // Run all in parallel
+  await Promise.all([
+    cacheRulesPromise,
+    redirectRulesPromise,
+    securityHeadersPromise,
+    rateLimitPromise,
+    tieredCachePromise,
+  ])
 
   // ═══════════════════════════════════════════════
-  // 3. SECURITY TRANSFORM RULES (http_response_headers_transform)
-  // ═══════════════════════════════════════════════
-  try {
-    const rulesetId = await getOrCreateRuleset('http_response_headers_transform')
-    if (rulesetId) {
-      const headerRules = [
-        {
-          action: 'rewrite',
-          action_parameters: {
-            headers: {
-              'X-Content-Type-Options': { operation: 'set', value: 'nosniff' },
-              'X-Frame-Options': { operation: 'set', value: 'SAMEORIGIN' },
-              'Referrer-Policy': { operation: 'set', value: 'strict-origin-when-cross-origin' },
-              'Permissions-Policy': { operation: 'set', value: 'camera=(), microphone=(), geolocation=(), payment=()' },
-              'X-XSS-Protection': { operation: 'set', value: '1; mode=block' },
-            },
-          },
-          expression: 'true',
-          description: 'Security headers on all responses',
-          enabled: true,
-        },
-      ]
-
-      const res = await fetch(`${baseUrl}/rulesets/${rulesetId}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({ rules: headerRules }),
-      })
-      const data = await res.json()
-      results['security_headers'] = {
-        success: !!data.success,
-        detail: data.success ? 'Applied' : JSON.stringify(data.errors),
-      }
-    }
-  } catch (e) {
-    results['security_headers'] = { success: false, error: String(e) }
-  }
-
-  // ═══════════════════════════════════════════════
-  // 4. WAF RATE LIMITING (http_ratelimit)
-  // ═══════════════════════════════════════════════
-  try {
-    const rulesetId = await getOrCreateRuleset('http_ratelimit')
-    if (rulesetId) {
-      const rateLimitRules = [
-        {
-          action: 'block',
-          action_parameters: {
-            response: {
-              status_code: 429,
-              content: '{"error":"Rate limit exceeded. Try again later."}',
-              content_type: 'application/json',
-            },
-          },
-          ratelimit: {
-            characteristics: ['ip.src'],
-            period: 60,
-            requests_per_period: 60,
-            mitigation_timeout: 600, // block for 10 min
-          },
-          expression: '(http.request.uri.path contains "/functions/v1/")',
-          description: 'Rate limit edge functions - 60/min per IP',
-          enabled: true,
-        },
-      ]
-
-      const res = await fetch(`${baseUrl}/rulesets/${rulesetId}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({ rules: rateLimitRules }),
-      })
-      const data = await res.json()
-      results['rate_limiting'] = {
-        success: !!data.success,
-        detail: data.success ? 'Applied' : JSON.stringify(data.errors),
-      }
-    }
-  } catch (e) {
-    results['rate_limiting'] = { success: false, error: String(e) }
-  }
-
-  // ═══════════════════════════════════════════════
-  // 5. TIERED CACHE (Argo Smart Routing / Tiered Cache)
-  // ═══════════════════════════════════════════════
-  try {
-    const res = await fetch(`${baseUrl}/argo/tiered_caching`, {
-      method: 'PATCH',
-      headers,
-      body: JSON.stringify({ value: 'on' }),
-    })
-    const data = await res.json()
-    results['tiered_cache'] = {
-      success: !!data.success,
-      detail: data.success ? 'Enabled' : JSON.stringify(data.errors),
-    }
-  } catch (e) {
-    results['tiered_cache'] = { success: false, error: String(e) }
-  }
-
-  // ═══════════════════════════════════════════════
-  // 6. CACHE PURGE (optional, purge all)
+  // 6. OPTIONAL: CACHE PURGE
   // ═══════════════════════════════════════════════
   let body: { purge_cache?: boolean } = {}
   try { body = await req.json() } catch { /* no body */ }
@@ -282,7 +223,6 @@ Deno.serve(async (req) => {
     }
   }
 
-  // Summary
   const allSuccess = Object.values(results).every(r => r.success)
 
   return new Response(JSON.stringify({
@@ -291,7 +231,7 @@ Deno.serve(async (req) => {
       ? 'All Cloudflare optimizations applied successfully!'
       : 'Some settings had issues — see details.',
     results,
-  }), {
+  }, null, 2), {
     status: 200,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
