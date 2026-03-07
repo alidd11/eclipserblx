@@ -115,7 +115,7 @@ export default function SellerBalance() {
         .select('value')
         .eq('key', 'seller_minimum_payout')
         .maybeSingle();
-      return data?.value ? parseFloat(String(data.value)) : 25;
+      return data?.value ? parseFloat(String(data.value)) : 5;
     },
     staleTime: 1000 * 60 * 30, // cache 30 min
   });
