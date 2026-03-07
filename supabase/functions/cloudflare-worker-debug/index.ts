@@ -23,39 +23,39 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // 1. Get account ID
     const accRes = await fetch('https://api.cloudflare.com/client/v4/accounts', { headers })
     const accData = await accRes.json()
     const accountId = accData.result?.[0]?.id
 
-    // 2. List worker routes on the zone
-    const routesRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes`, { headers })
-    const routesData = await routesRes.json()
+    // Get worker subdomain
+    const subdomainRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/subdomain`, { headers })
+    const subdomainData = await subdomainRes.json()
 
-    // 3. List workers on the account
-    const workersRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts`, { headers })
-    const workersData = await workersRes.json()
+    // Get the worker script content to verify
+    const scriptRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy`, {
+      headers: { 'Authorization': `Bearer ${CF_API_TOKEN}` },
+    })
+    const scriptContent = await scriptRes.text()
 
-    // 4. Check if there's a Pages project that might conflict
-    const pagesRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects`, { headers })
-    const pagesData = await pagesRes.json()
+    // Enable workers.dev route for the worker
+    const enableRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy/subdomain`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ enabled: true }),
+    })
+    const enableData = await enableRes.json()
 
-    // 5. Check zone settings for any relevant config
-    const zoneSettingsRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/settings`, { headers })
-    const zoneSettingsData = await zoneSettingsRes.json()
-
-    // Filter relevant settings
-    const relevantSettings = (zoneSettingsData.result || []).filter((s: any) => 
-      ['always_use_https', 'ssl', 'rocket_loader'].includes(s.id)
-    )
+    // Check zone page rules that might interfere
+    const pageRulesRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/pagerules`, { headers })
+    const pageRulesData = await pageRulesRes.json()
 
     return new Response(JSON.stringify({
       success: true,
-      account_id: accountId,
-      worker_routes: routesData.result || [],
-      workers: (workersData.result || []).map((w: any) => ({ id: w.id, modified_on: w.modified_on })),
-      pages_projects: (pagesData.result || []).map((p: any) => ({ name: p.name, subdomain: p.subdomain, domains: p.domains })),
-      relevant_settings: relevantSettings,
+      workers_subdomain: subdomainData.result,
+      worker_script_length: scriptContent.length,
+      worker_script_preview: scriptContent.slice(0, 500),
+      workers_dev_enabled: enableData,
+      page_rules: pageRulesData.result,
     }, null, 2), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
