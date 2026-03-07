@@ -64,12 +64,29 @@ Deno.serve(async (req) => {
     cfPatch('/settings/challenge_ttl', { value: 1800 }, 'challenge_passage_30min'),
   ])
 
-  // 3. Scrape Shield
+  // 3. SEO & Crawler Settings
   await Promise.all([
+    cfPatch('/settings/always_online', { value: 'on' }, 'always_online'),
     cfPatch('/settings/email_obfuscation', { value: 'on' }, 'email_obfuscation'),
     cfPatch('/settings/server_side_exclude', { value: 'on' }, 'server_side_excludes'),
     cfPatch('/settings/hotlink_protection', { value: 'off' }, 'hotlink_protection_off'),
   ])
+
+  // 4. Enable Crawler Hints (IndexNow integration)
+  try {
+    const crawlerRes = await fetch(`${baseUrl}/flags/products/crawler_hints/changes`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ feature_flag: 'crawler_hints', value: true }),
+    })
+    const crawlerData = await crawlerRes.json()
+    results['crawler_hints'] = { 
+      success: !!crawlerData.success, 
+      detail: crawlerData.success ? 'Enabled' : JSON.stringify(crawlerData.errors || crawlerData) 
+    }
+  } catch (e) {
+    results['crawler_hints'] = { success: false, error: String(e) }
+  }
 
   // 4. HSTS
   try {
