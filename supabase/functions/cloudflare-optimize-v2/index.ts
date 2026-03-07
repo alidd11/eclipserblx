@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
         },
       },
       ratelimit: {
-        characteristics: ['ip.src'],
+        characteristics: ['cf.colo.id', 'ip.src'],
         period: 60,
         requests_per_period: 60,
         mitigation_timeout: 600,
