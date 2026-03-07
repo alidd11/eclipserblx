@@ -119,7 +119,7 @@ export default function SellerBalance() {
     },
     staleTime: 1000 * 60 * 30, // cache 30 min
   });
-  const minPayout = minPayoutSetting ?? 25;
+  const minPayout = minPayoutSetting ?? 5;
   const hasPayoutMethod = 
     store?.paymentDetails?.payouts_enabled || 
     (store?.paymentDetails?.payout_method === 'paypal' && !!store?.paymentDetails?.paypal_email) ||
