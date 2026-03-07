@@ -18,7 +18,12 @@ Deno.serve(async (req) => {
       },
     })
 
-    const html = await res.text()
+    const [html, dnsRes] = await Promise.all([
+      res.text(),
+      fetch('https://dns.google/resolve?name=eclipserblx.com&type=NS'),
+    ])
+    const dns = await dnsRes.json()
+
     const titleMatch = html.match(/<title>([^<]+)<\/title>/i)
     const ogTitleMatch = html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i)
     const ogImageMatch = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i)
@@ -30,6 +35,7 @@ Deno.serve(async (req) => {
       title: titleMatch?.[1] ?? null,
       og_title: ogTitleMatch?.[1] ?? null,
       og_image: ogImageMatch?.[1] ?? null,
+      public_ns: (dns.Answer || []).map((a: any) => a.data),
       sample: html.slice(0, 800),
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
