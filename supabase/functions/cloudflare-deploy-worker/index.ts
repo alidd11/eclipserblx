@@ -37,7 +37,10 @@ export default {
       userAgent.toLowerCase().includes(bot.toLowerCase())
     );
 
-    if (!isBot) {
+    // Manual debug switch to verify worker routing quickly
+    const forceOg = url.searchParams.get('__ogtest') === '1';
+
+    if (!isBot && !forceOg) {
       return fetch(request);
     }
 
