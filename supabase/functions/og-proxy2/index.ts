@@ -65,7 +65,14 @@ function page(meta: { title: string; description: string; image: string; url: st
 }
 
 function getRequestedPath(requestUrl: URL): string {
-  // Prefer suffix path: /functions/v1/og-proxy2/products/some-slug
+  // In many runtimes req.url pathname is already the suffix (e.g. /products/slug)
+  if (requestUrl.pathname && requestUrl.pathname !== "/") {
+    if (requestUrl.pathname.startsWith("/products/") || requestUrl.pathname.startsWith("/store/") || requestUrl.pathname === "/") {
+      return requestUrl.pathname;
+    }
+  }
+
+  // Alternative format: /functions/v1/og-proxy2/products/some-slug
   const suffixMatch = requestUrl.pathname.match(/\/functions\/v1\/og-proxy2(\/.*)?$/);
   if (suffixMatch?.[1]) return suffixMatch[1];
 
