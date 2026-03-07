@@ -188,8 +188,9 @@ Deno.serve(async (req) => {
 
   // Run all in parallel
   await Promise.all([
-    cacheRulesPromise,
-    redirectRulesPromise,
+    cacheAssetsPromise,
+    cacheFontsPromise,
+    wwwRedirectPromise,
     securityHeadersPromise,
     rateLimitPromise,
     tieredCachePromise,
