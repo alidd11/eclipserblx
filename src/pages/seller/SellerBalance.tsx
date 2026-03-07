@@ -75,8 +75,8 @@ export default function SellerBalance() {
   const requestPayout = useMutation({
     mutationFn: async () => {
       if (!store?.id || !user?.id) throw new Error('Missing store or user');
-      if (!balance?.available_balance || balance.available_balance < (minPayoutSetting ?? 25)) {
-        throw new Error(`Insufficient balance for payout (minimum £${minPayoutSetting ?? 25})`);
+      if (!balance?.available_balance || balance.available_balance < (minPayoutSetting ?? 5)) {
+        throw new Error(`Insufficient balance for payout (minimum £${minPayoutSetting ?? 5})`);
       }
       
       // Use atomic database function to prevent race conditions
@@ -115,11 +115,11 @@ export default function SellerBalance() {
         .select('value')
         .eq('key', 'seller_minimum_payout')
         .maybeSingle();
-      return data?.value ? parseFloat(String(data.value)) : 25;
+      return data?.value ? parseFloat(String(data.value)) : 5;
     },
     staleTime: 1000 * 60 * 30, // cache 30 min
   });
-  const minPayout = minPayoutSetting ?? 25;
+  const minPayout = minPayoutSetting ?? 5;
   const hasPayoutMethod = 
     store?.paymentDetails?.payouts_enabled || 
     (store?.paymentDetails?.payout_method === 'paypal' && !!store?.paymentDetails?.paypal_email) ||
