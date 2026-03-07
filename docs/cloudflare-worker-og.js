@@ -58,7 +58,7 @@ export default {
     }
 
     // Bot detected — proxy to the og-proxy edge function
-    const ogUrl = `${SUPABASE_FUNCTION_URL}?path=${encodeURIComponent(url.pathname)}`;
+    const ogUrl = `${SUPABASE_FUNCTION_URL}${url.pathname}`;
 
     try {
       const ogResponse = await fetch(ogUrl, {
