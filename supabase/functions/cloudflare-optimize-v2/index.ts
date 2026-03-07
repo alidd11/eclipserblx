@@ -99,17 +99,7 @@ Deno.serve(async (req) => {
     ],
     'cache_assets'
   )
-
-  // Cache fonts immutably
-  const cacheFontsPromise = createPageRule(
-    'eclipserblx.com/fonts/*',
-    [
-      { id: 'cache_level', value: 'cache_everything' },
-      { id: 'edge_cache_ttl', value: 31536000 },
-      { id: 'browser_cache_ttl', value: 31536000 },
-    ],
-    'cache_fonts'
-  )
+  // Note: Free plan allows 3 page rules max. Fonts are served under /assets/ by Vite.
 
   // www → root redirect
   const wwwRedirectPromise = createPageRule(
