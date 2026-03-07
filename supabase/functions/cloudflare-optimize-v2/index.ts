@@ -129,7 +129,30 @@ Deno.serve(async (req) => {
       description: 'Add security headers to all responses',
       enabled: true,
     },
-  ], 'security_headers')
+    {
+      action: 'rewrite',
+      action_parameters: {
+        headers: {
+          'Link': { operation: 'set', value: '<https://eclipserblx.com>; rel="canonical"' },
+          'X-Robots-Tag': { operation: 'set', value: 'index, follow, max-image-preview:large, max-snippet:-1' },
+        },
+      },
+      expression: '(http.request.uri.path eq "/") or not (http.request.uri.path contains ".")',
+      description: 'SEO headers for HTML pages — allow full indexing and rich previews',
+      enabled: true,
+    },
+    {
+      action: 'rewrite',
+      action_parameters: {
+        headers: {
+          'X-Robots-Tag': { operation: 'set', value: 'noindex, nofollow' },
+        },
+      },
+      expression: 'starts_with(http.request.uri.path, "/admin") or starts_with(http.request.uri.path, "/seller/") or starts_with(http.request.uri.path, "/staff/")',
+      description: 'Block search engines from indexing admin/staff pages',
+      enabled: true,
+    },
+  ], 'security_and_seo_headers')
 
   // ═══════════════════════════════════════════════
   // 4. RATE LIMITING
