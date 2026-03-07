@@ -35,8 +35,6 @@ Deno.serve(async (req) => {
         headers,
         body: JSON.stringify({
           name: `Eclipse ${label}`,
-          kind: 'zone',
-          phase,
           rules,
         }),
       })
@@ -160,10 +158,10 @@ Deno.serve(async (req) => {
         },
       },
       ratelimit: {
-        characteristics: ['ip.src'],
-        period: 60,
-        requests_per_period: 60,
-        mitigation_timeout: 600,
+        characteristics: ['cf.colo.id', 'ip.src'],
+        period: 10,
+        requests_per_period: 10,
+        mitigation_timeout: 10,
       },
       expression: '(http.request.uri.path contains "/functions/v1/")',
       description: 'Rate limit edge functions - 60 req/min per IP',
