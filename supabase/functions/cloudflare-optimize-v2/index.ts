@@ -161,7 +161,7 @@ Deno.serve(async (req) => {
         characteristics: ['cf.colo.id', 'ip.src'],
         period: 10,
         requests_per_period: 10,
-        mitigation_timeout: 600,
+        mitigation_timeout: 10,
       },
       expression: '(http.request.uri.path contains "/functions/v1/")',
       description: 'Rate limit edge functions - 60 req/min per IP',
