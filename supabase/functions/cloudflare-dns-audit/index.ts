@@ -39,11 +39,20 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const listRes = await fetch(
-      `https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/dns_records?per_page=500`,
-      { headers },
-    )
+    const [zoneRes, listRes] = await Promise.all([
+      fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}`, { headers }),
+      fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/dns_records?per_page=500`, { headers }),
+    ])
+
+    const zoneData = await zoneRes.json()
     const listData = await listRes.json()
+
+    if (!zoneData.success) {
+      return new Response(JSON.stringify({ success: false, error: 'Failed to fetch zone details', details: zoneData.errors }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     if (!listData.success) {
       return new Response(JSON.stringify({ success: false, error: 'Failed to list DNS records', details: listData.errors }), {
