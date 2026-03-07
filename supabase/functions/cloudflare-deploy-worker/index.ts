@@ -146,7 +146,14 @@ Deno.serve(async (req) => {
     const routeResults: Array<{ pattern: string; success: boolean; action: 'created' | 'updated' | 'skipped'; errors?: unknown }> = []
 
     if (CF_ZONE_ID) {
-      const routePatterns = ['eclipserblx.com/*', 'www.eclipserblx.com/*']
+      const routePatterns = [
+        'eclipserblx.com/products/*',
+        'eclipserblx.com/store/*',
+        'eclipserblx.com/*',
+        'www.eclipserblx.com/products/*',
+        'www.eclipserblx.com/store/*',
+        'www.eclipserblx.com/*',
+      ]
 
       const routesRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes`, {
         headers: { 'Authorization': `Bearer ${CF_API_TOKEN}`, 'Content-Type': 'application/json' },
