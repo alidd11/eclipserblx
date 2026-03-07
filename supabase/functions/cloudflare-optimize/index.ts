@@ -51,6 +51,8 @@ Deno.serve(async (req) => {
     cfPatch('/settings/minify', { value: { js: 'on', css: 'on', html: 'on' } }, 'auto_minify'),
     cfPatch('/settings/rocket_loader', { value: 'off' }, 'rocket_loader_off'),
     cfPatch('/settings/websockets', { value: 'on' }, 'websockets'),
+    cfPatch('/settings/speed_brain', { value: 'on' }, 'speed_brain'),
+    cfPatch('/settings/fonts', { value: 'off' }, 'cf_fonts_off'),
   ])
 
   // 2. SSL/TLS Settings
