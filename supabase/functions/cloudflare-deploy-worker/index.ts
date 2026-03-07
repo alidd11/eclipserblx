@@ -5,9 +5,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// The worker script to deploy
 const WORKER_SCRIPT = `
 const SUPABASE_FUNCTION_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy2";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsbmJlcmd3amZybWdramhyYmtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NDY1NjIsImV4cCI6MjA4MzIyMjU2Mn0.4jHxaV7Mjlw2RbjDz9W8B07-SR_8Z7IeTTXMu8RUZ20";
 
 const BOT_PATTERNS = [
   "Discordbot", "Twitterbot", "facebookexternalhit", "LinkedInBot",
@@ -21,6 +21,9 @@ const STATIC_OG_PATHS = new Set([
   '/affiliate', '/advertise', '/jobs',
 ]);
 
+// Lovable origin IP
+const ORIGIN = "https://185.158.133.1";
+
 export default {
   async fetch(request) {
     const url = new URL(request.url);
@@ -29,40 +32,74 @@ export default {
     const isDynamicPage = /^\\/(products|store)\\/[^/?#]+/.test(url.pathname);
     const isStaticOgPage = STATIC_OG_PATHS.has(url.pathname);
 
-    if (!isDynamicPage && !isStaticOgPage) {
-      return fetch(request);
-    }
-
     const isBot = BOT_PATTERNS.some((bot) =>
       userAgent.toLowerCase().includes(bot.toLowerCase())
     );
-
-    // Manual debug switch to verify worker routing quickly
     const forceOg = url.searchParams.get('__ogtest') === '1';
 
-    if (!isBot && !forceOg) {
-      return fetch(request);
+    // Only intercept if it's a relevant page AND a bot (or force test)
+    if ((isDynamicPage || isStaticOgPage) && (isBot || forceOg)) {
+      const ogUrl = SUPABASE_FUNCTION_URL + "?path=" + encodeURIComponent(url.pathname);
+      try {
+        const ogResponse = await fetch(ogUrl, {
+          headers: {
+            "User-Agent": userAgent,
+            "X-OG-Worker": "1",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+          },
+        });
+
+        if (!ogResponse.ok) {
+          const errText = await ogResponse.text();
+          return new Response("OG proxy error: " + ogResponse.status + " " + errText, {
+            status: 502,
+            headers: { "Content-Type": "text/plain", "X-OG-Worker": "error-" + ogResponse.status },
+          });
+        }
+
+        return new Response(ogResponse.body, {
+          status: 200,
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "public, max-age=300",
+            "X-OG-Worker": "served",
+          },
+        });
+      } catch (error) {
+        return new Response("OG worker fetch failed: " + error.message, {
+          status: 502,
+          headers: { "Content-Type": "text/plain", "X-OG-Worker": "catch-error" },
+        });
+      }
     }
 
-    const ogUrl = SUPABASE_FUNCTION_URL + "?path=" + encodeURIComponent(url.pathname);
+    // For all other requests, proxy to the Lovable origin directly
+    // We must use the origin IP to avoid looping back through Cloudflare
+    const originUrl = new URL(url.pathname + url.search, ORIGIN);
+    const originHeaders = new Headers(request.headers);
+    originHeaders.set("Host", url.hostname);
 
     try {
-      const ogResponse = await fetch(ogUrl, {
-        headers: {
-          "User-Agent": userAgent,
-          "X-OG-Worker": "1",
-        },
+      const originRes = await fetch(originUrl.toString(), {
+        method: request.method,
+        headers: originHeaders,
+        body: request.method !== "GET" && request.method !== "HEAD" ? request.body : undefined,
+        redirect: "manual",
       });
 
-      return new Response(ogResponse.body, {
-        status: ogResponse.status,
-        headers: {
-          "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "public, max-age=300",
-        },
+      const responseHeaders = new Headers(originRes.headers);
+      responseHeaders.set("X-OG-Worker", "pass");
+
+      return new Response(originRes.body, {
+        status: originRes.status,
+        headers: responseHeaders,
       });
     } catch (error) {
-      return fetch(request);
+      return new Response("Origin fetch failed: " + error.message, {
+        status: 502,
+        headers: { "Content-Type": "text/plain", "X-OG-Worker": "origin-error" },
+      });
     }
   },
 };
@@ -74,7 +111,7 @@ Deno.serve(async (req) => {
   }
 
   const CF_API_TOKEN = Deno.env.get('CLOUDFLARE_API_TOKEN')
-  const CF_ZONE_ID = Deno.env.get('CLOUDFLARE_ZONE_ID') // not used for Workers API but kept for reference
+  const CF_ZONE_ID = Deno.env.get('CLOUDFLARE_ZONE_ID')
 
   if (!CF_API_TOKEN) {
     return new Response(JSON.stringify({ error: 'Missing Cloudflare API token' }), {
@@ -82,7 +119,6 @@ Deno.serve(async (req) => {
     })
   }
 
-  // Parse optional worker name from request body
   let workerName = 'eclipse-og-proxy'
   let customScript: string | null = null
   try {
@@ -95,7 +131,7 @@ Deno.serve(async (req) => {
 
   const scriptToUpload = customScript || WORKER_SCRIPT
 
-  // Get Cloudflare Account ID first
+  // Get Cloudflare Account ID
   let accountId: string
   try {
     const accountRes = await fetch('https://api.cloudflare.com/client/v4/accounts', {
@@ -114,14 +150,10 @@ Deno.serve(async (req) => {
     })
   }
 
-  // Upload/update the worker script
+  // Upload the worker script
   try {
     const formData = new FormData()
-    
-    // Worker metadata
-    const metadata = {
-      main_module: 'worker.js',
-    }
+    const metadata = { main_module: 'worker.js' }
     formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }))
     formData.append('worker.js', new Blob([scriptToUpload], { type: 'application/javascript+module' }), 'worker.js')
 
@@ -137,82 +169,62 @@ Deno.serve(async (req) => {
 
     if (!uploadData.success) {
       return new Response(JSON.stringify({
-        success: false,
-        error: 'Failed to upload worker',
-        details: uploadData.errors,
-      }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
+        success: false, error: 'Failed to upload worker', details: uploadData.errors,
+      }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    // Now set the route(s) for the worker on the zone
-    const routeResults: Array<{ pattern: string; success: boolean; action: 'created' | 'updated' | 'skipped'; errors?: unknown }> = []
+    // Set up Worker Custom Domains (replaces route-based approach)
+    const customDomainResults: Array<{ domain: string; success: boolean; action: string; errors?: unknown }> = []
+    const domains = ['eclipserblx.com', 'www.eclipserblx.com']
 
     if (CF_ZONE_ID) {
-      const routePatterns = [
-        'eclipserblx.com/products/*',
-        'eclipserblx.com/store/*',
-        'eclipserblx.com/*',
-        'www.eclipserblx.com/products/*',
-        'www.eclipserblx.com/store/*',
-        'www.eclipserblx.com/*',
-      ]
+      // First, list existing custom domains for this worker
+      const existingDomainsRes = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/domains`,
+        { headers: { 'Authorization': `Bearer ${CF_API_TOKEN}`, 'Content-Type': 'application/json' } }
+      )
+      const existingDomainsData = await existingDomainsRes.json()
+      const existingDomains = existingDomainsData.result || []
 
-      const routesRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes`, {
-        headers: { 'Authorization': `Bearer ${CF_API_TOKEN}`, 'Content-Type': 'application/json' },
-      })
-      const routesData = await routesRes.json()
+      for (const domain of domains) {
+        const existing = existingDomains.find((d: any) => d.hostname === domain && d.service === workerName)
 
-      if (!routesData.success) {
-        return new Response(JSON.stringify({
-          success: false,
-          error: 'Failed to list existing worker routes',
-          details: routesData.errors,
-        }), {
-          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        })
-      }
+        if (existing) {
+          customDomainResults.push({ domain, success: true, action: 'already_exists' })
+          continue
+        }
 
-      for (const pattern of routePatterns) {
-        const existingRoute = routesData.result?.find((r: { pattern: string }) => r.pattern === pattern)
+        // Remove any existing domain binding for this hostname (might be bound to different worker)
+        const conflicting = existingDomains.find((d: any) => d.hostname === domain)
+        if (conflicting) {
+          await fetch(
+            `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/domains/${conflicting.id}`,
+            { method: 'DELETE', headers: { 'Authorization': `Bearer ${CF_API_TOKEN}` } }
+          )
+        }
 
-        if (existingRoute) {
-          const updateRouteRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes/${existingRoute.id}`, {
+        // Create the custom domain
+        const createRes = await fetch(
+          `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/domains`,
+          {
             method: 'PUT',
             headers: { 'Authorization': `Bearer ${CF_API_TOKEN}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pattern, script: workerName }),
-          })
-          const updateRouteData = await updateRouteRes.json()
-          routeResults.push({
-            pattern,
-            success: !!updateRouteData.success,
-            action: 'updated',
-            errors: updateRouteData.success ? undefined : updateRouteData.errors,
-          })
-        } else {
-          const createRouteRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${CF_API_TOKEN}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pattern, script: workerName }),
-          })
-          const createRouteData = await createRouteRes.json()
-          routeResults.push({
-            pattern,
-            success: !!createRouteData.success,
-            action: 'created',
-            errors: createRouteData.success ? undefined : createRouteData.errors,
-          })
-        }
-      }
-
-      const routeFailure = routeResults.find((r) => !r.success)
-      if (routeFailure) {
-        return new Response(JSON.stringify({
-          success: false,
-          error: 'Worker uploaded but route binding failed',
-          route_results: routeResults,
-        }), {
-          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            body: JSON.stringify({
+              hostname: domain,
+              zone_id: CF_ZONE_ID,
+              service: workerName,
+              environment: 'production',
+              override_existing_dns_record: true,
+              override_existing_origin: true,
+            }),
+          }
+        )
+        const createData = await createRes.json()
+        customDomainResults.push({
+          domain,
+          success: !!createData.success,
+          action: 'created',
+          errors: createData.success ? undefined : createData.errors,
         })
       }
     }
@@ -221,10 +233,8 @@ Deno.serve(async (req) => {
       success: true,
       message: `Worker "${workerName}" deployed successfully!`,
       worker_id: uploadData.result?.id,
-      route_results: routeResults,
-    }), {
-      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
+      custom_domains: customDomainResults,
+    }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
   } catch (e) {
     return new Response(JSON.stringify({ error: 'Worker deploy failed', detail: String(e) }), {
