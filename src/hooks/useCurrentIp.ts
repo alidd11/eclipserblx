@@ -15,6 +15,17 @@ export function useCurrentIp(): IpInfo {
   useEffect(() => {
     const fetchIp = async () => {
       try {
+        // Reuse cached IP ban check result from IpBanCheck to avoid duplicate edge function calls
+        const cached = sessionStorage.getItem('ip-ban-check');
+        if (cached) {
+          const { data: cachedData, ts } = JSON.parse(cached);
+          if (Date.now() - ts < 10 * 60 * 1000) {
+            setIp(cachedData?.ip || null);
+            setIsLoading(false);
+            return;
+          }
+        }
+
         const { data, error: fnError } = await supabase.functions.invoke('check-ip-ban');
         
         if (fnError) {
@@ -23,6 +34,8 @@ export function useCurrentIp(): IpInfo {
         }
         
         setIp(data?.ip || null);
+        // Cache for other consumers
+        sessionStorage.setItem('ip-ban-check', JSON.stringify({ data, ts: Date.now() }));
       } catch (err) {
         setError('Failed to fetch IP');
       } finally {

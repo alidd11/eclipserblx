@@ -100,11 +100,11 @@ export function useSubscription() {
     checkSubscription();
   }, [checkSubscription]);
 
-  // Periodic refresh every 60 seconds
+  // Periodic refresh every 5 minutes (reduced from 60s to save edge function calls)
   useEffect(() => {
     if (!user) return;
     
-    const interval = setInterval(checkSubscription, 60000);
+    const interval = setInterval(checkSubscription, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [user, checkSubscription]);
 
