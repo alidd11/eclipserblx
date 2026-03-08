@@ -42,8 +42,10 @@ interface UserProfile {
 interface StaffMember {
   user_id: string;
   display_name: string | null;
-  email: string;
+  email?: string;
   role?: string;
+  last_seen?: string;
+  roles?: string[];
 }
 
 interface TypingUser {
@@ -259,9 +261,9 @@ function StaffMessagesContent() {
   } = useQuery({
     queryKey: ['all-staff-members'],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('list-staff');
+      const { data, error } = await supabase.rpc('list_staff_members');
       if (error) throw error;
-      return (data?.staff ?? []) as StaffMember[];
+      return (data ?? []) as StaffMember[];
     },
   });
 

@@ -790,7 +790,7 @@ export default function IPShield() {
 
   const startCheckout = useMutation({
     mutationFn: async (tier: string) => {
-      const { data, error } = await supabase.functions.invoke('create-ip-shield-checkout', { body: { tier } });
+      const { data, error } = await supabase.functions.invoke('create-subscription', { body: { product_type: 'ip_shield', tier } });
       if (error) throw error;
       return data as { url: string };
     },

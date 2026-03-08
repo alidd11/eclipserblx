@@ -114,8 +114,8 @@ export function useSubscription() {
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-subscription-checkout', {
-        body: { tier: 'pro', billingPeriod: 'monthly' },
+      const { data, error } = await supabase.functions.invoke('create-subscription', {
+        body: { product_type: 'eclipse_plus', tier: 'pro', billingPeriod: 'monthly' },
         headers: session?.access_token ? {
           Authorization: `Bearer ${session.access_token}`,
         } : undefined,

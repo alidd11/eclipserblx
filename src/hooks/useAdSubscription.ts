@@ -114,8 +114,8 @@ export function useAdSubscriptionCheckout() {
         throw new Error('Please sign in to subscribe');
       }
       
-      const { data, error } = await supabase.functions.invoke('create-ad-subscription-checkout', {
-        body: { tier, billingPeriod, herePings, everyonePings },
+      const { data, error } = await supabase.functions.invoke('create-subscription', {
+        body: { product_type: 'ad_subscription', tier, billingPeriod, herePings, everyonePings },
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
