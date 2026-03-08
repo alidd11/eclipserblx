@@ -9018,6 +9018,15 @@ export type Database = {
         Returns: boolean
       }
       is_username_available: { Args: { username: string }; Returns: boolean }
+      list_staff_members: {
+        Args: never
+        Returns: {
+          display_name: string
+          last_seen: string
+          roles: string[]
+          user_id: string
+        }[]
+      }
       log_sensitive_access: {
         Args: {
           p_action?: string
