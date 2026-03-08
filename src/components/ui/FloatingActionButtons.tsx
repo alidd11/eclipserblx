@@ -51,7 +51,7 @@ export const FloatingActionButtons = forwardRef<HTMLDivElement>(function Floatin
                 <Button
                   size="icon"
                   onClick={scrollToTop}
-                  className="h-10 w-10 xs:h-12 xs:w-12 rounded-full shadow-lg bg-gradient-to-br from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white border-0 touch-target"
+                  className="h-10 w-10 xs:h-12 xs:w-12 rounded-full shadow-lg bg-secondary hover:bg-secondary/90 text-secondary-foreground border-0 touch-target"
                 >
                   <ArrowUp className="h-4 w-4 xs:h-5 xs:w-5" />
                 </Button>
@@ -81,7 +81,7 @@ export const FloatingActionButtons = forwardRef<HTMLDivElement>(function Floatin
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="absolute -top-0.5 -right-0.5 xs:-top-1 xs:-right-1 h-5 w-5 xs:h-6 xs:w-6 rounded-full bg-red-500 text-white text-[10px] xs:text-xs font-bold flex items-center justify-center shadow-md"
+                className="absolute -top-0.5 -right-0.5 xs:-top-1 xs:-right-1 h-5 w-5 xs:h-6 xs:w-6 rounded-full bg-destructive text-destructive-foreground text-[10px] xs:text-xs font-bold flex items-center justify-center shadow-md"
               >
                 {cartItemCount > 9 ? '9+' : cartItemCount}
               </motion.span>

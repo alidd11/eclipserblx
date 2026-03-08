@@ -874,3 +874,15 @@ video.background-video::-webkit-media-controls-start-playback-button {
     transform: translateX(100%);
   }
 }
+
+/* Global focus-visible ring for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+/* Remove focus ring for mouse/touch users */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
