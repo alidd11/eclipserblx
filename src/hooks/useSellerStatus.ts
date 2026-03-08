@@ -208,7 +208,7 @@ export function useSellerStatus() {
       return data as StoreApplication | null;
     },
     enabled: !!user?.id,
-    staleTime: 2 * 60 * 1000, // 2 minutes - application status changes infrequently
+    staleTime: 5 * 60 * 1000, // 5 minutes - application status changes infrequently
   });
 
   // Get seller balance if they have an approved store
