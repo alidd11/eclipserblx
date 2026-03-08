@@ -339,7 +339,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       return data;
     },
     enabled: !!profile?.discord_id,
-    staleTime: 1000 * 60 * 30,
+    staleTime: 1000 * 60 * 60, // 1 hour
   });
 
 
