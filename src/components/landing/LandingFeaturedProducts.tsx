@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ShieldCheck, Award, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
