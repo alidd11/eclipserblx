@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PercentChange } from '@/components/shared/dashboard';
 import { DollarSign, TrendingUp, ShoppingCart, Package } from 'lucide-react';
-import { subDays } from 'date-fns';
 
 export function RevenueSummaryStats() {
   const { store } = useSellerStatus();
