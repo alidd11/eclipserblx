@@ -36,7 +36,7 @@ export function IpBanCheck({ children }: { children: React.ReactNode }) {
           setBanInfo({ banned: false });
         } else {
           setBanInfo(data);
-          // Cache result for 10 minutes
+          // Cache result for 15 minutes
           sessionStorage.setItem('ip-ban-check', JSON.stringify({ data, ts: Date.now() }));
         }
       } catch (err) {
