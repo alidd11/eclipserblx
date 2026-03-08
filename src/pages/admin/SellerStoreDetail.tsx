@@ -199,9 +199,9 @@ export default function SellerStoreDetail() {
       if (error) throw error;
 
       // Send email notification
-      const functionName = isActive ? 'send-store-reactivation-email' : 'send-store-deactivation-email';
+      const emailType = isActive ? 'store_reactivation' : 'store_deactivation';
       try {
-        await supabase.functions.invoke(functionName, { body: { store_id: storeId } });
+        await supabase.functions.invoke('send-admin-email', { body: { email_type: emailType, store_id: storeId } });
       } catch (emailError) {
         console.error('Failed to send email:', emailError);
       }
