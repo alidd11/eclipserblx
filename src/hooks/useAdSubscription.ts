@@ -90,8 +90,8 @@ export function useAdSubscription() {
       };
     },
     enabled: !!session?.user,
-    staleTime: 30 * 1000, // 30 seconds
-    refetchInterval: 60 * 1000, // 1 minute
+    staleTime: 5 * 60 * 1000, // 5 minutes (increased from 30s)
+    refetchInterval: 10 * 60 * 1000, // 10 minutes (reduced from 1 min)
   });
 }
 
