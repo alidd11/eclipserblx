@@ -3,9 +3,8 @@ import { Navigate } from 'react-router-dom';
 import { IPShieldSidebar } from './IPShieldSidebar';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
+import { useIdentityVerification } from '@/hooks/useIdentityVerification';
 import { LayoutShell } from '@/components/layout/LayoutShell';
 import { useIPShieldSubscription } from '@/hooks/useIPShieldSubscription';
 
