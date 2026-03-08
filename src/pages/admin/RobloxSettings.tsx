@@ -128,8 +128,8 @@ export default function RobloxSettings() {
     setGroupTestResult(null);
     
     try {
-      const { data, error } = await supabase.functions.invoke('verify-roblox-group', {
-        body: { roblox_user_id: testRobloxId, group_id: groupId },
+      const { data, error } = await supabase.functions.invoke('verify-roblox', {
+        body: { type: 'group', roblox_user_id: testRobloxId, group_id: groupId },
       });
       
       if (error) throw error;
