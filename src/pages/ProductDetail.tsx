@@ -769,8 +769,9 @@ export default function ProductDetail() {
             </Card>
 
 
-            {/* Report */}
+            {/* Price Alert + Report */}
             <div className="flex gap-2">
+              <PriceAlertButton productId={product.id} currentPrice={product.price} />
               <Button
                 variant="ghost"
                 size="sm"
