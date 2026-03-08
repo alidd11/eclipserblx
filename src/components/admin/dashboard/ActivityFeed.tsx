@@ -92,8 +92,8 @@ export function ActivityFeed() {
         .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
         .slice(0, 12);
     },
-    refetchInterval: 60_000,
-    staleTime: 30_000,
+    refetchInterval: 5 * 60_000, // 5 minutes (reduced from 1 min)
+    staleTime: 2 * 60_000,
   });
 
   if (isLoading) {

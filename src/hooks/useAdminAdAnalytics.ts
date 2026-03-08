@@ -71,8 +71,8 @@ export function useAdminAdAnalytics() {
   // Fetch all advertisements
   const { data: advertisements, isLoading: adsLoading } = useQuery({
     queryKey: ['admin-all-advertisements'],
-    staleTime: 30_000,
-    refetchInterval: 60_000,
+    staleTime: 5 * 60_000,
+    refetchInterval: 10 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('discord_advertisements')
@@ -87,8 +87,8 @@ export function useAdminAdAnalytics() {
   // Fetch all advertisement clicks (last 30 days for performance)
   const { data: clicks, isLoading: clicksLoading } = useQuery({
     queryKey: ['admin-all-ad-clicks'],
-    staleTime: 30_000,
-    refetchInterval: 60_000,
+    staleTime: 5 * 60_000,
+    refetchInterval: 10 * 60_000,
     queryFn: async () => {
       const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
       
@@ -106,8 +106,8 @@ export function useAdminAdAnalytics() {
   // Fetch all subscriptions
   const { data: subscriptions, isLoading: subsLoading } = useQuery({
     queryKey: ['admin-ad-subscriptions'],
-    staleTime: 30_000,
-    refetchInterval: 60_000,
+    staleTime: 5 * 60_000,
+    refetchInterval: 10 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('advertisement_subscriptions')

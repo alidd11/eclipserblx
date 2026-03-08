@@ -17,6 +17,18 @@ export function IpBanCheck({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const checkIpBan = async () => {
       try {
+        // Check sessionStorage cache first to avoid redundant edge function calls
+        const cached = sessionStorage.getItem('ip-ban-check');
+        if (cached) {
+          const { data: cachedData, ts } = JSON.parse(cached);
+          // Cache valid for 10 minutes
+          if (Date.now() - ts < 10 * 60 * 1000) {
+            setBanInfo(cachedData);
+            setIsChecking(false);
+            return;
+          }
+        }
+
         const { data, error } = await supabase.functions.invoke('check-ip-ban');
         
         if (error) {
@@ -24,6 +36,8 @@ export function IpBanCheck({ children }: { children: React.ReactNode }) {
           setBanInfo({ banned: false });
         } else {
           setBanInfo(data);
+          // Cache result for 10 minutes
+          sessionStorage.setItem('ip-ban-check', JSON.stringify({ data, ts: Date.now() }));
         }
       } catch (err) {
         console.error('Failed to check IP ban:', err);

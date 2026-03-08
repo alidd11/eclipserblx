@@ -62,8 +62,8 @@ export function LiveStatsCards() {
         newUsersLastWeek: usersLastWeek.count || 0,
       };
     },
-    refetchInterval: 60_000,
-    staleTime: 30_000,
+    refetchInterval: 5 * 60_000, // 5 minutes (reduced from 1 min to save DB queries)
+    staleTime: 2 * 60_000,
   });
 
   const calcTrend = (current: number, previous: number) => {

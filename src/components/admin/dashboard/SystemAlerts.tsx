@@ -105,8 +105,8 @@ export function SystemAlerts() {
 
       return items;
     },
-    refetchInterval: 60_000,
-    staleTime: 30_000,
+    refetchInterval: 5 * 60_000, // 5 minutes (reduced from 1 min)
+    staleTime: 2 * 60_000,
   });
 
   if (isLoading || !alerts?.length) return null;
