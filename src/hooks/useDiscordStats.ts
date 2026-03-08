@@ -9,6 +9,7 @@ interface DiscordStats {
 }
 
 const DEFAULT_INVITE_CODE = 'EmQnXwv6VZ';
+const FALLBACK_MEMBER_COUNT = 500;
 
 export function useDiscordStats() {
   const { discordUrl } = useDiscordUrl();
