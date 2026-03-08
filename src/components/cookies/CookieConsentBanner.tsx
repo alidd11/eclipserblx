@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
@@ -5,7 +6,7 @@ import { CookieSettingsDialog } from './CookieSettingsDialog';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-export function CookieConsentBanner() {
+export const CookieConsentBanner = forwardRef<HTMLDivElement>(function CookieConsentBanner(_props, _ref) {
   const { showBanner, showSettings, acceptAll, rejectNonEssential, openSettings } = useCookieConsent();
   const { t } = useTranslation();
 
@@ -58,4 +59,4 @@ export function CookieConsentBanner() {
       <CookieSettingsDialog />
     </>
   );
-}
+});
