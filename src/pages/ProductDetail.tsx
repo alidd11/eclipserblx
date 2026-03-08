@@ -38,6 +38,7 @@ import { BreadcrumbSchema, ProductSchema } from '@/components/seo/StructuredData
 import { ReviewSchema } from '@/components/seo/ReviewSchema';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { RecentlyViewedProducts } from '@/components/product/RecentlyViewedProducts';
+import { FrequentlyBoughtTogether } from '@/components/product/FrequentlyBoughtTogether';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
