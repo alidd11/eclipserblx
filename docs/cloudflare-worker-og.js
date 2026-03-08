@@ -105,11 +105,20 @@ export default {
  */
 async function proxyToOrigin(request, url) {
   const originUrl = new URL(url.pathname + url.search, ORIGIN_URL);
+  const newHeaders = new Headers(request.headers);
+  newHeaders.delete("Host");
+  newHeaders.delete("host");
   const newRequest = new Request(originUrl.toString(), {
     method: request.method,
-    headers: request.headers,
+    headers: newHeaders,
     body: request.body,
-    redirect: "follow",
+    redirect: "manual",
   });
-  return fetch(newRequest);
+  const res = await fetch(newRequest);
+  const responseHeaders = new Headers(res.headers);
+  responseHeaders.delete("location");
+  return new Response(res.body, {
+    status: res.status === 301 || res.status === 302 ? 200 : res.status,
+    headers: responseHeaders,
+  });
 }
