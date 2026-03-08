@@ -59,4 +59,4 @@ export const CookieConsentBanner = forwardRef<HTMLDivElement>(function CookieCon
       <CookieSettingsDialog />
     </>
   );
-}
+});
