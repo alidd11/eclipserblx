@@ -1,5 +1,11 @@
 project_id = "qlnbergwjfrmgkjhrbkj"
 
+[functions.create-subscription]
+verify_jwt = false
+
+[functions.send-admin-email]
+verify_jwt = false
+
 [functions.grant-eclipse-credits-to-members]
 verify_jwt = false
 
