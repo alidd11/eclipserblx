@@ -83,19 +83,37 @@ export default {
       }
     }
 
-    const originUrl = new URL(url.pathname + url.search, ORIGIN);
     const originHeaders = new Headers(request.headers);
     originHeaders.delete("Host");
     originHeaders.delete("host");
 
     try {
       const isGetLike = request.method === "GET" || request.method === "HEAD";
-      const originRes = await fetch(originUrl.toString(), {
+      const fetchInit = {
         method: request.method,
         headers: originHeaders,
         body: !isGetLike ? request.body : undefined,
         redirect: "manual",
-      });
+      };
+
+      let activeOrigin = ORIGIN_PRIMARY;
+      let originUrl = new URL(url.pathname + url.search, activeOrigin);
+      let originRes: Response;
+
+      try {
+        originRes = await fetch(originUrl.toString(), fetchInit);
+      } catch {
+        activeOrigin = ORIGIN_FALLBACK;
+        originUrl = new URL(url.pathname + url.search, activeOrigin);
+        originRes = await fetch(originUrl.toString(), fetchInit);
+      }
+
+      // If primary origin times out or fails at edge, retry against fallback origin
+      if (activeOrigin === ORIGIN_PRIMARY && [522, 523, 524, 530].includes(originRes.status)) {
+        activeOrigin = ORIGIN_FALLBACK;
+        originUrl = new URL(url.pathname + url.search, activeOrigin);
+        originRes = await fetch(originUrl.toString(), fetchInit);
+      }
 
       // Handle redirects manually to prevent loops
       if ([301, 302, 303, 307, 308].includes(originRes.status)) {
@@ -104,11 +122,11 @@ export default {
         // Block auth-bridge and lovable internal redirects to prevent loops
         const isAuthBridge = location.includes("auth-bridge") ||
           location.includes("lovableproject.com") ||
-          (location.includes("lovable.app") && !location.includes(ORIGIN));
+          (location.includes("lovable.app") && !location.includes(activeOrigin));
 
         if (isAuthBridge) {
           // Serve the SPA index.html directly instead of following the redirect
-          const spaRes = await fetch(ORIGIN + "/index.html", {
+          const spaRes = await fetch(activeOrigin + "/index.html", {
             headers: { "Accept": "text/html" },
           });
           return new Response(spaRes.body, {
@@ -117,6 +135,7 @@ export default {
               "Content-Type": "text/html; charset=utf-8",
               "Cache-Control": "no-cache",
               "X-OG-Worker": "auth-bridge-bypass",
+              "X-OG-Origin": activeOrigin,
             },
           });
         }
@@ -124,8 +143,8 @@ export default {
         // For other redirects (e.g. OAuth), pass them through
         // Rewrite Location from origin domain to custom domain
         let rewrittenLocation = location;
-        if (location.startsWith(ORIGIN)) {
-          rewrittenLocation = location.replace(ORIGIN, url.origin);
+        if (location.startsWith(activeOrigin)) {
+          rewrittenLocation = location.replace(activeOrigin, url.origin);
         }
 
         return new Response(null, {
@@ -133,12 +152,14 @@ export default {
           headers: {
             "Location": rewrittenLocation,
             "X-OG-Worker": "redirect",
+            "X-OG-Origin": activeOrigin,
           },
         });
       }
 
       const responseHeaders = new Headers(originRes.headers);
       responseHeaders.set("X-OG-Worker", "pass");
+      responseHeaders.set("X-OG-Origin", activeOrigin);
 
       // Ensure HTML pages always have correct Content-Type so Safari
       // does not treat the response as a file download
