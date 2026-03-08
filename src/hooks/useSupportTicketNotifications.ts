@@ -59,7 +59,7 @@ export function useSupportTicketNotifications() {
               .select('user_id');
             
             if (subscriptions && subscriptions.length > 0) {
-              const staffUserIds = [...new Set(subscriptions.map(s => s.user_id))];
+              const staffUserIds = [...new Set(subscriptions.map(s => s.user_id))] as string[];
               await notifyNewSupportTicket(staffUserIds, {
                 id: newTicket.id,
                 subject: newTicket.subject,
