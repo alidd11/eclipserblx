@@ -161,6 +161,9 @@ export default function SellerDashboard() {
             <TopProductsLeaderboard />
           </Suspense>
           <Suspense fallback={<DashboardCardSkeleton />}>
+            <SalesVelocityInsights />
+          </Suspense>
+          <Suspense fallback={<DashboardCardSkeleton />}>
             <NotificationCenter />
           </Suspense>
         </div>
