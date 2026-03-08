@@ -29,12 +29,15 @@ const ADMIN_TEST_EMAILS = ['alicanimir1@gmail.com'];
 
 // Background Stripe sync interval: 30 minutes
 const STRIPE_SYNC_INTERVAL = 30 * 60 * 1000;
+// localStorage cache key
+const CACHE_KEY = 'ip-shield-sub-cache';
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
 export function useIPShieldSubscription() {
   const { user, session } = useAuth();
   const lastSyncRef = useRef<number>(0);
 
-  // Background Stripe sync (fire-and-forget)
+  // Background Stripe sync — writes result to localStorage cache
   const syncWithStripe = useCallback(async () => {
     if (!session?.access_token) return;
     const now = Date.now();
@@ -42,11 +45,14 @@ export function useIPShieldSubscription() {
     lastSyncRef.current = now;
 
     try {
-      await supabase.functions.invoke('check-ip-shield-subscription');
+      const { data } = await supabase.functions.invoke('check-ip-shield-subscription');
+      if (data) {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now(), userId: user?.id }));
+      }
     } catch (err) {
       console.error('Background IP Shield sync failed:', err);
     }
-  }, [session]);
+  }, [session, user]);
 
   useEffect(() => {
     if (!user) return;
@@ -71,7 +77,7 @@ export function useIPShieldSubscription() {
         };
       }
 
-      // Check for admin-assigned custom plan (direct DB query)
+      // Check for admin-assigned custom plan (direct DB query — no edge function)
       const { data: customPlan } = await supabase
         .from('ip_shield_custom_plans')
         .select('*')
@@ -102,16 +108,30 @@ export function useIPShieldSubscription() {
         }
       }
 
-      // For Stripe-based subscriptions, we rely on the background sync
-      // The edge function syncs data to the subscriptions table, but IP Shield
-      // uses a different Stripe price lookup - we need the edge function result
-      // So fall back to calling it (but with aggressive caching)
+      // Read from localStorage cache (populated by background sync)
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const { data, ts, userId } = JSON.parse(cached);
+          if (userId === user.id && Date.now() - ts < CACHE_TTL && data) {
+            return data as IPShieldSubscriptionStatus;
+          }
+        }
+      } catch {}
+
+      // First load with no cache — call edge function once, then cache
       const { data, error } = await supabase.functions.invoke('check-ip-shield-subscription');
       if (error) throw error;
+      
+      // Cache the result
+      if (data) {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now(), userId: user.id }));
+      }
+      
       return data as IPShieldSubscriptionStatus;
     },
     enabled: !!user,
-    staleTime: 10 * 60 * 1000, // 10 minutes - aggressive caching
+    staleTime: 10 * 60 * 1000, // 10 minutes
     gcTime: 15 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
