@@ -106,8 +106,8 @@ export function useAdminAdAnalytics() {
   // Fetch all subscriptions
   const { data: subscriptions, isLoading: subsLoading } = useQuery({
     queryKey: ['admin-ad-subscriptions'],
-    staleTime: 30_000,
-    refetchInterval: 60_000,
+    staleTime: 5 * 60_000,
+    refetchInterval: 10 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('advertisement_subscriptions')
