@@ -265,7 +265,7 @@ export default function StorePage() {
       return data || [];
     },
     enabled: !!store?.id,
-    staleTime: 30000,
+    staleTime: 2 * 60_000,
   });
 
   // Check if activeTab is a global category

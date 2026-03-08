@@ -73,7 +73,7 @@ export default function AdminOrders() {
       if (error) throw error;
       return count || 0;
     },
-    staleTime: 30000,
+    staleTime: 2 * 60_000,
   });
 
   const { data: orders, isLoading } = useQuery({

@@ -184,7 +184,7 @@ export default function AdminUsers() {
       if (error) throw error;
       return data;
     },
-    staleTime: 30000,
+    staleTime: 2 * 60_000,
   });
 
   // Check if current user has admin role

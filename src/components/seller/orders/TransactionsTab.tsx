@@ -60,7 +60,7 @@ export function TransactionsTab({ storeId }: TransactionsTabProps) {
       return { transactions: data || [], totalCount: count || 0 };
     },
     enabled: !!storeId,
-    staleTime: 30000,
+    staleTime: 2 * 60_000,
   });
 
   const transactions = transactionsData?.transactions || [];
