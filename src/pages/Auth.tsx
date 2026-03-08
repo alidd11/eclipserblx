@@ -13,7 +13,7 @@ import { PasswordStrengthMeter, isPasswordStrongEnough } from '@/components/auth
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePageTracking } from '@/hooks/usePageTracking';
-import { lovable } from '@/integrations/lovable/index';
+import { useTranslation } from 'react-i18next';
 import { useTranslation } from 'react-i18next';
 
 const authSchema = z.object({
