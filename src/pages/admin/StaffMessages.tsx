@@ -42,8 +42,10 @@ interface UserProfile {
 interface StaffMember {
   user_id: string;
   display_name: string | null;
-  email: string;
+  email?: string;
   role?: string;
+  last_seen?: string;
+  roles?: string[];
 }
 
 interface TypingUser {
