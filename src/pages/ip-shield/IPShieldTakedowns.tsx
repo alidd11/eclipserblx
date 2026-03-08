@@ -85,15 +85,7 @@ export default function IPShieldTakedowns() {
   });
 
   // Fetch verified identity details to pre-populate form
-  const { data: verificationData } = useQuery({
-    queryKey: ['ip-shield-identity-verification', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('check-identity-verification');
-      if (error) throw error;
-      return data as { verified: boolean; status: string; verifiedName?: string; verifiedEmail?: string; verifiedAddress?: string };
-    },
-    enabled: !!user,
-  });
+  const { data: verificationData } = useIdentityVerification();
 
   // Fetch user profile for fallback
   const { data: userProfile } = useQuery({
