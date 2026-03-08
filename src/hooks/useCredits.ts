@@ -56,22 +56,23 @@ export function useCredits() {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const { data, error } = await supabase.functions.invoke('get-credit-balance', {
-        headers: session?.access_token ? {
-          Authorization: `Bearer ${session.access_token}`,
-        } : undefined,
-      });
-      
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
+      // Direct client query instead of edge function
+      const [balanceResult, txResult] = await Promise.all([
+        supabase.from('credit_balances').select('*').eq('user_id', user.id).maybeSingle(),
+        supabase.from('credit_transactions').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
+      ]);
+
+      if (balanceResult.error) throw new Error(balanceResult.error.message);
+
+      const bal = balanceResult.data;
 
       setState({
-        balance: data.balance || 0,
-        totalPurchased: data.total_purchased || 0,
-        totalGifted: data.total_gifted || 0,
-        totalSpent: data.total_spent || 0,
-        eclipsePlusBonusClaimed: data.eclipse_plus_bonus_claimed || false,
-        transactions: data.transactions || [],
+        balance: Number(bal?.balance ?? 0),
+        totalPurchased: Number(bal?.total_purchased ?? 0),
+        totalGifted: Number(bal?.total_gifted ?? 0),
+        totalSpent: Number(bal?.total_spent ?? 0),
+        eclipsePlusBonusClaimed: bal?.eclipse_plus_bonus_claimed ?? false,
+        transactions: (txResult.data ?? []) as CreditTransaction[],
         isLoading: false,
         error: null,
       });

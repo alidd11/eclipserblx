@@ -509,13 +509,15 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { data: walletData } = useQuery({
     queryKey: ['wallet-balance-quick', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('get-credit-balance', {
-        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
-      });
+      const { data, error } = await supabase
+        .from('credit_balances')
+        .select('balance')
+        .eq('user_id', user!.id)
+        .maybeSingle();
       if (error) return { balance: 0 };
-      return data;
+      return { balance: Number(data?.balance ?? 0) };
     },
-    enabled: !!user?.id && !!session?.access_token,
+    enabled: !!user?.id,
     staleTime: 1000 * 60 * 2,
   });
 
