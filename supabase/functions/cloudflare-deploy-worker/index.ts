@@ -93,11 +93,22 @@ export default {
         method: request.method,
         headers: originHeaders,
         body: !isGetLike ? request.body : undefined,
-        redirect: isGetLike ? "follow" : "manual",
+        redirect: "follow",
       });
 
       const responseHeaders = new Headers(originRes.headers);
       responseHeaders.set("X-OG-Worker", "pass");
+
+      // Ensure HTML pages always have correct Content-Type so Safari
+      // does not treat the response as a file download
+      const ct = responseHeaders.get("Content-Type") || "";
+      const isPage = !url.pathname.includes(".") || url.pathname.endsWith(".html");
+      if (isPage && !ct.includes("text/html")) {
+        responseHeaders.set("Content-Type", "text/html; charset=utf-8");
+      }
+
+      // Remove any Content-Disposition that could trigger a download prompt
+      responseHeaders.delete("Content-Disposition");
 
       return new Response(originRes.body, {
         status: originRes.status,
