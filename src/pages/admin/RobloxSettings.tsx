@@ -128,8 +128,8 @@ export default function RobloxSettings() {
     setGroupTestResult(null);
     
     try {
-      const { data, error } = await supabase.functions.invoke('verify-roblox-group', {
-        body: { roblox_user_id: testRobloxId, group_id: groupId },
+      const { data, error } = await supabase.functions.invoke('verify-roblox', {
+        body: { type: 'group', roblox_user_id: testRobloxId, group_id: groupId },
       });
       
       if (error) throw error;
@@ -166,8 +166,8 @@ export default function RobloxSettings() {
     setPremiumTestResult(null);
     
     try {
-      const { data, error } = await supabase.functions.invoke('verify-roblox-premium', {
-        body: { roblox_user_id: testRobloxId },
+      const { data, error } = await supabase.functions.invoke('verify-roblox', {
+        body: { type: 'premium', roblox_user_id: testRobloxId },
       });
       
       if (error) throw error;

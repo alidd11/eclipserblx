@@ -40,9 +40,9 @@ export function RobloxLinkCard({ userId, robloxUserId, robloxUsername, accountsL
     setVerifiedData(null);
 
     try {
-      // Use edge function to verify Roblox username (avoids CORS issues)
-      const { data, error } = await supabase.functions.invoke('verify-roblox-user', {
-        body: { username: inputUsername.trim() },
+      // Use merged edge function to verify Roblox username (avoids CORS issues)
+      const { data, error } = await supabase.functions.invoke('verify-roblox', {
+        body: { type: 'user', username: inputUsername.trim() },
       });
 
       if (error) {
