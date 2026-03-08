@@ -8,7 +8,7 @@ interface DiscordStats {
   guild_icon: string | null;
 }
 
-const DEFAULT_INVITE_CODE = 'EmQnXwv6VZ';
+const DEFAULT_INVITE_CODE = 'eclipserblx';
 const FALLBACK_MEMBER_COUNT = 500;
 
 export function useDiscordStats() {
