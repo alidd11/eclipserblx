@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAffiliateConnectStatus } from '@/hooks/useAffiliateConnectStatus';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   DollarSign, 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAffiliateConnectStatus } from '@/hooks/useAffiliateConnectStatus';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { 
