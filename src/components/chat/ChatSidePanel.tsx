@@ -964,4 +964,4 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
       )}
     </AnimatePresence>
   );
-}
+});
