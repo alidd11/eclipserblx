@@ -61,7 +61,7 @@ export default function AdminAuditLogs() {
       return data;
     },
     enabled: logUserIds.length > 0,
-    staleTime: 60000,
+    staleTime: 5 * 60_000,
   });
 
   const getAdminName = (userId: string) => {
