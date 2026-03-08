@@ -57,7 +57,8 @@ export function AdSlotPicker({ tier, userId, value, onChange }: AdSlotPickerProp
       if (error) throw error;
       return data;
     },
-    refetchInterval: 2 * 60_000, // 2 minutes (reduced from 30s)
+    refetchInterval: 5 * 60_000, // 5 minutes (relaxed from 2 min)
+    staleTime: 2 * 60_000,
   });
 
   // Check if user already has a pending booked slot

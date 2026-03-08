@@ -88,7 +88,7 @@ export default function SellerReviews() {
       return { reviews, totalCount: count || 0 };
     },
     enabled: !!store?.id && !!productMap,
-    staleTime: 30000,
+    staleTime: 2 * 60_000, // 2 minutes
   });
 
   const reviews = reviewsData?.reviews || [];

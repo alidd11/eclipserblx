@@ -44,7 +44,7 @@ export default function AdminAuditLogs() {
       if (error) throw error;
       return data as AuditLog[];
     },
-    staleTime: 30000,
+    staleTime: 3 * 60_000, // 3 minutes
   });
 
   // Get profiles only for users in the current logs (optimized)
