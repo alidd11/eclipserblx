@@ -373,7 +373,7 @@ export default function Marketplace() {
                       <Card className="overflow-hidden hover:shadow-md transition-all h-full">
                         <div className="aspect-square relative bg-muted">
                           {product.images?.[0] ? (
-                            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                            <img src={optimizeImageUrl(product.images[0], 200)} alt={product.name} width={200} height={200} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Package className="h-8 w-8 text-muted-foreground/30" />

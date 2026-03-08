@@ -43,7 +43,7 @@ const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct; fe
           <div className={`relative overflow-hidden bg-muted ${featured ? 'aspect-[16/10]' : 'aspect-[4/3]'}`}>
             {product.images?.[0] ? (
               <img
-                src={product.images[0]}
+                src={optimizeImageUrl(product.images[0], 400, 300)}
                 alt={product.name}
                 loading="lazy"
                 decoding="async"

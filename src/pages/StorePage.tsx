@@ -477,8 +477,10 @@ export default function StorePage() {
           {/* Store Logo */}
           {store.logo_url ? (
             <img 
-              src={store.logo_url} 
+              src={optimizeImageUrl(store.logo_url, 96, 96, 'contain')} 
               alt={store.name}
+              width={96}
+              height={96}
               className="h-24 w-24 object-contain flex-shrink-0 drop-shadow-lg"
             />
           ) : (
