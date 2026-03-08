@@ -39,7 +39,7 @@ export const LanguageSwitcher = forwardRef<HTMLDivElement, LanguageSwitcherProps
         {supportedLanguages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
-            onClick={() => i18n.changeLanguage(lang.code)}
+            onSelect={() => { void i18n.changeLanguage(lang.code); }}
             className={cn(
               'flex items-center gap-2 cursor-pointer',
               i18n.language === lang.code && 'bg-accent'
