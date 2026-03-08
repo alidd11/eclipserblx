@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 const DEFAULT_TITLE = 'Eclipse - Roblox Asset Marketplace';
 const DEFAULT_DESCRIPTION =
   'Eclipse is the best Roblox asset marketplace alternative. Buy premium UK roleplay scripts, vehicles, maps & game assets. Lower fees than competitors, instant delivery.';
-const DEFAULT_OG_IMAGE = 'https://storage.googleapis.com/gpt-engineer-file-uploads/6XoLGVy9Aseup6dIxodIWS9uGsS2/social-images/social-1770521924890-IMG_4300.png';
+const DEFAULT_OG_IMAGE = 'https://storage.googleapis.com/gpt-engineer-file-uploads/6XoLGVy9Aseup6dIxodIWS9uGsS2/social-images/social-1772684689417-IMG_0084.webp';
 
 interface PageMetaOptions {
   title?: string;
