@@ -15,19 +15,138 @@ const BOT_PATTERNS = [
   "Applebot", "Embedly", "Iframely", "vkShare", "Pinterestbot",
 ];
 
-// Performance testing tools that should NOT be treated as bots
 const NOT_BOT_PATTERNS = [
   "Lighthouse", "PageSpeed", "PTST", "Chrome-Lighthouse", "Speed Insights",
 ];
 
 const STATIC_OG_PATHS = new Set([
-  '/', '/products', '/stores', '/categories', '/featured',
-  '/eclipse-plus', '/faq', '/help-center', '/sell', '/contact',
-  '/affiliate', '/advertise', '/jobs',
+  "/", "/products", "/stores", "/categories", "/featured",
+  "/eclipse-plus", "/faq", "/help-center", "/sell", "/contact",
+  "/affiliate", "/advertise", "/jobs",
 ]);
 
-const ORIGIN_PRIMARY = "https://roleplay-hub-shop.lovable.app";
-const ORIGIN_FALLBACK = "https://id-preview--d330fb3c-8e4c-4ae9-8517-806e609eff0f.lovable.app";
+const ORIGINS = [
+  "https://roleplay-hub-shop.lovable.app",
+  "https://id-preview--d330fb3c-8e4c-4ae9-8517-806e609eff0f.lovable.app",
+];
+
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+const ORIGIN_ERROR_STATUSES = new Set([522, 523, 524, 530]);
+
+function isAuthLikePath(pathname) {
+  return pathname.startsWith("/auth") || pathname.startsWith("/~oauth");
+}
+
+function isAuthBridgeUrl(value) {
+  const v = String(value || "").toLowerCase();
+  return v.includes("auth-bridge") || v.includes("lovable.dev") || v.includes("lovableproject.com") || v.includes("/auth/login");
+}
+
+function normalizeResponseHeaders(headers, pathname, activeOrigin) {
+  const out = new Headers(headers);
+  out.set("X-OG-Worker", "pass");
+  out.set("X-OG-Origin", activeOrigin);
+
+  const ct = out.get("Content-Type") || "";
+  const isPage = !pathname.includes(".") || pathname.endsWith(".html");
+  if (isPage && !ct.includes("text/html")) {
+    out.set("Content-Type", "text/html; charset=utf-8");
+  }
+
+  out.delete("Content-Disposition");
+  out.delete("Location");
+  return out;
+}
+
+async function serveSpaEntry(origin) {
+  const spaRes = await fetch(origin + "/index.html", {
+    headers: { "Accept": "text/html" },
+    redirect: "follow",
+  });
+
+  return new Response(spaRes.body, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-cache",
+      "X-OG-Worker": "spa-fallback",
+      "X-OG-Origin": origin,
+    },
+  });
+}
+
+async function proxyToOrigins(request, url) {
+  const originHeaders = new Headers(request.headers);
+  originHeaders.delete("Host");
+  originHeaders.delete("host");
+
+  const isGetLike = request.method === "GET" || request.method === "HEAD";
+  const requestBody = isGetLike ? undefined : request.body;
+
+  for (const origin of ORIGINS) {
+    let currentUrl = new URL(url.pathname + url.search, origin).toString();
+
+    for (let hop = 0; hop < 6; hop++) {
+      let res;
+      try {
+        res = await fetch(currentUrl, {
+          method: request.method,
+          headers: originHeaders,
+          body: requestBody,
+          redirect: "manual",
+        });
+      } catch {
+        break;
+      }
+
+      if (ORIGIN_ERROR_STATUSES.has(res.status)) {
+        break;
+      }
+
+      if (!REDIRECT_STATUSES.has(res.status)) {
+        return new Response(res.body, {
+          status: res.status,
+          headers: normalizeResponseHeaders(res.headers, url.pathname, origin),
+        });
+      }
+
+      const location = res.headers.get("Location") || "";
+      if (!location) {
+        return serveSpaEntry(origin);
+      }
+
+      if (isAuthBridgeUrl(location)) {
+        return serveSpaEntry(origin);
+      }
+
+      const nextUrl = new URL(location, currentUrl);
+      const originHost = new URL(origin).host;
+
+      if (nextUrl.host === originHost) {
+        currentUrl = nextUrl.toString();
+        continue;
+      }
+
+      if (isAuthLikePath(url.pathname)) {
+        return new Response(null, {
+          status: res.status,
+          headers: {
+            "Location": nextUrl.toString(),
+            "X-OG-Worker": "redirect-pass",
+            "X-OG-Origin": origin,
+          },
+        });
+      }
+
+      return serveSpaEntry(origin);
+    }
+  }
+
+  return new Response("All origins timed out", {
+    status: 502,
+    headers: { "Content-Type": "text/plain", "X-OG-Worker": "origin-timeout" },
+  });
+}
 
 export default {
   async fetch(request) {
@@ -36,16 +155,9 @@ export default {
 
     const isDynamicPage = /^\\/(products|store)\\/[^/?#]+/.test(url.pathname);
     const isStaticOgPage = STATIC_OG_PATHS.has(url.pathname);
-
-    // Exclude performance testing tools (Lighthouse, PageSpeed) from bot handling
-    const isTestingTool = NOT_BOT_PATTERNS.some((p) =>
-      userAgent.toLowerCase().includes(p.toLowerCase())
-    );
-
-    const isBot = !isTestingTool && BOT_PATTERNS.some((bot) =>
-      userAgent.toLowerCase().includes(bot.toLowerCase())
-    );
-    const forceOg = url.searchParams.get('__ogtest') === '1';
+    const isTestingTool = NOT_BOT_PATTERNS.some((p) => userAgent.toLowerCase().includes(p.toLowerCase()));
+    const isBot = !isTestingTool && BOT_PATTERNS.some((bot) => userAgent.toLowerCase().includes(bot.toLowerCase()));
+    const forceOg = url.searchParams.get("__ogtest") === "1";
 
     if ((isDynamicPage || isStaticOgPage) && (isBot || forceOg)) {
       const ogUrl = SUPABASE_FUNCTION_URL + "?path=" + encodeURIComponent(url.pathname);
@@ -83,108 +195,7 @@ export default {
       }
     }
 
-    const originHeaders = new Headers(request.headers);
-    originHeaders.delete("Host");
-    originHeaders.delete("host");
-
-    try {
-      const isGetLike = request.method === "GET" || request.method === "HEAD";
-      const fetchInit = {
-        method: request.method,
-        headers: originHeaders,
-        body: !isGetLike ? request.body : undefined,
-        redirect: "manual",
-      };
-
-      let activeOrigin = ORIGIN_PRIMARY;
-      let originUrl = new URL(url.pathname + url.search, activeOrigin);
-      let originRes: Response;
-
-      try {
-        originRes = await fetch(originUrl.toString(), fetchInit);
-      } catch {
-        activeOrigin = ORIGIN_FALLBACK;
-        originUrl = new URL(url.pathname + url.search, activeOrigin);
-        originRes = await fetch(originUrl.toString(), fetchInit);
-      }
-
-      // If primary origin times out or fails at edge, retry against fallback origin
-      if (activeOrigin === ORIGIN_PRIMARY && [522, 523, 524, 530].includes(originRes.status)) {
-        activeOrigin = ORIGIN_FALLBACK;
-        originUrl = new URL(url.pathname + url.search, activeOrigin);
-        originRes = await fetch(originUrl.toString(), fetchInit);
-      }
-
-      // Handle redirects manually to prevent loops
-      if ([301, 302, 303, 307, 308].includes(originRes.status)) {
-        const location = originRes.headers.get("Location") || "";
-
-        // Block auth-bridge and lovable internal redirects to prevent loops
-        const isAuthBridge = location.includes("auth-bridge") ||
-          location.includes("lovableproject.com") ||
-          (location.includes("lovable.app") && !location.includes(activeOrigin));
-
-        if (isAuthBridge) {
-          // Serve the SPA index.html directly instead of following the redirect
-          const spaRes = await fetch(activeOrigin + "/index.html", {
-            headers: { "Accept": "text/html" },
-          });
-          return new Response(spaRes.body, {
-            status: 200,
-            headers: {
-              "Content-Type": "text/html; charset=utf-8",
-              "Cache-Control": "no-cache",
-              "X-OG-Worker": "auth-bridge-bypass",
-              "X-OG-Origin": activeOrigin,
-            },
-          });
-        }
-
-        // For other redirects (e.g. OAuth), pass them through
-        // Rewrite Location from origin domain to custom domain
-        let rewrittenLocation = location;
-        if (location.startsWith(activeOrigin)) {
-          rewrittenLocation = location.replace(activeOrigin, url.origin);
-        }
-
-        return new Response(null, {
-          status: originRes.status,
-          headers: {
-            "Location": rewrittenLocation,
-            "X-OG-Worker": "redirect",
-            "X-OG-Origin": activeOrigin,
-          },
-        });
-      }
-
-      const responseHeaders = new Headers(originRes.headers);
-      responseHeaders.set("X-OG-Worker", "pass");
-      responseHeaders.set("X-OG-Origin", activeOrigin);
-
-      // Ensure HTML pages always have correct Content-Type so Safari
-      // does not treat the response as a file download
-      const ct = responseHeaders.get("Content-Type") || "";
-      const isPage = !url.pathname.includes(".") || url.pathname.endsWith(".html");
-      if (isPage && !ct.includes("text/html")) {
-        responseHeaders.set("Content-Type", "text/html; charset=utf-8");
-      }
-
-      // Remove any Content-Disposition that could trigger a download prompt
-      responseHeaders.delete("Content-Disposition");
-
-      // Remove Location headers from non-redirect responses to prevent confusion
-      responseHeaders.delete("Location");
-
-      return new Response(originRes.body, {
-        status: originRes.status,
-        headers: responseHeaders,
-      });
-    } catch (error) {
-      return new Response("Origin fetch failed: " + error.message, {
-        status: 502,
-        headers: { "Content-Type": "text/plain", "X-OG-Worker": "origin-error" },
-      });
-    }
+    return proxyToOrigins(request, url);
   },
 };
 `
