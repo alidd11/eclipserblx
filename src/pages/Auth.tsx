@@ -14,7 +14,6 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { useTranslation } from 'react-i18next';
-import { useTranslation } from 'react-i18next';
 
 const authSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
