@@ -105,10 +105,13 @@ export default {
  */
 async function proxyToOrigin(request, url) {
   const originUrl = new URL(url.pathname + url.search, ORIGIN_URL);
+  const forwardedHeaders = new Headers(request.headers);
+  forwardedHeaders.delete("host");
+
   const newRequest = new Request(originUrl.toString(), {
     method: request.method,
-    headers: request.headers,
-    body: request.body,
+    headers: forwardedHeaders,
+    body: request.method !== "GET" && request.method !== "HEAD" ? request.body : undefined,
     redirect: "follow",
   });
   return fetch(newRequest);
