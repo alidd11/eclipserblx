@@ -39,6 +39,7 @@ import { ReviewSchema } from '@/components/seo/ReviewSchema';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { RecentlyViewedProducts } from '@/components/product/RecentlyViewedProducts';
 import { FrequentlyBoughtTogether } from '@/components/product/FrequentlyBoughtTogether';
+import { PriceAlertButton } from '@/components/product/PriceAlertButton';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
