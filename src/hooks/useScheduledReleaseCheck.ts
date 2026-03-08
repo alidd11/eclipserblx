@@ -20,18 +20,11 @@ export function useScheduledReleaseCheck() {
     if (!user) return;
 
     // Initial check on mount
-    checkScheduledReleases().then(result => {
-      if (result.processed && result.processed > 0) {
-        console.log(`[ScheduledReleaseCheck] Processed ${result.processed} products, notified ${result.notified} users`);
-      }
-    });
+    checkScheduledReleases().catch(() => {});
 
     // Set up periodic checking
-    intervalRef.current = setInterval(async () => {
-      const result = await checkScheduledReleases();
-      if (result.processed && result.processed > 0) {
-        console.log(`[ScheduledReleaseCheck] Processed ${result.processed} products, notified ${result.notified} users`);
-      }
+    intervalRef.current = setInterval(() => {
+      checkScheduledReleases().catch(() => {});
     }, CHECK_INTERVAL);
 
     return () => {

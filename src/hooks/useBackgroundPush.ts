@@ -219,7 +219,7 @@ export function useBackgroundPush() {
       if (error) throw error;
 
       setIsSubscribed(true);
-      console.log('Push subscription saved successfully');
+      
       return { success: true };
     } catch (error: any) {
       console.error('Error subscribing to push:', error);
@@ -266,7 +266,7 @@ export function useBackgroundPush() {
       }
 
       setIsSubscribed(false);
-      console.log('Push subscription removed successfully');
+      
       return true;
     } catch (error) {
       console.error('Error unsubscribing from push:', error);

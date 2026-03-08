@@ -59,31 +59,31 @@ export default function SellerDashboard() {
     queryKey: ['seller-product-stats', store?.id],
     queryFn: async () => {
       if (!store?.id) return { total: 0, pending: 0, approved: 0, nonCompliant: 0 };
-      const { data, error } = await supabase
+
+      // Fetch products and bot product IDs in parallel
+      const { data: products, error } = await supabase
         .from('products')
         .select('id, moderation_status, description, asset_file_url')
         .eq('store_id', store.id);
       if (error) throw error;
-      const products = data || [];
+      if (!products?.length) return { total: 0, pending: 0, approved: 0, nonCompliant: 0 };
 
-      // Fetch bot product IDs so we skip the file requirement for them
+      const productIds = products.map(p => p.id);
       const { data: botProducts } = await supabase
         .from('bot_products')
         .select('product_id')
-        .in('product_id', products.map(p => p.id));
+        .in('product_id', productIds);
       const botProductIds = new Set((botProducts || []).map(bp => bp.product_id));
 
-      const nonCompliant = products.filter(p => {
+      let pending = 0, approved = 0, nonCompliant = 0;
+      for (const p of products) {
+        if (p.moderation_status === 'pending') pending++;
+        if (p.moderation_status === 'approved') approved++;
         const plainDesc = (p.description || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
         const needsFile = !botProductIds.has(p.id);
-        return plainDesc.length < 100 || (needsFile && !p.asset_file_url);
-      });
-      return {
-        total: products.length,
-        pending: products.filter(p => p.moderation_status === 'pending').length,
-        approved: products.filter(p => p.moderation_status === 'approved').length,
-        nonCompliant: nonCompliant.length,
-      };
+        if (plainDesc.length < 100 || (needsFile && !p.asset_file_url)) nonCompliant++;
+      }
+      return { total: products.length, pending, approved, nonCompliant };
     },
     enabled: !!store?.id,
   });
