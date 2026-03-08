@@ -84,8 +84,7 @@ export default {
 
     const originUrl = new URL(url.pathname + url.search, ORIGIN);
     const originHeaders = new Headers(request.headers);
-    originHeaders.delete("Host");
-    originHeaders.delete("host");
+    originHeaders.set("Host", url.hostname);
 
     try {
       const originRes = await fetch(originUrl.toString(), {
