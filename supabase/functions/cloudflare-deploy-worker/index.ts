@@ -93,8 +93,48 @@ export default {
         method: request.method,
         headers: originHeaders,
         body: !isGetLike ? request.body : undefined,
-        redirect: "follow",
+        redirect: "manual",
       });
+
+      // Handle redirects manually to prevent loops
+      if ([301, 302, 303, 307, 308].includes(originRes.status)) {
+        const location = originRes.headers.get("Location") || "";
+
+        // Block auth-bridge and lovable internal redirects to prevent loops
+        const isAuthBridge = location.includes("auth-bridge") ||
+          location.includes("lovableproject.com") ||
+          (location.includes("lovable.app") && !location.includes(ORIGIN));
+
+        if (isAuthBridge) {
+          // Serve the SPA index.html directly instead of following the redirect
+          const spaRes = await fetch(ORIGIN + "/index.html", {
+            headers: { "Accept": "text/html" },
+          });
+          return new Response(spaRes.body, {
+            status: 200,
+            headers: {
+              "Content-Type": "text/html; charset=utf-8",
+              "Cache-Control": "no-cache",
+              "X-OG-Worker": "auth-bridge-bypass",
+            },
+          });
+        }
+
+        // For other redirects (e.g. OAuth), pass them through
+        // Rewrite Location from origin domain to custom domain
+        let rewrittenLocation = location;
+        if (location.startsWith(ORIGIN)) {
+          rewrittenLocation = location.replace(ORIGIN, url.origin);
+        }
+
+        return new Response(null, {
+          status: originRes.status,
+          headers: {
+            "Location": rewrittenLocation,
+            "X-OG-Worker": "redirect",
+          },
+        });
+      }
 
       const responseHeaders = new Headers(originRes.headers);
       responseHeaders.set("X-OG-Worker", "pass");
@@ -109,6 +149,9 @@ export default {
 
       // Remove any Content-Disposition that could trigger a download prompt
       responseHeaders.delete("Content-Disposition");
+
+      // Remove Location headers from non-redirect responses to prevent confusion
+      responseHeaders.delete("Location");
 
       return new Response(originRes.body, {
         status: originRes.status,
