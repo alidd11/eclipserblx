@@ -81,7 +81,7 @@ export const FloatingActionButtons = forwardRef<HTMLDivElement>(function Floatin
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="absolute -top-0.5 -right-0.5 xs:-top-1 xs:-right-1 h-5 w-5 xs:h-6 xs:w-6 rounded-full bg-red-500 text-white text-[10px] xs:text-xs font-bold flex items-center justify-center shadow-md"
+                className="absolute -top-0.5 -right-0.5 xs:-top-1 xs:-right-1 h-5 w-5 xs:h-6 xs:w-6 rounded-full bg-destructive text-destructive-foreground text-[10px] xs:text-xs font-bold flex items-center justify-center shadow-md"
               >
                 {cartItemCount > 9 ? '9+' : cartItemCount}
               </motion.span>
