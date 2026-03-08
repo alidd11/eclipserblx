@@ -6,29 +6,32 @@ async function getVapidPublicKey(): Promise<string | undefined> {
   // First try env variable
   const fromEnv = (import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined)?.trim();
   if (fromEnv && fromEnv.length > 0) {
-    // Clean and validate the key
     const cleaned = fromEnv.replace(/[\s\r\n]/g, '');
     if (/^[A-Za-z0-9_-]+$/.test(cleaned)) {
       return cleaned;
     }
-    console.warn('VITE_VAPID_PUBLIC_KEY contains invalid characters, trying backend...');
+    console.warn('VITE_VAPID_PUBLIC_KEY contains invalid characters, trying settings...');
   }
 
   try {
-    const { data, error } = await supabase.functions.invoke('get-vapid-public-key');
+    // Query settings table directly instead of invoking edge function
+    const { data, error } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'vapid_public_key')
+      .maybeSingle();
     if (error) throw error;
 
-    const key = (data as any)?.publicKey;
+    const key = data?.value;
     if (typeof key === 'string' && key.trim()) {
-      // Clean and validate the key from backend
-      const cleaned = key.replace(/[\s\r\n]/g, '').trim();
+      const cleaned = key.replace(/[\s\r\n"]/g, '').trim();
       if (/^[A-Za-z0-9_-]+$/.test(cleaned)) {
         return cleaned;
       }
-      console.error('VAPID key from backend contains invalid characters');
+      console.error('VAPID key from settings contains invalid characters');
     }
   } catch (err) {
-    console.error('Failed to retrieve VAPID public key from backend:', err);
+    console.error('Failed to retrieve VAPID public key from settings:', err);
   }
 
   return undefined;
