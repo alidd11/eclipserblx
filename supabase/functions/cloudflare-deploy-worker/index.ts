@@ -47,7 +47,8 @@ export default {
     );
     const forceOg = url.searchParams.get('__ogtest') === '1';
 
-    if ((isDynamicPage || isStaticOgPage) && (isBot || forceOg)) {
+    const shouldPassRedirectToBrowser = (pathname) =>
+      pathname.startsWith('/auth') || pathname.startsWith('/~oauth');
       const ogUrl = SUPABASE_FUNCTION_URL + "?path=" + encodeURIComponent(url.pathname);
       try {
         const ogResponse = await fetch(ogUrl, {
