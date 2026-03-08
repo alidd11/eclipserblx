@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
   // ═══════════════════════════════════════════════
   // 1. PAGE RULES (Cache + Redirects via legacy API)
   // ═══════════════════════════════════════════════
-  async function createPageRule(target: string, actions: unknown[], label: string) {
+  async function createPageRule(target: string, actions: unknown[], label: string, priority = 1) {
     try {
       // First delete existing page rules to avoid conflicts
       const listRes = await fetch(`${baseUrl}/pagerules?status=active`, { headers })
@@ -62,7 +62,21 @@ Deno.serve(async (req) => {
       
       if (listData.success && listData.result) {
         for (const rule of listData.result) {
-          if (rule.targets?.[0]?.constraint?.value === target) {
+          const ruleTarget = rule.targets?.[0]?.constraint?.value
+          const hasForwarding = Array.isArray(rule.actions) && rule.actions.some((a: any) => a?.id === 'forwarding_url')
+
+          // Replace exact-target rules being managed by this function
+          if (ruleTarget === target) {
+            await fetch(`${baseUrl}/pagerules/${rule.id}`, { method: 'DELETE', headers })
+            continue
+          }
+
+          // Prevent apex/www redirect loops by removing conflicting forwarding rules
+          if (
+            label === 'www_redirect' &&
+            hasForwarding &&
+            (ruleTarget === 'eclipserblx.com/*' || ruleTarget === 'www.eclipserblx.com/*')
+          ) {
             await fetch(`${baseUrl}/pagerules/${rule.id}`, { method: 'DELETE', headers })
           }
         }
@@ -74,7 +88,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           targets: [{ target: 'url', constraint: { operator: 'matches', value: target } }],
           actions,
-          priority: 1,
+          priority,
           status: 'active',
         }),
       })
