@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { LayoutShell } from '@/components/layout/LayoutShell';
+import { useIPShieldSubscription } from '@/hooks/useIPShieldSubscription';
 
 interface IPShieldLayoutProps {
   children: ReactNode;
@@ -16,16 +17,8 @@ export function IPShieldLayout({ children }: IPShieldLayoutProps) {
   const { user, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
 
-  // Check subscription + verification (skip for staff/admins)
-  const { data: subscriptionStatus, isLoading: subLoading } = useQuery({
-    queryKey: ['ip-shield-subscription', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('check-ip-shield-subscription');
-      if (error) throw error;
-      return data as { subscribed: boolean; tier?: string; limits?: any; custom_plan?: boolean };
-    },
-    enabled: !!user && !isStaff,
-  });
+  // Check subscription via shared hook (DB-first with background Stripe sync)
+  const { data: subscriptionStatus, isLoading: subLoading } = useIPShieldSubscription();
 
   const { data: verificationStatus, isLoading: verifyLoading } = useQuery({
     queryKey: ['ip-shield-identity-verification', user?.id],

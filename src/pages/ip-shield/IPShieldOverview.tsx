@@ -1,6 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useIPShieldSubscription } from '@/hooks/useIPShieldSubscription';
 import { IPShieldLayout } from '@/components/ip-shield/IPShieldLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -109,15 +110,7 @@ function AnalyticsDashboard({ userId }: { userId?: string }) {
 export default function IPShieldOverview() {
   const { user } = useAuth();
 
-  const { data: subscriptionStatus } = useQuery({
-    queryKey: ['ip-shield-subscription', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('check-ip-shield-subscription');
-      if (error) throw error;
-      return data as any;
-    },
-    enabled: !!user,
-  });
+  const { data: subscriptionStatus } = useIPShieldSubscription();
 
   const { data: registryCount } = useQuery({
     queryKey: ['ip-registry-count', user?.id],

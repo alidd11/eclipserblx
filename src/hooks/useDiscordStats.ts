@@ -19,8 +19,8 @@ export function useDiscordStats() {
       }
       return data;
     },
-    staleTime: 1000 * 60 * 10, // Cache for 10 minutes — non-critical data
-    gcTime: 1000 * 60 * 15,
+    staleTime: 1000 * 60 * 30, // Cache for 30 minutes — server member count rarely changes
+    gcTime: 1000 * 60 * 45,
     refetchOnWindowFocus: false,
     refetchOnMount: false, // Prevent refetch on every component mount
   });

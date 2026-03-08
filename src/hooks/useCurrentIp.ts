@@ -19,7 +19,7 @@ export function useCurrentIp(): IpInfo {
         const cached = sessionStorage.getItem('ip-ban-check');
         if (cached) {
           const { data: cachedData, ts } = JSON.parse(cached);
-          if (Date.now() - ts < 10 * 60 * 1000) {
+          if (Date.now() - ts < 15 * 60 * 1000) {
             setIp(cachedData?.ip || null);
             setIsLoading(false);
             return;

@@ -21,8 +21,8 @@ export function IpBanCheck({ children }: { children: React.ReactNode }) {
         const cached = sessionStorage.getItem('ip-ban-check');
         if (cached) {
           const { data: cachedData, ts } = JSON.parse(cached);
-          // Cache valid for 10 minutes
-          if (Date.now() - ts < 10 * 60 * 1000) {
+          // Cache valid for 15 minutes (extended from 10 to reduce edge function calls)
+          if (Date.now() - ts < 15 * 60 * 1000) {
             setBanInfo(cachedData);
             setIsChecking(false);
             return;
@@ -36,7 +36,7 @@ export function IpBanCheck({ children }: { children: React.ReactNode }) {
           setBanInfo({ banned: false });
         } else {
           setBanInfo(data);
-          // Cache result for 10 minutes
+          // Cache result for 15 minutes
           sessionStorage.setItem('ip-ban-check', JSON.stringify({ data, ts: Date.now() }));
         }
       } catch (err) {

@@ -28,6 +28,7 @@ import {
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { IPShieldContactDialog } from '@/components/ip-shield/IPShieldContactDialog';
+import { useIPShieldSubscription } from '@/hooks/useIPShieldSubscription';
 
 
 const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof Clock }> = {
@@ -745,16 +746,8 @@ export default function IPShield() {
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: 'Custom IP Shield Plan', message: '' });
   const [contactSubmitting, setContactSubmitting] = useState(false);
-  // Check IP Shield subscription status (skip for staff)
-  const { data: subscriptionStatus, isLoading: subLoading, refetch: refetchSubscription } = useQuery({
-    queryKey: ['ip-shield-subscription', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('check-ip-shield-subscription');
-      if (error) throw error;
-      return data as { subscribed: boolean; tier?: string; limits?: { takedowns_per_month: number; registry_limit: number; priority: boolean; monitoring: boolean; dedicated_agent: boolean }; subscription_end?: string; subscription_id?: string };
-    },
-    enabled: !!user && !isStaff,
-  });
+  // Check IP Shield subscription status via shared hook (DB-first, edge function only for Stripe sync)
+  const { data: subscriptionStatus, isLoading: subLoading, refetch: refetchSubscription } = useIPShieldSubscription();
 
   const isSubscribed = isStaff || subscriptionStatus?.subscribed === true;
   // Check identity verification status (skip for staff)
