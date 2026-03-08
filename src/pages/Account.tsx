@@ -318,6 +318,15 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     queryKey: ['discord-avatar', profile?.discord_id],
     queryFn: async () => {
       if (!profile?.discord_id) return null;
+      // Check localStorage cache first
+      const cacheKey = `discord-avatar-${profile.discord_id}`;
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        try {
+          const { data: cachedData, ts } = JSON.parse(cached);
+          if (Date.now() - ts < 30 * 60 * 1000) return cachedData;
+        } catch {}
+      }
       const { data, error } = await supabase.functions.invoke('get-discord-avatar', {
         body: { discord_id: profile.discord_id },
       });
@@ -325,10 +334,12 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         console.error('Failed to fetch Discord avatar:', error);
         return null;
       }
+      // Cache in localStorage for 30 minutes
+      localStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() }));
       return data;
     },
     enabled: !!profile?.discord_id,
-    staleTime: 1000 * 60 * 30, // Cache for 30 minutes
+    staleTime: 1000 * 60 * 30,
   });
 
 
