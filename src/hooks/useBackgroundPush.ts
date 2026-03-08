@@ -266,7 +266,7 @@ export function useBackgroundPush() {
       }
 
       setIsSubscribed(false);
-      console.log('Push subscription removed successfully');
+      
       return true;
     } catch (error) {
       console.error('Error unsubscribing from push:', error);
