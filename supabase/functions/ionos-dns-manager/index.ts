@@ -34,33 +34,36 @@ Deno.serve(async (req) => {
   const corsResp = handleCors(req);
   if (corsResp) return corsResp;
 
-  try {
-    // Auth check — require admin role
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return unauthorized();
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const token = authHeader.replace("Bearer ", "");
-    
-    // Allow service role key to bypass user auth (for internal/admin calls)
-    const isServiceRole = token === supabaseKey;
-    
-    if (!isServiceRole) {
-      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-      if (authError || !user) return unauthorized();
+    const body: IonosRequest = await req.json().catch(() => ({ action: "health-check" }));
 
-      // Check admin role
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin");
+    // Health-check is allowed without auth for testing connectivity
+    if (body.action !== "health-check") {
+      // Auth check — require admin role
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader) return unauthorized();
 
-      if (!roles || roles.length === 0) {
-        return jsonError("Admin access required", 403, "FORBIDDEN");
+      const token = authHeader.replace("Bearer ", "");
+      
+      // Allow service role key to bypass user auth
+      const isServiceRole = token === supabaseKey;
+      
+      if (!isServiceRole) {
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+        if (authError || !user) return unauthorized();
+
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "admin");
+
+        if (!roles || roles.length === 0) {
+          return jsonError("Admin access required", 403, "FORBIDDEN");
+        }
       }
     }
 
@@ -71,8 +74,6 @@ Deno.serve(async (req) => {
 
     const IONOS_KEY = Deno.env.get("IONOS_API_KEY");
     if (!IONOS_KEY) return jsonError("IONOS_API_KEY secret not configured", 500);
-
-    const body: IonosRequest = await req.json().catch(() => ({ action: "health-check" }));
     const { action } = body;
 
     // Detect API type from key format
