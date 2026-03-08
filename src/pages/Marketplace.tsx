@@ -164,7 +164,7 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
       <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200">
         <div className="aspect-[4/3] relative overflow-hidden bg-muted">
           {product.images?.[0] ? (
-            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
+            <img src={optimizeImageUrl(product.images[0], 400, 300)} alt={product.name} width={400} height={300} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-muted">
               <span className="text-muted-foreground text-sm">No image</span>
