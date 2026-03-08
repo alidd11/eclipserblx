@@ -11,7 +11,7 @@
 const SUPABASE_FUNCTION_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy2";
 
 // The actual Lovable origin to proxy human traffic to
-const ORIGIN_URL = "https://id-preview--d330fb3c-8e4c-4ae9-8517-806e609eff0f.lovable.app";
+const ORIGIN_URL = "https://roleplay-hub-shop.lovable.app";
 
 // Bot user-agent patterns (social crawlers & search engines only)
 const BOT_PATTERNS = [

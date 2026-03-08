@@ -26,7 +26,7 @@ const STATIC_OG_PATHS = new Set([
   '/affiliate', '/advertise', '/jobs',
 ]);
 
-const ORIGIN = "https://id-preview--d330fb3c-8e4c-4ae9-8517-806e609eff0f.lovable.app";
+const ORIGIN = "https://roleplay-hub-shop.lovable.app";
 
 export default {
   async fetch(request) {
