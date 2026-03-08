@@ -24,11 +24,11 @@ serve(async (req) => {
       .maybeSingle();
 
     // Extract invite code from URL or use default
-    let inviteUrl = setting?.value || "https://discord.gg/EmQnXwv6VZ";
+    let inviteUrl = setting?.value || "https://discord.gg/eclipserblx";
     if (typeof inviteUrl === "string") {
       inviteUrl = inviteUrl.replace(/^"|"$/g, "");
     }
-    const inviteCode = inviteUrl.split("/").pop() || "EmQnXwv6VZ";
+    const inviteCode = inviteUrl.split("/").pop() || "eclipserblx";
 
     // Fetch invite with counts from Discord API (no auth needed)
     const discordRes = await fetch(
