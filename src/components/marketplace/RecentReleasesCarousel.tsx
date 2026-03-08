@@ -153,7 +153,7 @@ export function RecentReleasesCarousel() {
                 <div className="aspect-[4/3] relative overflow-hidden bg-muted">
                   {product.images?.[0] ? (
                     <img
-                      src={product.images[0]}
+                      src={optimizeImageUrl(product.images[0], 300, 225)}
                       alt={product.name}
                       loading="lazy"
                       decoding="async"
