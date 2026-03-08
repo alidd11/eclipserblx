@@ -227,7 +227,7 @@ export function useSellerStatus() {
       return data as SellerBalance | null;
     },
     enabled: !!user?.id && store?.status === 'approved',
-    staleTime: 30 * 1000, // 30 seconds - balance can change with sales
+    staleTime: 2 * 60 * 1000, // 2 minutes - balance can change with sales
   });
 
   const isSeller = store?.status === 'approved';

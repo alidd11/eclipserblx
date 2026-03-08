@@ -28,7 +28,7 @@ export function DiscordWidget() {
       }
       return String(val);
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes - Discord server ID rarely changes
   });
 
   const widgetHeight = isMobile ? 300 : 400;
