@@ -16,53 +16,47 @@ export function RevenueSummaryStats() {
 
       const now = new Date();
       const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-      const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
       const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
-      const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59).toISOString();
 
-      // Today's revenue (exclude refunded)
-      const { data: todaySales } = await supabase
-        .from('seller_transactions')
-        .select('net_amount')
-        .eq('store_id', store.id)
-        .eq('type', 'sale')
-        .is('refunded_at', null)
-        .gte('created_at', startOfToday);
+      // Single query: fetch all sales from last month onwards (covers today, this month, last month)
+      const [salesRes, balanceRes] = await Promise.all([
+        supabase
+          .from('seller_transactions')
+          .select('net_amount, created_at')
+          .eq('store_id', store.id)
+          .eq('type', 'sale')
+          .is('refunded_at', null)
+          .gte('created_at', startOfLastMonth)
+          .order('created_at', { ascending: false })
+          .limit(1000),
+        supabase
+          .from('seller_balances')
+          .select('total_earned')
+          .eq('store_id', store.id)
+          .maybeSingle(),
+      ]);
 
-      const todayRevenue = todaySales?.reduce((sum, t) => sum + (t.net_amount || 0), 0) || 0;
+      const sales = salesRes.data || [];
+      const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      // This month revenue (exclude refunded)
-      const { data: monthSales } = await supabase
-        .from('seller_transactions')
-        .select('net_amount')
-        .eq('store_id', store.id)
-        .eq('type', 'sale')
-        .is('refunded_at', null)
-        .gte('created_at', startOfThisMonth);
+      let todayRevenue = 0;
+      let thisMonthRevenue = 0;
+      let thisMonthOrders = 0;
+      let lastMonthRevenue = 0;
 
-      const thisMonthRevenue = monthSales?.reduce((sum, t) => sum + (t.net_amount || 0), 0) || 0;
-      const thisMonthOrders = monthSales?.length || 0;
+      for (const t of sales) {
+        const d = new Date(t.created_at);
+        const amt = t.net_amount || 0;
+        if (d >= startOfThisMonth) {
+          thisMonthRevenue += amt;
+          thisMonthOrders++;
+          if (t.created_at >= startOfToday) todayRevenue += amt;
+        } else {
+          lastMonthRevenue += amt;
+        }
+      }
 
-      // Last month revenue for comparison (exclude refunded)
-      const { data: lastMonthSales } = await supabase
-        .from('seller_transactions')
-        .select('net_amount')
-        .eq('store_id', store.id)
-        .eq('type', 'sale')
-        .is('refunded_at', null)
-        .gte('created_at', startOfLastMonth)
-        .lte('created_at', endOfLastMonth);
-
-      const lastMonthRevenue = lastMonthSales?.reduce((sum, t) => sum + (t.net_amount || 0), 0) || 0;
-
-      // All-time: use seller_balances.total_earned (avoids 1000-row limit)
-      const { data: balanceData } = await supabase
-        .from('seller_balances')
-        .select('total_earned')
-        .eq('store_id', store.id)
-        .maybeSingle();
-
-      const totalRevenue = balanceData?.total_earned || 0;
+      const totalRevenue = balanceRes.data?.total_earned || 0;
 
       return { todayRevenue, thisMonthRevenue, lastMonthRevenue, thisMonthOrders, totalRevenue };
     },
