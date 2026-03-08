@@ -44,18 +44,24 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) return unauthorized();
+    
+    // Allow service role key to bypass user auth (for internal/admin calls)
+    const isServiceRole = token === supabaseKey;
+    
+    if (!isServiceRole) {
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !user) return unauthorized();
 
-    // Check admin role
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin");
+      // Check admin role
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin");
 
-    if (!roles || roles.length === 0) {
-      return jsonError("Admin access required", 403, "FORBIDDEN");
+      if (!roles || roles.length === 0) {
+        return jsonError("Admin access required", 403, "FORBIDDEN");
+      }
     }
 
     // Rate limit
