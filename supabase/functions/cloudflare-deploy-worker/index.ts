@@ -81,6 +81,7 @@ async function proxyToOrigins(request, url) {
   originHeaders.delete("host");
 
   const isGetLike = request.method === "GET" || request.method === "HEAD";
+  const requestBody = isGetLike ? undefined : request.body;
 
   for (const origin of ORIGINS) {
     let currentUrl = new URL(url.pathname + url.search, origin).toString();
@@ -91,7 +92,7 @@ async function proxyToOrigins(request, url) {
         res = await fetch(currentUrl, {
           method: request.method,
           headers: originHeaders,
-          body: !isGetLike ? request.body : undefined,
+          body: requestBody,
           redirect: "manual",
         });
       } catch {
