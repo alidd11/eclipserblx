@@ -121,7 +121,7 @@ export default function SellerMessages() {
       return { conversations: conversationsWithData as StoreConversation[], totalCount: count || 0 };
     },
     enabled: !!storeId,
-    staleTime: 30000,
+    staleTime: 2 * 60_000,
   });
 
   const conversations = conversationsData?.conversations || [];

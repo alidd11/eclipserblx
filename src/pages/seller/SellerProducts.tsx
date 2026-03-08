@@ -191,7 +191,7 @@ export default function SellerProducts() {
       return { products: data || [], totalCount: count || 0 };
     },
     enabled: !!store?.id,
-    staleTime: 30000,
+    staleTime: 2 * 60_000,
   });
 
   const products = productsData?.products || [];

@@ -196,7 +196,7 @@ export default function MyPurchases() {
       );
     },
     enabled: !!(user?.id || user?.email),
-    staleTime: 30000,
+    staleTime: 2 * 60_000,
   });
 
   // Paid orders for products tab

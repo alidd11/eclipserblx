@@ -25,6 +25,7 @@ import { useSystemStatus } from '@/hooks/useSystemStatus';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useTranslation } from 'react-i18next';
+import { useNotifications } from '@/hooks/useNotifications';
 
 // Extracted sidebar sub-components
 import { DiscordIcon, RobloxIcon } from './sidebar/SidebarBrandIcons';
@@ -106,48 +107,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const { data: ipShieldData } = useIPShieldSubscription();
   const hasIPShield = isIPShieldAdmin || ipShieldData?.subscribed === true;
 
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
-
-  // Fetch unread notification count
-  useEffect(() => {
-    if (!user) {
-      setUnreadNotifications(0);
-      return;
-    }
-
-    const fetchUnreadCount = async () => {
-      const { count } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('is_read', false);
-      
-      setUnreadNotifications(count || 0);
-    };
-
-    fetchUnreadCount();
-
-    // Subscribe to realtime updates
-    const channel = supabase
-      .channel('sidebar-notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => {
-          fetchUnreadCount();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
+  // Use the shared notification hook — eliminates duplicate realtime channel + DB query
+  const { unreadCount: unreadNotifications } = useNotifications();
 
   // Use collapsed from props unless in mobile drawer mode
   const isCollapsed = isMobileDrawer ? false : collapsed;

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Bell } from 'lucide-react';
+import { useState } from 'react';
+import { Bell, Award, Tag, ShoppingCart, MessageCircle, Trophy, Percent } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -7,23 +7,11 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { Badge, Award, Tag, ShoppingCart, MessageCircle, Trophy, Percent } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useNotificationSound } from '@/hooks/useNotificationSound';
-
-interface Notification {
-  id: string;
-  type: string;
-  title: string;
-  message: string;
-  link: string | null;
-  is_read: boolean;
-  created_at: string;
-}
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useNotifications } from '@/hooks/useNotifications';
 
 const notificationIcons: Record<string, React.ReactNode> = {
   badge_earned: <Award className="h-4 w-4 text-yellow-500" />,
@@ -36,99 +24,17 @@ const notificationIcons: Record<string, React.ReactNode> = {
 export function NotificationBell() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { playSound } = useNotificationSound();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Use the shared notification hook — single realtime channel for all consumers
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
-  useEffect(() => {
-    if (!user) return;
-
-    // Fetch initial notifications
-    fetchNotifications();
-
-    // Subscribe to realtime updates
-    const channel = supabase
-      .channel('notifications-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          const newNotification = payload.new as Notification;
-          setNotifications((prev) => [newNotification, ...prev]);
-          setUnreadCount((prev) => prev + 1);
-          
-          // Play sound and send browser push notification
-          playSound();
-          if ('Notification' in window && window.Notification.permission === 'granted' && document.hidden) {
-            new window.Notification(newNotification.title, {
-              body: newNotification.message,
-              tag: `notification-${newNotification.id}`,
-              icon: '/favicon.ico',
-            });
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
-
-  const fetchNotifications = async () => {
-    if (!user) return;
-
-    const { data, error } = await supabase
-      .from('notifications')
-      .select('id, type, title, message, link, is_read, created_at')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(20);
-
-    if (!error && data) {
-      setNotifications(data);
-      setUnreadCount(data.filter((n) => !n.is_read).length);
-    }
-  };
-
-  const markAsRead = async (id: string) => {
-    await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('id', id);
-
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
-    );
-    setUnreadCount((prev) => Math.max(0, prev - 1));
-  };
-
-  const markAllAsRead = async () => {
-    if (!user) return;
-
-    await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('user_id', user.id)
-      .eq('is_read', false);
-
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-    setUnreadCount(0);
-  };
-
-  const handleNotificationClick = (notification: Notification) => {
+  const handleNotificationClick = (notification: typeof notifications[0]) => {
     if (!notification.is_read) {
       markAsRead(notification.id);
     }
     if (notification.link) {
-      // On customer site: always redirect admin links to /account
-      // On admin site: allow admin links
       const isOnAdminSite = location.pathname.startsWith('/admin');
       const isAdminLink = notification.link.startsWith('/admin');
       

@@ -36,7 +36,7 @@ export function StoreBestSellers({
       return (data || []).filter(p => (p.download_count || 0) > 0);
     },
     enabled: !!storeId,
-    staleTime: 30000, // 30 seconds cache
+    staleTime: 2 * 60_000,
   });
 
   // Don't render if no best sellers

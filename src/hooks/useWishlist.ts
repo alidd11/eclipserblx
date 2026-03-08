@@ -141,6 +141,6 @@ export function useWishlistItems() {
       return data || [];
     },
     enabled: !!user?.id,
-    staleTime: 30000,
+    staleTime: 2 * 60_000,
   });
 }

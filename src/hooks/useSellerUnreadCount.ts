@@ -19,7 +19,7 @@ export function useSellerUnreadCount() {
       return count || 0;
     },
     enabled: !!user?.id,
-    staleTime: 30000,
+    staleTime: 2 * 60_000,
   });
 
   // Realtime subscription for live updates

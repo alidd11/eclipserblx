@@ -43,7 +43,7 @@ export default function SellerReviews() {
       return Object.fromEntries((data || []).map(p => [p.id, p.name]));
     },
     enabled: !!store?.id,
-    staleTime: 60000,
+    staleTime: 5 * 60_000, // 5 minutes — product list rarely changes
   });
 
   // Fetch reviews with pagination
@@ -88,7 +88,7 @@ export default function SellerReviews() {
       return { reviews, totalCount: count || 0 };
     },
     enabled: !!store?.id && !!productMap,
-    staleTime: 30000,
+    staleTime: 2 * 60_000, // 2 minutes
   });
 
   const reviews = reviewsData?.reviews || [];
