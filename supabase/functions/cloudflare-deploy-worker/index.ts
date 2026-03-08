@@ -84,7 +84,8 @@ export default {
 
     const originUrl = new URL(url.pathname + url.search, ORIGIN);
     const originHeaders = new Headers(request.headers);
-    originHeaders.set("Host", url.hostname);
+    originHeaders.delete("Host");
+    originHeaders.delete("host");
 
     try {
       const originRes = await fetch(originUrl.toString(), {
@@ -96,9 +97,10 @@ export default {
 
       const responseHeaders = new Headers(originRes.headers);
       responseHeaders.set("X-OG-Worker", "pass");
+      responseHeaders.delete("location");
 
       return new Response(originRes.body, {
-        status: originRes.status,
+        status: originRes.status === 301 || originRes.status === 302 ? 200 : originRes.status,
         headers: responseHeaders,
       });
     } catch (error) {
