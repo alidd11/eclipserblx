@@ -111,7 +111,8 @@ Deno.serve(async (req) => {
       { id: 'edge_cache_ttl', value: 2592000 }, // 30 days
       { id: 'browser_cache_ttl', value: 31536000 }, // 1 year
     ],
-    'cache_assets'
+    'cache_assets',
+    2
   )
   // Note: Free plan allows 3 page rules max. Fonts are served under /assets/ by Vite.
 
