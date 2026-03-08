@@ -25,6 +25,7 @@ import { useSystemStatus } from '@/hooks/useSystemStatus';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useTranslation } from 'react-i18next';
+import { useNotifications } from '@/hooks/useNotifications';
 
 // Extracted sidebar sub-components
 import { DiscordIcon, RobloxIcon } from './sidebar/SidebarBrandIcons';
