@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 
 interface DiscordStats {
   approximate_member_count: number | null;
@@ -8,21 +8,42 @@ interface DiscordStats {
   guild_icon: string | null;
 }
 
+const DEFAULT_INVITE_CODE = 'EmQnXwv6VZ';
+
 export function useDiscordStats() {
+  const { discordUrl } = useDiscordUrl();
+
+  // Extract invite code from the URL
+  const inviteCode = discordUrl?.split('/').pop() || DEFAULT_INVITE_CODE;
+
   const { data, isLoading } = useQuery<DiscordStats>({
-    queryKey: ['discord-server-stats'],
+    queryKey: ['discord-server-stats', inviteCode],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('discord-server-stats');
-      if (error) {
-        console.error('Failed to fetch Discord stats:', error);
+      // Call Discord's public invite API directly — no edge function needed
+      const res = await fetch(
+        `https://discord.com/api/v10/invites/${inviteCode}?with_counts=true`
+      );
+
+      if (!res.ok) {
+        console.error('Discord invite API error:', res.status);
         return { approximate_member_count: null, approximate_presence_count: null, guild_name: null, guild_icon: null };
       }
-      return data;
+
+      const invite = await res.json();
+
+      return {
+        approximate_member_count: invite.approximate_member_count ?? null,
+        approximate_presence_count: invite.approximate_presence_count ?? null,
+        guild_name: invite.guild?.name ?? null,
+        guild_icon: invite.guild?.icon
+          ? `https://cdn.discordapp.com/icons/${invite.guild.id}/${invite.guild.icon}.png?size=64`
+          : null,
+      };
     },
-    staleTime: 1000 * 60 * 30, // Cache for 30 minutes — server member count rarely changes
+    staleTime: 1000 * 60 * 30, // Cache for 30 minutes
     gcTime: 1000 * 60 * 45,
     refetchOnWindowFocus: false,
-    refetchOnMount: false, // Prevent refetch on every component mount
+    refetchOnMount: false,
   });
 
   return {
