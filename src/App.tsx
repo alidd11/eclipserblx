@@ -65,6 +65,7 @@ const App = () => (
                   <Sonner />
                   <BrowserRouter>
                     <GlobalBackground />
+                    <ScrollToTop />
                     <IpBanCheck>
                       <PWAWrapper>
                         <AdminManifestHandler />
