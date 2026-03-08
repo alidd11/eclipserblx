@@ -25,7 +25,10 @@ export function useDiscordStats() {
       );
 
       if (!res.ok) {
-        console.error('Discord invite API error:', res.status);
+        // Don't log 404s as errors — invite code may simply be expired/invalid
+        if (res.status !== 404) {
+          console.warn('Discord invite API error:', res.status);
+        }
         return { approximate_member_count: null, approximate_presence_count: null, guild_name: null, guild_icon: null };
       }
 
@@ -44,6 +47,7 @@ export function useDiscordStats() {
     gcTime: 1000 * 60 * 45,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
+    retry: false, // Don't retry on 404s
   });
 
   return {
