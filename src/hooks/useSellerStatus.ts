@@ -187,7 +187,7 @@ export function useSellerStatus() {
       } as Store;
     },
     enabled: !!user?.id,
-    staleTime: 60 * 1000, // 1 minute - store data rarely changes mid-session
+    staleTime: 5 * 60 * 1000, // 5 minutes - store data rarely changes mid-session
   });
 
   // Check if user has a pending application
