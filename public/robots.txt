@@ -30,5 +30,6 @@ Disallow: /global-guard/
 Disallow: /bot-dashboard
 Disallow: /order-success
 Disallow: /complete-profile
+Disallow: /search?*
 
 Sitemap: https://eclipserblx.com/sitemap.xml
