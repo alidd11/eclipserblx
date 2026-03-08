@@ -38,6 +38,8 @@ import { BreadcrumbSchema, ProductSchema } from '@/components/seo/StructuredData
 import { ReviewSchema } from '@/components/seo/ReviewSchema';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { RecentlyViewedProducts } from '@/components/product/RecentlyViewedProducts';
+import { FrequentlyBoughtTogether } from '@/components/product/FrequentlyBoughtTogether';
+import { PriceAlertButton } from '@/components/product/PriceAlertButton';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -767,8 +769,9 @@ export default function ProductDetail() {
             </Card>
 
 
-            {/* Report */}
+            {/* Price Alert + Report */}
             <div className="flex gap-2">
+              <PriceAlertButton productId={product.id} currentPrice={product.price} />
               <Button
                 variant="ghost"
                 size="sm"
@@ -977,6 +980,7 @@ export default function ProductDetail() {
             </CardContent>
           </Card>
         )}
+        <FrequentlyBoughtTogether productId={product.id} categoryId={product.category_id} storeId={product.store_id} />
         <RecentlyViewedProducts currentProductId={product.id} />
         </div>
       </PullToRefresh>

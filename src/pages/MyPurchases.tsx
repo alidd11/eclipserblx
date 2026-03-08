@@ -45,6 +45,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { DisputeDialog } from '@/components/purchases/DisputeDialog';
+import { OrderTimeline } from '@/components/purchases/OrderTimeline';
 
 // Format bytes to human readable size
 const formatFileSize = (bytes: number): string => {
@@ -648,7 +649,15 @@ export default function MyPurchases() {
                             )}
                           </div>
                         </div>
-                        <div className="border-t border-border/50 p-4 space-y-2 bg-muted/20">
+                        {/* Order Timeline */}
+                        <div className="border-t border-border/50 px-4 pt-2 bg-muted/20">
+                          <OrderTimeline
+                            status={order.status}
+                            createdAt={order.created_at}
+                            paymentMethod={order.payment_method}
+                          />
+                        </div>
+                        <div className="px-4 pb-4 space-y-2 bg-muted/20">
                           <div className="flex justify-between text-sm">
                             <span className="text-primary font-medium">Order Date:</span>
                             <span className="text-muted-foreground">{format(new Date(order.created_at), 'MMM d, yyyy')}</span>

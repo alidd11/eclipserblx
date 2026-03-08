@@ -28,6 +28,8 @@ const StoreHealthScore = lazy(() => import('@/components/seller/StoreHealthScore
 const CustomerDemographics = lazy(() => import('@/components/seller/CustomerDemographics').then(m => ({ default: m.CustomerDemographics })));
 const PayoutTimeline = lazy(() => import('@/components/seller/PayoutTimeline').then(m => ({ default: m.PayoutTimeline })));
 const StorePreviewCard = lazy(() => import('@/components/seller/StorePreviewCard').then(m => ({ default: m.StorePreviewCard })));
+const SalesVelocityInsights = lazy(() => import('@/components/seller/SalesVelocityInsights').then(m => ({ default: m.SalesVelocityInsights })));
+const ProductPerformanceComparison = lazy(() => import('@/components/seller/ProductPerformanceComparison').then(m => ({ default: m.ProductPerformanceComparison })));
 
 const CURRENT_TOS_VERSION = "1.0";
 
@@ -160,6 +162,9 @@ export default function SellerDashboard() {
             <TopProductsLeaderboard />
           </Suspense>
           <Suspense fallback={<DashboardCardSkeleton />}>
+            <SalesVelocityInsights />
+          </Suspense>
+          <Suspense fallback={<DashboardCardSkeleton />}>
             <NotificationCenter />
           </Suspense>
         </div>
@@ -176,6 +181,11 @@ export default function SellerDashboard() {
             <PayoutTimeline />
           </Suspense>
         </div>
+
+        {/* ── Product Comparison ── */}
+        <Suspense fallback={<DashboardCardSkeleton />}>
+          <ProductPerformanceComparison />
+        </Suspense>
 
         <Suspense fallback={<DashboardCardSkeleton />}>
           <StorePreviewCard />

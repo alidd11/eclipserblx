@@ -4381,6 +4381,44 @@ export type Database = {
         }
         Relationships: []
       }
+      price_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          notified_at: string | null
+          original_price: number
+          product_id: string
+          target_price: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notified_at?: string | null
+          original_price: number
+          product_id: string
+          target_price?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notified_at?: string | null
+          original_price?: number
+          product_id?: string
+          target_price?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_bundles: {
         Row: {
           bundle_price: number
@@ -6083,6 +6121,7 @@ export type Database = {
           max_uses: number | null
           min_order_amount: number | null
           product_ids: string[] | null
+          starts_at: string | null
           store_id: string
           updated_at: string
         }
@@ -6099,6 +6138,7 @@ export type Database = {
           max_uses?: number | null
           min_order_amount?: number | null
           product_ids?: string[] | null
+          starts_at?: string | null
           store_id: string
           updated_at?: string
         }
@@ -6115,6 +6155,7 @@ export type Database = {
           max_uses?: number | null
           min_order_amount?: number | null
           product_ids?: string[] | null
+          starts_at?: string | null
           store_id?: string
           updated_at?: string
         }
