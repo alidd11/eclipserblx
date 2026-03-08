@@ -978,6 +978,7 @@ export default function ProductDetail() {
             </CardContent>
           </Card>
         )}
+        <FrequentlyBoughtTogether productId={product.id} categoryId={product.category_id} storeId={product.store_id} />
         <RecentlyViewedProducts currentProductId={product.id} />
         </div>
       </PullToRefresh>
