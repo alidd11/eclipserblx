@@ -1,7 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useIPShieldSubscription } from '@/hooks/useIPShieldSubscription';
+import { useIdentityVerification } from '@/hooks/useIdentityVerification';
 import { IPShieldLayout } from '@/components/ip-shield/IPShieldLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
