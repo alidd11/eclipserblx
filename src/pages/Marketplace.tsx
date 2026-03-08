@@ -164,7 +164,7 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
       <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200">
         <div className="aspect-[4/3] relative overflow-hidden bg-muted">
           {product.images?.[0] ? (
-            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
+            <img src={optimizeImageUrl(product.images[0], 400, 300)} alt={product.name} width={400} height={300} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-muted">
               <span className="text-muted-foreground text-sm">No image</span>
@@ -174,7 +174,7 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
         {/* Store strip */}
         <div className="h-7 flex items-center gap-1.5 px-2.5 bg-muted/60">
           {product.stores?.logo_url && (
-            <img src={product.stores.logo_url} alt="" className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0" />
+            <img src={optimizeImageUrl(product.stores.logo_url, 14, 14, 'contain')} alt="" width={14} height={14} loading="lazy" decoding="async" className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0" />
           )}
           <span className="text-[10px] text-muted-foreground font-medium truncate">{product.stores?.name}</span>
           {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
@@ -373,7 +373,7 @@ export default function Marketplace() {
                       <Card className="overflow-hidden hover:shadow-md transition-all h-full">
                         <div className="aspect-square relative bg-muted">
                           {product.images?.[0] ? (
-                            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                            <img src={optimizeImageUrl(product.images[0], 200)} alt={product.name} width={200} height={200} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Package className="h-8 w-8 text-muted-foreground/30" />

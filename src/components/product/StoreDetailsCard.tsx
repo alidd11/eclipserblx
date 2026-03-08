@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 import { BadgeCheck, Shield, Store, Star, Package } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -58,7 +59,7 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
             {/* Store Logo - positioned to overlap banner slightly */}
             {store.logo_url ? (
               <img 
-                src={store.logo_url} 
+                src={optimizeImageUrl(store.logo_url, 48, 48, 'contain')} 
                 alt={store.name}
               className="h-12 w-12 rounded-lg object-contain bg-white/10 border border-white/10 flex-shrink-0 group-hover:border-primary/50 transition-colors"
             />
