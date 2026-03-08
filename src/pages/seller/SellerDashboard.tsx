@@ -182,6 +182,11 @@ export default function SellerDashboard() {
           </Suspense>
         </div>
 
+        {/* ── Product Comparison ── */}
+        <Suspense fallback={<DashboardCardSkeleton />}>
+          <ProductPerformanceComparison />
+        </Suspense>
+
         <Suspense fallback={<DashboardCardSkeleton />}>
           <StorePreviewCard />
         </Suspense>
