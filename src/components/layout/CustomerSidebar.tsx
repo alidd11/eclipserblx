@@ -13,6 +13,7 @@ import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useIPShieldSubscription } from '@/hooks/useIPShieldSubscription';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
