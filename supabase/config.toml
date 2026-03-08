@@ -367,3 +367,6 @@ verify_jwt = false
 
 [functions.create-identity-verification]
 verify_jwt = false
+
+[functions.ionos-dns-manager]
+verify_jwt = false
