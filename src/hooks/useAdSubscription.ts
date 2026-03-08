@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { openExternalUrl } from '@/lib/externalBrowser';
+import { useRef, useEffect, useCallback } from 'react';
 
 export type AdTier = 'basic' | 'pro' | 'premium';
 export type AdBillingPeriod = 'monthly' | 'annual';
@@ -39,6 +40,16 @@ export interface AdSubscriptionStatus {
   partnership_pings_balance: number;
 }
 
+// Ads per month by tier
+const TIER_ADS: Record<string, number> = {
+  basic: 3,
+  pro: 10,
+  premium: 30,
+};
+
+// Background Stripe sync interval: 30 minutes
+const STRIPE_SYNC_INTERVAL = 30 * 60 * 1000;
+
 export function useAdTiers() {
   return useQuery({
     queryKey: ['advertisement-tiers'],
@@ -63,35 +74,77 @@ export function useAdTiers() {
 
 export function useAdSubscription() {
   const { session } = useAuth();
-  
+  const lastSyncRef = useRef<number>(0);
+  const queryClient = useQueryClient();
+
+  // Background Stripe sync (fire-and-forget)
+  const syncWithStripe = useCallback(async () => {
+    if (!session?.access_token) return;
+    const now = Date.now();
+    if (now - lastSyncRef.current < STRIPE_SYNC_INTERVAL) return;
+    lastSyncRef.current = now;
+
+    try {
+      await supabase.functions.invoke('check-ad-subscription', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      // Re-read from DB after sync
+      queryClient.invalidateQueries({ queryKey: ['ad-subscription'] });
+    } catch (err) {
+      console.error('Background ad subscription sync failed:', err);
+    }
+  }, [session, queryClient]);
+
+  // Schedule background sync
+  useEffect(() => {
+    if (!session?.user) return;
+    const timer = setTimeout(syncWithStripe, 5000);
+    const interval = setInterval(syncWithStripe, STRIPE_SYNC_INTERVAL);
+    return () => { clearTimeout(timer); clearInterval(interval); };
+  }, [session?.user, syncWithStripe]);
+
   return useQuery({
     queryKey: ['ad-subscription', session?.user?.id],
     queryFn: async (): Promise<AdSubscriptionStatus> => {
-      const { data, error } = await supabase.functions.invoke('check-ad-subscription', {
-        headers: session?.access_token 
-          ? { Authorization: `Bearer ${session.access_token}` }
-          : undefined,
-      });
-      
+      // Read directly from DB (no edge function invocation)
+      const { data: localSub, error } = await supabase
+        .from('advertisement_subscriptions')
+        .select('*')
+        .eq('user_id', session!.user!.id)
+        .eq('status', 'active')
+        .maybeSingle();
+
       if (error) throw error;
-      
+
+      if (!localSub) {
+        return {
+          subscribed: false, tier: null, tier_name: null,
+          ads_remaining: 0, ads_per_month: 0, ads_used: 0,
+          current_period_end: null, billing_period: null,
+          here_pings_balance: 0, everyone_pings_balance: 0, partnership_pings_balance: 0,
+        };
+      }
+
+      const adsPerMonth = TIER_ADS[localSub.tier] || 0;
+      const adsUsed = localSub.ads_used_this_month || 0;
+
       return {
-        subscribed: data.subscribed || false,
-        tier: data.tier || null,
-        tier_name: data.tier_name || null,
-        ads_remaining: data.ads_remaining || 0,
-        ads_per_month: data.ads_per_month || 0,
-        ads_used: data.ads_used || 0,
-        current_period_end: data.current_period_end || null,
-        billing_period: data.billing_period || null,
-        here_pings_balance: data.here_pings_balance || 0,
-        everyone_pings_balance: data.everyone_pings_balance || 0,
-        partnership_pings_balance: data.partnership_pings_balance || 0,
+        subscribed: true,
+        tier: localSub.tier as AdTier,
+        tier_name: localSub.tier.charAt(0).toUpperCase() + localSub.tier.slice(1),
+        ads_remaining: Math.max(0, adsPerMonth - adsUsed),
+        ads_per_month: adsPerMonth,
+        ads_used: adsUsed,
+        current_period_end: localSub.current_period_end,
+        billing_period: (localSub.billing_period as AdBillingPeriod) || null,
+        here_pings_balance: localSub.here_pings_balance || 0,
+        everyone_pings_balance: localSub.everyone_pings_balance || 0,
+        partnership_pings_balance: localSub.partnership_pings_balance || 0,
       };
     },
     enabled: !!session?.user,
-    staleTime: 5 * 60 * 1000, // 5 minutes (increased from 30s)
-    refetchInterval: 10 * 60 * 1000, // 10 minutes (reduced from 1 min)
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 10 * 60 * 1000,
   });
 }
 

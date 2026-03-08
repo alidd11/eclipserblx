@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -26,9 +26,13 @@ interface SubscriptionState {
   error: string | null;
 }
 
+// Background sync interval: 30 minutes (Stripe sync only)
+const STRIPE_SYNC_INTERVAL = 30 * 60 * 1000;
+
 export function useSubscription() {
   const { user, session } = useAuth();
   const queryClient = useQueryClient();
+  const lastSyncRef = useRef<number>(0);
   const [state, setState] = useState<SubscriptionState>({
     isSubscribed: false,
     subscriptionEnd: null,
@@ -41,219 +45,171 @@ export function useSubscription() {
     error: null,
   });
 
-  const checkSubscription = useCallback(async () => {
+  // Fast path: read directly from DB (no edge function invocation)
+  const readFromDB = useCallback(async () => {
     if (!user) {
       setState({
-        isSubscribed: false,
-        subscriptionEnd: null,
-        subscriptionId: null,
-        freeProductsClaimed: 0,
-        canClaimFree: false,
-        claimedThisMonth: false,
-        claimedProductId: null,
-        isLoading: false,
-        error: null,
+        isSubscribed: false, subscriptionEnd: null, subscriptionId: null,
+        freeProductsClaimed: 0, canClaimFree: false, claimedThisMonth: false,
+        claimedProductId: null, isLoading: false, error: null,
       });
       return;
     }
 
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
-
     try {
-      const { data, error } = await supabase.functions.invoke('check-subscription', {
-        headers: session?.access_token ? {
-          Authorization: `Bearer ${session.access_token}`,
-        } : undefined,
-      });
-      
-      if (error) {
-        throw error;
-      }
+      // Parallel queries: subscription + free claims
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      const [subResult, claimsResult] = await Promise.all([
+        supabase
+          .from('subscriptions')
+          .select('status, current_period_end, stripe_subscription_id, granted_by')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .maybeSingle(),
+        supabase
+          .from('subscription_free_claims')
+          .select('id, product_id', { count: 'exact' })
+          .eq('user_id', user.id)
+          .eq('claim_period', currentMonth),
+      ]);
 
-      if (data.error) {
-        throw new Error(data.error);
-      }
+      const sub = subResult.data;
+      const isActive = sub && sub.current_period_end && new Date(sub.current_period_end) > new Date();
+      const freeProductsClaimed = claimsResult.count || 0;
+      const lastClaimed = claimsResult.data?.length ? claimsResult.data[claimsResult.data.length - 1]?.product_id : null;
 
       setState({
-        isSubscribed: data.subscribed || false,
-        subscriptionEnd: data.subscriptionEnd || null,
-        subscriptionId: data.subscriptionId || null,
-        freeProductsClaimed: data.freeProductsClaimed || 0,
-        canClaimFree: data.canClaimFree || false,
-        claimedThisMonth: data.claimedThisMonth || false,
-        claimedProductId: data.claimedProductId || null,
+        isSubscribed: !!isActive,
+        subscriptionEnd: isActive ? sub.current_period_end : null,
+        subscriptionId: isActive ? sub.stripe_subscription_id : null,
+        freeProductsClaimed,
+        canClaimFree: !!isActive && freeProductsClaimed < 1,
+        claimedThisMonth: freeProductsClaimed > 0,
+        claimedProductId: lastClaimed || null,
         isLoading: false,
         error: null,
       });
     } catch (error) {
-      console.error('Error checking subscription:', error);
+      console.error('Error reading subscription from DB:', error);
       setState(prev => ({
         ...prev,
         isLoading: false,
         error: error instanceof Error ? error.message : 'Failed to check subscription',
       }));
     }
-  }, [user, session]);
+  }, [user]);
 
-  // Check subscription on mount and when user changes
-  useEffect(() => {
-    checkSubscription();
-  }, [checkSubscription]);
-
-  // Periodic refresh every 5 minutes (reduced from 60s to save edge function calls)
-  useEffect(() => {
-    if (!user) return;
+  // Slow path: sync with Stripe via edge function (background, infrequent)
+  const syncWithStripe = useCallback(async () => {
+    if (!user || !session?.access_token) return;
     
-    const interval = setInterval(checkSubscription, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [user, checkSubscription]);
-
-  const subscribe = useCallback(async () => {
-    if (!user) {
-      throw new Error('You must be logged in to subscribe');
-    }
+    const now = Date.now();
+    if (now - lastSyncRef.current < STRIPE_SYNC_INTERVAL) return;
+    lastSyncRef.current = now;
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-subscription', {
-        body: { product_type: 'eclipse_plus', tier: 'pro', billingPeriod: 'monthly' },
-        headers: session?.access_token ? {
-          Authorization: `Bearer ${session.access_token}`,
-        } : undefined,
+      await supabase.functions.invoke('check-subscription', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
       });
-      
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
-      
-      if (data.url) {
-        window.location.href = data.url;
-      }
+      // After sync, re-read from DB to pick up any changes
+      await readFromDB();
     } catch (error) {
-      console.error('Error creating subscription checkout:', error);
-      throw error;
+      console.error('Background Stripe sync failed:', error);
     }
+  }, [user, session, readFromDB]);
+
+  // Initial load: read from DB immediately, then sync with Stripe in background
+  useEffect(() => {
+    readFromDB();
+  }, [readFromDB]);
+
+  useEffect(() => {
+    if (!user) return;
+    // Delay initial Stripe sync to not block page load
+    const timer = setTimeout(syncWithStripe, 5000);
+    const interval = setInterval(syncWithStripe, STRIPE_SYNC_INTERVAL);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
+  }, [user, syncWithStripe]);
+
+  const subscribe = useCallback(async () => {
+    if (!user) throw new Error('You must be logged in to subscribe');
+
+    const { data, error } = await supabase.functions.invoke('create-subscription', {
+      body: { product_type: 'eclipse_plus', tier: 'pro', billingPeriod: 'monthly' },
+      headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+    });
+    
+    if (error) throw error;
+    if (data.error) throw new Error(data.error);
+    if (data.url) window.location.href = data.url;
   }, [user, session]);
 
   const openCustomerPortal = useCallback(async () => {
-    if (!user) {
-      throw new Error('You must be logged in to manage your subscription');
-    }
+    if (!user) throw new Error('You must be logged in to manage your subscription');
 
-    try {
-      const { data, error } = await supabase.functions.invoke('customer-portal', {
-        headers: session?.access_token ? {
-          Authorization: `Bearer ${session.access_token}`,
-        } : undefined,
-      });
-      
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
-      
-      if (data.url) {
-        await openExternalUrl(data.url);
-      }
-    } catch (error) {
-      console.error('Error opening customer portal:', error);
-      throw error;
-    }
+    const { data, error } = await supabase.functions.invoke('customer-portal', {
+      headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+    });
+    
+    if (error) throw error;
+    if (data.error) throw new Error(data.error);
+    if (data.url) await openExternalUrl(data.url);
   }, [user, session]);
 
   const claimFreeProduct = useCallback(async (productId: string) => {
-    if (!user) {
-      throw new Error('You must be logged in to claim a free product');
-    }
+    if (!user) throw new Error('You must be logged in to claim a free product');
+    if (!state.isSubscribed) throw new Error('You must have an active Eclipse+ subscription to claim free products');
+    if (!state.canClaimFree) throw new Error('You have already claimed your free product this month');
 
-    if (!state.isSubscribed) {
-      throw new Error('You must have an active Eclipse+ subscription to claim free products');
-    }
+    const { data, error } = await supabase.functions.invoke('claim-free-product', {
+      body: { productId },
+      headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+    });
+    
+    if (error) throw error;
+    if (data.error) throw new Error(data.error);
+    
+    await readFromDB();
+    queryClient.invalidateQueries({ queryKey: ['user-orders'] });
+    return data;
+  }, [user, session, state.isSubscribed, state.canClaimFree, readFromDB, queryClient]);
 
-    if (!state.canClaimFree) {
-      throw new Error('You have already claimed your free product this month');
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke('claim-free-product', {
-        body: { productId },
-        headers: session?.access_token ? {
-          Authorization: `Bearer ${session.access_token}`,
-        } : undefined,
-      });
-      
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
-      
-      // Refresh subscription state
-      await checkSubscription();
-      
-      // Invalidate orders query to show the new order
-      queryClient.invalidateQueries({ queryKey: ['user-orders'] });
-      
-      return data;
-    } catch (error) {
-      console.error('Error claiming free product:', error);
-      throw error;
-    }
-  }, [user, session, state.isSubscribed, state.canClaimFree, checkSubscription, queryClient]);
-
-  // Calculate member price for a product (fixed 30% discount)
   const getMemberPrice = useCallback((originalPrice: number, categoryId?: string | null, isResellable?: boolean): number => {
-    // Resellable products do NOT get any discount
-    if (isResellable) {
-      return originalPrice;
-    }
-    // Eclipse Savers products do NOT get any discount
-    if (categoryId === ECLIPSE_SAVERS_CATEGORY_ID) {
-      return originalPrice;
-    }
-    
-    // Bot products get 35% discount
-    if (categoryId === BOT_CATEGORY_ID) {
-      return originalPrice * (1 - ECLIPSE_PLUS_BOT_DISCOUNT / 100);
-    }
-    
-    // All other products get 30% discount
+    if (isResellable) return originalPrice;
+    if (categoryId === ECLIPSE_SAVERS_CATEGORY_ID) return originalPrice;
+    if (categoryId === BOT_CATEGORY_ID) return originalPrice * (1 - ECLIPSE_PLUS_BOT_DISCOUNT / 100);
     return originalPrice * (1 - ECLIPSE_PLUS_DISCOUNT / 100);
   }, []);
 
-  // Check if a product is eligible for the discount
   const isEligibleForDiscount = useCallback((categoryId?: string | null, isResellable?: boolean, storeEclipseEnabled?: boolean): boolean => {
-    // Store has opted out of Eclipse+ discounts
     if (storeEclipseEnabled === false) return false;
-    // Resellable products are NOT eligible for discounts
     if (isResellable) return false;
-    // Eclipse Savers products are NOT eligible for discounts
     return categoryId !== ECLIPSE_SAVERS_CATEGORY_ID;
   }, []);
 
-  // Get the discount percentage for a product category (fixed values)
   const getDiscountPercent = useCallback((categoryId?: string | null, isResellable?: boolean): number => {
-    // Resellable products get 0% discount
     if (isResellable) return 0;
-    // Eclipse Savers get 0% discount
     if (categoryId === ECLIPSE_SAVERS_CATEGORY_ID) return 0;
-    // Bot products get 35%
     if (categoryId === BOT_CATEGORY_ID) return ECLIPSE_PLUS_BOT_DISCOUNT;
-    // All other products get 30%
     return ECLIPSE_PLUS_DISCOUNT;
   }, []);
 
-  // Check if a product is eligible for free claim
   const isEligibleForFreeClaim = useCallback((categoryId?: string | null, isResellable?: boolean, eclipseFreeEligible?: boolean): boolean => {
-    // Seller opted out of free claims
     if (eclipseFreeEligible === false) return false;
-    // Resellable products are NOT eligible for free claims
     if (isResellable) return false;
-    // Neither Bots nor Eclipse Savers are eligible for free claims
     return categoryId !== BOT_CATEGORY_ID && categoryId !== ECLIPSE_SAVERS_CATEGORY_ID;
   }, []);
 
   return {
     ...state,
-    // Add backwards-compatible properties
     tier: state.isSubscribed ? 'pro' : null,
     billingPeriod: state.isSubscribed ? 'monthly' : null,
     discountPercent: state.isSubscribed ? ECLIPSE_PLUS_DISCOUNT : 0,
     freeProductsPerMonth: state.isSubscribed ? 1 : 0,
-    checkSubscription,
+    checkSubscription: readFromDB,
     subscribe,
     openCustomerPortal,
     claimFreeProduct,
