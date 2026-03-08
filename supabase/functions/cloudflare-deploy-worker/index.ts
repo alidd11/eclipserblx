@@ -88,19 +88,19 @@ export default {
     originHeaders.delete("host");
 
     try {
+      const isGetLike = request.method === "GET" || request.method === "HEAD";
       const originRes = await fetch(originUrl.toString(), {
         method: request.method,
         headers: originHeaders,
-        body: request.method !== "GET" && request.method !== "HEAD" ? request.body : undefined,
-        redirect: "manual",
+        body: !isGetLike ? request.body : undefined,
+        redirect: isGetLike ? "follow" : "manual",
       });
 
       const responseHeaders = new Headers(originRes.headers);
       responseHeaders.set("X-OG-Worker", "pass");
-      responseHeaders.delete("location");
 
       return new Response(originRes.body, {
-        status: originRes.status === 301 || originRes.status === 302 ? 200 : originRes.status,
+        status: originRes.status,
         headers: responseHeaders,
       });
     } catch (error) {
