@@ -99,35 +99,35 @@ export default {
       };
 
       let activeOrigin = ORIGIN_PRIMARY;
-      let originUrl = new URL(url.pathname + url.search, activeOrigin);
-      let originRes: Response;
+      let currentUrl = new URL(url.pathname + url.search, activeOrigin).toString();
+      let originRes;
 
       try {
-        originRes = await fetch(originUrl.toString(), fetchInit);
+        originRes = await fetch(currentUrl, fetchInit);
       } catch {
         activeOrigin = ORIGIN_FALLBACK;
-        originUrl = new URL(url.pathname + url.search, activeOrigin);
-        originRes = await fetch(originUrl.toString(), fetchInit);
+        currentUrl = new URL(url.pathname + url.search, activeOrigin).toString();
+        originRes = await fetch(currentUrl, fetchInit);
       }
 
       // If primary origin times out or fails at edge, retry against fallback origin
       if (activeOrigin === ORIGIN_PRIMARY && [522, 523, 524, 530].includes(originRes.status)) {
         activeOrigin = ORIGIN_FALLBACK;
-        originUrl = new URL(url.pathname + url.search, activeOrigin);
-        originRes = await fetch(originUrl.toString(), fetchInit);
+        currentUrl = new URL(url.pathname + url.search, activeOrigin).toString();
+        originRes = await fetch(currentUrl, fetchInit);
       }
 
-      // Handle redirects manually to prevent loops
-      if ([301, 302, 303, 307, 308].includes(originRes.status)) {
+      // Follow same-origin redirects internally to prevent browser redirect loops
+      for (let hop = 0; hop < 6 && [301, 302, 303, 307, 308].includes(originRes.status); hop++) {
         const location = originRes.headers.get("Location") || "";
+        if (!location) break;
 
-        // Block auth-bridge and lovable internal redirects to prevent loops
         const isAuthBridge = location.includes("auth-bridge") ||
+          location.includes("lovable.dev") ||
           location.includes("lovableproject.com") ||
-          (location.includes("lovable.app") && !location.includes(activeOrigin));
+          location.includes("/auth/login");
 
         if (isAuthBridge) {
-          // Serve the SPA index.html directly instead of following the redirect
           const spaRes = await fetch(activeOrigin + "/index.html", {
             headers: { "Accept": "text/html" },
           });
@@ -142,18 +142,38 @@ export default {
           });
         }
 
-        // For other redirects (e.g. OAuth), pass them through
-        // Rewrite Location from origin domain to custom domain
-        let rewrittenLocation = location;
-        if (location.startsWith(activeOrigin)) {
-          rewrittenLocation = location.replace(activeOrigin, url.origin);
+        const nextUrl = new URL(location, currentUrl);
+        const originHost = new URL(activeOrigin).host;
+
+        // Internal redirects are resolved by worker, not sent back to browser
+        if (nextUrl.host === originHost) {
+          currentUrl = nextUrl.toString();
+          originRes = await fetch(currentUrl, fetchInit);
+          continue;
         }
 
-        return new Response(null, {
-          status: originRes.status,
+        // Only OAuth routes should pass external redirects to browser
+        if (shouldPassRedirectToBrowser(url.pathname)) {
+          return new Response(null, {
+            status: originRes.status,
+            headers: {
+              "Location": nextUrl.toString(),
+              "X-OG-Worker": "redirect-pass",
+              "X-OG-Origin": activeOrigin,
+            },
+          });
+        }
+
+        // For non-auth routes, break redirect chains by serving SPA entry
+        const spaRes = await fetch(activeOrigin + "/index.html", {
+          headers: { "Accept": "text/html" },
+        });
+        return new Response(spaRes.body, {
+          status: 200,
           headers: {
-            "Location": rewrittenLocation,
-            "X-OG-Worker": "redirect",
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-cache",
+            "X-OG-Worker": "redirect-loop-guard",
             "X-OG-Origin": activeOrigin,
           },
         });
