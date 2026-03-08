@@ -13,7 +13,6 @@ import { PasswordStrengthMeter, isPasswordStrongEnough } from '@/components/auth
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePageTracking } from '@/hooks/usePageTracking';
-import { lovable } from '@/integrations/lovable/index';
 import { useTranslation } from 'react-i18next';
 
 const authSchema = z.object({
@@ -511,25 +510,55 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     }
   };
 
-  const handleAppleSignIn = async () => {
+  const isCustomDomainAuth = () => {
+    const hostname = window.location.hostname;
+    return !hostname.endsWith('.lovable.app') && !hostname.endsWith('.lovableproject.com');
+  };
+
+  const isSafeOAuthRedirectUrl = (url: string) => {
+    try {
+      const parsed = new URL(url);
+      const backendHost = new URL(import.meta.env.VITE_SUPABASE_URL).hostname;
+      const allowedHosts = [backendHost, 'accounts.google.com', 'appleid.apple.com'];
+      return allowedHosts.includes(parsed.hostname) || parsed.hostname.endsWith('.supabase.co');
+    } catch {
+      return false;
+    }
+  };
+
+  const handleOAuthSignIn = async (provider: 'google' | 'apple') => {
+    const providerLabel = provider === 'google' ? 'Google' : 'Apple';
+
     setSocialLoading(true);
     setErrors({});
+
     try {
-      const result = await lovable.auth.signInWithOAuth('apple', {
-        redirect_uri: window.location.origin,
+      const shouldBypassBridge = isCustomDomainAuth();
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: window.location.origin,
+          ...(shouldBypassBridge ? ({ skipBrowserRedirect: true } as any) : {}),
+        },
       });
-      if (result.error) {
-        toast({
-          title: 'Apple Sign-In Failed',
-          description: result.error.message || 'Failed to sign in with Apple',
-          variant: 'destructive',
-        });
-        setErrors({ social: result.error.message || 'Apple sign-in failed' });
+
+      if (error) {
+        throw new Error(error.message || `Failed to sign in with ${providerLabel}`);
+      }
+
+      if (shouldBypassBridge) {
+        const oauthUrl = data?.url;
+        if (!oauthUrl || !isSafeOAuthRedirectUrl(oauthUrl)) {
+          throw new Error('Received an invalid sign-in URL. Please try again.');
+        }
+
+        window.location.assign(oauthUrl);
+        return;
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       toast({
-        title: 'Apple Sign-In Failed',
+        title: `${providerLabel} Sign-In Failed`,
         description: errorMessage,
         variant: 'destructive',
       });
@@ -539,32 +568,12 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     }
   };
 
+  const handleAppleSignIn = async () => {
+    await handleOAuthSignIn('apple');
+  };
+
   const handleGoogleSignIn = async () => {
-    setSocialLoading(true);
-    setErrors({});
-    try {
-      const result = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) {
-        toast({
-          title: 'Google Sign-In Failed',
-          description: result.error.message || 'Failed to sign in with Google',
-          variant: 'destructive',
-        });
-        setErrors({ social: result.error.message || 'Google sign-in failed' });
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      toast({
-        title: 'Google Sign-In Failed',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-      setErrors({ social: errorMessage });
-    } finally {
-      setSocialLoading(false);
-    }
+    await handleOAuthSignIn('google');
   };
 
   const handleDiscordSignIn = async () => {
