@@ -47,7 +47,7 @@ export function useGlobalGuardLimits() {
         isPremium: limits.is_premium,
       };
     },
-    staleTime: 60 * 1000, // Cache for 1 minute
+    staleTime: 5 * 60 * 1000, // 5 minutes - limits rarely change mid-session
   });
 
   return {

@@ -1,7 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useIPShieldSubscription } from '@/hooks/useIPShieldSubscription';
+import { useIdentityVerification } from '@/hooks/useIdentityVerification';
 import { IPShieldLayout } from '@/components/ip-shield/IPShieldLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,15 +13,7 @@ export default function IPShieldSettings() {
 
   const { data: subscriptionStatus } = useIPShieldSubscription();
 
-  const { data: verificationStatus } = useQuery({
-    queryKey: ['ip-shield-identity-verification', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('check-identity-verification');
-      if (error) throw error;
-      return data as any;
-    },
-    enabled: !!user,
-  });
+  const { data: verificationStatus } = useIdentityVerification();
 
   const tier = subscriptionStatus?.tier || 'unknown';
   const limits = subscriptionStatus?.limits;

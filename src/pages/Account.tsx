@@ -324,7 +324,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       if (cached) {
         try {
           const { data: cachedData, ts } = JSON.parse(cached);
-          if (Date.now() - ts < 30 * 60 * 1000) return cachedData;
+          if (Date.now() - ts < 60 * 60 * 1000) return cachedData;
         } catch {}
       }
       const { data, error } = await supabase.functions.invoke('get-discord-avatar', {
@@ -339,7 +339,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       return data;
     },
     enabled: !!profile?.discord_id,
-    staleTime: 1000 * 60 * 30,
+    staleTime: 1000 * 60 * 60, // 1 hour
   });
 
 

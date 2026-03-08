@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAffiliateConnectStatus } from '@/hooks/useAffiliateConnectStatus';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   DollarSign, 
@@ -81,16 +82,9 @@ export function AffiliateCard() {
     enabled: !!user?.id && application?.status === 'approved',
   });
 
-  // Check Stripe Connect status
-  const { data: connectStatus } = useQuery({
-    queryKey: ['affiliate-connect-status', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('check-affiliate-connect-status');
-      if (error) throw error;
-      return data as { hasAccount: boolean; isOnboarded: boolean; canReceivePayments: boolean; accountId: string | null };
-    },
-    enabled: !!user?.id && application?.status === 'approved' && application?.preferred_payout_method === 'stripe',
-  });
+  const { data: connectStatus } = useAffiliateConnectStatus(
+    !!user?.id && application?.status === 'approved' && application?.preferred_payout_method === 'stripe'
+  );
 
   // Get recent commissions
   const { data: commissions } = useQuery({

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAffiliateConnectStatus } from '@/hooks/useAffiliateConnectStatus';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { 
@@ -108,16 +109,9 @@ export default function Affiliate() {
     enabled: !!user?.id && application?.status === 'approved',
   });
 
-  // Check Stripe Connect status - always check for approved affiliates so they can switch to Stripe
-  const { data: connectStatus, isLoading: connectStatusLoading } = useQuery({
-    queryKey: ['affiliate-connect-status', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('check-affiliate-connect-status');
-      if (error) throw error;
-      return data as { hasAccount: boolean; isOnboarded: boolean; canReceivePayments: boolean; accountId: string | null };
-    },
-    enabled: !!user?.id && application?.status === 'approved',
-  });
+  const { data: connectStatus, isLoading: connectStatusLoading } = useAffiliateConnectStatus(
+    !!user?.id && application?.status === 'approved'
+  );
 
   // Get recent commissions
   const { data: commissions } = useQuery({

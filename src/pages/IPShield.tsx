@@ -4,6 +4,7 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useIdentityVerification } from '@/hooks/useIdentityVerification';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -751,15 +752,9 @@ export default function IPShield() {
 
   const isSubscribed = isStaff || subscriptionStatus?.subscribed === true;
   // Check identity verification status (skip for staff)
-  const { data: verificationStatus, isLoading: verifyLoading, refetch: refetchVerification } = useQuery({
-    queryKey: ['ip-shield-identity-verification', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('check-identity-verification');
-      if (error) throw error;
-      return data as { verified: boolean; status: string; verifiedAt?: string };
-    },
-    enabled: !!user && !isStaff && isSubscribed,
-  });
+  const { data: verificationStatus, isLoading: verifyLoading, refetch: refetchVerification } = useIdentityVerification(
+    !!user && !isStaff && isSubscribed
+  );
 
   const isVerified = isStaff || verificationStatus?.verified === true;
 

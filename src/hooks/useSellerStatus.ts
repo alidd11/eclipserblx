@@ -187,7 +187,7 @@ export function useSellerStatus() {
       } as Store;
     },
     enabled: !!user?.id,
-    staleTime: 60 * 1000, // 1 minute - store data rarely changes mid-session
+    staleTime: 5 * 60 * 1000, // 5 minutes - store data rarely changes mid-session
   });
 
   // Check if user has a pending application
@@ -208,7 +208,7 @@ export function useSellerStatus() {
       return data as StoreApplication | null;
     },
     enabled: !!user?.id,
-    staleTime: 2 * 60 * 1000, // 2 minutes - application status changes infrequently
+    staleTime: 5 * 60 * 1000, // 5 minutes - application status changes infrequently
   });
 
   // Get seller balance if they have an approved store
@@ -227,7 +227,7 @@ export function useSellerStatus() {
       return data as SellerBalance | null;
     },
     enabled: !!user?.id && store?.status === 'approved',
-    staleTime: 30 * 1000, // 30 seconds - balance can change with sales
+    staleTime: 2 * 60 * 1000, // 2 minutes - balance can change with sales
   });
 
   const isSeller = store?.status === 'approved';
