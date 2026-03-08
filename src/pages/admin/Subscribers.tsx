@@ -161,8 +161,9 @@ export default function Subscribers() {
 
       const emails = recipients.map(r => r.email);
 
-      const { data, error } = await supabase.functions.invoke('send-mass-email', {
+      const { data, error } = await supabase.functions.invoke('send-admin-email', {
         body: {
+          email_type: 'mass_email',
           emails,
           subject: emailSubject,
           content: emailContent,
