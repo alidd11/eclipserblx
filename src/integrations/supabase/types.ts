@@ -8677,9 +8677,7 @@ export type Database = {
           average_rating: number | null
           banner_url: string | null
           bio: string | null
-          commission_rate: number | null
           created_at: string | null
-          custom_commission_rate: number | null
           custom_css: string | null
           description: string | null
           discord_url: string | null
@@ -8700,7 +8698,6 @@ export type Database = {
           logo_url: string | null
           name: string | null
           owner_id: string | null
-          payout_method: string | null
           product_count: number | null
           roblox_gamepass_discount_enabled: boolean | null
           roblox_gamepass_discount_percent: number | null
@@ -8719,7 +8716,6 @@ export type Database = {
           store_id: string | null
           theme: string | null
           tiktok_url: string | null
-          total_revenue: number | null
           total_sales: number | null
           twitter_url: string | null
           updated_at: string | null
@@ -8734,9 +8730,7 @@ export type Database = {
           average_rating?: number | null
           banner_url?: string | null
           bio?: string | null
-          commission_rate?: number | null
           created_at?: string | null
-          custom_commission_rate?: number | null
           custom_css?: string | null
           description?: string | null
           discord_url?: string | null
@@ -8757,7 +8751,6 @@ export type Database = {
           logo_url?: string | null
           name?: string | null
           owner_id?: string | null
-          payout_method?: string | null
           product_count?: number | null
           roblox_gamepass_discount_enabled?: boolean | null
           roblox_gamepass_discount_percent?: number | null
@@ -8776,7 +8769,6 @@ export type Database = {
           store_id?: string | null
           theme?: string | null
           tiktok_url?: string | null
-          total_revenue?: number | null
           total_sales?: number | null
           twitter_url?: string | null
           updated_at?: string | null
@@ -8791,9 +8783,7 @@ export type Database = {
           average_rating?: number | null
           banner_url?: string | null
           bio?: string | null
-          commission_rate?: number | null
           created_at?: string | null
-          custom_commission_rate?: number | null
           custom_css?: string | null
           description?: string | null
           discord_url?: string | null
@@ -8814,7 +8804,6 @@ export type Database = {
           logo_url?: string | null
           name?: string | null
           owner_id?: string | null
-          payout_method?: string | null
           product_count?: number | null
           roblox_gamepass_discount_enabled?: boolean | null
           roblox_gamepass_discount_percent?: number | null
@@ -8833,7 +8822,6 @@ export type Database = {
           store_id?: string | null
           theme?: string | null
           tiktok_url?: string | null
-          total_revenue?: number | null
           total_sales?: number | null
           twitter_url?: string | null
           updated_at?: string | null
