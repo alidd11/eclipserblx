@@ -226,8 +226,9 @@ export function useSellerVerification() {
       // 5. Roblox Group Membership
       if (userProfile.roblox_user_id && settings.roblox_group_id) {
         try {
-          const { data, error } = await supabase.functions.invoke('verify-roblox-group', {
+          const { data, error } = await supabase.functions.invoke('verify-roblox', {
             body: {
+              type: 'group',
               roblox_user_id: userProfile.roblox_user_id,
               group_id: settings.roblox_group_id,
             },
