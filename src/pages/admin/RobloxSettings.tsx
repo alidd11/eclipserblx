@@ -166,8 +166,8 @@ export default function RobloxSettings() {
     setPremiumTestResult(null);
     
     try {
-      const { data, error } = await supabase.functions.invoke('verify-roblox-premium', {
-        body: { roblox_user_id: testRobloxId },
+      const { data, error } = await supabase.functions.invoke('verify-roblox', {
+        body: { type: 'premium', roblox_user_id: testRobloxId },
       });
       
       if (error) throw error;

@@ -261,8 +261,9 @@ export function useSellerVerification() {
 
         for (const badgeId of settings.roblox_required_badges) {
           try {
-            const { data } = await supabase.functions.invoke('verify-roblox-badge', {
+            const { data } = await supabase.functions.invoke('verify-roblox', {
               body: {
+                type: 'badge',
                 roblox_user_id: userProfile.roblox_user_id,
                 badge_id: badgeId,
               },
