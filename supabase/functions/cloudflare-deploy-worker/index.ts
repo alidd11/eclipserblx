@@ -15,13 +15,17 @@ const BOT_PATTERNS = [
   "Applebot", "Embedly", "Iframely", "vkShare", "Pinterestbot",
 ];
 
+// Performance testing tools that should NOT be treated as bots
+const NOT_BOT_PATTERNS = [
+  "Lighthouse", "PageSpeed", "PTST", "Chrome-Lighthouse", "Speed Insights",
+];
+
 const STATIC_OG_PATHS = new Set([
   '/', '/products', '/stores', '/categories', '/featured',
   '/eclipse-plus', '/faq', '/help-center', '/sell', '/contact',
   '/affiliate', '/advertise', '/jobs',
 ]);
 
-// Lovable origin - use the preview URL which doesn't redirect to custom domain
 const ORIGIN = "https://id-preview--d330fb3c-8e4c-4ae9-8517-806e609eff0f.lovable.app";
 
 export default {
@@ -32,12 +36,16 @@ export default {
     const isDynamicPage = /^\\/(products|store)\\/[^/?#]+/.test(url.pathname);
     const isStaticOgPage = STATIC_OG_PATHS.has(url.pathname);
 
-    const isBot = BOT_PATTERNS.some((bot) =>
+    // Exclude performance testing tools (Lighthouse, PageSpeed) from bot handling
+    const isTestingTool = NOT_BOT_PATTERNS.some((p) =>
+      userAgent.toLowerCase().includes(p.toLowerCase())
+    );
+
+    const isBot = !isTestingTool && BOT_PATTERNS.some((bot) =>
       userAgent.toLowerCase().includes(bot.toLowerCase())
     );
     const forceOg = url.searchParams.get('__ogtest') === '1';
 
-    // Only intercept if it's a relevant page AND a bot (or force test)
     if ((isDynamicPage || isStaticOgPage) && (isBot || forceOg)) {
       const ogUrl = SUPABASE_FUNCTION_URL + "?path=" + encodeURIComponent(url.pathname);
       try {
@@ -74,8 +82,6 @@ export default {
       }
     }
 
-    // For all other requests, proxy to the Lovable origin directly
-    // We must use the origin IP to avoid looping back through Cloudflare
     const originUrl = new URL(url.pathname + url.search, ORIGIN);
     const originHeaders = new Headers(request.headers);
     originHeaders.set("Host", url.hostname);
