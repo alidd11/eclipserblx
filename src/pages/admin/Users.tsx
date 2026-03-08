@@ -173,7 +173,7 @@ export default function AdminUsers() {
       
       return data || [];
     },
-    staleTime: 30000,
+    staleTime: 2 * 60_000,
   });
 
   const { data: userRoles } = useQuery({
