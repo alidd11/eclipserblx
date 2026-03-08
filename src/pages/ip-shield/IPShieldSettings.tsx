@@ -11,15 +11,7 @@ import { format } from 'date-fns';
 export default function IPShieldSettings() {
   const { user } = useAuth();
 
-  const { data: subscriptionStatus } = useQuery({
-    queryKey: ['ip-shield-subscription', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('check-ip-shield-subscription');
-      if (error) throw error;
-      return data as any;
-    },
-    enabled: !!user,
-  });
+  const { data: subscriptionStatus } = useIPShieldSubscription();
 
   const { data: verificationStatus } = useQuery({
     queryKey: ['ip-shield-identity-verification', user?.id],

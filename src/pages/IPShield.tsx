@@ -28,6 +28,7 @@ import {
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { IPShieldContactDialog } from '@/components/ip-shield/IPShieldContactDialog';
+import { useIPShieldSubscription } from '@/hooks/useIPShieldSubscription';
 
 
 const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof Clock }> = {
