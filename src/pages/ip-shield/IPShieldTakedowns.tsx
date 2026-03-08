@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useIdentityVerification } from '@/hooks/useIdentityVerification';
 import { IPShieldLayout } from '@/components/ip-shield/IPShieldLayout';
 import { TakedownEvidenceUpload } from '@/components/ip-shield/TakedownEvidenceUpload';
 import { Card, CardContent } from '@/components/ui/card';
