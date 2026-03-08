@@ -171,22 +171,23 @@ export default function ProductDetail() {
     enabled: !!product?.category_id,
   });
 
-  // Check if user has purchased this product
-  // (Uses a backend function so it can also match older/guest orders by customer_email)
+  // Check if user has purchased this product using direct DB query via RPC
   const { data: hasPurchased } = useQuery({
     queryKey: ['user-has-purchased', product?.id, user?.id],
     queryFn: async () => {
       if (!product?.id || !user) return false;
-      const { data, error } = await supabase.functions.invoke('check-product-purchase', {
-        body: { productId: product.id },
+      const { data, error } = await supabase.rpc('user_has_purchased_product', {
+        _user_id: user.id,
+        _product_id: product.id,
       });
       if (error) {
         console.error('Error checking purchase:', error);
         return false;
       }
-      return Boolean((data as { hasPurchased?: boolean } | null)?.hasPurchased);
+      return Boolean(data);
     },
     enabled: !!product?.id && !!user,
+    staleTime: 1000 * 60 * 5,
   });
 
   // Check if user has already reviewed this product

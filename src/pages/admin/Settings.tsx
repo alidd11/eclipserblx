@@ -616,11 +616,20 @@ export default function AdminSettings() {
                       onClick={async () => {
                         setIsGeneratingVapid(true);
                         try {
-                          const { data, error } = await supabase.functions.invoke('generate-vapid-keys');
-                          if (error) throw error;
+                          const keyPair = await crypto.subtle.generateKey(
+                            { name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']
+                          );
+                          const pubRaw = await crypto.subtle.exportKey('raw', keyPair.publicKey);
+                          const privJwk = await crypto.subtle.exportKey('jwk', keyPair.privateKey);
+                          const toB64Url = (buf: ArrayBuffer) => {
+                            const bytes = new Uint8Array(buf);
+                            let bin = '';
+                            bytes.forEach(b => bin += String.fromCharCode(b));
+                            return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+                          };
                           setGeneratedVapidKeys({
-                            publicKey: data.publicKey,
-                            privateKey: data.privateKey,
+                            publicKey: toB64Url(pubRaw),
+                            privateKey: privJwk.d!,
                           });
                           toast.success('VAPID keys generated! Copy and update your secrets below.');
                         } catch (err: any) {
