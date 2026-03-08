@@ -29,8 +29,9 @@ export function UpgradeBanner({ currentServers = 0, maxServers = 2, variant = 'f
   const handleSubscribe = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-global-guard-checkout', {
+      const { data, error } = await supabase.functions.invoke('create-subscription', {
         body: {
+          product_type: 'global_guard',
           billingPeriod: 'monthly',
           additionalServers,
           isEclipsePlus: isSubscribed,
