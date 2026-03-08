@@ -50,11 +50,11 @@ export function PWADiscordBanner() {
         {/* Stats + CTA — aligned with text above (offset past the logo) */}
         <div className="flex items-center justify-between gap-3 pl-[3.375rem]">
           <div className="flex items-center gap-3">
-            {/* Online indicator — stable dot */}
+            {/* Online indicator */}
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <span className="inline-flex rounded-full h-2 w-2 bg-green-500" />
               <span className="font-medium">
-                {isLoading ? '...' : onlineCount !== null ? `${formatCount(onlineCount)} Online` : 'Online Now'}
+                {isLoading ? '...' : onlineCount !== null ? `${formatCount(onlineCount)} Online` : 'Online'}
               </span>
             </div>
 
@@ -64,7 +64,7 @@ export function PWADiscordBanner() {
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Users className="h-3 w-3" />
               <span className="font-medium">
-                {isLoading ? '...' : memberCount !== null ? `${formatCount(memberCount)} Members` : '500+ Members'}
+                {isLoading ? '...' : `${formatCount(memberCount ?? 500)}+ Members`}
               </span>
             </div>
           </div>
