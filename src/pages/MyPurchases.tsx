@@ -45,6 +45,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { DisputeDialog } from '@/components/purchases/DisputeDialog';
+import { OrderTimeline } from '@/components/purchases/OrderTimeline';
 
 // Format bytes to human readable size
 const formatFileSize = (bytes: number): string => {
