@@ -71,8 +71,8 @@ export function useAdminAdAnalytics() {
   // Fetch all advertisements
   const { data: advertisements, isLoading: adsLoading } = useQuery({
     queryKey: ['admin-all-advertisements'],
-    staleTime: 30_000,
-    refetchInterval: 60_000,
+    staleTime: 5 * 60_000,
+    refetchInterval: 10 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('discord_advertisements')
