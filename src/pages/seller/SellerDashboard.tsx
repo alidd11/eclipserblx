@@ -28,6 +28,7 @@ const StoreHealthScore = lazy(() => import('@/components/seller/StoreHealthScore
 const CustomerDemographics = lazy(() => import('@/components/seller/CustomerDemographics').then(m => ({ default: m.CustomerDemographics })));
 const PayoutTimeline = lazy(() => import('@/components/seller/PayoutTimeline').then(m => ({ default: m.PayoutTimeline })));
 const StorePreviewCard = lazy(() => import('@/components/seller/StorePreviewCard').then(m => ({ default: m.StorePreviewCard })));
+const SalesVelocityInsights = lazy(() => import('@/components/seller/SalesVelocityInsights').then(m => ({ default: m.SalesVelocityInsights })));
 
 const CURRENT_TOS_VERSION = "1.0";
 
