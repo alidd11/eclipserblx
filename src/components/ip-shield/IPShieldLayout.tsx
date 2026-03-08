@@ -19,15 +19,9 @@ export function IPShieldLayout({ children }: IPShieldLayoutProps) {
   // Check subscription via shared hook (DB-first with background Stripe sync)
   const { data: subscriptionStatus, isLoading: subLoading } = useIPShieldSubscription();
 
-  const { data: verificationStatus, isLoading: verifyLoading } = useQuery({
-    queryKey: ['ip-shield-identity-verification', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('check-identity-verification');
-      if (error) throw error;
-      return data as { verified: boolean; status: string };
-    },
-    enabled: !!user && !isStaff && subscriptionStatus?.subscribed === true,
-  });
+  const { data: verificationStatus, isLoading: verifyLoading } = useIdentityVerification(
+    !!user && !isStaff && subscriptionStatus?.subscribed === true
+  );
 
   const loading = authLoading || adminLoading || (!isStaff && (subLoading || (subscriptionStatus?.subscribed && verifyLoading)));
 
