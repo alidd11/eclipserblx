@@ -52,6 +52,7 @@ export default {
 
     if ((isDynamicPage || isStaticOgPage) && (isBot || forceOg)) {
       const ogUrl = SUPABASE_FUNCTION_URL + "?path=" + encodeURIComponent(url.pathname);
+      try {
         const ogResponse = await fetch(ogUrl, {
           headers: {
             "User-Agent": userAgent,
