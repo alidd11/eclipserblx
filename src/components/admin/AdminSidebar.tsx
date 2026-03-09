@@ -143,6 +143,7 @@ const navGroups: NavGroup[] = [
       { title: 'Gift Credits', icon: Gift, href: '/admin/gift-credits', permissions: ['manage_users'], roles: ['admin'] },
       { title: 'IP Bans', icon: Ban, href: '/admin/ip-bans', permissions: ['view_ip_bans'] },
       { title: 'Subscribers', icon: Mail, href: '/admin/subscribers', permissions: ['view_subscribers'] },
+      { title: 'IP Shield Plans', icon: Shield, href: '/admin/ip-shield-custom-plans', permissions: ['manage_users'], roles: ['admin'] },
     ],
   },
   {
