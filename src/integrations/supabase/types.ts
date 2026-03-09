@@ -6369,6 +6369,7 @@ export type Database = {
       seller_payouts: {
         Row: {
           amount: number
+          auto_processed: boolean | null
           completed_at: string | null
           created_at: string | null
           failure_reason: string | null
@@ -6388,6 +6389,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          auto_processed?: boolean | null
           completed_at?: string | null
           created_at?: string | null
           failure_reason?: string | null
@@ -6407,6 +6409,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          auto_processed?: boolean | null
           completed_at?: string | null
           created_at?: string | null
           failure_reason?: string | null

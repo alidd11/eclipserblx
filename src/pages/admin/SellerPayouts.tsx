@@ -137,19 +137,26 @@ export default function SellerPayouts() {
   });
 
   const getStatusBadge = (status: string, payout?: any) => {
+    const autoTag = payout?.auto_processed ? (
+      <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-[10px] ml-1">Auto</Badge>
+    ) : null;
+
     switch (status) {
       case "completed":
-        return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Completed</Badge>;
+        return <span className="flex items-center gap-1"><Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Completed</Badge>{autoTag}</span>;
       case "rejected":
-        return <Badge variant="destructive">Rejected</Badge>;
+        return <span className="flex items-center gap-1"><Badge variant="destructive">Rejected</Badge>{autoTag}</span>;
       case "processing":
-        return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Processing</Badge>;
+        return <span className="flex items-center gap-1"><Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Processing</Badge>{autoTag}</span>;
       case "awaiting_funds":
         return (
-          <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            Awaiting Funds
-          </Badge>
+          <span className="flex items-center gap-1">
+            <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              Awaiting Funds
+            </Badge>
+            {autoTag}
+          </span>
         );
       default:
         return <Badge variant="secondary">Pending</Badge>;

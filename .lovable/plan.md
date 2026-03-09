@@ -1,68 +1,36 @@
 
 
-## Plan: Automate Seller Withdrawal Payments
+## Issues Identified
 
-### Current State
-- Sellers click "Request Payout" → creates a `seller_payouts` record with status `pending`
-- Admin manually opens `/admin/seller-payouts`, reviews each request, and clicks "Process" 
-- For Stripe Connect sellers: admin manually marks as completed and updates balances client-side
-- For Wise (bank transfer) sellers: admin clicks "Process via Wise" which calls the `wise-payout` edge function
-- `check-wise-funding` cron already runs hourly for `awaiting_funds` payouts
+**Issue 1: Sidebar positioned at top of screen on desktop**
+The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
 
-### What We'll Build
-A new **`auto-process-seller-payouts`** edge function that runs on a scheduled cron job (every 30 minutes) and automatically processes pending payout requests without admin intervention.
+**Issue 2: Excessive black empty space in the content area**
+The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
 
-### How It Works
+## Plan
 
-1. **New edge function: `auto-process-seller-payouts`**
-   - Fetches all `seller_payouts` with status `pending`
-   - For each payout, looks up the store's `payout_method` from `store_payment_details`
-   - **Stripe Connect sellers** (`payout_method = 'stripe'`): Creates a Stripe Transfer to the seller's connected account using `stripe.transfers.create({ destination: stripe_account_id })`. Marks payout as `completed`.
-   - **Wise/bank transfer sellers** (`payout_method = 'bank_transfer'`): Calls the existing Wise payout logic (quote → transfer → fund). If insufficient Wise balance, triggers Stripe funding and marks as `awaiting_funds` (existing `check-wise-funding` cron handles retry).
-   - **PayPal sellers** (`payout_method = 'paypal'`): Skips — keeps as `pending` for manual processing (PayPal requires manual handling).
-   - Updates `seller_balances` atomically (deduct `available_balance`, increment `total_paid`)
-   - Creates audit log entries for every processed payout
-   - Sends seller notification on success/failure
+### 1. Widen the content area on the Categories page
+- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
+- Reduce vertical padding between the header and grid
+- Tighten the gap between the page title/description and the cards
 
-2. **Safety guards**
-   - Only processes payouts that have been pending for at least 5 minutes (prevents race with the seller's request)
-   - Validates store has completed Stripe Connect onboarding (`payouts_enabled = true`) before attempting Stripe transfers
-   - Validates Wise recipient exists before attempting bank transfers
-   - Max 50 payouts per run to prevent timeout
-   - Skips stores with `is_restricted = true` in security scores
-   - All financial operations wrapped in try/catch per-payout (one failure doesn't block others)
+### 2. Improve the PageHeader component
+- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
+- This applies globally to all pages using PageHeader
 
-3. **Cron job**: Schedule every 30 minutes via `pg_cron`
+### 3. Make category cards fill space better
+- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
+- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
+- Reduce grid gap slightly so cards feel more connected
 
-4. **Admin visibility**: Add an "Auto-processed" badge to the SellerPayouts admin page so staff can see which payouts were automated vs manual
+### 4. Sidebar desktop alignment fix
+- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
+- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
+- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
 
-### Files Changed
-- **New**: `supabase/functions/auto-process-seller-payouts/index.ts`
-- **Modified**: `src/pages/admin/SellerPayouts.tsx` — add auto-processed indicator badge
-- **Database**: New cron job entry (via SQL insert, not migration)
-
-### Technical Details
-
-```text
-Seller requests payout
-        │
-        ▼
-  seller_payouts (status: pending)
-        │
-        ▼  (every 30 min cron)
-  auto-process-seller-payouts
-        │
-   ┌────┴────────┬──────────────┐
-   ▼             ▼              ▼
- Stripe      Wise/Bank       PayPal
- Connect     Transfer        (skip)
-   │             │
-   ▼             ▼
- Transfer    Quote→Transfer
- to acct     →Fund from bal
-   │             │
-   ▼             ▼
- completed   processing/
-             awaiting_funds
-```
+### Files to modify
+- `src/pages/Categories.tsx` — widen container, tighten spacing
+- `src/components/ui/PageHeader.tsx` — reduce bottom margin
+- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
 
