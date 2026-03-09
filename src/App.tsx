@@ -10,7 +10,7 @@ import { ChatPanelProvider } from "@/hooks/useChatPanel";
 import { StoreDomainProvider } from "@/hooks/useStoreDomain";
 import { CookieConsentProvider } from "@/hooks/useCookieConsent";
 import { CurrencyProvider } from "@/hooks/useCurrency";
-import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+const InstallPrompt = lazy(() => import("@/components/pwa/InstallPrompt").then(m => ({ default: m.InstallPrompt })));
 import { PWAWrapper } from "@/components/pwa/PWAWrapper";
 import { IpBanCheck } from "@/components/IpBanCheck";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -79,7 +79,7 @@ const App = forwardRef<HTMLDivElement>((_, ref) => (
                             <AppRoutes />
                           </EmailGuard>
                         </Suspense>
-                        <InstallPrompt />
+                        <Suspense fallback={null}><InstallPrompt /></Suspense>
                       </PWAWrapper>
                       {/* Chat components rendered OUTSIDE PWAWrapper to prevent transform-related positioning issues */}
                       <Suspense fallback={null}>

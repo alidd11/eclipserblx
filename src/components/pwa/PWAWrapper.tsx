@@ -1,7 +1,5 @@
 import { useState, useEffect, ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
 import { WifiOff, Wifi } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useServiceWorkerUpdate } from '@/hooks/useServiceWorkerUpdate';
 import { useAppVersionCheck } from '@/hooks/useAppVersionCheck';
 import { useSystemStatus } from '@/hooks/useSystemStatus';
@@ -47,20 +45,15 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
 
   return (
     <>
-      {/* Offline banner */}
-      <AnimatePresence>
-        {isOffline && (
-          <motion.div
-            initial={{ y: -50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -50, opacity: 0 }}
-            className="fixed top-0 left-0 right-0 z-[100] bg-destructive text-destructive-foreground px-4 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-center gap-2 text-sm"
-          >
-            <WifiOff className="h-4 w-4" />
-            You're offline. Some features may be unavailable.
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Offline banner — CSS-only animation, no framer-motion */}
+      {isOffline && (
+        <div
+          className="fixed top-0 left-0 right-0 z-[100] bg-destructive text-destructive-foreground px-4 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-center gap-2 text-sm animate-slide-down"
+        >
+          <WifiOff className="h-4 w-4" />
+          You're offline. Some features may be unavailable.
+        </div>
+      )}
 
       {/* Content — no transform wrapper */}
       <div

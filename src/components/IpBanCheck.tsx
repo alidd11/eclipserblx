@@ -1,13 +1,24 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Ban, AlertTriangle } from 'lucide-react';
-import { format } from 'date-fns';
 
 interface BanInfo {
   banned: boolean;
   reason?: string;
   expires_at?: string | null;
   ip?: string;
+}
+
+function formatBanDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }) + ' at ' + d.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
 }
 
 export function IpBanCheck({ children }: { children: React.ReactNode }) {
@@ -52,9 +63,6 @@ export function IpBanCheck({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer);
   }, []);
 
-  // Render children immediately while ban check runs in background
-  // This prevents the IP ban check from blocking FCP/LCP
-
   // Show banned screen if IP is banned
   if (banInfo?.banned) {
     return (
@@ -87,7 +95,7 @@ export function IpBanCheck({ children }: { children: React.ReactNode }) {
             <p className="text-sm text-muted-foreground">
               This ban expires on{' '}
               <span className="font-medium">
-                {format(new Date(banInfo.expires_at), 'MMMM d, yyyy \'at\' h:mm a')}
+                {formatBanDate(banInfo.expires_at)}
               </span>
             </p>
           )}
