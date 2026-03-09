@@ -323,10 +323,7 @@ export default function SellerSettingsDomain() {
               className="flex-1"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && domainSearchInput.trim()) {
-                  window.open(
-                    `https://www.namecheap.com/domains/registration/results/?domain=${encodeURIComponent(domainSearchInput.trim())}&aff=${NAMECHEAP_AFFILIATE_ID}`,
-                    '_blank'
-                  );
+                  window.open(DOMAIN_REGISTRAR_URL, '_blank');
                 }
               }}
             />
