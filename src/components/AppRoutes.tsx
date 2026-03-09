@@ -371,7 +371,7 @@ export function AppRoutes() {
         {/* Public store page */}
         <Route path="/store/:storeSlug" element={<StorePage />} />
         <Route path="/store/:storeSlug/reviews" element={<StoreReviewsPage />} />
-        <Route path="/store/:slug/about" element={<StoreAbout />} />
+        <Route path="/store/:storeSlug/about" element={<StoreAbout />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/analytics" element={<AdminAnalytics />} />

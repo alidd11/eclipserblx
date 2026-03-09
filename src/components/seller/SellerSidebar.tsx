@@ -109,6 +109,7 @@ const navGroups: NavGroup[] = [
       { title: 'Custom Domain', icon: Globe, href: '/seller/settings/domain' },
       { title: 'Payments', icon: CreditCard, href: '/seller/settings/payments' },
       { title: 'Team', icon: Users, href: '/seller/settings/team' },
+      { title: 'Notifications', icon: Bell, href: '/seller/settings/notifications' },
     ],
   },
 ];
