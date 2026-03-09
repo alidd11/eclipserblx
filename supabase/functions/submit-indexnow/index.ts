@@ -100,12 +100,24 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Ping Google to re-crawl the sitemap
+    const sitemapUrl = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/dynamic-sitemap";
+    let googlePing = { status: 0, ok: false };
+    try {
+      const gRes = await fetch(`https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`);
+      googlePing = { status: gRes.status, ok: gRes.status >= 200 && gRes.status < 300 };
+      await gRes.text();
+    } catch (e) {
+      googlePing = { status: 0, ok: false, error: e.message } as any;
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         totalUrls: urlsToSubmit.length,
         results,
-        message: `Submitted ${urlsToSubmit.length} URLs to IndexNow (Bing, Yandex, and IndexNow API)`,
+        googlePing,
+        message: `Submitted ${urlsToSubmit.length} URLs to IndexNow + pinged Google sitemap`,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
