@@ -327,9 +327,10 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
                   </NavLink>
                 </div>
               )}
-            </div>
+            </div>}
 
-            {/* Discord Link */}
+            {/* Discord Link — hidden on custom domains */}
+            {!isCustomStoreDomain && (
             <a
               href={discordUrl}
               target="_blank"
