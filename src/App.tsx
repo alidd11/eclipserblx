@@ -53,7 +53,8 @@ function PageLoader() {
   );
 }
 
-const App = () => (
+const App = forwardRef<HTMLDivElement>((_, ref) => (
+  <div ref={ref}>
   <ConnectionErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <CookieConsentProvider>
