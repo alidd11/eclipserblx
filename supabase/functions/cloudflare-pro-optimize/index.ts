@@ -91,14 +91,14 @@ Deno.serve(async (req) => {
       );
       console.log("[CF] Current bot_management:", JSON.stringify(getBot.data?.result || {}));
 
+      // Pro tier: only sbfm_definitely_automated, sbfm_verified_bots, sbfm_static_resource_protection, enable_js
+      // fight_mode is Free-only, sbfm_likely_automated is Business+ only
       const botUpdate = await cfApi(
         `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/bot_management`,
         "PUT",
         {
           enable_js: true,
-          fight_mode: true,
           sbfm_definitely_automated: "block",
-          sbfm_likely_automated: "managed_challenge",
           sbfm_verified_bots: "allow",
           sbfm_static_resource_protection: false,
         },
@@ -370,12 +370,6 @@ Deno.serve(async (req) => {
     // Find existing or create new entrypoint.
 
     try {
-      const listRes = await cfApi(
-        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
-        "GET", null, "list_rulesets_owasp"
-      );
-      const allRulesets = listRes.data.result || [];
-
       const OWASP_RULESET_ID = "4814384a9e5d4991b9815dcfc25d2f1f";
       const CF_MANAGED_RULESET_ID = "efb7b8c949ac4650a09736fc376e9aee";
 
@@ -396,35 +390,16 @@ Deno.serve(async (req) => {
         },
       ];
 
-      const existingManaged = allRulesets.find((r: any) => r.phase === "http_request_firewall_managed");
-
-      if (existingManaged) {
-        const r = await cfApi(
-          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingManaged.id}`,
-          "PUT",
-          {
-            name: existingManaged.name,
-            kind: existingManaged.kind,
-            phase: "http_request_firewall_managed",
-            rules: managedRules,
-          },
-          "owasp_managed_ruleset"
-        );
-        results["owasp_managed_ruleset"] = { success: r.data.success, action: "updated", status: r.status };
-      } else {
-        const r = await cfApi(
-          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
-          "POST",
-          {
-            name: "Eclipse Managed WAF Entrypoint",
-            kind: "zone",
-            phase: "http_request_firewall_managed",
-            rules: managedRules,
-          },
-          "owasp_managed_ruleset"
-        );
-        results["owasp_managed_ruleset"] = { success: r.data.success, action: "created", status: r.status };
-      }
+      // Use the zone entrypoint API directly — avoids stale ruleset ID issues
+      const r = await cfApi(
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/phases/http_request_firewall_managed/entrypoint`,
+        "PUT",
+        {
+          rules: managedRules,
+        },
+        "owasp_managed_ruleset"
+      );
+      results["owasp_managed_ruleset"] = { success: r.data.success, status: r.status };
     } catch (e) {
       results["owasp_managed_ruleset"] = { success: false, error: (e as Error).message };
     }
