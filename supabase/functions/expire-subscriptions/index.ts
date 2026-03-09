@@ -1,0 +1,49 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
+    console.log("[expire-subscriptions] Running scheduled cleanup...");
+
+    // Expire admin-granted subscriptions (no stripe_subscription_id) past their end date
+    const { data: adminExpired, error: adminError } = await supabase
+      .from("subscriptions")
+      .update({ status: "inactive" })
+      .eq("status", "active")
+      .is("stripe_subscription_id", null)
+      .lt("current_period_end", new Date().toISOString())
+      .select("id");
+
+    if (adminError) {
+      console.error("[expire-subscriptions] Admin grants error:", adminError.message);
+    }
+
+    const adminCount = adminExpired?.length ?? 0;
+    console.log(`[expire-subscriptions] Expired ${adminCount} admin-granted subscriptions`);
+
+    return new Response(
+      JSON.stringify({ success: true, expired_admin_grants: adminCount }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (err) {
+    console.error("[expire-subscriptions] Error:", err);
+    return new Response(
+      JSON.stringify({ success: false, error: String(err) }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});
