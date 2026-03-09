@@ -28,10 +28,14 @@ import {
   Star,
   Eye,
   Code,
-  CalendarIcon
+  CalendarIcon,
+  Image,
+  Link2,
+  EyeOff
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
+import { StoreNavEditor } from '@/components/seller/StoreNavEditor';
 
 const STORE_THEMES = [
   { id: 'default', name: 'Default', description: 'Clean and modern' },
