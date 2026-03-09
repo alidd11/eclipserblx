@@ -14,7 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useDropZone } from '@/hooks/useDropZone';
-import { useIOSKeyboardFix } from '@/hooks/useIOSKeyboardFix';
+// useIOSKeyboardFix removed — keyboard CSS vars handled by AdminLayout's useIOSChatKeyboard
 import { markChatAsRead } from '@/hooks/useChatNotifications';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
@@ -164,7 +164,7 @@ function AdminChatContent() {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  const { isKeyboardVisible } = useIOSKeyboardFix();
+  // Removed useIOSKeyboardFix — keyboard state is handled by useIOSChatKeyboard in AdminLayout
 
   // Detect PWA mode
   const isPWA = typeof window !== 'undefined' && (
@@ -547,52 +547,31 @@ function AdminChatContent() {
     };
   }, [messages, scrollToBottom]);
 
-  // Handle viewport resize for keyboard - scroll chat to bottom when keyboard opens
+  // Scroll to bottom when viewport resizes (keyboard open/close).
+  // Single lightweight listener — CSS var updates are handled by useIOSChatKeyboard in AdminLayout.
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
 
     let lastHeight = vv.height;
-    let timers: number[] = [];
+    let timer: number | undefined;
 
-    const handleViewportResize = () => {
-      const heightDelta = Math.abs(vv.height - lastHeight);
-      // Only react to significant height changes (keyboard open/close)
-      if (heightDelta > 50) {
+    const handleResize = () => {
+      const delta = Math.abs(vv.height - lastHeight);
+      if (delta > 50) {
         lastHeight = vv.height;
-        // Clear any pending scroll timers
-        timers.forEach(t => clearTimeout(t));
-        // Staggered scrolls to handle iOS keyboard animation settling
-        timers = [
-          window.setTimeout(scrollToBottom, 0),
-          window.setTimeout(scrollToBottom, 100),
-          window.setTimeout(scrollToBottom, 250),
-          window.setTimeout(scrollToBottom, 400),
-        ];
+        clearTimeout(timer);
+        // Single delayed scroll after keyboard animation settles
+        timer = window.setTimeout(scrollToBottom, 120);
       }
     };
 
-    vv.addEventListener('resize', handleViewportResize);
-
+    vv.addEventListener('resize', handleResize);
     return () => {
-      timers.forEach(t => clearTimeout(t));
-      vv.removeEventListener('resize', handleViewportResize);
+      clearTimeout(timer);
+      vv.removeEventListener('resize', handleResize);
     };
   }, [scrollToBottom]);
-
-  // Scroll to bottom when keyboard becomes visible
-  useEffect(() => {
-    if (!isKeyboardVisible) return;
-    
-    // Give the viewport time to resize, then scroll chat to bottom
-    const timeoutId = setTimeout(() => {
-      scrollToBottom();
-    }, 150);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [isKeyboardVisible, scrollToBottom]);
 
   // Scroll to bottom when mention suggestions appear (ensures input stays visible)
   useEffect(() => {
@@ -1120,10 +1099,10 @@ function AdminChatContent() {
       )}
 
       {/* Input bar - iMessage style */}
-      <div className={cn(
-        "px-3 py-2 sm:px-4 sm:py-3 flex-shrink-0 bg-card relative",
-        !isKeyboardVisible && isPWA && "pb-[env(safe-area-inset-bottom,0px)]"
-      )}>
+      <div
+        data-gesture-exempt="true"
+        className="px-3 py-2 sm:px-4 sm:py-3 flex-shrink-0 bg-card pb-[var(--chat-safe-bottom,0px)] relative"
+      >
         {/* Mention suggestions */}
         {showMentionSuggestions && (
           <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-[100]">
@@ -1205,7 +1184,7 @@ function AdminChatContent() {
         />
 
         {/* Modern input bar */}
-        <div className="flex gap-2 items-center">
+        <div data-gesture-exempt="true" className="flex gap-2 items-center">
           {/* Plus/Attachment button */}
           <Button
             variant="ghost"
@@ -1262,8 +1241,9 @@ function AdminChatContent() {
                 });
               }}
               placeholder="Message..."
-              className="w-full rounded-full bg-muted/50 border-0 focus-visible:ring-1 pr-10"
+              className="w-full rounded-full bg-muted/50 border-0 focus-visible:ring-1 pr-10 text-base"
               disabled={isUploading}
+              style={{ fontSize: '16px' }}
             />
           </div>
 

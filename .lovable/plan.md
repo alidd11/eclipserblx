@@ -1,80 +1,36 @@
 
-Goal: run a full admin chat + staff messages PWA keyboard stability audit, then implement a hardening pass so the keyboard no longer “disappears” on iOS installed app.
 
-What I already audited
-1) Chat layout stack
-- `AdminLayout` drives chat pages with `height: var(--chat-vvh, 100dvh)` and sets `--chat-safe-bottom`.
-- `useIOSChatKeyboard` updates CSS vars from `visualViewport.resize`.
+## Issues Identified
 
-2) Per-page keyboard logic
-- `AdminChat` + `StaffMessages` each also attach their own `visualViewport.resize` listeners and use `useIOSKeyboardFix` (another listener).
-- That means multiple independent viewport listeners are firing on the same keyboard transitions.
+**Issue 1: Sidebar positioned at top of screen on desktop**
+The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
 
-3) Input behavior differences (important)
-- `StaffMessages` input enforces `fontSize: '16px'` (good for iOS).
-- `AdminChat` input currently inherits default `Input` size (`text-sm`, effectively ~14px). This is a known iOS trigger for zoom/focus instability and can look like keyboard dismissal/disappearance.
-- `LiveChat` already uses 16px and similar keep-visible behavior.
+**Issue 2: Excessive black empty space in the content area**
+The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
 
-4) Runtime signals
-- Console snapshot shows a React ref warning in command palette (`CommandDialog`/`SearchCommandPalette`) unrelated to chat keyboard directly, but worth cleaning to reduce render noise.
+## Plan
 
-Most likely root causes
-- Primary: Admin chat input font size below 16px in iOS PWA.
-- Secondary: competing keyboard/viewport handlers (`useIOSChatKeyboard` + page-local resize effects + `useIOSKeyboardFix`) causing race conditions during open/close animation.
-- Tertiary: slight inconsistency in bottom-safe-area padding behavior between admin/staff chat composers.
+### 1. Widen the content area on the Categories page
+- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
+- Reduce vertical padding between the header and grid
+- Tighten the gap between the page title/description and the cards
 
-Implementation plan
-Phase 1 — Stabilize keyboard behavior (highest priority)
-1. Enforce iOS-safe input sizing consistently
-- Set Admin Chat composer input to guaranteed 16px (match Staff/LiveChat).
-- Keep touch focus strategy but avoid redundant focus churn.
+### 2. Improve the PageHeader component
+- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
+- This applies globally to all pages using PageHeader
 
-2. Remove duplicate viewport race paths
-- Keep one authoritative viewport mechanism for chat pages (layout-level CSS var source).
-- Remove per-page “extra” resize timers in `AdminChat` and `StaffMessages` that duplicate the same scroll/resize reaction.
-- Keep minimal scroll-to-bottom on focus + message change only.
+### 3. Make category cards fill space better
+- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
+- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
+- Reduce grid gap slightly so cards feel more connected
 
-3. Unify composer safe-area behavior
-- Use `pb-[var(--chat-safe-bottom,...)]` consistently for both Admin Chat and Staff Messages.
-- Avoid branching bottom padding on `isKeyboardVisible` where not needed.
+### 4. Sidebar desktop alignment fix
+- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
+- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
+- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
 
-Phase 2 — Harden focus/gesture flow
-4. Normalize focus handlers
-- Keep synchronous focus on touch/pointer for iOS PWA, but simplify to one deterministic path to prevent focus bounce.
-- Ensure input wrappers on both pages are marked `data-gesture-exempt` to avoid accidental gesture interception.
+### Files to modify
+- `src/pages/Categories.tsx` — widen container, tighten spacing
+- `src/components/ui/PageHeader.tsx` — reduce bottom margin
+- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
 
-5. Keep-visible behavior simplification
-- Replace long staggered timeout chains with short, deterministic “focus + one delayed settle” pattern.
-- Ensure mention popup open/close does not reflow input out of viewport.
-
-Phase 3 — Full audit verification (every practical check)
-6. Functional checks on both pages (`/admin/admin-chat`, `/admin/staff-messages`)
-- First tap focuses input and opens keyboard.
-- Type continuously; keyboard stays open.
-- Send message; keyboard stays available and input remains visible.
-- Open @mention list, select mention, continue typing.
-- Add/remove attachment, continue typing.
-- Switch between chats/pages; keyboard still stable.
-- Background app → foreground; keyboard still works.
-- Rotate device portrait/landscape.
-- Return from non-chat admin pages back into chat.
-
-7. Regression checks
-- Scroll behavior remains smooth (`-webkit-overflow-scrolling: touch`).
-- No grey strip/bottom gap regressions.
-- No new console errors.
-
-Technical details (for implementation)
-- Files to update:
-  - `src/pages/admin/AdminChat.tsx`
-  - `src/pages/admin/StaffMessages.tsx`
-  - `src/hooks/useIOSKeyboardFix.ts` (possibly reduce/remove usage in these two pages)
-  - `src/components/admin/AdminLayout.tsx` (if minor safe-area harmonization needed)
-  - optional cleanup: `src/components/ui/command.tsx` + `src/components/search/SearchCommandPalette.tsx` (ref warning)
-- Guardrails:
-  - Keep current auth/permissions untouched.
-  - No backend schema/function changes needed.
-  - Prefer one viewport source of truth for chat pages.
-
-Expected outcome
-- Admin Chat and Staff Messages behave like stable iOS messaging UIs in installed PWA mode: keyboard opens reliably, stays present while typing/sending/mentioning, and composer remains visible without jump/disappear behavior.

@@ -12,7 +12,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { useIOSKeyboardFix } from '@/hooks/useIOSKeyboardFix';
+// useIOSKeyboardFix removed — keyboard CSS vars handled by AdminLayout's useIOSChatKeyboard
 import { markChatAsRead } from '@/hooks/useChatNotifications';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
@@ -156,7 +156,7 @@ function StaffMessagesContent() {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  const { isKeyboardVisible } = useIOSKeyboardFix();
+  // Removed useIOSKeyboardFix — keyboard state handled by useIOSChatKeyboard in AdminLayout
 
   // Detect PWA mode
   const isPWA = typeof window !== 'undefined' && (
@@ -510,52 +510,30 @@ function StaffMessagesContent() {
     };
   }, [messages, scrollToBottom]);
 
-  // Handle viewport resize for keyboard - scroll chat to bottom when keyboard opens
+  // Scroll to bottom when viewport resizes (keyboard open/close).
+  // Single lightweight listener — CSS var updates are handled by useIOSChatKeyboard in AdminLayout.
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
 
     let lastHeight = vv.height;
-    let timers: number[] = [];
+    let timer: number | undefined;
 
-    const handleViewportResize = () => {
-      const heightDelta = Math.abs(vv.height - lastHeight);
-      // Only react to significant height changes (keyboard open/close)
-      if (heightDelta > 50) {
+    const handleResize = () => {
+      const delta = Math.abs(vv.height - lastHeight);
+      if (delta > 50) {
         lastHeight = vv.height;
-        // Clear any pending scroll timers
-        timers.forEach(t => clearTimeout(t));
-        // Staggered scrolls to handle iOS keyboard animation settling
-        timers = [
-          window.setTimeout(scrollToBottom, 0),
-          window.setTimeout(scrollToBottom, 100),
-          window.setTimeout(scrollToBottom, 250),
-          window.setTimeout(scrollToBottom, 400),
-        ];
+        clearTimeout(timer);
+        timer = window.setTimeout(scrollToBottom, 120);
       }
     };
 
-    vv.addEventListener('resize', handleViewportResize);
-
+    vv.addEventListener('resize', handleResize);
     return () => {
-      timers.forEach(t => clearTimeout(t));
-      vv.removeEventListener('resize', handleViewportResize);
+      clearTimeout(timer);
+      vv.removeEventListener('resize', handleResize);
     };
   }, [scrollToBottom]);
-
-  // Scroll to bottom when keyboard becomes visible
-  useEffect(() => {
-    if (!isKeyboardVisible) return;
-    
-    // Give the viewport time to resize, then scroll chat to bottom
-    const timeoutId = setTimeout(() => {
-      scrollToBottom();
-    }, 150);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [isKeyboardVisible, scrollToBottom]);
 
   // Scroll to bottom when mention suggestions appear (ensures input stays visible)
   useEffect(() => {
