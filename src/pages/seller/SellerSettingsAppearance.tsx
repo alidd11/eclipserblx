@@ -125,6 +125,8 @@ export default function SellerSettingsAppearance() {
         custom_css: store.custom_css || '',
         banner_start_at: store.banner_start_at || null,
         banner_end_at: store.banner_end_at || null,
+        favicon_url: (store as any).favicon_url || '',
+        hide_branding: (store as any).hide_branding || false,
       });
     }
   }, [store]);
