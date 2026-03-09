@@ -118,8 +118,37 @@ export function StoreSidebar({
     onNavigate?.();
   };
 
+  // Fetch custom nav links for this store
+  const { data: customNavLinks = [] } = useQuery({
+    queryKey: ['store-nav-links-public', storeSlug],
+    queryFn: async () => {
+      const { data: storeData } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('slug', storeSlug)
+        .single();
+      if (!storeData) return [];
+      const { data, error } = await supabase
+        .from('store_nav_links')
+        .select('*')
+        .eq('store_id', storeData.id)
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true });
+      if (error) return [];
+      return data || [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Navigation groups matching CustomerSidebar structure
   // On custom domains, hide Marketplace link, My Account, and Legal groups
+  const customLinkItems: NavItem[] = customNavLinks.map((link: any) => ({
+    title: link.label,
+    icon: FileText,
+    href: link.url || undefined,
+    external: link.link_type === 'external',
+  }));
+
   const navGroups: NavGroup[] = [
     {
       id: 'quick-access',
@@ -141,6 +170,12 @@ export function StoreSidebar({
         { title: 'Wishlist', icon: Heart, href: '/wishlist' },
         { title: 'My Purchases', icon: Download, href: '/purchases' },
       ],
+    }] : []),
+    ...(customLinkItems.length > 0 ? [{
+      id: 'pages',
+      title: 'Pages',
+      icon: FileText,
+      items: customLinkItems,
     }] : []),
     {
       id: 'store',
