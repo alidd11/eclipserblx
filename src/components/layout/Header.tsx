@@ -348,8 +348,10 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
               </svg>
               <span>{t('nav.joinDiscord')}</span>
             </a>
+            )}
             
-            {/* System Status */}
+            {/* System Status — hidden on custom domains */}
+            {!isCustomStoreDomain && (
             <NavLink
               to="/status"
               onClick={() => setMobileMenuOpen(false)}
