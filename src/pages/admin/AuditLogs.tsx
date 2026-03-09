@@ -243,7 +243,7 @@ export default function AdminAuditLogs() {
           </TableRow>
         ) : (
           logs.map((log) => {
-            const details = log.details as { target_email?: string; target_user_id?: string } | null;
+            const details = log.details as { target_email?: string; target_display_name?: string; target_user_id?: string } | null;
             return (
               <TableRow key={log.id}>
                 <TableCell>
@@ -252,7 +252,7 @@ export default function AdminAuditLogs() {
                     Deleted
                   </Badge>
                 </TableCell>
-                <TableCell><span className="text-sm">{details?.target_email || details?.target_user_id || 'Unknown'}</span></TableCell>
+                <TableCell><span className="text-sm">{details?.target_display_name || details?.target_user_id?.slice(0, 8) || 'Unknown'}</span></TableCell>
                 <TableCell><span className="text-sm text-muted-foreground">{getAdminName(log.user_id)}</span></TableCell>
                 <TableCell><span className="text-sm text-muted-foreground">{format(new Date(log.created_at), 'MMM d, yyyy h:mm a')}</span></TableCell>
               </TableRow>
