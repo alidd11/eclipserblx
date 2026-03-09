@@ -61,6 +61,7 @@ const navGroups: NavGroup[] = [
       { title: 'Flash Sales', icon: Zap, href: '/seller/flash-sales' },
       { title: 'Bundle Deals', icon: PackagePlus, href: '/seller/bundles' },
       { title: 'Announcements', icon: Megaphone, href: '/seller/announcements' },
+      { title: 'Promote', icon: Sparkles, href: '/seller/promote' },
     ],
   },
   {
