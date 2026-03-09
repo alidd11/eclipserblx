@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
       .from('seller_payouts')
       .select(`
         *,
-        stores (id, name, owner_id, payout_method, wise_recipient_id, store_id),
+        stores (id, name, owner_id, payout_method, store_id),
         profiles!seller_payouts_seller_id_fkey (display_name, email)
       `)
       .eq('status', 'pending')
