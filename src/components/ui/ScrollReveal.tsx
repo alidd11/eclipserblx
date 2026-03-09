@@ -77,6 +77,7 @@ export const ScrollReveal = forwardRef<HTMLDivElement, ScrollRevealProps>(functi
         ease: [0.25, 0.1, 0.25, 1],
       }}
       className={className}
+      style={{ willChange: 'opacity, transform' }}
     >
       {children}
     </motion.div>

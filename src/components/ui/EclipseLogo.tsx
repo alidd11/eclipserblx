@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import marketplaceLogo from '@/assets/marketplace-logo-icon.webp';
+import marketplaceLogoSm from '@/assets/marketplace-logo-icon-sm.webp';
 
 interface EclipseLogoProps {
   className?: string;
@@ -23,10 +24,13 @@ const sizePx: Record<string, number> = {
 };
 
 export function EclipseLogo({ className, size = 'md' }: EclipseLogoProps) {
+  // Use small variant for sizes ≤36px to avoid serving 1024x1024 asset
+  const src = size === 'xl' ? marketplaceLogo : marketplaceLogoSm;
+
   return (
     <div className={cn('relative flex-shrink-0 rounded-md overflow-hidden', sizeClasses[size], className)}>
       <img
-        src={marketplaceLogo}
+        src={src}
         alt="Eclipse Logo"
         width={sizePx[size]}
         height={sizePx[size]}
