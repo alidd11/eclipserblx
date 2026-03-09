@@ -40,7 +40,7 @@ interface SearchCommandPaletteProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPaletteProps>(function SearchCommandPalette({ open, onOpenChange }, _ref) {
+export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPaletteProps) {
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
   const [products, setProducts] = useState<Product[]>([]);

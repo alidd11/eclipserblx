@@ -24,23 +24,20 @@ Command.displayName = CommandPrimitive.displayName;
 
 interface CommandDialogProps extends DialogProps {}
 
-const CommandDialog = React.forwardRef<HTMLDivElement, CommandDialogProps>(
-  ({ children, ...props }, ref) => {
-    return (
-      <Dialog {...props}>
-        <DialogContent ref={ref} className="overflow-hidden p-0 shadow-2xl shadow-black/20 top-[12%] translate-y-0 sm:top-[20%] max-h-[70vh] border-border/50 bg-popover/95 backdrop-blur-xl rounded-xl" aria-describedby={undefined}>
-          <VisuallyHidden>
-            <DialogTitle>Search</DialogTitle>
-          </VisuallyHidden>
-          <Command className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-muted-foreground/50 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-4 [&_[cmdk-input-wrapper]_svg]:w-4 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2.5 [&_[cmdk-item]]:py-2.5 [&_[cmdk-item]]:rounded-lg [&_[cmdk-item]_svg]:h-4 [&_[cmdk-item]_svg]:w-4">
-            {children}
-          </Command>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-);
-CommandDialog.displayName = "CommandDialog";
+function CommandDialog({ children, ...props }: CommandDialogProps) {
+  return (
+    <Dialog {...props}>
+      <DialogContent className="overflow-hidden p-0 shadow-2xl shadow-black/20 top-[12%] translate-y-0 sm:top-[20%] max-h-[70vh] border-border/50 bg-popover/95 backdrop-blur-xl rounded-xl" aria-describedby={undefined}>
+        <VisuallyHidden>
+          <DialogTitle>Search</DialogTitle>
+        </VisuallyHidden>
+        <Command className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-muted-foreground/50 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-4 [&_[cmdk-input-wrapper]_svg]:w-4 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2.5 [&_[cmdk-item]]:py-2.5 [&_[cmdk-item]]:rounded-lg [&_[cmdk-item]_svg]:h-4 [&_[cmdk-item]_svg]:w-4">
+          {children}
+        </Command>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
