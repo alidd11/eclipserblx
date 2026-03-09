@@ -246,8 +246,8 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
           aria-label="Mobile navigation"
         >
         <div className="flex flex-col gap-1 p-2">
-            {/* Main Navigation */}
-            {navLinks.map((link) => (
+            {/* Main Navigation — hidden on custom domains */}
+            {!isCustomStoreDomain && navLinks.map((link) => (
               <NavLink
                 key={link.href}
                 to={link.href}
