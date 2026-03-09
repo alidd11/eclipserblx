@@ -100,6 +100,7 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
       if (pendingVersion || updateTime) {
         url.searchParams.delete(PENDING_VERSION_PARAM);
         url.searchParams.delete(UPDATE_TIME_PARAM);
+        url.searchParams.delete(RELOAD_ATTEMPT_PARAM);
         window.history.replaceState({}, '', url.toString());
       }
     } catch {}
