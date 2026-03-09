@@ -174,7 +174,7 @@ export default function AdminRefunds() {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
-      order.customer_email?.toLowerCase().includes(query) ||
+      order.customer_id?.toLowerCase().includes(query) ||
       order.id.toLowerCase().includes(query) ||
       order.payment_id?.toLowerCase().includes(query) ||
       order.refund_id?.toLowerCase().includes(query)
