@@ -1,10 +1,11 @@
-import { forwardRef } from 'react';
+import { forwardRef, lazy, Suspense } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LandingHero } from '@/components/landing/LandingHero';
-import { PromotionCarousel } from '@/components/home/PromotionCarousel';
 import { MarketplaceSection } from '@/components/home/MarketplaceSection';
 import { PWADiscordBanner } from '@/components/landing/PWADiscordBanner';
 import { ActiveOffersCard } from '@/components/home/ActiveOffersCard';
+
+const PromotionCarousel = lazy(() => import('@/components/home/PromotionCarousel').then(m => ({ default: m.PromotionCarousel })));
 import { OrganizationSchema, WebsiteSearchSchema, SiteNavigationSchema } from '@/components/seo/StructuredData';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
