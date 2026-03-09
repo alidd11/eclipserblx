@@ -11,8 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Globe, CheckCircle, Clock, AlertTriangle, ExternalLink, Copy, Trash2, RefreshCw, Zap, Crown, CreditCard, Settings, Search, ShoppingCart, Link } from 'lucide-react';
 
-// Replace with your Namecheap affiliate ID once you have one
-const NAMECHEAP_AFFILIATE_ID = 'YOUR_AFFILIATE_ID';
+const DOMAIN_REGISTRAR_URL = 'https://www.cloudflare.com/products/registrar/';
 
 function StatusBadge({ status }: { status: string }) {
   const variants: Record<string, { className: string; label: string }> = {
@@ -324,20 +323,14 @@ export default function SellerSettingsDomain() {
               className="flex-1"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && domainSearchInput.trim()) {
-                  window.open(
-                    `https://www.namecheap.com/domains/registration/results/?domain=${encodeURIComponent(domainSearchInput.trim())}&aff=${NAMECHEAP_AFFILIATE_ID}`,
-                    '_blank'
-                  );
+                  window.open(DOMAIN_REGISTRAR_URL, '_blank');
                 }
               }}
             />
             <Button
               onClick={() => {
                 if (domainSearchInput.trim()) {
-                  window.open(
-                    `https://www.namecheap.com/domains/registration/results/?domain=${encodeURIComponent(domainSearchInput.trim())}&aff=${NAMECHEAP_AFFILIATE_ID}`,
-                    '_blank'
-                  );
+                  window.open(DOMAIN_REGISTRAR_URL, '_blank');
                 }
               }}
               disabled={!domainSearchInput.trim()}
@@ -350,7 +343,7 @@ export default function SellerSettingsDomain() {
             After purchasing your domain, return here and follow Steps 2 & 3 to connect it to your store.
           </p>
           <p className="text-[10px] text-muted-foreground/60">
-            Domain registration powered by Namecheap
+            Domain registration powered by Cloudflare Registrar — at-cost pricing, no markup
           </p>
         </CardContent>
       </Card>
