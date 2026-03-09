@@ -38,7 +38,7 @@ interface BotInstallationCode {
   } | null;
   processor_profile?: {
     display_name: string | null;
-    email: string;
+    staff_id: string | null;
   } | null;
 }
 
