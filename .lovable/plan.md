@@ -1,118 +1,36 @@
 
 
-# Store Customization Overhaul — Payhip Parity
+## Issues Identified
 
-## What Payhip Offers That We're Missing
+**Issue 1: Sidebar positioned at top of screen on desktop**
+The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
 
-Payhip gives sellers a full **store builder** with:
-1. **Custom Pages** — sellers create standalone pages (FAQ, About, Contact, etc.) with rich text
-2. **Navigation Links** — sellers control their store's top navigation menu (add/remove/reorder links to pages, categories, or external URLs)
-3. **Sections** — drag-and-drop content blocks on the homepage (text, images, featured products, testimonials, video embeds)
-4. **Themes** — multiple pre-built visual themes to choose from
-5. **Custom CSS** — full CSS override capability
-6. **Announcement Bar** — configurable top banner
-7. **Favicon** — custom browser icon
-8. **Remove Branding** — hide "Powered by" badge (premium)
+**Issue 2: Excessive black empty space in the content area**
+The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
 
-## What We Already Have
-- Themes (5 options), accent colors, fonts, layout styles
-- Hero section (title, subtitle, CTA)
-- Announcement bar with scheduling
-- Custom CSS
-- Custom Sections (content blocks on store page)
-- Show/hide reviews and social proof toggles
-- Banner image with date scheduling
+## Plan
 
-## Gaps to Fill
+### 1. Widen the content area on the Categories page
+- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
+- Reduce vertical padding between the header and grid
+- Tighten the gap between the page title/description and the cards
 
-### 1. Custom Pages (High Impact)
-Sellers need to create standalone pages (FAQ, Returns Policy, Contact, etc.) that live under their store URL.
+### 2. Improve the PageHeader component
+- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
+- This applies globally to all pages using PageHeader
 
-- **New table**: `store_pages` — `id, store_id, title, slug, content (rich text/HTML), is_published, display_order, created_at, updated_at`
-- **New seller page**: `/seller/store-pages` — CRUD interface with the existing TipTap rich text editor
-- **New public route**: `/store/:storeSlug/page/:pageSlug` — renders the custom page within StoreLayout
-- **Standalone domain support**: Add route to `StoreStandalonePage.tsx`
+### 3. Make category cards fill space better
+- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
+- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
+- Reduce grid gap slightly so cards feel more connected
 
-### 2. Custom Navigation (High Impact)
-Sellers need to control what links appear in their store's navigation bar.
+### 4. Sidebar desktop alignment fix
+- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
+- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
+- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
 
-- **New table**: `store_nav_links` — `id, store_id, label, url, link_type (page|category|external|section), target_id, display_order, is_visible`
-- **New seller UI**: Navigation editor within Appearance settings — add/remove/reorder links pointing to custom pages, categories, or external URLs
-- **Store rendering**: Update `StoreSidebar.tsx` / `StoreLayout.tsx` to render seller-defined nav links instead of only category tabs
-
-### 3. Favicon (Low Effort)
-- **New column** on `stores`: `favicon_url text`
-- **Upload UI** in Appearance settings
-- **Rendering**: Inject `<link rel="icon">` in `StoreStandalonePage` via `useEffect` when on custom domain
-
-### 4. Homepage Sections Builder (Medium Effort — Enhancement of Existing)
-The existing `store_custom_sections` already supports content blocks. Enhance with:
-- **New section types**: `featured_products`, `image_banner`, `video_embed`, `testimonials` (currently only text/html)
-- **Drag-and-drop reordering** in the seller editor (we already have `@dnd-kit` installed)
-- **Section visibility toggle** per section
-
-### 5. Hide "Powered by" Badge (Low Effort)
-- **New column** on `stores`: `hide_branding boolean default false`
-- Gate behind the custom domain subscription
-- Update `StoreStandalonePage.tsx` to conditionally hide the badge
-
-## Implementation Plan
-
-### Phase 1 — Custom Pages + Navigation (core Payhip parity)
-
-**Database Migration:**
-```sql
--- Custom pages
-CREATE TABLE public.store_pages (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  slug TEXT NOT NULL,
-  content TEXT DEFAULT '',
-  is_published BOOLEAN DEFAULT true,
-  display_order INTEGER DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(store_id, slug)
-);
-ALTER TABLE store_pages ENABLE ROW LEVEL SECURITY;
-
--- Navigation links
-CREATE TABLE public.store_nav_links (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
-  label TEXT NOT NULL,
-  url TEXT,
-  link_type TEXT NOT NULL DEFAULT 'page',
-  target_id UUID,
-  display_order INTEGER DEFAULT 0,
-  is_visible BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-ALTER TABLE store_nav_links ENABLE ROW LEVEL SECURITY;
-
--- Favicon + branding columns
-ALTER TABLE stores ADD COLUMN IF NOT EXISTS favicon_url TEXT;
-ALTER TABLE stores ADD COLUMN IF NOT EXISTS hide_branding BOOLEAN DEFAULT false;
-```
-
-**Files to Create:**
-- `src/pages/seller/SellerStorePages.tsx` — CRUD editor for custom pages with TipTap
-- `src/pages/StoreCustomPage.tsx` — Public page renderer
-- `src/components/seller/StoreNavEditor.tsx` — Navigation link manager (drag-and-drop)
-
-**Files to Modify:**
-- `src/components/AppRoutes.tsx` — Add `/seller/store-pages`, `/store/:storeSlug/page/:pageSlug`
-- `src/pages/StoreStandalonePage.tsx` — Add custom page route, favicon injection, conditional branding
-- `src/components/store/StoreLayout.tsx` — Render seller-defined nav links
-- `src/components/store/StoreSidebar.tsx` — Include custom pages and nav links
-- `src/components/seller/SellerSidebar.tsx` — Add "Pages" under Catalog group
-- `src/pages/seller/SellerSettingsAppearance.tsx` — Add favicon upload + nav editor tab + hide branding toggle
-
-### Phase 2 — Enhanced Sections Builder
-- Add new section types to `store_custom_sections`
-- Add drag-and-drop reordering with `@dnd-kit`
-- Add section visibility toggle
-
-This gives sellers the same level of storefront control as Payhip: custom pages, custom navigation, full visual customization, and white-label branding on their own domain.
+### Files to modify
+- `src/pages/Categories.tsx` — widen container, tighten spacing
+- `src/components/ui/PageHeader.tsx` — reduce bottom margin
+- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
 

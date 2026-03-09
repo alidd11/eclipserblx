@@ -183,6 +183,10 @@ const SellerImport = lazy(() => import("@/pages/seller/SellerImport"));
 const SellerPromotions = lazy(() => import("@/pages/seller/SellerPromotions"));
 const SellerTaxSummary = lazy(() => import("@/pages/seller/SellerTaxSummary"));
 const SellerSettingsDomain = lazy(() => import("@/pages/seller/SellerSettingsDomain"));
+const SellerStorePages = lazy(() => import("@/pages/seller/SellerStorePages"));
+
+// Store custom page
+const StoreCustomPage = lazy(() => import("@/pages/StoreCustomPage"));
 
 // Store standalone page for custom domains
 const StoreStandalonePage = lazy(() => import("@/pages/StoreStandalonePage"));
@@ -368,10 +372,12 @@ export function AppRoutes() {
         <Route path="/seller/discord" element={<SellerDiscord />} />
         <Route path="/seller/import" element={<SellerImport />} />
         <Route path="/seller/promote" element={<SellerPromotions />} />
+        <Route path="/seller/store-pages" element={<SellerStorePages />} />
         {/* Public store page */}
         <Route path="/store/:storeSlug" element={<StorePage />} />
         <Route path="/store/:storeSlug/reviews" element={<StoreReviewsPage />} />
         <Route path="/store/:storeSlug/about" element={<StoreAbout />} />
+        <Route path="/store/:storeSlug/page/:pageSlug" element={<StoreCustomPage />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/analytics" element={<AdminAnalytics />} />

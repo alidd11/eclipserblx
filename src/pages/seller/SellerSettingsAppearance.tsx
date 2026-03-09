@@ -28,10 +28,14 @@ import {
   Star,
   Eye,
   Code,
-  CalendarIcon
+  CalendarIcon,
+  Image,
+  Link2,
+  EyeOff
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
+import { StoreNavEditor } from '@/components/seller/StoreNavEditor';
 
 const STORE_THEMES = [
   { id: 'default', name: 'Default', description: 'Clean and modern' },
@@ -87,6 +91,8 @@ const INITIAL_FORM_DATA = {
   custom_css: '',
   banner_start_at: null as string | null,
   banner_end_at: null as string | null,
+  favicon_url: '',
+  hide_branding: false,
 };
 
 export default function SellerSettingsAppearance() {
@@ -119,6 +125,8 @@ export default function SellerSettingsAppearance() {
         custom_css: store.custom_css || '',
         banner_start_at: store.banner_start_at || null,
         banner_end_at: store.banner_end_at || null,
+        favicon_url: (store as any).favicon_url || '',
+        hide_branding: (store as any).hide_branding || false,
       });
     }
   }, [store]);
@@ -146,6 +154,8 @@ export default function SellerSettingsAppearance() {
           custom_css: data.custom_css || null,
           banner_start_at: data.banner_start_at || null,
           banner_end_at: data.banner_end_at || null,
+          favicon_url: data.favicon_url || null,
+          hide_branding: data.hide_branding,
           updated_at: new Date().toISOString(),
         } as any)
         .eq('id', store.id);
@@ -206,6 +216,12 @@ export default function SellerSettingsAppearance() {
                 <div className="flex items-center gap-2">
                   <Star className="h-4 w-4" />
                   Features
+                </div>
+              </SelectItem>
+              <SelectItem value="navigation">
+                <div className="flex items-center gap-2">
+                  <Link2 className="h-4 w-4" />
+                  Navigation
                 </div>
               </SelectItem>
               <SelectItem value="advanced">
@@ -613,6 +629,13 @@ export default function SellerSettingsAppearance() {
             </Card>
           </TabsContent>
 
+          {/* Navigation Tab */}
+          <TabsContent value="navigation" className="space-y-6">
+            {store?.id && (
+              <StoreNavEditor storeId={store.id} storeSlug={store.slug || store.id} />
+            )}
+          </TabsContent>
+
           {/* Advanced Tab */}
           <TabsContent value="advanced" className="space-y-6">
             <Card>
@@ -635,6 +658,57 @@ export default function SellerSettingsAppearance() {
                 <p className="text-xs text-muted-foreground">
                   ⚠️ Custom CSS is applied to your store page. Be careful not to break the layout.
                 </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Image className="h-5 w-5" />
+                  Favicon
+                </CardTitle>
+                <CardDescription>
+                  Custom browser icon for your store (visible on custom domains)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <Label>Favicon URL</Label>
+                  <Input
+                    value={formData.favicon_url}
+                    onChange={(e) => setFormData({ ...formData, favicon_url: e.target.value })}
+                    placeholder="https://example.com/favicon.ico"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Recommended: 32x32 or 64x64 .ico or .png file
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <EyeOff className="h-5 w-5" />
+                  Branding
+                </CardTitle>
+                <CardDescription>
+                  Control the "Powered by Eclipse" badge on your custom domain
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Hide "Powered by" Badge</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Only applies to stores using a custom domain
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.hide_branding}
+                    onCheckedChange={(checked) => setFormData({ ...formData, hide_branding: checked })}
+                  />
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
