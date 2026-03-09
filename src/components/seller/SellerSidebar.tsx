@@ -5,7 +5,7 @@ import {
   LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, Users,
   Tag, BarChart3, FileText, HelpCircle, MessageCircle, Star, Bot, Import,
   Gamepad2, Layers, TrendingUp, Receipt, LineChart, Heart, Megaphone,
-  RotateCcw, Zap, PackagePlus, Globe, Inbox
+  RotateCcw, Zap, PackagePlus, Globe, Inbox, Sparkles, Calculator
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -61,6 +61,7 @@ const navGroups: NavGroup[] = [
       { title: 'Flash Sales', icon: Zap, href: '/seller/flash-sales' },
       { title: 'Bundle Deals', icon: PackagePlus, href: '/seller/bundles' },
       { title: 'Announcements', icon: Megaphone, href: '/seller/announcements' },
+      { title: 'Promote', icon: Sparkles, href: '/seller/promote' },
     ],
   },
   {
@@ -85,6 +86,7 @@ const navGroups: NavGroup[] = [
       { title: 'Transactions', icon: Receipt, href: '/seller/transactions' },
       { title: 'Fees & Summary', icon: TrendingUp, href: '/seller/fees' },
       { title: 'Documents', icon: FileText, href: '/seller/documents' },
+      { title: 'Tax Summary', icon: Calculator, href: '/seller/tax-summary' },
     ],
   },
   {
@@ -107,6 +109,7 @@ const navGroups: NavGroup[] = [
       { title: 'Custom Domain', icon: Globe, href: '/seller/settings/domain' },
       { title: 'Payments', icon: CreditCard, href: '/seller/settings/payments' },
       { title: 'Team', icon: Users, href: '/seller/settings/team' },
+      { title: 'Notifications', icon: Bell, href: '/seller/settings/notifications' },
     ],
   },
 ];

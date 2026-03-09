@@ -1,10 +1,11 @@
  import { useState, useEffect, useRef } from 'react';
- import { 
-   LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
-   ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
-   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
-   AlertTriangle, Tags, Ban, Gift, Inbox, LucideIcon, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Ticket, Bot, RotateCcw, Upload, Wallet, DollarSign
- } from 'lucide-react';
+import { 
+  LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
+  ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
+  TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
+  AlertTriangle, Tags, Ban, Gift, Inbox, LucideIcon, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Ticket, Bot, RotateCcw, Upload, Wallet, DollarSign,
+  UserCheck, Link2, Code, Globe, Scale
+} from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -71,6 +72,7 @@ const navGroups: NavGroup[] = [
       { title: 'Disputes', icon: AlertTriangle, href: '/admin/disputes', permissions: ['manage_orders'], dividerAfter: true },
       { title: 'Affiliates', icon: Gift, href: '/admin/affiliates', permissions: ['view_affiliates'] },
       { title: 'Affiliate List', icon: FileText, href: '/admin/affiliate-applications', permissions: ['review_affiliate_applications'] },
+      { title: 'Referrals', icon: Link2, href: '/admin/referrals', permissions: ['view_affiliates'] },
     ],
   },
   {
@@ -126,6 +128,10 @@ const navGroups: NavGroup[] = [
       { title: 'Job Channels', icon: Megaphone, href: '/admin/job-channels', permissions: ['view_job_channels'] },
       { title: 'Applications', icon: FileText, href: '/admin/applications', permissions: ['view_applications'] },
       { title: 'Archived', icon: Archive, href: '/admin/archived-applications', permissions: ['review_applications'] },
+      { title: 'Recruiters', icon: UserCheck, href: '/admin/recruiters', permissions: ['manage_staff'] },
+      { title: 'Recruiter Applications', icon: FileText, href: '/admin/recruiter-applications', permissions: ['review_applications'] },
+      { title: 'Recruiter Payouts', icon: TrendingUp, href: '/admin/recruiter-payouts', permissions: ['manage_staff'] },
+      { title: 'Recruiter Commissions', icon: DollarSign, href: '/admin/recruiter-commissions', permissions: ['manage_staff'] },
     ],
   },
   {
@@ -137,6 +143,7 @@ const navGroups: NavGroup[] = [
       { title: 'Gift Credits', icon: Gift, href: '/admin/gift-credits', permissions: ['manage_users'], roles: ['admin'] },
       { title: 'IP Bans', icon: Ban, href: '/admin/ip-bans', permissions: ['view_ip_bans'] },
       { title: 'Subscribers', icon: Mail, href: '/admin/subscribers', permissions: ['view_subscribers'] },
+      { title: 'IP Shield Plans', icon: Shield, href: '/admin/ip-shield-custom-plans', permissions: ['manage_users'], roles: ['admin'] },
     ],
   },
   {
@@ -150,6 +157,9 @@ const navGroups: NavGroup[] = [
       { title: 'Discord', icon: MessageCircle, href: '/admin/discord-settings', permissions: ['manage_settings'] },
       { title: 'Roblox', icon: Gamepad2, href: '/admin/roblox-settings', permissions: ['manage_settings'], dividerAfter: true },
       { title: 'SEO & Indexing', icon: Activity, href: '/admin/seo-indexing', permissions: ['manage_settings'] },
+      { title: 'Email Templates', icon: Mail, href: '/admin/email-templates', permissions: ['manage_settings'] },
+      { title: 'Bot Codes', icon: Code, href: '/admin/bot-codes', permissions: ['view_bot_codes'] },
+      { title: 'GDPR Compliance', icon: Scale, href: '/admin/gdpr-compliance', permissions: [], roles: ['admin'] },
       { title: 'Settings', icon: Settings, href: '/admin/settings', permissions: [] },
       { title: 'Help', icon: HelpCircle, href: '/admin/help', permissions: [] },
     ],
