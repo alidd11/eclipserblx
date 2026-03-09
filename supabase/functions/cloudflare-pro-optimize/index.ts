@@ -387,12 +387,13 @@ Deno.serve(async (req) => {
       const existingManaged = allRulesets.find((r: any) => r.phase === "http_request_firewall_managed");
 
       if (existingManaged) {
+        // Preserve original name and kind when updating managed rulesets
         const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingManaged.id}`,
           "PUT",
           {
-            name: "Eclipse Pro Managed WAF",
-            kind: "zone",
+            name: existingManaged.name,
+            kind: existingManaged.kind,
             phase: "http_request_firewall_managed",
             rules: managedRules,
           },
