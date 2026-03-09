@@ -7,9 +7,62 @@ const corsHeaders = {
 };
 
 const WISE_API_URL = "https://api.transferwise.com";
+const PAYPAL_API_URL = "https://api-m.paypal.com";
 const MAX_PAYOUTS_PER_RUN = 50;
 const MIN_PENDING_MINUTES = 5;
 const MAX_PAYOUT_AMOUNT = 10000;
+
+async function getPayPalAccessToken(clientId: string, clientSecret: string): Promise<string> {
+  const response = await fetch(`${PAYPAL_API_URL}/v1/oauth2/token`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: 'grant_type=client_credentials',
+  });
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`PayPal auth failed: ${err}`);
+  }
+  const data = await response.json();
+  return data.access_token;
+}
+
+async function sendPayPalPayout(accessToken: string, payoutId: string, amount: number, recipientEmail: string): Promise<{ batchId: string }> {
+  const response = await fetch(`${PAYPAL_API_URL}/v1/payments/payouts`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender_batch_header: {
+        sender_batch_id: `eclipse-payout-${payoutId}-${Date.now()}`,
+        email_subject: 'You have received a payout from Eclipse',
+        email_message: 'Your seller earnings have been sent to your PayPal account.',
+      },
+      items: [
+        {
+          recipient_type: 'EMAIL',
+          amount: {
+            value: amount.toFixed(2),
+            currency: 'GBP',
+          },
+          receiver: recipientEmail,
+          note: `Eclipse Seller Payout #${payoutId}`,
+          sender_item_id: payoutId,
+        },
+      ],
+    }),
+  });
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`PayPal payout failed: ${err}`);
+  }
+  const data = await response.json();
+  return { batchId: data.batch_header.payout_batch_id };
+}
 
 const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
