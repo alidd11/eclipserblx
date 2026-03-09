@@ -32,4 +32,4 @@ Disallow: /order-success
 Disallow: /complete-profile
 Disallow: /search?*
 
-Sitemap: https://eclipserblx.com/sitemap.xml
+Sitemap: https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/dynamic-sitemap
