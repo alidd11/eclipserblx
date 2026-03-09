@@ -1,9 +1,7 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, authorization, x-client-info, apikey, content-type",
 };
 
 const SITE_URL = "https://eclipserblx.com";
@@ -11,8 +9,7 @@ const SITE_NAME = "Eclipse";
 const DEFAULT_IMAGE = "https://storage.googleapis.com/gpt-engineer-file-uploads/6XoLGVy9Aseup6dIxodIWS9uGsS2/social-images/social-1772684689417-IMG_0084.webp";
 const DEFAULT_DESCRIPTION = "Eclipse is the best Roblox asset marketplace. Buy premium roleplay scripts, vehicles, maps and game assets. Lower fees, instant delivery.";
 
-// Static page metadata
-const STATIC_PAGES: Record<string, { title: string; description: string; image?: string }> = {
+const STATIC_PAGES: Record<string, { title: string; description: string }> = {
   "/": { title: "Eclipse | Roblox Marketplace — Premium Assets, Lower Fees", description: DEFAULT_DESCRIPTION },
   "/products": { title: "Browse Products | Eclipse", description: "Browse hundreds of premium Roblox assets including scripts, vehicles, maps and more on Eclipse." },
   "/stores": { title: "Browse Stores | Eclipse", description: "Discover verified Roblox asset stores on Eclipse marketplace." },
@@ -28,164 +25,92 @@ const STATIC_PAGES: Record<string, { title: string; description: string; image?:
   "/jobs": { title: "Jobs | Eclipse", description: "Join the Eclipse team — we're hiring passionate people to build the future of Roblox commerce." },
 };
 
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+function esc(str: string): string {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-function buildHtml(opts: {
-  title: string;
-  description: string;
-  image: string;
-  url: string;
-  type?: string;
-  extra?: string;
-}): string {
-  const { title, description, image, url, type = "website", extra = "" } = opts;
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>${escapeHtml(title)}</title>
-  <meta name="description" content="${escapeHtml(description)}" />
-  <link rel="canonical" href="${escapeHtml(url)}" />
+function buildHtml(t: string, d: string, img: string, url: string, type = "website", extra = ""): string {
+  return `<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"/><title>${esc(t)}</title>
+<meta name="description" content="${esc(d)}"/>
+<link rel="canonical" href="${esc(url)}"/>
+<meta property="og:type" content="${type}"/>
+<meta property="og:site_name" content="${SITE_NAME}"/>
+<meta property="og:title" content="${esc(t)}"/>
+<meta property="og:description" content="${esc(d)}"/>
+<meta property="og:image" content="${esc(img)}"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:url" content="${esc(url)}"/>
+${extra}
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:site" content="@EclipseRblx"/>
+<meta name="twitter:title" content="${esc(t)}"/>
+<meta name="twitter:description" content="${esc(d)}"/>
+<meta name="twitter:image" content="${esc(img)}"/>
+<meta http-equiv="refresh" content="0;url=${esc(url)}"/>
+</head><body><p>Redirecting to <a href="${esc(url)}">${esc(t)}</a>…</p></body></html>`;
+}
 
-  <meta property="og:type" content="${type}" />
-  <meta property="og:site_name" content="${SITE_NAME}" />
-  <meta property="og:title" content="${escapeHtml(title)}" />
-  <meta property="og:description" content="${escapeHtml(description)}" />
-  <meta property="og:image" content="${escapeHtml(image)}" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:url" content="${escapeHtml(url)}" />
-  ${extra}
-
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:site" content="@EclipseRblx" />
-  <meta name="twitter:title" content="${escapeHtml(title)}" />
-  <meta name="twitter:description" content="${escapeHtml(description)}" />
-  <meta name="twitter:image" content="${escapeHtml(image)}" />
-
-  <meta http-equiv="refresh" content="0;url=${escapeHtml(url)}" />
-</head>
-<body>
-  <p>Redirecting to <a href="${escapeHtml(url)}">${escapeHtml(title)}</a>…</p>
-</body>
-</html>`;
+async function pgQuery(table: string, select: string, filters: string): Promise<any> {
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const res = await fetch(`${url}/rest/v1/${table}?select=${encodeURIComponent(select)}&${filters}`, {
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      Accept: "application/vnd.pgrst.object+json",
+    },
+  });
+  if (!res.ok) { await res.text(); return null; }
+  return res.json();
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const url = new URL(req.url);
-  const path = url.searchParams.get("path") || "/";
+  const u = new URL(req.url);
+  const path = u.searchParams.get("path") || "/";
 
-  // --- Static pages ---
-  const staticMeta = STATIC_PAGES[path];
-  if (staticMeta) {
-    const html = buildHtml({
-      title: staticMeta.title,
-      description: staticMeta.description,
-      image: staticMeta.image || DEFAULT_IMAGE,
-      url: `${SITE_URL}${path}`,
-    });
-    return new Response(html, {
+  // Static pages
+  const s = STATIC_PAGES[path];
+  if (s) {
+    return new Response(buildHtml(s.title, s.description, DEFAULT_IMAGE, `${SITE_URL}${path}`), {
       headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600", ...corsHeaders },
     });
   }
 
-  // --- Dynamic pages ---
-  const productMatch = path.match(/^\/products\/([a-zA-Z0-9][a-zA-Z0-9\-_]{0,200})$/);
-  const storeMatch = path.match(/^\/store\/([a-zA-Z0-9][a-zA-Z0-9\-_]{0,200})$/);
-
-  if (!productMatch && !storeMatch) {
-    // Unknown path — redirect to site
-    return new Response(null, {
-      status: 302,
-      headers: { Location: `${SITE_URL}${path}`, ...corsHeaders },
-    });
-  }
-
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const supabase = createClient(supabaseUrl, supabaseKey);
-
-  // --- Product page ---
-  if (productMatch) {
-    const slug = productMatch[1];
-    const { data: product } = await supabase
-      .from("products")
-      .select("name, description, images, price, slug, stores(name)")
-      .eq("slug", slug)
-      .eq("is_active", true)
-      .maybeSingle();
-
+  // Product pages
+  const pm = path.match(/^\/products\/([a-zA-Z0-9][a-zA-Z0-9\-_]{0,200})$/);
+  if (pm) {
+    const slug = pm[1];
+    const product = await pgQuery("products", "name,description,images,price,slug,stores(name)", `slug=eq.${slug}&is_active=eq.true`);
     const pageUrl = `${SITE_URL}/products/${encodeURIComponent(slug)}`;
+    if (!product) return new Response(null, { status: 302, headers: { Location: pageUrl, ...corsHeaders } });
 
-    if (!product) {
-      return new Response(null, { status: 302, headers: { Location: pageUrl, ...corsHeaders } });
-    }
+    const storeName = product.stores?.name;
+    const rawDesc = product.description ? product.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Check out ${product.name} on Eclipse`;
+    const desc = storeName ? `By ${storeName} — ${rawDesc}` : rawDesc;
+    const img = product.images?.[0] || DEFAULT_IMAGE;
+    const priceExtra = product.price != null ? `<meta property="product:price:amount" content="${product.price}"/><meta property="product:price:currency" content="GBP"/>` : "";
 
-    const storeName = (product.stores as any)?.name;
-    const rawDesc = product.description
-      ? product.description.replace(/<[^>]*>/g, "").slice(0, 200)
-      : `Check out ${product.name} on Eclipse`;
-    const description = storeName ? `By ${storeName} — ${rawDesc}` : rawDesc;
-    const ogImage = product.images?.[0] || DEFAULT_IMAGE;
-    const priceExtra = product.price != null
-      ? `<meta property="product:price:amount" content="${product.price}" />\n  <meta property="product:price:currency" content="GBP" />`
-      : "";
-
-    const html = buildHtml({
-      title: `${product.name} | ${SITE_NAME}`,
-      description,
-      image: ogImage,
-      url: pageUrl,
-      type: "product",
-      extra: priceExtra,
-    });
-
-    return new Response(html, {
+    return new Response(buildHtml(`${product.name} | ${SITE_NAME}`, desc, img, pageUrl, "product", priceExtra), {
       headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300", ...corsHeaders },
     });
   }
 
-  // --- Store page ---
-  if (storeMatch) {
-    const slug = storeMatch[1];
-    const { data: store } = await supabase
-      .from("stores")
-      .select("name, description, logo_url, slug, product_count")
-      .eq("slug", slug)
-      .eq("is_active", true)
-      .maybeSingle();
-
+  // Store pages
+  const sm = path.match(/^\/store\/([a-zA-Z0-9][a-zA-Z0-9\-_]{0,200})$/);
+  if (sm) {
+    const slug = sm[1];
+    const store = await pgQuery("stores", "name,description,logo_url,slug,product_count", `slug=eq.${slug}&is_active=eq.true`);
     const pageUrl = `${SITE_URL}/store/${encodeURIComponent(slug)}`;
+    if (!store) return new Response(null, { status: 302, headers: { Location: pageUrl, ...corsHeaders } });
 
-    if (!store) {
-      return new Response(null, { status: 302, headers: { Location: pageUrl, ...corsHeaders } });
-    }
+    const desc = store.description ? store.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Browse ${store.name}'s products on Eclipse — ${store.product_count || 0} items available.`;
+    const img = store.logo_url || DEFAULT_IMAGE;
 
-    const description = store.description
-      ? store.description.replace(/<[^>]*>/g, "").slice(0, 200)
-      : `Browse ${store.name}'s products on Eclipse — ${store.product_count || 0} items available.`;
-    const ogImage = store.logo_url || DEFAULT_IMAGE;
-
-    const html = buildHtml({
-      title: `${store.name} | ${SITE_NAME}`,
-      description,
-      image: ogImage,
-      url: pageUrl,
-      type: "profile",
-    });
-
-    return new Response(html, {
+    return new Response(buildHtml(`${store.name} | ${SITE_NAME}`, desc, img, pageUrl, "profile"), {
       headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=600", ...corsHeaders },
     });
   }
