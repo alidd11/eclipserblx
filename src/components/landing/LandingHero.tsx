@@ -9,14 +9,14 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const POPULAR_SEARCHES = [
-  'scripts',
-  'maps',
-  'ui',
-  'weapons',
-  'vehicles',
-  'admin',
-  'tools',
+const TRENDING_TAGS = [
+  { label: 'scripts', type: 'category' as const, target: 'scripts-systems' },
+  { label: 'maps', type: 'category' as const, target: 'maps' },
+  { label: 'ui', type: 'category' as const, target: 'roblox-ui' },
+  { label: 'vehicles', type: 'search' as const, target: 'vehicles' },
+  { label: 'weapons', type: 'search' as const, target: 'weapons' },
+  { label: 'admin', type: 'search' as const, target: 'admin' },
+  { label: 'tools', type: 'search' as const, target: 'tools' },
 ];
 
 export function LandingHero() {
@@ -39,8 +39,12 @@ export function LandingHero() {
     return () => clearInterval(interval);
   }, [rotatingWords.length]);
 
-  const handleSearchClick = (term: string) => {
-    navigate(`/search?q=${encodeURIComponent(term)}`);
+  const handleTagClick = (tag: typeof TRENDING_TAGS[number]) => {
+    if (tag.type === 'category') {
+      navigate(`/products?category=${tag.target}`);
+    } else {
+      navigate(`/search?q=${encodeURIComponent(tag.target)}`);
+    }
   };
 
   return (
@@ -113,13 +117,13 @@ export function LandingHero() {
             <span className="text-[10px] text-foreground/60 mr-1">
               Trending:
             </span>
-            {POPULAR_SEARCHES.map((term) => (
+            {TRENDING_TAGS.map((tag) => (
               <button
-                key={term}
-                onClick={() => handleSearchClick(term)}
+                key={tag.label}
+                onClick={() => handleTagClick(tag)}
                 className="text-[11px] px-2 py-0.5 rounded-sm border border-border/50 text-foreground/70 hover:text-foreground hover:border-border transition-colors"
               >
-                {term}
+                {tag.label}
               </button>
             ))}
           </div>
@@ -169,13 +173,13 @@ export function LandingHero() {
                 <Search className="h-3 w-3" aria-hidden="true" />
                 Trending
               </span>
-              {POPULAR_SEARCHES.map((term) => (
+              {TRENDING_TAGS.map((tag) => (
                 <button
-                  key={term}
-                  onClick={() => handleSearchClick(term)}
+                  key={tag.label}
+                  onClick={() => handleTagClick(tag)}
                   className="text-[11px] px-1.5 py-0.5 rounded bg-muted/50 hover:bg-muted text-foreground/70 hover:text-foreground transition-colors flex-shrink-0"
                 >
-                  {term}
+                  {tag.label}
                 </button>
               ))}
             </div>
