@@ -230,12 +230,23 @@ function PageLoader() {
 export function AppRoutes() {
   const hostname = window.location.hostname;
   const isGlobalGuardDomain = hostname.startsWith('guard.') || hostname === 'guard.eclipserblx.com';
+  const { isCustomStoreDomain, loading: domainLoading } = useStoreDomain();
 
   // If on Global Guard subdomain, render the Global Guard app
   if (isGlobalGuardDomain) {
     return (
       <Suspense fallback={<PageLoader />}>
         <GlobalGuardRouter />
+      </Suspense>
+    );
+  }
+
+  // If on a store custom domain/subdomain, render standalone store
+  if (isCustomStoreDomain) {
+    if (domainLoading) return <PageLoader />;
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <StoreStandalonePage />
       </Suspense>
     );
   }
