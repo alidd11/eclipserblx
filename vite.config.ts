@@ -19,32 +19,59 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     sourcemap: mode === 'production' ? 'hidden' : true,
-    // Optimize chunk splitting
+    // Optimize chunk splitting for better caching and smaller initial bundles
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Vendor chunks
-          'react-vendor': ['react', 'react-dom'],
-          'router': ['react-router-dom'],
-          'query': ['@tanstack/react-query'],
-          // lucide-react removed from manual chunks to allow per-route tree-shaking,
-          // reducing unused JavaScript on initial page load
-          // framer-motion, supabase, and radix removed from manual chunks
-          // to allow Vite to tree-shake and code-split them per-route,
-          // reducing unused JavaScript on initial page load
-          'forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
-          // editor (TipTap) and stripe removed from manual chunks
-          // so they code-split naturally and only load on routes that use them
-          'i18n': ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
+        manualChunks(id) {
+          // Core React - smallest possible initial bundle
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
+            return 'react-vendor';
+          }
+          // Router - needed for navigation
+          if (id.includes('node_modules/react-router')) {
+            return 'router';
+          }
+          // Query - needed for data fetching
+          if (id.includes('node_modules/@tanstack/react-query')) {
+            return 'query';
+          }
+          // Forms - only loaded on pages with forms
+          if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('node_modules/zod/')) {
+            return 'forms';
+          }
+          // i18n - translation system
+          if (id.includes('i18next')) {
+            return 'i18n';
+          }
+          // Sentry - loaded lazily via requestIdleCallback
+          if (id.includes('@sentry')) {
+            return 'sentry';
+          }
+          // Framer Motion - used for animations, can be deferred
+          if (id.includes('framer-motion')) {
+            return 'motion';
+          }
+          // Supabase - core backend client
+          if (id.includes('@supabase')) {
+            return 'supabase';
+          }
+          // Radix UI - component primitives, split by usage
+          if (id.includes('@radix-ui')) {
+            return 'radix';
+          }
+          // lucide-react - icons, tree-shaken per-route
+          // NOT in manual chunks to allow per-component tree-shaking
         },
       },
     },
     // Reduce chunk size warnings threshold
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 500,
     // Enable minification
     minify: 'esbuild',
-    // Target modern browsers
-    target: 'esnext',
+    // Target modern browsers for smaller output
+    target: 'es2022',
+    // Enable CSS code splitting
+    cssCodeSplit: true,
   },
   // Optimize dependencies
   optimizeDeps: {
