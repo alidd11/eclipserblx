@@ -40,6 +40,19 @@ serve(async (req) => {
       return new Response(`Webhook signature verification failed`, { status: 400 });
     }
 
+    // === WEBHOOK EVENT DEDUP: Prevent processing the same event twice ===
+    const { error: dedupError } = await supabaseAdmin
+      .from('processed_webhook_events')
+      .insert({ event_id: event.id, event_type: event.type });
+
+    if (dedupError?.code === '23505') {
+      // Unique constraint violation = already processed
+      LOG("Duplicate event, skipping", { eventId: event.id });
+      return new Response(JSON.stringify({ received: true, duplicate: true }), {
+        headers: { "Content-Type": "application/json" }, status: 200,
+      });
+    }
+
     // Route events to handlers
     switch (event.type) {
       case "checkout.session.completed": {
