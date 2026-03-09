@@ -98,6 +98,9 @@ const App = forwardRef<HTMLDivElement>((_, ref) => (
       </CookieConsentProvider>
     </QueryClientProvider>
   </ConnectionErrorBoundary>
-);
+  </div>
+));
+
+App.displayName = 'App';
 
 export default App;
