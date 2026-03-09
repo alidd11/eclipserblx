@@ -18,6 +18,7 @@ import { HeaderSearchBar } from './HeaderSearchBar';
 import { CurrencySelector } from './CurrencySelector';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
+import { useStoreDomain } from '@/hooks/useStoreDomain';
 
 // Nav links use translation keys - labels resolved in render
 const navLinkDefs = [
@@ -49,6 +50,9 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
   const { itemCount } = useCart();
   const { discordUrl } = useDiscordUrl();
   const { t } = useTranslation();
+  const { isCustomStoreDomain, storeDomainData } = useStoreDomain();
+  const storeLogoUrl = storeDomainData?.stores?.logo_url;
+  const storeName = storeDomainData?.stores?.name;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const systemStatus = useSystemStatus();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
@@ -110,14 +114,21 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
               {!onMenuClick && mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
             <Link to="/" className="flex items-center">
-              <EclipseLogo size="sm" />
+              {isCustomStoreDomain && storeLogoUrl ? (
+                <img src={storeLogoUrl} alt={storeName || 'Store'} className="h-7 w-7 object-contain" />
+              ) : (
+                <EclipseLogo size="sm" />
+              )}
             </Link>
           </div>
 
-          {/* Middle section: Search bar (flex to fill) */}
-          <div className="flex-1 min-w-0">
-            <HeaderSearchBar compact />
-          </div>
+          {/* Middle section: Search bar (flex to fill) — hidden on custom domains */}
+          {!isCustomStoreDomain && (
+            <div className="flex-1 min-w-0">
+              <HeaderSearchBar compact />
+            </div>
+          )}
+          {isCustomStoreDomain && <div className="flex-1" />}
 
           {/* Right section: Icons (flush right, tighter spacing) */}
           <div className="flex items-center shrink-0 ml-auto gap-0.5">
@@ -156,19 +167,24 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
           <div className="flex items-center gap-3 shrink-0">
             <BackButton showLabel={true} />
             <Link to="/" className="flex items-center shrink-0">
-              <EclipseLogo size="sm" />
+              {isCustomStoreDomain && storeLogoUrl ? (
+                <img src={storeLogoUrl} alt={storeName || 'Store'} className="h-8 w-8 object-contain" />
+              ) : (
+                <EclipseLogo size="sm" />
+              )}
             </Link>
           </div>
 
           {/* Center: Search + Currency + Language */}
           <div className="flex items-center gap-3 flex-1 justify-center min-w-0">
-            <HeaderSearchBar className="flex-1 max-w-2xl" />
+            {!isCustomStoreDomain && <HeaderSearchBar className="flex-1 max-w-2xl" />}
             <CurrencySelector />
             <LanguageSwitcher />
           </div>
 
           {/* Right: Actions */}
           <div className="flex items-center gap-1.5 shrink-0">
+            {!isCustomStoreDomain && (
             <a
               href={discordUrl}
               target="_blank"
@@ -186,6 +202,7 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
                 </svg>
               </Button>
             </a>
+            )}
 
             <NotificationBell />
 
@@ -231,8 +248,8 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
           aria-label="Mobile navigation"
         >
         <div className="flex flex-col gap-1 p-2">
-            {/* Main Navigation */}
-            {navLinks.map((link) => (
+            {/* Main Navigation — hidden on custom domains */}
+            {!isCustomStoreDomain && navLinks.map((link) => (
               <NavLink
                 key={link.href}
                 to={link.href}
@@ -251,8 +268,8 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
               </NavLink>
             ))}
 
-            {/* Resources / Categories - BuiltByBit style */}
-            <div className="border-t border-border/40 mt-1 pt-1">
+            {/* Resources / Categories - BuiltByBit style — hidden on custom domains */}
+            {!isCustomStoreDomain && <div className="border-t border-border/40 mt-1 pt-1">
               <button
                 onClick={() => setResourcesOpen(!resourcesOpen)}
                 className="flex items-center justify-between w-full px-3 py-2.5 text-sm font-semibold text-primary transition-colors touch-manipulation"
@@ -312,9 +329,10 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
                   </NavLink>
                 </div>
               )}
-            </div>
+            </div>}
 
-            {/* Discord Link */}
+            {/* Discord Link — hidden on custom domains */}
+            {!isCustomStoreDomain && (
             <a
               href={discordUrl}
               target="_blank"
@@ -332,8 +350,10 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
               </svg>
               <span>{t('nav.joinDiscord')}</span>
             </a>
+            )}
             
-            {/* System Status */}
+            {/* System Status — hidden on custom domains */}
+            {!isCustomStoreDomain && (
             <NavLink
               to="/status"
               onClick={() => setMobileMenuOpen(false)}
@@ -350,12 +370,13 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
               <span className="flex-1">{t('nav.systemStatus')}</span>
               <Circle className={cn('h-2.5 w-2.5 fill-current', statusConfig[systemStatus].color)} />
             </NavLink>
+            )}
             
             {/* Separator */}
-            <div className="my-2 border-t border-border" />
+            {!isCustomStoreDomain && <div className="my-2 border-t border-border" />}
             
-            {/* Legal & Support Links */}
-            {legalLinks.map((link) => (
+            {/* Legal & Support Links — hidden on custom domains */}
+            {!isCustomStoreDomain && legalLinks.map((link) => (
               <NavLink
                 key={link.href}
                 to={link.href}

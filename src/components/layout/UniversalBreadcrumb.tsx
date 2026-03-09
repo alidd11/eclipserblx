@@ -9,6 +9,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
+import { useStoreDomain } from '@/hooks/useStoreDomain';
 import { cn } from '@/lib/utils';
 import { hapticTap } from '@/lib/haptics';
 import {
@@ -96,6 +97,7 @@ export function UniversalBreadcrumb() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { canGoBack, canGoForward, goBack, goForward } = useNavigationHistory();
+  const { isCustomStoreDomain } = useStoreDomain();
   const pathSegments = location.pathname.split('/').filter(Boolean);
 
   if (excludedRoutes.includes(location.pathname) || pathSegments.length === 0) {
@@ -194,9 +196,9 @@ export function UniversalBreadcrumb() {
           <BreadcrumbList className="flex-nowrap">
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/" className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors">
+                <Link to={isCustomStoreDomain ? '/' : '/'} className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors">
                   <Home className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline text-xs font-medium">Home</span>
+                  <span className="hidden sm:inline text-xs font-medium">{isCustomStoreDomain ? 'Store' : 'Home'}</span>
                 </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
