@@ -359,7 +359,7 @@ export default function AdminBotCodes() {
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Shield className="h-3 w-3 shrink-0" />
                               <span className="truncate">
-                                Processed by: {code.processor_profile.display_name || code.processor_profile.email}
+                                Processed by: {code.processor_profile.display_name || code.processor_profile.staff_id || 'Staff'}
                               </span>
                             </div>
                           )}
