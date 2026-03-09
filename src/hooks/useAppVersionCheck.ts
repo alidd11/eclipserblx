@@ -7,7 +7,9 @@ const LOCAL_VERSION_KEY = 'app_installed_version';
 const LAST_UPDATE_KEY = 'app_last_force_update';
 const PENDING_VERSION_PARAM = '__v';
 const UPDATE_TIME_PARAM = '__t';
+const RELOAD_ATTEMPT_PARAM = '__ra';
 const GRACE_PERIOD = 60000; // 60 seconds grace period after update
+const MAX_RELOAD_ATTEMPTS = 2; // Prevent infinite reload loops on iOS
 
 interface AppVersion {
   id: string;
