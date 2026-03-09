@@ -86,6 +86,7 @@ const navGroups: NavGroup[] = [
       { title: 'Transactions', icon: Receipt, href: '/seller/transactions' },
       { title: 'Fees & Summary', icon: TrendingUp, href: '/seller/fees' },
       { title: 'Documents', icon: FileText, href: '/seller/documents' },
+      { title: 'Tax Summary', icon: Calculator, href: '/seller/tax-summary' },
     ],
   },
   {
