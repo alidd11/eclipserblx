@@ -404,9 +404,9 @@ Deno.serve(async (req) => {
       results["owasp_managed_ruleset"] = { success: false, error: (e as Error).message };
     }
 
-    // ─── 8. CRAWLER HINTS (Pro) ──────────────────────────────────
-
-    results["crawler_hints"] = { note: "Enable manually: Speed → Optimization → Content Optimization → Crawler Hints" };
+    // ─── 8. CRAWLER HINTS ──────────────────────────────────────
+    // No public API endpoint exists — dashboard-only toggle.
+    // Not counted in success total.
 
     // ─── SUMMARY ─────────────────────────────────────────────────
 
