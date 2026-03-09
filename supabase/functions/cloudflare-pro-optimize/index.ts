@@ -258,6 +258,8 @@ Deno.serve(async (req) => {
               "X-Frame-Options": { operation: "set", value: "SAMEORIGIN" },
               "Referrer-Policy": { operation: "set", value: "strict-origin-when-cross-origin" },
               "Permissions-Policy": { operation: "set", value: "camera=(), microphone=(), geolocation=()" },
+              "X-DNS-Prefetch-Control": { operation: "set", value: "on" },
+              "Strict-Transport-Security": { operation: "set", value: "max-age=31536000; includeSubDomains; preload" },
             },
           },
         },
