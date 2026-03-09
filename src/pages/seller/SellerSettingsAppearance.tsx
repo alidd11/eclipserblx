@@ -91,6 +91,8 @@ const INITIAL_FORM_DATA = {
   custom_css: '',
   banner_start_at: null as string | null,
   banner_end_at: null as string | null,
+  favicon_url: '',
+  hide_branding: false,
 };
 
 export default function SellerSettingsAppearance() {
