@@ -294,7 +294,14 @@ Deno.serve(async (req) => {
       } else {
         const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
-          "POST", transformPayload, "transform_rules"
+          "POST",
+          {
+            name: "Eclipse Pro Transform Rules",
+            kind: "zone",
+            phase: "http_response_headers_transform",
+            rules: transformRules,
+          },
+          "transform_rules"
         );
         results["transform_rules"] = { success: r.data.success, action: "created", status: r.status };
       }
