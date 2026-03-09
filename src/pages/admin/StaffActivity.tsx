@@ -106,7 +106,7 @@ export default function StaffActivityPage() {
       const userIds = [...new Set(filteredData.map(a => a.user_id))];
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, display_name, email')
+        .select('user_id, display_name, staff_id')
         .in('user_id', userIds);
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) ?? []);
