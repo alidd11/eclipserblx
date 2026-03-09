@@ -5,7 +5,7 @@ import {
   LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, Users,
   Tag, BarChart3, FileText, HelpCircle, MessageCircle, Star, Bot, Import,
   Gamepad2, Layers, TrendingUp, Receipt, LineChart, Heart, Megaphone,
-  RotateCcw, Zap, PackagePlus
+  RotateCcw, Zap, PackagePlus, Globe, Inbox
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -35,26 +35,27 @@ interface NavGroup {
 // Top-level items (no group)
 const topLevelItems: NavItem[] = [
   { title: 'Dashboard', icon: LayoutDashboard, href: '/seller' },
-  { title: 'Notifications', icon: Bell, href: '/seller/notifications' },
+  { title: 'Orders', icon: ShoppingCart, href: '/seller/orders' },
+  { title: 'Analytics', icon: BarChart3, href: '/seller/analytics' },
 ];
 
 const navGroups: NavGroup[] = [
   {
-    id: 'daily-ops',
-    title: 'Daily Operations',
-    icon: BarChart3,
+    id: 'catalog',
+    title: 'Catalog',
+    icon: Package,
     items: [
-      { title: 'Analytics', icon: BarChart3, href: '/seller/analytics' },
-      { title: 'Recent Orders', icon: ShoppingCart, href: '/seller/orders' },
-      { title: 'Reviews', icon: Star, href: '/seller/reviews' },
-      
-      { title: 'Documents', icon: FileText, href: '/seller/documents' },
+      { title: 'Products', icon: Package, href: '/seller/products' },
+      { title: 'Categories', icon: LayoutGrid, href: '/seller/categories' },
+      { title: 'Store Sections', icon: Layers, href: '/seller/tabs' },
+      { title: 'Custom Sections', icon: LayoutGrid, href: '/seller/custom-sections' },
+      { title: 'Import', icon: Import, href: '/seller/import' },
     ],
   },
   {
-    id: 'promotions',
-    title: 'Promotions',
-    icon: Tag,
+    id: 'marketing',
+    title: 'Marketing',
+    icon: Megaphone,
     items: [
       { title: 'Discount Codes', icon: Tag, href: '/seller/discounts' },
       { title: 'Flash Sales', icon: Zap, href: '/seller/flash-sales' },
@@ -63,26 +64,15 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: 'communications',
-    title: 'Communications',
-    icon: MessageCircle,
+    id: 'inbox',
+    title: 'Inbox',
+    icon: Inbox,
     items: [
-      { title: 'Customer Messages', icon: MessageCircle, href: '/seller/messages' },
+      { title: 'Messages', icon: MessageCircle, href: '/seller/messages' },
+      { title: 'Reviews', icon: Star, href: '/seller/reviews' },
       { title: 'Disputes', icon: RotateCcw, href: '/seller/refunds' },
       { title: 'Support Tickets', icon: HelpCircle, href: '/seller/support' },
-    ],
-  },
-  {
-    id: 'products',
-    title: 'Products',
-    icon: Package,
-    items: [
-      { title: 'All Products', icon: Package, href: '/seller/products' },
-      { title: 'Import', icon: Import, href: '/seller/import' },
-      { title: 'Categories', icon: LayoutGrid, href: '/seller/categories' },
-      { title: 'Store Sections', icon: Layers, href: '/seller/tabs' },
-      { title: 'Custom Sections', icon: LayoutGrid, href: '/seller/custom-sections' },
-      { title: 'Discord Bots', icon: Bot, href: '/seller/bots' },
+      { title: 'Notifications', icon: Bell, href: '/seller/notifications' },
     ],
   },
   {
@@ -91,9 +81,10 @@ const navGroups: NavGroup[] = [
     icon: DollarSign,
     items: [
       { title: 'Balance & Payouts', icon: DollarSign, href: '/seller/balance' },
-      { title: 'Revenue Breakdown', icon: LineChart, href: '/seller/revenue' },
+      { title: 'Revenue', icon: LineChart, href: '/seller/revenue' },
       { title: 'Transactions', icon: Receipt, href: '/seller/transactions' },
       { title: 'Fees & Summary', icon: TrendingUp, href: '/seller/fees' },
+      { title: 'Documents', icon: FileText, href: '/seller/documents' },
     ],
   },
   {
@@ -102,6 +93,7 @@ const navGroups: NavGroup[] = [
     icon: Gamepad2,
     items: [
       { title: 'Discord', icon: MessageCircle, href: '/seller/discord' },
+      { title: 'Discord Bots', icon: Bot, href: '/seller/bots' },
       { title: 'Roblox', icon: Gamepad2, href: '/seller/roblox' },
     ],
   },
@@ -110,10 +102,11 @@ const navGroups: NavGroup[] = [
     title: 'Settings',
     icon: Settings,
     items: [
-      { title: 'Team', icon: Users, href: '/seller/settings/team' },
       { title: 'Store Profile', icon: Store, href: '/seller/settings/profile' },
       { title: 'Appearance', icon: Palette, href: '/seller/settings/appearance' },
+      { title: 'Custom Domain', icon: Globe, href: '/seller/settings/domain' },
       { title: 'Payments', icon: CreditCard, href: '/seller/settings/payments' },
+      { title: 'Team', icon: Users, href: '/seller/settings/team' },
     ],
   },
 ];
@@ -146,7 +139,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
         return {};
       }
     }
-    return navGroups.reduce((acc, group) => ({ ...acc, [group.id]: true }), {});
+    return { catalog: true, inbox: true, marketing: false, finance: false, integrations: false, settings: false };
   });
 
   useEffect(() => {
