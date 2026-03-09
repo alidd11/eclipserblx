@@ -160,9 +160,25 @@ Deno.serve(async (req) => {
       const payoutMethod = payout.stores?.payout_method;
 
       try {
+        // === ATOMIC CLAIM: Prevent duplicate processing by concurrent runs ===
+        const { data: claimed } = await supabase.rpc('claim_payout_for_processing', {
+          p_payout_id: payoutId,
+          p_lock_id: runId,
+          p_expected_status: 'pending',
+        });
+
+        if (!claimed) {
+          logStep('Payout already claimed by another run', { payoutId });
+          results.skipped++;
+          results.details.push({ payoutId, status: 'skipped', reason: 'already_claimed' });
+          continue;
+        }
+
         // Safety: skip restricted stores
         if (storeId && restrictedStoreIds.has(storeId)) {
           logStep(`Skipping restricted store`, { payoutId, storeId });
+          // Release lock by keeping status as pending
+          await supabase.from('seller_payouts').update({ processing_locked_at: null, processing_lock_id: null }).eq('id', payoutId);
           results.skipped++;
           results.details.push({ payoutId, status: 'skipped', reason: 'restricted_store' });
           continue;
@@ -171,6 +187,7 @@ Deno.serve(async (req) => {
         // Safety: validate amount
         if (!payout.amount || payout.amount <= 0 || payout.amount > MAX_PAYOUT_AMOUNT) {
           logStep(`Invalid amount`, { payoutId, amount: payout.amount });
+          await supabase.from('seller_payouts').update({ processing_locked_at: null, processing_lock_id: null }).eq('id', payoutId);
           results.skipped++;
           results.details.push({ payoutId, status: 'skipped', reason: 'invalid_amount' });
           continue;
