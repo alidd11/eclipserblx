@@ -363,7 +363,7 @@ export default function AdminRefunds() {
                   </div>
                   <div>
                     <p className="text-muted-foreground">Customer</p>
-                    <p>{selectedOrder.customer_email}</p>
+                    <p className="font-mono">{selectedOrder.customer_id || 'Guest'}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Original Order Date</p>
