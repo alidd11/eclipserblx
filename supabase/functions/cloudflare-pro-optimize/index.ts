@@ -428,6 +428,7 @@ Deno.serve(async (req) => {
       success: true,
       summary: `${successCount}/${totalCount} settings applied successfully`,
       results,
+      error_details: Object.keys(errors).length > 0 ? errors : undefined,
       manual_steps: [
         "Verify Smart Tiered Caching is enabled (Caching → Tiered Cache)",
         "Verify HSTS is configured (SSL/TLS → Edge Certificates)",
