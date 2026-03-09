@@ -449,6 +449,8 @@ export default function AdminProducts() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       queryClient.invalidateQueries({ queryKey: ['admin-products-robux-status'] });
+      // Submit to search engines for indexing
+      if (form.slug) submitProductUrl(form.slug);
       setIsDialogOpen(false);
       setForm(emptyForm);
       toast.success(form.id ? 'Product updated' : 'Product created');
