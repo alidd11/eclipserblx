@@ -6,7 +6,6 @@ const corsHeaders = {
 
 const WORKER_SCRIPT = `
 const SUPABASE_FUNCTION_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy";
-const ORIGIN_URL = "https://roleplay-hub-shop.lovable.app";
 
 const BOT_PATTERNS = [
   "Discordbot", "Twitterbot", "facebookexternalhit", "LinkedInBot",
@@ -32,20 +31,24 @@ export default {
     const isDynamicPage = /^\\/(products|store)\\/[^/?#]+/.test(url.pathname);
     const isStaticOgPage = STATIC_OG_PATHS.has(url.pathname);
 
+    // If not an OG-relevant page, pass through immediately
     if (!isDynamicPage && !isStaticOgPage) {
-      return proxyToOrigin(request, url);
+      return fetch(request);
     }
 
-    const isTestingTool = NOT_BOT_PATTERNS.some((pattern) =>
-      userAgent.toLowerCase().includes(pattern.toLowerCase())
+    // Exclude performance testing tools
+    const isTestingTool = NOT_BOT_PATTERNS.some((p) =>
+      userAgent.toLowerCase().includes(p.toLowerCase())
     );
-    if (isTestingTool) return proxyToOrigin(request, url);
+    if (isTestingTool) return fetch(request);
 
+    // Only intercept bots — everyone else passes through
     const isBot = BOT_PATTERNS.some((bot) =>
       userAgent.toLowerCase().includes(bot.toLowerCase())
     );
-    if (!isBot) return proxyToOrigin(request, url);
+    if (!isBot) return fetch(request);
 
+    // Bot detected — serve OG HTML from edge function
     const ogUrl = SUPABASE_FUNCTION_URL + "?path=" + encodeURIComponent(url.pathname);
     try {
       const ogResponse = await fetch(ogUrl, {
@@ -59,68 +62,11 @@ export default {
         },
       });
     } catch (error) {
-      return proxyToOrigin(request, url);
+      // If OG proxy fails, let the bot see the normal page
+      return fetch(request);
     }
   },
 };
-
-async function proxyToOrigin(request, url) {
-  const originUrl = new URL(url.pathname + url.search, ORIGIN_URL);
-  const newHeaders = new Headers(request.headers);
-  newHeaders.delete("Host");
-  newHeaders.delete("host");
-
-  const isGetLike = request.method === "GET" || request.method === "HEAD";
-  const newRequest = new Request(originUrl.toString(), {
-    method: request.method,
-    headers: newHeaders,
-    body: !isGetLike ? request.body : undefined,
-    redirect: "manual",
-  });
-
-  const res = await fetch(newRequest);
-
-  if ([301, 302, 303, 307, 308].includes(res.status)) {
-    const location = res.headers.get("Location") || "";
-    const isAuthBridge = location.includes("auth-bridge") ||
-      location.includes("lovableproject.com") ||
-      (location.includes("lovable.app") && !location.includes(ORIGIN_URL));
-
-    if (isAuthBridge) {
-      const spaRes = await fetch(ORIGIN_URL + "/index.html", {
-        headers: { "Accept": "text/html" },
-      });
-      return new Response(spaRes.body, {
-        status: 200,
-        headers: {
-          "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "no-cache",
-          "X-OG-Worker": "auth-bridge-bypass",
-        },
-      });
-    }
-
-    let rewrittenLocation = location;
-    if (location.startsWith(ORIGIN_URL)) {
-      rewrittenLocation = location.replace(ORIGIN_URL, url.origin);
-    }
-    return new Response(null, {
-      status: res.status,
-      headers: { "Location": rewrittenLocation, "X-OG-Worker": "redirect" },
-    });
-  }
-
-  const responseHeaders = new Headers(res.headers);
-  const ct = responseHeaders.get("Content-Type") || "";
-  const isPage = !url.pathname.includes(".") || url.pathname.endsWith(".html");
-  if (isPage && !ct.includes("text/html")) {
-    responseHeaders.set("Content-Type", "text/html; charset=utf-8");
-  }
-  responseHeaders.delete("Content-Disposition");
-  responseHeaders.delete("Location");
-
-  return new Response(res.body, { status: res.status, headers: responseHeaders });
-}
 `;
 
 Deno.serve(async (req) => {
@@ -139,7 +85,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 1: Get the account ID from the zone
+    // Step 1: Get account ID from zone
     const zoneRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}`, {
       headers: { Authorization: `Bearer ${cfApiToken}`, "Content-Type": "application/json" },
     });
@@ -152,9 +98,8 @@ Deno.serve(async (req) => {
     }
     const accountId = zoneData.result.account.id;
 
-    // Step 2: Upload/update the worker script
+    // Step 2: Upload worker script
     const workerName = "eclipse-og-proxy";
-    // Use multipart form upload for ES modules format
     const metadata = JSON.stringify({
       main_module: "worker.js",
       compatibility_date: "2024-01-01",
@@ -194,14 +139,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 3: Create/update the worker route to match all traffic on the domain
-    // First list existing routes to avoid duplicates
+    // Step 3: Ensure route exists
     const routesRes = await fetch(
       `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes`,
       { headers: { Authorization: `Bearer ${cfApiToken}`, "Content-Type": "application/json" } }
     );
     const routesData = await routesRes.json();
-    
+
     const desiredPattern = "eclipserblx.com/*";
     const existingRoute = routesData.result?.find(
       (r: any) => r.pattern === desiredPattern || r.pattern === "*.eclipserblx.com/*"
@@ -209,7 +153,6 @@ Deno.serve(async (req) => {
 
     let routeResult;
     if (existingRoute) {
-      // Update existing route
       const updateRes = await fetch(
         `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes/${existingRoute.id}`,
         {
@@ -220,7 +163,6 @@ Deno.serve(async (req) => {
       );
       routeResult = await updateRes.json();
     } else {
-      // Create new route
       const createRes = await fetch(
         `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes`,
         {
@@ -239,7 +181,7 @@ Deno.serve(async (req) => {
         route: desiredPattern,
         upload: uploadData.success,
         routeUpdate: routeResult.success,
-        message: "Cloudflare Worker deployed and route configured successfully",
+        message: "Worker deployed — human traffic passes through, only bots intercepted",
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

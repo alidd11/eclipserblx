@@ -103,12 +103,12 @@ Deno.serve(async (req) => {
   const sm = path.match(/^\/store\/([a-zA-Z0-9][a-zA-Z0-9\-_]{0,200})$/);
   if (sm) {
     const slug = sm[1];
-    const store = await pgQuery("stores", "name,description,logo_url,slug,product_count", `slug=eq.${slug}&is_active=eq.true`);
+    const store = await pgQuery("stores", "name,description,logo_url,banner_url,slug,product_count", `slug=eq.${slug}&is_active=eq.true`);
     const pageUrl = `${SITE_URL}/store/${encodeURIComponent(slug)}`;
     if (!store) return new Response(null, { status: 302, headers: { Location: pageUrl, ...corsHeaders } });
 
     const desc = store.description ? store.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Browse ${store.name}'s products on Eclipse — ${store.product_count || 0} items available.`;
-    const img = store.logo_url || DEFAULT_IMAGE;
+    const img = store.banner_url || store.logo_url || DEFAULT_IMAGE;
 
     return new Response(buildHtml(`${store.name} | ${SITE_NAME}`, desc, img, pageUrl, "profile"), {
       headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=600", ...corsHeaders },
