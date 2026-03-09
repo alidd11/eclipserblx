@@ -102,10 +102,10 @@ Deno.serve(async (req) => {
     auth: { persistSession: false },
   });
 
-  const results = { processed: 0, skipped: 0, failed: 0, details: [] as any[] };
+  const runId = `auto-payout-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   try {
-    logStep('Starting auto-payout run');
+    logStep('Starting auto-payout run', { runId });
 
     // Fetch pending payouts older than 5 minutes, limit to MAX_PAYOUTS_PER_RUN
     const cutoff = new Date(Date.now() - MIN_PENDING_MINUTES * 60 * 1000).toISOString();
