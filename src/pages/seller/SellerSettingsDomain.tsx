@@ -9,12 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { Globe, CheckCircle, Clock, AlertTriangle, ExternalLink, Copy, Trash2, RefreshCw, Zap, Crown, CreditCard, Settings, Search, ShoppingCart, Link } from 'lucide-react';
+import { Globe, CheckCircle, Clock, AlertTriangle, ExternalLink, Copy, Trash2, RefreshCw, Zap, Crown, CreditCard, Settings, Link } from 'lucide-react';
 
-
-
-function StatusBadge({ status }: { status: string }) {
-  const variants: Record<string, { className: string; label: string }> = {
+ord<string, { className: string; label: string }> = {
     active: { className: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20', label: 'Active' },
     pending: { className: 'bg-amber-500/10 text-amber-500 border-amber-500/20', label: 'Pending' },
     verifying: { className: 'bg-blue-500/10 text-blue-500 border-blue-500/20', label: 'Verifying' },
