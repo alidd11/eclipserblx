@@ -9,6 +9,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
+import { useStoreDomain } from '@/hooks/useStoreDomain';
 import { cn } from '@/lib/utils';
 import { hapticTap } from '@/lib/haptics';
 import {
