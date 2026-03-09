@@ -51,6 +51,26 @@ export default {
     const url = new URL(request.url);
     const userAgent = request.headers.get("User-Agent") || "";
 
+    // /share/ prefix — ALWAYS proxy to og-proxy (guaranteed OG tags for any client)
+    if (url.pathname.startsWith("/share/")) {
+      const realPath = url.pathname.replace(/^\/share/, "");
+      const ogUrl = `${SUPABASE_FUNCTION_URL}?path=${encodeURIComponent(realPath)}`;
+      try {
+        const ogResponse = await fetch(ogUrl, {
+          headers: { "User-Agent": userAgent },
+        });
+        return new Response(ogResponse.body, {
+          status: ogResponse.status,
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "public, max-age=300",
+          },
+        });
+      } catch (error) {
+        return Response.redirect(url.origin + realPath, 302);
+      }
+    }
+
     // Check if this is a page that needs OG tags
     const isDynamicPage = /^\/(products|store)\/[^/?#]+/.test(url.pathname);
     const isStaticOgPage = STATIC_OG_PATHS.has(url.pathname);
