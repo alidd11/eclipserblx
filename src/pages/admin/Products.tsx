@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { submitProductUrl } from '@/lib/submitIndexNow';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Trash2, Search, Upload, FileCheck, X, Loader2, ImagePlus, Video, CheckSquare, Square, Edit3, Clock, Calendar, Store, Crown } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
@@ -448,6 +449,8 @@ export default function AdminProducts() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       queryClient.invalidateQueries({ queryKey: ['admin-products-robux-status'] });
+      // Submit to search engines for indexing
+      if (form.slug) submitProductUrl(form.slug);
       setIsDialogOpen(false);
       setForm(emptyForm);
       toast.success(form.id ? 'Product updated' : 'Product created');

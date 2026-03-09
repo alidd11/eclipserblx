@@ -99,6 +99,7 @@ const AdminStaffProfile = lazy(() => import("@/pages/admin/StaffProfile"));
 const AdminAffiliateApplications = lazy(() => import("@/pages/admin/AffiliateApplications"));
 const AdminStoreApplications = lazy(() => import("@/pages/admin/StoreApplications"));
 const AdminSellerProductReview = lazy(() => import("@/pages/admin/SellerProductReview"));
+const AdminSEOIndexing = lazy(() => import("@/pages/admin/SEOIndexing"));
 const AdminSellerProductsAll = lazy(() => import("@/pages/admin/SellerProductsAll"));
 const AdminSellerPayouts = lazy(() => import("@/pages/admin/SellerPayouts"));
 const AdminSellerRecruitment = lazy(() => import("@/pages/admin/SellerRecruitment"));
@@ -397,6 +398,7 @@ export function AppRoutes() {
         <Route path="/admin/affiliate-applications" element={<AdminAffiliateApplications />} />
         <Route path="/admin/store-applications" element={<AdminStoreApplications />} />
         <Route path="/admin/seller-product-review" element={<AdminSellerProductReview />} />
+        <Route path="/admin/seo-indexing" element={<AdminSEOIndexing />} />
         <Route path="/admin/seller-products" element={<AdminSellerProductsAll />} />
         <Route path="/admin/seller-commissions" element={<AdminSellerCommissions />} />
         <Route path="/admin/seller-commissions/:storeId" element={<AdminSellerStoreDetail />} />

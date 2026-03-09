@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 import { applyProductWatermark } from '@/lib/watermark';
+import { submitProductUrl } from '@/lib/submitIndexNow';
 import { QUANTIS_STORE_ID } from '@/lib/constants';
 import { EarlyAccessCard } from '@/components/seller/EarlyAccessCard';
 import { SellerLayout } from '@/components/seller/SellerLayout';
@@ -440,6 +441,10 @@ export default function SellerProductEditor() {
       }
     },
     onSuccess: async (result) => {
+      // Submit to search engines if auto-approved
+      if (result.isAutoApproved && formData.slug) {
+        submitProductUrl(formData.slug);
+      }
       // Send Discord announcement for auto-approved new products
       if (result.isAutoApproved && !isEditing) {
         try {
