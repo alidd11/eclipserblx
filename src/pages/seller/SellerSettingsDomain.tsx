@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { Globe, CheckCircle, Clock, AlertTriangle, ExternalLink, Copy, Trash2, RefreshCw, Zap } from 'lucide-react';
+import { Globe, CheckCircle, Clock, AlertTriangle, ExternalLink, Copy, Trash2, RefreshCw, Zap, Crown, CreditCard, Settings } from 'lucide-react';
 
 function StatusBadge({ status }: { status: string }) {
   const variants: Record<string, { className: string; label: string }> = {
@@ -62,8 +62,24 @@ export default function SellerSettingsDomain() {
     enabled: !!store,
   });
 
+  // Check custom domain subscription
+  const { data: domainSub, isLoading: subLoading } = useQuery({
+    queryKey: ['domain-subscription', store?.id],
+    queryFn: async () => {
+      if (!store) return { subscribed: false };
+      const { data, error } = await supabase.functions.invoke('domain-subscription', {
+        body: { action: 'check-subscription', store_id: store.id },
+      });
+      if (error) return { subscribed: false };
+      return data as { subscribed: boolean; current_period_end?: string; cancel_at_period_end?: boolean };
+    },
+    enabled: !!store,
+    refetchInterval: 30000, // Refresh every 30s (in case checkout just completed)
+  });
+
   const subdomain = domains?.find(d => d.domain_type === 'subdomain');
   const customDomains = domains?.filter(d => d.domain_type === 'custom') ?? [];
+  const isSubscribed = domainSub?.subscribed === true;
 
   // Claim subdomain mutation
   const claimSubdomain = useMutation({
@@ -140,12 +156,42 @@ export default function SellerSettingsDomain() {
     onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
   });
 
+  // Subscribe to custom domain add-on
+  const startCheckout = useMutation({
+    mutationFn: async () => {
+      if (!store) throw new Error('No store');
+      const { data, error } = await supabase.functions.invoke('domain-subscription', {
+        body: { action: 'create-checkout', store_id: store.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.url) window.open(data.url, '_blank');
+      return data;
+    },
+    onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
+  });
+
+  // Manage subscription
+  const openManage = useMutation({
+    mutationFn: async () => {
+      if (!store) throw new Error('No store');
+      const { data, error } = await supabase.functions.invoke('domain-subscription', {
+        body: { action: 'manage', store_id: store.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.url) window.open(data.url, '_blank');
+      return data;
+    },
+    onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
+  });
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({ title: 'Copied to clipboard' });
   };
 
-  if (storeLoading || domainsLoading) {
+  if (storeLoading || domainsLoading || subLoading) {
     return (
       <div className="space-y-4 p-6">
         <Skeleton className="h-8 w-48" />
@@ -223,109 +269,194 @@ export default function SellerSettingsDomain() {
       <Separator />
 
       {/* Custom Domain Section */}
-      <Card>
+      <Card className={!isSubscribed ? 'relative overflow-hidden' : ''}>
         <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Globe className="w-4 h-4 text-primary" />
-            Custom Domain
-          </CardTitle>
-          <CardDescription>
-            Connect your own domain (e.g., mystore.com) for a fully branded experience.
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Globe className="w-4 h-4 text-primary" />
+                Custom Domain
+                {!isSubscribed && (
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-xs">
+                    <Crown className="w-3 h-3 mr-1" />
+                    Premium
+                  </Badge>
+                )}
+              </CardTitle>
+              <CardDescription>
+                Connect your own domain (e.g., mystore.com) for a fully branded experience.
+              </CardDescription>
+            </div>
+            {isSubscribed && (
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Subscribed
+                </Badge>
+                <Button variant="ghost" size="sm" onClick={() => openManage.mutate()} disabled={openManage.isPending}>
+                  <Settings className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Add new custom domain */}
-          <div className="flex gap-2">
-            <Input
-              placeholder="mystore.com"
-              value={customDomainInput}
-              onChange={(e) => setCustomDomainInput(e.target.value)}
-              className="flex-1"
-            />
-            <Button
-              onClick={() => requestCustom.mutate(customDomainInput)}
-              disabled={!customDomainInput.trim() || requestCustom.isPending}
-            >
-              {requestCustom.isPending ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : null}
-              Add Domain
-            </Button>
-          </div>
-
-          {/* Existing custom domains */}
-          {customDomains.map((d) => (
-            <Card key={d.id} className="bg-muted/30">
-              <CardContent className="py-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <code className="font-mono text-sm text-foreground">{d.domain}</code>
-                  <div className="flex items-center gap-2">
-                    <StatusBadge status={d.status} />
-                    {d.ssl_status === 'active' && (
-                      <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
-                        SSL ✓
-                      </Badge>
-                    )}
-                  </div>
+          {!isSubscribed ? (
+            /* Paywall */
+            <div className="text-center py-6 space-y-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mx-auto">
+                <Crown className="w-8 h-8 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">Unlock Custom Domains</h3>
+                <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+                  Connect your own domain to your store for a fully branded, professional storefront.
+                  Your customers will see your domain — not ours.
+                </p>
+              </div>
+              <div className="flex items-baseline justify-center gap-1">
+                <span className="text-3xl font-bold text-foreground">£3</span>
+                <span className="text-muted-foreground">/month</span>
+              </div>
+              <ul className="text-sm text-muted-foreground space-y-2 max-w-xs mx-auto text-left">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                  Connect any domain you own
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                  Free SSL certificate included
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                  Guided DNS setup
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                  Cancel anytime
+                </li>
+              </ul>
+              <Button
+                size="lg"
+                onClick={() => startCheckout.mutate()}
+                disabled={startCheckout.isPending}
+                className="mt-2"
+              >
+                {startCheckout.isPending ? (
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <CreditCard className="w-4 h-4 mr-2" />
+                )}
+                Subscribe — £3/month
+              </Button>
+            </div>
+          ) : (
+            <>
+              {/* Subscription info */}
+              {domainSub?.current_period_end && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Clock className="w-3 h-3" />
+                  {domainSub.cancel_at_period_end
+                    ? `Cancels on ${new Date(domainSub.current_period_end).toLocaleDateString()}`
+                    : `Renews on ${new Date(domainSub.current_period_end).toLocaleDateString()}`
+                  }
                 </div>
+              )}
 
-                {/* DNS Instructions for pending/verifying domains */}
-                {(d.status === 'pending' || d.status === 'verifying') && (
-                  <div className="bg-card rounded-lg p-4 space-y-3 border border-border">
-                    <p className="text-sm font-medium text-foreground">DNS Setup Instructions:</p>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-start gap-2">
-                        <span className="font-medium text-primary min-w-[24px]">1.</span>
-                        <div>
-                          <p className="text-muted-foreground">Add a <strong>CNAME</strong> record:</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <code className="bg-muted px-2 py-0.5 rounded text-xs">{d.domain} → stores.eclipserblx.com</code>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard('stores.eclipserblx.com')}>
-                              <Copy className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="font-medium text-primary min-w-[24px]">2.</span>
-                        <div>
-                          <p className="text-muted-foreground">Add a <strong>TXT</strong> record:</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <code className="bg-muted px-2 py-0.5 rounded text-xs">_eclipsestore-verify.{d.domain} → {d.verification_token}</code>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(d.verification_token ?? '')}>
-                              <Copy className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </div>
+              {/* Add new custom domain */}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="mystore.com"
+                  value={customDomainInput}
+                  onChange={(e) => setCustomDomainInput(e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  onClick={() => requestCustom.mutate(customDomainInput)}
+                  disabled={!customDomainInput.trim() || requestCustom.isPending}
+                >
+                  {requestCustom.isPending ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  Add Domain
+                </Button>
+              </div>
+
+              {/* Existing custom domains */}
+              {customDomains.map((d) => (
+                <Card key={d.id} className="bg-muted/30">
+                  <CardContent className="py-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <code className="font-mono text-sm text-foreground">{d.domain}</code>
+                      <div className="flex items-center gap-2">
+                        <StatusBadge status={d.status} />
+                        {d.ssl_status === 'active' && (
+                          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                            SSL ✓
+                          </Badge>
+                        )}
                       </div>
                     </div>
-                    <Button
-                      size="sm"
-                      onClick={() => verifyDomain.mutate(d.id)}
-                      disabled={verifyDomain.isPending}
-                    >
-                      {verifyDomain.isPending ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
-                      Verify DNS
-                    </Button>
-                  </div>
-                )}
 
-                <div className="flex gap-2">
-                  {d.status === 'active' && (
-                    <Button variant="outline" size="sm" onClick={() => window.open(`https://${d.domain}`, '_blank')}>
-                      <ExternalLink className="w-4 h-4 mr-1" /> Visit
-                    </Button>
-                  )}
-                  <Button variant="ghost" size="sm" onClick={() => removeDomain.mutate(d.id)}>
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                    {/* DNS Instructions for pending/verifying domains */}
+                    {(d.status === 'pending' || d.status === 'verifying') && (
+                      <div className="bg-card rounded-lg p-4 space-y-3 border border-border">
+                        <p className="text-sm font-medium text-foreground">DNS Setup Instructions:</p>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-start gap-2">
+                            <span className="font-medium text-primary min-w-[24px]">1.</span>
+                            <div>
+                              <p className="text-muted-foreground">Add a <strong>CNAME</strong> record:</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <code className="bg-muted px-2 py-0.5 rounded text-xs">{d.domain} → stores.eclipserblx.com</code>
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard('stores.eclipserblx.com')}>
+                                  <Copy className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <span className="font-medium text-primary min-w-[24px]">2.</span>
+                            <div>
+                              <p className="text-muted-foreground">Add a <strong>TXT</strong> record:</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <code className="bg-muted px-2 py-0.5 rounded text-xs">_eclipsestore-verify.{d.domain} → {d.verification_token}</code>
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(d.verification_token ?? '')}>
+                                  <Copy className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => verifyDomain.mutate(d.id)}
+                          disabled={verifyDomain.isPending}
+                        >
+                          {verifyDomain.isPending ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                          Verify DNS
+                        </Button>
+                      </div>
+                    )}
 
-          {customDomains.length === 0 && (
-            <p className="text-sm text-muted-foreground py-2">
-              No custom domains yet. Add one above to get started.
-            </p>
+                    <div className="flex gap-2">
+                      {d.status === 'active' && (
+                        <Button variant="outline" size="sm" onClick={() => window.open(`https://${d.domain}`, '_blank')}>
+                          <ExternalLink className="w-4 h-4 mr-1" /> Visit
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="sm" onClick={() => removeDomain.mutate(d.id)}>
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+
+              {customDomains.length === 0 && (
+                <p className="text-sm text-muted-foreground py-2">
+                  No custom domains yet. Add one above to get started.
+                </p>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
