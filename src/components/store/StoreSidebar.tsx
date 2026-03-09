@@ -94,6 +94,7 @@ export function StoreSidebar({
   isMobileDrawer = false,
 }: StoreSidebarProps) {
   const location = useLocation();
+  const { isCustomStoreDomain } = useStoreDomain();
   const isCollapsed = isMobileDrawer ? false : collapsed;
 
   const scrollToSection = (sectionId: string) => {
