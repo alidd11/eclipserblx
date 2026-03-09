@@ -39,8 +39,12 @@ export function LandingHero() {
     return () => clearInterval(interval);
   }, [rotatingWords.length]);
 
-  const handleSearchClick = (term: string) => {
-    navigate(`/search?q=${encodeURIComponent(term)}`);
+  const handleTagClick = (tag: typeof TRENDING_TAGS[number]) => {
+    if (tag.type === 'category') {
+      navigate(`/products?category=${tag.target}`);
+    } else {
+      navigate(`/search?q=${encodeURIComponent(tag.target)}`);
+    }
   };
 
   return (
