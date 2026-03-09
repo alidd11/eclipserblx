@@ -330,10 +330,7 @@ export default function SellerSettingsDomain() {
             <Button
               onClick={() => {
                 if (domainSearchInput.trim()) {
-                  window.open(
-                    `https://www.namecheap.com/domains/registration/results/?domain=${encodeURIComponent(domainSearchInput.trim())}&aff=${NAMECHEAP_AFFILIATE_ID}`,
-                    '_blank'
-                  );
+                  window.open(DOMAIN_REGISTRAR_URL, '_blank');
                 }
               }}
               disabled={!domainSearchInput.trim()}
