@@ -173,13 +173,13 @@ export function LandingHero() {
                 <Search className="h-3 w-3" aria-hidden="true" />
                 Trending
               </span>
-              {POPULAR_SEARCHES.map((term) => (
+              {TRENDING_TAGS.map((tag) => (
                 <button
-                  key={term}
-                  onClick={() => handleSearchClick(term)}
+                  key={tag.label}
+                  onClick={() => handleTagClick(tag)}
                   className="text-[11px] px-1.5 py-0.5 rounded bg-muted/50 hover:bg-muted text-foreground/70 hover:text-foreground transition-colors flex-shrink-0"
                 >
-                  {term}
+                  {tag.label}
                 </button>
               ))}
             </div>
