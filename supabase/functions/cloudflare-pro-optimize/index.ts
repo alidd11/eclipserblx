@@ -41,6 +41,8 @@ Deno.serve(async (req) => {
     }
 
     // Helper for Cloudflare API calls with error logging
+    const errors: Record<string, unknown> = {};
+
     async function cfApi(url: string, method: string, body: unknown, label: string) {
       try {
         const res = await fetch(url, {
@@ -50,11 +52,11 @@ Deno.serve(async (req) => {
         });
         const data = await res.json();
         if (!data.success) {
-          console.error(`[CF] ${label} failed (${res.status}):`, JSON.stringify(data.errors || data.messages || data));
+          errors[label] = { status: res.status, errors: data.errors, messages: data.messages };
         }
         return { data, status: res.status };
       } catch (e) {
-        console.error(`[CF] ${label} exception:`, (e as Error).message);
+        errors[label] = { exception: (e as Error).message };
         return { data: { success: false }, status: 0, error: (e as Error).message };
       }
     }
