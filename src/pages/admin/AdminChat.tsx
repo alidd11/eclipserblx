@@ -1184,7 +1184,7 @@ function AdminChatContent() {
         />
 
         {/* Modern input bar */}
-        <div className="flex gap-2 items-center">
+        <div data-gesture-exempt="true" className="flex gap-2 items-center">
           {/* Plus/Attachment button */}
           <Button
             variant="ghost"
