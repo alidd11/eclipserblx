@@ -1,0 +1,1 @@
+ALTER TABLE public.seller_payouts ADD COLUMN IF NOT EXISTS auto_processed boolean DEFAULT false;
