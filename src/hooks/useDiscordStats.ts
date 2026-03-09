@@ -9,7 +9,6 @@ interface DiscordStats {
 }
 
 const DEFAULT_INVITE_CODE = 'eclipserblx';
-const FALLBACK_MEMBER_COUNT = 500;
 
 export function useDiscordStats() {
   const { discordUrl } = useDiscordUrl();
@@ -20,13 +19,20 @@ export function useDiscordStats() {
   const { data, isLoading } = useQuery<DiscordStats>({
     queryKey: ['discord-server-stats', inviteCode],
     queryFn: async () => {
-      // Call Discord's public invite API directly — no edge function needed
+      // Defer fetch so it doesn't compete with LCP-critical rendering
+      await new Promise<void>((resolve) => {
+        if ('requestIdleCallback' in window) {
+          (window as any).requestIdleCallback(resolve, { timeout: 3000 });
+        } else {
+          setTimeout(resolve, 1000);
+        }
+      });
+
       const res = await fetch(
         `https://discord.com/api/v10/invites/${inviteCode}?with_counts=true`
       );
 
       if (!res.ok) {
-        // Don't log 404s as errors — invite code may simply be expired/invalid
         if (res.status !== 404) {
           console.warn('Discord invite API error:', res.status);
         }
@@ -44,11 +50,11 @@ export function useDiscordStats() {
           : null,
       };
     },
-    staleTime: 1000 * 60 * 30, // Cache for 30 minutes
+    staleTime: 1000 * 60 * 30,
     gcTime: 1000 * 60 * 45,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
-    retry: false, // Don't retry on 404s
+    retry: false,
   });
 
   return {

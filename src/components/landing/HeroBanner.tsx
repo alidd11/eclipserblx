@@ -13,7 +13,7 @@ export function HeroBanner() {
       <img
         src={isMobile ? heroBgMobile : heroBgDesktop}
         alt=""
-        width={isMobile ? 768 : 1920}
+        width={isMobile ? 735 : 1920}
         height={isMobile ? 420 : 480}
         fetchPriority="high"
         decoding="sync"

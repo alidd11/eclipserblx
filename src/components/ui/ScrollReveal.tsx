@@ -22,15 +22,18 @@ const getVariants = (direction: string, distance: number): Variants => {
     none: {},
   };
 
+  const offset = offsets[direction];
+  const translateX = offset.x ?? 0;
+  const translateY = offset.y ?? 0;
+
   return {
     hidden: {
       opacity: 0,
-      ...offsets[direction],
+      transform: `translate3d(${translateX}px, ${translateY}px, 0)`,
     },
     visible: {
       opacity: 1,
-      x: 0,
-      y: 0,
+      transform: 'translate3d(0, 0, 0)',
     },
   };
 };
@@ -74,6 +77,7 @@ export const ScrollReveal = forwardRef<HTMLDivElement, ScrollRevealProps>(functi
         ease: [0.25, 0.1, 0.25, 1],
       }}
       className={className}
+      style={{ willChange: 'opacity, transform' }}
     >
       {children}
     </motion.div>

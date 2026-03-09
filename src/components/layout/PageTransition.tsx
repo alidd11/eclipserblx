@@ -2,8 +2,8 @@ import { motion, type Transition } from 'framer-motion';
 import { ReactNode } from 'react';
 
 const pageVariants = {
-  initial: { opacity: 0, y: 8 },
-  animate: { opacity: 1, y: 0 },
+  initial: { opacity: 0, transform: 'translateY(8px)' },
+  animate: { opacity: 1, transform: 'translateY(0px)' },
 };
 
 const pageTransition: Transition = {
@@ -16,10 +16,6 @@ interface PageTransitionProps {
   className?: string;
 }
 
-/**
- * Lightweight page enter animation.
- * Wrap around route content for a smooth fade+slide on mount.
- */
 export function PageTransition({ children, className }: PageTransitionProps) {
   return (
     <motion.div
@@ -28,6 +24,7 @@ export function PageTransition({ children, className }: PageTransitionProps) {
       variants={pageVariants}
       transition={pageTransition}
       className={className}
+      style={{ willChange: 'opacity, transform' }}
     >
       {children}
     </motion.div>
