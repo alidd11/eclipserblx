@@ -89,6 +89,7 @@ const App = () => (
                     </IpBanCheck>
                   </BrowserRouter>
                 </TooltipProvider>
+                </StoreDomainProvider>
               </ChatPanelProvider>
             </CartProvider>
           </AuthProvider>

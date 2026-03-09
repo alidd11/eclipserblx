@@ -361,6 +361,7 @@ export function AppRoutes() {
         <Route path="/seller/settings/payments" element={<SellerSettingsPayments />} />
         <Route path="/seller/settings/notifications" element={<SellerSettingsNotifications />} />
         <Route path="/seller/roblox" element={<SellerSettingsRoblox />} />
+        <Route path="/seller/settings/domain" element={<SellerSettingsDomain />} />
         <Route path="/seller/support" element={<SellerSupport />} />
         <Route path="/seller/messages" element={<SellerMessages />} />
         <Route path="/seller/reviews" element={<SellerReviews />} />
