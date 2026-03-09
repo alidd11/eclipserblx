@@ -164,7 +164,7 @@ function AdminChatContent() {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  const { isKeyboardVisible } = useIOSKeyboardFix();
+  // Removed useIOSKeyboardFix — keyboard state is handled by useIOSChatKeyboard in AdminLayout
 
   // Detect PWA mode
   const isPWA = typeof window !== 'undefined' && (
