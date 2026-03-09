@@ -151,6 +151,45 @@ serve(async (req) => {
         });
       }
       
+      // Handle Custom Domain subscriptions
+      if (isCustomDomain || isCustomDomainByPrice) {
+        const storeId = subscription.metadata?.store_id;
+        if (storeId) {
+          const isActive = subscription.status === "active" || subscription.status === "trialing";
+          const periodEnd = new Date(subscription.current_period_end * 1000).toISOString();
+          
+          // Upsert billing record
+          const { data: existingBilling } = await supabaseAdmin
+            .from("store_domain_billing")
+            .select("id")
+            .eq("stripe_subscription_id", subscription.id)
+            .maybeSingle();
+          
+          if (existingBilling) {
+            await supabaseAdmin.from("store_domain_billing").update({
+              status: isActive ? "active" : "cancelled",
+              current_period_end: periodEnd,
+              stripe_customer_id: customerId,
+              cancelled_at: !isActive ? new Date().toISOString() : null,
+            }).eq("id", existingBilling.id);
+          } else if (isActive) {
+            await supabaseAdmin.from("store_domain_billing").insert({
+              store_id: storeId,
+              stripe_subscription_id: subscription.id,
+              stripe_customer_id: customerId,
+              status: "active",
+              current_period_end: periodEnd,
+            });
+          }
+          
+          logStep("Custom domain subscription handled", { storeId, status: isActive ? "active" : "cancelled" });
+        }
+        return new Response(JSON.stringify({ received: true }), {
+          headers: { "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+
       // Handle IP Shield subscriptions
       if (isIpShield) {
         await handleIpShieldSubscription(supabaseAdmin, subscription, userId, customerEmail, event.type, ipShieldItem!, IP_SHIELD_TIER_MAP);
