@@ -12,7 +12,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { useIOSKeyboardFix } from '@/hooks/useIOSKeyboardFix';
+// useIOSKeyboardFix removed — keyboard CSS vars handled by AdminLayout's useIOSChatKeyboard
 import { markChatAsRead } from '@/hooks/useChatNotifications';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
