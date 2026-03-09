@@ -72,6 +72,7 @@ const navGroups: NavGroup[] = [
       { title: 'Disputes', icon: AlertTriangle, href: '/admin/disputes', permissions: ['manage_orders'], dividerAfter: true },
       { title: 'Affiliates', icon: Gift, href: '/admin/affiliates', permissions: ['view_affiliates'] },
       { title: 'Affiliate List', icon: FileText, href: '/admin/affiliate-applications', permissions: ['review_affiliate_applications'] },
+      { title: 'Referrals', icon: Link2, href: '/admin/referrals', permissions: ['view_affiliates'] },
     ],
   },
   {
