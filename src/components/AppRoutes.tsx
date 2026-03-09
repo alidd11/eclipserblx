@@ -1,4 +1,4 @@
-import { lazy, Suspense, forwardRef } from "react";
+import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
