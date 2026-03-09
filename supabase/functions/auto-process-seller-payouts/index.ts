@@ -461,11 +461,85 @@ Deno.serve(async (req) => {
           results.details.push({ payoutId, status: 'processing', method: 'wise', transferId: transfer.id });
 
         } else if (payoutMethod === 'paypal') {
-          // === PAYPAL — skip for manual processing ===
-          logStep(`PayPal payout, skipping for manual`, { payoutId });
-          results.skipped++;
-          results.details.push({ payoutId, status: 'skipped', reason: 'paypal_manual' });
-          continue;
+          // === PAYPAL PAYOUTS API ===
+          const paypalClientId = Deno.env.get('PAYPAL_CLIENT_ID');
+          const paypalClientSecret = Deno.env.get('PAYPAL_CLIENT_SECRET');
+
+          if (!paypalClientId || !paypalClientSecret) {
+            logStep(`No PayPal credentials, skipping`, { payoutId });
+            results.skipped++;
+            results.details.push({ payoutId, status: 'skipped', reason: 'no_paypal_credentials' });
+            continue;
+          }
+
+          // Get seller's PayPal email from store_payment_details
+          const { data: paypalDetails } = await supabase
+            .from('store_payment_details')
+            .select('paypal_email')
+            .eq('store_id', storeId)
+            .single();
+
+          const paypalEmail = paypalDetails?.paypal_email;
+          if (!paypalEmail) {
+            logStep(`No PayPal email for store`, { payoutId, storeId });
+            results.skipped++;
+            results.details.push({ payoutId, status: 'skipped', reason: 'no_paypal_email' });
+            continue;
+          }
+
+          // Get access token and send payout
+          const accessToken = await getPayPalAccessToken(paypalClientId, paypalClientSecret);
+          const { batchId } = await sendPayPalPayout(accessToken, payoutId, payout.amount, paypalEmail);
+
+          logStep(`PayPal payout sent`, { payoutId, batchId, email: paypalEmail });
+
+          // Update payout as completed
+          await supabase
+            .from('seller_payouts')
+            .update({
+              status: 'completed',
+              processed_at: new Date().toISOString(),
+              processed_by: null,
+              notes: `Auto-processed via PayPal Payouts. Batch: ${batchId}`,
+              auto_processed: true,
+            })
+            .eq('id', payoutId);
+
+          // Update seller balance atomically
+          const { data: ppBalance } = await supabase
+            .from('seller_balances')
+            .select('available_balance, total_paid')
+            .eq('user_id', payout.seller_id)
+            .single();
+
+          if (ppBalance) {
+            await supabase
+              .from('seller_balances')
+              .update({
+                available_balance: Math.max(0, (ppBalance.available_balance || 0) - payout.amount),
+                total_paid: (ppBalance.total_paid || 0) + payout.amount,
+              })
+              .eq('user_id', payout.seller_id);
+          }
+
+          // Audit log
+          await supabase.from('audit_logs').insert({
+            action: 'auto_payout_completed',
+            resource: 'seller_payouts',
+            details: { payoutId, method: 'paypal', batchId, amount: payout.amount, email: paypalEmail },
+          });
+
+          // Seller notification
+          await supabase.from('seller_notifications').insert({
+            user_id: payout.seller_id,
+            type: 'payout_completed',
+            title: 'Payout Completed',
+            message: `Your payout of £${payout.amount.toFixed(2)} has been sent to your PayPal (${paypalEmail}).`,
+            action_url: '/seller/payouts',
+          });
+
+          results.processed++;
+          results.details.push({ payoutId, status: 'completed', method: 'paypal', batchId });
 
         } else {
           // Unknown method — skip
