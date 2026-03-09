@@ -368,14 +368,10 @@ Deno.serve(async (req) => {
     }
 
     // ─── 7. ENABLE OWASP MANAGED RULESET (Pro) ──────────────────
+    // Managed WAF rulesets are deployed via the zone-level entrypoint.
+    // We create a new entrypoint if none exists (previous run may have removed it).
 
     try {
-      const listRes = await cfApi(
-        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
-        "GET", null, "list_rulesets_managed"
-      );
-      const allRulesets = listRes.data.result || [];
-
       // Well-known Cloudflare managed ruleset IDs
       const OWASP_RULESET_ID = "4814384a9e5d4991b9815dcfc25d2f1f";
       const CF_MANAGED_RULESET_ID = "efb7b8c949ac4650a09736fc376e9aee";
@@ -397,36 +393,19 @@ Deno.serve(async (req) => {
         },
       ];
 
-      const existingManaged = allRulesets.find((r: any) => r.phase === "http_request_firewall_managed");
-
-      if (existingManaged) {
-        // Preserve original name and kind when updating managed rulesets
-        const r = await cfApi(
-          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingManaged.id}`,
-          "PUT",
-          {
-            name: existingManaged.name,
-            kind: existingManaged.kind,
-            phase: "http_request_firewall_managed",
-            rules: managedRules,
-          },
-          "owasp_managed_ruleset"
-        );
-        results["owasp_managed_ruleset"] = { success: r.data.success, action: "updated", status: r.status };
-      } else {
-        const r = await cfApi(
-          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
-          "POST",
-          {
-            name: "Eclipse Pro Managed WAF",
-            kind: "zone",
-            phase: "http_request_firewall_managed",
-            rules: managedRules,
-          },
-          "owasp_managed_ruleset"
-        );
-        results["owasp_managed_ruleset"] = { success: r.data.success, action: "created", status: r.status };
-      }
+      // Always create a new zone entrypoint for managed WAF
+      const r = await cfApi(
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
+        "POST",
+        {
+          name: "Eclipse Managed WAF Entrypoint",
+          kind: "zone",
+          phase: "http_request_firewall_managed",
+          rules: managedRules,
+        },
+        "owasp_managed_ruleset"
+      );
+      results["owasp_managed_ruleset"] = { success: r.data.success, action: "created", status: r.status };
     } catch (e) {
       results["owasp_managed_ruleset"] = { success: false, error: (e as Error).message };
     }
