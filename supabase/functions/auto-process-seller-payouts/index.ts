@@ -102,10 +102,10 @@ Deno.serve(async (req) => {
     auth: { persistSession: false },
   });
 
-  const results = { processed: 0, skipped: 0, failed: 0, details: [] as any[] };
+  const runId = `auto-payout-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   try {
-    logStep('Starting auto-payout run');
+    logStep('Starting auto-payout run', { runId });
 
     // Fetch pending payouts older than 5 minutes, limit to MAX_PAYOUTS_PER_RUN
     const cutoff = new Date(Date.now() - MIN_PENDING_MINUTES * 60 * 1000).toISOString();
@@ -160,9 +160,25 @@ Deno.serve(async (req) => {
       const payoutMethod = payout.stores?.payout_method;
 
       try {
+        // === ATOMIC CLAIM: Prevent duplicate processing by concurrent runs ===
+        const { data: claimed } = await supabase.rpc('claim_payout_for_processing', {
+          p_payout_id: payoutId,
+          p_lock_id: runId,
+          p_expected_status: 'pending',
+        });
+
+        if (!claimed) {
+          logStep('Payout already claimed by another run', { payoutId });
+          results.skipped++;
+          results.details.push({ payoutId, status: 'skipped', reason: 'already_claimed' });
+          continue;
+        }
+
         // Safety: skip restricted stores
         if (storeId && restrictedStoreIds.has(storeId)) {
           logStep(`Skipping restricted store`, { payoutId, storeId });
+          // Release lock by keeping status as pending
+          await supabase.from('seller_payouts').update({ processing_locked_at: null, processing_lock_id: null }).eq('id', payoutId);
           results.skipped++;
           results.details.push({ payoutId, status: 'skipped', reason: 'restricted_store' });
           continue;
@@ -171,6 +187,7 @@ Deno.serve(async (req) => {
         // Safety: validate amount
         if (!payout.amount || payout.amount <= 0 || payout.amount > MAX_PAYOUT_AMOUNT) {
           logStep(`Invalid amount`, { payoutId, amount: payout.amount });
+          await supabase.from('seller_payouts').update({ processing_locked_at: null, processing_lock_id: null }).eq('id', payoutId);
           results.skipped++;
           results.details.push({ payoutId, status: 'skipped', reason: 'invalid_amount' });
           continue;
@@ -229,22 +246,11 @@ Deno.serve(async (req) => {
             })
             .eq('id', payoutId);
 
-          // Update seller balance atomically
-          const { data: currentBalance } = await supabase
-            .from('seller_balances')
-            .select('available_balance, total_paid')
-            .eq('user_id', payout.seller_id)
-            .single();
-
-          if (currentBalance) {
-            await supabase
-              .from('seller_balances')
-              .update({
-                available_balance: Math.max(0, (currentBalance.available_balance || 0) - payout.amount),
-                total_paid: (currentBalance.total_paid || 0) + payout.amount,
-              })
-              .eq('user_id', payout.seller_id);
-          }
+          // Atomic balance deduction
+          await supabase.rpc('deduct_seller_balance', {
+            p_user_id: payout.seller_id,
+            p_amount: payout.amount,
+          });
 
           // Audit log
           await supabase.from('audit_logs').insert({
@@ -458,22 +464,11 @@ Deno.serve(async (req) => {
             })
             .eq('id', payoutId);
 
-          // Update balance
-          const { data: currentBalance } = await supabase
-            .from('seller_balances')
-            .select('available_balance, total_paid')
-            .eq('user_id', payout.seller_id)
-            .single();
-
-          if (currentBalance) {
-            await supabase
-              .from('seller_balances')
-              .update({
-                available_balance: Math.max(0, (currentBalance.available_balance || 0) - payout.amount),
-                total_paid: (currentBalance.total_paid || 0) + payout.amount,
-              })
-              .eq('user_id', payout.seller_id);
-          }
+          // Atomic balance deduction
+          await supabase.rpc('deduct_seller_balance', {
+            p_user_id: payout.seller_id,
+            p_amount: payout.amount,
+          });
 
           // Audit & notification
           await supabase.from('audit_logs').insert({
@@ -645,22 +640,11 @@ Deno.serve(async (req) => {
             })
             .eq('id', payoutId);
 
-          // Update seller balance atomically
-          const { data: ppBalance } = await supabase
-            .from('seller_balances')
-            .select('available_balance, total_paid')
-            .eq('user_id', payout.seller_id)
-            .single();
-
-          if (ppBalance) {
-            await supabase
-              .from('seller_balances')
-              .update({
-                available_balance: Math.max(0, (ppBalance.available_balance || 0) - payout.amount),
-                total_paid: (ppBalance.total_paid || 0) + payout.amount,
-              })
-              .eq('user_id', payout.seller_id);
-          }
+          // Atomic balance deduction
+          await supabase.rpc('deduct_seller_balance', {
+            p_user_id: payout.seller_id,
+            p_amount: payout.amount,
+          });
 
           // Audit log
           await supabase.from('audit_logs').insert({
