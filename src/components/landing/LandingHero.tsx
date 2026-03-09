@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import { HeroBanner } from './HeroBanner';
 import { useTranslation } from 'react-i18next';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
-import { useState, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useIsMobile } from '@/hooks/use-mobile';
+
+// Lazy-load framer-motion only when animations are needed (desktop + no reduced motion)
+const MotionWordRotator = lazy(() => import('./MotionWordRotator'));
 
 const TRENDING_TAGS = [
   { label: 'scripts', type: 'category' as const, target: 'scripts-systems' },
@@ -19,6 +21,10 @@ const TRENDING_TAGS = [
   { label: 'tools', type: 'search' as const, target: 'tools' },
 ];
 
+function StaticWord({ word }: { word: string }) {
+  return <span className="absolute left-0">{word}</span>;
+}
+
 export function LandingHero() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -26,7 +32,6 @@ export function LandingHero() {
   const reducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
 
-  // On mobile, skip framer-motion entirely for hero word rotation
   const skipAnimation = reducedMotion || isMobile;
 
   const rotatingWords = ['Roblox', 'Discord'];
@@ -47,6 +52,19 @@ export function LandingHero() {
     }
   };
 
+  const wordRotator = (
+    <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em' }}>
+      <span className="invisible">{rotatingWords.reduce((a, b) => a.length > b.length ? a : b)}</span>
+      {skipAnimation ? (
+        <StaticWord word={rotatingWords[wordIndex]} />
+      ) : (
+        <Suspense fallback={<StaticWord word={rotatingWords[wordIndex]} />}>
+          <MotionWordRotator words={rotatingWords} index={wordIndex} />
+        </Suspense>
+      )}
+    </span>
+  );
+
   return (
     <section aria-labelledby="hero-heading" className="relative overflow-hidden" style={{ minHeight: '380px' }}>
       <HeroBanner />
@@ -59,27 +77,7 @@ export function LandingHero() {
           </p>
 
           <h1 id="hero-heading" className="font-display text-3xl lg:text-[2.5rem] font-bold leading-[1.1] tracking-tight mb-4 max-w-2xl">
-            {t('landing.headline')}{' '}
-            <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em' }}>
-              <span className="invisible">{rotatingWords.reduce((a, b) => a.length > b.length ? a : b)}</span>
-              {skipAnimation ? (
-                <span className="absolute left-0">{rotatingWords[wordIndex]}</span>
-              ) : (
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={wordIndex}
-                    initial={{ y: '100%', opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: '-100%', opacity: 0 }}
-                    transition={{ duration: 0.4, ease: 'easeInOut' }}
-                    className="absolute left-0"
-                  >
-                    {rotatingWords[wordIndex]}
-                  </motion.span>
-                </AnimatePresence>
-              )}
-            </span>{' '}
-            Experience.
+            {t('landing.headline')} {wordRotator} Experience.
           </h1>
 
           <p className="text-sm text-foreground/70 max-w-md mb-6 leading-relaxed">
@@ -133,27 +131,7 @@ export function LandingHero() {
         <div className="lg:hidden w-full flex flex-col items-center">
           <div className="text-center max-w-md">
             <h1 className="font-display text-2xl sm:text-3xl font-bold leading-[1.15] tracking-tight mb-3">
-              {t('landing.headline')}{' '}
-              <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em' }}>
-                <span className="invisible">{rotatingWords.reduce((a, b) => a.length > b.length ? a : b)}</span>
-                {skipAnimation ? (
-                  <span className="absolute left-0">{rotatingWords[wordIndex]}</span>
-                ) : (
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={wordIndex}
-                      initial={{ y: '100%', opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: '-100%', opacity: 0 }}
-                      transition={{ duration: 0.4, ease: 'easeInOut' }}
-                      className="absolute left-0"
-                    >
-                      {rotatingWords[wordIndex]}
-                    </motion.span>
-                  </AnimatePresence>
-                )}
-              </span>{' '}
-              Experience.
+              {t('landing.headline')} {wordRotator} Experience.
             </h1>
             <p className="text-sm text-foreground/70 mx-auto mb-5 leading-relaxed">
               {t('landing.description')}
