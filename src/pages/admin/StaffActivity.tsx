@@ -136,7 +136,7 @@ export default function StaffActivityPage() {
       
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, display_name, email')
+        .select('user_id, display_name, staff_id')
         .in('user_id', nonAdminUserIds);
 
       return profiles ?? [];
