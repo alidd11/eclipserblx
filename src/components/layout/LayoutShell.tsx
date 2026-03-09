@@ -104,7 +104,9 @@ function LayoutShellInner({
         </div>
       </div>
 
-      <FloatingActionButtons />
+      <Suspense fallback={null}>
+        <FloatingActionButtons />
+      </Suspense>
       <SearchCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
       {extra}
     </>
