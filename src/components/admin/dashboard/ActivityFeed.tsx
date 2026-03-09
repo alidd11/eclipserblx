@@ -25,9 +25,9 @@ export function ActivityFeed() {
       const items: FeedItem[] = [];
 
       const [recentOrders, recentUsers, recentTickets, recentProducts, recentReviews] = await Promise.all([
-        supabase.from('orders').select('id, created_at, status, total, customer_email')
+        supabase.from('orders').select('id, created_at, status, total, user_id')
           .order('created_at', { ascending: false }).limit(5),
-        supabase.from('profiles').select('user_id, display_name, email, created_at')
+        supabase.from('profiles').select('user_id, display_name, customer_id, created_at')
           .order('created_at', { ascending: false }).limit(5),
         supabase.from('support_tickets').select('id, ticket_number, subject, created_at, status')
           .order('created_at', { ascending: false }).limit(5),
