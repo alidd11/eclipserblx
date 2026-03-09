@@ -370,3 +370,6 @@ verify_jwt = false
 
 [functions.ionos-dns-manager]
 verify_jwt = false
+
+[functions.og-proxy2]
+verify_jwt = false
