@@ -90,16 +90,19 @@ export async function processAdPingPurchase(supabase: SupabaseClient, session: S
 
   LOG("Processing ad ping purchase", { userId, herePings, everyonePings });
 
-  const { data: sub } = await supabase
-    .from("advertisement_subscriptions").select("*")
-    .eq("user_id", userId).eq("status", "active").maybeSingle();
-  if (!sub) return;
+  // Use idempotent RPC with session.id as reference to prevent double-fulfillment
+  const { data: updated } = await supabase.rpc('increment_ad_ping_balance', {
+    p_user_id: userId,
+    p_here_pings: herePings,
+    p_everyone_pings: everyonePings,
+    p_reference_id: session.id,
+  });
 
-  await supabase.from("advertisement_subscriptions").update({
-    here_pings_balance: (sub.here_pings_balance || 0) + herePings,
-    everyone_pings_balance: (sub.everyone_pings_balance || 0) + everyonePings,
-    updated_at: new Date().toISOString(),
-  }).eq("id", sub.id);
+  if (updated) {
+    LOG("Ad pings added", { herePings, everyonePings });
+  } else {
+    LOG("Ad ping purchase already fulfilled or no active subscription", { sessionId: session.id });
+  }
 }
 
 export async function processCreditPurchase(supabase: SupabaseClient, session: Stripe.Checkout.Session) {
