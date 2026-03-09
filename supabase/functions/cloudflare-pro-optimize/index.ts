@@ -174,7 +174,7 @@ Deno.serve(async (req) => {
       results["cache_rules"] = { success: false, error: (e as Error).message };
     }
 
-    // ─── 4. REDIRECT RULES ───────────────────────────────────────
+    // ─── 4. REDIRECT RULES (Single Redirect phase) ─────────────
 
     try {
       const listRes = await cfApi(
@@ -200,24 +200,37 @@ Deno.serve(async (req) => {
         },
       ];
 
-      const existingRedirect = allRulesets.find((r: any) => r.phase === "http_request_dynamic_redirect");
-      const redirectPayload = {
-        name: "Eclipse Pro Redirect Rules",
-        kind: "zone",
-        phase: "http_request_dynamic_redirect",
-        rules: redirectRules,
-      };
+      // Try both redirect phases — Single Redirect or Dynamic Redirect
+      const existingRedirect = allRulesets.find((r: any) =>
+        r.phase === "http_request_redirect" || r.phase === "http_request_dynamic_redirect"
+      );
+
+      const phase = existingRedirect?.phase || "http_request_redirect";
 
       if (existingRedirect) {
         const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingRedirect.id}`,
-          "PUT", redirectPayload, "redirect_rules"
+          "PUT",
+          {
+            name: existingRedirect.name || "Eclipse Redirect Rules",
+            kind: existingRedirect.kind || "zone",
+            phase,
+            rules: redirectRules,
+          },
+          "redirect_rules"
         );
         results["redirect_rules"] = { success: r.data.success, action: "updated", status: r.status };
       } else {
         const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
-          "POST", redirectPayload, "redirect_rules"
+          "POST",
+          {
+            name: "Eclipse Redirect Rules",
+            kind: "zone",
+            phase: "http_request_redirect",
+            rules: redirectRules,
+          },
+          "redirect_rules"
         );
         results["redirect_rules"] = { success: r.data.success, action: "created", status: r.status };
       }
