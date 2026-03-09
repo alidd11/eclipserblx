@@ -8,7 +8,7 @@
  * Deploy this as a Cloudflare Worker on your domain.
  */
 
-const SUPABASE_FUNCTION_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy2";
+const SUPABASE_FUNCTION_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy";
 
 // The actual Lovable origin to proxy human traffic to
 const ORIGIN_URL = "https://roleplay-hub-shop.lovable.app";
