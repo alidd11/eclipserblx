@@ -117,13 +117,13 @@ export function LandingHero() {
             <span className="text-[10px] text-foreground/60 mr-1">
               Trending:
             </span>
-            {POPULAR_SEARCHES.map((term) => (
+            {TRENDING_TAGS.map((tag) => (
               <button
-                key={term}
-                onClick={() => handleSearchClick(term)}
+                key={tag.label}
+                onClick={() => handleTagClick(tag)}
                 className="text-[11px] px-2 py-0.5 rounded-sm border border-border/50 text-foreground/70 hover:text-foreground hover:border-border transition-colors"
               >
-                {term}
+                {tag.label}
               </button>
             ))}
           </div>
