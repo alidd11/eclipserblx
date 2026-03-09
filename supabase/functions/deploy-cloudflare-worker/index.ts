@@ -154,15 +154,36 @@ Deno.serve(async (req) => {
 
     // Step 2: Upload/update the worker script
     const workerName = "eclipse-og-proxy";
+    // Use multipart form upload for ES modules format
+    const metadata = JSON.stringify({
+      main_module: "worker.js",
+      compatibility_date: "2024-01-01",
+    });
+
+    const boundary = "----FormBoundary" + Math.random().toString(36).slice(2);
+    const body = [
+      `--${boundary}`,
+      `Content-Disposition: form-data; name="metadata"; filename="metadata.json"`,
+      `Content-Type: application/json`,
+      ``,
+      metadata,
+      `--${boundary}`,
+      `Content-Disposition: form-data; name="worker.js"; filename="worker.js"`,
+      `Content-Type: application/javascript+module`,
+      ``,
+      WORKER_SCRIPT,
+      `--${boundary}--`,
+    ].join("\r\n");
+
     const uploadRes = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}`,
       {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${cfApiToken}`,
-          "Content-Type": "application/javascript",
+          "Content-Type": `multipart/form-data; boundary=${boundary}`,
         },
-        body: WORKER_SCRIPT,
+        body,
       }
     );
     const uploadData = await uploadRes.json();
