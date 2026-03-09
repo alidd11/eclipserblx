@@ -272,7 +272,90 @@ export default function SellerSettingsDomain() {
 
       <Separator />
 
-      {/* Custom Domain Section */}
+      {/* Step Flow */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { step: 1, icon: ShoppingCart, label: 'Buy a Domain', desc: 'Purchase from a registrar' },
+          { step: 2, icon: Crown, label: 'Subscribe', desc: 'Custom Domains add-on (£3/mo)' },
+          { step: 3, icon: Link, label: 'Connect & Verify', desc: 'Point DNS to Eclipse' },
+        ].map(({ step, icon: Icon, label, desc }) => {
+          const isDone = step === 1
+            ? !!customDomainInput || customDomains.length > 0
+            : step === 2
+              ? isSubscribed
+              : customDomains.some(d => d.status === 'active');
+          return (
+            <div
+              key={step}
+              className={`flex flex-col items-center text-center p-3 rounded-lg border transition-colors ${
+                isDone ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-border bg-card'
+              }`}
+            >
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mb-2 ${
+                isDone ? 'bg-emerald-500 text-emerald-50' : 'bg-muted text-muted-foreground'
+              }`}>
+                {isDone ? <CheckCircle className="w-4 h-4" /> : step}
+              </div>
+              <Icon className="w-4 h-4 text-muted-foreground mb-1" />
+              <p className="text-xs font-medium text-foreground">{label}</p>
+              <p className="text-[10px] text-muted-foreground">{desc}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Buy a Domain — Affiliate Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <ShoppingCart className="w-4 h-4 text-primary" />
+            Need a Domain?
+          </CardTitle>
+          <CardDescription>
+            Search for your perfect domain name. You'll be redirected to our partner registrar to complete the purchase, then return here to connect it.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex gap-2">
+            <Input
+              placeholder="e.g. mystore.com"
+              value={domainSearchInput}
+              onChange={(e) => setDomainSearchInput(e.target.value)}
+              className="flex-1"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && domainSearchInput.trim()) {
+                  window.open(
+                    `https://www.namecheap.com/domains/registration/results/?domain=${encodeURIComponent(domainSearchInput.trim())}&aff=${NAMECHEAP_AFFILIATE_ID}`,
+                    '_blank'
+                  );
+                }
+              }}
+            />
+            <Button
+              onClick={() => {
+                if (domainSearchInput.trim()) {
+                  window.open(
+                    `https://www.namecheap.com/domains/registration/results/?domain=${encodeURIComponent(domainSearchInput.trim())}&aff=${NAMECHEAP_AFFILIATE_ID}`,
+                    '_blank'
+                  );
+                }
+              }}
+              disabled={!domainSearchInput.trim()}
+            >
+              <Search className="w-4 h-4 mr-2" />
+              Search & Buy
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            After purchasing your domain, return here and follow Steps 2 & 3 to connect it to your store.
+          </p>
+          <p className="text-[10px] text-muted-foreground/60">
+            Domain registration powered by Namecheap
+          </p>
+        </CardContent>
+      </Card>
+
+      <Separator />
       <Card className={!isSubscribed ? 'relative overflow-hidden' : ''}>
         <CardHeader>
           <div className="flex items-center justify-between">
