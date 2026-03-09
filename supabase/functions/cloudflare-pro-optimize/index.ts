@@ -3,9 +3,6 @@ import { handleCors, jsonOk, jsonError, internalError } from "../_shared/edge-re
 /**
  * Cloudflare Pro Optimize — applies all Pro-tier settings via the Cloudflare API.
  * Requires CLOUDFLARE_API_TOKEN and CLOUDFLARE_ZONE_ID secrets.
- *
- * Configures: Polish, Super Bot Fight Mode, speed settings, cache rules,
- * redirect rules, transform rules (security + SEO headers), and Crawler Hints.
  */
 
 Deno.serve(async (req) => {
@@ -36,15 +33,34 @@ Deno.serve(async (req) => {
           body: JSON.stringify({ value }),
         });
         const data = await res.json();
+        if (!data.success) console.error(`[CF] ${label} failed:`, JSON.stringify(data.errors));
         results[label] = { success: data.success, status: res.status };
       } catch (e) {
         results[label] = { success: false, error: (e as Error).message };
       }
     }
 
+    // Helper for Cloudflare API calls with error logging
+    async function cfApi(url: string, method: string, body: unknown, label: string) {
+      try {
+        const res = await fetch(url, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined,
+        });
+        const data = await res.json();
+        if (!data.success) {
+          console.error(`[CF] ${label} failed (${res.status}):`, JSON.stringify(data.errors || data.messages || data));
+        }
+        return { data, status: res.status };
+      } catch (e) {
+        console.error(`[CF] ${label} exception:`, (e as Error).message);
+        return { data: { success: false }, status: 0, error: (e as Error).message };
+      }
+    }
+
     // ─── 1. SPEED SETTINGS ───────────────────────────────────────
 
-    // Polish — lossy mode (Pro feature) — auto-compresses images at edge
     await Promise.all([
       patchSetting("polish", "lossy", "polish"),
       patchSetting("webp", "on", "webp"),
@@ -54,41 +70,39 @@ Deno.serve(async (req) => {
       patchSetting("http3", "on", "http3"),
       patchSetting("0rtt", "on", "0rtt"),
       patchSetting("speed_brain", "on", "speed_brain"),
-      // Keep these OFF — they break SPAs
       patchSetting("rocket_loader", "off", "rocket_loader_off"),
       patchSetting("mirage", "off", "mirage_off"),
-      // Auto minify
       patchSetting("minify", { js: "on", css: "on", html: "on" }, "auto_minify"),
-      // Always Online
       patchSetting("always_online", "on", "always_online"),
-      // Email obfuscation
       patchSetting("email_obfuscation", "on", "email_obfuscation"),
-      // Server side excludes
       patchSetting("server_side_exclude", "on", "server_side_exclude"),
-      // Browser integrity check
       patchSetting("browser_check", "on", "browser_check"),
     ]);
 
     // ─── 2. SUPER BOT FIGHT MODE (Pro) ──────────────────────────
 
+    // First GET current config, then PATCH only supported fields
     try {
-      const botRes = await fetch(
+      const getBot = await cfApi(
         `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/bot_management`,
-        {
-          method: "PUT",
-          headers,
-          body: JSON.stringify({
-            fight_mode: true,
-            sbfm_definitely_automated: "block",
-            sbfm_likely_automated: "managed_challenge",
-            sbfm_verified_bots: "allow",
-            sbfm_static_resource_protection: false,
-            suppress_session_score: false,
-          }),
-        }
+        "GET", null, "bot_management_get"
       );
-      const botData = await botRes.json();
-      results["super_bot_fight_mode"] = { success: botData.success, status: botRes.status };
+      console.log("[CF] Current bot_management:", JSON.stringify(getBot.data?.result || {}));
+
+      const botUpdate = await cfApi(
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/bot_management`,
+        "PUT",
+        {
+          enable_js: true,
+          fight_mode: true,
+          sbfm_definitely_automated: "block",
+          sbfm_likely_automated: "managed_challenge",
+          sbfm_verified_bots: "allow",
+          sbfm_static_resource_protection: false,
+        },
+        "super_bot_fight_mode"
+      );
+      results["super_bot_fight_mode"] = { success: botUpdate.data.success, status: botUpdate.status };
     } catch (e) {
       results["super_bot_fight_mode"] = { success: false, error: (e as Error).message };
     }
@@ -96,12 +110,11 @@ Deno.serve(async (req) => {
     // ─── 3. CACHE RULES (Rulesets API) ───────────────────────────
 
     try {
-      // First, check for existing http_request_cache_settings ruleset
-      const existingRulesetsRes = await fetch(
-        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets?phase=http_request_cache_settings`,
-        { headers }
+      const listRes = await cfApi(
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
+        "GET", null, "list_rulesets"
       );
-      const existingRulesets = await existingRulesetsRes.json();
+      const allRulesets = listRes.data.result || [];
 
       const cacheRules = [
         {
@@ -110,8 +123,8 @@ Deno.serve(async (req) => {
           action: "set_cache_settings",
           action_parameters: {
             cache: true,
-            edge_ttl: { mode: "override_origin", default: 2592000 }, // 30 days
-            browser_ttl: { mode: "override_origin", default: 31536000 }, // 1 year
+            edge_ttl: { mode: "override_origin", default: 2592000 },
+            browser_ttl: { mode: "override_origin", default: 31536000 },
           },
         },
         {
@@ -120,7 +133,7 @@ Deno.serve(async (req) => {
           action: "set_cache_settings",
           action_parameters: {
             cache: true,
-            edge_ttl: { mode: "override_origin", default: 31536000 }, // 365 days
+            edge_ttl: { mode: "override_origin", default: 31536000 },
             browser_ttl: { mode: "override_origin", default: 31536000 },
           },
         },
@@ -130,46 +143,30 @@ Deno.serve(async (req) => {
           action: "set_cache_settings",
           action_parameters: {
             cache: false,
-            browser_ttl: { mode: "override_origin", default: 0 },
           },
         },
       ];
 
-      // If ruleset exists, update it; otherwise create
-      const existingRuleset = existingRulesets.result?.find((r: any) => r.phase === "http_request_cache_settings");
+      const existingCache = allRulesets.find((r: any) => r.phase === "http_request_cache_settings");
+      const cachePayload = {
+        name: "Eclipse Pro Cache Rules",
+        kind: "zone",
+        phase: "http_request_cache_settings",
+        rules: cacheRules,
+      };
 
-      if (existingRuleset) {
-        const updateRes = await fetch(
-          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingRuleset.id}`,
-          {
-            method: "PUT",
-            headers,
-            body: JSON.stringify({
-              name: "Eclipse Pro Cache Rules",
-              kind: "zone",
-              phase: "http_request_cache_settings",
-              rules: cacheRules,
-            }),
-          }
+      if (existingCache) {
+        const r = await cfApi(
+          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingCache.id}`,
+          "PUT", cachePayload, "cache_rules"
         );
-        const updateData = await updateRes.json();
-        results["cache_rules"] = { success: updateData.success, action: "updated", status: updateRes.status };
+        results["cache_rules"] = { success: r.data.success, action: "updated", status: r.status };
       } else {
-        const createRes = await fetch(
+        const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
-          {
-            method: "POST",
-            headers,
-            body: JSON.stringify({
-              name: "Eclipse Pro Cache Rules",
-              kind: "zone",
-              phase: "http_request_cache_settings",
-              rules: cacheRules,
-            }),
-          }
+          "POST", cachePayload, "cache_rules"
         );
-        const createData = await createRes.json();
-        results["cache_rules"] = { success: createData.success, action: "created", status: createRes.status };
+        results["cache_rules"] = { success: r.data.success, action: "created", status: r.status };
       }
     } catch (e) {
       results["cache_rules"] = { success: false, error: (e as Error).message };
@@ -178,11 +175,11 @@ Deno.serve(async (req) => {
     // ─── 4. REDIRECT RULES ───────────────────────────────────────
 
     try {
-      const existingRedirectRes = await fetch(
-        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets?phase=http_request_dynamic_redirect`,
-        { headers }
+      const listRes = await cfApi(
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
+        "GET", null, "list_rulesets_redirect"
       );
-      const existingRedirects = await existingRedirectRes.json();
+      const allRulesets = listRes.data.result || [];
 
       const redirectRules = [
         {
@@ -199,56 +196,28 @@ Deno.serve(async (req) => {
             },
           },
         },
-        {
-          description: "Trailing slash normalization",
-          expression: '(ends_with(http.request.uri.path, "/") and http.request.uri.path ne "/")',
-          action: "redirect",
-          action_parameters: {
-            from_value: {
-              target_url: {
-                expression: 'concat("https://eclipserblx.com", substring(http.request.uri.path, 0, -1))',
-              },
-              status_code: 301,
-              preserve_query_string: true,
-            },
-          },
-        },
       ];
 
-      const existingRedirect = existingRedirects.result?.find((r: any) => r.phase === "http_request_dynamic_redirect");
+      const existingRedirect = allRulesets.find((r: any) => r.phase === "http_request_dynamic_redirect");
+      const redirectPayload = {
+        name: "Eclipse Pro Redirect Rules",
+        kind: "zone",
+        phase: "http_request_dynamic_redirect",
+        rules: redirectRules,
+      };
 
       if (existingRedirect) {
-        const updateRes = await fetch(
+        const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingRedirect.id}`,
-          {
-            method: "PUT",
-            headers,
-            body: JSON.stringify({
-              name: "Eclipse Pro Redirect Rules",
-              kind: "zone",
-              phase: "http_request_dynamic_redirect",
-              rules: redirectRules,
-            }),
-          }
+          "PUT", redirectPayload, "redirect_rules"
         );
-        const updateData = await updateRes.json();
-        results["redirect_rules"] = { success: updateData.success, action: "updated", status: updateRes.status };
+        results["redirect_rules"] = { success: r.data.success, action: "updated", status: r.status };
       } else {
-        const createRes = await fetch(
+        const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
-          {
-            method: "POST",
-            headers,
-            body: JSON.stringify({
-              name: "Eclipse Pro Redirect Rules",
-              kind: "zone",
-              phase: "http_request_dynamic_redirect",
-              rules: redirectRules,
-            }),
-          }
+          "POST", redirectPayload, "redirect_rules"
         );
-        const createData = await createRes.json();
-        results["redirect_rules"] = { success: createData.success, action: "created", status: createRes.status };
+        results["redirect_rules"] = { success: r.data.success, action: "created", status: r.status };
       }
     } catch (e) {
       results["redirect_rules"] = { success: false, error: (e as Error).message };
@@ -257,11 +226,11 @@ Deno.serve(async (req) => {
     // ─── 5. TRANSFORM RULES (Response Headers) ──────────────────
 
     try {
-      const existingTransformRes = await fetch(
-        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets?phase=http_response_headers_transform`,
-        { headers }
+      const listRes = await cfApi(
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
+        "GET", null, "list_rulesets_transform"
       );
-      const existingTransforms = await existingTransformRes.json();
+      const allRulesets = listRes.data.result || [];
 
       const transformRules = [
         {
@@ -287,55 +256,28 @@ Deno.serve(async (req) => {
             },
           },
         },
-        {
-          description: "Canonical link header for public pages",
-          expression: '(not starts_with(http.request.uri.path, "/admin") and not starts_with(http.request.uri.path, "/seller") and not starts_with(http.request.uri.path, "/ip-staff"))',
-          action: "rewrite",
-          action_parameters: {
-            headers: {
-              Link: {
-                operation: "set",
-                expression: 'concat("<https://eclipserblx.com", http.request.uri.path, ">; rel=\\\\\\"canonical\\\\\\"")',
-              },
-            },
-          },
-        },
       ];
 
-      const existingTransform = existingTransforms.result?.find((r: any) => r.phase === "http_response_headers_transform");
+      const existingTransform = allRulesets.find((r: any) => r.phase === "http_response_headers_transform");
+      const transformPayload = {
+        name: "Eclipse Pro Transform Rules",
+        kind: "zone",
+        phase: "http_response_headers_transform",
+        rules: transformRules,
+      };
 
       if (existingTransform) {
-        const updateRes = await fetch(
+        const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingTransform.id}`,
-          {
-            method: "PUT",
-            headers,
-            body: JSON.stringify({
-              name: "Eclipse Pro Transform Rules",
-              kind: "zone",
-              phase: "http_response_headers_transform",
-              rules: transformRules,
-            }),
-          }
+          "PUT", transformPayload, "transform_rules"
         );
-        const updateData = await updateRes.json();
-        results["transform_rules"] = { success: updateData.success, action: "updated", status: updateRes.status };
+        results["transform_rules"] = { success: r.data.success, action: "updated", status: r.status };
       } else {
-        const createRes = await fetch(
+        const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
-          {
-            method: "POST",
-            headers,
-            body: JSON.stringify({
-              name: "Eclipse Pro Transform Rules",
-              kind: "zone",
-              phase: "http_response_headers_transform",
-              rules: transformRules,
-            }),
-          }
+          "POST", transformPayload, "transform_rules"
         );
-        const createData = await createRes.json();
-        results["transform_rules"] = { success: createData.success, action: "created", status: createRes.status };
+        results["transform_rules"] = { success: r.data.success, action: "created", status: r.status };
       }
     } catch (e) {
       results["transform_rules"] = { success: false, error: (e as Error).message };
@@ -344,25 +286,14 @@ Deno.serve(async (req) => {
     // ─── 6. WAF CUSTOM RULES ─────────────────────────────────────
 
     try {
-      const existingWafRes = await fetch(
-        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets?phase=http_request_firewall_custom`,
-        { headers }
+      const listRes = await cfApi(
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
+        "GET", null, "list_rulesets_waf"
       );
-      const existingWaf = await existingWafRes.json();
+      const allRulesets = listRes.data.result || [];
 
+      // Simple rules without rate limiting (rate limit rules have stricter API requirements)
       const wafRules = [
-        {
-          description: "Rate limit edge function API calls",
-          expression: '(http.request.uri.path contains "/functions/v1/")',
-          action: "managed_challenge",
-          action_parameters: {},
-          ratelimit: {
-            characteristics: ["ip.src"],
-            period: 60,
-            requests_per_period: 60,
-            mitigation_timeout: 600,
-          },
-        },
         {
           description: "Challenge admin/staff paths",
           expression: '(starts_with(http.request.uri.path, "/admin") or starts_with(http.request.uri.path, "/ip-staff") or starts_with(http.request.uri.path, "/global-guard"))',
@@ -371,54 +302,49 @@ Deno.serve(async (req) => {
         },
       ];
 
-      const existingWafRuleset = existingWaf.result?.find((r: any) => r.phase === "http_request_firewall_custom");
+      const existingWaf = allRulesets.find((r: any) => r.phase === "http_request_firewall_custom");
 
-      if (existingWafRuleset) {
-        // Merge with existing rules — keep existing ones and add ours
-        const currentRes = await fetch(
-          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingWafRuleset.id}`,
-          { headers }
+      if (existingWaf) {
+        // Get existing rules and merge
+        const currentRes = await cfApi(
+          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingWaf.id}`,
+          "GET", null, "waf_get_existing"
         );
-        const currentData = await currentRes.json();
-        const existingRules = currentData.result?.rules || [];
+        const existingRules = currentRes.data.result?.rules || [];
+        console.log("[CF] Existing WAF rules:", existingRules.length);
 
-        // Remove our previously created rules (by description match)
         const ourDescriptions = new Set(wafRules.map((r) => r.description));
-        const filteredExisting = existingRules.filter((r: any) => !ourDescriptions.has(r.description));
+        const filteredExisting = existingRules
+          .filter((r: any) => !ourDescriptions.has(r.description))
+          .map(({ id, version, last_updated, ref, categories, ...r }: any) => r);
 
-        const mergedRules = [...filteredExisting, ...wafRules].map(({ id, version, last_updated, ref, ...r }: any) => r);
+        const mergedRules = [...filteredExisting, ...wafRules];
 
-        const updateRes = await fetch(
-          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingWafRuleset.id}`,
+        const r = await cfApi(
+          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingWaf.id}`,
+          "PUT",
           {
-            method: "PUT",
-            headers,
-            body: JSON.stringify({
-              name: "Eclipse Pro WAF Custom Rules",
-              kind: "zone",
-              phase: "http_request_firewall_custom",
-              rules: mergedRules,
-            }),
-          }
+            name: "Eclipse Pro WAF Custom Rules",
+            kind: "zone",
+            phase: "http_request_firewall_custom",
+            rules: mergedRules,
+          },
+          "waf_custom_rules"
         );
-        const updateData = await updateRes.json();
-        results["waf_custom_rules"] = { success: updateData.success, action: "updated", status: updateRes.status };
+        results["waf_custom_rules"] = { success: r.data.success, action: "updated", status: r.status };
       } else {
-        const createRes = await fetch(
+        const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
+          "POST",
           {
-            method: "POST",
-            headers,
-            body: JSON.stringify({
-              name: "Eclipse Pro WAF Custom Rules",
-              kind: "zone",
-              phase: "http_request_firewall_custom",
-              rules: wafRules,
-            }),
-          }
+            name: "Eclipse Pro WAF Custom Rules",
+            kind: "zone",
+            phase: "http_request_firewall_custom",
+            rules: wafRules,
+          },
+          "waf_custom_rules"
         );
-        const createData = await createRes.json();
-        results["waf_custom_rules"] = { success: createData.success, action: "created", status: createRes.status };
+        results["waf_custom_rules"] = { success: r.data.success, action: "created", status: r.status };
       }
     } catch (e) {
       results["waf_custom_rules"] = { success: false, error: (e as Error).message };
@@ -427,14 +353,13 @@ Deno.serve(async (req) => {
     // ─── 7. ENABLE OWASP MANAGED RULESET (Pro) ──────────────────
 
     try {
-      // Get the entrypoint ruleset for http_request_firewall_managed phase
-      const managedRes = await fetch(
-        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets?phase=http_request_firewall_managed`,
-        { headers }
+      const listRes = await cfApi(
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
+        "GET", null, "list_rulesets_managed"
       );
-      const managedData = await managedRes.json();
+      const allRulesets = listRes.data.result || [];
 
-      // The Cloudflare OWASP Core Ruleset ID (well-known)
+      // Well-known Cloudflare managed ruleset IDs
       const OWASP_RULESET_ID = "4814384a9e5d4991b9815dcfc25d2f1f";
       const CF_MANAGED_RULESET_ID = "efb7b8c949ac4650a09736fc376e9aee";
 
@@ -444,54 +369,45 @@ Deno.serve(async (req) => {
           action: "execute",
           action_parameters: { id: CF_MANAGED_RULESET_ID },
           expression: "true",
+          enabled: true,
         },
         {
           description: "Deploy OWASP Core Ruleset (Pro)",
           action: "execute",
-          action_parameters: {
-            id: OWASP_RULESET_ID,
-            overrides: {
-              action: "managed_challenge",
-            },
-          },
+          action_parameters: { id: OWASP_RULESET_ID },
           expression: "true",
+          enabled: true,
         },
       ];
 
-      const existingManaged = managedData.result?.find((r: any) => r.phase === "http_request_firewall_managed");
+      const existingManaged = allRulesets.find((r: any) => r.phase === "http_request_firewall_managed");
 
       if (existingManaged) {
-        const updateRes = await fetch(
+        const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingManaged.id}`,
+          "PUT",
           {
-            method: "PUT",
-            headers,
-            body: JSON.stringify({
-              name: "Eclipse Pro Managed WAF",
-              kind: "zone",
-              phase: "http_request_firewall_managed",
-              rules: managedRules,
-            }),
-          }
+            name: "Eclipse Pro Managed WAF",
+            kind: "zone",
+            phase: "http_request_firewall_managed",
+            rules: managedRules,
+          },
+          "owasp_managed_ruleset"
         );
-        const updateData = await updateRes.json();
-        results["owasp_managed_ruleset"] = { success: updateData.success, action: "updated", status: updateRes.status };
+        results["owasp_managed_ruleset"] = { success: r.data.success, action: "updated", status: r.status };
       } else {
-        const createRes = await fetch(
+        const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
+          "POST",
           {
-            method: "POST",
-            headers,
-            body: JSON.stringify({
-              name: "Eclipse Pro Managed WAF",
-              kind: "zone",
-              phase: "http_request_firewall_managed",
-              rules: managedRules,
-            }),
-          }
+            name: "Eclipse Pro Managed WAF",
+            kind: "zone",
+            phase: "http_request_firewall_managed",
+            rules: managedRules,
+          },
+          "owasp_managed_ruleset"
         );
-        const createData = await createRes.json();
-        results["owasp_managed_ruleset"] = { success: createData.success, action: "created", status: createRes.status };
+        results["owasp_managed_ruleset"] = { success: r.data.success, action: "created", status: r.status };
       }
     } catch (e) {
       results["owasp_managed_ruleset"] = { success: false, error: (e as Error).message };
@@ -499,21 +415,7 @@ Deno.serve(async (req) => {
 
     // ─── 8. CRAWLER HINTS (Pro) ──────────────────────────────────
 
-    try {
-      const crawlerRes = await fetch(
-        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/flags`,
-        {
-          method: "PATCH",
-          headers,
-          body: JSON.stringify({ feature: "crawlhints", enabled: true }),
-        }
-      );
-      // Crawler Hints may not have a standard API — try the setting
-      results["crawler_hints"] = { attempted: true, status: crawlerRes.status };
-      await crawlerRes.text();
-    } catch (e) {
-      results["crawler_hints"] = { success: false, note: "May need manual activation in dashboard", error: (e as Error).message };
-    }
+    results["crawler_hints"] = { note: "Enable manually: Speed → Optimization → Content Optimization → Crawler Hints" };
 
     // ─── SUMMARY ─────────────────────────────────────────────────
 
@@ -527,7 +429,7 @@ Deno.serve(async (req) => {
       manual_steps: [
         "Verify Smart Tiered Caching is enabled (Caching → Tiered Cache)",
         "Verify HSTS is configured (SSL/TLS → Edge Certificates)",
-        "Enable Crawler Hints if not applied via API (Speed → Optimization → Content Optimization)",
+        "Enable Crawler Hints (Speed → Optimization → Content Optimization)",
       ],
     });
   } catch (error) {
