@@ -37,11 +37,15 @@ const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
                 </Suspense>
               </ScrollReveal>
               <ScrollReveal delay={0.12} direction="up" distance={16} duration={0.35}>
-                <PWADiscordBanner />
+                <Suspense fallback={<div className="h-[72px] rounded-lg border border-border bg-card animate-pulse" />}>
+                  <PWADiscordBanner />
+                </Suspense>
               </ScrollReveal>
             </div>
             <ScrollReveal delay={0.18} direction="up" distance={12} duration={0.3}>
-              <ActiveOffersCard />
+              <Suspense fallback={null}>
+                <ActiveOffersCard />
+              </Suspense>
             </ScrollReveal>
           </div>
         </ScrollReveal>
