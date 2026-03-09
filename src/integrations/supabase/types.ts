@@ -7681,6 +7681,108 @@ export type Database = {
           },
         ]
       }
+      store_nav_links: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_visible: boolean | null
+          label: string
+          link_type: string
+          store_id: string
+          target_id: string | null
+          url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_visible?: boolean | null
+          label: string
+          link_type?: string
+          store_id: string
+          target_id?: string | null
+          url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_visible?: boolean | null
+          label?: string
+          link_type?: string
+          store_id?: string
+          target_id?: string | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_nav_links_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_nav_links_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_pages: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_published: boolean | null
+          slug: string
+          store_id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_published?: boolean | null
+          slug: string
+          store_id: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_published?: boolean | null
+          slug?: string
+          store_id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_pages_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_pages_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_payment_details: {
         Row: {
           bank_account_holder: string | null
@@ -7960,6 +8062,7 @@ export type Database = {
           discord_showcase_thread_id: string | null
           discord_url: string | null
           eclipse_plus_discount_enabled: boolean
+          favicon_url: string | null
           featured_product_ids: string[] | null
           follower_count: number | null
           font_body: string | null
@@ -7968,6 +8071,7 @@ export type Database = {
           hero_cta_text: string | null
           hero_subtitle: string | null
           hero_title: string | null
+          hide_branding: boolean | null
           id: string
           is_active: boolean | null
           is_testing: boolean
@@ -8032,6 +8136,7 @@ export type Database = {
           discord_showcase_thread_id?: string | null
           discord_url?: string | null
           eclipse_plus_discount_enabled?: boolean
+          favicon_url?: string | null
           featured_product_ids?: string[] | null
           follower_count?: number | null
           font_body?: string | null
@@ -8040,6 +8145,7 @@ export type Database = {
           hero_cta_text?: string | null
           hero_subtitle?: string | null
           hero_title?: string | null
+          hide_branding?: boolean | null
           id?: string
           is_active?: boolean | null
           is_testing?: boolean
@@ -8104,6 +8210,7 @@ export type Database = {
           discord_showcase_thread_id?: string | null
           discord_url?: string | null
           eclipse_plus_discount_enabled?: boolean
+          favicon_url?: string | null
           featured_product_ids?: string[] | null
           follower_count?: number | null
           font_body?: string | null
@@ -8112,6 +8219,7 @@ export type Database = {
           hero_cta_text?: string | null
           hero_subtitle?: string | null
           hero_title?: string | null
+          hide_branding?: boolean | null
           id?: string
           is_active?: boolean | null
           is_testing?: boolean
