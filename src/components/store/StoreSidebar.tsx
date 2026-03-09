@@ -28,6 +28,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { cn } from '@/lib/utils';
 import { safeStorage } from '@/lib/safeStorage';
 import { hapticTap } from '@/lib/haptics';
+import { useStoreDomain } from '@/hooks/useStoreDomain';
 
 // Unified icon styling constants (synchronized with CustomerSidebar)
 const ICON_SIZE = "h-4 w-4";
