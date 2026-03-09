@@ -520,8 +520,115 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          // Get access token and send payout
+          // Get access token
           const accessToken = await getPayPalAccessToken(paypalClientId, paypalClientSecret);
+
+          // Check PayPal GBP balance before sending
+          let paypalBalance = 0;
+          try {
+            const balanceRes = await fetch(`${PAYPAL_API_URL}/v1/reporting/balances?currency_code=GBP&as_of_time=${new Date().toISOString()}`, {
+              headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            });
+            if (balanceRes.ok) {
+              const balanceData = await balanceRes.json();
+              const gbpBal = balanceData.balances?.find((b: any) => b.currency === 'GBP');
+              paypalBalance = parseFloat(gbpBal?.total_balance?.value || '0');
+            } else {
+              logStep('PayPal balance check failed, proceeding cautiously', { payoutId, status: balanceRes.status });
+              // If balance API fails, try to send anyway (PayPal will reject if insufficient)
+              paypalBalance = Infinity;
+            }
+          } catch (balErr: any) {
+            logStep('PayPal balance check error', { payoutId, error: balErr.message });
+            paypalBalance = Infinity; // Proceed and let PayPal reject if needed
+          }
+
+          const requiredPaypalAmount = payout.amount * 1.05; // 5% buffer for fees
+
+          if (paypalBalance < requiredPaypalAmount && paypalBalance !== Infinity) {
+            logStep('Insufficient PayPal balance, requesting Stripe funding', { payoutId, balance: paypalBalance, required: requiredPaypalAmount });
+
+            // Try to fund from Stripe → bank (same pattern as Wise)
+            if (stripe) {
+              try {
+                const stripeBalance = await stripe.balance.retrieve();
+                const gbpAvailable = stripeBalance.available.find((b: any) => b.currency === 'gbp');
+                const availableGBP = gbpAvailable?.amount || 0;
+                const fundingAmountPence = Math.ceil(requiredPaypalAmount * 100);
+
+                if (availableGBP >= fundingAmountPence) {
+                  const stripePayout = await stripe.payouts.create({
+                    amount: fundingAmountPence,
+                    currency: 'gbp',
+                    description: `Auto PayPal funding for payout ${payoutId}`,
+                    metadata: { purpose: 'paypal_funding', linked_payout_id: payoutId, auto_processed: 'true' },
+                  });
+
+                  await supabase.from('wise_funding_requests').insert({
+                    stripe_payout_id: stripePayout.id,
+                    amount: fundingAmountPence / 100,
+                    currency: 'GBP',
+                    status: 'pending',
+                    linked_payout_ids: [payoutId],
+                  });
+
+                  await supabase
+                    .from('seller_payouts')
+                    .update({
+                      status: 'awaiting_funds',
+                      funding_status: 'funding_requested',
+                      stripe_funding_payout_id: stripePayout.id,
+                      funding_requested_at: new Date().toISOString(),
+                      auto_processed: true,
+                    })
+                    .eq('id', payoutId);
+
+                  results.details.push({ payoutId, status: 'awaiting_funds', method: 'paypal', reason: 'stripe_funding_initiated' });
+                } else {
+                  await supabase
+                    .from('seller_payouts')
+                    .update({
+                      status: 'awaiting_funds',
+                      funding_status: 'funding_failed',
+                      failure_reason: `Insufficient funds: PayPal £${paypalBalance.toFixed(2)}, Stripe £${(availableGBP / 100).toFixed(2)}`,
+                      funding_requested_at: new Date().toISOString(),
+                      auto_processed: true,
+                    })
+                    .eq('id', payoutId);
+
+                  results.details.push({ payoutId, status: 'awaiting_funds', method: 'paypal', reason: 'insufficient_all_funds' });
+                }
+              } catch (stripeErr: any) {
+                logStep('Stripe funding error for PayPal', { payoutId, error: stripeErr.message });
+                await supabase
+                  .from('seller_payouts')
+                  .update({
+                    status: 'awaiting_funds',
+                    funding_status: 'funding_failed',
+                    failure_reason: stripeErr.message,
+                    funding_requested_at: new Date().toISOString(),
+                    auto_processed: true,
+                  })
+                  .eq('id', payoutId);
+                results.details.push({ payoutId, status: 'awaiting_funds', method: 'paypal', reason: 'stripe_error' });
+              }
+            } else {
+              await supabase
+                .from('seller_payouts')
+                .update({
+                  status: 'awaiting_funds',
+                  funding_status: 'funding_failed',
+                  failure_reason: 'No Stripe key configured for auto-funding',
+                  auto_processed: true,
+                })
+                .eq('id', payoutId);
+              results.details.push({ payoutId, status: 'awaiting_funds', method: 'paypal', reason: 'no_stripe_for_funding' });
+            }
+            results.skipped++;
+            continue;
+          }
+
+          // Sufficient PayPal balance — send payout
           const { batchId } = await sendPayPalPayout(accessToken, payoutId, payout.amount, paypalEmail);
 
           logStep(`PayPal payout sent`, { payoutId, batchId, email: paypalEmail });

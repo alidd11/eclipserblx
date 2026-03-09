@@ -157,27 +157,62 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Wise recipient ID would need to be stored somewhere — for now, skip
-      const recipientId = null; // TODO: Add wise_recipient_id to store_payment_details
-      
-      if (!recipientId) {
-        logStep('No recipient configured for payout', { payoutId: payout.id });
+      // Get bank details to create recipient on-the-fly
+      const { data: bankDetails } = await supabase
+        .from('store_payment_details')
+        .select('bank_account_number, bank_routing_number, bank_swift_bic, bank_country, bank_account_holder_name')
+        .eq('store_id', payout.store_id)
+        .single();
+
+      if (!bankDetails?.bank_account_number || !bankDetails?.bank_swift_bic) {
+        logStep('No bank details for store', { payoutId: payout.id, storeId: payout.store_id });
         
         await supabase
           .from('seller_payouts')
           .update({
             funding_status: 'funding_failed',
-            failure_reason: 'No Wise recipient configured for store',
+            failure_reason: 'No bank details configured for store',
           })
           .eq('id', payout.id);
         
         failedCount++;
-        results.push({ payoutId: payout.id, status: 'failed', reason: 'no_recipient' });
+        results.push({ payoutId: payout.id, status: 'failed', reason: 'no_bank_details' });
         continue;
       }
 
       try {
-        // 1. Create quote
+        // 1. Create recipient on-the-fly from bank details
+        const recipientBody: any = {
+          profile: profile.id,
+          accountHolderName: bankDetails.bank_account_holder_name || 'Account Holder',
+          currency: 'GBP',
+          type: 'sort_code',
+          details: {
+            sortCode: (bankDetails.bank_routing_number || '').replace(/-/g, ''),
+            accountNumber: bankDetails.bank_account_number,
+          },
+        };
+
+        if (bankDetails.bank_country && bankDetails.bank_country !== 'GB' && bankDetails.bank_swift_bic) {
+          recipientBody.type = 'iban';
+          recipientBody.details = {
+            IBAN: bankDetails.bank_account_number,
+            BIC: bankDetails.bank_swift_bic,
+          };
+        }
+
+        const recipientRes = await fetch(`${WISE_API_URL}/v1/accounts`, {
+          method: 'POST',
+          headers: wiseHeaders,
+          body: JSON.stringify(recipientBody),
+        });
+        if (!recipientRes.ok) throw new Error(`Recipient creation failed: ${await recipientRes.text()}`);
+        const recipient = await recipientRes.json();
+        const recipientId = recipient.id;
+
+        logStep('Wise recipient created', { payoutId: payout.id, recipientId });
+
+        // 2. Create quote
         const quoteResponse = await fetch(`${WISE_API_URL}/v3/quotes`, {
           method: 'POST',
           headers: wiseHeaders,
@@ -196,7 +231,7 @@ Deno.serve(async (req) => {
         const quote = await quoteResponse.json();
         logStep('Quote created', { payoutId: payout.id, quoteId: quote.id });
         
-        // 2. Create transfer
+        // 3. Create transfer
         const transferResponse = await fetch(`${WISE_API_URL}/v1/transfers`, {
           method: 'POST',
           headers: wiseHeaders,
