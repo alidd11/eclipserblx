@@ -274,11 +274,12 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          const recipientId = payout.stores?.wise_recipient_id;
-          if (!recipientId) {
-            logStep(`No Wise recipient for store`, { payoutId, storeId });
+          // Get bank details from store_payment_details
+          const bankDetails = storeId ? paymentDetailsMap.get(storeId) : null;
+          if (!bankDetails?.bank_account_number || !bankDetails?.bank_swift_bic) {
+            logStep(`No bank details for store`, { payoutId, storeId });
             results.skipped++;
-            results.details.push({ payoutId, status: 'skipped', reason: 'no_wise_recipient' });
+            results.details.push({ payoutId, status: 'skipped', reason: 'no_bank_details' });
             continue;
           }
 
