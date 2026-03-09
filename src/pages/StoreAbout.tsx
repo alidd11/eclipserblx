@@ -9,7 +9,7 @@ import { sanitizeHtml } from '@/lib/sanitize';
 import { PUBLIC_STORE_COLUMNS } from '@/lib/storeColumns';
 
 export default function StoreAbout() {
-  const { slug } = useParams<{ slug: string }>();
+  const { storeSlug: slug } = useParams<{ storeSlug: string }>();
 
   const { data: store, isLoading } = useQuery({
     queryKey: ['store-about', slug],
