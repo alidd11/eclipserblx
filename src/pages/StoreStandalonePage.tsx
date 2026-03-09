@@ -1,0 +1,79 @@
+import { useStoreDomain } from '@/hooks/useStoreDomain';
+import { Skeleton } from '@/components/ui/skeleton';
+import StorePage from '@/pages/StorePage';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+
+const ProductDetail = lazy(() => import('@/pages/ProductDetail'));
+const Cart = lazy(() => import('@/pages/Cart'));
+const Checkout = lazy(() => import('@/pages/Checkout'));
+const OrderSuccess = lazy(() => import('@/pages/OrderSuccess'));
+const Auth = lazy(() => import('@/pages/Auth'));
+const StoreReviewsPage = lazy(() => import('@/pages/StoreReviewsPage'));
+const StoreAbout = lazy(() => import('@/pages/StoreAbout'));
+
+function PageLoader() {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="space-y-4 w-full max-w-md px-4">
+        <Skeleton className="h-8 w-3/4 mx-auto" />
+        <Skeleton className="h-4 w-1/2 mx-auto" />
+        <Skeleton className="h-64 w-full rounded-lg" />
+      </div>
+    </div>
+  );
+}
+
+export default function StoreStandalonePage() {
+  const { storeDomainData, loading } = useStoreDomain();
+
+  if (loading) return <PageLoader />;
+  if (!storeDomainData) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center text-foreground">
+        <div className="text-center space-y-4">
+          <h1 className="text-2xl font-bold">Store Not Found</h1>
+          <p className="text-muted-foreground">This domain is not connected to any store.</p>
+          <a href="https://eclipserblx.com" className="text-primary hover:underline">
+            Visit Eclipse Marketplace
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  const storeSlug = storeDomainData.stores.slug;
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<StorePage />} />
+          <Route path="/products/:slug" element={<ProductDetail />} />
+          <Route path="/reviews" element={<StoreReviewsPage />} />
+          <Route path="/about" element={<StoreAbout />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/auth" element={<Auth />} />
+          {/* Redirect /store/slug to root since we're already on the store domain */}
+          <Route path={`/store/${storeSlug}`} element={<Navigate to="/" replace />} />
+          <Route path={`/store/${storeSlug}/*`} element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
+      
+      {/* Powered by Eclipse footer badge */}
+      <div className="fixed bottom-4 right-4 z-40">
+        <a
+          href="https://eclipserblx.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur-sm border border-border text-xs text-muted-foreground hover:text-foreground transition-colors shadow-sm"
+        >
+          Powered by <span className="font-semibold text-primary">Eclipse</span>
+        </a>
+      </div>
+    </div>
+  );
+}
