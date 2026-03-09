@@ -44,10 +44,6 @@ export async function processRefund(
     return;
   }
 
-  if (!order) {
-    LOG("WARNING: Could not find order for refund", { chargeId, paymentIntentId });
-    return;
-  }
 
   const orderId = order.id;
 
