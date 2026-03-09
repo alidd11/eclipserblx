@@ -1,24 +1,22 @@
-import { useState } from 'react';
-
 const heroBgDesktop = '/hero-bg.webp';
 const heroBgMobile = '/hero-bg-mobile.webp';
 
 export function HeroBanner() {
-  const [isMobile] = useState(() => 
-    typeof window !== 'undefined' && window.innerWidth < 768
-  );
-
   return (
     <div className="absolute inset-x-0 top-0 h-[420px] sm:h-[480px] overflow-hidden">
-      <img
-        src={isMobile ? heroBgMobile : heroBgDesktop}
-        alt=""
-        width={isMobile ? 735 : 1920}
-        height={isMobile ? 420 : 480}
-        fetchPriority="high"
-        decoding="sync"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      {/* Use <picture> with srcSet for proper responsive loading */}
+      <picture>
+        <source media="(min-width: 768px)" srcSet={heroBgDesktop} type="image/webp" />
+        <img
+          src={heroBgMobile}
+          alt=""
+          width={375}
+          height={420}
+          fetchPriority="high"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      </picture>
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-background/55" />
