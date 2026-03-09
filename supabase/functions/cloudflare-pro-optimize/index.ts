@@ -404,9 +404,24 @@ Deno.serve(async (req) => {
       results["owasp_managed_ruleset"] = { success: false, error: (e as Error).message };
     }
 
-    // ─── 8. CRAWLER HINTS (Pro) ──────────────────────────────────
+    // ─── 8. CRAWLER HINTS ──────────────────────────────────────
 
-    results["crawler_hints"] = { note: "Enable manually: Speed → Optimization → Content Optimization → Crawler Hints" };
+    try {
+      const crawlerRes = await cfApi(
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/cache/crawler_hints`,
+        "PATCH",
+        { enabled: true },
+        "crawler_hints"
+      );
+      results["crawler_hints"] = { success: crawlerRes.data.success, status: crawlerRes.status };
+    } catch (e) {
+      // Fallback: try via settings API
+      try {
+        await patchSetting("crawler_hints", "on", "crawler_hints");
+      } catch {
+        results["crawler_hints"] = { success: false, note: "Enable manually: Speed → Configuration → Crawler Hints" };
+      }
+    }
 
     // ─── SUMMARY ─────────────────────────────────────────────────
 
