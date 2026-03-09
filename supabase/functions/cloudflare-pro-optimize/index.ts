@@ -174,7 +174,7 @@ Deno.serve(async (req) => {
       results["cache_rules"] = { success: false, error: (e as Error).message };
     }
 
-    // ─── 4. REDIRECT RULES ───────────────────────────────────────
+    // ─── 4. REDIRECT RULES (Single Redirect phase) ─────────────
 
     try {
       const listRes = await cfApi(
@@ -200,24 +200,35 @@ Deno.serve(async (req) => {
         },
       ];
 
-      const existingRedirect = allRulesets.find((r: any) => r.phase === "http_request_dynamic_redirect");
-      const redirectPayload = {
-        name: "Eclipse Pro Redirect Rules",
-        kind: "zone",
-        phase: "http_request_dynamic_redirect",
-        rules: redirectRules,
-      };
+      // "Single Redirect" permission maps to http_request_dynamic_redirect phase
+      const existingRedirect = allRulesets.find((r: any) =>
+        r.phase === "http_request_dynamic_redirect"
+      );
 
       if (existingRedirect) {
         const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingRedirect.id}`,
-          "PUT", redirectPayload, "redirect_rules"
+          "PUT",
+          {
+            name: existingRedirect.name || "Eclipse Redirect Rules",
+            kind: existingRedirect.kind || "zone",
+            phase: "http_request_dynamic_redirect",
+            rules: redirectRules,
+          },
+          "redirect_rules"
         );
         results["redirect_rules"] = { success: r.data.success, action: "updated", status: r.status };
       } else {
         const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
-          "POST", redirectPayload, "redirect_rules"
+          "POST",
+          {
+            name: "Eclipse Redirect Rules",
+            kind: "zone",
+            phase: "http_request_dynamic_redirect",
+            rules: redirectRules,
+          },
+          "redirect_rules"
         );
         results["redirect_rules"] = { success: r.data.success, action: "created", status: r.status };
       }
@@ -355,15 +366,16 @@ Deno.serve(async (req) => {
     }
 
     // ─── 7. ENABLE OWASP MANAGED RULESET (Pro) ──────────────────
+    // Managed WAF rulesets are deployed via the zone-level entrypoint.
+    // Find existing or create new entrypoint.
 
     try {
       const listRes = await cfApi(
         `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
-        "GET", null, "list_rulesets_managed"
+        "GET", null, "list_rulesets_owasp"
       );
       const allRulesets = listRes.data.result || [];
 
-      // Well-known Cloudflare managed ruleset IDs
       const OWASP_RULESET_ID = "4814384a9e5d4991b9815dcfc25d2f1f";
       const CF_MANAGED_RULESET_ID = "efb7b8c949ac4650a09736fc376e9aee";
 
@@ -387,7 +399,6 @@ Deno.serve(async (req) => {
       const existingManaged = allRulesets.find((r: any) => r.phase === "http_request_firewall_managed");
 
       if (existingManaged) {
-        // Preserve original name and kind when updating managed rulesets
         const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingManaged.id}`,
           "PUT",
@@ -405,7 +416,7 @@ Deno.serve(async (req) => {
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
           "POST",
           {
-            name: "Eclipse Pro Managed WAF",
+            name: "Eclipse Managed WAF Entrypoint",
             kind: "zone",
             phase: "http_request_firewall_managed",
             rules: managedRules,
