@@ -85,6 +85,11 @@ serve(async (req) => {
       // Check if this is a Global Guard subscription
       const isGlobalGuard = subscription.metadata?.product_type === 'global_guard';
       
+      // Check if this is a custom domain subscription
+      const isCustomDomain = subscription.metadata?.type === 'custom_domain';
+      const CUSTOM_DOMAIN_PRICE_ID = "price_1T8wQ9CjEHxHwNl9JtcT4Okv";
+      const isCustomDomainByPrice = subscription.items.data.some(item => item.price.id === CUSTOM_DOMAIN_PRICE_ID);
+      
       // Check if this is an IP Shield subscription
       const ipShieldItem = subscription.items.data.find(item => 
         IP_SHIELD_PRICE_IDS.includes(item.price.id)
@@ -98,6 +103,7 @@ serve(async (req) => {
         status: subscription.status,
         isGlobalGuard,
         isIpShield,
+        isCustomDomain: isCustomDomain || isCustomDomainByPrice,
       });
 
       // Get customer email to find user
