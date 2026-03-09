@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, forwardRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Package, Search, Sparkles, Loader2,
@@ -40,7 +40,7 @@ interface SearchCommandPaletteProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPaletteProps>(function SearchCommandPalette({ open, onOpenChange }, _ref) {
+export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPaletteProps) {
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
   const [products, setProducts] = useState<Product[]>([]);
@@ -388,7 +388,7 @@ export const SearchCommandPalette = forwardRef<HTMLDivElement, SearchCommandPale
       </div>
     </CommandDialog>
   );
-});
+}
 
 /* ── Product thumbnail sub-component ── */
 function ProductThumb({ product, formatPrice, highlightMatch }: { 
