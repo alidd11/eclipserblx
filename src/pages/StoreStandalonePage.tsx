@@ -1,9 +1,9 @@
 import { useStoreDomain } from '@/hooks/useStoreDomain';
 import { Skeleton } from '@/components/ui/skeleton';
-import StorePage from '@/pages/StorePage';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 
+const StorePage = lazy(() => import('@/pages/StorePage'));
 const ProductDetail = lazy(() => import('@/pages/ProductDetail'));
 const Cart = lazy(() => import('@/pages/Cart'));
 const Checkout = lazy(() => import('@/pages/Checkout'));
@@ -44,22 +44,22 @@ export default function StoreStandalonePage() {
 
   const storeSlug = storeDomainData.stores.slug;
 
+  // Render store routes — StorePage uses useParams so we wrap in /store/:storeSlug
   return (
     <div className="min-h-screen bg-background">
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route path="/" element={<StorePage />} />
+          {/* Map root to the store page via the slug param StorePage expects */}
+          <Route path="/" element={<Navigate to={`/store/${storeSlug}`} replace />} />
+          <Route path={`/store/${storeSlug}`} element={<StorePage />} />
+          <Route path={`/store/${storeSlug}/reviews`} element={<StoreReviewsPage />} />
+          <Route path={`/store/${storeSlug}/about`} element={<StoreAbout />} />
           <Route path="/products/:slug" element={<ProductDetail />} />
-          <Route path="/reviews" element={<StoreReviewsPage />} />
-          <Route path="/about" element={<StoreAbout />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-success" element={<OrderSuccess />} />
           <Route path="/auth" element={<Auth />} />
-          {/* Redirect /store/slug to root since we're already on the store domain */}
-          <Route path={`/store/${storeSlug}`} element={<Navigate to="/" replace />} />
-          <Route path={`/store/${storeSlug}/*`} element={<Navigate to="/" replace />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to={`/store/${storeSlug}`} replace />} />
         </Routes>
       </Suspense>
       
