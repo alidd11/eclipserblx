@@ -23,7 +23,7 @@ interface StaffActivityRecord {
   created_at: string;
   profile?: {
     display_name: string | null;
-    email: string;
+    staff_id: string | null;
   };
 }
 
@@ -106,7 +106,7 @@ export default function StaffActivityPage() {
       const userIds = [...new Set(filteredData.map(a => a.user_id))];
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, display_name, email')
+        .select('user_id, display_name, staff_id')
         .in('user_id', userIds);
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) ?? []);
@@ -136,7 +136,7 @@ export default function StaffActivityPage() {
       
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, display_name, email')
+        .select('user_id, display_name, staff_id')
         .in('user_id', nonAdminUserIds);
 
       return profiles ?? [];
@@ -263,7 +263,7 @@ export default function StaffActivityPage() {
                     <SelectItem value="all">All Staff</SelectItem>
                     {staffList?.map(staff => (
                       <SelectItem key={staff.user_id} value={staff.user_id}>
-                        {staff.display_name || staff.email}
+                        {staff.display_name || (staff as any).staff_id || 'Unknown'}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -306,7 +306,7 @@ export default function StaffActivityPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-medium">
-                            {activity.profile?.display_name || activity.profile?.email || 'Unknown User'}
+                            {activity.profile?.display_name || activity.profile?.staff_id || 'Unknown User'}
                           </span>
                           <Badge variant="outline" className={cn(
                             "text-xs",

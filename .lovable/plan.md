@@ -1,52 +1,36 @@
 
 
-## Email Visibility Audit & Fix Plan
+## Issues Identified
 
-### Current State
-Emails are displayed in several admin pages where they should be replaced with customer IDs or display names. The **Orders page** already correctly uses `getCustomerId()` instead of emails. However, many other admin pages still show raw emails.
+**Issue 1: Sidebar positioned at top of screen on desktop**
+The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
 
-### Pages Showing Emails (Needs Fixing)
+**Issue 2: Excessive black empty space in the content area**
+The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
 
-| Page | What's Shown | Fix |
-|------|-------------|-----|
-| **ActivityFeed** (Dashboard) | `customer_email` for orders, `email` for signups | Replace with customer_id lookup for orders, display_name for signups |
-| **Refunds** | `customer_email` in table, detail dialog, and search | Replace with customer_id from profiles (same pattern as Orders page) |
-| **Transcripts** | `customer_email` fallback for ticket names | Replace with `customer_id` or 'Unknown Customer' fallback |
-| **AuditLogs** | `email` fallback for staff identity | Replace with `display_name` or staff_id fallback |
-| **IpBans** | `email` fallback for banned user/banner display | Replace with `display_name` or customer_id |
-| **BotCodes** | `email` for processor display | Replace with `display_name` or staff_id |
-| **StoreApplications** | `email` shown next to applicant name | Replace with customer_id |
-| **StaffActivity** | `email` fallback for staff names | Replace with `display_name` or staff_id |
-| **SellerAgreements** | `owner_email` shown | Replace with store name or owner display_name |
-| **AffiliateApplications** | `email` shown in detail panel | Remove email display, keep affiliate_id |
-| **Recruiters** | `email` shown and searched | Replace with recruiter_id |
+## Plan
 
-### Pages Where Email is Acceptable
-- **StaffMessages** — Internal staff communication, email used for mention matching (backend only, not displayed to customers)
-- **StaffProfile** — Already hides primary admin email; staff emails are internal
-- **CustomerProfileDialog** — Primary admin only, contains all PII by design
-- **GrantEclipsePlusDialog** — Primary admin only, used for auth verification
-- **Subscribers** — Email newsletter subscribers page, email IS the data
-- **GDPRCompliance** — Primary admin only compliance dashboard
-- **LiveChat** — Already restricted email to primary admin only
+### 1. Widen the content area on the Categories page
+- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
+- Reduce vertical padding between the header and grid
+- Tighten the gap between the page title/description and the cards
 
-### Implementation Approach
-For each page:
-1. Replace `email` with `display_name` or `customer_id` in display
-2. For Refunds page: fetch customer profiles to resolve `user_id` → `customer_id` (same pattern as Orders page)
-3. For ActivityFeed: fetch `customer_id` from profiles for order users, use `display_name` only for signups
-4. Keep email in data fetches where needed for backend logic (e.g., sending emails) but don't render it
+### 2. Improve the PageHeader component
+- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
+- This applies globally to all pages using PageHeader
 
-### Files to Modify
-1. `src/components/admin/dashboard/ActivityFeed.tsx`
-2. `src/pages/admin/Refunds.tsx`
-3. `src/pages/admin/Transcripts.tsx`
-4. `src/pages/admin/AuditLogs.tsx`
-5. `src/pages/admin/IpBans.tsx`
-6. `src/pages/admin/BotCodes.tsx`
-7. `src/pages/admin/StoreApplications.tsx`
-8. `src/pages/admin/StaffActivity.tsx`
-9. `src/pages/admin/SellerAgreements.tsx`
-10. `src/pages/admin/AffiliateApplications.tsx`
-11. `src/pages/admin/Recruiters.tsx`
+### 3. Make category cards fill space better
+- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
+- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
+- Reduce grid gap slightly so cards feel more connected
+
+### 4. Sidebar desktop alignment fix
+- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
+- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
+- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
+
+### Files to modify
+- `src/pages/Categories.tsx` — widen container, tighten spacing
+- `src/components/ui/PageHeader.tsx` — reduce bottom margin
+- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
 

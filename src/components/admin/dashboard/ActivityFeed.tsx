@@ -25,9 +25,9 @@ export function ActivityFeed() {
       const items: FeedItem[] = [];
 
       const [recentOrders, recentUsers, recentTickets, recentProducts, recentReviews] = await Promise.all([
-        supabase.from('orders').select('id, created_at, status, total, customer_email')
+        supabase.from('orders').select('id, created_at, status, total, user_id')
           .order('created_at', { ascending: false }).limit(5),
-        supabase.from('profiles').select('user_id, display_name, email, created_at')
+        supabase.from('profiles').select('user_id, display_name, customer_id, created_at')
           .order('created_at', { ascending: false }).limit(5),
         supabase.from('support_tickets').select('id, ticket_number, subject, created_at, status')
           .order('created_at', { ascending: false }).limit(5),
@@ -37,11 +37,24 @@ export function ActivityFeed() {
           .order('created_at', { ascending: false }).limit(3),
       ]);
 
+      // Resolve customer_ids for order users
+      const orderUserIds = recentOrders.data?.map(o => o.user_id).filter(Boolean) || [];
+      let orderCustomerMap: Record<string, string> = {};
+      if (orderUserIds.length > 0) {
+        const { data: orderProfiles } = await supabase
+          .from('profiles')
+          .select('user_id, customer_id')
+          .in('user_id', orderUserIds);
+        orderProfiles?.forEach(p => {
+          if (p.customer_id) orderCustomerMap[p.user_id] = p.customer_id;
+        });
+      }
+
       recentOrders.data?.forEach(o => items.push({
         id: `order-${o.id}`,
         type: 'order',
         title: `New order — £${(o.total || 0).toFixed(2)}`,
-        subtitle: o.customer_email || 'Guest checkout',
+        subtitle: (o.user_id && orderCustomerMap[o.user_id]) || 'Guest checkout',
         time: o.created_at,
         icon: ShoppingCart,
         color: 'text-blue-500',
@@ -50,8 +63,8 @@ export function ActivityFeed() {
       recentUsers.data?.forEach(u => items.push({
         id: `user-${u.user_id}`,
         type: 'signup',
-        title: u.display_name || u.email || 'New user',
-        subtitle: 'Signed up',
+        title: u.display_name || 'New user',
+        subtitle: u.customer_id || 'Signed up',
         time: u.created_at,
         icon: UserPlus,
         color: 'text-green-500',

@@ -22,11 +22,11 @@ interface IpBan {
   expires_at: string | null;
   banned_by_profile?: {
     display_name: string | null;
-    email: string;
+    customer_id: string | null;
   } | null;
   banned_user_profile?: {
     display_name: string | null;
-    email: string;
+    customer_id: string | null;
   } | null;
 }
 
@@ -53,7 +53,7 @@ export default function IpBans() {
           if (ban.banned_by) {
             const { data: profile } = await supabase
               .from('profiles')
-              .select('display_name, email')
+              .select('display_name, customer_id')
               .eq('user_id', ban.banned_by)
               .single();
             banned_by_profile = profile;
@@ -62,7 +62,7 @@ export default function IpBans() {
           if (ban.user_id) {
             const { data: profile } = await supabase
               .from('profiles')
-              .select('display_name, email')
+              .select('display_name, customer_id')
               .eq('user_id', ban.user_id)
               .single();
             banned_user_profile = profile;
@@ -104,9 +104,9 @@ export default function IpBans() {
       ban.ip_address.toLowerCase().includes(query) ||
       ban.reason?.toLowerCase().includes(query) ||
       ban.banned_by_profile?.display_name?.toLowerCase().includes(query) ||
-      ban.banned_by_profile?.email.toLowerCase().includes(query) ||
+      ban.banned_by_profile?.customer_id?.toLowerCase().includes(query) ||
       ban.banned_user_profile?.display_name?.toLowerCase().includes(query) ||
-      ban.banned_user_profile?.email.toLowerCase().includes(query)
+      ban.banned_user_profile?.customer_id?.toLowerCase().includes(query)
     );
   });
 
@@ -220,7 +220,7 @@ export default function IpBans() {
                         {ban.banned_user_profile ? (
                           <div className="flex items-center gap-2">
                             <User className="h-4 w-4 text-muted-foreground" />
-                            <span>{ban.banned_user_profile.display_name || ban.banned_user_profile.email}</span>
+                            <span>{ban.banned_user_profile.display_name || ban.banned_user_profile.customer_id || 'Unknown'}</span>
                           </div>
                         ) : (
                           <span className="text-muted-foreground">—</span>
@@ -230,7 +230,7 @@ export default function IpBans() {
                         {ban.reason || <span className="text-muted-foreground">No reason provided</span>}
                       </TableCell>
                       <TableCell>
-                        {ban.banned_by_profile?.display_name || ban.banned_by_profile?.email || 'Unknown'}
+                        {ban.banned_by_profile?.display_name || 'Unknown'}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {format(new Date(ban.created_at), 'MMM d, yyyy HH:mm')}
@@ -321,7 +321,7 @@ export default function IpBans() {
                         {ban.banned_user_profile ? (
                           <div className="flex items-center gap-2">
                             <User className="h-4 w-4 text-muted-foreground" />
-                            <span>{ban.banned_user_profile.display_name || ban.banned_user_profile.email}</span>
+                            <span>{ban.banned_user_profile.display_name || ban.banned_user_profile.customer_id || 'Unknown'}</span>
                           </div>
                         ) : (
                           <span className="text-muted-foreground">—</span>
@@ -331,7 +331,7 @@ export default function IpBans() {
                         {ban.reason || <span className="text-muted-foreground">No reason provided</span>}
                       </TableCell>
                       <TableCell>
-                        {ban.banned_by_profile?.display_name || ban.banned_by_profile?.email || 'Unknown'}
+                        {ban.banned_by_profile?.display_name || 'Unknown'}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {format(new Date(ban.created_at), 'MMM d, yyyy HH:mm')}

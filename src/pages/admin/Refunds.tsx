@@ -55,6 +55,7 @@ interface RefundedOrder {
   refund_id: string | null;
   refunded_at: string | null;
   created_at: string;
+  customer_id?: string | null;
 }
 
 interface CommissionReversal {
@@ -104,7 +105,24 @@ export default function AdminRefunds() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as RefundedOrder[];
+
+      // Resolve customer_ids from profiles
+      const userIds = data?.map(o => o.user_id).filter(Boolean) as string[] || [];
+      let customerMap: Record<string, string> = {};
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, customer_id')
+          .in('user_id', userIds);
+        profiles?.forEach(p => {
+          if (p.customer_id) customerMap[p.user_id] = p.customer_id;
+        });
+      }
+
+      return (data || []).map(o => ({
+        ...o,
+        customer_id: o.user_id ? customerMap[o.user_id] || null : null,
+      })) as RefundedOrder[];
     },
   });
 
@@ -156,7 +174,7 @@ export default function AdminRefunds() {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
-      order.customer_email?.toLowerCase().includes(query) ||
+      order.customer_id?.toLowerCase().includes(query) ||
       order.id.toLowerCase().includes(query) ||
       order.payment_id?.toLowerCase().includes(query) ||
       order.refund_id?.toLowerCase().includes(query)
@@ -233,7 +251,7 @@ export default function AdminRefunds() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by email, order ID, payment ID..."
+                  placeholder="Search by customer ID, order ID, payment ID..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 bg-background/50"
@@ -288,7 +306,7 @@ export default function AdminRefunds() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="font-medium">{order.customer_email}</div>
+                          <div className="font-medium font-mono text-sm">{order.customer_id || 'Guest'}</div>
                         </TableCell>
                         <TableCell>{formatCurrency(order.total)}</TableCell>
                         <TableCell className="text-destructive font-medium">
@@ -345,7 +363,7 @@ export default function AdminRefunds() {
                   </div>
                   <div>
                     <p className="text-muted-foreground">Customer</p>
-                    <p>{selectedOrder.customer_email}</p>
+                    <p className="font-mono">{selectedOrder.customer_id || 'Guest'}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Original Order Date</p>
@@ -386,7 +404,7 @@ export default function AdminRefunds() {
                         >
                           <div>
                             <p className="font-medium">
-                              {commission.profile?.display_name || commission.profile?.email || "Unknown Affiliate"}
+                              {commission.profile?.display_name || "Unknown Affiliate"}
                             </p>
                             <p className="text-sm text-muted-foreground">
                               Commission: {formatCurrency(commission.commission_amount / 100)}

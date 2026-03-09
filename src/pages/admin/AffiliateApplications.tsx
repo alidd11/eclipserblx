@@ -159,10 +159,6 @@ const AffiliateApplications = () => {
                   <p className="font-medium">{selectedAffiliate.display_name || "Not set"}</p>
                 </div>
 
-                <div>
-                  <Label className="text-xs text-muted-foreground">Email</Label>
-                  <p className="font-medium">{selectedAffiliate.email}</p>
-                </div>
 
                 {selectedAffiliate.paypal_email && (
                   <div>

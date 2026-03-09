@@ -55,7 +55,7 @@ export default function AdminAuditLogs() {
       if (logUserIds.length === 0) return [];
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, display_name, email')
+        .select('user_id, display_name, staff_id')
         .in('user_id', logUserIds);
       if (error) throw error;
       return data;
@@ -67,7 +67,7 @@ export default function AdminAuditLogs() {
   const getAdminName = (userId: string) => {
     if (userId === '00000000-0000-0000-0000-000000000000') return 'System';
     const profile = profiles?.find(p => p.user_id === userId);
-    return profile?.display_name || profile?.email || 'Unknown';
+    return profile?.display_name || 'Unknown';
   };
 
   // Filter logs by category
@@ -116,7 +116,7 @@ export default function AdminAuditLogs() {
           </TableRow>
         ) : (
           logs.map((log) => {
-            const details = log.details as { target_email?: string; role?: string } | null;
+            const details = log.details as { target_email?: string; target_display_name?: string; role?: string } | null;
             const isAdded = log.action === 'role_added';
             return (
               <TableRow key={log.id}>
@@ -126,7 +126,7 @@ export default function AdminAuditLogs() {
                     {isAdded ? 'Added' : 'Removed'}
                   </Badge>
                 </TableCell>
-                <TableCell><span className="text-sm">{details?.target_email || 'Unknown'}</span></TableCell>
+                <TableCell><span className="text-sm">{details?.target_display_name || details?.target_email || 'Unknown'}</span></TableCell>
                 <TableCell>
                   <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
                     <Shield className="h-3 w-3 mr-1" />
@@ -243,7 +243,7 @@ export default function AdminAuditLogs() {
           </TableRow>
         ) : (
           logs.map((log) => {
-            const details = log.details as { target_email?: string; target_user_id?: string } | null;
+            const details = log.details as { target_email?: string; target_display_name?: string; target_user_id?: string } | null;
             return (
               <TableRow key={log.id}>
                 <TableCell>
@@ -252,7 +252,7 @@ export default function AdminAuditLogs() {
                     Deleted
                   </Badge>
                 </TableCell>
-                <TableCell><span className="text-sm">{details?.target_email || details?.target_user_id || 'Unknown'}</span></TableCell>
+                <TableCell><span className="text-sm">{details?.target_display_name || details?.target_user_id?.slice(0, 8) || 'Unknown'}</span></TableCell>
                 <TableCell><span className="text-sm text-muted-foreground">{getAdminName(log.user_id)}</span></TableCell>
                 <TableCell><span className="text-sm text-muted-foreground">{format(new Date(log.created_at), 'MMM d, yyyy h:mm a')}</span></TableCell>
               </TableRow>
@@ -297,7 +297,7 @@ export default function AdminAuditLogs() {
 
   // Mobile card renderers
   const renderMobileRoleCard = (log: AuditLog) => {
-    const details = log.details as { target_email?: string; role?: string } | null;
+    const details = log.details as { target_email?: string; target_display_name?: string; role?: string } | null;
     const isAdded = log.action === 'role_added';
     return (
       <div key={log.id} className="p-4 rounded-lg bg-muted/50 border border-border space-y-2">
@@ -311,7 +311,7 @@ export default function AdminAuditLogs() {
             {details?.role || 'Unknown'}
           </Badge>
         </div>
-        <p className="text-sm truncate">{details?.target_email || 'Unknown'}</p>
+        <p className="text-sm truncate">{details?.target_display_name || details?.target_email || 'Unknown'}</p>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>by {getAdminName(log.user_id)}</span>
           <span>{format(new Date(log.created_at), 'MMM d, h:mm a')}</span>
@@ -362,14 +362,14 @@ export default function AdminAuditLogs() {
   };
 
   const renderMobileAccountCard = (log: AuditLog) => {
-    const details = log.details as { target_email?: string; target_user_id?: string } | null;
+    const details = log.details as { target_email?: string; target_display_name?: string; target_user_id?: string } | null;
     return (
       <div key={log.id} className="p-4 rounded-lg bg-muted/50 border border-border space-y-2">
         <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/30">
           <Trash2 className="h-3 w-3 mr-1" />
           Account Deleted
         </Badge>
-        <p className="text-sm truncate">{details?.target_email || details?.target_user_id || 'Unknown'}</p>
+        <p className="text-sm truncate">{details?.target_display_name || details?.target_user_id?.slice(0, 8) || 'Unknown'}</p>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>by {getAdminName(log.user_id)}</span>
           <span>{format(new Date(log.created_at), 'MMM d, h:mm a')}</span>

@@ -86,8 +86,7 @@ export default function Recruiters() {
     return (
       app.display_name?.toLowerCase().includes(query) ||
       app.recruiter_id?.toLowerCase().includes(query) ||
-      app.discord_username?.toLowerCase().includes(query) ||
-      app.email?.toLowerCase().includes(query)
+      app.discord_username?.toLowerCase().includes(query)
     );
   });
 
@@ -234,7 +233,6 @@ export default function Recruiters() {
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {app.discord_username && <span>@{app.discord_username}</span>}
-                            {app.email && <span className="ml-2">{app.email}</span>}
                           </div>
                           <div className="text-xs text-muted-foreground mt-1">
                             Applied: {format(new Date(app.created_at), 'MMM d, yyyy')}

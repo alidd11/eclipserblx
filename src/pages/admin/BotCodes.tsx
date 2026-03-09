@@ -38,7 +38,7 @@ interface BotInstallationCode {
   } | null;
   processor_profile?: {
     display_name: string | null;
-    email: string;
+    staff_id: string | null;
   } | null;
 }
 
@@ -99,19 +99,19 @@ export default function AdminBotCodes() {
       
       // Fetch processor profiles
       const processedByIds = data?.filter(c => c.processed_by).map(c => c.processed_by) || [];
-      let processorMap: Record<string, { display_name: string | null; email: string }> = {};
+      let processorMap: Record<string, { display_name: string | null; staff_id: string | null }> = {};
       
       if (processedByIds.length > 0) {
         const { data: processors } = await supabase
           .from('profiles')
-          .select('user_id, display_name, email')
+          .select('user_id, display_name, staff_id')
           .in('user_id', processedByIds);
         
         if (processors) {
           processorMap = processors.reduce((acc, p) => {
-            acc[p.user_id] = { display_name: p.display_name, email: p.email };
+            acc[p.user_id] = { display_name: p.display_name, staff_id: p.staff_id };
             return acc;
-          }, {} as Record<string, { display_name: string | null; email: string }>);
+          }, {} as Record<string, { display_name: string | null; staff_id: string | null }>);
         }
       }
       
@@ -359,7 +359,7 @@ export default function AdminBotCodes() {
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Shield className="h-3 w-3 shrink-0" />
                               <span className="truncate">
-                                Processed by: {code.processor_profile.display_name || code.processor_profile.email}
+                                Processed by: {code.processor_profile.display_name || code.processor_profile.staff_id || 'Staff'}
                               </span>
                             </div>
                           )}
@@ -461,7 +461,7 @@ export default function AdminBotCodes() {
                             {code.processor_profile ? (
                               <div className="flex items-center gap-1 text-sm">
                                 <Shield className="h-3 w-3 text-primary" />
-                                <span>{code.processor_profile.display_name || code.processor_profile.email}</span>
+                                <span>{code.processor_profile.display_name || code.processor_profile.staff_id || 'Staff'}</span>
                               </div>
                             ) : (
                               <span className="text-muted-foreground">—</span>
