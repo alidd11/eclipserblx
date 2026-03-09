@@ -1200,6 +1200,7 @@ function AdminChatContent() {
           <div 
             className="flex-1 min-w-0 relative"
             style={{ touchAction: 'manipulation' }}
+            data-gesture-exempt="true"
           >
             <Input
               ref={inputRef}
