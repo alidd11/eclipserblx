@@ -50,6 +50,9 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
   const { itemCount } = useCart();
   const { discordUrl } = useDiscordUrl();
   const { t } = useTranslation();
+  const { isCustomStoreDomain, storeDomainData } = useStoreDomain();
+  const storeLogoUrl = storeDomainData?.stores?.logo_url;
+  const storeName = storeDomainData?.stores?.name;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const systemStatus = useSystemStatus();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
