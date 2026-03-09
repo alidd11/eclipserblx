@@ -1,13 +1,15 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, lazy, Suspense } from 'react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Header } from '@/components/layout/Header';
 import { UniversalBreadcrumb } from '@/components/layout/UniversalBreadcrumb';
 import { Footer } from '@/components/layout/Footer';
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
-import { FloatingActionButtons } from '@/components/ui/FloatingActionButtons';
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
 import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
 import { useEdgeSwipe } from '@/hooks/useEdgeSwipe';
+
+// Lazy-load FABs — only needed after user scrolls, imports framer-motion
+const FloatingActionButtons = lazy(() => import('@/components/ui/FloatingActionButtons').then(m => ({ default: m.FloatingActionButtons })));
 
 interface LayoutShellProps {
   children: ReactNode;
