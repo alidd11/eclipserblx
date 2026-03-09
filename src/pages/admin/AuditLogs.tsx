@@ -297,7 +297,7 @@ export default function AdminAuditLogs() {
 
   // Mobile card renderers
   const renderMobileRoleCard = (log: AuditLog) => {
-    const details = log.details as { target_email?: string; role?: string } | null;
+    const details = log.details as { target_email?: string; target_display_name?: string; role?: string } | null;
     const isAdded = log.action === 'role_added';
     return (
       <div key={log.id} className="p-4 rounded-lg bg-muted/50 border border-border space-y-2">
@@ -311,7 +311,7 @@ export default function AdminAuditLogs() {
             {details?.role || 'Unknown'}
           </Badge>
         </div>
-        <p className="text-sm truncate">{details?.target_email || 'Unknown'}</p>
+        <p className="text-sm truncate">{details?.target_display_name || details?.target_email || 'Unknown'}</p>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>by {getAdminName(log.user_id)}</span>
           <span>{format(new Date(log.created_at), 'MMM d, h:mm a')}</span>
