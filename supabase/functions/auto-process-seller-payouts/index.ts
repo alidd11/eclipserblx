@@ -376,7 +376,39 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json',
           };
 
-          // 1. Create quote
+          // 1. Create recipient on-the-fly from bank details
+          const recipientBody: any = {
+            profile: wiseProfile.id,
+            accountHolderName: bankDetails.bank_account_holder_name || payout.profiles?.display_name || 'Account Holder',
+            currency: 'GBP',
+            type: 'sort_code',
+            details: {
+              sortCode: (bankDetails.bank_routing_number || '').replace(/-/g, ''),
+              accountNumber: bankDetails.bank_account_number,
+            },
+          };
+
+          // If SWIFT/BIC provided and non-UK, use IBAN type instead
+          if (bankDetails.bank_country && bankDetails.bank_country !== 'GB' && bankDetails.bank_swift_bic) {
+            recipientBody.type = 'iban';
+            recipientBody.details = {
+              IBAN: bankDetails.bank_account_number,
+              BIC: bankDetails.bank_swift_bic,
+            };
+          }
+
+          const recipientRes = await fetch(`${WISE_API_URL}/v1/accounts`, {
+            method: 'POST',
+            headers: wiseHeaders,
+            body: JSON.stringify(recipientBody),
+          });
+          if (!recipientRes.ok) throw new Error(`Recipient creation failed: ${await recipientRes.text()}`);
+          const recipient = await recipientRes.json();
+          const recipientId = recipient.id;
+
+          logStep('Wise recipient created', { payoutId, recipientId });
+
+          // 2. Create quote
           const quoteRes = await fetch(`${WISE_API_URL}/v3/quotes`, {
             method: 'POST',
             headers: wiseHeaders,
@@ -390,7 +422,7 @@ Deno.serve(async (req) => {
           if (!quoteRes.ok) throw new Error(`Quote failed: ${await quoteRes.text()}`);
           const quote = await quoteRes.json();
 
-          // 2. Create transfer
+          // 3. Create transfer
           const transferRes = await fetch(`${WISE_API_URL}/v1/transfers`, {
             method: 'POST',
             headers: wiseHeaders,
