@@ -91,14 +91,14 @@ Deno.serve(async (req) => {
       );
       console.log("[CF] Current bot_management:", JSON.stringify(getBot.data?.result || {}));
 
+      // Pro tier: only sbfm_definitely_automated, sbfm_verified_bots, sbfm_static_resource_protection, enable_js
+      // fight_mode is Free-only, sbfm_likely_automated is Business+ only
       const botUpdate = await cfApi(
         `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/bot_management`,
         "PUT",
         {
           enable_js: true,
-          fight_mode: true,
           sbfm_definitely_automated: "block",
-          sbfm_likely_automated: "managed_challenge",
           sbfm_verified_bots: "allow",
           sbfm_static_resource_protection: false,
         },
