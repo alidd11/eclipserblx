@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 import { applyProductWatermark } from '@/lib/watermark';
+import { submitProductUrl } from '@/lib/submitIndexNow';
 import { QUANTIS_STORE_ID } from '@/lib/constants';
 import { EarlyAccessCard } from '@/components/seller/EarlyAccessCard';
 import { SellerLayout } from '@/components/seller/SellerLayout';
