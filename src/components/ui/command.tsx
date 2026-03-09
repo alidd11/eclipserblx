@@ -24,9 +24,9 @@ Command.displayName = CommandPrimitive.displayName;
 
 interface CommandDialogProps extends DialogProps {}
 
-function CommandDialog({ children, ...props }: CommandDialogProps) {
+function CommandDialog({ children, open, onOpenChange, defaultOpen, modal }: CommandDialogProps) {
   return (
-    <Dialog {...props}>
+    <Dialog open={open} onOpenChange={onOpenChange} defaultOpen={defaultOpen} modal={modal}>
       <DialogContent className="overflow-hidden p-0 shadow-2xl shadow-black/20 top-[12%] translate-y-0 sm:top-[20%] max-h-[70vh] border-border/50 bg-popover/95 backdrop-blur-xl rounded-xl" aria-describedby={undefined}>
         <VisuallyHidden>
           <DialogTitle>Search</DialogTitle>
