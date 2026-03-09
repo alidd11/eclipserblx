@@ -11,8 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Globe, CheckCircle, Clock, AlertTriangle, ExternalLink, Copy, Trash2, RefreshCw, Zap, Crown, CreditCard, Settings, Search, ShoppingCart, Link } from 'lucide-react';
 
-// Replace with your Namecheap affiliate ID once you have one
-const NAMECHEAP_AFFILIATE_ID = 'YOUR_AFFILIATE_ID';
+const DOMAIN_REGISTRAR_URL = 'https://www.cloudflare.com/products/registrar/';
 
 function StatusBadge({ status }: { status: string }) {
   const variants: Record<string, { className: string; label: string }> = {
