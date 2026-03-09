@@ -90,7 +90,7 @@ function LayoutShellInner({
             onMenuClick={() => setMobileOpen(true)}
             {...headerProps}
           />
-          <UniversalBreadcrumb />
+          <Suspense fallback={null}><UniversalBreadcrumb /></Suspense>
           <main
             id="main-content"
             className={mainClassName ?? "flex-1 overflow-y-auto overflow-x-hidden"}
