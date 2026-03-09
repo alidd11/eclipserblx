@@ -9,14 +9,14 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const POPULAR_SEARCHES = [
-  'scripts',
-  'maps',
-  'ui',
-  'weapons',
-  'vehicles',
-  'admin',
-  'tools',
+const TRENDING_TAGS = [
+  { label: 'scripts', type: 'category' as const, target: 'scripts-systems' },
+  { label: 'maps', type: 'category' as const, target: 'maps' },
+  { label: 'ui', type: 'category' as const, target: 'roblox-ui' },
+  { label: 'vehicles', type: 'search' as const, target: 'vehicles' },
+  { label: 'weapons', type: 'search' as const, target: 'weapons' },
+  { label: 'admin', type: 'search' as const, target: 'admin' },
+  { label: 'tools', type: 'search' as const, target: 'tools' },
 ];
 
 export function LandingHero() {
