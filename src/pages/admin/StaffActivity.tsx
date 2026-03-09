@@ -23,7 +23,7 @@ interface StaffActivityRecord {
   created_at: string;
   profile?: {
     display_name: string | null;
-    email: string;
+    staff_id: string | null;
   };
 }
 
