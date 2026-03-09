@@ -7451,27 +7451,36 @@ export type Database = {
       }
       store_domain_billing: {
         Row: {
+          cancelled_at: string | null
           created_at: string
           current_period_end: string | null
           id: string
           status: string
-          store_domain_id: string
+          store_domain_id: string | null
+          store_id: string | null
+          stripe_customer_id: string | null
           stripe_subscription_id: string | null
         }
         Insert: {
+          cancelled_at?: string | null
           created_at?: string
           current_period_end?: string | null
           id?: string
           status?: string
-          store_domain_id: string
+          store_domain_id?: string | null
+          store_id?: string | null
+          stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
         }
         Update: {
+          cancelled_at?: string | null
           created_at?: string
           current_period_end?: string | null
           id?: string
           status?: string
-          store_domain_id?: string
+          store_domain_id?: string | null
+          store_id?: string | null
+          stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
         }
         Relationships: [
@@ -7480,6 +7489,20 @@ export type Database = {
             columns: ["store_domain_id"]
             isOneToOne: false
             referencedRelation: "store_domains"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_domain_billing_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_domain_billing_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
             referencedColumns: ["id"]
           },
         ]
