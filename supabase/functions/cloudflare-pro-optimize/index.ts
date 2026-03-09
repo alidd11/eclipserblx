@@ -200,12 +200,10 @@ Deno.serve(async (req) => {
         },
       ];
 
-      // Try both redirect phases — Single Redirect or Dynamic Redirect
+      // "Single Redirect" permission maps to http_request_dynamic_redirect phase
       const existingRedirect = allRulesets.find((r: any) =>
-        r.phase === "http_request_redirect" || r.phase === "http_request_dynamic_redirect"
+        r.phase === "http_request_dynamic_redirect"
       );
-
-      const phase = existingRedirect?.phase || "http_request_redirect";
 
       if (existingRedirect) {
         const r = await cfApi(
@@ -214,7 +212,7 @@ Deno.serve(async (req) => {
           {
             name: existingRedirect.name || "Eclipse Redirect Rules",
             kind: existingRedirect.kind || "zone",
-            phase,
+            phase: "http_request_dynamic_redirect",
             rules: redirectRules,
           },
           "redirect_rules"
@@ -227,7 +225,7 @@ Deno.serve(async (req) => {
           {
             name: "Eclipse Redirect Rules",
             kind: "zone",
-            phase: "http_request_redirect",
+            phase: "http_request_dynamic_redirect",
             rules: redirectRules,
           },
           "redirect_rules"
