@@ -44,17 +44,49 @@ export default function StoreStandalonePage() {
   }
 
   const storeSlug = storeDomainData.stores.slug;
+  const hideBranding = (storeDomainData.stores as any).hide_branding === true;
+  const faviconUrl = (storeDomainData.stores as any).favicon_url;
 
-  // Render store routes — StorePage uses useParams so we wrap in /store/:storeSlug
+  return (
+    <StoreStandaloneContent 
+      storeSlug={storeSlug} 
+      hideBranding={hideBranding} 
+      faviconUrl={faviconUrl} 
+    />
+  );
+}
+
+function StoreStandaloneContent({ 
+  storeSlug, 
+  hideBranding, 
+  faviconUrl 
+}: { 
+  storeSlug: string; 
+  hideBranding: boolean; 
+  faviconUrl?: string | null;
+}) {
+  // Inject favicon
+  React.useEffect(() => {
+    if (faviconUrl) {
+      let link = document.querySelector("link[rel='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = faviconUrl;
+    }
+  }, [faviconUrl]);
+
   return (
     <div className="min-h-screen bg-background">
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          {/* Map root to the store page via the slug param StorePage expects */}
           <Route path="/" element={<Navigate to={`/store/${storeSlug}`} replace />} />
           <Route path={`/store/${storeSlug}`} element={<StorePage />} />
           <Route path={`/store/${storeSlug}/reviews`} element={<StoreReviewsPage />} />
           <Route path={`/store/${storeSlug}/about`} element={<StoreAbout />} />
+          <Route path={`/store/${storeSlug}/page/:pageSlug`} element={<StoreCustomPage />} />
           <Route path="/products/:slug" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
@@ -64,17 +96,19 @@ export default function StoreStandalonePage() {
         </Routes>
       </Suspense>
       
-      {/* Powered by Eclipse footer badge */}
-      <div className="fixed bottom-4 right-4 z-40">
-        <a
-          href="https://eclipserblx.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur-sm border border-border text-xs text-muted-foreground hover:text-foreground transition-colors shadow-sm"
-        >
-          Powered by <span className="font-semibold text-primary">Eclipse</span>
-        </a>
-      </div>
+      {/* Powered by Eclipse footer badge — hidden if seller has hide_branding enabled */}
+      {!hideBranding && (
+        <div className="fixed bottom-4 right-4 z-40">
+          <a
+            href="https://eclipserblx.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur-sm border border-border text-xs text-muted-foreground hover:text-foreground transition-colors shadow-sm"
+          >
+            Powered by <span className="font-semibold text-primary">Eclipse</span>
+          </a>
+        </div>
+      )}
     </div>
   );
 }

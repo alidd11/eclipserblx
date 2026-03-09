@@ -49,6 +49,7 @@ const navGroups: NavGroup[] = [
       { title: 'Categories', icon: LayoutGrid, href: '/seller/categories' },
       { title: 'Store Sections', icon: Layers, href: '/seller/tabs' },
       { title: 'Custom Sections', icon: LayoutGrid, href: '/seller/custom-sections' },
+      { title: 'Pages', icon: FileText, href: '/seller/store-pages' },
       { title: 'Import', icon: Import, href: '/seller/import' },
     ],
   },
