@@ -37,13 +37,11 @@ export async function processRefund(
     } catch { /* continue */ }
   }
 
-  if (!order && refundAmount) {
-    const refundGBP = refundAmount / 100;
-    const { data: orders } = await supabase
-      .from("orders").select("id, user_id, customer_email, status, total, created_at")
-      .eq("total", refundGBP).in("status", ["paid", "fulfilled"]).is("refunded_at", null)
-      .order("created_at", { ascending: false }).limit(1);
-    if (orders?.length) order = orders[0] as any;
+  // REMOVED: Fuzzy amount-based matching was a security risk — could refund wrong order.
+  // If we can't find the order by payment ID, log and bail.
+  if (!order) {
+    LOG("WARNING: Could not find order for refund by payment ID", { chargeId, paymentIntentId });
+    return;
   }
 
   if (!order) {

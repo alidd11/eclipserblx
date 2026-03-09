@@ -149,24 +149,15 @@ serve(async (req) => {
           const everyonePings = parseInt(paymentIntent.metadata?.everyone_pings || '0');
 
           if (herePings > 0 || everyonePings > 0) {
-            // Fetch current balances then increment
-            const { data: currentSub } = await supabaseAdmin
-              .from('advertisement_subscriptions')
-              .select('here_pings_balance, everyone_pings_balance')
-              .eq('user_id', user.id)
-              .eq('status', 'active')
-              .single();
-
-            if (currentSub) {
-              await supabaseAdmin
-                .from('advertisement_subscriptions')
-                .update({
-                  here_pings_balance: (currentSub.here_pings_balance || 0) + herePings,
-                  everyone_pings_balance: (currentSub.everyone_pings_balance || 0) + everyonePings,
-                })
-                .eq('user_id', user.id)
-                .eq('status', 'active');
-              logStep("Ad pings added", { herePings, everyonePings });
+            // Atomic ping increment — prevents lost updates on concurrent calls
+            const { data: updated } = await supabaseAdmin.rpc('increment_ad_ping_balance', {
+              p_user_id: user.id,
+              p_here_pings: herePings,
+              p_everyone_pings: everyonePings,
+              p_reference_id: paymentIntentId,
+            });
+            if (updated) {
+              logStep("Ad pings added atomically", { herePings, everyonePings });
             } else {
               logStep("No active ad subscription found for ping fulfillment", { userId: user.id });
             }

@@ -234,16 +234,12 @@ async function processSellerEarnings(
       escrow_hold_until: escrowHoldUntil.toISOString(),
     });
 
-    // Update balance — put earnings in pending_balance (escrow hold)
-    const { data: bal } = await supabase.from("seller_balances").select("pending_balance, total_earned").eq("user_id", sellerId).single();
-    if (bal) {
-      await supabase.from("seller_balances").update({
-        pending_balance: ((bal as any).pending_balance || 0) + earnings,
-        total_earned: ((bal as any).total_earned || 0) + earnings,
-      }).eq("user_id", sellerId);
-    } else {
-      await supabase.from("seller_balances").insert({ user_id: sellerId, store_id: product.store_id, pending_balance: earnings, available_balance: 0, total_earned: earnings });
-    }
+    // Atomic balance update — prevents read-then-write race
+    await supabase.rpc('increment_seller_pending_balance', {
+      p_seller_id: sellerId,
+      p_store_id: product.store_id,
+      p_amount: earnings,
+    });
 
     // Seller Discord webhook
     try {
