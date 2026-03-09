@@ -80,9 +80,9 @@ export default defineConfig(({ mode }) => ({
       'react-dom',
       'react-router-dom',
       '@tanstack/react-query',
-      'framer-motion',
       'lucide-react',
     ],
+    // framer-motion excluded — lazy-loaded per-component to reduce initial parse
   },
   plugins: [
     react(),

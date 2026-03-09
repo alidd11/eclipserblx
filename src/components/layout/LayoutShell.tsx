@@ -1,12 +1,16 @@
 import { ReactNode, useState, lazy, Suspense } from 'react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Header } from '@/components/layout/Header';
-import { UniversalBreadcrumb } from '@/components/layout/UniversalBreadcrumb';
-import { Footer } from '@/components/layout/Footer';
+// Lazy-load below-fold Footer to reduce initial bundle
+const Footer = lazy(() => import('@/components/layout/Footer').then(m => ({ default: m.Footer })));
+// Lazy-load breadcrumb — non-critical for initial paint
+const UniversalBreadcrumb = lazy(() => import('@/components/layout/UniversalBreadcrumb').then(m => ({ default: m.UniversalBreadcrumb })));
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
-import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
 import { useEdgeSwipe } from '@/hooks/useEdgeSwipe';
+
+// Lazy-load search palette — only needed when user presses Cmd+K
+const SearchCommandPalette = lazy(() => import('@/components/search/SearchCommandPalette').then(m => ({ default: m.SearchCommandPalette })));
 
 // Lazy-load FABs — only needed after user scrolls, imports framer-motion
 const FloatingActionButtons = lazy(() => import('@/components/ui/FloatingActionButtons').then(m => ({ default: m.FloatingActionButtons })));
@@ -88,7 +92,7 @@ function LayoutShellInner({
             onMenuClick={() => setMobileOpen(true)}
             {...headerProps}
           />
-          <UniversalBreadcrumb />
+          <Suspense fallback={null}><UniversalBreadcrumb /></Suspense>
           <main
             id="main-content"
             className={mainClassName ?? "flex-1 overflow-y-auto overflow-x-hidden"}
@@ -99,7 +103,7 @@ function LayoutShellInner({
             ) : (
               children
             )}
-            <Footer />
+            <Suspense fallback={null}><Footer /></Suspense>
           </main>
         </div>
       </div>
@@ -107,7 +111,11 @@ function LayoutShellInner({
       <Suspense fallback={null}>
         <FloatingActionButtons />
       </Suspense>
-      <SearchCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
+      {searchOpen && (
+        <Suspense fallback={null}>
+          <SearchCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
+        </Suspense>
+      )}
       {extra}
     </>
   );
