@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
     // Pre-fetch store_payment_details for Stripe Connect info
     const { data: paymentDetails } = await supabase
       .from('store_payment_details')
-      .select('store_id, stripe_account_id, payouts_enabled')
+      .select('store_id, stripe_account_id, payouts_enabled, bank_account_number, bank_routing_number, bank_swift_bic, bank_country, bank_account_holder_name, paypal_email')
       .in('store_id', storeIds);
 
     const paymentDetailsMap = new Map((paymentDetails || []).map((pd: any) => [pd.store_id, pd]));
