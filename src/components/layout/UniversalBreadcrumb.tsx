@@ -97,6 +97,7 @@ export function UniversalBreadcrumb() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { canGoBack, canGoForward, goBack, goForward } = useNavigationHistory();
+  const { isCustomStoreDomain } = useStoreDomain();
   const pathSegments = location.pathname.split('/').filter(Boolean);
 
   if (excludedRoutes.includes(location.pathname) || pathSegments.length === 0) {
