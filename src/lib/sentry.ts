@@ -35,6 +35,8 @@ async function loadSentry() {
       "Failed to fetch",
       "NetworkError",
       "AbortError",
+      "Importing a module script failed",
+      "Failed to fetch dynamically imported module",
     ],
     beforeSend(event) {
       if (event.exception?.values?.[0]?.stacktrace?.frames?.some(
