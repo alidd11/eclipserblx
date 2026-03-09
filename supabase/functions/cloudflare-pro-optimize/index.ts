@@ -81,6 +81,20 @@ Deno.serve(async (req) => {
       patchSetting("browser_check", "on", "browser_check"),
     ]);
 
+    // ─── 1b. TIERED CACHE ────────────────────────────────────────
+
+    try {
+      const r = await cfApi(
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/argo/tiered_caching`,
+        "PATCH",
+        { value: "on" },
+        "tiered_caching"
+      );
+      results["tiered_caching"] = { success: r.data.success, status: r.status };
+    } catch (e) {
+      results["tiered_caching"] = { success: false, error: (e as Error).message };
+    }
+
     // ─── 2. SUPER BOT FIGHT MODE (Pro) ──────────────────────────
 
     // First GET current config, then PATCH only supported fields
