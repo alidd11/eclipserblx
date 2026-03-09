@@ -358,6 +358,23 @@ Deno.serve(async (req) => {
             const escrowHoldUntil = new Date();
             escrowHoldUntil.setDate(escrowHoldUntil.getDate() + 3);
 
+            // Dedup guard: skip if seller transaction already exists for this order+item (webhook may have created it)
+            if (orderItemRecord?.id) {
+              const { data: existingSellerTx } = await supabaseClient
+                .from("seller_transactions")
+                .select("id")
+                .eq("order_id", orderId)
+                .eq("order_item_id", orderItemRecord.id)
+                .eq("type", "sale")
+                .is("refunded_at", null)
+                .limit(1);
+
+              if (existingSellerTx && existingSellerTx.length > 0) {
+                logStep("Seller transaction already exists for this order item, skipping", { orderId, orderItemId: orderItemRecord.id });
+                continue;
+              }
+            }
+
             const { error: txError } = await supabaseClient
               .from("seller_transactions")
               .insert({

@@ -90,16 +90,19 @@ export async function processAdPingPurchase(supabase: SupabaseClient, session: S
 
   LOG("Processing ad ping purchase", { userId, herePings, everyonePings });
 
-  const { data: sub } = await supabase
-    .from("advertisement_subscriptions").select("*")
-    .eq("user_id", userId).eq("status", "active").maybeSingle();
-  if (!sub) return;
+  // Use idempotent RPC with session.id as reference to prevent double-fulfillment
+  const { data: updated } = await supabase.rpc('increment_ad_ping_balance', {
+    p_user_id: userId,
+    p_here_pings: herePings,
+    p_everyone_pings: everyonePings,
+    p_reference_id: session.id,
+  });
 
-  await supabase.from("advertisement_subscriptions").update({
-    here_pings_balance: (sub.here_pings_balance || 0) + herePings,
-    everyone_pings_balance: (sub.everyone_pings_balance || 0) + everyonePings,
-    updated_at: new Date().toISOString(),
-  }).eq("id", sub.id);
+  if (updated) {
+    LOG("Ad pings added", { herePings, everyonePings });
+  } else {
+    LOG("Ad ping purchase already fulfilled or no active subscription", { sessionId: session.id });
+  }
 }
 
 export async function processCreditPurchase(supabase: SupabaseClient, session: Stripe.Checkout.Session) {
@@ -110,14 +113,22 @@ export async function processCreditPurchase(supabase: SupabaseClient, session: S
 
   LOG("Processing credit purchase", { userId, creditAmount });
 
-  await supabase.rpc('add_credits', {
-    p_user_id: userId, p_amount: creditAmount, p_type: 'purchase',
+  // Use idempotent fulfillment to prevent double-crediting
+  // (confirm-embedded-payment may also fire with the paymentIntentId)
+  const { data: fulfilled } = await supabase.rpc('fulfill_credits_idempotent', {
+    p_user_id: userId,
+    p_reference_id: session.id,
+    p_amount: creditAmount,
     p_description: `Credit purchase - £${creditAmount.toFixed(2)}`,
-    p_reference_id: session.id, p_gifted_by: null, p_order_id: null,
   });
 
-  await supabase.from("notifications").insert({
-    user_id: userId, title: "💰 Credits Added!",
-    message: `£${creditAmount.toFixed(2)} has been added to your credit balance.`, type: "general",
-  });
+  if (fulfilled) {
+    LOG("Credits added via webhook", { creditAmount });
+    await supabase.from("notifications").insert({
+      user_id: userId, title: "💰 Credits Added!",
+      message: `£${creditAmount.toFixed(2)} has been added to your credit balance.`, type: "general",
+    });
+  } else {
+    LOG("Credits already fulfilled (idempotent skip)", { sessionId: session.id });
+  }
 }

@@ -292,8 +292,16 @@ Deno.serve(async (req) => {
             processed_at: new Date().toISOString(),
           })
           .eq('id', payout.id);
+
+        // 5. CRITICAL: Deduct seller balance (was missing — sellers kept balance AND got paid)
+        await supabase.rpc('deduct_seller_balance', {
+          p_user_id: payout.seller_id,
+          p_amount: payout.amount,
+        });
+
+        logStep('Seller balance deducted', { payoutId: payout.id, amount: payout.amount });
         
-        // 5. Update funding request status
+        // 6. Update funding request status
         if (payout.stripe_funding_payout_id) {
           await supabase
             .from('wise_funding_requests')
