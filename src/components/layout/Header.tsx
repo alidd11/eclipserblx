@@ -368,12 +368,13 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
               <span className="flex-1">{t('nav.systemStatus')}</span>
               <Circle className={cn('h-2.5 w-2.5 fill-current', statusConfig[systemStatus].color)} />
             </NavLink>
+            )}
             
             {/* Separator */}
-            <div className="my-2 border-t border-border" />
+            {!isCustomStoreDomain && <div className="my-2 border-t border-border" />}
             
-            {/* Legal & Support Links */}
-            {legalLinks.map((link) => (
+            {/* Legal & Support Links — hidden on custom domains */}
+            {!isCustomStoreDomain && legalLinks.map((link) => (
               <NavLink
                 key={link.href}
                 to={link.href}
