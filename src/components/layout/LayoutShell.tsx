@@ -5,8 +5,10 @@ import { UniversalBreadcrumb } from '@/components/layout/UniversalBreadcrumb';
 import { Footer } from '@/components/layout/Footer';
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
-import { SearchCommandPalette } from '@/components/search/SearchCommandPalette';
 import { useEdgeSwipe } from '@/hooks/useEdgeSwipe';
+
+// Lazy-load search palette — only needed when user presses Cmd+K
+const SearchCommandPalette = lazy(() => import('@/components/search/SearchCommandPalette').then(m => ({ default: m.SearchCommandPalette })));
 
 // Lazy-load FABs — only needed after user scrolls, imports framer-motion
 const FloatingActionButtons = lazy(() => import('@/components/ui/FloatingActionButtons').then(m => ({ default: m.FloatingActionButtons })));
