@@ -31,6 +31,7 @@ export default function SellerSettingsDomain() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [customDomainInput, setCustomDomainInput] = useState('');
+  const [domainSearchInput, setDomainSearchInput] = useState('');
 
   // Get seller's store
   const { data: store, isLoading: storeLoading } = useQuery({
