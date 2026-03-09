@@ -81,6 +81,20 @@ Deno.serve(async (req) => {
       patchSetting("browser_check", "on", "browser_check"),
     ]);
 
+    // ─── 1b. TIERED CACHE ────────────────────────────────────────
+
+    try {
+      const r = await cfApi(
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/argo/tiered_caching`,
+        "PATCH",
+        { value: "on" },
+        "tiered_caching"
+      );
+      results["tiered_caching"] = { success: r.data.success, status: r.status };
+    } catch (e) {
+      results["tiered_caching"] = { success: false, error: (e as Error).message };
+    }
+
     // ─── 2. SUPER BOT FIGHT MODE (Pro) ──────────────────────────
 
     // First GET current config, then PATCH only supported fields
@@ -127,6 +141,7 @@ Deno.serve(async (req) => {
             cache: true,
             edge_ttl: { mode: "override_origin", default: 2592000 },
             browser_ttl: { mode: "override_origin", default: 31536000 },
+            serve_stale: { disable_stale_while_updating: false },
           },
         },
         {
@@ -137,6 +152,7 @@ Deno.serve(async (req) => {
             cache: true,
             edge_ttl: { mode: "override_origin", default: 31536000 },
             browser_ttl: { mode: "override_origin", default: 31536000 },
+            serve_stale: { disable_stale_while_updating: false },
           },
         },
         {
@@ -256,6 +272,8 @@ Deno.serve(async (req) => {
               "X-Frame-Options": { operation: "set", value: "SAMEORIGIN" },
               "Referrer-Policy": { operation: "set", value: "strict-origin-when-cross-origin" },
               "Permissions-Policy": { operation: "set", value: "camera=(), microphone=(), geolocation=()" },
+              "X-DNS-Prefetch-Control": { operation: "set", value: "on" },
+              "Strict-Transport-Security": { operation: "set", value: "max-age=31536000; includeSubDomains; preload" },
             },
           },
         },
@@ -290,7 +308,14 @@ Deno.serve(async (req) => {
       } else {
         const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
-          "POST", transformPayload, "transform_rules"
+          "POST",
+          {
+            name: "Eclipse Pro Transform Rules",
+            kind: "zone",
+            phase: "http_response_headers_transform",
+            rules: transformRules,
+          },
+          "transform_rules"
         );
         results["transform_rules"] = { success: r.data.success, action: "created", status: r.status };
       }
