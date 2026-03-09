@@ -116,7 +116,7 @@ export default function AdminAuditLogs() {
           </TableRow>
         ) : (
           logs.map((log) => {
-            const details = log.details as { target_email?: string; role?: string } | null;
+            const details = log.details as { target_email?: string; target_display_name?: string; role?: string } | null;
             const isAdded = log.action === 'role_added';
             return (
               <TableRow key={log.id}>
@@ -126,7 +126,7 @@ export default function AdminAuditLogs() {
                     {isAdded ? 'Added' : 'Removed'}
                   </Badge>
                 </TableCell>
-                <TableCell><span className="text-sm">{details?.target_email || 'Unknown'}</span></TableCell>
+                <TableCell><span className="text-sm">{details?.target_display_name || details?.target_email || 'Unknown'}</span></TableCell>
                 <TableCell>
                   <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
                     <Shield className="h-3 w-3 mr-1" />
