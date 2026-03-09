@@ -10,6 +10,7 @@ const Checkout = lazy(() => import('@/pages/Checkout'));
 const OrderSuccess = lazy(() => import('@/pages/OrderSuccess'));
 const Auth = lazy(() => import('@/pages/Auth'));
 const StoreReviewsPage = lazy(() => import('@/pages/StoreReviewsPage'));
+const StoreCustomPage = lazy(() => import('@/pages/StoreCustomPage'));
 const StoreAbout = lazy(() => import('@/pages/StoreAbout'));
 
 function PageLoader() {
