@@ -177,6 +177,11 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(event.request)
         .then(response => {
+          // Treat 5xx errors (including 522 timeouts) as failures - show offline page
+          if (!response.ok && response.status >= 500) {
+            console.log('[Eclipse SW] Server error', response.status, '- showing offline page');
+            throw new Error(`Server error: ${response.status}`);
+          }
           // Clone the response for caching
           const responseClone = response.clone();
           caches.open('navigation-cache').then(cache => {
@@ -184,7 +189,8 @@ self.addEventListener('fetch', (event) => {
           });
           return response;
         })
-        .catch(async () => {
+        .catch(async (error) => {
+          console.log('[Eclipse SW] Fetch failed:', error.message);
           // Fallback to cache if network fails
           const cachedResponse = await caches.match(event.request);
           if (cachedResponse) {

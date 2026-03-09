@@ -7,7 +7,9 @@ const LOCAL_VERSION_KEY = 'app_installed_version';
 const LAST_UPDATE_KEY = 'app_last_force_update';
 const PENDING_VERSION_PARAM = '__v';
 const UPDATE_TIME_PARAM = '__t';
+const RELOAD_ATTEMPT_PARAM = '__ra';
 const GRACE_PERIOD = 60000; // 60 seconds grace period after update
+const MAX_RELOAD_ATTEMPTS = 2; // Prevent infinite reload loops on iOS
 
 interface AppVersion {
   id: string;
@@ -98,6 +100,7 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
       if (pendingVersion || updateTime) {
         url.searchParams.delete(PENDING_VERSION_PARAM);
         url.searchParams.delete(UPDATE_TIME_PARAM);
+        url.searchParams.delete(RELOAD_ATTEMPT_PARAM);
         window.history.replaceState({}, '', url.toString());
       }
     } catch {}
@@ -105,6 +108,17 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
 
   const forceAppUpdate = useCallback(async (nextVersion: string) => {
     if (isUpdatingRef.current) return;
+    
+    // Check reload attempt counter to prevent infinite loops on iOS
+    try {
+      const url = new URL(window.location.href);
+      const currentAttempts = parseInt(url.searchParams.get(RELOAD_ATTEMPT_PARAM) || '0', 10);
+      if (currentAttempts >= MAX_RELOAD_ATTEMPTS) {
+        console.warn('[AppVersionCheck] Max reload attempts reached, aborting update loop');
+        return;
+      }
+    } catch {}
+    
     isUpdatingRef.current = true;
     if (showNotifications) showInfoNotification('Update Available', 'Applying update...');
     try {
@@ -113,8 +127,10 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
       setUpdateTimestamp(updateTime);
       try {
         const url = new URL(window.location.href);
+        const currentAttempts = parseInt(url.searchParams.get(RELOAD_ATTEMPT_PARAM) || '0', 10);
         url.searchParams.set(PENDING_VERSION_PARAM, nextVersion);
         url.searchParams.set(UPDATE_TIME_PARAM, updateTime);
+        url.searchParams.set(RELOAD_ATTEMPT_PARAM, (currentAttempts + 1).toString());
         window.history.replaceState({}, '', url.toString());
       } catch {}
       if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
