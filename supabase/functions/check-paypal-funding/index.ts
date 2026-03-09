@@ -143,6 +143,18 @@ Deno.serve(async (req) => {
     for (const payout of paypalPayouts) {
       const requiredAmount = payout.amount * 1.05; // 5% buffer
 
+      // Atomic claim to prevent concurrent processing
+      const { data: claimed } = await supabase.rpc('claim_payout_for_processing', {
+        p_payout_id: payout.id,
+        p_lock_id: `check-paypal-${Date.now()}`,
+        p_expected_status: 'awaiting_funds',
+      });
+
+      if (!claimed) {
+        logStep('Payout already claimed by another run', { payoutId: payout.id });
+        continue;
+      }
+
       logStep('Processing payout', {
         payoutId: payout.id,
         amount: payout.amount,
