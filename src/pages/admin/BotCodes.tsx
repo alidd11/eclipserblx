@@ -99,19 +99,19 @@ export default function AdminBotCodes() {
       
       // Fetch processor profiles
       const processedByIds = data?.filter(c => c.processed_by).map(c => c.processed_by) || [];
-      let processorMap: Record<string, { display_name: string | null; email: string }> = {};
+      let processorMap: Record<string, { display_name: string | null; staff_id: string | null }> = {};
       
       if (processedByIds.length > 0) {
         const { data: processors } = await supabase
           .from('profiles')
-          .select('user_id, display_name, email')
+          .select('user_id, display_name, staff_id')
           .in('user_id', processedByIds);
         
         if (processors) {
           processorMap = processors.reduce((acc, p) => {
-            acc[p.user_id] = { display_name: p.display_name, email: p.email };
+            acc[p.user_id] = { display_name: p.display_name, staff_id: p.staff_id };
             return acc;
-          }, {} as Record<string, { display_name: string | null; email: string }>);
+          }, {} as Record<string, { display_name: string | null; staff_id: string | null }>);
         }
       }
       
