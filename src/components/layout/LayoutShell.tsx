@@ -101,7 +101,7 @@ function LayoutShellInner({
             ) : (
               children
             )}
-            <Footer />
+            <Suspense fallback={null}><Footer /></Suspense>
           </main>
         </div>
       </div>
