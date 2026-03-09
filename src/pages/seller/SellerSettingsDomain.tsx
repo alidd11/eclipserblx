@@ -9,10 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { Globe, CheckCircle, Clock, AlertTriangle, ExternalLink, Copy, Trash2, RefreshCw, Zap, Crown, CreditCard, Settings, Link } from 'lucide-react';
+import { Globe, CheckCircle, Clock, AlertTriangle, ExternalLink, Copy, Trash2, RefreshCw, Zap, Crown, CreditCard, Settings, act';
 
-ord<string, { className: string; label: string }> = {
-    active: { className: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20', label: 'Active' },
+ord<string, { classNamxt-emerald-500 border-emerald-500/20', label: 'Active' },
     pending: { className: 'bg-amber-500/10 text-amber-500 border-amber-500/20', label: 'Pending' },
     verifying: { className: 'bg-blue-500/10 text-blue-500 border-blue-500/20', label: 'Verifying' },
     failed: { className: 'bg-destructive/10 text-destructive border-destructive/20', label: 'Failed' },
@@ -30,8 +29,7 @@ export default function SellerSettingsDomain() {
   const [domainSearchInput, setDomainSearchInput] = useState('');
 
   // Get seller's store
-  const { data: store, isLoading: storeLoading } = useQuery({
-    queryKey: ['seller-store-for-domain', user?.id],
+  const { d: ['seller-store-for-domain', user?.id],
     queryFn: async () => {
       if (!user) return null;
       const { data } = await supabase
