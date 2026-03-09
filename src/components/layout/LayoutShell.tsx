@@ -109,7 +109,11 @@ function LayoutShellInner({
       <Suspense fallback={null}>
         <FloatingActionButtons />
       </Suspense>
-      <SearchCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
+      {searchOpen && (
+        <Suspense fallback={null}>
+          <SearchCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
+        </Suspense>
+      )}
       {extra}
     </>
   );
