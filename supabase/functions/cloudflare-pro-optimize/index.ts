@@ -399,6 +399,7 @@ Deno.serve(async (req) => {
       const existingManaged = allRulesets.find((r: any) => r.phase === "http_request_firewall_managed");
 
       if (existingManaged) {
+        // Try update; if 404 (stale ID), delete and recreate
         const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingManaged.id}`,
           "PUT",
@@ -410,7 +411,27 @@ Deno.serve(async (req) => {
           },
           "owasp_managed_ruleset"
         );
-        results["owasp_managed_ruleset"] = { success: r.data.success, action: "updated", status: r.status };
+        if (r.status === 404) {
+          // Stale entrypoint — delete and recreate
+          await cfApi(
+            `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingManaged.id}`,
+            "DELETE", null, "owasp_delete_stale"
+          );
+          const r2 = await cfApi(
+            `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
+            "POST",
+            {
+              name: "Eclipse Managed WAF Entrypoint",
+              kind: "zone",
+              phase: "http_request_firewall_managed",
+              rules: managedRules,
+            },
+            "owasp_managed_ruleset_recreate"
+          );
+          results["owasp_managed_ruleset"] = { success: r2.data.success, action: "recreated", status: r2.status };
+        } else {
+          results["owasp_managed_ruleset"] = { success: r.data.success, action: "updated", status: r.status };
+        }
       } else {
         const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
