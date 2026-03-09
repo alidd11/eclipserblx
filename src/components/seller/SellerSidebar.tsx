@@ -139,7 +139,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
         return {};
       }
     }
-    return navGroups.reduce((acc, group) => ({ ...acc, [group.id]: true }), {});
+    return { catalog: true, inbox: true, marketing: false, finance: false, integrations: false, settings: false };
   });
 
   useEffect(() => {
