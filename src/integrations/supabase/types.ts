@@ -4419,6 +4419,24 @@ export type Database = {
           },
         ]
       }
+      processed_webhook_events: {
+        Row: {
+          event_id: string
+          event_type: string
+          processed_at: string
+        }
+        Insert: {
+          event_id: string
+          event_type: string
+          processed_at?: string
+        }
+        Update: {
+          event_id?: string
+          event_type?: string
+          processed_at?: string
+        }
+        Relationships: []
+      }
       product_bundles: {
         Row: {
           bundle_price: number
@@ -6379,6 +6397,8 @@ export type Database = {
           notes: string | null
           processed_at: string | null
           processed_by: string | null
+          processing_lock_id: string | null
+          processing_locked_at: string | null
           seller_id: string
           status: string | null
           store_id: string
@@ -6399,6 +6419,8 @@ export type Database = {
           notes?: string | null
           processed_at?: string | null
           processed_by?: string | null
+          processing_lock_id?: string | null
+          processing_locked_at?: string | null
           seller_id: string
           status?: string | null
           store_id: string
@@ -6419,6 +6441,8 @@ export type Database = {
           notes?: string | null
           processed_at?: string | null
           processed_by?: string | null
+          processing_lock_id?: string | null
+          processing_locked_at?: string | null
           seller_id?: string
           status?: string | null
           store_id?: string
@@ -9208,9 +9232,21 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: boolean
       }
+      claim_payout_for_processing: {
+        Args: {
+          p_expected_status?: string
+          p_lock_id: string
+          p_payout_id: string
+        }
+        Returns: boolean
+      }
       cleanup_expired_download_tokens: { Args: never; Returns: undefined }
       cleanup_expired_link_codes: { Args: never; Returns: undefined }
       cleanup_expired_tracking_data: { Args: never; Returns: Json }
+      deduct_seller_balance: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: boolean
+      }
       escalate_unanswered_tickets: { Args: never; Returns: number }
       generate_affiliate_id: { Args: never; Returns: string }
       generate_customer_id: { Args: never; Returns: string }
