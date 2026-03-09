@@ -149,6 +149,7 @@ const navGroups: NavGroup[] = [
       { title: 'Role Permissions', icon: Shield, href: '/admin/role-permissions', permissions: ['manage_permissions'], dividerAfter: true },
       { title: 'Discord', icon: MessageCircle, href: '/admin/discord-settings', permissions: ['manage_settings'] },
       { title: 'Roblox', icon: Gamepad2, href: '/admin/roblox-settings', permissions: ['manage_settings'], dividerAfter: true },
+      { title: 'SEO & Indexing', icon: Activity, href: '/admin/seo-indexing', permissions: ['manage_settings'] },
       { title: 'Settings', icon: Settings, href: '/admin/settings', permissions: [] },
       { title: 'Help', icon: HelpCircle, href: '/admin/help', permissions: [] },
     ],

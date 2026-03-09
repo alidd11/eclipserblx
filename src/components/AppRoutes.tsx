@@ -398,6 +398,7 @@ export function AppRoutes() {
         <Route path="/admin/affiliate-applications" element={<AdminAffiliateApplications />} />
         <Route path="/admin/store-applications" element={<AdminStoreApplications />} />
         <Route path="/admin/seller-product-review" element={<AdminSellerProductReview />} />
+        <Route path="/admin/seo-indexing" element={<AdminSEOIndexing />} />
         <Route path="/admin/seller-products" element={<AdminSellerProductsAll />} />
         <Route path="/admin/seller-commissions" element={<AdminSellerCommissions />} />
         <Route path="/admin/seller-commissions/:storeId" element={<AdminSellerStoreDetail />} />
