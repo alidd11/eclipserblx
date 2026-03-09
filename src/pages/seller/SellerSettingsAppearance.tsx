@@ -154,6 +154,8 @@ export default function SellerSettingsAppearance() {
           custom_css: data.custom_css || null,
           banner_start_at: data.banner_start_at || null,
           banner_end_at: data.banner_end_at || null,
+          favicon_url: data.favicon_url || null,
+          hide_branding: data.hide_branding,
           updated_at: new Date().toISOString(),
         } as any)
         .eq('id', store.id);
