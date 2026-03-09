@@ -1,8 +1,8 @@
 import { ReactNode, useState, lazy, Suspense } from 'react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Header } from '@/components/layout/Header';
-import { UniversalBreadcrumb } from '@/components/layout/UniversalBreadcrumb';
-import { Footer } from '@/components/layout/Footer';
+// Lazy-load below-fold Footer to reduce initial bundle
+const Footer = lazy(() => import('@/components/layout/Footer').then(m => ({ default: m.Footer })));
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
 import { useEdgeSwipe } from '@/hooks/useEdgeSwipe';
