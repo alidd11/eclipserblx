@@ -53,7 +53,7 @@ export default function IpBans() {
           if (ban.banned_by) {
             const { data: profile } = await supabase
               .from('profiles')
-              .select('display_name, email')
+              .select('display_name, customer_id')
               .eq('user_id', ban.banned_by)
               .single();
             banned_by_profile = profile;
@@ -62,7 +62,7 @@ export default function IpBans() {
           if (ban.user_id) {
             const { data: profile } = await supabase
               .from('profiles')
-              .select('display_name, email')
+              .select('display_name, customer_id')
               .eq('user_id', ban.user_id)
               .single();
             banned_user_profile = profile;
