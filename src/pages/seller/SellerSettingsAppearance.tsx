@@ -218,6 +218,12 @@ export default function SellerSettingsAppearance() {
                   Features
                 </div>
               </SelectItem>
+              <SelectItem value="navigation">
+                <div className="flex items-center gap-2">
+                  <Link2 className="h-4 w-4" />
+                  Navigation
+                </div>
+              </SelectItem>
               <SelectItem value="advanced">
                 <div className="flex items-center gap-2">
                   <Code className="h-4 w-4" />
