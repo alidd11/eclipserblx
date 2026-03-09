@@ -404,7 +404,7 @@ export default function AdminRefunds() {
                         >
                           <div>
                             <p className="font-medium">
-                              {commission.profile?.display_name || commission.profile?.email || "Unknown Affiliate"}
+                              {commission.profile?.display_name || "Unknown Affiliate"}
                             </p>
                             <p className="text-sm text-muted-foreground">
                               Commission: {formatCurrency(commission.commission_amount / 100)}

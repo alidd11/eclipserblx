@@ -362,14 +362,14 @@ export default function AdminAuditLogs() {
   };
 
   const renderMobileAccountCard = (log: AuditLog) => {
-    const details = log.details as { target_email?: string; target_user_id?: string } | null;
+    const details = log.details as { target_email?: string; target_display_name?: string; target_user_id?: string } | null;
     return (
       <div key={log.id} className="p-4 rounded-lg bg-muted/50 border border-border space-y-2">
         <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/30">
           <Trash2 className="h-3 w-3 mr-1" />
           Account Deleted
         </Badge>
-        <p className="text-sm truncate">{details?.target_email || details?.target_user_id || 'Unknown'}</p>
+        <p className="text-sm truncate">{details?.target_display_name || details?.target_user_id?.slice(0, 8) || 'Unknown'}</p>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>by {getAdminName(log.user_id)}</span>
           <span>{format(new Date(log.created_at), 'MMM d, h:mm a')}</span>

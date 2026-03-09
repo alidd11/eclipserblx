@@ -152,11 +152,11 @@ export default function Transcripts() {
       
       return (tickets || []).map(ticket => ({
         id: ticket.id,
-        title: (ticket as any).profiles?.display_name || (ticket as any).profiles?.username || ticket.customer_email || 'Unknown Customer',
+        title: (ticket as any).profiles?.display_name || (ticket as any).profiles?.username || 'Unknown Customer',
         subtitle: `${ticket.ticket_number || 'No ID'} - ${ticket.subject}`,
         created_at: ticket.created_at,
         closed_at: ticket.updated_at,
-        customer_name: (ticket as any).profiles?.display_name || ticket.customer_email,
+        customer_name: (ticket as any).profiles?.display_name || 'Unknown Customer',
         customer_id: ticket.user_id,
       })) as Transcript[];
     },

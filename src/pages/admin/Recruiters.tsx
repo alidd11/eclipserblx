@@ -86,8 +86,7 @@ export default function Recruiters() {
     return (
       app.display_name?.toLowerCase().includes(query) ||
       app.recruiter_id?.toLowerCase().includes(query) ||
-      app.discord_username?.toLowerCase().includes(query) ||
-      app.email?.toLowerCase().includes(query)
+      app.discord_username?.toLowerCase().includes(query)
     );
   });
 

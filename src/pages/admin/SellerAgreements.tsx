@@ -85,7 +85,6 @@ export default function SellerAgreements() {
     const matchesSearch = 
       store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       store.store_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      store.owner_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       store.owner_name?.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (activeTab === "pending") {

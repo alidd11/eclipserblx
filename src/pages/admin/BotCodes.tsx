@@ -461,7 +461,7 @@ export default function AdminBotCodes() {
                             {code.processor_profile ? (
                               <div className="flex items-center gap-1 text-sm">
                                 <Shield className="h-3 w-3 text-primary" />
-                                <span>{code.processor_profile.display_name || code.processor_profile.email}</span>
+                                <span>{code.processor_profile.display_name || code.processor_profile.staff_id || 'Staff'}</span>
                               </div>
                             ) : (
                               <span className="text-muted-foreground">—</span>

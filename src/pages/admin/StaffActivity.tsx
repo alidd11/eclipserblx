@@ -263,7 +263,7 @@ export default function StaffActivityPage() {
                     <SelectItem value="all">All Staff</SelectItem>
                     {staffList?.map(staff => (
                       <SelectItem key={staff.user_id} value={staff.user_id}>
-                        {staff.display_name || staff.email}
+                        {staff.display_name || (staff as any).staff_id || 'Unknown'}
                       </SelectItem>
                     ))}
                   </SelectContent>

@@ -494,7 +494,6 @@ export default function StoreApplications() {
                     <div>
                       <Label className="text-muted-foreground text-xs">Applicant</Label>
                       <p className="font-medium">{selectedApplication.profiles?.display_name}</p>
-                      <p className="text-sm text-muted-foreground">{selectedApplication.profiles?.email}</p>
                       {selectedApplication.profiles?.customer_id && (
                         <p className="text-xs font-mono text-muted-foreground">{selectedApplication.profiles.customer_id}</p>
                       )}
