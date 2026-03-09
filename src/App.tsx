@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, forwardRef } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -53,7 +53,8 @@ function PageLoader() {
   );
 }
 
-const App = () => (
+const App = forwardRef<HTMLDivElement>((_, ref) => (
+  <div ref={ref}>
   <ConnectionErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <CookieConsentProvider>
@@ -97,6 +98,9 @@ const App = () => (
       </CookieConsentProvider>
     </QueryClientProvider>
   </ConnectionErrorBoundary>
-);
+  </div>
+));
+
+App.displayName = 'App';
 
 export default App;
