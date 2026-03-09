@@ -122,10 +122,13 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
             </Link>
           </div>
 
-          {/* Middle section: Search bar (flex to fill) */}
-          <div className="flex-1 min-w-0">
-            <HeaderSearchBar compact />
-          </div>
+          {/* Middle section: Search bar (flex to fill) — hidden on custom domains */}
+          {!isCustomStoreDomain && (
+            <div className="flex-1 min-w-0">
+              <HeaderSearchBar compact />
+            </div>
+          )}
+          {isCustomStoreDomain && <div className="flex-1" />}
 
           {/* Right section: Icons (flush right, tighter spacing) */}
           <div className="flex items-center shrink-0 ml-auto gap-0.5">
