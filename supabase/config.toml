@@ -320,6 +320,9 @@ verify_jwt = false
 [functions.check-wise-funding]
 verify_jwt = false
 
+[functions.check-paypal-funding]
+verify_jwt = false
+
 [functions.discord-fun-bot]
 verify_jwt = false
 
