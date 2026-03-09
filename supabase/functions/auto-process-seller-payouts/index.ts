@@ -640,22 +640,11 @@ Deno.serve(async (req) => {
             })
             .eq('id', payoutId);
 
-          // Update seller balance atomically
-          const { data: ppBalance } = await supabase
-            .from('seller_balances')
-            .select('available_balance, total_paid')
-            .eq('user_id', payout.seller_id)
-            .single();
-
-          if (ppBalance) {
-            await supabase
-              .from('seller_balances')
-              .update({
-                available_balance: Math.max(0, (ppBalance.available_balance || 0) - payout.amount),
-                total_paid: (ppBalance.total_paid || 0) + payout.amount,
-              })
-              .eq('user_id', payout.seller_id);
-          }
+          // Atomic balance deduction
+          await supabase.rpc('deduct_seller_balance', {
+            p_user_id: payout.seller_id,
+            p_amount: payout.amount,
+          });
 
           // Audit log
           await supabase.from('audit_logs').insert({

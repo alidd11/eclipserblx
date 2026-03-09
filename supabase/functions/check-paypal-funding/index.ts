@@ -230,22 +230,11 @@ Deno.serve(async (req) => {
           })
           .eq('id', payout.id);
 
-        // Update seller balance
-        const { data: currentBal } = await supabase
-          .from('seller_balances')
-          .select('available_balance, total_paid')
-          .eq('user_id', payout.seller_id)
-          .single();
-
-        if (currentBal) {
-          await supabase
-            .from('seller_balances')
-            .update({
-              available_balance: Math.max(0, (currentBal.available_balance || 0) - payout.amount),
-              total_paid: (currentBal.total_paid || 0) + payout.amount,
-            })
-            .eq('user_id', payout.seller_id);
-        }
+        // Atomic balance deduction
+        await supabase.rpc('deduct_seller_balance', {
+          p_user_id: payout.seller_id,
+          p_amount: payout.amount,
+        });
 
         // Update funding request status
         if (payout.stripe_funding_payout_id) {
