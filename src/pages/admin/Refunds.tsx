@@ -306,7 +306,7 @@ export default function AdminRefunds() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="font-medium">{order.customer_email}</div>
+                          <div className="font-medium font-mono text-sm">{order.customer_id || 'Guest'}</div>
                         </TableCell>
                         <TableCell>{formatCurrency(order.total)}</TableCell>
                         <TableCell className="text-destructive font-medium">
