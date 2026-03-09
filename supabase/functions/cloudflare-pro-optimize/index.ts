@@ -261,17 +261,19 @@ Deno.serve(async (req) => {
       ];
 
       const existingTransform = allRulesets.find((r: any) => r.phase === "http_response_headers_transform");
-      const transformPayload = {
-        name: "Eclipse Pro Transform Rules",
-        kind: "zone",
-        phase: "http_response_headers_transform",
-        rules: transformRules,
-      };
 
       if (existingTransform) {
+        // Preserve original name and kind when updating
         const r = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${existingTransform.id}`,
-          "PUT", transformPayload, "transform_rules"
+          "PUT",
+          {
+            name: existingTransform.name,
+            kind: existingTransform.kind,
+            phase: "http_response_headers_transform",
+            rules: transformRules,
+          },
+          "transform_rules"
         );
         results["transform_rules"] = { success: r.data.success, action: "updated", status: r.status };
       } else {
