@@ -1,156 +1,147 @@
-# Cloudflare Optimization Guide for Eclipse
+# Cloudflare Pro Optimization Guide for Eclipse
 
-This guide covers all recommended Cloudflare settings for eclipserblx.com.
+This guide covers all Cloudflare settings for eclipserblx.com on the **Pro plan ($20/mo)**.
 
----
-
-## 1. Caching & Page Rules
-
-### Browser Cache TTL (Settings → Caching → Configuration)
-- Set **Browser Cache TTL** to **1 year** (for hashed Vite assets)
-- Enable **Always Online™** so Cloudflare serves stale pages if origin is down
-
-### Cache Rules (Rules → Cache Rules)
-
-Create these cache rules in order:
-
-#### Rule 1: Cache static assets aggressively
-- **When**: URI path contains `/assets/` OR URI path ends with `.js` `.css` `.woff2` `.webp` `.png` `.jpg` `.svg` `.ico`
-- **Then**:
-  - Cache eligible: Yes
-  - Edge TTL: 30 days
-  - Browser TTL: 1 year
-  - Cache Key: Ignore query string
-
-#### Rule 2: Cache fonts with immutable headers
-- **When**: URI path starts with `/fonts/`
-- **Then**:
-  - Edge TTL: 365 days
-  - Browser TTL: 1 year
-
-#### Rule 3: Don't cache HTML (SPA)
-- **When**: URI path equals `/` OR NOT (URI path contains `.`)
-- **Then**:
-  - Edge TTL: Bypass cache
-  - Browser TTL: No cache
-  - This ensures the SPA always gets fresh `index.html`
+Settings marked with 🤖 are **automated** via the `cloudflare-pro-optimize` backend function.
 
 ---
 
-## 2. Speed Optimizations
+## 1. Speed & Performance
 
-### Settings → Speed → Optimization
+### Settings (🤖 Automated)
 
-| Setting | Recommended | Why |
-|---------|-------------|-----|
-| **Auto Minify** | JS ✅ CSS ✅ HTML ✅ | Strips whitespace/comments at the edge |
-| **Brotli** | ✅ On | Better compression than gzip (~15-20% smaller) |
-| **Early Hints (103)** | ✅ On | Sends preload hints while origin processes request |
-| **HTTP/2** | ✅ On (default) | Multiplexed connections |
-| **HTTP/3 (QUIC)** | ✅ On | Faster connections, especially on mobile |
-| **Rocket Loader** | ❌ Off | Can break SPAs — leave off for React apps |
-| **Mirage** | ❌ Off (Pro+) | Image lazy loading — we handle this in code |
-| **Polish** | ✅ Lossy (Pro+) | Automatic image compression at the edge |
+| Setting | Value | Why |
+|---------|-------|-----|
+| **Polish** 🤖 | Lossy + WebP | Auto-compresses product images 20-40% at edge |
+| **Auto Minify** 🤖 | JS ✅ CSS ✅ HTML ✅ | Strips whitespace/comments |
+| **Brotli** 🤖 | ✅ On | ~15-20% better compression than gzip |
+| **Early Hints (103)** 🤖 | ✅ On | Preload hints while origin processes |
+| **HTTP/2 Prioritization** 🤖 | ✅ On | Smarter resource ordering (Pro) |
+| **HTTP/3 (QUIC)** 🤖 | ✅ On | Faster mobile connections |
+| **0-RTT** 🤖 | ✅ On | Faster reconnections |
+| **Speed Brain** 🤖 | ✅ On | Speculative prefetching |
+| **Rocket Loader** 🤖 | ❌ Off | Breaks React SPAs |
+| **Mirage** 🤖 | ❌ Off | We handle lazy loading in code |
+| **Always Online** 🤖 | ✅ On | Serves stale pages if origin is down |
 
-### Speed → Optimization → Content Optimization
-- **Cloudflare Fonts**: ❌ Off (we self-host fonts already)
+### Manual Verification
+- **Crawler Hints**: Enable in Speed → Optimization → Content Optimization (pushes IndexNow automatically)
+- **Cloudflare Fonts**: ❌ Off (we self-host fonts)
 
 ---
 
-## 3. Security Hardening
+## 2. Caching
 
-### SSL/TLS (SSL/TLS → Overview)
+### Cache Rules (🤖 Automated via Rulesets API)
+
+| Rule | Match | Edge TTL | Browser TTL |
+|------|-------|----------|-------------|
+| Static assets 🤖 | `/assets/`, `.js`, `.css`, `.woff2`, images | 30 days | 1 year |
+| Fonts 🤖 | `/fonts/` | 365 days | 1 year |
+| HTML/SPA 🤖 | `/` or paths without `.` | Bypass | No cache |
+
+### Manual Verification
+- **Smart Tiered Caching**: ✅ Enable (Caching → Tiered Cache) — uses CF global network as multi-tier cache
+
+---
+
+## 3. Security
+
+### SSL/TLS
 - Mode: **Full (strict)**
 - Minimum TLS Version: **TLS 1.2**
 - TLS 1.3: ✅ On
 - Always Use HTTPS: ✅ On
-- HSTS: ✅ Enable with:
-  - Max-Age: 12 months
-  - Include subdomains: Yes
-  - Preload: Yes
-  - No-Sniff: Yes
+- HSTS: ✅ (12 months, include subdomains, preload, no-sniff)
 
-### Security → WAF
-Enable these managed rules:
+### WAF Managed Rulesets (🤖 Automated)
 
-- **Cloudflare Managed Ruleset**: ✅ On (blocks common attacks: SQLi, XSS, etc.)
-- **Cloudflare OWASP Core Ruleset**: ✅ On (paranoia level 1 — balanced)
+| Ruleset | Action |
+|---------|--------|
+| **Cloudflare Managed Ruleset** 🤖 | Enabled — blocks SQLi, XSS, etc. |
+| **Cloudflare OWASP Core Ruleset** 🤖 | Enabled (managed_challenge) — Pro feature |
 
-### Security → Bots
-- **Bot Fight Mode**: ✅ On — blocks known bad bots
-- **Super Bot Fight Mode** (Pro+): Configure to:
-  - Definitely automated: Block
-  - Likely automated: Managed Challenge
-  - Verified bots: Allow (keeps Googlebot, Discordbot etc. working)
+### WAF Custom Rules (🤖 Automated)
 
-### Custom WAF Rules (Security → WAF → Custom Rules)
+| Rule | Match | Action |
+|------|-------|--------|
+| Rate limit API 🤖 | `/functions/v1/` | 60 req/min per IP → managed challenge |
+| Challenge admin paths 🤖 | `/admin/*`, `/ip-staff/*`, `/global-guard/*` | Managed challenge |
 
-#### Rule: Rate limit API proxy
-- **When**: URI path contains `/functions/v1/`
-- **Then**: Rate limit to 60 requests per minute per IP
-- Action on exceed: Block for 10 minutes
+### Bot Management (🤖 Automated)
 
-#### Rule: Block sensitive paths from external access
-- **When**: URI path starts with `/admin/` AND NOT (IP is in your allowlist)
-- **Then**: Block
-- *Note: This is defense-in-depth; your app already has auth, but this adds an edge layer*
+| Setting | Value |
+|---------|-------|
+| **Super Bot Fight Mode** 🤖 | Enabled (Pro) |
+| Definitely automated 🤖 | Block |
+| Likely automated 🤖 | Managed Challenge |
+| Verified bots 🤖 | Allow (Google, Discord, etc.) |
 
-#### Rule: Challenge suspicious countries (optional)
-- If your audience is primarily UK/US, you can challenge traffic from high-abuse countries
-
-### Security → Settings
-- **Security Level**: Medium
-- **Challenge Passage**: 30 minutes
-- **Browser Integrity Check**: ✅ On
+### Other Security (🤖 Automated)
+- **Browser Integrity Check** 🤖: ✅ On
+- **Email Obfuscation** 🤖: ✅ On
+- **Server-Side Excludes** 🤖: ✅ On
+- **Hotlink Protection**: ❌ Off (product images need OG preview embedding)
 
 ---
 
-## 4. Redirect Rules
+## 4. Transform Rules — Response Headers (🤖 Automated)
 
-### Rules → Redirect Rules
+### Security Headers (all responses)
+| Header | Value |
+|--------|-------|
+| `X-Content-Type-Options` | `nosniff` |
+| `X-Frame-Options` | `SAMEORIGIN` |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` |
 
-#### Rule 1: www → root redirect
-- **When**: Hostname equals `www.eclipserblx.com`
-- **Then**: Dynamic redirect to `https://eclipserblx.com${http.request.uri.path}`
-- Status: 301 (Permanent)
-- Preserve query string: Yes
-
-#### Rule 2: Force HTTPS
-- Already handled by "Always Use HTTPS" in SSL settings
-- No need for a separate rule
-
-#### Rule 3: Trailing slash normalization (optional)
-- **When**: URI path ends with `/` AND URI path is not `/`
-- **Then**: Redirect to same URL without trailing slash
-- Status: 301
+### SEO Headers
+| Path | Header |
+|------|--------|
+| `/admin/*`, `/seller/*`, `/ip-staff/*`, `/global-guard/*` | `X-Robots-Tag: noindex, nofollow` |
+| All public pages | `Link: <canonical>; rel="canonical"` |
 
 ---
 
-## 5. Additional Recommendations
+## 5. Redirect Rules (🤖 Automated)
 
-### Network
-- **HTTP/3**: ✅ On
-- **0-RTT**: ✅ On (faster reconnections)  
-- **WebSockets**: ✅ On (needed for Supabase Realtime)
-- **gRPC**: ❌ Off (not used)
-- **Pseudo IPv4**: Off
-
-### Scrape Shield
-- **Email Address Obfuscation**: ✅ On
-- **Server-Side Excludes**: ✅ On
-- **Hotlink Protection**: ❌ Off (product images need to be embeddable for OG previews)
-
-### Caching → Tiered Cache
-- ✅ Enable **Smart Tiered Caching** (free) — reduces origin requests by using Cloudflare's global network as multi-tier cache
+| Rule | From | To | Status |
+|------|------|----|--------|
+| www redirect 🤖 | `www.eclipserblx.com/*` | `eclipserblx.com/*` | 301 |
+| Trailing slash 🤖 | `/path/` | `/path` | 301 |
+| Force HTTPS | Already handled by SSL settings | — | — |
 
 ---
 
-## 6. Summary Checklist
+## 6. Network Settings
 
-- [ ] SSL: Full (strict) + TLS 1.2 min + HSTS
-- [ ] Speed: Brotli + Early Hints + HTTP/3 + Auto Minify (no Rocket Loader)
-- [ ] Cache: Long TTLs for assets, bypass for HTML
-- [ ] WAF: Managed rulesets + bot fight mode
-- [ ] Redirects: www→root 301, HTTPS forced
-- [ ] WebSockets enabled for realtime
-- [ ] Smart Tiered Caching enabled
+| Setting | Value |
+|---------|-------|
+| **HTTP/3** 🤖 | ✅ On |
+| **0-RTT** 🤖 | ✅ On |
+| **WebSockets** | ✅ On (needed for realtime) |
+| **gRPC** | ❌ Off |
+
+---
+
+## 7. Running the Optimization
+
+Invoke the `cloudflare-pro-optimize` backend function from the admin panel or directly. It will apply all 🤖 settings in one call and return a detailed report of what succeeded.
+
+### Manual Steps After Running
+- [ ] Verify Smart Tiered Caching is enabled
+- [ ] Verify HSTS is configured on Edge Certificates
+- [ ] Enable Crawler Hints in Speed → Optimization (if not applied via API)
+- [ ] Confirm WebSockets are enabled in Network settings
+
+---
+
+## 8. Expected Impact
+
+| Area | Improvement |
+|------|-------------|
+| **Images** | 20-40% smaller via Polish lossy + WebP |
+| **Security** | OWASP + Managed rulesets block attacks at edge |
+| **Bots** | Super Bot Fight Mode stops scrapers, allows verified bots |
+| **SEO** | Crawler Hints + canonical headers + noindex on private paths |
+| **Caching** | Granular edge/browser TTLs reduce origin load |
