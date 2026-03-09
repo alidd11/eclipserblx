@@ -1241,8 +1241,9 @@ function AdminChatContent() {
                 });
               }}
               placeholder="Message..."
-              className="w-full rounded-full bg-muted/50 border-0 focus-visible:ring-1 pr-10"
+              className="w-full rounded-full bg-muted/50 border-0 focus-visible:ring-1 pr-10 text-base"
               disabled={isUploading}
+              style={{ fontSize: '16px' }}
             />
           </div>
 
