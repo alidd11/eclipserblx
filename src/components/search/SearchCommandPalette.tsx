@@ -388,7 +388,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
       </div>
     </CommandDialog>
   );
-});
+}
 
 /* ── Product thumbnail sub-component ── */
 function ProductThumb({ product, formatPrice, highlightMatch }: { 
