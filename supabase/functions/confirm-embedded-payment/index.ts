@@ -128,15 +128,18 @@ serve(async (req) => {
         case 'credits': {
           const creditAmount = parseFloat(paymentIntent.metadata?.credit_amount || '0');
           if (creditAmount > 0) {
-            // Add credits to user's balance
-            await supabaseAdmin.rpc('add_credits', {
+            // Idempotent credit fulfillment — prevents double-crediting on retry
+            const { data: fulfilled } = await supabaseAdmin.rpc('fulfill_credits_idempotent', {
               p_user_id: user.id,
-              p_amount: creditAmount,
-              p_type: 'purchase',
-              p_description: `Purchased £${creditAmount.toFixed(2)} credits`,
               p_reference_id: paymentIntentId,
+              p_amount: creditAmount,
+              p_description: `Purchased £${creditAmount.toFixed(2)} credits`,
             });
-            logStep("Credits added", { creditAmount });
+            if (fulfilled) {
+              logStep("Credits added", { creditAmount });
+            } else {
+              logStep("Credits already fulfilled (idempotent skip)", { paymentIntentId });
+            }
           }
           break;
         }
