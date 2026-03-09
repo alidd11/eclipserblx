@@ -220,7 +220,7 @@ export default function IpBans() {
                         {ban.banned_user_profile ? (
                           <div className="flex items-center gap-2">
                             <User className="h-4 w-4 text-muted-foreground" />
-                            <span>{ban.banned_user_profile.display_name || ban.banned_user_profile.email}</span>
+                            <span>{ban.banned_user_profile.display_name || ban.banned_user_profile.customer_id || 'Unknown'}</span>
                           </div>
                         ) : (
                           <span className="text-muted-foreground">—</span>
@@ -230,7 +230,7 @@ export default function IpBans() {
                         {ban.reason || <span className="text-muted-foreground">No reason provided</span>}
                       </TableCell>
                       <TableCell>
-                        {ban.banned_by_profile?.display_name || ban.banned_by_profile?.email || 'Unknown'}
+                        {ban.banned_by_profile?.display_name || 'Unknown'}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {format(new Date(ban.created_at), 'MMM d, yyyy HH:mm')}
