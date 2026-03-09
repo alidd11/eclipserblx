@@ -22,11 +22,11 @@ interface IpBan {
   expires_at: string | null;
   banned_by_profile?: {
     display_name: string | null;
-    email: string;
+    customer_id: string | null;
   } | null;
   banned_user_profile?: {
     display_name: string | null;
-    email: string;
+    customer_id: string | null;
   } | null;
 }
 
