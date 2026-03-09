@@ -183,6 +183,10 @@ const SellerImport = lazy(() => import("@/pages/seller/SellerImport"));
 const SellerPromotions = lazy(() => import("@/pages/seller/SellerPromotions"));
 const SellerTaxSummary = lazy(() => import("@/pages/seller/SellerTaxSummary"));
 const SellerSettingsDomain = lazy(() => import("@/pages/seller/SellerSettingsDomain"));
+const SellerStorePages = lazy(() => import("@/pages/seller/SellerStorePages"));
+
+// Store custom page
+const StoreCustomPage = lazy(() => import("@/pages/StoreCustomPage"));
 
 // Store standalone page for custom domains
 const StoreStandalonePage = lazy(() => import("@/pages/StoreStandalonePage"));
