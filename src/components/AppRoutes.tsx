@@ -99,6 +99,7 @@ const AdminStaffProfile = lazy(() => import("@/pages/admin/StaffProfile"));
 const AdminAffiliateApplications = lazy(() => import("@/pages/admin/AffiliateApplications"));
 const AdminStoreApplications = lazy(() => import("@/pages/admin/StoreApplications"));
 const AdminSellerProductReview = lazy(() => import("@/pages/admin/SellerProductReview"));
+const AdminSEOIndexing = lazy(() => import("@/pages/admin/SEOIndexing"));
 const AdminSellerProductsAll = lazy(() => import("@/pages/admin/SellerProductsAll"));
 const AdminSellerPayouts = lazy(() => import("@/pages/admin/SellerPayouts"));
 const AdminSellerRecruitment = lazy(() => import("@/pages/admin/SellerRecruitment"));
