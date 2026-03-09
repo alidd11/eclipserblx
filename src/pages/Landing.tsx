@@ -2,10 +2,11 @@ import { forwardRef, lazy, Suspense } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LandingHero } from '@/components/landing/LandingHero';
 import { MarketplaceSection } from '@/components/home/MarketplaceSection';
-import { PWADiscordBanner } from '@/components/landing/PWADiscordBanner';
-import { ActiveOffersCard } from '@/components/home/ActiveOffersCard';
 
+// Lazy-load below-fold components to reduce initial JS bundle
 const PromotionCarousel = lazy(() => import('@/components/home/PromotionCarousel').then(m => ({ default: m.PromotionCarousel })));
+const PWADiscordBanner = lazy(() => import('@/components/landing/PWADiscordBanner').then(m => ({ default: m.PWADiscordBanner })));
+const ActiveOffersCard = lazy(() => import('@/components/home/ActiveOffersCard').then(m => ({ default: m.ActiveOffersCard })));
 import { OrganizationSchema, WebsiteSearchSchema, SiteNavigationSchema } from '@/components/seo/StructuredData';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
