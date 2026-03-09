@@ -167,7 +167,11 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
           <div className="flex items-center gap-3 shrink-0">
             <BackButton showLabel={true} />
             <Link to="/" className="flex items-center shrink-0">
-              <EclipseLogo size="sm" />
+              {isCustomStoreDomain && storeLogoUrl ? (
+                <img src={storeLogoUrl} alt={storeName || 'Store'} className="h-8 w-8 object-contain" />
+              ) : (
+                <EclipseLogo size="sm" />
+              )}
             </Link>
           </div>
 
