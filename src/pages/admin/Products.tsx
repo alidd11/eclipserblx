@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { submitProductUrl } from '@/lib/submitIndexNow';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Trash2, Search, Upload, FileCheck, X, Loader2, ImagePlus, Video, CheckSquare, Square, Edit3, Clock, Calendar, Store, Crown } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
