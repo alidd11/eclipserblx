@@ -79,7 +79,7 @@ const App = forwardRef<HTMLDivElement>((_, ref) => (
                             <AppRoutes />
                           </EmailGuard>
                         </Suspense>
-                        <InstallPrompt />
+                        <Suspense fallback={null}><InstallPrompt /></Suspense>
                       </PWAWrapper>
                       {/* Chat components rendered OUTSIDE PWAWrapper to prevent transform-related positioning issues */}
                       <Suspense fallback={null}>
