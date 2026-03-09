@@ -436,4 +436,4 @@ export function AppRoutes() {
     </Suspense>
     </RouteErrorBoundary>
   );
-});
+}
