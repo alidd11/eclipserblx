@@ -177,7 +177,7 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
 
           {/* Center: Search + Currency + Language */}
           <div className="flex items-center gap-3 flex-1 justify-center min-w-0">
-            <HeaderSearchBar className="flex-1 max-w-2xl" />
+            {!isCustomStoreDomain && <HeaderSearchBar className="flex-1 max-w-2xl" />}
             <CurrencySelector />
             <LanguageSwitcher />
           </div>
