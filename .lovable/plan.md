@@ -1,56 +1,36 @@
 
 
-## Performance Optimization Plan
+## Issues Identified
 
-### Current State
-The codebase is already well-optimized with lazy-loaded routes, code splitting, deferred Sentry, preloaded fonts/hero images, critical CSS inlining, and efficient caching strategies. The PageSpeed API quota is currently exhausted so I can't get exact scores, but based on the code audit, here are the remaining optimization opportunities.
+**Issue 1: Sidebar positioned at top of screen on desktop**
+The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
 
-### Optimizations to Implement
+**Issue 2: Excessive black empty space in the content area**
+The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
 
-#### 1. Remove `willChange` from always-visible elements
-`PageTransition` and `ScrollReveal` set `willChange: 'opacity, transform'` permanently. This promotes every page and every scroll-revealed section to its own GPU layer, consuming VRAM and hurting compositing on low-end devices. Best practice: only set `willChange` briefly before animation, or remove it entirely since framer-motion handles GPU promotion automatically.
+## Plan
 
-**Files:** `PageTransition.tsx`, `ScrollReveal.tsx`
+### 1. Widen the content area on the Categories page
+- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
+- Reduce vertical padding between the header and grid
+- Tighten the gap between the page title/description and the cards
 
-#### 2. Defer non-critical above-the-fold providers
-`GlobalBackground` renders an SVG noise texture filter on every page load. The inline SVG data URI triggers an immediate paint. Replace the fractal noise with a simpler CSS approach or make it load after FCP.
+### 2. Improve the PageHeader component
+- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
+- This applies globally to all pages using PageHeader
 
-**File:** `GlobalBackground.tsx` — use a tiny static noise PNG instead of inline SVG filter (SVG filters are render-blocking)
+### 3. Make category cards fill space better
+- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
+- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
+- Reduce grid gap slightly so cards feel more connected
 
-#### 3. Reduce initial JS by lazy-loading `embla-carousel` in PromotionCarousel
-`PromotionCarousel` imports `embla-carousel-react` and `embla-carousel-autoplay` synchronously on the landing page critical path. These should be lazy-loaded since the carousel is below the hero text.
+### 4. Sidebar desktop alignment fix
+- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
+- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
+- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
 
-**File:** `Landing.tsx` — wrap PromotionCarousel in a dynamic import
-
-#### 4. Add `fetchpriority="low"` to below-fold images
-Product images in `MarketplaceSection` use `loading="lazy"` but lack `fetchpriority="low"`, which would further deprioritize their network requests during initial load.
-
-**File:** `MarketplaceSection.tsx`
-
-#### 5. Remove permanent `will-change` CSS classes
-The `.gpu-accelerated` utility class in `index.css` applies `transform: translateZ(0)` permanently. Audit usage and remove if applied to static elements.
-
-**File:** `index.css`
-
-#### 6. Add `content-visibility: auto` to below-fold sections
-The marketplace section is already lazy-loaded via `LazySection`, but once rendered it's a large DOM tree. Adding `content-visibility: auto` with `contain-intrinsic-size` will skip layout/paint for off-screen portions.
-
-**File:** `MarketplaceSection.tsx` wrapper
-
-#### 7. Optimize `FeaturedProductsCard` region flag imports
-Four static flag images are imported at the top level regardless of whether they're needed. Convert to dynamic imports or inline the flags as small data URIs.
-
-**File:** `FeaturedProductsCard.tsx`
-
-### Summary of Changes
-
-| File | Change | Impact |
-|------|--------|--------|
-| `PageTransition.tsx` | Remove `willChange` style | Less GPU memory, faster compositing |
-| `ScrollReveal.tsx` | Remove `willChange` style | Same — framer handles this |
-| `GlobalBackground.tsx` | Replace SVG filter noise with CSS or static asset | Faster FP/FCP |
-| `Landing.tsx` | Lazy-import `PromotionCarousel` | Smaller initial JS bundle |
-| `MarketplaceSection.tsx` | Add `content-visibility: auto` to wrapper | Skip offscreen layout work |
-| `FeaturedProductsCard.tsx` | Lazy-load region flag images | Reduce initial bundle ~20KB |
-| `index.css` | Remove `.gpu-accelerated` if unused or make conditional | Reduce layer promotion |
+### Files to modify
+- `src/pages/Categories.tsx` — widen container, tighten spacing
+- `src/components/ui/PageHeader.tsx` — reduce bottom margin
+- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
 

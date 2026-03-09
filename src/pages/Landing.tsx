@@ -1,10 +1,11 @@
-import { forwardRef } from 'react';
+import { forwardRef, lazy, Suspense } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LandingHero } from '@/components/landing/LandingHero';
-import { PromotionCarousel } from '@/components/home/PromotionCarousel';
 import { MarketplaceSection } from '@/components/home/MarketplaceSection';
 import { PWADiscordBanner } from '@/components/landing/PWADiscordBanner';
 import { ActiveOffersCard } from '@/components/home/ActiveOffersCard';
+
+const PromotionCarousel = lazy(() => import('@/components/home/PromotionCarousel').then(m => ({ default: m.PromotionCarousel })));
 import { OrganizationSchema, WebsiteSearchSchema, SiteNavigationSchema } from '@/components/seo/StructuredData';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
@@ -30,7 +31,9 @@ const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
           <div className="px-4 sm:px-6 lg:px-8 -mt-10 relative z-20 space-y-3">
             <div className="lg:grid lg:grid-cols-2 lg:gap-3 space-y-3 lg:space-y-0">
               <ScrollReveal delay={0.05} direction="up" distance={16} duration={0.35}>
-                <PromotionCarousel />
+                <Suspense fallback={<div className="h-[72px] rounded-lg border border-border bg-card animate-pulse" />}>
+                  <PromotionCarousel />
+                </Suspense>
               </ScrollReveal>
               <ScrollReveal delay={0.12} direction="up" distance={16} duration={0.35}>
                 <PWADiscordBanner />

@@ -319,7 +319,7 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
   const pagedStores = allStores.slice(storePage * STORES_PER_PAGE, (storePage + 1) * STORES_PER_PAGE);
 
   return (
-    <section ref={ref} className="container mx-auto px-4 py-6 sm:py-8 space-y-8">
+    <section ref={ref} className="container mx-auto px-4 py-6 sm:py-8 space-y-8" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 600px' }}>
       {/* Browse Mode Toggle */}
       <MarketplaceBrowseToggle mode={browseMode} onChange={setBrowseMode} />
 

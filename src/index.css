@@ -670,17 +670,17 @@
 }
 
 @layer components {
-  /* GPU-accelerated animations */
-  .gpu-accelerated {
-    transform: translateZ(0);
-    will-change: transform;
-    backface-visibility: hidden;
-  }
-  
   /* Content visibility for off-screen elements */
   .content-auto {
     content-visibility: auto;
     contain-intrinsic-size: 0 500px;
+  }
+
+  /* Lightweight CSS noise texture — replaces render-blocking SVG filter */
+  .bg-noise {
+    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAElBMVEUAAAAAAAAAAAAAAAAAAAAAAADgKxmiAAAABnRSTlMFBQUFBQWJBBjHAAAASUlEQVQ4y2MYBaNg2AImKAMYGBhYoQwWBkYGIRiDkYEJzmBiYIIzmBmY4QwWBhY4g5WBFc5gY2CDM9gZ2OEMDgYOOIOTgRMAAN7wCQly/KPlAAAAAElFTkSuQmCC");
+    background-repeat: repeat;
+    background-size: 48px 48px;
   }
 
   .gaming-card {
