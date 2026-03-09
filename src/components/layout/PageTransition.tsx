@@ -24,7 +24,6 @@ export function PageTransition({ children, className }: PageTransitionProps) {
       variants={pageVariants}
       transition={pageTransition}
       className={className}
-      style={{ willChange: 'opacity, transform' }}
     >
       {children}
     </motion.div>
