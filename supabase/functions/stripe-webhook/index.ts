@@ -134,7 +134,8 @@ serve(async (req) => {
 
       case "payout.paid": {
         const payout = event.data.object as Stripe.Payout;
-        if (payout.metadata?.purpose === 'wise_funding') {
+        const purpose = payout.metadata?.purpose;
+        if (purpose === 'wise_funding') {
           await supabaseAdmin.from('wise_funding_requests').update({
             status: 'paid', completed_at: new Date().toISOString(),
             notes: `Stripe payout completed at ${new Date().toISOString()}`,
@@ -143,6 +144,20 @@ serve(async (req) => {
           try {
             const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
             await fetch(`${supabaseUrl}/functions/v1/check-wise-funding`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}` },
+              body: JSON.stringify({ triggered_by: 'payout.paid', payout_id: payout.id }),
+            });
+          } catch { /* non-fatal */ }
+        } else if (purpose === 'paypal_funding') {
+          await supabaseAdmin.from('wise_funding_requests').update({
+            status: 'paid', completed_at: new Date().toISOString(),
+            notes: `Stripe payout completed (PayPal funding) at ${new Date().toISOString()}`,
+          }).eq('stripe_payout_id', payout.id);
+
+          try {
+            const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+            await fetch(`${supabaseUrl}/functions/v1/check-paypal-funding`, {
               method: "POST",
               headers: { "Content-Type": "application/json", "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}` },
               body: JSON.stringify({ triggered_by: 'payout.paid', payout_id: payout.id }),
