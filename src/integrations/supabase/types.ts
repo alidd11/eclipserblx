@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_ping_purchase_log: {
+        Row: {
+          created_at: string | null
+          everyone_pings: number | null
+          here_pings: number | null
+          id: string
+          reference_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          everyone_pings?: number | null
+          here_pings?: number | null
+          id?: string
+          reference_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          everyone_pings?: number | null
+          here_pings?: number | null
+          id?: string
+          reference_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ad_schedule_slots: {
         Row: {
           ad_id: string | null
