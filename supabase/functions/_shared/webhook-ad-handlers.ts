@@ -113,14 +113,22 @@ export async function processCreditPurchase(supabase: SupabaseClient, session: S
 
   LOG("Processing credit purchase", { userId, creditAmount });
 
-  await supabase.rpc('add_credits', {
-    p_user_id: userId, p_amount: creditAmount, p_type: 'purchase',
+  // Use idempotent fulfillment to prevent double-crediting
+  // (confirm-embedded-payment may also fire with the paymentIntentId)
+  const { data: fulfilled } = await supabase.rpc('fulfill_credits_idempotent', {
+    p_user_id: userId,
+    p_reference_id: session.id,
+    p_amount: creditAmount,
     p_description: `Credit purchase - £${creditAmount.toFixed(2)}`,
-    p_reference_id: session.id, p_gifted_by: null, p_order_id: null,
   });
 
-  await supabase.from("notifications").insert({
-    user_id: userId, title: "💰 Credits Added!",
-    message: `£${creditAmount.toFixed(2)} has been added to your credit balance.`, type: "general",
-  });
+  if (fulfilled) {
+    LOG("Credits added via webhook", { creditAmount });
+    await supabase.from("notifications").insert({
+      user_id: userId, title: "💰 Credits Added!",
+      message: `£${creditAmount.toFixed(2)} has been added to your credit balance.`, type: "general",
+    });
+  } else {
+    LOG("Credits already fulfilled (idempotent skip)", { sessionId: session.id });
+  }
 }
