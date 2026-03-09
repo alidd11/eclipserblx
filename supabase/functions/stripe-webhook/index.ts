@@ -49,6 +49,37 @@ serve(async (req) => {
         if (type === "credit_purchase") await processCreditPurchase(supabaseAdmin, session);
         else if (type === "ad_ping_purchase") await processAdPingPurchase(supabaseAdmin, session);
         else if (type === "ad_subscription") await processAdSubscriptionPurchase(supabaseAdmin, stripe, session);
+        else if (type === "custom_domain") {
+          // Fulfill custom domain subscription
+          const subId = session.subscription as string;
+          const custId = session.customer as string;
+          const storeId = session.metadata?.store_id;
+          if (subId && storeId) {
+            const periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+            try {
+              const sub = await stripe.subscriptions.retrieve(subId);
+              const realEnd = new Date(sub.current_period_end * 1000).toISOString();
+              await supabaseAdmin.from("store_domain_billing").insert({
+                store_id: storeId,
+                stripe_subscription_id: subId,
+                stripe_customer_id: custId,
+                status: "active",
+                current_period_end: realEnd,
+              });
+              LOG("Custom domain subscription fulfilled", { storeId, subId });
+            } catch (e) {
+              LOG("Custom domain fulfillment error", { error: String(e) });
+              // Fallback insert
+              await supabaseAdmin.from("store_domain_billing").insert({
+                store_id: storeId,
+                stripe_subscription_id: subId,
+                stripe_customer_id: custId,
+                status: "active",
+                current_period_end: periodEnd,
+              });
+            }
+          }
+        }
         else {
           await processPayment(supabaseAdmin, stripe, {
             paymentId: session.id, paymentType: "checkout_session",
