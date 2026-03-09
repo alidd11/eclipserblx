@@ -55,6 +55,7 @@ interface RefundedOrder {
   refund_id: string | null;
   refunded_at: string | null;
   created_at: string;
+  customer_id?: string | null;
 }
 
 interface CommissionReversal {
