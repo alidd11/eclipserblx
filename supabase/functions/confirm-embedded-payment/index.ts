@@ -128,15 +128,18 @@ serve(async (req) => {
         case 'credits': {
           const creditAmount = parseFloat(paymentIntent.metadata?.credit_amount || '0');
           if (creditAmount > 0) {
-            // Add credits to user's balance
-            await supabaseAdmin.rpc('add_credits', {
+            // Idempotent credit fulfillment — prevents double-crediting on retry
+            const { data: fulfilled } = await supabaseAdmin.rpc('fulfill_credits_idempotent', {
               p_user_id: user.id,
-              p_amount: creditAmount,
-              p_type: 'purchase',
-              p_description: `Purchased £${creditAmount.toFixed(2)} credits`,
               p_reference_id: paymentIntentId,
+              p_amount: creditAmount,
+              p_description: `Purchased £${creditAmount.toFixed(2)} credits`,
             });
-            logStep("Credits added", { creditAmount });
+            if (fulfilled) {
+              logStep("Credits added", { creditAmount });
+            } else {
+              logStep("Credits already fulfilled (idempotent skip)", { paymentIntentId });
+            }
           }
           break;
         }
@@ -146,24 +149,15 @@ serve(async (req) => {
           const everyonePings = parseInt(paymentIntent.metadata?.everyone_pings || '0');
 
           if (herePings > 0 || everyonePings > 0) {
-            // Fetch current balances then increment
-            const { data: currentSub } = await supabaseAdmin
-              .from('advertisement_subscriptions')
-              .select('here_pings_balance, everyone_pings_balance')
-              .eq('user_id', user.id)
-              .eq('status', 'active')
-              .single();
-
-            if (currentSub) {
-              await supabaseAdmin
-                .from('advertisement_subscriptions')
-                .update({
-                  here_pings_balance: (currentSub.here_pings_balance || 0) + herePings,
-                  everyone_pings_balance: (currentSub.everyone_pings_balance || 0) + everyonePings,
-                })
-                .eq('user_id', user.id)
-                .eq('status', 'active');
-              logStep("Ad pings added", { herePings, everyonePings });
+            // Atomic ping increment — prevents lost updates on concurrent calls
+            const { data: updated } = await supabaseAdmin.rpc('increment_ad_ping_balance', {
+              p_user_id: user.id,
+              p_here_pings: herePings,
+              p_everyone_pings: everyonePings,
+              p_reference_id: paymentIntentId,
+            });
+            if (updated) {
+              logStep("Ad pings added atomically", { herePings, everyonePings });
             } else {
               logStep("No active ad subscription found for ping fulfillment", { userId: user.id });
             }

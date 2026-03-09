@@ -271,34 +271,13 @@ serve(async (req) => {
         if (txError) {
           logStep("Seller transaction error (non-fatal)", { message: txError.message, details: txError.details, code: txError.code });
         } else {
-          // Update seller balance — escrow hold: put in pending_balance
-          const { data: currentSellerBalance } = await supabaseClient
-            .from("seller_balances")
-            .select("pending_balance, total_earned")
-            .eq("user_id", item.seller_id)
-            .single();
-
-          if (currentSellerBalance) {
-            await supabaseClient
-              .from("seller_balances")
-              .update({
-                pending_balance: (currentSellerBalance.pending_balance || 0) + sellerEarnings,
-                total_earned: (currentSellerBalance.total_earned || 0) + sellerEarnings,
-              })
-              .eq("user_id", item.seller_id);
-          } else {
-            await supabaseClient
-              .from("seller_balances")
-              .insert({
-                user_id: item.seller_id,
-                store_id: item.store_id,
-                pending_balance: sellerEarnings,
-                available_balance: 0,
-                total_earned: sellerEarnings,
-              });
-          }
-          
-          logStep("Seller balance updated", { sellerId: item.seller_id, amount: sellerEarnings });
+          // Atomic balance update — prevents read-then-write race
+          await supabaseClient.rpc('increment_seller_pending_balance', {
+            p_seller_id: item.seller_id,
+            p_store_id: item.store_id,
+            p_amount: sellerEarnings,
+          });
+          logStep("Seller balance updated atomically", { sellerId: item.seller_id, amount: sellerEarnings });
 
           // Send email + in-app sale notification to seller
           try {

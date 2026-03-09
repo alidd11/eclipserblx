@@ -379,33 +379,13 @@ Deno.serve(async (req) => {
             if (txError) {
               logStep("Seller transaction error (non-fatal)", txError);
             } else {
-              // Update seller balance — escrow hold: put in pending_balance
-              const { data: currentBalance } = await supabaseClient
-                .from("seller_balances")
-                .select("pending_balance, total_earned")
-                .eq("user_id", sellerId)
-                .single();
-
-              if (currentBalance) {
-                await supabaseClient
-                  .from("seller_balances")
-                  .update({
-                    pending_balance: (currentBalance.pending_balance || 0) + sellerEarnings,
-                    total_earned: (currentBalance.total_earned || 0) + sellerEarnings,
-                  })
-                  .eq("user_id", sellerId);
-              } else {
-                await supabaseClient
-                  .from("seller_balances")
-                  .insert({
-                    user_id: sellerId,
-                    store_id: product.store_id,
-                    pending_balance: sellerEarnings,
-                    available_balance: 0,
-                    total_earned: sellerEarnings,
-                  });
-              }
-              logStep("Seller balance updated", { sellerId, amount: sellerEarnings });
+              // Atomic balance update — prevents read-then-write race
+              await supabaseClient.rpc('increment_seller_pending_balance', {
+                p_seller_id: sellerId,
+                p_store_id: product.store_id,
+                p_amount: sellerEarnings,
+              });
+              logStep("Seller balance updated atomically", { sellerId, amount: sellerEarnings });
 
               // Send email + in-app sale notification to seller
               try {

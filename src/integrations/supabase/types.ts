@@ -9243,11 +9243,21 @@ export type Database = {
       cleanup_expired_download_tokens: { Args: never; Returns: undefined }
       cleanup_expired_link_codes: { Args: never; Returns: undefined }
       cleanup_expired_tracking_data: { Args: never; Returns: Json }
+      cleanup_old_webhook_events: { Args: never; Returns: undefined }
       deduct_seller_balance: {
         Args: { p_amount: number; p_user_id: string }
         Returns: boolean
       }
       escalate_unanswered_tickets: { Args: never; Returns: number }
+      fulfill_credits_idempotent: {
+        Args: {
+          p_amount: number
+          p_description: string
+          p_reference_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       generate_affiliate_id: { Args: never; Returns: string }
       generate_customer_id: { Args: never; Returns: string }
       generate_customer_ticket_number: { Args: never; Returns: string }
@@ -9294,8 +9304,21 @@ export type Database = {
         Args: { p_ad_id: string; p_is_unique: boolean }
         Returns: undefined
       }
+      increment_ad_ping_balance: {
+        Args: {
+          p_everyone_pings?: number
+          p_here_pings?: number
+          p_reference_id?: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       increment_promotion_impression: {
         Args: { p_date: string; p_promotion_id: string }
+        Returns: undefined
+      }
+      increment_seller_pending_balance: {
+        Args: { p_amount: number; p_seller_id: string; p_store_id: string }
         Returns: undefined
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
