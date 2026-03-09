@@ -105,7 +105,24 @@ export default function AdminRefunds() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as RefundedOrder[];
+
+      // Resolve customer_ids from profiles
+      const userIds = data?.map(o => o.user_id).filter(Boolean) as string[] || [];
+      let customerMap: Record<string, string> = {};
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, customer_id')
+          .in('user_id', userIds);
+        profiles?.forEach(p => {
+          if (p.customer_id) customerMap[p.user_id] = p.customer_id;
+        });
+      }
+
+      return (data || []).map(o => ({
+        ...o,
+        customer_id: o.user_id ? customerMap[o.user_id] || null : null,
+      })) as RefundedOrder[];
     },
   });
 
