@@ -1,7 +1,7 @@
+import React, { lazy, Suspense, useEffect } from 'react';
 import { useStoreDomain } from '@/hooks/useStoreDomain';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
 
 const StorePage = lazy(() => import('@/pages/StorePage'));
 const ProductDetail = lazy(() => import('@/pages/ProductDetail'));
