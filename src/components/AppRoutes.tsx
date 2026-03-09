@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useStoreDomain } from "@/hooks/useStoreDomain";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 
@@ -181,6 +182,10 @@ const SellerBots = lazy(() => import("@/pages/seller/SellerBots"));
 const SellerImport = lazy(() => import("@/pages/seller/SellerImport"));
 const SellerPromotions = lazy(() => import("@/pages/seller/SellerPromotions"));
 const SellerTaxSummary = lazy(() => import("@/pages/seller/SellerTaxSummary"));
+const SellerSettingsDomain = lazy(() => import("@/pages/seller/SellerSettingsDomain"));
+
+// Store standalone page for custom domains
+const StoreStandalonePage = lazy(() => import("@/pages/StoreStandalonePage"));
 
 // Standalone pages
 const IPShield = lazy(() => import("@/pages/IPShield"));
@@ -225,12 +230,23 @@ function PageLoader() {
 export function AppRoutes() {
   const hostname = window.location.hostname;
   const isGlobalGuardDomain = hostname.startsWith('guard.') || hostname === 'guard.eclipserblx.com';
+  const { isCustomStoreDomain, loading: domainLoading } = useStoreDomain();
 
   // If on Global Guard subdomain, render the Global Guard app
   if (isGlobalGuardDomain) {
     return (
       <Suspense fallback={<PageLoader />}>
         <GlobalGuardRouter />
+      </Suspense>
+    );
+  }
+
+  // If on a store custom domain/subdomain, render standalone store
+  if (isCustomStoreDomain) {
+    if (domainLoading) return <PageLoader />;
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <StoreStandalonePage />
       </Suspense>
     );
   }
@@ -345,6 +361,7 @@ export function AppRoutes() {
         <Route path="/seller/settings/payments" element={<SellerSettingsPayments />} />
         <Route path="/seller/settings/notifications" element={<SellerSettingsNotifications />} />
         <Route path="/seller/roblox" element={<SellerSettingsRoblox />} />
+        <Route path="/seller/settings/domain" element={<SellerSettingsDomain />} />
         <Route path="/seller/support" element={<SellerSupport />} />
         <Route path="/seller/messages" element={<SellerMessages />} />
         <Route path="/seller/reviews" element={<SellerReviews />} />

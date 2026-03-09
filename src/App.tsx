@@ -7,6 +7,7 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { CartProvider } from "@/hooks/useCart";
 import { ChatPanelProvider } from "@/hooks/useChatPanel";
+import { StoreDomainProvider } from "@/hooks/useStoreDomain";
 import { CookieConsentProvider } from "@/hooks/useCookieConsent";
 import { CurrencyProvider } from "@/hooks/useCurrency";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
@@ -60,6 +61,7 @@ const App = () => (
           <AuthProvider>
             <CartProvider>
               <ChatPanelProvider>
+                <StoreDomainProvider>
                 <TooltipProvider>
                   <Toaster />
                   <Sonner />
@@ -87,6 +89,7 @@ const App = () => (
                     </IpBanCheck>
                   </BrowserRouter>
                 </TooltipProvider>
+                </StoreDomainProvider>
               </ChatPanelProvider>
             </CartProvider>
           </AuthProvider>
