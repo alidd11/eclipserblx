@@ -629,6 +629,13 @@ export default function SellerSettingsAppearance() {
             </Card>
           </TabsContent>
 
+          {/* Navigation Tab */}
+          <TabsContent value="navigation" className="space-y-6">
+            {store?.id && (
+              <StoreNavEditor storeId={store.id} storeSlug={store.slug || store.id} />
+            )}
+          </TabsContent>
+
           {/* Advanced Tab */}
           <TabsContent value="advanced" className="space-y-6">
             <Card>
@@ -651,6 +658,57 @@ export default function SellerSettingsAppearance() {
                 <p className="text-xs text-muted-foreground">
                   ⚠️ Custom CSS is applied to your store page. Be careful not to break the layout.
                 </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Image className="h-5 w-5" />
+                  Favicon
+                </CardTitle>
+                <CardDescription>
+                  Custom browser icon for your store (visible on custom domains)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <Label>Favicon URL</Label>
+                  <Input
+                    value={formData.favicon_url}
+                    onChange={(e) => setFormData({ ...formData, favicon_url: e.target.value })}
+                    placeholder="https://example.com/favicon.ico"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Recommended: 32x32 or 64x64 .ico or .png file
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <EyeOff className="h-5 w-5" />
+                  Branding
+                </CardTitle>
+                <CardDescription>
+                  Control the "Powered by Eclipse" badge on your custom domain
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Hide "Powered by" Badge</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Only applies to stores using a custom domain
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.hide_branding}
+                    onCheckedChange={(checked) => setFormData({ ...formData, hide_branding: checked })}
+                  />
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
