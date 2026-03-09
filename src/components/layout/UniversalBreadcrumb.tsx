@@ -196,9 +196,9 @@ export function UniversalBreadcrumb() {
           <BreadcrumbList className="flex-nowrap">
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/" className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors">
+                <Link to={isCustomStoreDomain ? '/' : '/'} className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors">
                   <Home className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline text-xs font-medium">Home</span>
+                  <span className="hidden sm:inline text-xs font-medium">{isCustomStoreDomain ? 'Store' : 'Home'}</span>
                 </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>

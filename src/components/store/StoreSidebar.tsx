@@ -117,18 +117,19 @@ export function StoreSidebar({
   };
 
   // Navigation groups matching CustomerSidebar structure
+  // On custom domains, hide Marketplace link, My Account, and Legal groups
   const navGroups: NavGroup[] = [
     {
       id: 'quick-access',
       title: 'Quick Access',
       icon: Home,
       items: [
-        { title: 'Marketplace', icon: ChevronLeft, href: '/' },
+        ...(!isCustomStoreDomain ? [{ title: 'Marketplace', icon: ChevronLeft, href: '/' }] : []),
         { title: 'Store Home', icon: Home, href: `/store/${storeSlug}` },
         { title: 'About', icon: Info, href: `/store/${storeSlug}/about` },
       ],
     },
-    {
+    ...(!isCustomStoreDomain ? [{
       id: 'account',
       title: 'My Account',
       icon: User,
@@ -138,7 +139,7 @@ export function StoreSidebar({
         { title: 'Wishlist', icon: Heart, href: '/wishlist' },
         { title: 'My Purchases', icon: Download, href: '/purchases' },
       ],
-    },
+    }] : []),
     {
       id: 'store',
       title: 'Store',
@@ -153,7 +154,7 @@ export function StoreSidebar({
         }] : []),
       ],
     },
-    {
+    ...(!isCustomStoreDomain ? [{
       id: 'legal',
       title: 'Legal',
       icon: FileText,
@@ -162,8 +163,8 @@ export function StoreSidebar({
         { title: 'Privacy Policy', icon: Shield, href: '/privacy' },
         { title: 'Refund Policy', icon: RefreshCw, href: '/refund' },
       ],
-    },
-  ];
+    }] : []),
+  ] as NavGroup[];
 
   // Initialize open groups from localStorage
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {

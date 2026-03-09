@@ -184,6 +184,7 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
 
           {/* Right: Actions */}
           <div className="flex items-center gap-1.5 shrink-0">
+            {!isCustomStoreDomain && (
             <a
               href={discordUrl}
               target="_blank"
@@ -201,6 +202,7 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
                 </svg>
               </Button>
             </a>
+            )}
 
             <NotificationBell />
 

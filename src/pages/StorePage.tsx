@@ -383,7 +383,7 @@ export default function StorePage() {
     <StoreSchema
       name={store.name}
       description={store.description || undefined}
-      url={`https://eclipserblx.com/store/${store.slug || storeSlug}`}
+      url={`${window.location.origin}/store/${store.slug || storeSlug}`}
       image={store.logo_url || undefined}
       rating={store.average_rating || undefined}
     />
