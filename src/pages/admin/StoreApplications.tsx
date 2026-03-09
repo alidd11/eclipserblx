@@ -324,7 +324,7 @@ export default function StoreApplications() {
             <div>
               <h3 className="font-semibold">{app.store_name}</h3>
               <p className="text-sm text-muted-foreground">
-                by {app.profiles?.display_name || 'Unknown'} ({app.profiles?.email})
+                by {app.profiles?.display_name || 'Unknown'} {app.profiles?.customer_id && <span className="font-mono text-xs">({app.profiles.customer_id})</span>}
               </p>
             </div>
             <div className="flex items-center gap-2">
