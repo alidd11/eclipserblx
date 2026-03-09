@@ -67,7 +67,7 @@ export default function AdminAuditLogs() {
   const getAdminName = (userId: string) => {
     if (userId === '00000000-0000-0000-0000-000000000000') return 'System';
     const profile = profiles?.find(p => p.user_id === userId);
-    return profile?.display_name || profile?.email || 'Unknown';
+    return profile?.display_name || 'Unknown';
   };
 
   // Filter logs by category
