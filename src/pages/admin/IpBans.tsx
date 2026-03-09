@@ -104,9 +104,9 @@ export default function IpBans() {
       ban.ip_address.toLowerCase().includes(query) ||
       ban.reason?.toLowerCase().includes(query) ||
       ban.banned_by_profile?.display_name?.toLowerCase().includes(query) ||
-      ban.banned_by_profile?.email.toLowerCase().includes(query) ||
+      ban.banned_by_profile?.customer_id?.toLowerCase().includes(query) ||
       ban.banned_user_profile?.display_name?.toLowerCase().includes(query) ||
-      ban.banned_user_profile?.email.toLowerCase().includes(query)
+      ban.banned_user_profile?.customer_id?.toLowerCase().includes(query)
     );
   });
 
