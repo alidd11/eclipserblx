@@ -127,6 +127,7 @@ Deno.serve(async (req) => {
             cache: true,
             edge_ttl: { mode: "override_origin", default: 2592000 },
             browser_ttl: { mode: "override_origin", default: 31536000 },
+            serve_stale: { disable_stale_while_updating: false },
           },
         },
         {
@@ -137,6 +138,7 @@ Deno.serve(async (req) => {
             cache: true,
             edge_ttl: { mode: "override_origin", default: 31536000 },
             browser_ttl: { mode: "override_origin", default: 31536000 },
+            serve_stale: { disable_stale_while_updating: false },
           },
         },
         {
