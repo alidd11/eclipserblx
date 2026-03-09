@@ -857,6 +857,16 @@
   animation: page-in 0.2s cubic-bezier(0.25, 0.1, 0.25, 1) both;
 }
 
+/* Offline banner slide-down — CSS-only, replaces framer-motion */
+@keyframes slide-down {
+  from { transform: translateY(-50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out both;
+}
+
 /* Hero banner gradient animation */
 @keyframes hero-gradient {
   0%, 100% {
