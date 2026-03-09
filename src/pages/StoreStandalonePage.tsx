@@ -66,7 +66,7 @@ function StoreStandaloneContent({
   faviconUrl?: string | null;
 }) {
   // Inject favicon
-  React.useEffect(() => {
+  useEffect(() => {
     if (faviconUrl) {
       let link = document.querySelector("link[rel='icon']") as HTMLLinkElement;
       if (!link) {
