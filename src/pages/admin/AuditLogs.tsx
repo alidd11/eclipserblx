@@ -55,7 +55,7 @@ export default function AdminAuditLogs() {
       if (logUserIds.length === 0) return [];
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, display_name, email')
+        .select('user_id, display_name, staff_id')
         .in('user_id', logUserIds);
       if (error) throw error;
       return data;
