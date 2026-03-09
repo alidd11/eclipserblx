@@ -343,7 +343,7 @@ export default function SellerSettingsDomain() {
             After purchasing your domain, return here and follow Steps 2 & 3 to connect it to your store.
           </p>
           <p className="text-[10px] text-muted-foreground/60">
-            Domain registration powered by Namecheap
+            Domain registration powered by Cloudflare Registrar — at-cost pricing, no markup
           </p>
         </CardContent>
       </Card>
