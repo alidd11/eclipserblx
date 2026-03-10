@@ -15,8 +15,9 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { 
   RotateCcw, Check, X, AlertTriangle, Clock, 
-  ShieldAlert, MessageSquare, Info
+  ShieldAlert, MessageSquare, Info, FileImage
 } from 'lucide-react';
+import { DisputeEvidenceUpload } from '@/components/purchases/DisputeEvidenceUpload';
 
 export default function SellerRefunds() {
   const queryClient = useQueryClient();
