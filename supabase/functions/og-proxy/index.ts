@@ -52,7 +52,41 @@ ${extra}
 </head><body><p>Redirecting to <a href="${esc(url)}">${esc(t)}</a>…</p></body></html>`;
 }
 
-async function pgQuery(table: string, select: string, filters: string): Promise<any> {
+async function resolveStoreByHostname(hostname: string): Promise<any> {
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  // Look up store_domains for this hostname
+  const domainRes = await fetch(
+    `${url}/rest/v1/store_domains?select=store_id&domain=eq.${encodeURIComponent(hostname)}&status=eq.active&limit=1`,
+    {
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        Accept: "application/json",
+      },
+    }
+  );
+  if (!domainRes.ok) { await domainRes.text(); return null; }
+  const domains = await domainRes.json();
+  if (!domains?.length) return null;
+
+  const storeId = domains[0].store_id;
+  // Fetch store details
+  const storeRes = await fetch(
+    `${url}/rest/v1/stores?select=id,name,description,logo_url,banner_url,slug,product_count&id=eq.${storeId}&is_active=eq.true`,
+    {
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        Accept: "application/vnd.pgrst.object+json",
+      },
+    }
+  );
+  if (!storeRes.ok) { await storeRes.text(); return null; }
+  return storeRes.json();
+}
+
   const url = Deno.env.get("SUPABASE_URL")!;
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const res = await fetch(`${url}/rest/v1/${table}?select=${encodeURIComponent(select)}&${filters}`, {
