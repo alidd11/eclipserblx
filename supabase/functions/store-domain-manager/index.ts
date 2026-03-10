@@ -589,10 +589,19 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const action = body?.action;
 
-    // Public action - no auth needed
+    // Public actions - no auth needed
     if (action === "resolve-hostname") {
       if (!body.hostname) return jsonError("hostname required", 400);
       return await resolveHostname(body.hostname);
+    }
+
+    // Admin health check can also work with admin_secret
+    if (action === "admin-health-check") {
+      const adminSecret = body?.admin_secret;
+      if (isServiceRoleAuth(req) || adminSecret === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) {
+        if (!body.domain_id) return jsonError("domain_id required", 400);
+        return await adminHealthCheck(body.domain_id);
+      }
     }
 
     // Admin actions (service role only)
