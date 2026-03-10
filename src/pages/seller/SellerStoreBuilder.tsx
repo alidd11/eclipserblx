@@ -27,7 +27,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
-import { Save, ExternalLink, Loader2, RotateCcw } from 'lucide-react';
+import { Save, ExternalLink, Loader2, RotateCcw, Monitor, Smartphone } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
