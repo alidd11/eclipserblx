@@ -32,7 +32,6 @@ function isStoreHostname(hostname) {
     const sub = hostname.replace('.eclipserblx.com', '');
     return !RESERVED_SUBS.includes(sub);
   }
-  // Any other hostname = custom domain
   if (hostname.endsWith('.lovable.app') || hostname.endsWith('.lovableproject.com')) return false;
   return true;
 }
@@ -43,69 +42,85 @@ async function serveOg(path, userAgent, hostname) {
   const ogResponse = await fetch(ogUrl, {
     headers: { "User-Agent": userAgent },
   });
-  return new Response(ogResponse.body, {
+  const body = await ogResponse.text();
+  return new Response(body, {
     status: ogResponse.status,
     headers: {
       "Content-Type": "text/html; charset=utf-8",
       "Cache-Control": "public, max-age=300",
+      "X-Eclipse-Worker": "og-served",
+      "X-Eclipse-Path": path,
     },
   });
 }
 
+function addWorkerHeader(response, action) {
+  const newResponse = new Response(response.body, response);
+  newResponse.headers.set("X-Eclipse-Worker", action);
+  return newResponse;
+}
+
 export default {
   async fetch(request) {
-    const url = new URL(request.url);
-    const userAgent = request.headers.get("User-Agent") || "";
-    const hostname = url.hostname;
+    try {
+      const url = new URL(request.url);
+      const userAgent = request.headers.get("User-Agent") || "";
+      const hostname = url.hostname;
 
-    // --- Store subdomain / custom domain ---
-    if (isStoreHostname(hostname)) {
+      // --- Store subdomain / custom domain ---
+      if (isStoreHostname(hostname)) {
+        const isTestingTool = NOT_BOT_PATTERNS.some((p) =>
+          userAgent.toLowerCase().includes(p.toLowerCase())
+        );
+        if (isTestingTool) return addWorkerHeader(await fetch(request), "passthrough-testing");
+
+        const isBot = BOT_PATTERNS.some((bot) =>
+          userAgent.toLowerCase().includes(bot.toLowerCase())
+        );
+        if (!isBot) return addWorkerHeader(await fetch(request), "passthrough-human");
+
+        try {
+          return await serveOg(url.pathname, userAgent, hostname);
+        } catch (e) {
+          return addWorkerHeader(await fetch(request), "error-store:" + e.message);
+        }
+      }
+
+      // --- /share/ prefix — ALWAYS proxy (guaranteed OG tags) ---
+      if (url.pathname.startsWith("/share/")) {
+        const realPath = url.pathname.replace(/^\\/share/, "");
+        try {
+          return await serveOg(realPath, userAgent, null);
+        } catch (error) {
+          return Response.redirect(url.origin + realPath, 302);
+        }
+      }
+
+      const isDynamicPage = /^\\/(products|store)\\/[^/?#]+/.test(url.pathname);
+      const isStaticOgPage = STATIC_OG_PATHS.has(url.pathname);
+
+      if (!isDynamicPage && !isStaticOgPage) return addWorkerHeader(await fetch(request), "passthrough-nopage");
+
       const isTestingTool = NOT_BOT_PATTERNS.some((p) =>
         userAgent.toLowerCase().includes(p.toLowerCase())
       );
-      if (isTestingTool) return fetch(request);
+      if (isTestingTool) return addWorkerHeader(await fetch(request), "passthrough-testing");
 
       const isBot = BOT_PATTERNS.some((bot) =>
         userAgent.toLowerCase().includes(bot.toLowerCase())
       );
-      if (!isBot) return fetch(request);
+      if (!isBot) return addWorkerHeader(await fetch(request), "passthrough-human");
 
       try {
-        return await serveOg(url.pathname, userAgent, hostname);
-      } catch (e) {
-        return fetch(request);
-      }
-    }
-
-    // --- /share/ prefix — ALWAYS proxy (guaranteed OG tags) ---
-    if (url.pathname.startsWith("/share/")) {
-      const realPath = url.pathname.replace(/^\\/share/, "");
-      try {
-        return await serveOg(realPath, userAgent, null);
+        return await serveOg(url.pathname, userAgent, null);
       } catch (error) {
-        return Response.redirect(url.origin + realPath, 302);
+        return addWorkerHeader(await fetch(request), "error-og:" + error.message);
       }
-    }
-
-    const isDynamicPage = /^\\/(products|store)\\/[^/?#]+/.test(url.pathname);
-    const isStaticOgPage = STATIC_OG_PATHS.has(url.pathname);
-
-    if (!isDynamicPage && !isStaticOgPage) return fetch(request);
-
-    const isTestingTool = NOT_BOT_PATTERNS.some((p) =>
-      userAgent.toLowerCase().includes(p.toLowerCase())
-    );
-    if (isTestingTool) return fetch(request);
-
-    const isBot = BOT_PATTERNS.some((bot) =>
-      userAgent.toLowerCase().includes(bot.toLowerCase())
-    );
-    if (!isBot) return fetch(request);
-
-    try {
-      return await serveOg(url.pathname, userAgent, null);
-    } catch (error) {
-      return fetch(request);
+    } catch (globalError) {
+      return new Response("Worker error: " + globalError.message, {
+        status: 500,
+        headers: { "X-Eclipse-Worker": "fatal-error" },
+      });
     }
   },
 };
@@ -253,7 +268,7 @@ async function ensureShareRedirectRule(cfApiToken: string, cfZoneId: string) {
       from_value: {
         status_code: 302,
         target_url: {
-          expression: `concat("https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy?path=", substring(http.request.uri.path, 7))`,
+          expression: `concat("https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy?path=", substring(http.request.uri.path, 6))`,
         },
         preserve_query_string: false,
       },
@@ -492,6 +507,113 @@ Deno.serve(async (req) => {
       sbfmResult = { success: false, error: (e as Error).message };
     }
 
+    // Step 7: Ensure DNS records are PROXIED (orange cloud) so Cloudflare features work
+    let dnsResults: Array<Record<string, unknown>> = [];
+    try {
+      const dnsData = await cfApi(
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records`,
+        cfApiToken
+      );
+      if (dnsData.success) {
+        const targetHostnames = ['eclipserblx.com', 'www.eclipserblx.com'];
+        const records = (dnsData.result || []).filter(
+          (r: any) => targetHostnames.includes(r.name) && (r.type === 'A' || r.type === 'AAAA' || r.type === 'CNAME')
+        );
+        
+        for (const record of records) {
+          if (!record.proxied) {
+            console.log(`[DNS] Enabling proxy for ${record.name} (${record.type} → ${record.content})`);
+            const updateRes = await cfApi(
+              `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records/${record.id}`,
+              cfApiToken,
+              {
+                method: "PATCH",
+                body: JSON.stringify({ proxied: true }),
+              }
+            );
+            dnsResults.push({
+              name: record.name,
+              type: record.type,
+              wasProxied: false,
+              nowProxied: true,
+              success: !!updateRes.success,
+              errors: updateRes.errors,
+            });
+          } else {
+            dnsResults.push({
+              name: record.name,
+              type: record.type,
+              wasProxied: true,
+              action: "already_proxied",
+            });
+          }
+        }
+
+        // Also check wildcard *.eclipserblx.com for store subdomains
+        const wildcardRecords = (dnsData.result || []).filter(
+          (r: any) => r.name === '*.eclipserblx.com' && (r.type === 'A' || r.type === 'AAAA' || r.type === 'CNAME')
+        );
+        for (const record of wildcardRecords) {
+          if (!record.proxied) {
+            console.log(`[DNS] Enabling proxy for ${record.name} (${record.type})`);
+            const updateRes = await cfApi(
+              `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records/${record.id}`,
+              cfApiToken,
+              { method: "PATCH", body: JSON.stringify({ proxied: true }) }
+            );
+            dnsResults.push({ name: record.name, type: record.type, wasProxied: false, nowProxied: true, success: !!updateRes.success, errors: updateRes.errors });
+          } else {
+            dnsResults.push({ name: record.name, type: record.type, wasProxied: true, action: "already_proxied" });
+          }
+        }
+      }
+      console.log("[DNS] Results:", JSON.stringify(dnsResults));
+    } catch (e) {
+      console.log("[DNS] Error:", (e as Error).message);
+      dnsResults = [{ error: (e as Error).message }];
+    }
+
+    // Step 8: Check for conflicting Pages projects
+    let pagesInfo: Record<string, unknown> = {};
+    try {
+      const pagesData = await cfApi(
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects`,
+        cfApiToken
+      );
+      if (pagesData.success) {
+        const projects = (pagesData.result || []).map((p: any) => ({
+          name: p.name,
+          domains: p.domains,
+          production_branch: p.production_branch,
+        }));
+        const conflicting = projects.filter((p: any) =>
+          p.domains?.some((d: string) => d.includes('eclipserblx'))
+        );
+        pagesInfo = {
+          totalProjects: projects.length,
+          conflicting: conflicting.length > 0 ? conflicting : "none",
+        };
+        console.log("[PAGES] Conflicting projects:", JSON.stringify(conflicting));
+      }
+    } catch (e) {
+      pagesInfo = { error: (e as Error).message };
+    }
+
+    // Step 9: Get DNS record IPs for debugging
+    let dnsDetails: Array<Record<string, unknown>> = [];
+    try {
+      const dnsData = await cfApi(
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records`,
+        cfApiToken
+      );
+      if (dnsData.success) {
+        dnsDetails = (dnsData.result || [])
+          .filter((r: any) => ['eclipserblx.com', 'www.eclipserblx.com', '*.eclipserblx.com'].includes(r.name))
+          .map((r: any) => ({ name: r.name, type: r.type, content: r.content, proxied: r.proxied }));
+      }
+      console.log("[DNS-DETAILS]", JSON.stringify(dnsDetails));
+    } catch {}
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -503,7 +625,10 @@ Deno.serve(async (req) => {
         wafSkipRule: wafResult,
         shareRedirectRule: redirectResult,
         sbfmConfig: sbfmResult,
-        message: "Worker deployed with WAF skip rule, SBFM config, and /share/ redirect — bots always get OG tags",
+        dnsProxy: dnsResults,
+        dnsDetails,
+        pagesConflict: pagesInfo,
+        message: "Worker deployed with full diagnostics",
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
