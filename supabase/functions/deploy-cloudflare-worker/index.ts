@@ -219,7 +219,7 @@ function buildWorkerScript(): string {
   lines.push(
     'if(sm){var html=await sOg(sm[1]);if(html)return oR(html,"og-store");}'
   );
-  lines.push("return fetch(request);");
+  lines.push("var r=await fetch(request);return new Response(r.body,{status:r.status,headers:new Headers(r.headers)});");
   lines.push(
     '}catch(err){return new Response("Worker error: "+err.message,{status:500});}}};'
   );

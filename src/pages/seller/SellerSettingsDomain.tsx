@@ -347,7 +347,7 @@ export default function SellerSettingsDomain() {
                       <div className="flex items-start gap-2">
                         <span className="font-medium text-primary min-w-[24px]">1.</span>
                         <div>
-                          <p className="text-muted-foreground">Add a <strong>CNAME</strong> record:</p>
+                          <p className="text-muted-foreground">Add a <strong>CNAME</strong> record <span className="text-amber-500 font-medium">(DNS-only / grey cloud)</span>:</p>
                           <div className="flex items-center gap-2 mt-1">
                             <code className="bg-muted px-2 py-0.5 rounded text-xs">{d.domain} → stores.eclipserblx.com</code>
                             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard('stores.eclipserblx.com')}>

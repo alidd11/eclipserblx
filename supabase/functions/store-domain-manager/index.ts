@@ -107,7 +107,7 @@ async function requestCustomDomain(userId: string, storeId: string, domain: stri
   return jsonOk({
     domain: record,
     instructions: {
-      step1: `Add a CNAME record: ${domain} → stores.eclipserblx.com`,
+      step1: `Add a CNAME record: ${domain} → stores.eclipserblx.com (DNS-only / grey cloud — do NOT proxy)`,
       step2: `Add a TXT record: _eclipsestore-verify.${domain} → ${record.verification_token}`,
       step3: "Click 'Verify DNS' once records are set up",
     },
