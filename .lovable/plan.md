@@ -1,36 +1,48 @@
 
 
-## Issues Identified
+## Root Cause Analysis: Custom Domain Error 1000
 
-**Issue 1: Sidebar positioned at top of screen on desktop**
-The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
+After thorough investigation of the Cloudflare API responses, DNS records, and official documentation, I've identified the **actual root cause** that has been missed in all previous attempts.
 
-**Issue 2: Excessive black empty space in the content area**
-The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
+### The Problem
 
-## Plan
+There are **two critical misconfigurations** working together:
 
-### 1. Widen the content area on the Categories page
-- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
-- Reduce vertical padding between the header and grid
-- Tighten the gap between the page title/description and the cards
+1. **Fallback Origin is stuck in "initializing" status** — The Cloudflare for SaaS fallback origin (set to `eclipserblx.com`) has been in "initializing" state since March 9 and has NEVER become "active". This means **no custom hostname can ever route traffic**. The custom hostname for `has.h-and-c.co.uk` exists and has active SSL, but Cloudflare has nowhere to send the traffic.
 
-### 2. Improve the PageHeader component
-- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
-- This applies globally to all pages using PageHeader
+2. **`stores.eclipserblx.com` is DNS-only (grey cloud)** — Per Cloudflare's official documentation: *"The fallback origin is where Cloudflare will route traffic sent to your custom hostnames (**must be proxied**)."* Currently `stores.eclipserblx.com` has `proxied: false`.
 
-### 3. Make category cards fill space better
-- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
-- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
-- Reduce grid gap slightly so cards feel more connected
+### Why Previous Fixes Failed
 
-### 4. Sidebar desktop alignment fix
-- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
-- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
-- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
+- **Setting `stores.eclipserblx.com` to orange cloud alone** didn't work because the fallback origin was set to `eclipserblx.com` (the apex), not `stores.eclipserblx.com`.
+- **The fallback origin `eclipserblx.com`** likely can't activate because the apex has a Cloudflare Worker bound to it (`eclipse-og-proxy`), creating a conflict.
 
-### Files to modify
-- `src/pages/Categories.tsx` — widen container, tighten spacing
-- `src/components/ui/PageHeader.tsx` — reduce bottom margin
-- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
+### The Fix (3 steps)
+
+1. **Set `stores.eclipserblx.com` to proxied (orange cloud)** — This is REQUIRED for it to serve as a fallback origin.
+
+2. **Change the fallback origin from `eclipserblx.com` to `stores.eclipserblx.com`** — A dedicated subdomain without Worker conflicts.
+
+3. **Wait for fallback origin status to become "active"** — Then verify `has.h-and-c.co.uk` works.
+
+### Technical Implementation
+
+Create a temporary edge function (`cf-fix-fallback`) that:
+- Updates the `stores.eclipserblx.com` DNS record to `proxied: true` via the Cloudflare API
+- Sets the fallback origin to `stores.eclipserblx.com` via `PUT /zones/{zone_id}/custom_hostnames/fallback_origin`
+- Returns the new fallback origin status for verification
+
+Then clean up the temporary function after execution.
+
+### Why This Will Work
+
+The official Cloudflare for SaaS flow:
+```text
+has.h-and-c.co.uk (seller CNAME, grey cloud)
+  → stores.eclipserblx.com (proxied/orange cloud, fallback origin)
+    → Cloudflare edge matches custom hostname
+      → Routes to origin IP 185.158.133.1
+```
+
+With the fallback origin actually active, Cloudflare's edge will intercept requests to `has.h-and-c.co.uk`, match them against the custom hostname registry, and route them correctly — eliminating Error 1000.
 
