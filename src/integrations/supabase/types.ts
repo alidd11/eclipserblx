@@ -9131,7 +9131,6 @@ export type Database = {
       }
       products_public: {
         Row: {
-          asset_file_url: string | null
           category_id: string | null
           created_at: string | null
           deleted_at: string | null
@@ -9149,8 +9148,6 @@ export type Database = {
           is_resellable: boolean | null
           is_seller_product: boolean | null
           min_price: number | null
-          moderation_flags: Json | null
-          moderation_notes: string | null
           moderation_status: string | null
           name: string | null
           price: number | null
@@ -9163,7 +9160,6 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          asset_file_url?: never
           category_id?: string | null
           created_at?: string | null
           deleted_at?: string | null
@@ -9181,8 +9177,6 @@ export type Database = {
           is_resellable?: boolean | null
           is_seller_product?: boolean | null
           min_price?: number | null
-          moderation_flags?: never
-          moderation_notes?: never
           moderation_status?: string | null
           name?: string | null
           price?: number | null
@@ -9195,7 +9189,6 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          asset_file_url?: never
           category_id?: string | null
           created_at?: string | null
           deleted_at?: string | null
@@ -9213,8 +9206,6 @@ export type Database = {
           is_resellable?: boolean | null
           is_seller_product?: boolean | null
           min_price?: number | null
-          moderation_flags?: never
-          moderation_notes?: never
           moderation_status?: string | null
           name?: string | null
           price?: number | null
