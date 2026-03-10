@@ -1,36 +1,123 @@
 
 
-## Issues Identified
+# Dispute System Improvements Plan
 
-**Issue 1: Sidebar positioned at top of screen on desktop**
-The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
+## Current State
 
-**Issue 2: Excessive black empty space in the content area**
-The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
+The dispute system has three surfaces: a **DisputeDialog** (customer files), **SellerRefunds** (seller responds), and **Admin Disputes** (staff resolves). However, several critical flows are missing:
 
-## Plan
+- Customers cannot view dispute status after filing
+- Customers cannot escalate after seller denial
+- No automatic escalation when sellers miss the 48h deadline
+- No evidence attachments for either party
 
-### 1. Widen the content area on the Categories page
-- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
-- Reduce vertical padding between the header and grid
-- Tighten the gap between the page title/description and the cards
+## What We Will Build
 
-### 2. Improve the PageHeader component
-- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
-- This applies globally to all pages using PageHeader
+### 1. Customer Dispute Tracker (My Purchases page)
 
-### 3. Make category cards fill space better
-- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
-- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
-- Reduce grid gap slightly so cards feel more connected
+Add a dispute status indicator to each order card that has an active dispute. When clicked, opens a **DisputeStatusDialog** showing:
 
-### 4. Sidebar desktop alignment fix
-- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
-- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
-- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
+- Current status with visual badge (Pending, Denied, Escalated, Approved, Resolved)
+- Timeline of events (filed, seller responded, escalated, resolved)
+- Seller's response (if any)
+- Admin's decision (if any)
+- Escalation button (visible only when status = "denied")
 
-### Files to modify
-- `src/pages/Categories.tsx` — widen container, tighten spacing
-- `src/components/ui/PageHeader.tsx` — reduce bottom margin
-- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
+**Data**: Query `refund_requests` where `customer_id = auth.uid()` for orders in the list.
+
+### 2. Customer Escalation Flow
+
+When a seller denies a dispute, the customer sees a prominent "Escalate to Eclipse" button. Clicking opens a form for an escalation reason. On submit:
+
+- Updates `refund_requests` row: `status = 'escalated'`, `escalated_at = now()`, `escalation_reason = <input>`
+- Sends a Discord notification via `send-ticket-notification` edge function
+- Creates a seller notification for visibility
+
+**RLS**: The existing customer UPDATE policy already allows `customer_id = auth.uid()`. We will add a database function `escalate_dispute` (SECURITY DEFINER) that validates the dispute is in "denied" status before allowing escalation, preventing status manipulation.
+
+### 3. Auto-Escalation (48h Cron)
+
+Create a new edge function `auto-escalate-disputes` that:
+
+- Queries `refund_requests` where `status = 'pending'` and `created_at < now() - interval '48 hours'`
+- Updates matching rows to `status = 'escalated'`, `escalated_at = now()`, `escalation_reason = 'Auto-escalated: seller did not respond within 48 hours'`
+- Sends Discord notifications for each escalated dispute
+- Scheduled via `pg_cron` to run every hour
+
+### 4. Evidence Attachments
+
+Create a private storage bucket `dispute-evidence` with RLS policies allowing:
+
+- Customers to upload evidence for their own disputes
+- Sellers to upload evidence for disputes on their store
+- Staff to view all evidence
+
+Add a `dispute_evidence` table:
+
+```text
+id (uuid PK)
+dispute_id (uuid FK → refund_requests)
+uploaded_by (uuid FK → auth.users via profiles)
+file_path (text)
+file_name (text)
+file_size (integer)
+created_at (timestamptz)
+```
+
+Integrate file upload into:
+- The DisputeDialog (customer filing)
+- The DisputeStatusDialog (customer adding evidence post-filing)
+- The SellerRefunds response dialog
+- The Admin Disputes detail dialog
+
+## Files to Create/Modify
+
+| File | Action |
+|------|--------|
+| `src/components/purchases/DisputeStatusDialog.tsx` | **Create** — Customer dispute tracker + escalation UI |
+| `src/pages/MyPurchases.tsx` | **Edit** — Fetch dispute status per order, show badge + open tracker |
+| `src/components/purchases/DisputeDialog.tsx` | **Edit** — Add evidence upload field |
+| `src/components/purchases/DisputeEvidenceUpload.tsx` | **Create** — Reusable evidence file upload component |
+| `src/pages/seller/SellerRefunds.tsx` | **Edit** — Add evidence upload to seller response dialog, show customer evidence |
+| `src/pages/admin/Disputes.tsx` | **Edit** — Show evidence attachments in detail dialog |
+| `supabase/functions/auto-escalate-disputes/index.ts` | **Create** — Cron-triggered auto-escalation function |
+| Migration SQL | **Create** — `dispute_evidence` table, `escalate_dispute` RPC, storage bucket, RLS policies |
+| pg_cron SQL (insert tool) | **Run** — Schedule hourly cron job |
+
+## Database Changes (Migration)
+
+```sql
+-- 1. dispute_evidence table
+CREATE TABLE public.dispute_evidence (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  dispute_id uuid NOT NULL REFERENCES public.refund_requests(id) ON DELETE CASCADE,
+  uploaded_by uuid NOT NULL,
+  file_path text NOT NULL,
+  file_name text NOT NULL,
+  file_size integer DEFAULT 0,
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE public.dispute_evidence ENABLE ROW LEVEL SECURITY;
+
+-- RLS: customers see own, sellers see their store's, staff see all
+
+-- 2. escalate_dispute RPC (SECURITY DEFINER)
+-- Validates status = 'denied' before allowing escalation
+
+-- 3. Storage bucket
+INSERT INTO storage.buckets (id, name, public) VALUES ('dispute-evidence', 'dispute-evidence', false);
+
+-- 4. Storage RLS policies for upload/download
+```
+
+## Execution Order
+
+1. Database migration (table + RPC + bucket + policies)
+2. Auto-escalation edge function + cron schedule
+3. `DisputeEvidenceUpload` component
+4. `DisputeStatusDialog` component (tracker + escalation)
+5. Update `MyPurchases` to show dispute status + open tracker
+6. Update `DisputeDialog` with evidence upload
+7. Update `SellerRefunds` with evidence viewing + upload
+8. Update admin `Disputes` with evidence viewing
 
