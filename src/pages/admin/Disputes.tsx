@@ -636,6 +636,9 @@ export default function Disputes() {
                   </div>
                 )}
 
+                {/* Evidence Attachments */}
+                <DisputeEvidenceSection disputeId={selectedDispute.id} />
+
                 {/* Escalation */}
                 {selectedDispute.escalation_reason && (
                   <Card className="border-amber-500/20 bg-amber-500/5">
