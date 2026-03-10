@@ -127,7 +127,7 @@ export function DisputeStatusDialog({ open, onOpenChange, disputeId }: DisputeSt
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
-            Dispute Status
+            Dispute {dispute?.dispute_number || 'Status'}
           </DialogTitle>
           <DialogDescription>Track your dispute progress and take action if needed.</DialogDescription>
         </DialogHeader>

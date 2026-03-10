@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
         try {
           await supabase.functions.invoke("send-ticket-notification", {
             body: {
-              ticket_number: `DSP-${dispute.id.substring(0, 6).toUpperCase()}`,
+              ticket_number: dispute.dispute_number || `DSP-${dispute.id.substring(0, 6).toUpperCase()}`,
               subject: `Auto-Escalated Dispute`,
               category: "Dispute",
               customer_name: "System",

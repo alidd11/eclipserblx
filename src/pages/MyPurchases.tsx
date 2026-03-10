@@ -159,11 +159,11 @@ export default function MyPurchases() {
 
   // Map order_id -> dispute for quick lookup
   const disputesByOrder = useMemo(() => {
-    const map: Record<string, { id: string; status: string; amount: number }> = {};
+    const map: Record<string, { id: string; status: string; amount: number; dispute_number: string }> = {};
     (userDisputes || []).forEach((d: any) => {
       // Keep the most recent / most relevant dispute per order
       if (!map[d.order_id] || ['pending', 'escalated', 'denied'].includes(d.status)) {
-        map[d.order_id] = { id: d.id, status: d.status, amount: d.amount };
+        map[d.order_id] = { id: d.id, status: d.status, amount: d.amount, dispute_number: d.dispute_number };
       }
     });
     return map;

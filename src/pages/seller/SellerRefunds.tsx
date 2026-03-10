@@ -203,7 +203,7 @@ export default function SellerRefunds() {
       <Dialog open={!!selectedRequest} onOpenChange={() => { setSelectedRequest(null); setResponse(''); }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Refund Request</DialogTitle>
+            <DialogTitle>Dispute {selectedRequest?.dispute_number || ''}</DialogTitle>
             <DialogDescription>
               From {selectedRequest?.customer?.display_name || 'Unknown'}
             </DialogDescription>

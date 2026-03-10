@@ -467,7 +467,7 @@ export default function Disputes() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-destructive" />
-              Dispute Review
+              Dispute {selectedDispute?.dispute_number || 'Review'}
             </DialogTitle>
             <DialogDescription>
               Review dispute details, escrow status, and take action.
