@@ -13,7 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Globe, CheckCircle, CheckCircle2, Circle, ExternalLink, Copy, Trash2,
   RefreshCw, Zap, Link, ShoppingCart, ChevronDown, AlertTriangle,
-  Shield, CloudOff, XCircle, Info,
+  Shield, CloudOff, XCircle, Info, Activity, Cloud,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -29,64 +29,87 @@ function StatusBadge({ status }: { status: string }) {
   return <Badge variant="outline" className={v.className}>{v.label}</Badge>;
 }
 
-// ── Error explainer for common domain issues ──
-function DomainErrorExplainer({ status, sslStatus, domain }: { status: string; sslStatus: string; domain: string }) {
-  if (status === 'active' && sslStatus === 'active') return null;
+// ── Health check result display ──
+function HealthCheckResult({ data }: { data: any }) {
+  if (!data) return null;
 
-  const errors: { icon: React.ReactNode; title: string; message: string; variant: 'destructive' | 'default' }[] = [];
+  const isOk = !data.error_code && data.http_reachable;
+  const errorMessages: Record<string, { title: string; message: string; fix: string }> = {
+    '1000': {
+      title: 'Error 1000: DNS Conflict',
+      message: 'Your domain resolves to a prohibited IP due to a cross-zone Cloudflare conflict.',
+      fix: 'Your domain is managed by Cloudflare, which conflicts with our Cloudflare setup. You need to either: (1) Pause Cloudflare on your domain, (2) Move DNS to a non-Cloudflare provider like Namecheap DNS, or (3) Use an A record pointing to 185.158.133.1 with DNS-only instead of a CNAME.',
+    },
+    '1014': {
+      title: 'Error 1014: Cross-User Banned',
+      message: 'Your CNAME record is set to Proxied (orange cloud).',
+      fix: 'In your Cloudflare dashboard, click the orange cloud icon next to your CNAME record to switch it to DNS-only (grey cloud).',
+    },
+    '522': {
+      title: 'Error 522: Connection Timed Out',
+      message: 'The origin server is not responding.',
+      fix: 'Check that your DNS records are correctly pointing to stores.eclipserblx.com. If the issue persists, contact support.',
+    },
+    '523': {
+      title: 'Error 523: Origin Unreachable',
+      message: 'The origin server could not be reached.',
+      fix: 'Verify your CNAME record points to stores.eclipserblx.com and that it is set to DNS-only (grey cloud).',
+    },
+    'redirect_loop': {
+      title: 'Redirect Loop Detected',
+      message: 'The domain is caught in an infinite redirect.',
+      fix: 'Check for conflicting redirect rules, Page Rules, or "Always Use HTTPS" settings in your Cloudflare dashboard that may affect this domain.',
+    },
+  };
 
-  if (status === 'failed') {
-    errors.push({
-      icon: <XCircle className="h-4 w-4" />,
-      title: 'Domain verification failed',
-      message: `We couldn't verify ownership of ${domain}. Please check that your TXT record (_eclipsestore-verify.${domain}) is correctly set up and try again. DNS changes can take up to 24 hours to propagate.`,
-      variant: 'destructive',
-    });
-  }
-
-  if (sslStatus === 'failed') {
-    errors.push({
-      icon: <Shield className="h-4 w-4" />,
-      title: 'SSL certificate failed',
-      message: `SSL provisioning failed for ${domain}. This usually means your CNAME record is set to Proxied (orange cloud) in Cloudflare instead of DNS-only (grey cloud). Switch to DNS-only and click "Verify DNS" again.`,
-      variant: 'destructive',
-    });
-  }
-
-  if (sslStatus === 'pending' && status === 'active') {
-    errors.push({
-      icon: <Info className="h-4 w-4" />,
-      title: 'SSL certificate pending',
-      message: `Your domain is verified but SSL is still being provisioned. This usually takes a few minutes. If it's been more than an hour, ensure your CNAME is DNS-only (grey cloud) and not Proxied.`,
-      variant: 'default',
-    });
-  }
-
-  if (status === 'verifying') {
-    errors.push({
-      icon: <Info className="h-4 w-4" />,
-      title: 'Waiting for DNS verification',
-      message: `We're waiting for your DNS records to propagate. This can take up to 24 hours. Make sure your TXT record is set correctly and click "Verify DNS" to check again.`,
-      variant: 'default',
-    });
-  }
+  const error = data.error_code ? errorMessages[data.error_code] : null;
 
   return (
     <div className="space-y-2">
-      {errors.map((err, i) => (
-        <Alert key={i} variant={err.variant}>
-          {err.icon}
-          <AlertTitle>{err.title}</AlertTitle>
-          <AlertDescription className="text-xs mt-1">{err.message}</AlertDescription>
+      {isOk ? (
+        <Alert>
+          <CheckCircle className="h-4 w-4 text-emerald-500" />
+          <AlertTitle className="text-emerald-600 dark:text-emerald-400">Domain is working</AlertTitle>
+          <AlertDescription className="text-xs">{data.diagnosis}</AlertDescription>
         </Alert>
-      ))}
+      ) : error ? (
+        <Alert variant="destructive">
+          <XCircle className="h-4 w-4" />
+          <AlertTitle>{error.title}</AlertTitle>
+          <AlertDescription className="text-xs mt-1 space-y-2">
+            <p>{error.message}</p>
+            <div className="bg-background/50 rounded p-2 border border-border">
+              <p className="font-medium text-foreground text-xs mb-1">How to fix:</p>
+              <p className="text-xs">{error.fix}</p>
+            </div>
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Domain check inconclusive</AlertTitle>
+          <AlertDescription className="text-xs">{data.diagnosis || 'Could not determine domain status.'}</AlertDescription>
+        </Alert>
+      )}
+
+      {data.is_cloudflare_zone && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/5 border border-amber-500/20 rounded-lg">
+          <Cloud className="h-4 w-4 text-amber-500 shrink-0" />
+          <p className="text-xs text-amber-600 dark:text-amber-400">
+            <strong>Cloudflare-managed domain detected.</strong> Cross-zone conflicts are common. See the setup guide below for Cloudflare-specific instructions.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
 
 // ── Cloudflare-specific setup checklist ──
-function CloudflareChecklist({ domain, verificationToken }: { domain: string; verificationToken: string | null }) {
-  const steps = [
+function CloudflareChecklist({ domain, verificationToken, isCloudflare }: { domain: string; verificationToken: string | null; isCloudflare: boolean }) {
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const toggle = (id: string) => setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const standardSteps = [
     {
       id: 'cname',
       label: 'Add CNAME record',
@@ -117,30 +140,48 @@ function CloudflareChecklist({ domain, verificationToken }: { domain: string; ve
         </>
       ),
     },
+  ];
+
+  const cloudflareSteps = [
     {
       id: 'grey-cloud',
-      label: 'Set CNAME to DNS-only (grey cloud)',
+      label: 'Set ALL records to DNS-only (grey cloud)',
       detail: (
         <span className="text-amber-600 dark:text-amber-400 font-medium">
-          Critical: Click the orange cloud icon next to your CNAME records to turn them grey. Proxied mode causes Error 1014.
+          CRITICAL: Click the orange cloud icon next to EVERY record for this domain to turn it grey. Proxied mode causes errors.
         </span>
       ),
     },
     {
       id: 'no-redirect',
-      label: 'Disable page rules & redirects for this domain',
-      detail: 'Make sure there are no Cloudflare Page Rules, Redirect Rules, or Workers interfering with this domain.',
+      label: 'Disable redirect rules for this domain',
+      detail: 'Remove any Cloudflare Page Rules, Redirect Rules, or "Always Use HTTPS" settings that target this domain.',
     },
     {
-      id: 'verify',
-      label: 'Click "Verify DNS" below',
-      detail: 'Once all records are set, click verify. DNS propagation can take up to 24 hours.',
+      id: 'no-worker',
+      label: 'Remove Cloudflare Workers for this domain',
+      detail: 'Ensure no Cloudflare Worker routes match this domain/subdomain.',
+    },
+    {
+      id: 'pause-cf',
+      label: 'If errors persist: Pause Cloudflare or move DNS',
+      detail: (
+        <>
+          If you still see Error 1000 after all steps, you must either{' '}
+          <strong>Pause Cloudflare on your domain</strong> (Overview → Advanced Actions → Pause) or{' '}
+          <strong>move your DNS to a non-Cloudflare provider</strong>.{' '}
+          Alternatively, use an <strong>A record</strong> pointing to{' '}
+          <code className="bg-muted px-1 rounded text-xs">185.158.133.1</code> (DNS-only) instead of a CNAME.
+        </>
+      ),
     },
   ];
 
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
-
-  const toggle = (id: string) => setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
+  const steps = isCloudflare ? [...standardSteps, ...cloudflareSteps] : [...standardSteps, {
+    id: 'verify',
+    label: 'Click "Verify DNS" below',
+    detail: 'Once all records are set, click verify. DNS propagation can take up to 24 hours.',
+  }];
 
   const completedCount = Object.values(checked).filter(Boolean).length;
 
@@ -148,8 +189,8 @@ function CloudflareChecklist({ domain, verificationToken }: { domain: string; ve
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-foreground flex items-center gap-2">
-          <CloudOff className="w-4 h-4 text-primary" />
-          Cloudflare Setup Checklist
+          {isCloudflare ? <Cloud className="w-4 h-4 text-amber-500" /> : <CloudOff className="w-4 h-4 text-primary" />}
+          {isCloudflare ? 'Cloudflare Setup Checklist' : 'Setup Checklist'}
         </p>
         <span className="text-xs text-muted-foreground">
           {completedCount}/{steps.length}
@@ -181,27 +222,25 @@ function CloudflareChecklist({ domain, verificationToken }: { domain: string; ve
         ))}
       </div>
 
-      {/* Common error reference */}
-      <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-3 space-y-2">
-        <p className="text-xs font-semibold text-destructive flex items-center gap-1.5">
-          <AlertTriangle className="w-3.5 h-3.5" />
-          Common Cloudflare Errors
-        </p>
-        <div className="space-y-1.5 text-xs text-muted-foreground">
-          <p>
-            <strong className="text-foreground">Error 1000</strong> — DNS points to prohibited IP. Your fallback origin isn't reachable. Contact support.
+      {isCloudflare && (
+        <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-3 space-y-2">
+          <p className="text-xs font-semibold text-destructive flex items-center gap-1.5">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            Common Cloudflare Errors
           </p>
-          <p>
-            <strong className="text-foreground">Error 1014</strong> — Cross-user banned. Your CNAME is set to <strong>Proxied (orange cloud)</strong>. Switch to <strong>DNS-only (grey cloud)</strong>.
-          </p>
-          <p>
-            <strong className="text-foreground">Error 522/523</strong> — Connection timed out. Check your domain's DNS records are pointing to <code className="bg-muted px-1 rounded">stores.eclipserblx.com</code>.
-          </p>
-          <p>
-            <strong className="text-foreground">ERR_TOO_MANY_REDIRECTS</strong> — You may have a Cloudflare Page Rule or redirect conflicting. Disable all rules for this domain.
-          </p>
+          <div className="space-y-1.5 text-xs text-muted-foreground">
+            <p>
+              <strong className="text-foreground">Error 1000</strong> — Cross-zone conflict. Your domain is on Cloudflare and clashes with our Cloudflare setup. Pause CF or move DNS.
+            </p>
+            <p>
+              <strong className="text-foreground">Error 1014</strong> — CNAME is <strong>Proxied (orange)</strong>. Switch to <strong>DNS-only (grey)</strong>.
+            </p>
+            <p>
+              <strong className="text-foreground">ERR_TOO_MANY_REDIRECTS</strong> — Remove redirect rules or "Always Use HTTPS" for this domain.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -273,10 +312,18 @@ export default function SellerSettingsDomain() {
       if (data?.error) throw new Error(data.error);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
       setCustomDomainInput('');
-      toast({ title: 'Domain registered', description: 'Follow the DNS instructions below to verify.' });
+      if (data.is_cloudflare_zone) {
+        toast({ 
+          title: '⚠️ Cloudflare domain detected', 
+          description: 'Your domain uses Cloudflare DNS. Follow the Cloudflare-specific checklist carefully to avoid errors.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({ title: 'Domain registered', description: 'Follow the DNS instructions below to verify.' });
+      }
     },
     onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
   });
@@ -293,12 +340,35 @@ export default function SellerSettingsDomain() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
       if (data.verified) {
-        toast({ title: 'Domain verified!', description: `SSL status: ${data.ssl_status}` });
+        if (data.health_check?.error_code) {
+          toast({ 
+            title: 'Verified but issue detected', 
+            description: `Domain verified & SSL provisioned, but a health check found: ${data.health_check.diagnosis}`,
+            variant: 'destructive',
+          });
+        } else {
+          toast({ title: 'Domain verified!', description: `SSL status: ${data.ssl_status}` });
+        }
       } else {
         toast({ title: 'Not verified yet', description: data.message || 'DNS may still be propagating.', variant: 'destructive' });
       }
     },
     onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
+  });
+
+  const healthCheck = useMutation({
+    mutationFn: async (domainId: string) => {
+      const { data, error } = await supabase.functions.invoke('store-domain-manager', {
+        body: { action: 'health-check', domain_id: domainId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-domains'] });
+    },
+    onError: (e: any) => toast({ title: 'Health check failed', description: e.message, variant: 'destructive' }),
   });
 
   const removeDomain = useMutation({
@@ -440,116 +510,159 @@ export default function SellerSettingsDomain() {
             <ShoppingCart className="w-4 h-4 text-primary" />
             <p className="text-sm text-muted-foreground">
               Need a domain?{' '}
-              <a
-                href="https://www.cloudflare.com/products/registrar/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary font-medium hover:underline"
-              >
+              <a href="https://www.cloudflare.com/products/registrar/" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">
                 Buy one at cost on Cloudflare
               </a>{' '}
               (from ~$8/year) or from{' '}
-              <a
-                href="https://www.namecheap.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary font-medium hover:underline"
-              >
+              <a href="https://www.namecheap.com/" target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">
                 Namecheap
               </a>.
             </p>
           </div>
 
           {/* Existing custom domains */}
-          {customDomains.map((d) => (
-            <Card key={d.id} className="bg-muted/30">
-              <CardContent className="py-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <code className="font-mono text-sm text-foreground">{d.domain}</code>
-                  <div className="flex items-center gap-2">
-                    <StatusBadge status={d.status} />
-                    {d.ssl_status === 'active' && (
-                      <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
-                        SSL ✓
-                      </Badge>
-                    )}
+          {customDomains.map((d) => {
+            const isCloudflare = !!(d as any).is_cloudflare_zone;
+            const lastHealthCheck = (d as any).last_health_check;
+
+            return (
+              <Card key={d.id} className="bg-muted/30">
+                <CardContent className="py-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <code className="font-mono text-sm text-foreground">{d.domain}</code>
+                      {isCloudflare && (
+                        <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-xs">
+                          <Cloud className="w-3 h-3 mr-1" />
+                          Cloudflare
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <StatusBadge status={d.status} />
+                      {d.ssl_status === 'active' && (
+                        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                          SSL ✓
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* Error explainer */}
-                <DomainErrorExplainer status={d.status} sslStatus={d.ssl_status ?? 'pending'} domain={d.domain} />
+                  {/* Health check results */}
+                  {lastHealthCheck && <HealthCheckResult data={lastHealthCheck} />}
 
-                {/* Cloudflare checklist for pending/verifying domains */}
-                {(d.status === 'pending' || d.status === 'verifying' || d.status === 'failed') && (
-                  <div className="bg-card rounded-lg p-4 border border-border space-y-4">
-                    <div className="space-y-2 text-sm">
-                      <p className="text-sm font-medium text-foreground">DNS Records to Add:</p>
-                      <div className="flex items-start gap-2">
-                        <span className="font-medium text-primary min-w-[24px]">1.</span>
-                        <div>
-                          <p className="text-muted-foreground">Add a <strong>CNAME</strong> record:</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <code className="bg-muted px-2 py-0.5 rounded text-xs">{d.domain} → stores.eclipserblx.com</code>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard('stores.eclipserblx.com')}>
-                              <Copy className="w-3 h-3" />
-                            </Button>
+                  {/* Health check result from mutation (live) */}
+                  {healthCheck.data && healthCheck.variables === d.id && !lastHealthCheck && (
+                    <HealthCheckResult data={healthCheck.data} />
+                  )}
+
+                  {/* Setup instructions for pending/verifying/failed domains */}
+                  {(d.status === 'pending' || d.status === 'verifying' || d.status === 'failed') && (
+                    <div className="bg-card rounded-lg p-4 border border-border space-y-4">
+                      <div className="space-y-2 text-sm">
+                        <p className="text-sm font-medium text-foreground">DNS Records to Add:</p>
+                        <div className="flex items-start gap-2">
+                          <span className="font-medium text-primary min-w-[24px]">1.</span>
+                          <div>
+                            <p className="text-muted-foreground">Add a <strong>CNAME</strong> record:</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <code className="bg-muted px-2 py-0.5 rounded text-xs">{d.domain} → stores.eclipserblx.com</code>
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard('stores.eclipserblx.com')}>
+                                <Copy className="w-3 h-3" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
+                        <div className="flex items-start gap-2">
+                          <span className="font-medium text-primary min-w-[24px]">2.</span>
+                          <div>
+                            <p className="text-muted-foreground">Add a <strong>CNAME</strong> for <strong>www</strong>:</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <code className="bg-muted px-2 py-0.5 rounded text-xs">www.{d.domain} → stores.eclipserblx.com</code>
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard('stores.eclipserblx.com')}>
+                                <Copy className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <span className="font-medium text-primary min-w-[24px]">3.</span>
+                          <div>
+                            <p className="text-muted-foreground">Add a <strong>TXT</strong> record:</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <code className="bg-muted px-2 py-0.5 rounded text-xs break-all">_eclipsestore-verify.{d.domain} → {d.verification_token}</code>
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(d.verification_token ?? '')}>
+                                <Copy className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {isCloudflare && (
+                          <div className="flex items-start gap-2">
+                            <span className="font-medium text-amber-500 min-w-[24px]">⚠️</span>
+                            <div>
+                              <p className="text-amber-600 dark:text-amber-400 font-medium text-xs">
+                                Alternative for Cloudflare users: Use an A record instead of CNAME
+                              </p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <code className="bg-muted px-2 py-0.5 rounded text-xs">{d.domain} → 185.158.133.1 (A record, DNS-only)</code>
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard('185.158.133.1')}>
+                                  <Copy className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-start gap-2">
-                        <span className="font-medium text-primary min-w-[24px]">2.</span>
-                        <div>
-                          <p className="text-muted-foreground">Add a <strong>CNAME</strong> for <strong>www</strong>:</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <code className="bg-muted px-2 py-0.5 rounded text-xs">www.{d.domain} → stores.eclipserblx.com</code>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard('stores.eclipserblx.com')}>
-                              <Copy className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="font-medium text-primary min-w-[24px]">3.</span>
-                        <div>
-                          <p className="text-muted-foreground">Add a <strong>TXT</strong> record:</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <code className="bg-muted px-2 py-0.5 rounded text-xs break-all">_eclipsestore-verify.{d.domain} → {d.verification_token}</code>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(d.verification_token ?? '')}>
-                              <Copy className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </div>
+
+                      <Separator />
+
+                      <CloudflareChecklist
+                        domain={d.domain}
+                        verificationToken={d.verification_token}
+                        isCloudflare={isCloudflare}
+                      />
+
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => verifyDomain.mutate(d.id)}
+                          disabled={verifyDomain.isPending}
+                        >
+                          {verifyDomain.isPending ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                          Verify DNS
+                        </Button>
                       </div>
                     </div>
+                  )}
 
-                    <Separator />
-
-                    <CloudflareChecklist domain={d.domain} verificationToken={d.verification_token} />
-
-                    <Button
-                      size="sm"
-                      onClick={() => verifyDomain.mutate(d.id)}
-                      disabled={verifyDomain.isPending}
-                    >
-                      {verifyDomain.isPending ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
-                      Verify DNS
+                  {/* Actions for active domains */}
+                  <div className="flex gap-2">
+                    {d.status === 'active' && (
+                      <>
+                        <Button variant="outline" size="sm" onClick={() => window.open(`https://${d.domain}`, '_blank')}>
+                          <ExternalLink className="w-4 h-4 mr-1" /> Visit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => healthCheck.mutate(d.id)}
+                          disabled={healthCheck.isPending}
+                        >
+                          {healthCheck.isPending ? <RefreshCw className="w-4 h-4 mr-1 animate-spin" /> : <Activity className="w-4 h-4 mr-1" />}
+                          Health Check
+                        </Button>
+                      </>
+                    )}
+                    <Button variant="ghost" size="sm" onClick={() => removeDomain.mutate(d.id)}>
+                      <Trash2 className="w-4 h-4 text-destructive" />
                     </Button>
                   </div>
-                )}
-
-                <div className="flex gap-2">
-                  {d.status === 'active' && (
-                    <Button variant="outline" size="sm" onClick={() => window.open(`https://${d.domain}`, '_blank')}>
-                      <ExternalLink className="w-4 h-4 mr-1" /> Visit
-                    </Button>
-                  )}
-                  <Button variant="ghost" size="sm" onClick={() => removeDomain.mutate(d.id)}>
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
 
           {customDomains.length === 0 && (
             <p className="text-sm text-muted-foreground py-2">

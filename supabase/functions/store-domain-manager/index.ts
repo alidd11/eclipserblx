@@ -42,20 +42,169 @@ async function getAuthUser(req: Request) {
   return data?.user ?? null;
 }
 
+// ── Helper: Check if domain uses Cloudflare nameservers ──
+async function detectCloudflareZone(domain: string): Promise<boolean> {
+  try {
+    // Extract root domain (e.g., "has.h-and-c.co.uk" → "h-and-c.co.uk")
+    const parts = domain.split(".");
+    // Handle co.uk, com.au etc. by trying progressively
+    let rootDomain = domain;
+    if (parts.length > 2) {
+      // Try with last 2 parts first, then 3 for .co.uk style
+      const candidates = [];
+      if (parts.length >= 3) candidates.push(parts.slice(-3).join("."));
+      candidates.push(parts.slice(-2).join("."));
+      
+      for (const candidate of candidates) {
+        const nsResp = await fetch(
+          `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(candidate)}&type=NS`,
+          { headers: { Accept: "application/dns-json" } }
+        );
+        const nsData = await nsResp.json();
+        const nsRecords = (nsData?.Answer ?? [])
+          .filter((a: any) => a.type === 2)
+          .map((a: any) => (a.data ?? "").toLowerCase());
+        
+        if (nsRecords.length > 0) {
+          return nsRecords.some((ns: string) => ns.includes(".ns.cloudflare.com"));
+        }
+      }
+    }
+    
+    // Fallback: check the domain directly
+    const nsResp = await fetch(
+      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(rootDomain)}&type=NS`,
+      { headers: { Accept: "application/dns-json" } }
+    );
+    const nsData = await nsResp.json();
+    const nsRecords = (nsData?.Answer ?? [])
+      .filter((a: any) => a.type === 2)
+      .map((a: any) => (a.data ?? "").toLowerCase());
+    
+    return nsRecords.some((ns: string) => ns.includes(".ns.cloudflare.com"));
+  } catch {
+    return false;
+  }
+}
+
+// ── Helper: Health check a domain ──
+async function performHealthCheck(domain: string) {
+  const checks: Record<string, any> = {
+    timestamp: new Date().toISOString(),
+    domain,
+    dns_ok: false,
+    cname_target: null,
+    resolves_to_cloudflare: false,
+    http_reachable: false,
+    http_status: null,
+    error_code: null,
+    is_cloudflare_zone: false,
+    diagnosis: "",
+    recommended_fix: "",
+  };
+
+  try {
+    // 1. Check CNAME resolution
+    const cnameResp = await fetch(
+      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=CNAME`,
+      { headers: { Accept: "application/dns-json" } }
+    );
+    const cnameData = await cnameResp.json();
+    const cnameRecords = (cnameData?.Answer ?? []).filter((a: any) => a.type === 5);
+    if (cnameRecords.length > 0) {
+      checks.cname_target = cnameRecords[0].data?.replace(/\.$/, "");
+      checks.dns_ok = true;
+    }
+
+    // 2. Check A record resolution
+    const aResp = await fetch(
+      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`,
+      { headers: { Accept: "application/dns-json" } }
+    );
+    const aData = await aResp.json();
+    const aRecords = (aData?.Answer ?? []).filter((a: any) => a.type === 1);
+    if (aRecords.length > 0) {
+      checks.dns_ok = true;
+      const ips = aRecords.map((a: any) => a.data);
+      // Cloudflare proxy IPs are in 104.16-31.x.x, 172.64-71.x.x ranges
+      checks.resolves_to_cloudflare = ips.some((ip: string) => {
+        const parts = ip.split(".").map(Number);
+        return (parts[0] === 104 && parts[1] >= 16 && parts[1] <= 31) ||
+               (parts[0] === 172 && parts[1] >= 64 && parts[1] <= 71);
+      });
+    }
+
+    // 3. Check NS to detect Cloudflare zone
+    checks.is_cloudflare_zone = await detectCloudflareZone(domain);
+
+    // 4. Try HTTP fetch to check for errors
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+      const httpResp = await fetch(`https://${domain}/`, {
+        signal: controller.signal,
+        redirect: "manual",
+        headers: { "User-Agent": "EclipseHealthCheck/1.0" },
+      });
+      clearTimeout(timeout);
+      
+      checks.http_status = httpResp.status;
+      checks.http_reachable = true;
+
+      // Check for Cloudflare error pages
+      const body = await httpResp.text();
+      if (body.includes("Error 1000")) {
+        checks.error_code = "1000";
+        checks.diagnosis = "DNS points to prohibited IP — cross-zone Cloudflare conflict detected.";
+      } else if (body.includes("Error 1014")) {
+        checks.error_code = "1014";
+        checks.diagnosis = "CNAME Cross-User Banned — your CNAME is set to Proxied (orange cloud). Switch to DNS-only (grey cloud).";
+      } else if (body.includes("Error 522")) {
+        checks.error_code = "522";
+        checks.diagnosis = "Connection timed out — the origin server is not responding.";
+      } else if (body.includes("Error 523")) {
+        checks.error_code = "523";
+        checks.diagnosis = "Origin is unreachable — check DNS records are correct.";
+      } else if (body.includes("ERR_TOO_MANY_REDIRECTS") || httpResp.status === 301 || httpResp.status === 302) {
+        checks.error_code = "redirect_loop";
+        checks.diagnosis = "Redirect loop detected — check for conflicting redirect rules.";
+      } else if (httpResp.status >= 200 && httpResp.status < 400) {
+        checks.error_code = null;
+        checks.diagnosis = "Domain appears to be working correctly.";
+      }
+    } catch (fetchErr: any) {
+      checks.http_reachable = false;
+      checks.diagnosis = `Could not reach domain: ${fetchErr.message}`;
+    }
+
+    // 5. Generate recommended fix
+    if (checks.error_code === "1000" && checks.is_cloudflare_zone) {
+      checks.recommended_fix = "CLOUDFLARE_CROSS_ZONE";
+    } else if (checks.error_code === "1014") {
+      checks.recommended_fix = "DISABLE_PROXY";
+    } else if (checks.error_code === "1000") {
+      checks.recommended_fix = "CHECK_DNS";
+    } else if (!checks.dns_ok) {
+      checks.recommended_fix = "ADD_DNS_RECORDS";
+    }
+  } catch (e: any) {
+    checks.diagnosis = `Health check failed: ${e.message}`;
+  }
+
+  return checks;
+}
+
 // ── Action: claim-subdomain ──
 async function claimSubdomain(userId: string, storeId: string, slug: string) {
   const admin = getSupabaseAdmin();
   const domain = `${slug.toLowerCase()}.eclipserblx.com`;
 
-  // Verify store ownership
   const { data: store } = await admin.from("stores").select("id, slug, owner_id").eq("id", storeId).single();
   if (!store || store.owner_id !== userId) return jsonError("Not your store", 403);
 
-  // Check if domain already taken
   const { data: existing } = await admin.from("store_domains").select("id").eq("domain", domain).single();
   if (existing) return jsonError("Subdomain already claimed", 409);
 
-  // Check if store already has a subdomain
   const { data: storeExisting } = await admin
     .from("store_domains")
     .select("id")
@@ -64,13 +213,12 @@ async function claimSubdomain(userId: string, storeId: string, slug: string) {
     .limit(1);
   if (storeExisting && storeExisting.length > 0) return jsonError("Store already has a subdomain", 409);
 
-  // Wildcard DNS handles *.eclipserblx.com, just register in DB as active
   const { data: record, error } = await admin.from("store_domains").insert({
     store_id: storeId,
     domain,
     domain_type: "subdomain",
     status: "active",
-    ssl_status: "active", // Wildcard SSL covers it
+    ssl_status: "active",
     verified_at: new Date().toISOString(),
     is_primary: true,
   }).select().single();
@@ -79,29 +227,27 @@ async function claimSubdomain(userId: string, storeId: string, slug: string) {
   return jsonOk({ domain: record });
 }
 
-// ── Action: request-custom-domain ──
+// ── Action: request-custom-domain (with Cloudflare auto-detection) ──
 async function requestCustomDomain(userId: string, storeId: string, domain: string) {
   const admin = getSupabaseAdmin();
 
-  // Normalize domain
   domain = domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
 
-  // Validate
   if (domain.endsWith(".eclipserblx.com")) return jsonError("Use claim-subdomain for eclipserblx.com subdomains", 400);
   if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(domain)) {
     return jsonError("Invalid domain format", 400);
   }
 
-  // Verify store ownership
   const { data: store } = await admin.from("stores").select("id, owner_id").eq("id", storeId).single();
   if (!store || store.owner_id !== userId) return jsonError("Not your store", 403);
 
-  // Check if domain already registered (exclude removed ones)
   const { data: existing } = await admin.from("store_domains").select("id, status").eq("domain", domain).neq("status", "removed").single();
   if (existing) return jsonError("Domain already registered", 409);
 
-  // Clean up any old removed records for this domain
   await admin.from("store_domains").delete().eq("domain", domain).eq("status", "removed");
+
+  // Auto-detect Cloudflare zone
+  const isCloudflare = await detectCloudflareZone(domain);
 
   const { data: record, error } = await admin.from("store_domains").insert({
     store_id: storeId,
@@ -110,18 +256,29 @@ async function requestCustomDomain(userId: string, storeId: string, domain: stri
     status: "pending",
     ssl_status: "pending",
     is_primary: false,
+    is_cloudflare_zone: isCloudflare,
   }).select().single();
 
   if (error) return jsonError(error.message, 500);
 
-  return jsonOk({
-    domain: record,
-    instructions: {
-      step1: `Add a CNAME record: ${domain} → stores.eclipserblx.com (DNS-only / grey cloud — do NOT proxy your CNAME)`,
-      step2: `Add a TXT record: _eclipsestore-verify.${domain} → ${record.verification_token}`,
-      step3: "Click 'Verify DNS' once records are set up",
-    },
-  });
+  // Return different instructions based on detection
+  const instructions = isCloudflare
+    ? {
+        warning: "CLOUDFLARE_DETECTED",
+        message: "Your domain uses Cloudflare DNS. To avoid Error 1000 (cross-zone conflict), you MUST follow these specific steps:",
+        step1: `In your Cloudflare dashboard, add a CNAME record: ${domain} → stores.eclipserblx.com — set it to DNS-only (grey cloud)`,
+        step2: `Add a TXT record: _eclipsestore-verify.${domain} → ${record.verification_token}`,
+        step3: "CRITICAL: Ensure the CNAME proxy status shows a GREY cloud icon, NOT orange",
+        step4: "If you still see Error 1000 after verifying, you may need to pause Cloudflare on your domain or use a non-Cloudflare DNS provider",
+        alternative: `Alternative: Add an A record for ${domain} → 185.158.133.1 (DNS-only/grey cloud) instead of a CNAME. This may avoid the cross-zone conflict.`,
+      }
+    : {
+        step1: `Add a CNAME record: ${domain} → stores.eclipserblx.com (DNS-only / grey cloud — do NOT proxy your CNAME)`,
+        step2: `Add a TXT record: _eclipsestore-verify.${domain} → ${record.verification_token}`,
+        step3: "Click 'Verify DNS' once records are set up",
+      };
+
+  return jsonOk({ domain: record, instructions, is_cloudflare_zone: isCloudflare });
 }
 
 // ── Action: verify-custom-domain ──
@@ -138,7 +295,6 @@ async function verifyCustomDomain(userId: string, domainId: string) {
   if ((domainRecord as any).stores?.owner_id !== userId) return jsonError("Not your domain", 403);
   if (domainRecord.domain_type !== "custom") return jsonError("Only custom domains need verification", 400);
 
-  // Check TXT record via DNS over HTTPS (Cloudflare DoH)
   const txtName = `_eclipsestore-verify.${domainRecord.domain}`;
   const dohResp = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(txtName)}&type=TXT`, {
     headers: { Accept: "application/dns-json" },
@@ -152,11 +308,12 @@ async function verifyCustomDomain(userId: string, domainId: string) {
   const tokenMatch = txtRecords.some((txt: string) => txt === domainRecord.verification_token);
 
   if (!tokenMatch) {
-    await admin.from("store_domains").update({ status: "verifying" }).eq("id", domainId);
-    return jsonOk({ verified: false, message: "TXT record not found yet. DNS may still be propagating.", expected_token: domainRecord.verification_token });
+    // Also re-check Cloudflare status
+    const isCloudflare = await detectCloudflareZone(domainRecord.domain);
+    await admin.from("store_domains").update({ status: "verifying", is_cloudflare_zone: isCloudflare }).eq("id", domainId);
+    return jsonOk({ verified: false, message: "TXT record not found yet. DNS may still be propagating.", expected_token: domainRecord.verification_token, is_cloudflare_zone: isCloudflare });
   }
 
-  // Verified! Now provision SSL via Cloudflare Custom Hostnames
   const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
   const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
 
@@ -165,15 +322,11 @@ async function verifyCustomDomain(userId: string, domainId: string) {
 
   if (cfToken && cfZoneId) {
     try {
-      const { resp, data } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames`, {
+      const { data } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames`, {
         method: "POST",
         body: JSON.stringify({
           hostname: domainRecord.domain,
-          ssl: {
-            method: "http",
-            type: "dv",
-            settings: { min_tls_version: "1.2" },
-          },
+          ssl: { method: "http", type: "dv", settings: { min_tls_version: "1.2" } },
         }),
       });
 
@@ -190,15 +343,56 @@ async function verifyCustomDomain(userId: string, domainId: string) {
     }
   }
 
+  // Re-detect Cloudflare status
+  const isCloudflare = await detectCloudflareZone(domainRecord.domain);
+
   await admin.from("store_domains").update({
     status: "active",
     verified_at: new Date().toISOString(),
     ssl_status: sslStatus,
     cloudflare_hostname_id: cfHostnameId,
+    is_cloudflare_zone: isCloudflare,
     updated_at: new Date().toISOString(),
   }).eq("id", domainId);
 
-  return jsonOk({ verified: true, ssl_status: sslStatus });
+  // Auto-run health check after verification
+  const healthCheck = await performHealthCheck(domainRecord.domain);
+  await admin.from("store_domains").update({
+    last_health_check: healthCheck,
+    last_health_check_at: new Date().toISOString(),
+  }).eq("id", domainId);
+
+  return jsonOk({ 
+    verified: true, 
+    ssl_status: sslStatus, 
+    is_cloudflare_zone: isCloudflare,
+    health_check: healthCheck,
+  });
+}
+
+// ── Action: health-check (public for domain owners) ──
+async function healthCheckDomain(userId: string, domainId: string) {
+  const admin = getSupabaseAdmin();
+
+  const { data: domainRecord } = await admin
+    .from("store_domains")
+    .select("*, stores!inner(owner_id)")
+    .eq("id", domainId)
+    .single();
+
+  if (!domainRecord) return jsonError("Domain not found", 404);
+  if ((domainRecord as any).stores?.owner_id !== userId) return jsonError("Not your domain", 403);
+
+  const healthCheck = await performHealthCheck(domainRecord.domain);
+
+  // Update Cloudflare zone status based on health check
+  await admin.from("store_domains").update({
+    last_health_check: healthCheck,
+    last_health_check_at: new Date().toISOString(),
+    is_cloudflare_zone: healthCheck.is_cloudflare_zone,
+  }).eq("id", domainId);
+
+  return jsonOk(healthCheck);
 }
 
 // ── Action: check-status ──
@@ -214,7 +408,6 @@ async function checkStatus(userId: string, domainId: string) {
   if (!domainRecord) return jsonError("Domain not found", 404);
   if ((domainRecord as any).stores?.owner_id !== userId) return jsonError("Not your domain", 403);
 
-  // If SSL pending and has cloudflare hostname ID, check status
   if (domainRecord.ssl_status === "pending" && domainRecord.cloudflare_hostname_id) {
     const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
     const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
@@ -239,6 +432,9 @@ async function checkStatus(userId: string, domainId: string) {
     ssl_status: domainRecord.ssl_status,
     verified_at: domainRecord.verified_at,
     is_primary: domainRecord.is_primary,
+    is_cloudflare_zone: domainRecord.is_cloudflare_zone,
+    last_health_check: domainRecord.last_health_check,
+    last_health_check_at: domainRecord.last_health_check_at,
   });
 }
 
@@ -255,7 +451,6 @@ async function removeDomain(userId: string, domainId: string) {
   if (!domainRecord) return jsonError("Domain not found", 404);
   if ((domainRecord as any).stores?.owner_id !== userId) return jsonError("Not your domain", 403);
 
-  // Clean up Cloudflare custom hostname if exists
   if (domainRecord.cloudflare_hostname_id) {
     const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
     const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
@@ -284,7 +479,7 @@ async function resolveHostname(hostname: string) {
   return jsonOk(data);
 }
 
-// ── Action: admin-verify-domain (service role only, no ownership check) ──
+// ── Action: admin-verify-domain (service role only) ──
 async function adminVerifyDomain(domainId: string) {
   const admin = getSupabaseAdmin();
 
@@ -297,7 +492,6 @@ async function adminVerifyDomain(domainId: string) {
   if (!domainRecord) return jsonError("Domain not found", 404);
   if (domainRecord.domain_type !== "custom") return jsonError("Only custom domains need verification", 400);
 
-  // Check TXT record via DNS over HTTPS
   const txtName = `_eclipsestore-verify.${domainRecord.domain}`;
   const dohResp = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(txtName)}&type=TXT`, {
     headers: { Accept: "application/dns-json" },
@@ -314,7 +508,6 @@ async function adminVerifyDomain(domainId: string) {
     return jsonOk({ verified: false, message: "TXT record not found", expected_token: domainRecord.verification_token, found_records: txtRecords });
   }
 
-  // Verified! Provision SSL via Cloudflare Custom Hostnames
   const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
   const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
 
@@ -323,15 +516,11 @@ async function adminVerifyDomain(domainId: string) {
 
   if (cfToken && cfZoneId) {
     try {
-      const { resp, data } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames`, {
+      const { data } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames`, {
         method: "POST",
         body: JSON.stringify({
           hostname: domainRecord.domain,
-          ssl: {
-            method: "http",
-            type: "dv",
-            settings: { min_tls_version: "1.2" },
-          },
+          ssl: { method: "http", type: "dv", settings: { min_tls_version: "1.2" } },
         }),
       });
 
@@ -348,15 +537,25 @@ async function adminVerifyDomain(domainId: string) {
     }
   }
 
+  const isCloudflare = await detectCloudflareZone(domainRecord.domain);
+
   await admin.from("store_domains").update({
     status: "active",
     verified_at: new Date().toISOString(),
     ssl_status: sslStatus,
     cloudflare_hostname_id: cfHostnameId,
+    is_cloudflare_zone: isCloudflare,
     updated_at: new Date().toISOString(),
   }).eq("id", domainId);
 
-  return jsonOk({ verified: true, ssl_status: sslStatus, cloudflare_hostname_id: cfHostnameId });
+  // Auto-run health check
+  const healthCheck = await performHealthCheck(domainRecord.domain);
+  await admin.from("store_domains").update({
+    last_health_check: healthCheck,
+    last_health_check_at: new Date().toISOString(),
+  }).eq("id", domainId);
+
+  return jsonOk({ verified: true, ssl_status: sslStatus, cloudflare_hostname_id: cfHostnameId, is_cloudflare_zone: isCloudflare, health_check: healthCheck });
 }
 
 Deno.serve(async (req) => {
@@ -373,7 +572,7 @@ Deno.serve(async (req) => {
       return await resolveHostname(body.hostname);
     }
 
-    // Admin action - service role or admin_secret, skips ownership checks
+    // Admin action
     if (action === "admin-verify-domain") {
       const adminSecret = body?.admin_secret;
       if (!isServiceRoleAuth(req) && adminSecret !== Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) {
@@ -404,12 +603,16 @@ Deno.serve(async (req) => {
         if (!body.domain_id) return jsonError("domain_id required", 400);
         return await checkStatus(user.id, body.domain_id);
 
+      case "health-check":
+        if (!body.domain_id) return jsonError("domain_id required", 400);
+        return await healthCheckDomain(user.id, body.domain_id);
+
       case "remove-domain":
         if (!body.domain_id) return jsonError("domain_id required", 400);
         return await removeDomain(user.id, body.domain_id);
 
       default:
-        return jsonError("Unknown action. Supported: claim-subdomain, request-custom-domain, verify-custom-domain, check-status, remove-domain, resolve-hostname", 400);
+        return jsonError("Unknown action. Supported: claim-subdomain, request-custom-domain, verify-custom-domain, check-status, health-check, remove-domain, resolve-hostname", 400);
     }
   } catch (e) {
     return internalError(e);
