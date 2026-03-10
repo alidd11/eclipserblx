@@ -776,7 +776,7 @@ export default function ProductDetail() {
                 size="sm"
                 className="flex-1 text-muted-foreground hover:text-foreground"
                 onClick={async () => {
-                  const shareUrl = `https://eclipserblx.com/share/products/${slug}`;
+                  const shareUrl = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID || 'qlnbergwjfrmgkjhrbkj'}.supabase.co/functions/v1/og-proxy?path=/products/${slug}`;
                   if (navigator.share) {
                     try {
                       await navigator.share({ title: product.name, text: `Check out ${product.name} on Eclipse`, url: shareUrl });
