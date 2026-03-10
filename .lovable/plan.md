@@ -1,36 +1,107 @@
 
 
-## Issues Identified
+# Store Builder: Drag-and-Drop Section Editor
 
-**Issue 1: Sidebar positioned at top of screen on desktop**
-The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
+## What We're Building
 
-**Issue 2: Excessive black empty space in the content area**
-The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
+A unified visual store builder at `/seller/store-builder` where sellers can reorder, toggle, and configure their storefront sections via drag-and-drop, with a live preview panel.
 
-## Plan
+## Current State
 
-### 1. Widen the content area on the Categories page
-- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
-- Reduce vertical padding between the header and grid
-- Tighten the gap between the page title/description and the cards
+StorePage.tsx renders sections in a hardcoded order: Banner → Header → Best Sellers → Products → Trust Signals → Custom Sections → Reviews → Recommendations. Sellers have no way to reorder or hide these sections.
 
-### 2. Improve the PageHeader component
-- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
-- This applies globally to all pages using PageHeader
+## Database Change
 
-### 3. Make category cards fill space better
-- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
-- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
-- Reduce grid gap slightly so cards feel more connected
+Add a `store_layout` JSONB column to `stores`:
 
-### 4. Sidebar desktop alignment fix
-- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
-- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
-- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
+```sql
+ALTER TABLE public.stores 
+ADD COLUMN IF NOT EXISTS store_layout jsonb DEFAULT null;
+```
 
-### Files to modify
-- `src/pages/Categories.tsx` — widen container, tighten spacing
-- `src/components/ui/PageHeader.tsx` — reduce bottom margin
-- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
+When `null`, StorePage uses the current hardcoded order (backward compatible).
+
+JSON structure:
+```json
+{
+  "sections": [
+    { "type": "banner", "visible": true },
+    { "type": "header", "visible": true },
+    { "type": "best_sellers", "visible": true, "config": { "limit": 4 } },
+    { "type": "products", "visible": true },
+    { "type": "trust_signals", "visible": true },
+    { "type": "custom_sections", "visible": true },
+    { "type": "reviews", "visible": true },
+    { "type": "recommendations", "visible": true }
+  ]
+}
+```
+
+## New Files
+
+### `src/pages/seller/SellerStoreBuilder.tsx`
+- Split-pane layout using `react-resizable-panels` (already installed)
+- Left: Sortable section list with `@dnd-kit/core` + `@dnd-kit/sortable`
+- Right: Scaled-down live preview using existing store components
+- Save button persists `store_layout` JSON to the `stores` table
+- Each section row: drag handle, icon, name, visibility toggle (eye icon), click to configure
+- When a section is selected, inline settings appear below the list (e.g., Best Sellers limit, Hero text)
+
+### `src/components/seller/builder/SectionList.tsx`
+- Renders the draggable list of sections using `@dnd-kit/sortable`
+- Each item shows: grip handle, section icon, name, eye toggle
+
+### `src/components/seller/builder/SectionSettings.tsx`
+- Contextual settings panel for the selected section type
+- Best Sellers: limit slider (2-8)
+- Hero/Banner: title, subtitle, CTA text
+- Announcement: text, active toggle
+
+### `src/components/seller/builder/BuilderPreview.tsx`
+- Renders a scaled (0.5x) preview of the store sections in the configured order
+- Uses the same components as StorePage but in a preview container
+- Updates reactively as sections are reordered/toggled
+
+## Modified Files
+
+| File | Change |
+|------|--------|
+| `src/pages/StorePage.tsx` | Read `store_layout` from store query; if present, render sections dynamically in saved order, skip `visible: false` |
+| `src/lib/storeColumns.ts` | Add `store_layout` to `PUBLIC_STORE_COLUMNS` |
+| `src/components/AppRoutes.tsx` | Add route for `/seller/store-builder` |
+| `src/components/seller/SellerSidebar.tsx` | Add "Store Builder" with Sparkles icon as first item in Catalog group |
+
+## How StorePage Changes
+
+The default layout (no active tab) currently renders sections at lines 758-916. With `store_layout`:
+
+```typescript
+const DEFAULT_SECTIONS = [
+  'banner', 'header', 'best_sellers', 'products', 
+  'trust_signals', 'custom_sections', 'reviews', 'recommendations'
+];
+
+const layout = store.store_layout?.sections ?? 
+  DEFAULT_SECTIONS.map(type => ({ type, visible: true }));
+
+// Render sections in order, skipping invisible ones
+{layout.filter(s => s.visible).map(section => {
+  switch(section.type) {
+    case 'best_sellers': return <StoreBestSellers limit={section.config?.limit ?? 4} />;
+    case 'trust_signals': return <StoreTrustSignals />;
+    // etc.
+  }
+})}
+```
+
+Banner and Header always render at top (they're structural), but their visibility can be toggled.
+
+## Implementation Order
+
+1. Database migration (add `store_layout` column)
+2. Update `storeColumns.ts`
+3. Create builder components (SectionList, SectionSettings, BuilderPreview)
+4. Create `SellerStoreBuilder.tsx` page
+5. Add route and sidebar entry
+6. Update `StorePage.tsx` to respect `store_layout`
 
