@@ -87,6 +87,49 @@ async function detectCloudflareZone(domain: string): Promise<boolean> {
   }
 }
 
+// ── Helper: Detect if a CNAME is proxied (resolves to CF IPs instead of target) ──
+async function detectProxiedCname(domain: string): Promise<{ is_proxied: boolean; cname_target: string | null }> {
+  try {
+    // Check CNAME record
+    const cnameResp = await fetch(
+      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=CNAME`,
+      { headers: { Accept: "application/dns-json" } }
+    );
+    const cnameData = await cnameResp.json();
+    const cnameRecords = (cnameData?.Answer ?? []).filter((a: any) => a.type === 5);
+    
+    if (cnameRecords.length === 0) return { is_proxied: false, cname_target: null };
+    
+    const cnameTarget = cnameRecords[0].data?.replace(/\.$/, "") ?? null;
+    
+    // If CNAME exists but A records resolve to Cloudflare proxy IPs, the CNAME is proxied
+    const aResp = await fetch(
+      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`,
+      { headers: { Accept: "application/dns-json" } }
+    );
+    const aData = await aResp.json();
+    const aRecords = (aData?.Answer ?? []).filter((a: any) => a.type === 1);
+    
+    if (aRecords.length > 0) {
+      const ips = aRecords.map((a: any) => a.data);
+      const isCloudflareProxy = ips.some((ip: string) => {
+        const parts = ip.split(".").map(Number);
+        return (parts[0] === 104 && parts[1] >= 16 && parts[1] <= 31) ||
+               (parts[0] === 172 && parts[1] >= 64 && parts[1] <= 71);
+      });
+      // If resolves to CF proxy IPs and not our origin, it's proxied
+      const isOurOrigin = ips.includes("185.158.133.1");
+      if (isCloudflareProxy && !isOurOrigin) {
+        return { is_proxied: true, cname_target: cnameTarget };
+      }
+    }
+    
+    return { is_proxied: false, cname_target: cnameTarget };
+  } catch {
+    return { is_proxied: false, cname_target: null };
+  }
+}
+
 // ── Helper: Health check a domain ──
 async function performHealthCheck(domain: string) {
   const checks: Record<string, any> = {
@@ -94,6 +137,7 @@ async function performHealthCheck(domain: string) {
     domain,
     dns_ok: false,
     cname_target: null,
+    cname_is_proxied: false,
     resolves_to_cloudflare: false,
     http_reachable: false,
     http_status: null,
