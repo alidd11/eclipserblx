@@ -181,6 +181,11 @@ async function performHealthCheck(domain: string) {
     // 3. Check NS to detect Cloudflare zone
     checks.is_cloudflare_zone = await detectCloudflareZone(domain);
 
+    // 3.5. Detect proxied CNAME
+    const proxiedCheck = await detectProxiedCname(domain);
+    checks.cname_is_proxied = proxiedCheck.is_proxied;
+    if (proxiedCheck.cname_target) checks.cname_target = proxiedCheck.cname_target;
+
     // 4. Try HTTP fetch to check for errors
     try {
       const controller = new AbortController();
