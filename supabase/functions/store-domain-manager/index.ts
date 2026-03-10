@@ -24,6 +24,13 @@ function getSupabaseAdmin() {
   );
 }
 
+function isServiceRoleAuth(req: Request): boolean {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) return false;
+  const token = authHeader.replace("Bearer ", "");
+  return token === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+}
+
 async function getAuthUser(req: Request) {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) return null;
