@@ -33,7 +33,8 @@ import {
   MessageCircle,
   ChevronLeft,
   ChevronRight,
-  AlertTriangle
+  AlertTriangle,
+  Megaphone
 } from 'lucide-react';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
@@ -931,6 +932,17 @@ export default function StorePage() {
                           accentColor={accentColor}
                           limit={4}
                         />
+                      </div>
+                    ) : null;
+                  case 'announcement':
+                    return section.config?.active && section.config?.text ? (
+                      <div
+                        key={`section-${section.type}-${idx}`}
+                        className="rounded-lg px-4 py-2.5 text-center text-sm font-medium flex items-center justify-center gap-2 mb-4"
+                        style={{ backgroundColor: `${accentColor}15`, color: accentColor }}
+                      >
+                        <Megaphone className="h-4 w-4 shrink-0" />
+                        {section.config.text}
                       </div>
                     ) : null;
                   default:
