@@ -233,7 +233,13 @@ async function performHealthCheck(domain: string) {
     }
 
     // 5. Generate recommended fix
-    if (checks.error_code === "1000" && checks.is_cloudflare_zone) {
+    if (checks.cname_is_proxied) {
+      checks.recommended_fix = "DISABLE_PROXY";
+      if (!checks.error_code) {
+        checks.error_code = "proxied_cname";
+        checks.diagnosis = "Your CNAME record is Proxied (orange cloud). This will cause errors. Switch it to DNS-only (grey cloud) immediately.";
+      }
+    } else if (checks.error_code === "1000" && checks.is_cloudflare_zone) {
       checks.recommended_fix = "CLOUDFLARE_CROSS_ZONE";
     } else if (checks.error_code === "1014") {
       checks.recommended_fix = "DISABLE_PROXY";
