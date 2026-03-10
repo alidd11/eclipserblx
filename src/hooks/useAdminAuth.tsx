@@ -24,7 +24,7 @@ export function useAdminAuth() {
 
   const isAdmin = roles?.includes('admin') ?? false;
   const isLeadAdministrator = roles?.includes('lead_administrator') ?? false;
-  const isOrderManager = roles?.includes('order_manager') ?? false;
+  const isLeadManager = roles?.includes('lead_manager') ?? false;
   const isSupportAgent = roles?.includes('support_agent') ?? false;
   const isAnalyst = roles?.includes('analyst') ?? false;
   const isSeller = roles?.includes('seller') ?? false;
@@ -42,7 +42,7 @@ export function useAdminAuth() {
     roles: roles ?? [],
     isAdmin,
     isLeadAdministrator,
-    isOrderManager,
+    isLeadManager,
     isSupportAgent,
     isAnalyst,
     isSeller,
