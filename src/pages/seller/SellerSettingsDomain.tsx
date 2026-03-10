@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { Globe, CheckCircle, ExternalLink, Copy, Trash2, RefreshCw, Zap, Link } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Globe, CheckCircle, ExternalLink, Copy, Trash2, RefreshCw, Zap, Link, ShoppingCart, HelpCircle, ChevronDown } from 'lucide-react';
 
 function StatusBadge({ status }: { status: string }) {
   const variants: Record<string, { className: string; label: string }> = {
