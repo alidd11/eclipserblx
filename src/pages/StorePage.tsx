@@ -767,8 +767,8 @@ export default function StorePage() {
               const layoutSections = storeLayout?.sections
                 ? (storeLayout.sections as Array<{ type: string; visible: boolean; config?: Record<string, any> }>)
                     .filter((s) => s.visible !== false)
-                    .map((s) => ({ type: s.type, config: s.config || {} }))
-                : defaultOrder.map(type => ({ type, config: {} }));
+                    .map((s) => ({ type: s.type, config: (s.config || {}) as any }))
+                : defaultOrder.map(type => ({ type, config: {} as any }));
 
               // Filter out banner/header since they're rendered structurally above
               const contentSections = layoutSections.filter(
