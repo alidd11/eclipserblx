@@ -52,6 +52,41 @@ ${extra}
 </head><body><p>Redirecting to <a href="${esc(url)}">${esc(t)}</a>…</p></body></html>`;
 }
 
+async function resolveStoreByHostname(hostname: string): Promise<any> {
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  // Look up store_domains for this hostname
+  const domainRes = await fetch(
+    `${url}/rest/v1/store_domains?select=store_id&domain=eq.${encodeURIComponent(hostname)}&status=eq.active&limit=1`,
+    {
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        Accept: "application/json",
+      },
+    }
+  );
+  if (!domainRes.ok) { await domainRes.text(); return null; }
+  const domains = await domainRes.json();
+  if (!domains?.length) return null;
+
+  const storeId = domains[0].store_id;
+  // Fetch store details
+  const storeRes = await fetch(
+    `${url}/rest/v1/stores?select=id,name,description,logo_url,banner_url,slug,product_count&id=eq.${storeId}&is_active=eq.true`,
+    {
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        Accept: "application/vnd.pgrst.object+json",
+      },
+    }
+  );
+  if (!storeRes.ok) { await storeRes.text(); return null; }
+  return storeRes.json();
+}
+
 async function pgQuery(table: string, select: string, filters: string): Promise<any> {
   const url = Deno.env.get("SUPABASE_URL")!;
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -71,6 +106,40 @@ Deno.serve(async (req) => {
 
   const u = new URL(req.url);
   const path = u.searchParams.get("path") || "/";
+  const hostname = u.searchParams.get("hostname");
+
+  // --- Store subdomain / custom domain OG ---
+  if (hostname) {
+    const store = await resolveStoreByHostname(hostname);
+    if (store) {
+      const storeUrl = `https://${hostname}${path}`;
+      const desc = store.description
+        ? store.description.replace(/<[^>]*>/g, "").slice(0, 200)
+        : `Browse ${store.name}'s products on Eclipse — ${store.product_count || 0} items available.`;
+      const img = store.banner_url || store.logo_url || DEFAULT_IMAGE;
+
+      // If path matches a product slug, try to serve product-level OG
+      const pm = path.match(/^\/products\/([a-zA-Z0-9][a-zA-Z0-9\-_]{0,200})$/);
+      if (pm) {
+        const product = await pgQuery("products", "name,description,images,price,slug,store_id", `slug=eq.${pm[1]}&store_id=eq.${store.id}&is_active=eq.true`);
+        if (product) {
+          const pDesc = product.description ? product.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Check out ${product.name} on ${store.name}`;
+          const pImg = product.images?.[0] || img;
+          const priceExtra = product.price != null ? `<meta property="product:price:amount" content="${product.price}"/><meta property="product:price:currency" content="GBP"/>` : "";
+          return new Response(buildHtml(`${product.name} | ${store.name}`, pDesc, pImg, storeUrl, "product", priceExtra), {
+            headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300", ...corsHeaders },
+          });
+        }
+      }
+
+      // Default: store-level OG
+      return new Response(buildHtml(`${store.name} | ${SITE_NAME}`, desc, img, storeUrl, "profile"), {
+        headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=600", ...corsHeaders },
+      });
+    }
+    // Unknown hostname — redirect to main site
+    return new Response(null, { status: 302, headers: { Location: `${SITE_URL}${path}`, ...corsHeaders } });
+  }
 
   // Static pages
   const s = STATIC_PAGES[path];

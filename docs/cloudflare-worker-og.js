@@ -4,109 +4,113 @@
  * ARCHITECTURE: This worker ONLY intercepts bot/crawler requests to serve
  * rich OG meta tags. Human traffic passes through untouched via fetch(request).
  * 
- * This eliminates white screen issues caused by manual proxying, auth-bridge
- * redirect loops, and Content-Type mismatches.
+ * Supports:
+ * - Main site (eclipserblx.com / www.eclipserblx.com)
+ * - Store subdomains (*.eclipserblx.com)
+ * - Store custom domains (mystore.com) via Cloudflare for SaaS
  * 
  * Deploy via the deploy-cloudflare-worker edge function.
  */
 
 const SUPABASE_FUNCTION_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy";
 
-// Bot user-agent patterns (social crawlers & search engines only)
 const BOT_PATTERNS = [
-  "Discordbot",
-  "Twitterbot",
-  "facebookexternalhit",
-  "LinkedInBot",
-  "Slackbot",
-  "TelegramBot",
-  "WhatsApp",
-  "Googlebot",
-  "bingbot",
-  "Applebot",
-  "Embedly",
-  "Iframely",
-  "vkShare",
-  "Pinterestbot",
+  "Discordbot", "Twitterbot", "facebookexternalhit", "LinkedInBot",
+  "Slackbot", "TelegramBot", "WhatsApp", "Googlebot", "bingbot",
+  "Applebot", "Embedly", "Iframely", "vkShare", "Pinterestbot",
 ];
 
-// Patterns that should NOT be treated as bots (performance testing tools)
 const NOT_BOT_PATTERNS = [
-  "Lighthouse",
-  "PageSpeed",
-  "PTST",
-  "Chrome-Lighthouse",
-  "Speed Insights",
+  "Lighthouse", "PageSpeed", "PTST", "Chrome-Lighthouse", "Speed Insights",
 ];
 
-// Static pages that should also get OG tags for bots
 const STATIC_OG_PATHS = new Set([
   '/', '/products', '/stores', '/categories', '/featured',
   '/eclipse-plus', '/faq', '/help-center', '/sell', '/contact',
   '/affiliate', '/advertise', '/jobs',
 ]);
 
+const MAIN_DOMAINS = ['eclipserblx.com', 'www.eclipserblx.com'];
+const RESERVED_SUBS = ['guard', 'www', 'api', 'admin', 'mail', 'stores'];
+
+function isStoreHostname(hostname) {
+  if (MAIN_DOMAINS.includes(hostname)) return false;
+  if (hostname.endsWith('.eclipserblx.com')) {
+    const sub = hostname.replace('.eclipserblx.com', '');
+    return !RESERVED_SUBS.includes(sub);
+  }
+  if (hostname.endsWith('.lovable.app') || hostname.endsWith('.lovableproject.com')) return false;
+  return true;
+}
+
+async function serveOg(path, userAgent, hostname) {
+  let ogUrl = `${SUPABASE_FUNCTION_URL}?path=${encodeURIComponent(path)}`;
+  if (hostname) ogUrl += `&hostname=${encodeURIComponent(hostname)}`;
+  const ogResponse = await fetch(ogUrl, {
+    headers: { "User-Agent": userAgent },
+  });
+  return new Response(ogResponse.body, {
+    status: ogResponse.status,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "public, max-age=300",
+    },
+  });
+}
+
 export default {
   async fetch(request) {
     const url = new URL(request.url);
     const userAgent = request.headers.get("User-Agent") || "";
+    const hostname = url.hostname;
 
-    // /share/ prefix — ALWAYS proxy to og-proxy (guaranteed OG tags for any client)
+    // --- Store subdomain / custom domain ---
+    if (isStoreHostname(hostname)) {
+      const isTestingTool = NOT_BOT_PATTERNS.some((p) =>
+        userAgent.toLowerCase().includes(p.toLowerCase())
+      );
+      if (isTestingTool) return fetch(request);
+
+      const isBot = BOT_PATTERNS.some((bot) =>
+        userAgent.toLowerCase().includes(bot.toLowerCase())
+      );
+      if (!isBot) return fetch(request);
+
+      try {
+        return await serveOg(url.pathname, userAgent, hostname);
+      } catch (e) {
+        return fetch(request);
+      }
+    }
+
+    // --- /share/ prefix — ALWAYS proxy (guaranteed OG tags) ---
     if (url.pathname.startsWith("/share/")) {
       const realPath = url.pathname.replace(/^\/share/, "");
-      const ogUrl = `${SUPABASE_FUNCTION_URL}?path=${encodeURIComponent(realPath)}`;
       try {
-        const ogResponse = await fetch(ogUrl, {
-          headers: { "User-Agent": userAgent },
-        });
-        return new Response(ogResponse.body, {
-          status: ogResponse.status,
-          headers: {
-            "Content-Type": "text/html; charset=utf-8",
-            "Cache-Control": "public, max-age=300",
-          },
-        });
+        return await serveOg(realPath, userAgent, null);
       } catch (error) {
         return Response.redirect(url.origin + realPath, 302);
       }
     }
 
-    // Check if this is a page that needs OG tags
     const isDynamicPage = /^\/(products|store)\/[^/?#]+/.test(url.pathname);
     const isStaticOgPage = STATIC_OG_PATHS.has(url.pathname);
 
-    // Not an OG-relevant page — pass through immediately
-    if (!isDynamicPage && !isStaticOgPage) {
-      return fetch(request);
-    }
+    if (!isDynamicPage && !isStaticOgPage) return fetch(request);
 
-    // Exclude performance testing tools
-    const isTestingTool = NOT_BOT_PATTERNS.some((pattern) =>
-      userAgent.toLowerCase().includes(pattern.toLowerCase())
+    const isTestingTool = NOT_BOT_PATTERNS.some((p) =>
+      userAgent.toLowerCase().includes(p.toLowerCase())
     );
     if (isTestingTool) return fetch(request);
 
-    // Only intercept bots — everyone else passes through
     const isBot = BOT_PATTERNS.some((bot) =>
       userAgent.toLowerCase().includes(bot.toLowerCase())
     );
     if (!isBot) return fetch(request);
 
-    // Bot detected — serve OG HTML from edge function
-    const ogUrl = `${SUPABASE_FUNCTION_URL}?path=${encodeURIComponent(url.pathname)}`;
     try {
-      const ogResponse = await fetch(ogUrl, {
-        headers: { "User-Agent": userAgent },
-      });
-      return new Response(ogResponse.body, {
-        status: ogResponse.status,
-        headers: {
-          "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "public, max-age=300",
-        },
-      });
+      return await serveOg(url.pathname, userAgent, null);
     } catch (error) {
-      // If OG proxy fails, let the bot see the normal page
       return fetch(request);
     }
   },
