@@ -37,7 +37,8 @@ import {
   AlertTriangle, Search, Eye, Loader2, CheckCircle, XCircle, Clock, 
   ShieldAlert, Shield, Snowflake, User, Store, FileText,
   Calendar, Banknote, MessageSquare, ExternalLink, Timer, AlertCircle,
-  ArrowUpRight, ChevronLeft, ChevronRight
+  ArrowUpRight, ChevronLeft, ChevronRight, FileImage
+} from 'lucide-react';
 } from 'lucide-react';
 import { format, formatDistanceToNow, differenceInHours, addHours } from 'date-fns';
 import { toast } from 'sonner';
