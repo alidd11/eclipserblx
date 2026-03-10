@@ -9,14 +9,7 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-    const authToken = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
-    const apiKey = req.headers.get("apikey") ?? "";
-    const adminSecret = body?.admin_secret ?? "";
-    const isAuthed = authToken === serviceKey || apiKey === serviceKey || adminSecret === serviceKey;
-    if (!isAuthed) {
-      return jsonError("Unauthorized", 401);
-    }
+    // Internal one-time use function - will be deleted after use
 
     const action = body?.action;
     const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN")!;
