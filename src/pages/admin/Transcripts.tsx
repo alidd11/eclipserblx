@@ -64,29 +64,6 @@ export default function Transcripts() {
     },
   });
 
-  // Fetch closed discord modmail tickets
-  const { data: modmailTranscripts = [], isLoading: modmailLoading } = useQuery({
-    queryKey: ['transcripts-modmail'],
-    queryFn: async () => {
-      const { data: tickets, error } = await supabase
-        .from('discord_modmail_tickets')
-        .select('*')
-        .eq('status', 'closed')
-        .order('closed_at', { ascending: false })
-        .limit(100);
-      
-      if (error) throw error;
-      
-      return (tickets || []).map(ticket => ({
-        id: ticket.id,
-        title: ticket.discord_username,
-        subtitle: ticket.subject || 'No subject',
-        created_at: ticket.created_at,
-        closed_at: ticket.closed_at,
-        customer_name: ticket.discord_username,
-      })) as Transcript[];
-    },
-  });
 
   // Fetch closed seller tickets
   const { data: sellerTicketTranscripts = [], isLoading: sellerTicketsLoading } = useQuery({
@@ -181,19 +158,6 @@ export default function Transcripts() {
           ...m,
           sender_name: m.sender_type === 'agent' ? 'Staff' : 'Customer',
         }));
-      } else if (activeTab === 'modmail') {
-        const { data } = await supabase
-          .from('discord_modmail_messages')
-          .select('id, content, is_staff_reply, created_at')
-          .eq('ticket_id', expandedTranscript)
-          .order('created_at', { ascending: true });
-        messages = (data || []).map(m => ({
-          id: m.id,
-          message: m.content,
-          sender_type: m.is_staff_reply ? 'staff' : 'user',
-          created_at: m.created_at,
-          sender_name: m.is_staff_reply ? 'Staff' : 'User',
-        }));
       } else if (activeTab === 'seller-tickets') {
         const { data } = await supabase
           .from('seller_ticket_messages')
@@ -273,7 +237,7 @@ export default function Transcripts() {
 
   const departments = [
     { id: 'live-chat', label: 'Live Chat', icon: Inbox, count: liveChatTranscripts.length, loading: liveChatLoading },
-    { id: 'modmail', label: 'Discord Modmail', icon: Mail, count: modmailTranscripts.length, loading: modmailLoading },
+    
     { id: 'seller-tickets', label: 'Seller Tickets', icon: Ticket, count: sellerTicketTranscripts.length, loading: sellerTicketsLoading },
     { id: 'customer-tickets', label: 'Customer Tickets', icon: MessageSquare, count: customerTicketTranscripts.length, loading: customerTicketsLoading },
     { id: 'contact', label: 'Contact Messages', icon: Mail, count: contactTranscripts.length, loading: contactLoading },
@@ -283,7 +247,7 @@ export default function Transcripts() {
   const getActiveTranscripts = (): Transcript[] => {
     switch (activeTab) {
       case 'live-chat': return filterTranscripts(liveChatTranscripts);
-      case 'modmail': return filterTranscripts(modmailTranscripts);
+      
       case 'seller-tickets': return filterTranscripts(sellerTicketTranscripts);
       case 'customer-tickets': return filterTranscripts(customerTicketTranscripts);
       case 'contact': return filterTranscripts(contactTranscripts);
@@ -295,7 +259,7 @@ export default function Transcripts() {
   const isLoading = () => {
     switch (activeTab) {
       case 'live-chat': return liveChatLoading;
-      case 'modmail': return modmailLoading;
+      
       case 'seller-tickets': return sellerTicketsLoading;
       case 'customer-tickets': return customerTicketsLoading;
       case 'contact': return contactLoading;

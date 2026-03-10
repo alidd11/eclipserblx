@@ -113,7 +113,7 @@ const AdminSellerDocuments = lazy(() => import("@/pages/admin/SellerDocuments"))
 const AdminManualPayouts = lazy(() => import("@/pages/admin/ManualPayouts"));
 const AdminSellerTickets = lazy(() => import("@/pages/admin/SellerTickets"));
 const AdminRolePermissions = lazy(() => import("@/pages/admin/RolePermissions"));
-const AdminDiscordModmail = lazy(() => import("@/pages/admin/DiscordModmail"));
+
 const AdminCommunityAnnouncements = lazy(() => import("@/pages/admin/CommunityAnnouncements"));
 const AdminDiscordPolls = lazy(() => import("@/pages/admin/DiscordPolls"));
 const AdminDiscordQOTD = lazy(() => import("@/pages/admin/DiscordQOTD"));
@@ -434,7 +434,7 @@ export function AppRoutes() {
         <Route path="/admin/manual-payouts" element={<AdminManualPayouts />} />
         <Route path="/admin/seller-tickets" element={<AdminSellerTickets />} />
         <Route path="/admin/role-permissions" element={<AdminRolePermissions />} />
-        <Route path="/admin/discord-modmail" element={<AdminDiscordModmail />} />
+        
         <Route path="/admin/community-announcements" element={<AdminCommunityAnnouncements />} />
         <Route path="/admin/discord-polls" element={<AdminDiscordPolls />} />
         <Route path="/admin/discord-qotd" element={<AdminDiscordQOTD />} />
