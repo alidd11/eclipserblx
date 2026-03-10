@@ -376,3 +376,6 @@ verify_jwt = false
 
 [functions.og-proxy]
 verify_jwt = false
+
+[functions.store-domain-manager]
+verify_jwt = false
