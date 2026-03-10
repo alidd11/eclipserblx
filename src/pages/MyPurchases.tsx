@@ -149,7 +149,7 @@ export default function MyPurchases() {
       if (!user?.id) return [];
       const { data, error } = await supabase
         .from('refund_requests')
-        .select('id, order_id, status, amount')
+        .select('id, order_id, status, amount, dispute_number')
         .eq('customer_id', user.id);
       if (error) throw error;
       return data || [];
