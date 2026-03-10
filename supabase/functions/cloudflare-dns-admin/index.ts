@@ -7,10 +7,14 @@ Deno.serve(async (req) => {
   if (corsResp) return corsResp;
 
   try {
+    // For internal admin use only - validate via a body secret
+    const adminSecret = body?.admin_secret;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const authToken = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
     const apiKey = req.headers.get("apikey") ?? "";
-    if (authToken !== serviceKey && apiKey !== serviceKey) {
+    const isAuthed = authToken === serviceKey || apiKey === serviceKey || adminSecret === serviceKey;
+    if (!isAuthed) {
+      // Log what we received for debugging
       return jsonError("Unauthorized", 401);
     }
 
