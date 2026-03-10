@@ -225,7 +225,7 @@ export default function SellerStoreBuilder() {
 
   if (isLoading) {
     return (
-      <SellerLayout title="Store Builder">
+      <SellerLayout>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
@@ -233,25 +233,24 @@ export default function SellerStoreBuilder() {
     );
   }
 
-  return (
-    <SellerLayout 
-      title="Store Builder"
-      actions={
-        <Button
-          onClick={() => saveMutation.mutate()}
-          disabled={!hasChanges || saveMutation.isPending}
-          size="sm"
-          className="gap-1.5"
-        >
-          {saveMutation.isPending ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Save className="h-3.5 w-3.5" />
-          )}
-          Save Layout
-        </Button>
-      }
+  const saveButton = (
+    <Button
+      onClick={() => saveMutation.mutate()}
+      disabled={!hasChanges || saveMutation.isPending}
+      size="sm"
+      className="gap-1.5"
     >
+      {saveMutation.isPending ? (
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+      ) : (
+        <Save className="h-3.5 w-3.5" />
+      )}
+      Save Layout
+    </Button>
+  );
+
+  return (
+    <SellerLayout>
       {isMobile ? (
         <div className="space-y-4">
           {sidePanel}
