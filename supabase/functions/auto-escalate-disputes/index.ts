@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
 
     const { data: disputes, error: fetchError } = await supabase
       .from("refund_requests")
-      .select("id, order_id, customer_id, store_id, amount, reason")
+      .select("id, order_id, customer_id, store_id, amount, reason, dispute_number")
       .eq("status", "pending")
       .is("seller_responded_at", null)
       .lt("created_at", cutoff);
@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
         try {
           await supabase.functions.invoke("send-ticket-notification", {
             body: {
-              ticket_number: `DSP-${dispute.id.substring(0, 6).toUpperCase()}`,
+              ticket_number: dispute.dispute_number || `DSP-${dispute.id.substring(0, 6).toUpperCase()}`,
               subject: `Auto-Escalated Dispute`,
               category: "Dispute",
               customer_name: "System",

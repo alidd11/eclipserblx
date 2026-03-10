@@ -5784,6 +5784,7 @@ export type Database = {
           created_at: string
           customer_id: string
           details: string | null
+          dispute_number: string | null
           escalated_at: string | null
           escalation_reason: string | null
           id: string
@@ -5804,6 +5805,7 @@ export type Database = {
           created_at?: string
           customer_id: string
           details?: string | null
+          dispute_number?: string | null
           escalated_at?: string | null
           escalation_reason?: string | null
           id?: string
@@ -5824,6 +5826,7 @@ export type Database = {
           created_at?: string
           customer_id?: string
           details?: string | null
+          dispute_number?: string | null
           escalated_at?: string | null
           escalation_reason?: string | null
           id?: string
@@ -9583,6 +9586,7 @@ export type Database = {
       generate_customer_id: { Args: never; Returns: string }
       generate_customer_ticket_number: { Args: never; Returns: string }
       generate_discord_link_code: { Args: never; Returns: string }
+      generate_dispute_number: { Args: never; Returns: string }
       generate_installation_code: { Args: never; Returns: string }
       generate_recruiter_id: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }

@@ -185,6 +185,7 @@ export default function Disputes() {
     if (!search) return true;
     const s = search.toLowerCase();
     return (
+      d.dispute_number?.toLowerCase().includes(s) ||
       d.customer?.display_name?.toLowerCase().includes(s) ||
       d.customer?.email?.toLowerCase().includes(s) ||
       d.customer?.customer_id?.toLowerCase().includes(s) ||
@@ -373,6 +374,7 @@ export default function Disputes() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead>Dispute</TableHead>
                         <TableHead>Customer</TableHead>
                         <TableHead>Store</TableHead>
                         <TableHead>Reason</TableHead>
@@ -402,6 +404,9 @@ export default function Disputes() {
                               setAdminResponse(d.admin_response || '');
                             }}
                           >
+                            <TableCell>
+                              <p className="text-sm font-mono font-medium text-primary">{d.dispute_number || '—'}</p>
+                            </TableCell>
                             <TableCell>
                               <div>
                                 <p className="font-medium text-sm">{d.customer?.display_name || 'Unknown'}</p>
@@ -462,7 +467,7 @@ export default function Disputes() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-destructive" />
-              Dispute Review
+              Dispute {selectedDispute?.dispute_number || 'Review'}
             </DialogTitle>
             <DialogDescription>
               Review dispute details, escrow status, and take action.
