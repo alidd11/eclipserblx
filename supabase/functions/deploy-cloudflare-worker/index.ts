@@ -456,8 +456,11 @@ Deno.serve(async (req) => {
     // Step 4: WAF skip rule for social media bots (bypasses Bot Fight Mode)
     const wafResult = await ensureWafSkipRule(cfApiToken, cfZoneId);
 
+    console.log("[WAF] Result:", JSON.stringify(wafResult));
+
     // Step 5: Redirect rule for /share/ paths (bulletproof fallback)
     const redirectResult = await ensureShareRedirectRule(cfApiToken, cfZoneId);
+    console.log("[REDIRECT] Result:", JSON.stringify(redirectResult));
 
     // Step 6: Configure SBFM to not block bots (allow WAF skip rule to work)
     let sbfmResult: Record<string, unknown> = { success: false, skipped: true };
