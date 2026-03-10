@@ -184,6 +184,7 @@ const SellerPromotions = lazy(() => import("@/pages/seller/SellerPromotions"));
 const SellerTaxSummary = lazy(() => import("@/pages/seller/SellerTaxSummary"));
 const SellerSettingsDomain = lazy(() => import("@/pages/seller/SellerSettingsDomain"));
 const SellerStorePages = lazy(() => import("@/pages/seller/SellerStorePages"));
+const SellerStoreBuilder = lazy(() => import("@/pages/seller/SellerStoreBuilder"));
 
 // Store custom page
 const StoreCustomPage = lazy(() => import("@/pages/StoreCustomPage"));
