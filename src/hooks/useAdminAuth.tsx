@@ -42,7 +42,7 @@ export function useAdminAuth() {
     roles: roles ?? [],
     isAdmin,
     isLeadAdministrator,
-    isOrderManager,
+    isLeadManager,
     isSupportAgent,
     isAnalyst,
     isSeller,
