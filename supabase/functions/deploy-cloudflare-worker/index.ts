@@ -196,14 +196,14 @@ function buildWorkerScript(): string {
     'var isDyn=/^\\/(products|store)\\/[^\\/?#]+/.test(path);'
   );
   lines.push("var isStat=SP.hasOwnProperty(path);");
-  lines.push("if(!isDyn&&!isStat)return fetch(request);");
+  lines.push("if(!isDyn&&!isStat){var r=await fetch(request);return new Response(r.body,{status:r.status,headers:new Headers(r.headers)});}");
   lines.push(
-    "if(NB.some(function(p){return ua.toLowerCase().includes(p.toLowerCase());}))return fetch(request);"
+    "if(NB.some(function(p){return ua.toLowerCase().includes(p.toLowerCase());})){var r=await fetch(request);return new Response(r.body,{status:r.status,headers:new Headers(r.headers)});}"
   );
   lines.push(
     "var isBot=BP.some(function(b){return ua.toLowerCase().includes(b.toLowerCase());});"
   );
-  lines.push("if(!isBot)return fetch(request);");
+  lines.push("if(!isBot){var r=await fetch(request);return new Response(r.body,{status:r.status,headers:new Headers(r.headers)});}");
   lines.push(
     'if(isStat){var sp=SP[path];return oR(oh(sp[0],sp[1],DI,SU_URL+path),"og-static");}'
   );
