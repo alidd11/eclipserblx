@@ -11,6 +11,7 @@ interface BuilderPreviewProps {
   storeName?: string;
   accentColor?: string;
   selectedId?: string | null;
+  previewMode?: 'desktop' | 'mobile';
 }
 
 /* ── Mini section renderers ── */
@@ -40,9 +41,9 @@ function HeaderPreview({ storeName }: { storeName: string }) {
   );
 }
 
-function ProductGridPreview({ count = 4 }: { count?: number }) {
+function ProductGridPreview({ count = 4, mobile = false }: { count?: number; mobile?: boolean }) {
   return (
-    <div className="grid grid-cols-4 gap-1.5">
+    <div className={cn("grid gap-1.5", mobile ? "grid-cols-2" : "grid-cols-4")}>
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="rounded bg-muted/40 flex flex-col overflow-hidden">
           <div className="aspect-[4/3] bg-muted/60" />
@@ -127,27 +128,39 @@ function RecommendationsPreview() {
 
 /* ── Main Preview ── */
 
-export function BuilderPreview({ sections, storeName = 'Your Store', accentColor = '#6366f1', selectedId }: BuilderPreviewProps) {
+export function BuilderPreview({ sections, storeName = 'Your Store', accentColor = '#6366f1', selectedId, previewMode = 'desktop' }: BuilderPreviewProps) {
   const visibleSections = sections.filter(s => s.visible);
+  const isMobile = previewMode === 'mobile';
 
   return (
-    <div className="bg-background border border-border rounded-xl overflow-hidden shadow-sm">
-      {/* Browser chrome */}
-      <div className="flex items-center gap-1.5 px-3 py-2 bg-muted/50 border-b border-border">
-        <div className="flex gap-1">
-          <div className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
-          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+    <div className={cn(
+      "bg-background border border-border overflow-hidden shadow-sm transition-all duration-300 mx-auto",
+      isMobile
+        ? "w-[375px] rounded-[2.5rem] border-[6px] border-foreground/80"
+        : "w-full rounded-xl"
+    )}>
+      {/* Browser chrome / notch */}
+      {isMobile ? (
+        <div className="bg-foreground/80 pt-2 pb-1 px-4 flex justify-center">
+          <div className="w-20 h-4 rounded-full bg-background/20" />
         </div>
-        <div className="flex-1 mx-2">
-          <div className="bg-background rounded-md px-3 py-1 text-[10px] text-muted-foreground text-center truncate border border-border/50">
-            eclipse.store/{storeName.toLowerCase().replace(/\s+/g, '-')}
+      ) : (
+        <div className="flex items-center gap-1.5 px-3 py-2 bg-muted/50 border-b border-border">
+          <div className="flex gap-1">
+            <div className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
+            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+            <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+          </div>
+          <div className="flex-1 mx-2">
+            <div className="bg-background rounded-md px-3 py-1 text-[10px] text-muted-foreground text-center truncate border border-border/50">
+              eclipse.store/{storeName.toLowerCase().replace(/\s+/g, '-')}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Preview content */}
-      <div className="p-3 space-y-2 max-h-[60vh] overflow-y-auto">
+      <div className={cn("p-3 space-y-2 overflow-y-auto", isMobile ? "max-h-[580px]" : "max-h-[60vh]")}>
         {visibleSections.length === 0 ? (
           <div className="py-12 text-center text-muted-foreground text-sm">
             All sections are hidden. Toggle some sections on to preview your store.
@@ -171,7 +184,7 @@ export function BuilderPreview({ sections, storeName = 'Your Store', accentColor
                     <TrendingUp className="h-3 w-3 text-muted-foreground/50" />
                     <span className="text-[10px] text-muted-foreground/60 font-medium">Best Sellers</span>
                   </div>
-                  <ProductGridPreview count={section.config?.limit ?? 4} />
+                  <ProductGridPreview count={section.config?.limit ?? 4} mobile={isMobile} />
                 </div>
               )}
               {section.type === 'products' && (
@@ -180,7 +193,7 @@ export function BuilderPreview({ sections, storeName = 'Your Store', accentColor
                     <Package className="h-3 w-3 text-muted-foreground/50" />
                     <span className="text-[10px] text-muted-foreground/60 font-medium">All Products</span>
                   </div>
-                  <ProductGridPreview count={8} />
+                  <ProductGridPreview count={isMobile ? 4 : 8} mobile={isMobile} />
                 </div>
               )}
               {section.type === 'trust_signals' && <TrustSignalsPreview accentColor={accentColor} />}
@@ -192,6 +205,13 @@ export function BuilderPreview({ sections, storeName = 'Your Store', accentColor
           ))
         )}
       </div>
+
+      {/* Mobile home bar */}
+      {isMobile && (
+        <div className="bg-background py-2 flex justify-center">
+          <div className="w-28 h-1 rounded-full bg-foreground/20" />
+        </div>
+      )}
     </div>
   );
 }

@@ -27,7 +27,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
-import { Save, ExternalLink, Loader2, RotateCcw } from 'lucide-react';
+import { Save, ExternalLink, Loader2, RotateCcw, Monitor, Smartphone } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -62,6 +62,7 @@ export default function SellerStoreBuilder() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sections, setSections] = useState<StoreSection[]>(DEFAULT_SECTIONS);
   const [hasChanges, setHasChanges] = useState(false);
+  const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
 
   // Load saved layout
   const { data: savedLayout, isLoading } = useQuery({
@@ -206,12 +207,34 @@ export default function SellerStoreBuilder() {
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <h2 className="text-sm font-semibold">Live Preview</h2>
-        {storeUrl && (
-          <Link to={storeUrl} target="_blank" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
-            <ExternalLink className="h-3 w-3" />
-            View Store
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center bg-muted rounded-md p-0.5">
+            <Button
+              variant={previewMode === 'desktop' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-7 w-7 p-0"
+              onClick={() => setPreviewMode('desktop')}
+              haptic={false}
+            >
+              <Monitor className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant={previewMode === 'mobile' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-7 w-7 p-0"
+              onClick={() => setPreviewMode('mobile')}
+              haptic={false}
+            >
+              <Smartphone className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+          {storeUrl && (
+            <Link to={storeUrl} target="_blank" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+              <ExternalLink className="h-3 w-3" />
+              View Store
+            </Link>
+          )}
+        </div>
       </div>
       <div className="flex-1 overflow-y-auto p-4">
         <BuilderPreview
@@ -219,6 +242,7 @@ export default function SellerStoreBuilder() {
           storeName={store?.name}
           accentColor={store?.accent_color || undefined}
           selectedId={selectedId}
+          previewMode={previewMode}
         />
       </div>
     </div>
