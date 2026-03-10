@@ -138,6 +138,7 @@ export default function MyPurchases() {
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [ordersPage, setOrdersPage] = useState(1);
   const [disputeOrder, setDisputeOrder] = useState<{ id: string; displayId: string } | null>(null);
+  const [viewingDisputeId, setViewingDisputeId] = useState<string | null>(null);
   
   const ITEMS_PER_PAGE = 6;
 
