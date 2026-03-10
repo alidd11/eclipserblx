@@ -62,24 +62,8 @@ export default function SellerSettingsDomain() {
     enabled: !!store,
   });
 
-  // Check custom domain subscription
-  const { data: domainSub, isLoading: subLoading } = useQuery({
-    queryKey: ['domain-subscription', store?.id],
-    queryFn: async () => {
-      if (!store) return { subscribed: false };
-      const { data, error } = await supabase.functions.invoke('domain-subscription', {
-        body: { action: 'check-subscription', store_id: store.id },
-      });
-      if (error) return { subscribed: false };
-      return data as { subscribed: boolean; current_period_end?: string; cancel_at_period_end?: boolean };
-    },
-    enabled: !!store,
-    refetchInterval: 30000,
-  });
-
-  const subdomain = domains?.find(d => d.domain_type === 'subdomain');
-  const customDomains = domains?.filter(d => d.domain_type === 'custom') ?? [];
-  const isSubscribed = domainSub?.subscribed === true;
+  // Custom domains are now free — no subscription check needed
+  const isSubscribed = true;
 
   // Claim subdomain mutation
   const claimSubdomain = useMutation({
