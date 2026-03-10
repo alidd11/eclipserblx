@@ -471,7 +471,7 @@ Deno.serve(async (req) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            sbfm_definitely_automated: "managed_challenge",
+            sbfm_definitely_automated: "allow",
             sbfm_verified_bots: "allow",
             sbfm_static_resource_protection: false,
           }),
