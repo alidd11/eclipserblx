@@ -11,6 +11,7 @@ interface BuilderPreviewProps {
   storeName?: string;
   accentColor?: string;
   selectedId?: string | null;
+  previewMode?: 'desktop' | 'mobile';
 }
 
 /* ── Mini section renderers ── */
