@@ -167,19 +167,6 @@ export default function Transcripts() {
           ...m,
           sender_name: m.sender_type === 'agent' ? 'Staff' : 'Customer',
         }));
-      } else if (activeTab === 'modmail') {
-        const { data } = await supabase
-          .from('discord_modmail_messages')
-          .select('id, content, is_staff_reply, created_at')
-          .eq('ticket_id', expandedTranscript)
-          .order('created_at', { ascending: true });
-        messages = (data || []).map(m => ({
-          id: m.id,
-          message: m.content,
-          sender_type: m.is_staff_reply ? 'staff' : 'user',
-          created_at: m.created_at,
-          sender_name: m.is_staff_reply ? 'Staff' : 'User',
-        }));
       } else if (activeTab === 'seller-tickets') {
         const { data } = await supabase
           .from('seller_ticket_messages')
