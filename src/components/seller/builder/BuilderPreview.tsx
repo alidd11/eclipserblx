@@ -128,24 +128,36 @@ function RecommendationsPreview() {
 
 /* ── Main Preview ── */
 
-export function BuilderPreview({ sections, storeName = 'Your Store', accentColor = '#6366f1', selectedId }: BuilderPreviewProps) {
+export function BuilderPreview({ sections, storeName = 'Your Store', accentColor = '#6366f1', selectedId, previewMode = 'desktop' }: BuilderPreviewProps) {
   const visibleSections = sections.filter(s => s.visible);
+  const isMobile = previewMode === 'mobile';
 
   return (
-    <div className="bg-background border border-border rounded-xl overflow-hidden shadow-sm">
-      {/* Browser chrome */}
-      <div className="flex items-center gap-1.5 px-3 py-2 bg-muted/50 border-b border-border">
-        <div className="flex gap-1">
-          <div className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
-          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+    <div className={cn(
+      "bg-background border border-border overflow-hidden shadow-sm transition-all duration-300 mx-auto",
+      isMobile
+        ? "w-[375px] rounded-[2.5rem] border-[6px] border-foreground/80"
+        : "w-full rounded-xl"
+    )}>
+      {/* Browser chrome / notch */}
+      {isMobile ? (
+        <div className="bg-foreground/80 pt-2 pb-1 px-4 flex justify-center">
+          <div className="w-20 h-4 rounded-full bg-background/20" />
         </div>
-        <div className="flex-1 mx-2">
-          <div className="bg-background rounded-md px-3 py-1 text-[10px] text-muted-foreground text-center truncate border border-border/50">
-            eclipse.store/{storeName.toLowerCase().replace(/\s+/g, '-')}
+      ) : (
+        <div className="flex items-center gap-1.5 px-3 py-2 bg-muted/50 border-b border-border">
+          <div className="flex gap-1">
+            <div className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
+            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+            <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+          </div>
+          <div className="flex-1 mx-2">
+            <div className="bg-background rounded-md px-3 py-1 text-[10px] text-muted-foreground text-center truncate border border-border/50">
+              eclipse.store/{storeName.toLowerCase().replace(/\s+/g, '-')}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Preview content */}
       <div className="p-3 space-y-2 max-h-[60vh] overflow-y-auto">
