@@ -434,7 +434,7 @@ export function AppRoutes() {
         <Route path="/admin/manual-payouts" element={<AdminManualPayouts />} />
         <Route path="/admin/seller-tickets" element={<AdminSellerTickets />} />
         <Route path="/admin/role-permissions" element={<AdminRolePermissions />} />
-        <Route path="/admin/discord-modmail" element={<AdminDiscordModmail />} />
+        
         <Route path="/admin/community-announcements" element={<AdminCommunityAnnouncements />} />
         <Route path="/admin/discord-polls" element={<AdminDiscordPolls />} />
         <Route path="/admin/discord-qotd" element={<AdminDiscordQOTD />} />

@@ -76,12 +76,6 @@ const commands = [
     integration_types: [0],
   },
   {
-    name: "support",
-    description: "Contact Eclipse support - opens a ticket",
-    contexts: [0], // Guild only
-    integration_types: [0],
-  },
-  {
     name: "reply",
     description: "Reply to your active support ticket",
     contexts: [1], // DM only
