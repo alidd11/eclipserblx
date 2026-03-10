@@ -142,6 +142,44 @@ export default function MyPurchases() {
   
   const ITEMS_PER_PAGE = 6;
 
+  // Fetch user's active disputes
+  const { data: userDisputes } = useQuery({
+    queryKey: ['user-disputes', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('refund_requests')
+        .select('id, order_id, status, amount')
+        .eq('customer_id', user.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
+
+  // Map order_id -> dispute for quick lookup
+  const disputesByOrder = useMemo(() => {
+    const map: Record<string, { id: string; status: string; amount: number }> = {};
+    (userDisputes || []).forEach((d: any) => {
+      // Keep the most recent / most relevant dispute per order
+      if (!map[d.order_id] || ['pending', 'escalated', 'denied'].includes(d.status)) {
+        map[d.order_id] = { id: d.id, status: d.status, amount: d.amount };
+      }
+    });
+    return map;
+  }, [userDisputes]);
+
+  const getDisputeBadge = (status: string) => {
+    switch (status) {
+      case 'pending': return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 gap-1 text-xs"><Clock className="h-3 w-3" />Dispute Pending</Badge>;
+      case 'denied': return <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 gap-1 text-xs"><X className="h-3 w-3" />Dispute Denied</Badge>;
+      case 'escalated': return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20 gap-1 text-xs"><ShieldAlert className="h-3 w-3" />Escalated</Badge>;
+      case 'approved': return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 gap-1 text-xs"><Check className="h-3 w-3" />Refund Approved</Badge>;
+      case 'resolved': return <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 gap-1 text-xs"><Shield className="h-3 w-3" />Resolved</Badge>;
+      default: return null;
+    }
+  };
+
   // Fetch bot installation codes
   const { data: botCodes } = useQuery({
     queryKey: ['user-bot-codes', user?.id],
