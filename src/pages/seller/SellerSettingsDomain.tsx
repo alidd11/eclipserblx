@@ -311,6 +311,11 @@ export default function SellerSettingsDomain() {
                     <strong>Click "Verify DNS"</strong> — once records propagate (up to 24h), your domain will go live with SSL
                   </li>
                 </ol>
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 mt-2">
+                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                    ⚠️ Cloudflare users: Your CNAME records <strong>must</strong> be set to <strong>DNS-only (grey cloud)</strong>, not Proxied (orange cloud). Using Proxied mode will cause a 1014 "Cross User Banned" error.
+                  </p>
+                </div>
                 <p className="text-xs text-muted-foreground/70">
                   DNS changes can take up to 24 hours to propagate. If verification fails, double-check your records and try again.
                 </p>
@@ -342,7 +347,7 @@ export default function SellerSettingsDomain() {
                       <div className="flex items-start gap-2">
                         <span className="font-medium text-primary min-w-[24px]">1.</span>
                         <div>
-                          <p className="text-muted-foreground">Add a <strong>CNAME</strong> record:</p>
+                          <p className="text-muted-foreground">Add a <strong>CNAME</strong> record <span className="text-amber-500 font-medium">(DNS-only / grey cloud)</span>:</p>
                           <div className="flex items-center gap-2 mt-1">
                             <code className="bg-muted px-2 py-0.5 rounded text-xs">{d.domain} → stores.eclipserblx.com</code>
                             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard('stores.eclipserblx.com')}>
