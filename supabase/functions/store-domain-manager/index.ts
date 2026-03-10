@@ -298,6 +298,13 @@ Deno.serve(async (req) => {
       return await resolveHostname(body.hostname);
     }
 
+    // Admin action - service role only, skips ownership checks
+    if (action === "admin-verify-domain") {
+      if (!isServiceRoleAuth(req)) return unauthorized("Service role required");
+      if (!body.domain_id) return jsonError("domain_id required", 400);
+      return await adminVerifyDomain(body.domain_id);
+    }
+
     // All other actions require auth
     const user = await getAuthUser(req);
     if (!user) return unauthorized();
