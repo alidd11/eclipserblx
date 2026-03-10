@@ -170,6 +170,7 @@ export default function SellerRefunds() {
                 <CardContent className="flex items-center justify-between py-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-mono text-primary">{r.dispute_number}</span>
                       <span className="font-medium">
                         {r.customer?.display_name || 'Unknown Customer'}
                       </span>
