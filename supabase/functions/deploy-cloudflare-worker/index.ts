@@ -60,7 +60,6 @@ export default {
 
     // --- Store subdomain / custom domain ---
     if (isStoreHostname(hostname)) {
-      // Exclude performance testing tools
       const isTestingTool = NOT_BOT_PATTERNS.some((p) =>
         userAgent.toLowerCase().includes(p.toLowerCase())
       );
@@ -112,6 +111,217 @@ export default {
 };
 `;
 
+// Bot UA patterns for WAF skip rule
+const WAF_BOT_EXPRESSIONS = [
+  'Discordbot', 'Twitterbot', 'facebookexternalhit', 'LinkedInBot',
+  'Slackbot', 'TelegramBot', 'WhatsApp', 'Googlebot', 'bingbot',
+  'Applebot', 'Embedly', 'Iframely', 'vkShare', 'Pinterestbot',
+];
+
+function buildWafExpression(): string {
+  return WAF_BOT_EXPRESSIONS
+    .map(bot => `(http.user_agent contains "${bot}")`)
+    .join(' or ');
+}
+
+async function cfApi(url: string, token: string, options: RequestInit = {}) {
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+  return res.json();
+}
+
+async function ensureWafSkipRule(cfApiToken: string, cfZoneId: string) {
+  // Get existing custom firewall rulesets for the zone
+  const rulesetsData = await cfApi(
+    `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
+    cfApiToken
+  );
+
+  if (!rulesetsData.success) {
+    return { success: false, error: "Failed to list rulesets", details: rulesetsData.errors };
+  }
+
+  // Find the zone-level custom firewall ruleset (phase: http_request_firewall_custom)
+  const customFwRuleset = rulesetsData.result?.find(
+    (rs: any) => rs.phase === "http_request_firewall_custom"
+  );
+
+  const wafRuleName = "Skip Bot Fight Mode for Social Crawlers";
+  const wafExpression = buildWafExpression();
+
+  const newRule = {
+    action: "skip",
+    action_parameters: {
+      ruleset: "current",
+      phases: ["http_request_sbfm"],
+      products: ["bic", "hot", "rateLimit", "securityLevel", "uaBlock", "zoneLockdown"],
+    },
+    expression: wafExpression,
+    description: wafRuleName,
+    enabled: true,
+  };
+
+  if (customFwRuleset) {
+    // Get full ruleset with rules
+    const fullRuleset = await cfApi(
+      `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${customFwRuleset.id}`,
+      cfApiToken
+    );
+
+    if (!fullRuleset.success) {
+      return { success: false, error: "Failed to fetch custom firewall ruleset", details: fullRuleset.errors };
+    }
+
+    const existingRules = fullRuleset.result?.rules || [];
+    const existingIdx = existingRules.findIndex((r: any) => r.description === wafRuleName);
+
+    let updatedRules;
+    if (existingIdx >= 0) {
+      // Update existing rule in place
+      updatedRules = [...existingRules];
+      updatedRules[existingIdx] = { ...updatedRules[existingIdx], ...newRule };
+    } else {
+      // Prepend new rule (highest priority)
+      updatedRules = [newRule, ...existingRules];
+    }
+
+    const updateResult = await cfApi(
+      `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${customFwRuleset.id}`,
+      cfApiToken,
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          rules: updatedRules.map((r: any) => ({
+            action: r.action,
+            action_parameters: r.action_parameters,
+            expression: r.expression,
+            description: r.description,
+            enabled: r.enabled,
+          })),
+        }),
+      }
+    );
+
+    return {
+      success: !!updateResult.success,
+      action: existingIdx >= 0 ? "updated" : "added",
+      errors: updateResult.errors,
+    };
+  } else {
+    // Create new custom firewall ruleset with the skip rule
+    const createResult = await cfApi(
+      `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
+      cfApiToken,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          name: "Eclipse Custom WAF Rules",
+          kind: "zone",
+          phase: "http_request_firewall_custom",
+          rules: [newRule],
+        }),
+      }
+    );
+
+    return {
+      success: !!createResult.success,
+      action: "created_ruleset",
+      errors: createResult.errors,
+    };
+  }
+}
+
+async function ensureShareRedirectRule(cfApiToken: string, cfZoneId: string) {
+  const phase = "http_request_dynamic_redirect";
+  const ruleName = "Eclipse /share/ OG proxy redirect";
+
+  // Get entrypoint ruleset for dynamic redirect phase
+  const entrypoint = await cfApi(
+    `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/phases/${phase}/entrypoint`,
+    cfApiToken
+  );
+
+  const redirectRule = {
+    action: "redirect",
+    action_parameters: {
+      from_value: {
+        status_code: 302,
+        target_url: {
+          expression: `concat("https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy?path=", substring(http.request.uri.path, 6))`,
+        },
+        preserve_query_string: false,
+      },
+    },
+    expression: `starts_with(http.request.uri.path, "/share/")`,
+    description: ruleName,
+    enabled: true,
+  };
+
+  if (entrypoint.success && entrypoint.result?.id) {
+    // Ruleset exists, update it
+    const existingRules = entrypoint.result.rules || [];
+    const existingIdx = existingRules.findIndex((r: any) => r.description === ruleName);
+
+    let updatedRules;
+    if (existingIdx >= 0) {
+      updatedRules = [...existingRules];
+      updatedRules[existingIdx] = { ...updatedRules[existingIdx], ...redirectRule };
+    } else {
+      updatedRules = [redirectRule, ...existingRules];
+    }
+
+    const updateResult = await cfApi(
+      `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${entrypoint.result.id}`,
+      cfApiToken,
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          rules: updatedRules.map((r: any) => ({
+            action: r.action,
+            action_parameters: r.action_parameters,
+            expression: r.expression,
+            description: r.description,
+            enabled: r.enabled,
+          })),
+        }),
+      }
+    );
+
+    return {
+      success: !!updateResult.success,
+      action: existingIdx >= 0 ? "updated" : "added",
+      errors: updateResult.errors,
+    };
+  } else {
+    // Create new entrypoint ruleset
+    const createResult = await cfApi(
+      `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
+      cfApiToken,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          name: "Eclipse Redirect Rules",
+          kind: "zone",
+          phase,
+          rules: [redirectRule],
+        }),
+      }
+    );
+
+    return {
+      success: !!createResult.success,
+      action: "created_ruleset",
+      errors: createResult.errors,
+    };
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -129,10 +339,7 @@ Deno.serve(async (req) => {
     }
 
     // Step 1: Get account ID from zone
-    const zoneRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}`, {
-      headers: { Authorization: `Bearer ${cfApiToken}`, "Content-Type": "application/json" },
-    });
-    const zoneData = await zoneRes.json();
+    const zoneData = await cfApi(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}`, cfApiToken);
     if (!zoneData.success) {
       return new Response(
         JSON.stringify({ error: "Failed to fetch zone info", details: zoneData.errors }),
@@ -163,18 +370,16 @@ Deno.serve(async (req) => {
       `--${boundary}--`,
     ].join("\r\n");
 
-    const uploadRes = await fetch(
+    const uploadData = await cfApi(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}`,
+      cfApiToken,
       {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${cfApiToken}`,
-          "Content-Type": `multipart/form-data; boundary=${boundary}`,
-        },
+        headers: { "Content-Type": `multipart/form-data; boundary=${boundary}` },
         body,
       }
     );
-    const uploadData = await uploadRes.json();
+
     if (!uploadData.success) {
       return new Response(
         JSON.stringify({ error: "Failed to upload worker", details: uploadData.errors }),
@@ -182,12 +387,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 3: Ensure OG worker routes exist for both apex + www
-    const routesRes = await fetch(
+    // Step 3: Ensure OG worker routes exist
+    const routesData = await cfApi(
       `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes`,
-      { headers: { Authorization: `Bearer ${cfApiToken}`, "Content-Type": "application/json" } }
+      cfApiToken
     );
-    const routesData = await routesRes.json();
 
     if (!routesData.success) {
       return new Response(
@@ -215,15 +419,14 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        const updateRes = await fetch(
+        const updateData = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes/${existingRoute.id}`,
+          cfApiToken,
           {
             method: "PUT",
-            headers: { Authorization: `Bearer ${cfApiToken}`, "Content-Type": "application/json" },
             body: JSON.stringify({ pattern, script: workerName }),
           }
         );
-        const updateData = await updateRes.json();
         routeResults.push({
           pattern,
           action: "updated",
@@ -231,15 +434,14 @@ Deno.serve(async (req) => {
           errors: updateData?.errors,
         });
       } else {
-        const createRes = await fetch(
+        const createData = await cfApi(
           `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes`,
+          cfApiToken,
           {
             method: "POST",
-            headers: { Authorization: `Bearer ${cfApiToken}`, "Content-Type": "application/json" },
             body: JSON.stringify({ pattern, script: workerName }),
           }
         );
-        const createData = await createRes.json();
         routeResults.push({
           pattern,
           action: "created",
@@ -251,6 +453,12 @@ Deno.serve(async (req) => {
 
     const routeUpdate = routeResults.every((r) => r.success);
 
+    // Step 4: WAF skip rule for social media bots (bypasses Bot Fight Mode)
+    const wafResult = await ensureWafSkipRule(cfApiToken, cfZoneId);
+
+    // Step 5: Redirect rule for /share/ paths (bulletproof fallback)
+    const redirectResult = await ensureShareRedirectRule(cfApiToken, cfZoneId);
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -259,7 +467,9 @@ Deno.serve(async (req) => {
         upload: uploadData.success,
         routeUpdate,
         routeResults,
-        message: "Worker deployed — human traffic passes through, only bots intercepted",
+        wafSkipRule: wafResult,
+        shareRedirectRule: redirectResult,
+        message: "Worker deployed with WAF skip rule and /share/ redirect — bots always get OG tags",
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

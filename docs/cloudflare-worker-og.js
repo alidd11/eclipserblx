@@ -10,6 +10,20 @@
  * - Store custom domains (mystore.com) via Cloudflare for SaaS
  * 
  * Deploy via the deploy-cloudflare-worker edge function.
+ * 
+ * COMPANION RULES (also deployed by the edge function):
+ * 
+ * 1. WAF Custom Rule (phase: http_request_firewall_custom)
+ *    - Skips Bot Fight Mode for social media crawler User-Agents
+ *    - Expression: (http.user_agent contains "Discordbot") or ...
+ *    - Action: skip (bypasses SBFM, BIC, rate limiting, etc.)
+ *    - This ensures the Worker actually receives bot requests
+ * 
+ * 2. Redirect Rule (phase: http_request_dynamic_redirect)
+ *    - Redirects /share/* to og-proxy edge function directly
+ *    - Works independently of the Worker (bulletproof fallback)
+ *    - Expression: starts_with(http.request.uri.path, "/share/")
+ *    - Target: supabase.co/functions/v1/og-proxy?path=<rest-of-path>
  */
 
 const SUPABASE_FUNCTION_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy";
