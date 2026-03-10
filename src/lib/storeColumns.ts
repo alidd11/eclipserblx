@@ -25,7 +25,8 @@ export const PUBLIC_STORE_COLUMNS = `
   roblox_group_min_rank, roblox_premium_discount_enabled, roblox_premium_discount_percent,
   roblox_gamepass_id, roblox_gamepass_discount_enabled, roblox_gamepass_discount_percent,
   eclipse_plus_discount_enabled, pwyw_enabled,
-  banner_start_at, banner_end_at
+  banner_start_at, banner_end_at,
+  store_layout
 `;
 
 // Minimal columns for store listings (marketplace, search results)

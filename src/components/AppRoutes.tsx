@@ -340,6 +340,7 @@ export function AppRoutes() {
         <Route path="/seller/transactions" element={<SellerTransactionHistory />} />
         <Route path="/seller/fees" element={<SellerTaxFeeSummary />} />
         <Route path="/seller/tabs" element={<SellerStoreTabs />} />
+        <Route path="/seller/store-builder" element={<SellerStoreBuilder />} />
         <Route path="/seller/categories" element={<SellerCategories />} />
         <Route path="/seller/discounts" element={<SellerDiscounts />} />
         
