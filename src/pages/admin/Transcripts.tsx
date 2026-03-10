@@ -246,7 +246,7 @@ export default function Transcripts() {
 
   const departments = [
     { id: 'live-chat', label: 'Live Chat', icon: Inbox, count: liveChatTranscripts.length, loading: liveChatLoading },
-    { id: 'modmail', label: 'Discord Modmail', icon: Mail, count: modmailTranscripts.length, loading: modmailLoading },
+    
     { id: 'seller-tickets', label: 'Seller Tickets', icon: Ticket, count: sellerTicketTranscripts.length, loading: sellerTicketsLoading },
     { id: 'customer-tickets', label: 'Customer Tickets', icon: MessageSquare, count: customerTicketTranscripts.length, loading: customerTicketsLoading },
     { id: 'contact', label: 'Contact Messages', icon: Mail, count: contactTranscripts.length, loading: contactLoading },
