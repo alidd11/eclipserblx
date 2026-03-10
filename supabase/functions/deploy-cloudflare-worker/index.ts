@@ -197,7 +197,7 @@ Deno.serve(async (req) => {
     }
 
     const existingRoutes = Array.isArray(routesData.result) ? routesData.result : [];
-    const desiredPatterns = ["eclipserblx.com/*", "www.eclipserblx.com/*"];
+    const desiredPatterns = ["eclipserblx.com/*", "www.eclipserblx.com/*", "*.eclipserblx.com/*"];
 
     const routeResults: Array<{
       pattern: string;
