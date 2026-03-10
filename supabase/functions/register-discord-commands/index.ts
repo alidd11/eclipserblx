@@ -76,13 +76,6 @@ const commands = [
     integration_types: [0],
   },
   {
-    name: "reply",
-    description: "Reply to your active support ticket",
-    contexts: [1], // DM only
-    integration_types: [0, 1], // Works with both guild and user installs
-    dm_permission: true,
-  },
-  {
     name: "showcase",
     description: "View a featured product from the marketplace",
     contexts: [0], // Guild only
