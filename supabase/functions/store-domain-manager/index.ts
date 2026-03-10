@@ -168,6 +168,12 @@ async function performHealthCheck(domain: string) {
       } else if (body.includes("ERR_TOO_MANY_REDIRECTS") || httpResp.status === 301 || httpResp.status === 302) {
         checks.error_code = "redirect_loop";
         checks.diagnosis = "Redirect loop detected — check for conflicting redirect rules.";
+      } else if (httpResp.status === 403 && checks.is_cloudflare_zone && checks.resolves_to_cloudflare) {
+        checks.error_code = "403_cloudflare";
+        checks.diagnosis = "403 Forbidden — the seller's Cloudflare zone is blocking requests. The CNAME must use DNS-only (grey cloud) mode, or switch to an A record pointing to 185.158.133.1.";
+      } else if (httpResp.status === 403) {
+        checks.error_code = "403";
+        checks.diagnosis = "403 Forbidden — access is being blocked. Check WAF rules or Cloudflare settings on the domain.";
       } else if (httpResp.status >= 200 && httpResp.status < 400) {
         checks.error_code = null;
         checks.diagnosis = "Domain appears to be working correctly.";
