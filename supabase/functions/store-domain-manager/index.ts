@@ -168,6 +168,12 @@ async function performHealthCheck(domain: string) {
       } else if (body.includes("ERR_TOO_MANY_REDIRECTS") || httpResp.status === 301 || httpResp.status === 302) {
         checks.error_code = "redirect_loop";
         checks.diagnosis = "Redirect loop detected — check for conflicting redirect rules.";
+      } else if (httpResp.status === 403 && checks.is_cloudflare_zone && checks.resolves_to_cloudflare) {
+        checks.error_code = "403_cloudflare";
+        checks.diagnosis = "403 Forbidden — the seller's Cloudflare zone is blocking requests. The CNAME must use DNS-only (grey cloud) mode, or switch to an A record pointing to 185.158.133.1.";
+      } else if (httpResp.status === 403) {
+        checks.error_code = "403";
+        checks.diagnosis = "403 Forbidden — access is being blocked. Check WAF rules or Cloudflare settings on the domain.";
       } else if (httpResp.status >= 200 && httpResp.status < 400) {
         checks.error_code = null;
         checks.diagnosis = "Domain appears to be working correctly.";
@@ -182,6 +188,10 @@ async function performHealthCheck(domain: string) {
       checks.recommended_fix = "CLOUDFLARE_CROSS_ZONE";
     } else if (checks.error_code === "1014") {
       checks.recommended_fix = "DISABLE_PROXY";
+    } else if (checks.error_code === "403_cloudflare") {
+      checks.recommended_fix = "CLOUDFLARE_CROSS_ZONE";
+    } else if (checks.error_code === "403") {
+      checks.recommended_fix = "CHECK_WAF";
     } else if (checks.error_code === "1000") {
       checks.recommended_fix = "CHECK_DNS";
     } else if (!checks.dns_ok) {
@@ -395,6 +405,29 @@ async function healthCheckDomain(userId: string, domainId: string) {
   return jsonOk(healthCheck);
 }
 
+// ── Action: admin-health-check (service role only, no owner check) ──
+async function adminHealthCheck(domainId: string) {
+  const admin = getSupabaseAdmin();
+
+  const { data: domainRecord } = await admin
+    .from("store_domains")
+    .select("*")
+    .eq("id", domainId)
+    .single();
+
+  if (!domainRecord) return jsonError("Domain not found", 404);
+
+  const healthCheck = await performHealthCheck(domainRecord.domain);
+
+  await admin.from("store_domains").update({
+    last_health_check: healthCheck,
+    last_health_check_at: new Date().toISOString(),
+    is_cloudflare_zone: healthCheck.is_cloudflare_zone,
+  }).eq("id", domainId);
+
+  return jsonOk(healthCheck);
+}
+
 // ── Action: check-status ──
 async function checkStatus(userId: string, domainId: string) {
   const admin = getSupabaseAdmin();
@@ -566,16 +599,38 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const action = body?.action;
 
-    // Public action - no auth needed
+    // Public actions - no auth needed
     if (action === "resolve-hostname") {
       if (!body.hostname) return jsonError("hostname required", 400);
       return await resolveHostname(body.hostname);
     }
 
-    // Admin action
+    // Admin health check — requires service role or apikey header match
+    if (action === "admin-health-check") {
+      const apiKey = req.headers.get("apikey") ?? "";
+      const authToken = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+      if (apiKey === serviceKey || authToken === serviceKey) {
+        if (!body.domain_id) return jsonError("domain_id required", 400);
+        return await adminHealthCheck(body.domain_id);
+      }
+    }
+
+    // Admin actions (service role only)
+    if (isServiceRoleAuth(req)) {
+      if (action === "admin-verify-domain") {
+        if (!body.domain_id) return jsonError("domain_id required", 400);
+        return await adminVerifyDomain(body.domain_id);
+      }
+      if (action === "admin-health-check") {
+        if (!body.domain_id) return jsonError("domain_id required", 400);
+        return await adminHealthCheck(body.domain_id);
+      }
+    }
+
     if (action === "admin-verify-domain") {
       const adminSecret = body?.admin_secret;
-      if (!isServiceRoleAuth(req) && adminSecret !== Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) {
+      if (adminSecret !== Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) {
         return unauthorized("Admin access required");
       }
       if (!body.domain_id) return jsonError("domain_id required", 400);

@@ -60,6 +60,16 @@ function HealthCheckResult({ data }: { data: any }) {
       message: 'The domain is caught in an infinite redirect.',
       fix: 'Check for conflicting redirect rules, Page Rules, or "Always Use HTTPS" settings in your Cloudflare dashboard that may affect this domain.',
     },
+    '403_cloudflare': {
+      title: '403 Forbidden — Cloudflare Blocking',
+      message: 'Your Cloudflare zone is blocking requests to this domain, likely because the CNAME is proxied (orange cloud).',
+      fix: 'In your Cloudflare dashboard, switch your CNAME record to DNS-only (grey cloud), OR delete the CNAME and create an A record pointing to 185.158.133.1 (also DNS-only). This bypasses the cross-zone conflict.',
+    },
+    '403': {
+      title: '403 Forbidden',
+      message: 'Access to this domain is being blocked.',
+      fix: 'Check your domain\'s WAF rules, Bot Fight Mode, and any firewall settings that may be blocking traffic. If using Cloudflare, ensure the CNAME is set to DNS-only (grey cloud).',
+    },
   };
 
   const error = data.error_code ? errorMessages[data.error_code] : null;
