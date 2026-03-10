@@ -288,6 +288,18 @@ export default function SellerSettingsDomain() {
                       <div className="flex items-start gap-2">
                         <span className="font-medium text-primary min-w-[24px]">2.</span>
                         <div>
+                          <p className="text-muted-foreground">Add a <strong>CNAME</strong> record for <strong>www</strong>:</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <code className="bg-muted px-2 py-0.5 rounded text-xs">www.{d.domain} → stores.eclipserblx.com</code>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard('stores.eclipserblx.com')}>
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="font-medium text-primary min-w-[24px]">3.</span>
+                        <div>
                           <p className="text-muted-foreground">Add a <strong>TXT</strong> record:</p>
                           <div className="flex items-center gap-2 mt-1">
                             <code className="bg-muted px-2 py-0.5 rounded text-xs">_eclipsestore-verify.{d.domain} → {d.verification_token}</code>
