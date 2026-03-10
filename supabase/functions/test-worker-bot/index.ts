@@ -3,47 +3,47 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function cfGet(url: string, token: string) {
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-  });
-  const text = await res.text();
-  try { return JSON.parse(text); } catch { return { raw: text.slice(0, 300), status: res.status }; }
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const CF_TOKEN = Deno.env.get("CLOUDFLARE_API_TOKEN")!;
-  const CF_ZONE_ID = Deno.env.get("CLOUDFLARE_ZONE_ID")!;
-
-  const zone = await cfGet(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}`, CF_TOKEN);
-  const accountId = zone.result?.account?.id;
-  const routes = await cfGet(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes`, CF_TOKEN);
-  const subdomain = await cfGet(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/subdomain`, CF_TOKEN);
-  const redirect = await cfGet(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/rulesets/phases/http_request_dynamic_redirect/entrypoint`, CF_TOKEN);
-  const devMode = await cfGet(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/settings/development_mode`, CF_TOKEN);
-
-  // Check script settings (not the script content)
-  const scriptSettings = await cfGet(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy/settings`, CF_TOKEN);
-
-  return new Response(JSON.stringify({
-    zone: {
-      status: zone.result?.status,
-      paused: zone.result?.paused,
-      type: zone.result?.type,
-      plan: zone.result?.plan?.name,
+  const tests = [
+    { 
+      name: "workers_dev_bot",
+      url: "https://eclipse-og-proxy.mqddfqd5gs.workers.dev/products/battle-of-ypres-1917",
+      ua: "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)"
     },
-    devMode: devMode.result,
-    routes: routes.result?.map((r: any) => ({ pattern: r.pattern, script: r.script })),
-    scriptSettings,
-    subdomain: subdomain.result,
-    redirectRules: redirect.result?.rules?.map((r: any) => ({
-      description: r.description,
-      enabled: r.enabled,
-      expression: r.expression,
-    })),
-  }, null, 2), {
+    { 
+      name: "workers_dev_share",
+      url: "https://eclipse-og-proxy.mqddfqd5gs.workers.dev/share/products/battle-of-ypres-1917",
+      ua: "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)"
+    },
+  ];
+
+  const results: any[] = [];
+  for (const test of tests) {
+    try {
+      const res = await fetch(test.url, {
+        headers: { "User-Agent": test.ua },
+        redirect: "manual",
+      });
+      const headers: Record<string, string> = {};
+      res.headers.forEach((v, k) => { headers[k] = v; });
+      const body = await res.text();
+
+      results.push({
+        name: test.name,
+        status: res.status,
+        workerHeader: headers['x-eclipse-worker'] || null,
+        title: body.match(/<title>(.*?)<\/title>/)?.[1] || null,
+        hasProductOg: body.includes('Battle of Ypres'),
+        bodyPreview: body.slice(0, 300),
+      });
+    } catch (e) {
+      results.push({ name: test.name, error: (e as Error).message });
+    }
+  }
+
+  return new Response(JSON.stringify(results, null, 2), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 });
