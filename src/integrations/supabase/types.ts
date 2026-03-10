@@ -2385,6 +2385,44 @@ export type Database = {
           },
         ]
       }
+      dispute_evidence: {
+        Row: {
+          created_at: string | null
+          dispute_id: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string | null
+          dispute_id: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string | null
+          dispute_id?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_evidence_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "refund_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       download_logs: {
         Row: {
           downloaded_at: string
@@ -9526,6 +9564,10 @@ export type Database = {
       deduct_seller_balance: {
         Args: { p_amount: number; p_user_id: string }
         Returns: boolean
+      }
+      escalate_dispute: {
+        Args: { p_dispute_id: string; p_reason: string }
+        Returns: undefined
       }
       escalate_unanswered_tickets: { Args: never; Returns: number }
       fulfill_credits_idempotent: {

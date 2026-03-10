@@ -15,8 +15,9 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { 
   RotateCcw, Check, X, AlertTriangle, Clock, 
-  ShieldAlert, MessageSquare, Info
+  ShieldAlert, MessageSquare, Info, FileImage
 } from 'lucide-react';
+import { DisputeEvidenceUpload } from '@/components/purchases/DisputeEvidenceUpload';
 
 export default function SellerRefunds() {
   const queryClient = useQueryClient();
@@ -207,89 +208,145 @@ export default function SellerRefunds() {
             </DialogDescription>
           </DialogHeader>
           {selectedRequest && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Status</span>
-                {getStatusBadge(selectedRequest.status)}
-              </div>
-              <div>
-                <span className="text-sm font-medium">Amount</span>
-                <p className="text-lg font-bold">£{Number(selectedRequest.amount).toFixed(2)}</p>
-              </div>
-              <div>
-                <span className="text-sm font-medium">Reason</span>
-                <p className="text-sm text-muted-foreground">{selectedRequest.reason}</p>
-              </div>
-              {selectedRequest.details && (
-                <div>
-                  <span className="text-sm font-medium">Details</span>
-                  <p className="text-sm text-muted-foreground">{selectedRequest.details}</p>
-                </div>
-              )}
-              {selectedRequest.escalation_reason && (
-                <Card className="bg-amber-500/5 border-amber-500/20">
-                  <CardContent className="py-3">
-                    <p className="text-sm font-medium text-amber-500">Escalation Reason</p>
-                    <p className="text-sm text-muted-foreground">{selectedRequest.escalation_reason}</p>
-                  </CardContent>
-                </Card>
-              )}
-              {selectedRequest.seller_response && (
-                <div>
-                  <span className="text-sm font-medium">Your Response</span>
-                  <p className="text-sm text-muted-foreground">{selectedRequest.seller_response}</p>
-                </div>
-              )}
-              {selectedRequest.admin_response && (
-                <div>
-                  <span className="text-sm font-medium">Eclipse Decision</span>
-                  <p className="text-sm text-muted-foreground">{selectedRequest.admin_response}</p>
-                </div>
-              )}
-
-              {selectedRequest.status === 'pending' && (
-                <>
-                  <div className="space-y-2">
-                    <Label>Your Response</Label>
-                    <Textarea 
-                      value={response} 
-                      onChange={e => {
-                        if (e.target.value.length <= 1000) {
-                          setResponse(e.target.value);
-                        }
-                      }}
-                      placeholder="Explain your decision..."
-                      rows={3}
-                      maxLength={1000}
-                    />
-                    <p className="text-xs text-muted-foreground text-right">{response.length}/1,000</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      className="flex-1 bg-green-600 hover:bg-green-700"
-                      onClick={() => respondMutation.mutate({ id: selectedRequest.id, status: 'approved' })}
-                      disabled={respondMutation.isPending}
-                    >
-                      <Check className="h-4 w-4 mr-2" />Approve Refund
-                    </Button>
-                    <Button 
-                      variant="destructive"
-                      className="flex-1"
-                      onClick={() => respondMutation.mutate({ id: selectedRequest.id, status: 'denied' })}
-                      disabled={respondMutation.isPending}
-                    >
-                      <X className="h-4 w-4 mr-2" />Deny
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground text-center">
-                    If denied, the customer can escalate this to Eclipse for review.
-                  </p>
-                </>
-              )}
-            </div>
+            <SellerDisputeDetail
+              request={selectedRequest}
+              response={response}
+              setResponse={setResponse}
+              respondMutation={respondMutation}
+              getStatusBadge={getStatusBadge}
+            />
           )}
         </DialogContent>
       </Dialog>
     </SellerLayout>
+  );
+}
+
+function SellerDisputeDetail({ request, response, setResponse, respondMutation, getStatusBadge }: any) {
+  // Fetch evidence for this dispute
+  const { data: evidence } = useQuery({
+    queryKey: ['dispute-evidence-seller', request.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('dispute_evidence')
+        .select('*')
+        .eq('dispute_id', request.id)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!request.id,
+  });
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">Status</span>
+        {getStatusBadge(request.status)}
+      </div>
+      <div>
+        <span className="text-sm font-medium">Amount</span>
+        <p className="text-lg font-bold">£{Number(request.amount).toFixed(2)}</p>
+      </div>
+      <div>
+        <span className="text-sm font-medium">Reason</span>
+        <p className="text-sm text-muted-foreground">{request.reason}</p>
+      </div>
+      {request.details && (
+        <div>
+          <span className="text-sm font-medium">Details</span>
+          <p className="text-sm text-muted-foreground">{request.details}</p>
+        </div>
+      )}
+
+      {/* Customer Evidence */}
+      {evidence && evidence.length > 0 && (
+        <div>
+          <span className="text-sm font-medium flex items-center gap-1.5 mb-2">
+            <FileImage className="h-3.5 w-3.5" /> Customer Evidence ({evidence.length})
+          </span>
+          <div className="space-y-2">
+            {evidence.map((e: any) => (
+              <div key={e.id} className="flex items-center gap-2 p-2 rounded-lg border bg-muted/30 text-sm">
+                <FileImage className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="truncate flex-1">{e.file_name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {request.escalation_reason && (
+        <Card className="bg-amber-500/5 border-amber-500/20">
+          <CardContent className="py-3">
+            <p className="text-sm font-medium text-amber-500">Escalation Reason</p>
+            <p className="text-sm text-muted-foreground">{request.escalation_reason}</p>
+          </CardContent>
+        </Card>
+      )}
+      {request.seller_response && (
+        <div>
+          <span className="text-sm font-medium">Your Response</span>
+          <p className="text-sm text-muted-foreground">{request.seller_response}</p>
+        </div>
+      )}
+      {request.admin_response && (
+        <div>
+          <span className="text-sm font-medium">Eclipse Decision</span>
+          <p className="text-sm text-muted-foreground">{request.admin_response}</p>
+        </div>
+      )}
+
+      {request.status === 'pending' && (
+        <>
+          <div className="space-y-2">
+            <Label>Your Response</Label>
+            <Textarea 
+              value={response} 
+              onChange={e => {
+                if (e.target.value.length <= 1000) {
+                  setResponse(e.target.value);
+                }
+              }}
+              placeholder="Explain your decision..."
+              rows={3}
+              maxLength={1000}
+            />
+            <p className="text-xs text-muted-foreground text-right">{response.length}/1,000</p>
+          </div>
+
+          {/* Seller evidence upload */}
+          <div className="space-y-2">
+            <Label>Attach Evidence (optional)</Label>
+            <DisputeEvidenceUpload
+              disputeId={request.id}
+              onFilesChange={() => {}}
+              maxFiles={5}
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <Button 
+              className="flex-1 bg-green-600 hover:bg-green-700"
+              onClick={() => respondMutation.mutate({ id: request.id, status: 'approved' })}
+              disabled={respondMutation.isPending}
+            >
+              <Check className="h-4 w-4 mr-2" />Approve Refund
+            </Button>
+            <Button 
+              variant="destructive"
+              className="flex-1"
+              onClick={() => respondMutation.mutate({ id: request.id, status: 'denied' })}
+              disabled={respondMutation.isPending}
+            >
+              <X className="h-4 w-4 mr-2" />Deny
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            If denied, the customer can escalate this to Eclipse for review.
+          </p>
+        </>
+      )}
+    </div>
   );
 }

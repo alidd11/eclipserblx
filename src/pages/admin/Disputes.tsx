@@ -37,7 +37,7 @@ import {
   AlertTriangle, Search, Eye, Loader2, CheckCircle, XCircle, Clock, 
   ShieldAlert, Shield, Snowflake, User, Store, FileText,
   Calendar, Banknote, MessageSquare, ExternalLink, Timer, AlertCircle,
-  ArrowUpRight, ChevronLeft, ChevronRight
+  ArrowUpRight, ChevronLeft, ChevronRight, FileImage
 } from 'lucide-react';
 import { format, formatDistanceToNow, differenceInHours, addHours } from 'date-fns';
 import { toast } from 'sonner';
@@ -636,6 +636,9 @@ export default function Disputes() {
                   </div>
                 )}
 
+                {/* Evidence Attachments */}
+                <DisputeEvidenceSection disputeId={selectedDispute.id} />
+
                 {/* Escalation */}
                 {selectedDispute.escalation_reason && (
                   <Card className="border-amber-500/20 bg-amber-500/5">
@@ -724,5 +727,44 @@ export default function Disputes() {
         </DialogContent>
       </Dialog>
     </AdminLayout>
+  );
+}
+
+function DisputeEvidenceSection({ disputeId }: { disputeId: string }) {
+  const { data: evidence, isLoading } = useQuery({
+    queryKey: ['admin-dispute-evidence', disputeId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('dispute_evidence')
+        .select('*')
+        .eq('dispute_id', disputeId)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!disputeId,
+  });
+
+  if (isLoading || !evidence || evidence.length === 0) return null;
+
+  return (
+    <div>
+      <p className="text-sm font-medium mb-2 flex items-center gap-1.5">
+        <FileImage className="h-3.5 w-3.5" /> Evidence Attachments ({evidence.length})
+      </p>
+      <div className="space-y-2">
+        {evidence.map((e: any) => (
+          <div key={e.id} className="flex items-center gap-2 p-2 rounded-lg border bg-muted/30 text-sm">
+            <FileImage className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="truncate flex-1">{e.file_name}</span>
+            <span className="text-xs text-muted-foreground shrink-0">
+              {e.file_size < 1024 * 1024 
+                ? `${(e.file_size / 1024).toFixed(1)} KB` 
+                : `${(e.file_size / (1024 * 1024)).toFixed(1)} MB`}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

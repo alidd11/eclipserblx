@@ -21,6 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { AlertTriangle, Loader2 } from 'lucide-react';
+import { DisputeEvidenceUpload } from './DisputeEvidenceUpload';
 
 interface DisputeDialogProps {
   open: boolean;
@@ -28,6 +29,12 @@ interface DisputeDialogProps {
   orderId: string;
   orderDisplayId: string;
   onSuccess?: () => void;
+}
+
+interface UploadedFile {
+  file_path: string;
+  file_name: string;
+  file_size: number;
 }
 
 const disputeReasons = [
@@ -43,6 +50,7 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
   const [reason, setReason] = useState('');
   const [description, setDescription] = useState('');
   const [selectedItemId, setSelectedItemId] = useState('');
+  const [evidenceFiles, setEvidenceFiles] = useState<UploadedFile[]>([]);
 
   // Fetch order items with product/store info
   const { data: orderItems } = useQuery({
@@ -76,7 +84,7 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
       const itemPrice = Number(selectedItem.price);
       const reasonLabel = disputeReasons.find(r => r.value === reason)?.label || reason;
 
-      const { error } = await supabase
+      const { data: disputeData, error } = await supabase
         .from('refund_requests')
         .insert({
           order_id: orderId,
@@ -87,13 +95,27 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
           details: description.trim(),
           amount: itemPrice,
           status: 'pending',
-        });
+        })
+        .select()
+        .single();
 
       if (error) {
         if (error.code === '23505') {
           throw new Error('You already have an open dispute for this item.');
         }
         throw error;
+      }
+
+      // Save evidence files to dispute_evidence table
+      if (evidenceFiles.length > 0 && disputeData) {
+        const evidenceRows = evidenceFiles.map(f => ({
+          dispute_id: disputeData.id,
+          uploaded_by: user.id,
+          file_path: f.file_path,
+          file_name: f.file_name,
+          file_size: f.file_size,
+        }));
+        await supabase.from('dispute_evidence').insert(evidenceRows);
       }
 
       // Send email notification to seller
@@ -110,7 +132,7 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
         }).catch((err) => console.error('Failed to send dispute email:', err));
       }
 
-      // Auto-create a support ticket so the customer can talk to staff
+      // Auto-create a support ticket
       try {
         const ticketSubject = `Dispute: ${selectedItem.product_name || 'Order item'} (${orderDisplayId})`;
         const ticketMessage = `Reason: ${reasonLabel}\n\n${description.trim()}\n\n---\nOrder: ${orderDisplayId}\nProduct: ${selectedItem.product_name}\nAmount: £${itemPrice.toFixed(2)}`;
@@ -139,10 +161,8 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
               is_internal_note: false,
             });
 
-          // Send Discord notification for the dispute ticket
           const customerName = user.user_metadata?.display_name || user.email || 'Unknown';
           
-          // Fetch store name for the notification
           let storeName = 'Unknown Store';
           if (storeId) {
             const { data: storeData } = await supabase
@@ -175,6 +195,7 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
       setReason('');
       setDescription('');
       setSelectedItemId('');
+      setEvidenceFiles([]);
       onOpenChange(false);
       onSuccess?.();
     },
@@ -259,6 +280,16 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
               placeholder="Provide details about your issue..."
               className="min-h-[120px]"
               maxLength={2000}
+            />
+          </div>
+
+          {/* Evidence Upload */}
+          <div className="space-y-2">
+            <Label>Evidence (optional)</Label>
+            <DisputeEvidenceUpload
+              onFilesChange={setEvidenceFiles}
+              existingFiles={evidenceFiles}
+              maxFiles={5}
             />
           </div>
 
