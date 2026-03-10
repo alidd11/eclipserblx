@@ -87,6 +87,7 @@ async function resolveStoreByHostname(hostname: string): Promise<any> {
   return storeRes.json();
 }
 
+async function pgQuery(table: string, select: string, filters: string): Promise<any> {
   const url = Deno.env.get("SUPABASE_URL")!;
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const res = await fetch(`${url}/rest/v1/${table}?select=${encodeURIComponent(select)}&${filters}`, {
