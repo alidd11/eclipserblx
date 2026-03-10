@@ -62,6 +62,7 @@ export default function SellerStoreBuilder() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sections, setSections] = useState<StoreSection[]>(DEFAULT_SECTIONS);
   const [hasChanges, setHasChanges] = useState(false);
+  const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
 
   // Load saved layout
   const { data: savedLayout, isLoading } = useQuery({
