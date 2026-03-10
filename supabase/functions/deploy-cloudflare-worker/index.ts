@@ -185,10 +185,10 @@ function buildWorkerScript(): string {
   lines.push(
     "var isBot=BP.some(function(b){return ua.toLowerCase().includes(b.toLowerCase());});"
   );
-  lines.push("if(!isBot)return fetch(request);");
+  lines.push("if(!isBot){var r=await fetch(request);return new Response(r.body,{status:r.status,headers:new Headers(r.headers)});}");
   lines.push("var sub=h.replace('.eclipserblx.com','');");
   lines.push(
-    'var html=await sOg(sub);if(html)return oR(html,"og-subdomain");return fetch(request);}'
+    'var html=await sOg(sub);if(html)return oR(html,"og-subdomain");var r=await fetch(request);return new Response(r.body,{status:r.status,headers:new Headers(r.headers)});}'
   );
 
   // Main domain handler
