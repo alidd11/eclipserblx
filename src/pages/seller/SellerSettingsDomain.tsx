@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { Globe, CheckCircle, ExternalLink, Copy, Trash2, RefreshCw, Zap, Link } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Globe, CheckCircle, ExternalLink, Copy, Trash2, RefreshCw, Zap, Link, ShoppingCart, HelpCircle, ChevronDown } from 'lucide-react';
 
 function StatusBadge({ status }: { status: string }) {
   const variants: Record<string, { className: string; label: string }> = {
@@ -251,6 +252,71 @@ export default function SellerSettingsDomain() {
               Add Domain
             </Button>
           </div>
+
+          {/* Need a domain? CTA */}
+          <div className="flex items-center gap-2 px-1">
+            <ShoppingCart className="w-4 h-4 text-primary" />
+            <p className="text-sm text-muted-foreground">
+              Need a domain?{' '}
+              <a
+                href="https://www.cloudflare.com/products/registrar/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary font-medium hover:underline"
+              >
+                Buy one at cost on Cloudflare
+              </a>{' '}
+              (from ~$8/year) or from{' '}
+              <a
+                href="https://www.namecheap.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary font-medium hover:underline"
+              >
+                Namecheap
+              </a>.
+            </p>
+          </div>
+
+          {/* How-to guide */}
+          <Collapsible>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="w-full justify-between text-muted-foreground hover:text-foreground">
+                <span className="flex items-center gap-2">
+                  <HelpCircle className="w-4 h-4" />
+                  How to connect a custom domain
+                </span>
+                <ChevronDown className="w-4 h-4 transition-transform duration-200 [[data-state=open]_&]:rotate-180" />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="bg-muted/50 rounded-lg p-4 mt-2 space-y-3 text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">Step-by-step guide:</p>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>
+                    <strong>Buy a domain</strong> from any registrar (Cloudflare, Namecheap, GoDaddy, etc.)
+                  </li>
+                  <li>
+                    <strong>Add your domain above</strong> using the input field — we'll generate your DNS records
+                  </li>
+                  <li>
+                    <strong>Go to your registrar's DNS settings</strong> and add the records shown:
+                    <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
+                      <li><strong>CNAME</strong> for your domain → <code className="bg-muted px-1 rounded text-xs">stores.eclipserblx.com</code></li>
+                      <li><strong>CNAME</strong> for www → <code className="bg-muted px-1 rounded text-xs">stores.eclipserblx.com</code></li>
+                      <li><strong>TXT</strong> record for ownership verification</li>
+                    </ul>
+                  </li>
+                  <li>
+                    <strong>Click "Verify DNS"</strong> — once records propagate (up to 24h), your domain will go live with SSL
+                  </li>
+                </ol>
+                <p className="text-xs text-muted-foreground/70">
+                  DNS changes can take up to 24 hours to propagate. If verification fails, double-check your records and try again.
+                </p>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* Existing custom domains */}
           {customDomains.map((d) => (
