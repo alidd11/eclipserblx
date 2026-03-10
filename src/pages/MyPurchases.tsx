@@ -677,11 +677,22 @@ export default function MyPurchases() {
                               {displayStatus}
                             </div>
                           </div>
+                          {/* Dispute status badge */}
+                          {disputesByOrder[order.id] && (
+                            <button
+                              onClick={() => setViewingDisputeId(disputesByOrder[order.id].id)}
+                              className="w-full flex items-center justify-between p-2 rounded-md bg-muted/30 border border-border hover:border-primary/30 transition-colors cursor-pointer"
+                            >
+                              {getDisputeBadge(disputesByOrder[order.id].status)}
+                              <span className="text-xs text-muted-foreground">View details →</span>
+                            </button>
+                          )}
+
                           <div className="flex gap-2">
                             <Button asChild variant="outline" className="flex-1">
                               <Link to={`/order-success?order_id=${order.id}`}>View order</Link>
                             </Button>
-                            {['paid', 'completed'].includes(order.status) && (
+                            {['paid', 'completed'].includes(order.status) && !disputesByOrder[order.id] && (
                               <Button
                                 variant="outline"
                                 className="border-destructive/30 text-destructive hover:bg-destructive/10"
@@ -689,6 +700,15 @@ export default function MyPurchases() {
                               >
                                 <AlertTriangle className="h-4 w-4 mr-2" />
                                 Dispute
+                              </Button>
+                            )}
+                            {disputesByOrder[order.id] && (
+                              <Button
+                                variant="outline"
+                                onClick={() => setViewingDisputeId(disputesByOrder[order.id].id)}
+                              >
+                                <ShieldAlert className="h-4 w-4 mr-2" />
+                                Track
                               </Button>
                             )}
                           </div>
