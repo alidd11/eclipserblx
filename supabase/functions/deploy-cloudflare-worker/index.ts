@@ -462,11 +462,14 @@ Deno.serve(async (req) => {
     // Step 6: Configure SBFM to not block bots (allow WAF skip rule to work)
     let sbfmResult: Record<string, unknown> = { success: false, skipped: true };
     try {
-      const sbfmConfig = await cfApi(
+      const sbfmRes = await fetch(
         `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/bot_management/config`,
-        cfApiToken,
         {
           method: "PUT",
+          headers: {
+            Authorization: `Bearer ${cfApiToken}`,
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
             sbfm_definitely_automated: "managed_challenge",
             sbfm_likely_automated: "managed_challenge",
@@ -476,7 +479,14 @@ Deno.serve(async (req) => {
           }),
         }
       );
-      sbfmResult = { success: !!sbfmConfig.success, action: "configured", errors: sbfmConfig.errors };
+      const sbfmText = await sbfmRes.text();
+      console.log("[SBFM] Status:", sbfmRes.status, "Response:", sbfmText.slice(0, 500));
+      try {
+        const sbfmData = JSON.parse(sbfmText);
+        sbfmResult = { success: !!sbfmData.success, action: "configured", status: sbfmRes.status, errors: sbfmData.errors };
+      } catch {
+        sbfmResult = { success: false, status: sbfmRes.status, raw: sbfmText.slice(0, 200) };
+      }
     } catch (e) {
       sbfmResult = { success: false, error: (e as Error).message };
     }
