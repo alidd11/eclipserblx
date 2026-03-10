@@ -765,6 +765,15 @@ export default function MyPurchases() {
             orderDisplayId={disputeOrder.displayId}
           />
         )}
+
+        {/* Dispute Status Tracker */}
+        {viewingDisputeId && (
+          <DisputeStatusDialog
+            open={!!viewingDisputeId}
+            onOpenChange={(open) => !open && setViewingDisputeId(null)}
+            disputeId={viewingDisputeId}
+          />
+        )}
       </div>
     </MainLayout>
   );
