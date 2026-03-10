@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
 
     const { data: disputes, error: fetchError } = await supabase
       .from("refund_requests")
-      .select("id, order_id, customer_id, store_id, amount, reason")
+      .select("id, order_id, customer_id, store_id, amount, reason, dispute_number")
       .eq("status", "pending")
       .is("seller_responded_at", null)
       .lt("created_at", cutoff);
