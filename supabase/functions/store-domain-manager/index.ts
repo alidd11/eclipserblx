@@ -605,10 +605,15 @@ Deno.serve(async (req) => {
       return await resolveHostname(body.hostname);
     }
 
-    // Admin health check — accepts service role or admin_secret
+    // Admin health check — requires service role or apikey header match
     if (action === "admin-health-check") {
-      if (!body.domain_id) return jsonError("domain_id required", 400);
-      return await adminHealthCheck(body.domain_id);
+      const apiKey = req.headers.get("apikey") ?? "";
+      const authToken = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+      if (apiKey === serviceKey || authToken === serviceKey) {
+        if (!body.domain_id) return jsonError("domain_id required", 400);
+        return await adminHealthCheck(body.domain_id);
+      }
     }
 
     // Admin actions (service role only)
