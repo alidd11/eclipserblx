@@ -41,8 +41,29 @@ async function serveOg(path, userAgent, hostname) {
   if (hostname) ogUrl += "&hostname=" + encodeURIComponent(hostname);
   const ogResponse = await fetch(ogUrl, {
     headers: { "User-Agent": userAgent },
+    cf: { cacheTtl: 0 },
+    redirect: "manual",
   });
+  const ogStatus = ogResponse.status;
+  const ogCt = ogResponse.headers.get("content-type") || "unknown";
+  const ogLocation = ogResponse.headers.get("location") || "";
+  
+  // If og-proxy returned a redirect, don't follow it
+  if (ogStatus >= 300 && ogStatus < 400) {
+    return new Response("OG redirect: " + ogLocation, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain",
+        "X-Eclipse-Worker": "og-redirect",
+        "X-Eclipse-OgStatus": String(ogStatus),
+        "X-Eclipse-OgLocation": ogLocation,
+      },
+    });
+  }
+  
   const body = await ogResponse.text();
+  const hasOgTag = body.includes("og:title");
+  
   return new Response(body, {
     status: ogResponse.status,
     headers: {
@@ -50,6 +71,11 @@ async function serveOg(path, userAgent, hostname) {
       "Cache-Control": "public, max-age=300",
       "X-Eclipse-Worker": "og-served",
       "X-Eclipse-Path": path,
+      "X-Eclipse-OgStatus": String(ogStatus),
+      "X-Eclipse-OgCt": ogCt,
+      "X-Eclipse-OgUrl": ogUrl,
+      "X-Eclipse-HasOg": String(hasOgTag),
+      "X-Eclipse-BodyLen": String(body.length),
     },
   });
 }
