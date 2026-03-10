@@ -933,6 +933,17 @@ export default function StorePage() {
                         />
                       </div>
                     ) : null;
+                  case 'announcement':
+                    return section.config?.active && section.config?.text ? (
+                      <div
+                        key={`section-${section.type}-${idx}`}
+                        className="rounded-lg px-4 py-2.5 text-center text-sm font-medium flex items-center justify-center gap-2 mb-4"
+                        style={{ backgroundColor: `${accentColor}15`, color: accentColor }}
+                      >
+                        <Megaphone className="h-4 w-4 shrink-0" />
+                        {section.config.text}
+                      </div>
+                    ) : null;
                   default:
                     return null;
                 }

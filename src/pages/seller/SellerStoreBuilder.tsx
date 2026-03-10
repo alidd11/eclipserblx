@@ -218,6 +218,7 @@ export default function SellerStoreBuilder() {
           sections={sections}
           storeName={store?.name}
           accentColor={store?.accent_color || undefined}
+          selectedId={selectedId}
         />
       </div>
     </div>
