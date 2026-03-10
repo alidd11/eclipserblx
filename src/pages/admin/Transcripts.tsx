@@ -64,15 +64,6 @@ export default function Transcripts() {
     },
   });
 
-        id: ticket.id,
-        title: ticket.discord_username,
-        subtitle: ticket.subject || 'No subject',
-        created_at: ticket.created_at,
-        closed_at: ticket.closed_at,
-        customer_name: ticket.discord_username,
-      })) as Transcript[];
-    },
-  });
 
   // Fetch closed seller tickets
   const { data: sellerTicketTranscripts = [], isLoading: sellerTicketsLoading } = useQuery({
