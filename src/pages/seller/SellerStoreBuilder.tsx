@@ -242,6 +242,7 @@ export default function SellerStoreBuilder() {
           storeName={store?.name}
           accentColor={store?.accent_color || undefined}
           selectedId={selectedId}
+          previewMode={previewMode}
         />
       </div>
     </div>

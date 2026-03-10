@@ -160,7 +160,7 @@ export function BuilderPreview({ sections, storeName = 'Your Store', accentColor
       )}
 
       {/* Preview content */}
-      <div className="p-3 space-y-2 max-h-[60vh] overflow-y-auto">
+      <div className={cn("p-3 space-y-2 overflow-y-auto", isMobile ? "max-h-[580px]" : "max-h-[60vh]")}>
         {visibleSections.length === 0 ? (
           <div className="py-12 text-center text-muted-foreground text-sm">
             All sections are hidden. Toggle some sections on to preview your store.
@@ -184,7 +184,7 @@ export function BuilderPreview({ sections, storeName = 'Your Store', accentColor
                     <TrendingUp className="h-3 w-3 text-muted-foreground/50" />
                     <span className="text-[10px] text-muted-foreground/60 font-medium">Best Sellers</span>
                   </div>
-                  <ProductGridPreview count={section.config?.limit ?? 4} />
+                  <ProductGridPreview count={section.config?.limit ?? 4} mobile={isMobile} />
                 </div>
               )}
               {section.type === 'products' && (
@@ -193,7 +193,7 @@ export function BuilderPreview({ sections, storeName = 'Your Store', accentColor
                     <Package className="h-3 w-3 text-muted-foreground/50" />
                     <span className="text-[10px] text-muted-foreground/60 font-medium">All Products</span>
                   </div>
-                  <ProductGridPreview count={8} />
+                  <ProductGridPreview count={isMobile ? 4 : 8} mobile={isMobile} />
                 </div>
               )}
               {section.type === 'trust_signals' && <TrustSignalsPreview accentColor={accentColor} />}
@@ -205,6 +205,13 @@ export function BuilderPreview({ sections, storeName = 'Your Store', accentColor
           ))
         )}
       </div>
+
+      {/* Mobile home bar */}
+      {isMobile && (
+        <div className="bg-background py-2 flex justify-center">
+          <div className="w-28 h-1 rounded-full bg-foreground/20" />
+        </div>
+      )}
     </div>
   );
 }
