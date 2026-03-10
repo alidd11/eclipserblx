@@ -4,107 +4,32 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const WORKER_SCRIPT = `
-const SUPABASE_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsbmJlcmd3amZybWdramhyYmtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NDY1NjIsImV4cCI6MjA4MzIyMjU2Mn0.4jHxaV7Mjlw2RbjDz9W8B07-SR_8Z7IeTTXMu8RUZ20";
-const SITE_URL = "https://eclipserblx.com";
-const SITE_NAME = "Eclipse";
-const DEFAULT_IMAGE = "https://storage.googleapis.com/gpt-engineer-file-uploads/6XoLGVy9Aseup6dIxodIWS9uGsS2/social-images/social-1772684689417-IMG_0084.webp";
-const DEFAULT_DESC = "Eclipse is the best Roblox asset marketplace. Buy premium roleplay scripts, vehicles, maps and game assets. Lower fees, instant delivery.";
-const BOT_PATTERNS = ["Discordbot","Twitterbot","facebookexternalhit","LinkedInBot","Slackbot","TelegramBot","WhatsApp","Googlebot","bingbot","Applebot","Embedly","Iframely","vkShare","Pinterestbot"];
-const NOT_BOT_PATTERNS = ["Lighthouse","PageSpeed","PTST","Chrome-Lighthouse","Speed Insights"];
-const STATIC_PAGES = {
-  "/": { t: "Eclipse | Roblox Marketplace — Premium Assets, Lower Fees", d: DEFAULT_DESC },
-  "/products": { t: "Browse Products | Eclipse", d: "Browse hundreds of premium Roblox assets on Eclipse." },
-  "/stores": { t: "Browse Stores | Eclipse", d: "Discover verified Roblox asset stores on Eclipse." },
-  "/categories": { t: "Categories | Eclipse", d: "Browse Roblox assets by category." },
-  "/featured": { t: "Featured Products | Eclipse", d: "Hand-picked featured Roblox assets on Eclipse." },
-  "/eclipse-plus": { t: "Eclipse+ Membership | Eclipse", d: "Get exclusive perks with Eclipse+ membership." },
-  "/faq": { t: "FAQ | Eclipse", d: "Frequently asked questions about Eclipse marketplace." },
-  "/sell": { t: "Start Selling on Eclipse", d: "Sell your Roblox creations on Eclipse." },
-  "/contact": { t: "Contact Us | Eclipse", d: "Get in touch with the Eclipse team." },
-  "/affiliate": { t: "Affiliate Programme | Eclipse", d: "Earn commission by referring to Eclipse." },
-  "/advertise": { t: "Advertise on Eclipse", d: "Promote your Roblox products on Eclipse." },
-  "/jobs": { t: "Jobs | Eclipse", d: "Join the Eclipse team." },
-};
-const MAIN_DOMAINS = ['eclipserblx.com', 'www.eclipserblx.com'];
-const RESERVED_SUBS = ['guard','www','api','admin','mail','stores'];
-function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
-function ogHtml(t,d,img,url,type,extra){
-  return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><title>'+esc(t)+'</title><meta name="description" content="'+esc(d)+'"/><link rel="canonical" href="'+esc(url)+'"/><meta property="og:type" content="'+(type||'website')+'"/><meta property="og:site_name" content="'+SITE_NAME+'"/><meta property="og:title" content="'+esc(t)+'"/><meta property="og:description" content="'+esc(d)+'"/><meta property="og:image" content="'+esc(img)+'"/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:url" content="'+esc(url)+'"/>'+(extra||'')+'<meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="'+esc(t)+'"/><meta name="twitter:description" content="'+esc(d)+'"/><meta name="twitter:image" content="'+esc(img)+'"/><meta http-equiv="refresh" content="0;url='+esc(url)+'"/></head><body><p>Redirecting…</p></body></html>';
-}
-async function dbGet(table,select,filters){
-  const r=await fetch(SUPABASE_URL+"/rest/v1/"+table+"?select="+encodeURIComponent(select)+"&"+filters,{
-    headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY,Accept:"application/vnd.pgrst.object+json"}
-  });
-  if(!r.ok){await r.text();return null;}
-  try{return await r.json();}catch{return null;}
-}
-function isStoreSub(h){
-  if(MAIN_DOMAINS.includes(h))return false;
-  if(h.endsWith('.eclipserblx.com')){const s=h.replace('.eclipserblx.com','');return !RESERVED_SUBS.includes(s);}
-  if(h.endsWith('.lovable.app')||h.endsWith('.lovableproject.com'))return false;
-  return true;
-}
-async function productOg(slug){
-  const p=await dbGet("products","name,description,images,price,slug,stores(name)","slug=eq."+slug+"&is_active=eq.true");
-  if(!p)return null;
-  const sn=p.stores?.name;const rd=p.description?p.description.replace(/<[^>]*>/g,"").slice(0,200):"Check out "+p.name+" on Eclipse";
-  const d=sn?"By "+sn+" — "+rd:rd;const img=(p.images&&p.images[0])||DEFAULT_IMAGE;
-  const pe=p.price!=null?'<meta property="product:price:amount" content="'+p.price+'"/><meta property="product:price:currency" content="GBP"/>':"";
-  return ogHtml(p.name+" | "+SITE_NAME,d,img,SITE_URL+"/products/"+slug,"product",pe);
-}
-async function storeOg(slug){
-  const s=await dbGet("stores","name,description,logo_url,banner_url,slug,product_count","slug=eq."+slug+"&is_active=eq.true");
-  if(!s)return null;
-  const d=s.description?s.description.replace(/<[^>]*>/g,"").slice(0,200):"Browse "+s.name+"'s products on Eclipse.";
-  return ogHtml(s.name+" | "+SITE_NAME,d,s.banner_url||s.logo_url||DEFAULT_IMAGE,SITE_URL+"/store/"+slug,"profile","");
-}
-function ogResponse(html,tag){return new Response(html,{status:200,headers:{"Content-Type":"text/html;charset=utf-8","Cache-Control":"public,max-age=300","X-Eclipse-Worker":tag}});}
-export default {
-  async fetch(request){
-    try{
-      const url=new URL(request.url);const ua=request.headers.get("User-Agent")||"";const h=url.hostname;
-      let path=url.pathname;
-      // /share/ always serve OG
-      if(path.startsWith("/share/")){path=path.slice(6);
-        const pm=path.match(/^\\/products\\/([a-zA-Z0-9][a-zA-Z0-9\\-_]{0,200})$/);
-        if(pm){const html=await productOg(pm[1]);if(html)return ogResponse(html,"og-share-product");}
-        const sm=path.match(/^\\/store\\/([a-zA-Z0-9][a-zA-Z0-9\\-_]{0,200})$/);
-        if(sm){const html=await storeOg(sm[1]);if(html)return ogResponse(html,"og-share-store");}
-        const sp=STATIC_PAGES[path];
-        if(sp)return ogResponse(ogHtml(sp.t,sp.d,DEFAULT_IMAGE,SITE_URL+path),"og-share-static");
-        return Response.redirect(SITE_URL+path,302);
-      }
-      // Store subdomains
-      if(isStoreSub(h)){
-        const isBot=BOT_PATTERNS.some(b=>ua.toLowerCase().includes(b.toLowerCase()));
-        if(!isBot){const r=await fetch(request);r.headers.set("X-Eclipse-Worker","pass-human");return r;}
-        const sub=h.replace('.eclipserblx.com','');
-        const html=await storeOg(sub);
-        if(html)return ogResponse(html,"og-subdomain");
-        return fetch(request);
-      }
-      // Main domain
-      const isDyn=/^\\/(products|store)\\/[^/?#]+/.test(path);
-      const isStat=STATIC_PAGES.hasOwnProperty(path);
-      if(!isDyn&&!isStat){const r=await fetch(request);return r;}
-      if(NOT_BOT_PATTERNS.some(p=>ua.toLowerCase().includes(p.toLowerCase())))return fetch(request);
-      const isBot=BOT_PATTERNS.some(b=>ua.toLowerCase().includes(b.toLowerCase()));
-      if(!isBot)return fetch(request);
-      // Bot on main domain
-      if(isStat){const sp=STATIC_PAGES[path];return ogResponse(ogHtml(sp.t,sp.d,DEFAULT_IMAGE,SITE_URL+path),"og-static");}
-      const pm=path.match(/^\\/products\\/([a-zA-Z0-9][a-zA-Z0-9\\-_]{0,200})$/);
-      if(pm){const html=await productOg(pm[1]);if(html)return ogResponse(html,"og-product");}
-      const sm=path.match(/^\\/store\\/([a-zA-Z0-9][a-zA-Z0-9\\-_]{0,200})$/);
-      if(sm){const html=await storeOg(sm[1]);if(html)return ogResponse(html,"og-store");}
-      return fetch(request);
-    }catch(e){return new Response("Worker error: "+e.message,{status:500,headers:{"X-Eclipse-Worker":"fatal"}});}
-  },
-};
-`;
+function getWorkerScript(): string {
+  const SUPABASE_URL = "https://qlnbergwjfrmgkjhrbkj.supabase.co";
+  const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsbmJlcmd3amZybWdramhyYmtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NDY1NjIsImV4cCI6MjA4MzIyMjU2Mn0.4jHxaV7Mjlw2RbjDz9W8B07-SR_8Z7IeTTXMu8RUZ20";
+  const SITE_URL = "https://eclipserblx.com";
+  const DEFAULT_IMAGE = "https://storage.googleapis.com/gpt-engineer-file-uploads/6XoLGVy9Aseup6dIxodIWS9uGsS2/social-images/social-1772684689417-IMG_0084.webp";
 
-// Bot UA patterns for WAF skip rule
+  return `
+const SU="${SUPABASE_URL}";const AK="${ANON_KEY}";const SU_URL="${SITE_URL}";const SN="Eclipse";
+const DI="${DEFAULT_IMAGE}";
+const DD="Eclipse is the best Roblox asset marketplace. Buy premium roleplay scripts, vehicles, maps and game assets. Lower fees, instant delivery.";
+const BP=["Discordbot","Twitterbot","facebookexternalhit","LinkedInBot","Slackbot","TelegramBot","WhatsApp","Googlebot","bingbot","Applebot","Embedly","Iframely","vkShare","Pinterestbot"];
+const NB=["Lighthouse","PageSpeed","PTST","Chrome-Lighthouse","Speed Insights"];
+const SP={"/":["Eclipse | Roblox Marketplace — Premium Assets, Lower Fees",DD],"/products":["Browse Products | Eclipse","Browse hundreds of premium Roblox assets on Eclipse."],"/stores":["Browse Stores | Eclipse","Discover verified Roblox asset stores on Eclipse."],"/categories":["Categories | Eclipse","Browse Roblox assets by category."],"/featured":["Featured Products | Eclipse","Hand-picked featured Roblox assets on Eclipse."],"/eclipse-plus":["Eclipse+ Membership | Eclipse","Get exclusive perks with Eclipse+ membership."],"/faq":["FAQ | Eclipse","Frequently asked questions about Eclipse marketplace."],"/sell":["Start Selling on Eclipse","Sell your Roblox creations on Eclipse."],"/contact":["Contact Us | Eclipse","Get in touch with the Eclipse team."],"/affiliate":["Affiliate Programme | Eclipse","Earn commission by referring to Eclipse."],"/advertise":["Advertise on Eclipse","Promote your Roblox products on Eclipse."],"/jobs":["Jobs | Eclipse","Join the Eclipse team."]};
+const MD=['eclipserblx.com','www.eclipserblx.com'];
+const RS=['guard','www','api','admin','mail','stores'];
+function e(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function oh(t,d,img,url,type,ex){return'<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><title>'+e(t)+'</title><meta name="description" content="'+e(d)+'"/><link rel="canonical" href="'+e(url)+'"/><meta property="og:type" content="'+(type||'website')+'"/><meta property="og:site_name" content="'+SN+'"/><meta property="og:title" content="'+e(t)+'"/><meta property="og:description" content="'+e(d)+'"/><meta property="og:image" content="'+e(img)+'"/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:url" content="'+e(url)+'"/>'+(ex||'')+'<meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="'+e(t)+'"/><meta name="twitter:description" content="'+e(d)+'"/><meta name="twitter:image" content="'+e(img)+'"/><meta http-equiv="refresh" content="0;url='+e(url)+'"/></head><body><p>Redirecting…</p></body></html>';}
+async function dg(t,s,f){const r=await fetch(SU+"/rest/v1/"+t+"?select="+encodeURIComponent(s)+"&"+f,{headers:{apikey:AK,Authorization:"Bearer "+AK,Accept:"application/vnd.pgrst.object+json"}});if(!r.ok){await r.text();return null;}try{return await r.json();}catch{return null;}}
+function isSS(h){if(MD.includes(h))return false;if(h.endsWith('.eclipserblx.com')){const s=h.replace('.eclipserblx.com','');return!RS.includes(s);}if(h.endsWith('.lovable.app')||h.endsWith('.lovableproject.com'))return false;return true;}
+async function pOg(slug){const p=await dg("products","name,description,images,price,slug,stores(name)","slug=eq."+slug+"&is_active=eq.true");if(!p)return null;const sn=p.stores?.name;const rd=p.description?p.description.replace(/<[^>]*>/g,"").slice(0,200):"Check out "+p.name+" on Eclipse";const d=sn?"By "+sn+" — "+rd:rd;const img=(p.images&&p.images[0])||DI;const pe=p.price!=null?'<meta property="product:price:amount" content="'+p.price+'"/><meta property="product:price:currency" content="GBP"/>':"";return oh(p.name+" | "+SN,d,img,SU_URL+"/products/"+slug,"product",pe);}
+async function sOg(slug){const s=await dg("stores","name,description,logo_url,banner_url,slug,product_count","slug=eq."+slug+"&is_active=eq.true");if(!s)return null;const d=s.description?s.description.replace(/<[^>]*>/g,"").slice(0,200):"Browse "+s.name+"'s products on Eclipse.";return oh(s.name+" | "+SN,d,s.banner_url||s.logo_url||DI,SU_URL+"/store/"+slug,"profile","");}
+function oR(html,tag){return new Response(html,{status:200,headers:{"Content-Type":"text/html;charset=utf-8","Cache-Control":"public,max-age=300","X-Eclipse-Worker":tag}});}
+export default{async fetch(request){try{const url=new URL(request.url);const ua=request.headers.get("User-Agent")||"";const h=url.hostname;let path=url.pathname;if(path.startsWith("/share/")){path=path.slice(6);const pm=path.match(/^\\/products\\/([a-zA-Z0-9][a-zA-Z0-9\\-_]{0,200})$/);if(pm){const html=await pOg(pm[1]);if(html)return oR(html,"og-share-product");}const sm=path.match(/^\\/store\\/([a-zA-Z0-9][a-zA-Z0-9\\-_]{0,200})$/);if(sm){const html=await sOg(sm[1]);if(html)return oR(html,"og-share-store");}const sp=SP[path];if(sp)return oR(oh(sp[0],sp[1],DI,SU_URL+path),"og-share-static");return Response.redirect(SU_URL+path,302);}if(isSS(h)){const isBot=BP.some(b=>ua.toLowerCase().includes(b.toLowerCase()));if(!isBot){const r=await fetch(request);r.headers.set("X-Eclipse-Worker","pass-human");return r;}const sub=h.replace('.eclipserblx.com','');const html=await sOg(sub);if(html)return oR(html,"og-subdomain");return fetch(request);}const isDyn=/^\\/(products|store)\\/[^/?#]+/.test(path);const isStat=SP.hasOwnProperty(path);if(!isDyn&&!isStat)return fetch(request);if(NB.some(p=>ua.toLowerCase().includes(p.toLowerCase())))return fetch(request);const isBot=BP.some(b=>ua.toLowerCase().includes(b.toLowerCase()));if(!isBot)return fetch(request);if(isStat){const sp=SP[path];return oR(oh(sp[0],sp[1],DI,SU_URL+path),"og-static");}const pm=path.match(/^\\/products\\/([a-zA-Z0-9][a-zA-Z0-9\\-_]{0,200})$/);if(pm){const html=await pOg(pm[1]);if(html)return oR(html,"og-product");}const sm=path.match(/^\\/store\\/([a-zA-Z0-9][a-zA-Z0-9\\-_]{0,200})$/);if(sm){const html=await sOg(sm[1]);if(html)return oR(html,"og-store");}return fetch(request);}catch(err){return new Response("Worker error: "+err.message,{status:500,headers:{"X-Eclipse-Worker":"fatal"}});}}};
+`;
+}
+
 const WAF_BOT_EXPRESSIONS = [
   'Discordbot', 'Twitterbot', 'facebookexternalhit', 'LinkedInBot',
   'Slackbot', 'TelegramBot', 'WhatsApp', 'Googlebot', 'bingbot',
@@ -112,9 +37,7 @@ const WAF_BOT_EXPRESSIONS = [
 ];
 
 function buildWafExpression(): string {
-  return WAF_BOT_EXPRESSIONS
-    .map(bot => `(http.user_agent contains "${bot}")`)
-    .join(' or ');
+  return WAF_BOT_EXPRESSIONS.map(bot => `(http.user_agent contains "${bot}")`).join(' or ');
 }
 
 async function cfApi(url: string, token: string, options: RequestInit = {}) {
@@ -129,491 +52,154 @@ async function cfApi(url: string, token: string, options: RequestInit = {}) {
   return res.json();
 }
 
-async function ensureWafSkipRule(cfApiToken: string, cfZoneId: string) {
-  // Get existing custom firewall rulesets for the zone
-  const rulesetsData = await cfApi(
-    `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
-    cfApiToken
-  );
+async function ensureWafSkipRule(token: string, zoneId: string) {
+  const rulesetsData = await cfApi(`https://api.cloudflare.com/client/v4/zones/${zoneId}/rulesets`, token);
+  if (!rulesetsData.success) return { success: false, error: "Failed to list rulesets" };
 
-  if (!rulesetsData.success) {
-    return { success: false, error: "Failed to list rulesets", details: rulesetsData.errors };
-  }
-
-  // Find the zone-level custom firewall ruleset (phase: http_request_firewall_custom)
-  const customFwRuleset = rulesetsData.result?.find(
-    (rs: any) => rs.phase === "http_request_firewall_custom"
-  );
-
+  const customFwRuleset = rulesetsData.result?.find((rs: any) => rs.phase === "http_request_firewall_custom");
   const wafRuleName = "Skip Bot Fight Mode for Social Crawlers";
-  const wafExpression = buildWafExpression();
-
   const newRule = {
     action: "skip",
-    action_parameters: {
-      ruleset: "current",
-      phases: ["http_request_sbfm"],
-      products: ["bic", "hot", "rateLimit", "securityLevel", "uaBlock", "zoneLockdown"],
-    },
-    expression: wafExpression,
+    action_parameters: { ruleset: "current", phases: ["http_request_sbfm"], products: ["bic", "hot", "rateLimit", "securityLevel", "uaBlock", "zoneLockdown"] },
+    expression: buildWafExpression(),
     description: wafRuleName,
     enabled: true,
   };
 
   if (customFwRuleset) {
-    // Get full ruleset with rules
-    const fullRuleset = await cfApi(
-      `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${customFwRuleset.id}`,
-      cfApiToken
-    );
-
-    if (!fullRuleset.success) {
-      return { success: false, error: "Failed to fetch custom firewall ruleset", details: fullRuleset.errors };
-    }
-
-    const existingRules = fullRuleset.result?.rules || [];
-    const existingIdx = existingRules.findIndex((r: any) => r.description === wafRuleName);
-
-    let updatedRules;
-    if (existingIdx >= 0) {
-      // Update existing rule in place
-      updatedRules = [...existingRules];
-      updatedRules[existingIdx] = { ...updatedRules[existingIdx], ...newRule };
-    } else {
-      // Prepend new rule (highest priority)
-      updatedRules = [newRule, ...existingRules];
-    }
-
-    const updateResult = await cfApi(
-      `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${customFwRuleset.id}`,
-      cfApiToken,
-      {
-        method: "PUT",
-        body: JSON.stringify({
-          rules: updatedRules.map((r: any) => ({
-            action: r.action,
-            action_parameters: r.action_parameters,
-            expression: r.expression,
-            description: r.description,
-            enabled: r.enabled,
-          })),
-        }),
-      }
-    );
-
-    return {
-      success: !!updateResult.success,
-      action: existingIdx >= 0 ? "updated" : "added",
-      errors: updateResult.errors,
-    };
-  } else {
-    // Create new custom firewall ruleset with the skip rule
-    const createResult = await cfApi(
-      `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
-      cfApiToken,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          name: "Eclipse Custom WAF Rules",
-          kind: "zone",
-          phase: "http_request_firewall_custom",
-          rules: [newRule],
-        }),
-      }
-    );
-
-    return {
-      success: !!createResult.success,
-      action: "created_ruleset",
-      errors: createResult.errors,
-    };
+    const full = await cfApi(`https://api.cloudflare.com/client/v4/zones/${zoneId}/rulesets/${customFwRuleset.id}`, token);
+    if (!full.success) return { success: false, error: "Failed to fetch ruleset" };
+    const rules = full.result?.rules || [];
+    const idx = rules.findIndex((r: any) => r.description === wafRuleName);
+    const updated = [...rules];
+    if (idx >= 0) updated[idx] = { ...updated[idx], ...newRule }; else updated.unshift(newRule);
+    const res = await cfApi(`https://api.cloudflare.com/client/v4/zones/${zoneId}/rulesets/${customFwRuleset.id}`, token, {
+      method: "PUT",
+      body: JSON.stringify({ rules: updated.map((r: any) => ({ action: r.action, action_parameters: r.action_parameters, expression: r.expression, description: r.description, enabled: r.enabled })) }),
+    });
+    return { success: !!res.success, action: idx >= 0 ? "updated" : "added" };
   }
+
+  const res = await cfApi(`https://api.cloudflare.com/client/v4/zones/${zoneId}/rulesets`, token, {
+    method: "POST",
+    body: JSON.stringify({ name: "Eclipse Custom WAF Rules", kind: "zone", phase: "http_request_firewall_custom", rules: [newRule] }),
+  });
+  return { success: !!res.success, action: "created_ruleset" };
 }
 
-async function ensureShareRedirectRule(cfApiToken: string, cfZoneId: string) {
+async function ensureRedirectRule(token: string, zoneId: string) {
   const phase = "http_request_dynamic_redirect";
   const ruleName = "Eclipse /share/ OG proxy redirect";
+  const entrypoint = await cfApi(`https://api.cloudflare.com/client/v4/zones/${zoneId}/rulesets/phases/${phase}/entrypoint`, token);
 
-  // Get entrypoint ruleset for dynamic redirect phase
-  const entrypoint = await cfApi(
-    `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/phases/${phase}/entrypoint`,
-    cfApiToken
-  );
-
-  const redirectRule = {
+  const rule = {
     action: "redirect",
-    action_parameters: {
-      from_value: {
-        status_code: 302,
-        target_url: {
-          expression: `concat("https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy?path=", substring(http.request.uri.path, 6))`,
-        },
-        preserve_query_string: false,
-      },
-    },
+    action_parameters: { from_value: { status_code: 302, target_url: { expression: `concat("https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy?path=", substring(http.request.uri.path, 6))` }, preserve_query_string: false } },
     expression: `starts_with(http.request.uri.path, "/share/")`,
     description: ruleName,
     enabled: true,
   };
 
   if (entrypoint.success && entrypoint.result?.id) {
-    // Ruleset exists, update it
-    const existingRules = entrypoint.result.rules || [];
-    const existingIdx = existingRules.findIndex((r: any) => r.description === ruleName);
-
-    let updatedRules;
-    if (existingIdx >= 0) {
-      updatedRules = [...existingRules];
-      updatedRules[existingIdx] = { ...updatedRules[existingIdx], ...redirectRule };
-    } else {
-      updatedRules = [redirectRule, ...existingRules];
-    }
-
-    const updateResult = await cfApi(
-      `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${entrypoint.result.id}`,
-      cfApiToken,
-      {
-        method: "PUT",
-        body: JSON.stringify({
-          rules: updatedRules.map((r: any) => ({
-            action: r.action,
-            action_parameters: r.action_parameters,
-            expression: r.expression,
-            description: r.description,
-            enabled: r.enabled,
-          })),
-        }),
-      }
-    );
-
-    return {
-      success: !!updateResult.success,
-      action: existingIdx >= 0 ? "updated" : "added",
-      errors: updateResult.errors,
-    };
-  } else {
-    // Create new entrypoint ruleset
-    const createResult = await cfApi(
-      `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`,
-      cfApiToken,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          name: "Eclipse Redirect Rules",
-          kind: "zone",
-          phase,
-          rules: [redirectRule],
-        }),
-      }
-    );
-
-    return {
-      success: !!createResult.success,
-      action: "created_ruleset",
-      errors: createResult.errors,
-    };
+    const rules = entrypoint.result.rules || [];
+    const idx = rules.findIndex((r: any) => r.description === ruleName);
+    const updated = [...rules];
+    if (idx >= 0) updated[idx] = { ...updated[idx], ...rule }; else updated.unshift(rule);
+    const res = await cfApi(`https://api.cloudflare.com/client/v4/zones/${zoneId}/rulesets/${entrypoint.result.id}`, token, {
+      method: "PUT",
+      body: JSON.stringify({ rules: updated.map((r: any) => ({ action: r.action, action_parameters: r.action_parameters, expression: r.expression, description: r.description, enabled: r.enabled })) }),
+    });
+    return { success: !!res.success, action: idx >= 0 ? "updated" : "added" };
   }
+
+  const res = await cfApi(`https://api.cloudflare.com/client/v4/zones/${zoneId}/rulesets`, token, {
+    method: "POST",
+    body: JSON.stringify({ name: "Eclipse Redirect Rules", kind: "zone", phase, rules: [rule] }),
+  });
+  return { success: !!res.success, action: "created_ruleset" };
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const cfApiToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
+    const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
     const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
-
-    if (!cfApiToken || !cfZoneId) {
-      return new Response(
-        JSON.stringify({ error: "Missing Cloudflare credentials" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (!cfToken || !cfZoneId) {
+      return new Response(JSON.stringify({ error: "Missing Cloudflare credentials" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Step 1: Get account ID from zone
-    const zoneData = await cfApi(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}`, cfApiToken);
-    if (!zoneData.success) {
-      return new Response(
-        JSON.stringify({ error: "Failed to fetch zone info", details: zoneData.errors }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const zoneData = await cfApi(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}`, cfToken);
+    if (!zoneData.success) return new Response(JSON.stringify({ error: "Zone fetch failed" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const accountId = zoneData.result.account.id;
 
-    // Step 2: Upload worker script
+    // Upload worker
     const workerName = "eclipse-og-proxy";
-    const metadata = JSON.stringify({
-      main_module: "worker.js",
-      compatibility_date: "2024-01-01",
+    const script = getWorkerScript();
+    const boundary = "----FB" + Math.random().toString(36).slice(2);
+    const body = `--${boundary}\r\nContent-Disposition: form-data; name="metadata"; filename="metadata.json"\r\nContent-Type: application/json\r\n\r\n${JSON.stringify({ main_module: "worker.js", compatibility_date: "2024-01-01" })}\r\n--${boundary}\r\nContent-Disposition: form-data; name="worker.js"; filename="worker.js"\r\nContent-Type: application/javascript+module\r\n\r\n${script}\r\n--${boundary}--`;
+
+    const upload = await cfApi(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}`, cfToken, {
+      method: "PUT",
+      headers: { "Content-Type": `multipart/form-data; boundary=${boundary}` },
+      body,
     });
+    if (!upload.success) return new Response(JSON.stringify({ error: "Worker upload failed", details: upload.errors }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const boundary = "----FormBoundary" + Math.random().toString(36).slice(2);
-    const body = [
-      `--${boundary}`,
-      `Content-Disposition: form-data; name="metadata"; filename="metadata.json"`,
-      `Content-Type: application/json`,
-      ``,
-      metadata,
-      `--${boundary}`,
-      `Content-Disposition: form-data; name="worker.js"; filename="worker.js"`,
-      `Content-Type: application/javascript+module`,
-      ``,
-      WORKER_SCRIPT,
-      `--${boundary}--`,
-    ].join("\r\n");
-
-    const uploadData = await cfApi(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}`,
-      cfApiToken,
-      {
-        method: "PUT",
-        headers: { "Content-Type": `multipart/form-data; boundary=${boundary}` },
-        body,
-      }
-    );
-
-    if (!uploadData.success) {
-      return new Response(
-        JSON.stringify({ error: "Failed to upload worker", details: uploadData.errors }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Step 3: Ensure OG worker routes exist
-    const routesData = await cfApi(
-      `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes`,
-      cfApiToken
-    );
-
-    if (!routesData.success) {
-      return new Response(
-        JSON.stringify({ error: "Failed to fetch worker routes", details: routesData.errors }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const existingRoutes = Array.isArray(routesData.result) ? routesData.result : [];
-    const desiredPatterns = ["eclipserblx.com/*", "www.eclipserblx.com/*", "*.eclipserblx.com/*"];
-
-    const routeResults: Array<{
-      pattern: string;
-      action: "created" | "updated" | "unchanged";
-      success: boolean;
-      errors?: unknown;
-    }> = [];
-
-    for (const pattern of desiredPatterns) {
-      const existingRoute = existingRoutes.find((r: any) => r.pattern === pattern);
-
-      if (existingRoute) {
-        if (existingRoute.script === workerName) {
-          routeResults.push({ pattern, action: "unchanged", success: true });
-          continue;
-        }
-
-        const updateData = await cfApi(
-          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes/${existingRoute.id}`,
-          cfApiToken,
-          {
-            method: "PUT",
-            body: JSON.stringify({ pattern, script: workerName }),
-          }
-        );
-        routeResults.push({
-          pattern,
-          action: "updated",
-          success: !!updateData?.success,
-          errors: updateData?.errors,
-        });
+    // Routes
+    const routesData = await cfApi(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes`, cfToken);
+    const existing = Array.isArray(routesData.result) ? routesData.result : [];
+    const patterns = ["eclipserblx.com/*", "www.eclipserblx.com/*", "*.eclipserblx.com/*"];
+    const routeResults = [];
+    for (const pattern of patterns) {
+      const ex = existing.find((r: any) => r.pattern === pattern);
+      if (ex?.script === workerName) { routeResults.push({ pattern, action: "unchanged" }); continue; }
+      if (ex) {
+        await cfApi(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes/${ex.id}`, cfToken, { method: "PUT", body: JSON.stringify({ pattern, script: workerName }) });
+        routeResults.push({ pattern, action: "updated" });
       } else {
-        const createData = await cfApi(
-          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes`,
-          cfApiToken,
-          {
-            method: "POST",
-            body: JSON.stringify({ pattern, script: workerName }),
-          }
-        );
-        routeResults.push({
-          pattern,
-          action: "created",
-          success: !!createData?.success,
-          errors: createData?.errors,
-        });
+        await cfApi(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes`, cfToken, { method: "POST", body: JSON.stringify({ pattern, script: workerName }) });
+        routeResults.push({ pattern, action: "created" });
       }
     }
 
-    const routeUpdate = routeResults.every((r) => r.success);
+    // WAF + Redirect + SBFM in parallel
+    const [waf, redirect] = await Promise.all([
+      ensureWafSkipRule(cfToken, cfZoneId),
+      ensureRedirectRule(cfToken, cfZoneId),
+    ]);
 
-    // Step 4: WAF skip rule for social media bots (bypasses Bot Fight Mode)
-    const wafResult = await ensureWafSkipRule(cfApiToken, cfZoneId);
-
-    console.log("[WAF] Result:", JSON.stringify(wafResult));
-
-    // Step 5: Redirect rule for /share/ paths (bulletproof fallback)
-    const redirectResult = await ensureShareRedirectRule(cfApiToken, cfZoneId);
-    console.log("[REDIRECT] Result:", JSON.stringify(redirectResult));
-
-    // Step 6: Configure SBFM to not block bots (allow WAF skip rule to work)
-    let sbfmResult: Record<string, unknown> = { success: false, skipped: true };
+    let sbfm = { success: false as boolean };
     try {
-      const sbfmRes = await fetch(
-        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/bot_management`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${cfApiToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            sbfm_definitely_automated: "allow",
-            sbfm_verified_bots: "allow",
-            sbfm_static_resource_protection: false,
-          }),
-        }
-      );
-      const sbfmText = await sbfmRes.text();
-      console.log("[SBFM] Status:", sbfmRes.status, "Response:", sbfmText.slice(0, 500));
-      try {
-        const sbfmData = JSON.parse(sbfmText);
-        sbfmResult = { success: !!sbfmData.success, action: "configured", status: sbfmRes.status, errors: sbfmData.errors };
-      } catch {
-        sbfmResult = { success: false, status: sbfmRes.status, raw: sbfmText.slice(0, 200) };
-      }
-    } catch (e) {
-      sbfmResult = { success: false, error: (e as Error).message };
-    }
-
-    // Step 7: Ensure DNS records are PROXIED (orange cloud) so Cloudflare features work
-    let dnsResults: Array<Record<string, unknown>> = [];
-    try {
-      const dnsData = await cfApi(
-        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records`,
-        cfApiToken
-      );
-      if (dnsData.success) {
-        const targetHostnames = ['eclipserblx.com', 'www.eclipserblx.com'];
-        const records = (dnsData.result || []).filter(
-          (r: any) => targetHostnames.includes(r.name) && (r.type === 'A' || r.type === 'AAAA' || r.type === 'CNAME')
-        );
-        
-        for (const record of records) {
-          if (!record.proxied) {
-            console.log(`[DNS] Enabling proxy for ${record.name} (${record.type} → ${record.content})`);
-            const updateRes = await cfApi(
-              `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records/${record.id}`,
-              cfApiToken,
-              {
-                method: "PATCH",
-                body: JSON.stringify({ proxied: true }),
-              }
-            );
-            dnsResults.push({
-              name: record.name,
-              type: record.type,
-              wasProxied: false,
-              nowProxied: true,
-              success: !!updateRes.success,
-              errors: updateRes.errors,
-            });
-          } else {
-            dnsResults.push({
-              name: record.name,
-              type: record.type,
-              wasProxied: true,
-              action: "already_proxied",
-            });
-          }
-        }
-
-        // Also check wildcard *.eclipserblx.com for store subdomains
-        const wildcardRecords = (dnsData.result || []).filter(
-          (r: any) => r.name === '*.eclipserblx.com' && (r.type === 'A' || r.type === 'AAAA' || r.type === 'CNAME')
-        );
-        for (const record of wildcardRecords) {
-          if (!record.proxied) {
-            console.log(`[DNS] Enabling proxy for ${record.name} (${record.type})`);
-            const updateRes = await cfApi(
-              `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records/${record.id}`,
-              cfApiToken,
-              { method: "PATCH", body: JSON.stringify({ proxied: true }) }
-            );
-            dnsResults.push({ name: record.name, type: record.type, wasProxied: false, nowProxied: true, success: !!updateRes.success, errors: updateRes.errors });
-          } else {
-            dnsResults.push({ name: record.name, type: record.type, wasProxied: true, action: "already_proxied" });
-          }
-        }
-      }
-      console.log("[DNS] Results:", JSON.stringify(dnsResults));
-    } catch (e) {
-      console.log("[DNS] Error:", (e as Error).message);
-      dnsResults = [{ error: (e as Error).message }];
-    }
-
-    // Step 8: Check for conflicting Pages projects
-    let pagesInfo: Record<string, unknown> = {};
-    try {
-      const pagesData = await cfApi(
-        `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects`,
-        cfApiToken
-      );
-      if (pagesData.success) {
-        const projects = (pagesData.result || []).map((p: any) => ({
-          name: p.name,
-          domains: p.domains,
-          production_branch: p.production_branch,
-        }));
-        const conflicting = projects.filter((p: any) =>
-          p.domains?.some((d: string) => d.includes('eclipserblx'))
-        );
-        pagesInfo = {
-          totalProjects: projects.length,
-          conflicting: conflicting.length > 0 ? conflicting : "none",
-        };
-        console.log("[PAGES] Conflicting projects:", JSON.stringify(conflicting));
-      }
-    } catch (e) {
-      pagesInfo = { error: (e as Error).message };
-    }
-
-    // Step 9: Get DNS record IPs for debugging
-    let dnsDetails: Array<Record<string, unknown>> = [];
-    try {
-      const dnsData = await cfApi(
-        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records`,
-        cfApiToken
-      );
-      if (dnsData.success) {
-        dnsDetails = (dnsData.result || [])
-          .filter((r: any) => ['eclipserblx.com', 'www.eclipserblx.com', '*.eclipserblx.com'].includes(r.name))
-          .map((r: any) => ({ name: r.name, type: r.type, content: r.content, proxied: r.proxied }));
-      }
-      console.log("[DNS-DETAILS]", JSON.stringify(dnsDetails));
+      const r = await fetch(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}/bot_management`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${cfToken}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ sbfm_definitely_automated: "allow", sbfm_verified_bots: "allow", sbfm_static_resource_protection: false }),
+      });
+      const d = await r.json();
+      sbfm = { success: !!d.success };
     } catch {}
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        worker: workerName,
-        routes: desiredPatterns,
-        upload: uploadData.success,
-        routeUpdate,
-        routeResults,
-        wafSkipRule: wafResult,
-        shareRedirectRule: redirectResult,
-        sbfmConfig: sbfmResult,
-        dnsProxy: dnsResults,
-        dnsDetails,
-        pagesConflict: pagesInfo,
-        message: "Worker deployed with full diagnostics",
-      }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    // DNS proxy check
+    const dnsData = await cfApi(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records`, cfToken);
+    const dnsResults: any[] = [];
+    if (dnsData.success) {
+      const targets = ['eclipserblx.com', 'www.eclipserblx.com', '*.eclipserblx.com'];
+      for (const rec of (dnsData.result || []).filter((r: any) => targets.includes(r.name) && ['A', 'AAAA', 'CNAME'].includes(r.type))) {
+        if (!rec.proxied) {
+          await cfApi(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records/${rec.id}`, cfToken, { method: "PATCH", body: JSON.stringify({ proxied: true }) });
+          dnsResults.push({ name: rec.name, proxied: true, action: "enabled" });
+        } else {
+          dnsResults.push({ name: rec.name, proxied: true, action: "ok" });
+        }
+      }
+    }
+
+    return new Response(JSON.stringify({
+      success: true, worker: workerName, upload: upload.success,
+      routes: routeResults, waf, redirect, sbfm, dns: dnsResults,
+    }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: "Deployment failed", message: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "Failed", message: (error as Error).message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
