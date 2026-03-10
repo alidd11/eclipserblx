@@ -64,20 +64,6 @@ export default function Transcripts() {
     },
   });
 
-  // Fetch closed discord modmail tickets
-  const { data: modmailTranscripts = [], isLoading: modmailLoading } = useQuery({
-    queryKey: ['transcripts-modmail'],
-    queryFn: async () => {
-      const { data: tickets, error } = await supabase
-        .from('discord_modmail_tickets')
-        .select('*')
-        .eq('status', 'closed')
-        .order('closed_at', { ascending: false })
-        .limit(100);
-      
-      if (error) throw error;
-      
-      return (tickets || []).map(ticket => ({
         id: ticket.id,
         title: ticket.discord_username,
         subtitle: ticket.subject || 'No subject',
