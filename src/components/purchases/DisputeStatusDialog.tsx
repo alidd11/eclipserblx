@@ -80,7 +80,7 @@ export function DisputeStatusDialog({ open, onOpenChange, disputeId }: DisputeSt
       // Send Discord notification
       supabase.functions.invoke('send-ticket-notification', {
         body: {
-          ticket_number: `DSP-${disputeId.substring(0, 6).toUpperCase()}`,
+          ticket_number: dispute?.dispute_number || `DSP-${disputeId.substring(0, 6).toUpperCase()}`,
           subject: 'Customer Escalated Dispute',
           category: 'Dispute',
           customer_name: user?.user_metadata?.display_name || user?.email || 'Unknown',
