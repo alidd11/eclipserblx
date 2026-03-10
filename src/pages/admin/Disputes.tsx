@@ -405,6 +405,9 @@ export default function Disputes() {
                             }}
                           >
                             <TableCell>
+                              <p className="text-sm font-mono font-medium text-primary">{d.dispute_number || '—'}</p>
+                            </TableCell>
+                            <TableCell>
                               <div>
                                 <p className="font-medium text-sm">{d.customer?.display_name || 'Unknown'}</p>
                                 <p className="text-xs text-muted-foreground font-mono">{d.customer?.customer_id || '—'}</p>
