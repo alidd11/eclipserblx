@@ -173,8 +173,6 @@ Deno.serve(async (req) => {
         case "unlink":
           return await handleUnlinkCommand(supabase, discordUserId, discordUsername, serverContext, discordAvatarUrl);
 
-        case "support":
-          return await handleSupportCommand(supabase, discordUserId, discordUsername, discordAvatarUrl);
 
         case "reply":
           // DM-only command for replying to active tickets
