@@ -456,6 +456,7 @@ export function AppRoutes() {
         <Route path="/admin/recruiter-commissions" element={<AdminRecruiterCommissions />} />
         <Route path="/admin/gdpr-compliance" element={<AdminGDPRCompliance />} />
         <Route path="/admin/platform-ledger" element={<AdminPlatformLedger />} />
+        <Route path="/admin/custom-domains" element={<AdminCustomDomains />} />
         {/* Global Guard routes (path-based instead of subdomain) */}
         <Route path="/guard/*" element={<GlobalGuardRouter />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
