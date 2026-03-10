@@ -573,6 +573,47 @@ Deno.serve(async (req) => {
       dnsResults = [{ error: (e as Error).message }];
     }
 
+    // Step 8: Check for conflicting Pages projects
+    let pagesInfo: Record<string, unknown> = {};
+    try {
+      const pagesData = await cfApi(
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects`,
+        cfApiToken
+      );
+      if (pagesData.success) {
+        const projects = (pagesData.result || []).map((p: any) => ({
+          name: p.name,
+          domains: p.domains,
+          production_branch: p.production_branch,
+        }));
+        const conflicting = projects.filter((p: any) =>
+          p.domains?.some((d: string) => d.includes('eclipserblx'))
+        );
+        pagesInfo = {
+          totalProjects: projects.length,
+          conflicting: conflicting.length > 0 ? conflicting : "none",
+        };
+        console.log("[PAGES] Conflicting projects:", JSON.stringify(conflicting));
+      }
+    } catch (e) {
+      pagesInfo = { error: (e as Error).message };
+    }
+
+    // Step 9: Get DNS record IPs for debugging
+    let dnsDetails: Array<Record<string, unknown>> = [];
+    try {
+      const dnsData = await cfApi(
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records`,
+        cfApiToken
+      );
+      if (dnsData.success) {
+        dnsDetails = (dnsData.result || [])
+          .filter((r: any) => ['eclipserblx.com', 'www.eclipserblx.com', '*.eclipserblx.com'].includes(r.name))
+          .map((r: any) => ({ name: r.name, type: r.type, content: r.content, proxied: r.proxied }));
+      }
+      console.log("[DNS-DETAILS]", JSON.stringify(dnsDetails));
+    } catch {}
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -585,7 +626,9 @@ Deno.serve(async (req) => {
         shareRedirectRule: redirectResult,
         sbfmConfig: sbfmResult,
         dnsProxy: dnsResults,
-        message: "Worker deployed with WAF skip rule, SBFM config, DNS proxy check, and /share/ redirect",
+        dnsDetails,
+        pagesConflict: pagesInfo,
+        message: "Worker deployed with full diagnostics",
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
