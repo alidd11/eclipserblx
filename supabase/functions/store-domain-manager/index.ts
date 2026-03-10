@@ -89,9 +89,12 @@ async function requestCustomDomain(userId: string, storeId: string, domain: stri
   const { data: store } = await admin.from("stores").select("id, owner_id").eq("id", storeId).single();
   if (!store || store.owner_id !== userId) return jsonError("Not your store", 403);
 
-  // Check if domain already registered
-  const { data: existing } = await admin.from("store_domains").select("id").eq("domain", domain).single();
+  // Check if domain already registered (exclude removed ones)
+  const { data: existing } = await admin.from("store_domains").select("id, status").eq("domain", domain).neq("status", "removed").single();
   if (existing) return jsonError("Domain already registered", 409);
+
+  // Clean up any old removed records for this domain
+  await admin.from("store_domains").delete().eq("domain", domain).eq("status", "removed");
 
   const { data: record, error } = await admin.from("store_domains").insert({
     store_id: storeId,
