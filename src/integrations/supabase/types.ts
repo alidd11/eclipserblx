@@ -8325,6 +8325,7 @@ export type Database = {
           slug: string
           status: string | null
           store_id: string
+          store_layout: Json | null
           theme: string | null
           tiktok_url: string | null
           total_revenue: number | null
@@ -8399,6 +8400,7 @@ export type Database = {
           slug: string
           status?: string | null
           store_id: string
+          store_layout?: Json | null
           theme?: string | null
           tiktok_url?: string | null
           total_revenue?: number | null
@@ -8473,6 +8475,7 @@ export type Database = {
           slug?: string
           status?: string | null
           store_id?: string
+          store_layout?: Json | null
           theme?: string | null
           tiktok_url?: string | null
           total_revenue?: number | null

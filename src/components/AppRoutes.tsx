@@ -184,6 +184,7 @@ const SellerPromotions = lazy(() => import("@/pages/seller/SellerPromotions"));
 const SellerTaxSummary = lazy(() => import("@/pages/seller/SellerTaxSummary"));
 const SellerSettingsDomain = lazy(() => import("@/pages/seller/SellerSettingsDomain"));
 const SellerStorePages = lazy(() => import("@/pages/seller/SellerStorePages"));
+const SellerStoreBuilder = lazy(() => import("@/pages/seller/SellerStoreBuilder"));
 
 // Store custom page
 const StoreCustomPage = lazy(() => import("@/pages/StoreCustomPage"));
@@ -339,6 +340,7 @@ export function AppRoutes() {
         <Route path="/seller/transactions" element={<SellerTransactionHistory />} />
         <Route path="/seller/fees" element={<SellerTaxFeeSummary />} />
         <Route path="/seller/tabs" element={<SellerStoreTabs />} />
+        <Route path="/seller/store-builder" element={<SellerStoreBuilder />} />
         <Route path="/seller/categories" element={<SellerCategories />} />
         <Route path="/seller/discounts" element={<SellerDiscounts />} />
         
