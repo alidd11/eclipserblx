@@ -35,10 +35,15 @@ function HealthCheckResult({ data }: { data: any }) {
 
   const isOk = !data.error_code && data.http_reachable;
   const errorMessages: Record<string, { title: string; message: string; fix: string }> = {
+    'proxied_cname': {
+      title: '⚠️ CNAME is Proxied (Orange Cloud)',
+      message: 'Your CNAME record is set to Proxied mode. This WILL cause errors (Error 1000/1014). Even if it appears to work now, it will break.',
+      fix: 'In your DNS provider dashboard (e.g. Cloudflare), click the ORANGE CLOUD icon next to your CNAME record to switch it to DNS-only (GREY cloud). This is the #1 cause of domain connection failures.',
+    },
     '1000': {
       title: 'Error 1000: DNS Conflict',
       message: 'Your domain resolves to a prohibited IP due to a cross-zone Cloudflare conflict.',
-      fix: 'Your domain is managed by Cloudflare, which conflicts with our Cloudflare setup. You need to either: (1) Pause Cloudflare on your domain, (2) Move DNS to a non-Cloudflare provider like Namecheap DNS, or (3) Use an A record pointing to 185.158.133.1 with DNS-only instead of a CNAME.',
+      fix: 'Your domain is managed by Cloudflare, which conflicts with our Cloudflare setup. You need to either: (1) Switch your CNAME to DNS-only (grey cloud), (2) Use an A record pointing to 185.158.133.1 with DNS-only, or (3) Move DNS to a non-Cloudflare provider.',
     },
     '1014': {
       title: 'Error 1014: Cross-User Banned',
@@ -498,6 +503,16 @@ export default function SellerSettingsDomain() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Prominent DNS-only warning */}
+          <Alert className="border-amber-500/30 bg-amber-500/5">
+            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            <AlertTitle className="text-amber-600 dark:text-amber-400 text-sm">Important: DNS-only mode required</AlertTitle>
+            <AlertDescription className="text-xs text-muted-foreground">
+              When adding a CNAME record, you <strong className="text-foreground">MUST</strong> set it to <strong className="text-foreground">DNS-only (grey cloud)</strong>, NOT Proxied (orange cloud). 
+              This is the #1 cause of domain connection failures. If you use Cloudflare, consider using an <strong className="text-foreground">A record</strong> pointing to <code className="bg-muted px-1 rounded">185.158.133.1</code> instead.
+            </AlertDescription>
+          </Alert>
+
           {/* Add new custom domain */}
           <div className="flex gap-2">
             <Input

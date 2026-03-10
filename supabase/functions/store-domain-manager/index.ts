@@ -87,6 +87,49 @@ async function detectCloudflareZone(domain: string): Promise<boolean> {
   }
 }
 
+// ── Helper: Detect if a CNAME is proxied (resolves to CF IPs instead of target) ──
+async function detectProxiedCname(domain: string): Promise<{ is_proxied: boolean; cname_target: string | null }> {
+  try {
+    // Check CNAME record
+    const cnameResp = await fetch(
+      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=CNAME`,
+      { headers: { Accept: "application/dns-json" } }
+    );
+    const cnameData = await cnameResp.json();
+    const cnameRecords = (cnameData?.Answer ?? []).filter((a: any) => a.type === 5);
+    
+    if (cnameRecords.length === 0) return { is_proxied: false, cname_target: null };
+    
+    const cnameTarget = cnameRecords[0].data?.replace(/\.$/, "") ?? null;
+    
+    // If CNAME exists but A records resolve to Cloudflare proxy IPs, the CNAME is proxied
+    const aResp = await fetch(
+      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`,
+      { headers: { Accept: "application/dns-json" } }
+    );
+    const aData = await aResp.json();
+    const aRecords = (aData?.Answer ?? []).filter((a: any) => a.type === 1);
+    
+    if (aRecords.length > 0) {
+      const ips = aRecords.map((a: any) => a.data);
+      const isCloudflareProxy = ips.some((ip: string) => {
+        const parts = ip.split(".").map(Number);
+        return (parts[0] === 104 && parts[1] >= 16 && parts[1] <= 31) ||
+               (parts[0] === 172 && parts[1] >= 64 && parts[1] <= 71);
+      });
+      // If resolves to CF proxy IPs and not our origin, it's proxied
+      const isOurOrigin = ips.includes("185.158.133.1");
+      if (isCloudflareProxy && !isOurOrigin) {
+        return { is_proxied: true, cname_target: cnameTarget };
+      }
+    }
+    
+    return { is_proxied: false, cname_target: cnameTarget };
+  } catch {
+    return { is_proxied: false, cname_target: null };
+  }
+}
+
 // ── Helper: Health check a domain ──
 async function performHealthCheck(domain: string) {
   const checks: Record<string, any> = {
@@ -94,6 +137,7 @@ async function performHealthCheck(domain: string) {
     domain,
     dns_ok: false,
     cname_target: null,
+    cname_is_proxied: false,
     resolves_to_cloudflare: false,
     http_reachable: false,
     http_status: null,
@@ -136,6 +180,11 @@ async function performHealthCheck(domain: string) {
 
     // 3. Check NS to detect Cloudflare zone
     checks.is_cloudflare_zone = await detectCloudflareZone(domain);
+
+    // 3.5. Detect proxied CNAME
+    const proxiedCheck = await detectProxiedCname(domain);
+    checks.cname_is_proxied = proxiedCheck.is_proxied;
+    if (proxiedCheck.cname_target) checks.cname_target = proxiedCheck.cname_target;
 
     // 4. Try HTTP fetch to check for errors
     try {
@@ -184,7 +233,13 @@ async function performHealthCheck(domain: string) {
     }
 
     // 5. Generate recommended fix
-    if (checks.error_code === "1000" && checks.is_cloudflare_zone) {
+    if (checks.cname_is_proxied) {
+      checks.recommended_fix = "DISABLE_PROXY";
+      if (!checks.error_code) {
+        checks.error_code = "proxied_cname";
+        checks.diagnosis = "Your CNAME record is Proxied (orange cloud). This will cause errors. Switch it to DNS-only (grey cloud) immediately.";
+      }
+    } else if (checks.error_code === "1000" && checks.is_cloudflare_zone) {
       checks.recommended_fix = "CLOUDFLARE_CROSS_ZONE";
     } else if (checks.error_code === "1014") {
       checks.recommended_fix = "DISABLE_PROXY";
