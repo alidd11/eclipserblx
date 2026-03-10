@@ -1,0 +1,339 @@
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { AdminLayout } from '@/components/admin/AdminLayout';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Globe, CheckCircle, XCircle, Cloud, AlertTriangle, RefreshCw,
+  Activity, Search, ExternalLink, Shield, Clock,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+
+function StatusBadge({ status }: { status: string }) {
+  const variants: Record<string, { className: string; label: string }> = {
+    active: { className: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20', label: 'Active' },
+    pending: { className: 'bg-amber-500/10 text-amber-500 border-amber-500/20', label: 'Pending' },
+    verifying: { className: 'bg-blue-500/10 text-blue-500 border-blue-500/20', label: 'Verifying' },
+    failed: { className: 'bg-destructive/10 text-destructive border-destructive/20', label: 'Failed' },
+    removed: { className: 'bg-muted text-muted-foreground border-border', label: 'Removed' },
+  };
+  const v = variants[status] ?? variants.pending;
+  return <Badge variant="outline" className={v.className}>{v.label}</Badge>;
+}
+
+function SslBadge({ status }: { status: string | null }) {
+  if (status === 'active') return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">SSL Active</Badge>;
+  if (status === 'pending') return <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20">SSL Pending</Badge>;
+  return <Badge variant="outline" className="bg-muted text-muted-foreground border-border">No SSL</Badge>;
+}
+
+function HealthBadge({ healthCheck }: { healthCheck: any }) {
+  if (!healthCheck) return <span className="text-xs text-muted-foreground">No check</span>;
+  const errorCode = healthCheck.error_code;
+  if (!errorCode && healthCheck.http_reachable) {
+    return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Healthy</Badge>;
+  }
+  const label = errorCode === '1000' ? 'Error 1000' :
+    errorCode === '1014' ? 'Error 1014' :
+    errorCode === '403_cloudflare' ? '403 CF Block' :
+    errorCode === '403' ? '403 Forbidden' :
+    errorCode === '522' ? 'Timeout' :
+    errorCode === '523' ? 'Unreachable' :
+    errorCode === 'redirect_loop' ? 'Redirect Loop' :
+    'Issue Detected';
+  return <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">{label}</Badge>;
+}
+
+export default function AdminCustomDomains() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [search, setSearch] = useState('');
+  const [runningHealthCheck, setRunningHealthCheck] = useState<string | null>(null);
+
+  const { data: domains, isLoading } = useQuery({
+    queryKey: ['admin-custom-domains'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('store_domains')
+        .select('*, stores!inner(name, slug, owner_id)')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const healthCheckMutation = useMutation({
+    mutationFn: async (domainId: string) => {
+      setRunningHealthCheck(domainId);
+      const { data, error } = await supabase.functions.invoke('store-domain-manager', {
+        body: { action: 'admin-health-check', domain_id: domainId },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data, domainId) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-custom-domains'] });
+      const isOk = !data.error_code && data.http_reachable;
+      toast({
+        title: isOk ? 'Domain is healthy' : `Issue: ${data.error_code || 'unknown'}`,
+        description: data.diagnosis || 'Health check complete',
+        variant: isOk ? 'default' : 'destructive',
+      });
+    },
+    onError: (err: any) => {
+      toast({ title: 'Health check failed', description: err.message, variant: 'destructive' });
+    },
+    onSettled: () => setRunningHealthCheck(null),
+  });
+
+  const filtered = (domains ?? []).filter(d => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return d.domain.toLowerCase().includes(q) ||
+      (d.stores as any)?.name?.toLowerCase().includes(q) ||
+      (d.stores as any)?.slug?.toLowerCase().includes(q);
+  });
+
+  const stats = {
+    total: domains?.length ?? 0,
+    active: domains?.filter(d => d.status === 'active').length ?? 0,
+    cloudflare: domains?.filter(d => d.is_cloudflare_zone).length ?? 0,
+    issues: domains?.filter(d => {
+      const hc = d.last_health_check as any;
+      return hc?.error_code;
+    }).length ?? 0,
+  };
+
+  return (
+    <AdminLayout title="Custom Domains">
+      <div className="space-y-6">
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-2xl font-bold">{stats.total}</p>
+                  <p className="text-xs text-muted-foreground">Total Domains</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-emerald-500" />
+                <div>
+                  <p className="text-2xl font-bold">{stats.active}</p>
+                  <p className="text-xs text-muted-foreground">Active</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <Cloud className="h-4 w-4 text-amber-500" />
+                <div>
+                  <p className="text-2xl font-bold">{stats.cloudflare}</p>
+                  <p className="text-xs text-muted-foreground">On Cloudflare</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-destructive" />
+                <div>
+                  <p className="text-2xl font-bold">{stats.issues}</p>
+                  <p className="text-xs text-muted-foreground">With Issues</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Search & Actions */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <CardTitle className="text-lg">All Custom Domains</CardTitle>
+                <CardDescription>Monitor and manage seller custom domains</CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!domains?.length}
+                onClick={() => {
+                  // Run health checks on all domains with issues or no check
+                  const toCheck = (domains ?? []).filter(d =>
+                    d.domain_type === 'custom' && (
+                      !d.last_health_check ||
+                      (d.last_health_check as any)?.error_code
+                    )
+                  );
+                  toCheck.forEach(d => healthCheckMutation.mutate(d.id));
+                }}
+              >
+                <Activity className="h-3.5 w-3.5 mr-1.5" />
+                Check All
+              </Button>
+            </div>
+            <div className="relative mt-2">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search domains or store names..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            {isLoading ? (
+              <div className="p-4 space-y-3">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                <Globe className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>No custom domains found</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Domain</TableHead>
+                      <TableHead>Store</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>SSL</TableHead>
+                      <TableHead>Health</TableHead>
+                      <TableHead>CF Zone</TableHead>
+                      <TableHead>Last Check</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map(domain => {
+                      const store = domain.stores as any;
+                      const hc = domain.last_health_check as any;
+                      return (
+                        <TableRow key={domain.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5">
+                              <Globe className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                              <a
+                                href={`https://${domain.domain}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm font-medium hover:underline flex items-center gap-1"
+                              >
+                                {domain.domain}
+                                <ExternalLink className="h-3 w-3 opacity-50" />
+                              </a>
+                            </div>
+                            {domain.is_primary && (
+                              <Badge variant="outline" className="mt-0.5 text-[10px] px-1 py-0">Primary</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm">{store?.name ?? 'Unknown'}</span>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="text-[10px]">
+                              {domain.domain_type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell><StatusBadge status={domain.status} /></TableCell>
+                          <TableCell><SslBadge status={domain.ssl_status} /></TableCell>
+                          <TableCell><HealthBadge healthCheck={hc} /></TableCell>
+                          <TableCell>
+                            {domain.is_cloudflare_zone ? (
+                              <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-[10px]">
+                                <Cloud className="h-3 w-3 mr-1" />CF
+                              </Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {domain.last_health_check_at ? (
+                              <span className="text-xs text-muted-foreground">
+                                {format(new Date(domain.last_health_check_at), 'dd MMM HH:mm')}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">Never</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={runningHealthCheck === domain.id}
+                              onClick={() => healthCheckMutation.mutate(domain.id)}
+                            >
+                              <RefreshCw className={cn("h-3.5 w-3.5", runningHealthCheck === domain.id && "animate-spin")} />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Domains with issues detail */}
+        {filtered.some(d => (d.last_health_check as any)?.error_code) && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-destructive" />
+                Domains with Issues
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {filtered
+                .filter(d => (d.last_health_check as any)?.error_code)
+                .map(domain => {
+                  const hc = domain.last_health_check as any;
+                  return (
+                    <Alert key={domain.id} variant="destructive">
+                      <XCircle className="h-4 w-4" />
+                      <AlertTitle className="text-sm">{domain.domain}</AlertTitle>
+                      <AlertDescription className="text-xs mt-1 space-y-1">
+                        <p>{hc.diagnosis}</p>
+                        {hc.recommended_fix && (
+                          <p className="opacity-70">Fix: {hc.recommended_fix}</p>
+                        )}
+                        {domain.is_cloudflare_zone && (
+                          <p className="flex items-center gap-1 opacity-70">
+                            <Cloud className="h-3 w-3" /> Domain is on Cloudflare — seller must use DNS-only (grey cloud) or A record to 185.158.133.1
+                          </p>
+                        )}
+                      </AlertDescription>
+                    </Alert>
+                  );
+                })}
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </AdminLayout>
+  );
+}
