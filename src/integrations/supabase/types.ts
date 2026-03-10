@@ -7728,7 +7728,10 @@ export type Database = {
           domain: string
           domain_type: string
           id: string
+          is_cloudflare_zone: boolean | null
           is_primary: boolean
+          last_health_check: Json | null
+          last_health_check_at: string | null
           ssl_status: string
           status: string
           store_id: string
@@ -7742,7 +7745,10 @@ export type Database = {
           domain: string
           domain_type?: string
           id?: string
+          is_cloudflare_zone?: boolean | null
           is_primary?: boolean
+          last_health_check?: Json | null
+          last_health_check_at?: string | null
           ssl_status?: string
           status?: string
           store_id: string
@@ -7756,7 +7762,10 @@ export type Database = {
           domain?: string
           domain_type?: string
           id?: string
+          is_cloudflare_zone?: boolean | null
           is_primary?: boolean
+          last_health_check?: Json | null
+          last_health_check_at?: string | null
           ssl_status?: string
           status?: string
           store_id?: string
