@@ -140,35 +140,7 @@ export default function SellerSettingsDomain() {
     onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
   });
 
-  // Subscribe to custom domain add-on
-  const startCheckout = useMutation({
-    mutationFn: async () => {
-      if (!store) throw new Error('No store');
-      const { data, error } = await supabase.functions.invoke('domain-subscription', {
-        body: { action: 'create-checkout', store_id: store.id },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      if (data?.url) window.open(data.url, '_blank');
-      return data;
-    },
-    onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
-  });
-
-  // Manage subscription
-  const openManage = useMutation({
-    mutationFn: async () => {
-      if (!store) throw new Error('No store');
-      const { data, error } = await supabase.functions.invoke('domain-subscription', {
-        body: { action: 'manage', store_id: store.id },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      if (data?.url) window.open(data.url, '_blank');
-      return data;
-    },
-    onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
-  });
+  // Subscription checkout and management removed — custom domains are now free
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
