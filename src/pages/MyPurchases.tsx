@@ -19,7 +19,11 @@ import {
   Filter,
   X,
   ShoppingBag,
-  AlertTriangle
+  AlertTriangle,
+  ShieldAlert,
+  Clock,
+  Shield,
+  Check
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -45,6 +49,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { DisputeDialog } from '@/components/purchases/DisputeDialog';
+import { DisputeStatusDialog } from '@/components/purchases/DisputeStatusDialog';
 import { OrderTimeline } from '@/components/purchases/OrderTimeline';
 
 // Format bytes to human readable size
