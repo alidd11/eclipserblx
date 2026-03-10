@@ -492,6 +492,72 @@ Deno.serve(async (req) => {
       sbfmResult = { success: false, error: (e as Error).message };
     }
 
+    // Step 7: Ensure DNS records are PROXIED (orange cloud) so Cloudflare features work
+    let dnsResults: Array<Record<string, unknown>> = [];
+    try {
+      const dnsData = await cfApi(
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records`,
+        cfApiToken
+      );
+      if (dnsData.success) {
+        const targetHostnames = ['eclipserblx.com', 'www.eclipserblx.com'];
+        const records = (dnsData.result || []).filter(
+          (r: any) => targetHostnames.includes(r.name) && (r.type === 'A' || r.type === 'AAAA' || r.type === 'CNAME')
+        );
+        
+        for (const record of records) {
+          if (!record.proxied) {
+            console.log(`[DNS] Enabling proxy for ${record.name} (${record.type} → ${record.content})`);
+            const updateRes = await cfApi(
+              `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records/${record.id}`,
+              cfApiToken,
+              {
+                method: "PATCH",
+                body: JSON.stringify({ proxied: true }),
+              }
+            );
+            dnsResults.push({
+              name: record.name,
+              type: record.type,
+              wasProxied: false,
+              nowProxied: true,
+              success: !!updateRes.success,
+              errors: updateRes.errors,
+            });
+          } else {
+            dnsResults.push({
+              name: record.name,
+              type: record.type,
+              wasProxied: true,
+              action: "already_proxied",
+            });
+          }
+        }
+
+        // Also check wildcard *.eclipserblx.com for store subdomains
+        const wildcardRecords = (dnsData.result || []).filter(
+          (r: any) => r.name === '*.eclipserblx.com' && (r.type === 'A' || r.type === 'AAAA' || r.type === 'CNAME')
+        );
+        for (const record of wildcardRecords) {
+          if (!record.proxied) {
+            console.log(`[DNS] Enabling proxy for ${record.name} (${record.type})`);
+            const updateRes = await cfApi(
+              `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records/${record.id}`,
+              cfApiToken,
+              { method: "PATCH", body: JSON.stringify({ proxied: true }) }
+            );
+            dnsResults.push({ name: record.name, type: record.type, wasProxied: false, nowProxied: true, success: !!updateRes.success, errors: updateRes.errors });
+          } else {
+            dnsResults.push({ name: record.name, type: record.type, wasProxied: true, action: "already_proxied" });
+          }
+        }
+      }
+      console.log("[DNS] Results:", JSON.stringify(dnsResults));
+    } catch (e) {
+      console.log("[DNS] Error:", (e as Error).message);
+      dnsResults = [{ error: (e as Error).message }];
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -503,7 +569,8 @@ Deno.serve(async (req) => {
         wafSkipRule: wafResult,
         shareRedirectRule: redirectResult,
         sbfmConfig: sbfmResult,
-        message: "Worker deployed with WAF skip rule, SBFM config, and /share/ redirect — bots always get OG tags",
+        dnsProxy: dnsResults,
+        message: "Worker deployed with WAF skip rule, SBFM config, DNS proxy check, and /share/ redirect",
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
