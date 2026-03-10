@@ -459,6 +459,28 @@ Deno.serve(async (req) => {
     // Step 5: Redirect rule for /share/ paths (bulletproof fallback)
     const redirectResult = await ensureShareRedirectRule(cfApiToken, cfZoneId);
 
+    // Step 6: Configure SBFM to not block bots (allow WAF skip rule to work)
+    let sbfmResult: Record<string, unknown> = { success: false, skipped: true };
+    try {
+      const sbfmConfig = await cfApi(
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/bot_management/config`,
+        cfApiToken,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            sbfm_definitely_automated: "managed_challenge",
+            sbfm_likely_automated: "managed_challenge",
+            sbfm_verified_bots: "allow",
+            sbfm_static_resource_protection: false,
+            enable_js: true,
+          }),
+        }
+      );
+      sbfmResult = { success: !!sbfmConfig.success, action: "configured", errors: sbfmConfig.errors };
+    } catch (e) {
+      sbfmResult = { success: false, error: (e as Error).message };
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -469,7 +491,8 @@ Deno.serve(async (req) => {
         routeResults,
         wafSkipRule: wafResult,
         shareRedirectRule: redirectResult,
-        message: "Worker deployed with WAF skip rule and /share/ redirect — bots always get OG tags",
+        sbfmConfig: sbfmResult,
+        message: "Worker deployed with WAF skip rule, SBFM config, and /share/ redirect — bots always get OG tags",
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
