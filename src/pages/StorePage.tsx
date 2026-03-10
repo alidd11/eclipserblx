@@ -756,162 +756,188 @@ export default function StorePage() {
         </div>
       ) : (
         <>
-          {/* Default Store Layout - Best Sellers, Stats, Products */}
+          {/* Dynamic Store Layout - respects store_layout if set */}
           <div className="container px-4 mt-4">
-            <StoreBestSellers
-              storeId={store.id}
-              storeName={store.name}
-              accentColor={accentColor}
-              limit={4}
-            />
-          </div>
+            {(() => {
+              const storeLayout = (store as any)?.store_layout;
+              const defaultOrder = [
+                'best_sellers', 'products', 'trust_signals', 'custom_sections', 'reviews', 'recommendations'
+              ];
+              
+              const layoutSections = storeLayout?.sections
+                ? (storeLayout.sections as Array<{ type: string; visible: boolean; config?: Record<string, any> }>)
+                    .filter((s) => s.visible !== false)
+                    .map((s) => ({ type: s.type, config: s.config || {} }))
+                : defaultOrder.map(type => ({ type, config: {} }));
 
+              // Filter out banner/header since they're rendered structurally above
+              const contentSections = layoutSections.filter(
+                (s) => s.type !== 'banner' && s.type !== 'header'
+              );
 
-          <div className="container px-4 mt-4">
-            {/* Products Section */}
-            <div id="store-products" className="mb-8 scroll-mt-20">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold">All Products</h2>
-                {totalProductPages > 1 && (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={goToPrevPage}
-                      style={{ borderColor: accentColor, color: accentColor }}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <span className="text-sm text-muted-foreground">
-                      {currentProductPage + 1} / {totalProductPages}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={goToNextPage}
-                      style={{ borderColor: accentColor, color: accentColor }}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {productsLoading ? (
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                  {[1, 2, 3, 4].map(i => (
-                    <Skeleton key={i} className="aspect-[3/4] rounded-lg" />
-                  ))}
-                </div>
-              ) : paginatedProducts && paginatedProducts.length > 0 ? (
-                <div
-                  {...swipeHandlers}
-                  className="relative overflow-hidden"
-                >
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={currentProductPage}
-                      initial={{ opacity: 0, x: 50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -50 }}
-                      transition={{ duration: 0.3 }}
-                      className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
-                    >
-                      {paginatedProducts.map((product: any) => {
-                        const isNewProduct = product.created_at 
-                          ? (Date.now() - new Date(product.created_at).getTime()) < 7 * 24 * 60 * 60 * 1000 
-                          : false;
-                        
-                        return (
-                          <ProductCard
-                            key={product.id}
-                            id={product.id}
-                            name={product.name}
-                            price={product.price}
-                            image={product.images?.[0] || '/placeholder.svg'}
-                            slug={product.slug}
-                            category={(product.categories as any)?.name}
-                            isResellable={product.is_resellable}
-                            showNewBadge={isNewProduct}
-                            createdAt={product.created_at}
-                            storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
-                          />
-                        );
-                      })}
-                    </motion.div>
-                  </AnimatePresence>
-                  
-                  {/* Page indicators */}
-                  {totalProductPages > 1 && (
-                    <div className="flex justify-center gap-1.5 mt-4">
-                      {Array.from({ length: totalProductPages }).map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentProductPage(index)}
-                          className={`h-2 rounded-full transition-all duration-300 ${
-                            index === currentProductPage ? 'w-6' : 'w-2'
-                          }`}
-                          style={{
-                            backgroundColor: index === currentProductPage ? accentColor : `${accentColor}40`,
-                          }}
+              return contentSections.map((section, idx) => {
+                switch (section.type) {
+                  case 'best_sellers':
+                    return (
+                      <div key={`section-${section.type}-${idx}`} className="mb-4">
+                        <StoreBestSellers
+                          storeId={store.id}
+                          storeName={store.name}
+                          accentColor={accentColor}
+                          limit={section.config?.limit ?? 4}
                         />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <Card className={themeStyles.card}>
-                  <CardContent className="py-12 text-center">
-                    <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                    <h3 className="text-lg font-medium mb-2">No Products Yet</h3>
-                    <p className="text-muted-foreground">
-                      This store hasn't listed any products yet. Check back soon!
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+                      </div>
+                    );
+                  case 'products':
+                    return (
+                      <div key={`section-${section.type}-${idx}`} id="store-products" className="mb-8 scroll-mt-20">
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className="text-xl font-bold">All Products</h2>
+                          {totalProductPages > 1 && (
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={goToPrevPage}
+                                style={{ borderColor: accentColor, color: accentColor }}
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </Button>
+                              <span className="text-sm text-muted-foreground">
+                                {currentProductPage + 1} / {totalProductPages}
+                              </span>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={goToNextPage}
+                                style={{ borderColor: accentColor, color: accentColor }}
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
 
-            {/* Trust Signals */}
-            <StoreTrustSignals 
-              accentColor={accentColor}
-              isVerified={store.is_verified}
-              isTrusted={(store as any).is_trusted}
-            />
-
-            {/* Custom Sections */}
-            {store && (
-              <div className="mb-8">
-                <StoreCustomSections storeId={store.id} accentColor={accentColor} />
-              </div>
-            )}
-
-            {/* Reviews Section */}
-            {store && (
-              <div className="mb-8">
-                <StoreReviews
-                  storeId={store.id}
-                  storeName={store.name}
-                  accentColor={accentColor}
-                  averageRating={store.average_rating}
-                />
-              </div>
-            )}
-
-            {/* Recommendations Section */}
-            {store && products && products.length > 0 && (
-              <div id="store-recommendations" className="scroll-mt-20">
-                <StoreRecommendations
-                  storeId={store.id}
-                  storeName={store.name}
-                  categoryIds={[...new Set(products.map(p => p.category_id).filter(Boolean))] as string[]}
-                  accentColor={accentColor}
-                  limit={4}
-                />
-              </div>
-            )}
+                        {productsLoading ? (
+                          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                            {[1, 2, 3, 4].map(i => (
+                              <Skeleton key={i} className="aspect-[3/4] rounded-lg" />
+                            ))}
+                          </div>
+                        ) : paginatedProducts && paginatedProducts.length > 0 ? (
+                          <div
+                            {...swipeHandlers}
+                            className="relative overflow-hidden"
+                          >
+                            <AnimatePresence mode="wait">
+                              <motion.div
+                                key={currentProductPage}
+                                initial={{ opacity: 0, x: 50 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -50 }}
+                                transition={{ duration: 0.3 }}
+                                className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
+                              >
+                                {paginatedProducts.map((product: any) => {
+                                  const isNewProduct = product.created_at 
+                                    ? (Date.now() - new Date(product.created_at).getTime()) < 7 * 24 * 60 * 60 * 1000 
+                                    : false;
+                                  
+                                  return (
+                                    <ProductCard
+                                      key={product.id}
+                                      id={product.id}
+                                      name={product.name}
+                                      price={product.price}
+                                      image={product.images?.[0] || '/placeholder.svg'}
+                                      slug={product.slug}
+                                      category={(product.categories as any)?.name}
+                                      isResellable={product.is_resellable}
+                                      showNewBadge={isNewProduct}
+                                      createdAt={product.created_at}
+                                      storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
+                                    />
+                                  );
+                                })}
+                              </motion.div>
+                            </AnimatePresence>
+                            
+                            {totalProductPages > 1 && (
+                              <div className="flex justify-center gap-1.5 mt-4">
+                                {Array.from({ length: totalProductPages }).map((_, index) => (
+                                  <button
+                                    key={index}
+                                    onClick={() => setCurrentProductPage(index)}
+                                    className={`h-2 rounded-full transition-all duration-300 ${
+                                      index === currentProductPage ? 'w-6' : 'w-2'
+                                    }`}
+                                    style={{
+                                      backgroundColor: index === currentProductPage ? accentColor : `${accentColor}40`,
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <Card className={themeStyles.card}>
+                            <CardContent className="py-12 text-center">
+                              <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                              <h3 className="text-lg font-medium mb-2">No Products Yet</h3>
+                              <p className="text-muted-foreground">
+                                This store hasn't listed any products yet. Check back soon!
+                              </p>
+                            </CardContent>
+                          </Card>
+                        )}
+                      </div>
+                    );
+                  case 'trust_signals':
+                    return (
+                      <div key={`section-${section.type}-${idx}`}>
+                        <StoreTrustSignals 
+                          accentColor={accentColor}
+                          isVerified={store.is_verified}
+                          isTrusted={(store as any).is_trusted}
+                        />
+                      </div>
+                    );
+                  case 'custom_sections':
+                    return store ? (
+                      <div key={`section-${section.type}-${idx}`} className="mb-8">
+                        <StoreCustomSections storeId={store.id} accentColor={accentColor} />
+                      </div>
+                    ) : null;
+                  case 'reviews':
+                    return store ? (
+                      <div key={`section-${section.type}-${idx}`} className="mb-8">
+                        <StoreReviews
+                          storeId={store.id}
+                          storeName={store.name}
+                          accentColor={accentColor}
+                          averageRating={store.average_rating}
+                        />
+                      </div>
+                    ) : null;
+                  case 'recommendations':
+                    return store && products && products.length > 0 ? (
+                      <div key={`section-${section.type}-${idx}`} id="store-recommendations" className="scroll-mt-20">
+                        <StoreRecommendations
+                          storeId={store.id}
+                          storeName={store.name}
+                          categoryIds={[...new Set(products.map(p => p.category_id).filter(Boolean))] as string[]}
+                          accentColor={accentColor}
+                          limit={4}
+                        />
+                      </div>
+                    ) : null;
+                  default:
+                    return null;
+                }
+              });
+            })()}
           </div>
         </>
       )}
