@@ -6,43 +6,22 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const ogUrl = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy?path=/products/battle-of-ypres-1917";
-
-  // Test 1: No auth (how Worker calls it)
-  const res1 = await fetch(ogUrl, {
-    headers: { "User-Agent": "Discordbot/2.0" },
+  const url = "https://eclipse-og-proxy.mqddfqd5gs.workers.dev/products/battle-of-ypres-1917";
+  const res = await fetch(url, {
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)" },
     redirect: "manual",
   });
-  const body1 = await res1.text();
-  const h1: Record<string, string> = {};
-  res1.headers.forEach((v, k) => { h1[k] = v; });
-
-  // Test 2: With anon key
-  const res2 = await fetch(ogUrl, {
-    headers: {
-      "User-Agent": "Discordbot/2.0",
-      "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsbmJlcmd3amZybWdramhyYmtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NDY1NjIsImV4cCI6MjA4MzIyMjU2Mn0.4jHxaV7Mjlw2RbjDz9W8B07-SR_8Z7IeTTXMu8RUZ20",
-    },
-    redirect: "manual",
-  });
-  const body2 = await res2.text();
+  const body = await res.text();
+  const headers: Record<string, string> = {};
+  res.headers.forEach((v, k) => { headers[k] = v; });
 
   return new Response(JSON.stringify({
-    noAuth: {
-      status: res1.status,
-      title: body1.match(/<title>(.*?)<\/title>/)?.[1] || null,
-      hasProduct: body1.includes("Battle of Ypres"),
-      bodyLen: body1.length,
-      bodyPreview: body1.slice(0, 300),
-      location: h1['location'] || null,
-    },
-    withKey: {
-      status: res2.status,
-      title: body2.match(/<title>(.*?)<\/title>/)?.[1] || null,
-      hasProduct: body2.includes("Battle of Ypres"),
-      bodyLen: body2.length,
-      bodyPreview: body2.slice(0, 300),
-    },
+    status: res.status,
+    eclipseHeaders: Object.fromEntries(Object.entries(headers).filter(([k]) => k.startsWith('x-eclipse'))),
+    title: body.match(/<title>(.*?)<\/title>/)?.[1] || null,
+    hasProductOg: body.includes('Battle of Ypres'),
+    bodyLen: body.length,
+    bodyPreview: body.slice(0, 400),
   }, null, 2), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
