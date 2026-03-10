@@ -41,9 +41,9 @@ function HeaderPreview({ storeName }: { storeName: string }) {
   );
 }
 
-function ProductGridPreview({ count = 4 }: { count?: number }) {
+function ProductGridPreview({ count = 4, mobile = false }: { count?: number; mobile?: boolean }) {
   return (
-    <div className="grid grid-cols-4 gap-1.5">
+    <div className={cn("grid gap-1.5", mobile ? "grid-cols-2" : "grid-cols-4")}>
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="rounded bg-muted/40 flex flex-col overflow-hidden">
           <div className="aspect-[4/3] bg-muted/60" />
