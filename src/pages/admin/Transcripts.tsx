@@ -256,7 +256,7 @@ export default function Transcripts() {
   const getActiveTranscripts = (): Transcript[] => {
     switch (activeTab) {
       case 'live-chat': return filterTranscripts(liveChatTranscripts);
-      case 'modmail': return filterTranscripts(modmailTranscripts);
+      
       case 'seller-tickets': return filterTranscripts(sellerTicketTranscripts);
       case 'customer-tickets': return filterTranscripts(customerTicketTranscripts);
       case 'contact': return filterTranscripts(contactTranscripts);
