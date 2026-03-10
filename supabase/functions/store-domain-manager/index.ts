@@ -284,7 +284,81 @@ async function resolveHostname(hostname: string) {
   return jsonOk(data);
 }
 
-Deno.serve(async (req) => {
+// ── Action: admin-verify-domain (service role only, no ownership check) ──
+async function adminVerifyDomain(domainId: string) {
+  const admin = getSupabaseAdmin();
+
+  const { data: domainRecord } = await admin
+    .from("store_domains")
+    .select("*")
+    .eq("id", domainId)
+    .single();
+
+  if (!domainRecord) return jsonError("Domain not found", 404);
+  if (domainRecord.domain_type !== "custom") return jsonError("Only custom domains need verification", 400);
+
+  // Check TXT record via DNS over HTTPS
+  const txtName = `_eclipsestore-verify.${domainRecord.domain}`;
+  const dohResp = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(txtName)}&type=TXT`, {
+    headers: { Accept: "application/dns-json" },
+  });
+  const dohData = await dohResp.json();
+  
+  const txtRecords: string[] = (dohData?.Answer ?? [])
+    .filter((a: any) => a.type === 16)
+    .map((a: any) => (a.data ?? "").replace(/"/g, ""));
+
+  const tokenMatch = txtRecords.some((txt: string) => txt === domainRecord.verification_token);
+
+  if (!tokenMatch) {
+    return jsonOk({ verified: false, message: "TXT record not found", expected_token: domainRecord.verification_token, found_records: txtRecords });
+  }
+
+  // Verified! Provision SSL via Cloudflare Custom Hostnames
+  const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
+  const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
+
+  let sslStatus = "pending";
+  let cfHostnameId = null;
+
+  if (cfToken && cfZoneId) {
+    try {
+      const { resp, data } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames`, {
+        method: "POST",
+        body: JSON.stringify({
+          hostname: domainRecord.domain,
+          ssl: {
+            method: "http",
+            type: "dv",
+            settings: { min_tls_version: "1.2" },
+          },
+        }),
+      });
+
+      if (data?.success) {
+        cfHostnameId = data.result?.id;
+        sslStatus = data.result?.ssl?.status === "active" ? "active" : "pending";
+      } else {
+        console.error("Cloudflare custom hostname error:", data?.errors);
+        return jsonOk({ verified: true, cloudflare_error: data?.errors, message: "TXT verified but Cloudflare provisioning failed" });
+      }
+    } catch (e) {
+      console.error("Cloudflare API error:", e);
+      sslStatus = "failed";
+    }
+  }
+
+  await admin.from("store_domains").update({
+    status: "active",
+    verified_at: new Date().toISOString(),
+    ssl_status: sslStatus,
+    cloudflare_hostname_id: cfHostnameId,
+    updated_at: new Date().toISOString(),
+  }).eq("id", domainId);
+
+  return jsonOk({ verified: true, ssl_status: sslStatus, cloudflare_hostname_id: cfHostnameId });
+}
+
   const corsResp = handleCors(req);
   if (corsResp) return corsResp;
 
