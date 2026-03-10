@@ -174,9 +174,6 @@ Deno.serve(async (req) => {
           return await handleUnlinkCommand(supabase, discordUserId, discordUsername, serverContext, discordAvatarUrl);
 
 
-        case "reply":
-          // DM-only command for replying to active tickets
-          return await handleReplyCommand(supabase, discordUserId, discordUsername, discordAvatarUrl);
 
         case "showcase":
           return await handleShowcaseCommand(supabase, serverContext);
