@@ -253,7 +253,7 @@ async function ensureShareRedirectRule(cfApiToken: string, cfZoneId: string) {
       from_value: {
         status_code: 302,
         target_url: {
-          expression: `concat("https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy?path=", substring(http.request.uri.path, 6))`,
+          expression: `concat("https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy?path=", regex_replace(http.request.uri.path, "^/share", ""))`,
         },
         preserve_query_string: false,
       },
