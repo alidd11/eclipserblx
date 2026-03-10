@@ -268,7 +268,7 @@ export default function Transcripts() {
   const isLoading = () => {
     switch (activeTab) {
       case 'live-chat': return liveChatLoading;
-      case 'modmail': return modmailLoading;
+      
       case 'seller-tickets': return sellerTicketsLoading;
       case 'customer-tickets': return customerTicketsLoading;
       case 'contact': return contactLoading;
