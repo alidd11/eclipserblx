@@ -463,7 +463,7 @@ Deno.serve(async (req) => {
     let sbfmResult: Record<string, unknown> = { success: false, skipped: true };
     try {
       const sbfmRes = await fetch(
-        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/bot_management/config`,
+        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/bot_management`,
         {
           method: "PUT",
           headers: {
