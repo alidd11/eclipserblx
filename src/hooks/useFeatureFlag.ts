@@ -29,7 +29,7 @@ export function useFeatureFlag(flagName: string): UseFeatureFlagResult {
         // Fetch the feature flag
         const { data: flag, error: flagError } = await supabase
           .from('feature_flags')
-          .select('enabled, user_ids')
+          .select('id, enabled, user_ids')
           .eq('name', flagName)
           .single();
 
