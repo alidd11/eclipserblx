@@ -32,7 +32,6 @@ function isStoreHostname(hostname) {
     const sub = hostname.replace('.eclipserblx.com', '');
     return !RESERVED_SUBS.includes(sub);
   }
-  // Any other hostname = custom domain
   if (hostname.endsWith('.lovable.app') || hostname.endsWith('.lovableproject.com')) return false;
   return true;
 }
@@ -43,69 +42,85 @@ async function serveOg(path, userAgent, hostname) {
   const ogResponse = await fetch(ogUrl, {
     headers: { "User-Agent": userAgent },
   });
-  return new Response(ogResponse.body, {
+  const body = await ogResponse.text();
+  return new Response(body, {
     status: ogResponse.status,
     headers: {
       "Content-Type": "text/html; charset=utf-8",
       "Cache-Control": "public, max-age=300",
+      "X-Eclipse-Worker": "og-served",
+      "X-Eclipse-Path": path,
     },
   });
 }
 
+function addWorkerHeader(response, action) {
+  const newResponse = new Response(response.body, response);
+  newResponse.headers.set("X-Eclipse-Worker", action);
+  return newResponse;
+}
+
 export default {
   async fetch(request) {
-    const url = new URL(request.url);
-    const userAgent = request.headers.get("User-Agent") || "";
-    const hostname = url.hostname;
+    try {
+      const url = new URL(request.url);
+      const userAgent = request.headers.get("User-Agent") || "";
+      const hostname = url.hostname;
 
-    // --- Store subdomain / custom domain ---
-    if (isStoreHostname(hostname)) {
+      // --- Store subdomain / custom domain ---
+      if (isStoreHostname(hostname)) {
+        const isTestingTool = NOT_BOT_PATTERNS.some((p) =>
+          userAgent.toLowerCase().includes(p.toLowerCase())
+        );
+        if (isTestingTool) return addWorkerHeader(await fetch(request), "passthrough-testing");
+
+        const isBot = BOT_PATTERNS.some((bot) =>
+          userAgent.toLowerCase().includes(bot.toLowerCase())
+        );
+        if (!isBot) return addWorkerHeader(await fetch(request), "passthrough-human");
+
+        try {
+          return await serveOg(url.pathname, userAgent, hostname);
+        } catch (e) {
+          return addWorkerHeader(await fetch(request), "error-store:" + e.message);
+        }
+      }
+
+      // --- /share/ prefix — ALWAYS proxy (guaranteed OG tags) ---
+      if (url.pathname.startsWith("/share/")) {
+        const realPath = url.pathname.replace(/^\\/share/, "");
+        try {
+          return await serveOg(realPath, userAgent, null);
+        } catch (error) {
+          return Response.redirect(url.origin + realPath, 302);
+        }
+      }
+
+      const isDynamicPage = /^\\/(products|store)\\/[^/?#]+/.test(url.pathname);
+      const isStaticOgPage = STATIC_OG_PATHS.has(url.pathname);
+
+      if (!isDynamicPage && !isStaticOgPage) return addWorkerHeader(await fetch(request), "passthrough-nopage");
+
       const isTestingTool = NOT_BOT_PATTERNS.some((p) =>
         userAgent.toLowerCase().includes(p.toLowerCase())
       );
-      if (isTestingTool) return fetch(request);
+      if (isTestingTool) return addWorkerHeader(await fetch(request), "passthrough-testing");
 
       const isBot = BOT_PATTERNS.some((bot) =>
         userAgent.toLowerCase().includes(bot.toLowerCase())
       );
-      if (!isBot) return fetch(request);
+      if (!isBot) return addWorkerHeader(await fetch(request), "passthrough-human");
 
       try {
-        return await serveOg(url.pathname, userAgent, hostname);
-      } catch (e) {
-        return fetch(request);
-      }
-    }
-
-    // --- /share/ prefix — ALWAYS proxy (guaranteed OG tags) ---
-    if (url.pathname.startsWith("/share/")) {
-      const realPath = url.pathname.replace(/^\\/share/, "");
-      try {
-        return await serveOg(realPath, userAgent, null);
+        return await serveOg(url.pathname, userAgent, null);
       } catch (error) {
-        return Response.redirect(url.origin + realPath, 302);
+        return addWorkerHeader(await fetch(request), "error-og:" + error.message);
       }
-    }
-
-    const isDynamicPage = /^\\/(products|store)\\/[^/?#]+/.test(url.pathname);
-    const isStaticOgPage = STATIC_OG_PATHS.has(url.pathname);
-
-    if (!isDynamicPage && !isStaticOgPage) return fetch(request);
-
-    const isTestingTool = NOT_BOT_PATTERNS.some((p) =>
-      userAgent.toLowerCase().includes(p.toLowerCase())
-    );
-    if (isTestingTool) return fetch(request);
-
-    const isBot = BOT_PATTERNS.some((bot) =>
-      userAgent.toLowerCase().includes(bot.toLowerCase())
-    );
-    if (!isBot) return fetch(request);
-
-    try {
-      return await serveOg(url.pathname, userAgent, null);
-    } catch (error) {
-      return fetch(request);
+    } catch (globalError) {
+      return new Response("Worker error: " + globalError.message, {
+        status: 500,
+        headers: { "X-Eclipse-Worker": "fatal-error" },
+      });
     }
   },
 };
