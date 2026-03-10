@@ -185,6 +185,7 @@ export default function Disputes() {
     if (!search) return true;
     const s = search.toLowerCase();
     return (
+      d.dispute_number?.toLowerCase().includes(s) ||
       d.customer?.display_name?.toLowerCase().includes(s) ||
       d.customer?.email?.toLowerCase().includes(s) ||
       d.customer?.customer_id?.toLowerCase().includes(s) ||
