@@ -253,7 +253,7 @@ async function ensureShareRedirectRule(cfApiToken: string, cfZoneId: string) {
       from_value: {
         status_code: 302,
         target_url: {
-          expression: `concat("https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy?path=", substring(http.request.uri.path, 6))`,
+          expression: `concat("https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy?path=", substring(http.request.uri.path, 7))`,
         },
         preserve_query_string: false,
       },
@@ -456,8 +456,11 @@ Deno.serve(async (req) => {
     // Step 4: WAF skip rule for social media bots (bypasses Bot Fight Mode)
     const wafResult = await ensureWafSkipRule(cfApiToken, cfZoneId);
 
+    console.log("[WAF] Result:", JSON.stringify(wafResult));
+
     // Step 5: Redirect rule for /share/ paths (bulletproof fallback)
     const redirectResult = await ensureShareRedirectRule(cfApiToken, cfZoneId);
+    console.log("[REDIRECT] Result:", JSON.stringify(redirectResult));
 
     // Step 6: Configure SBFM to not block bots (allow WAF skip rule to work)
     let sbfmResult: Record<string, unknown> = { success: false, skipped: true };
@@ -471,7 +474,7 @@ Deno.serve(async (req) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            sbfm_definitely_automated: "managed_challenge",
+            sbfm_definitely_automated: "allow",
             sbfm_verified_bots: "allow",
             sbfm_static_resource_protection: false,
           }),

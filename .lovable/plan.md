@@ -1,49 +1,36 @@
 
 
-## Diagnosis: Why OG Tags Still Don't Work
+## Issues Identified
 
-I ran a complete end-to-end test:
+**Issue 1: Sidebar positioned at top of screen on desktop**
+The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
 
-1. **og-proxy edge function**: Works perfectly. Returns correct product-specific OG HTML with title, image, description.
+**Issue 2: Excessive black empty space in the content area**
+The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
 
-2. **Cloudflare Worker + Routes**: Deployed successfully, 3 routes bound to `eclipserblx.com/*`, `www.eclipserblx.com/*`, `*.eclipserblx.com/*`.
+## Plan
 
-3. **WAF Skip Rule**: API reports success.
+### 1. Widen the content area on the Categories page
+- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
+- Reduce vertical padding between the header and grid
+- Tighten the gap between the page title/description and the cards
 
-4. **`/share/` Redirect Rule**: API reports success.
+### 2. Improve the PageHeader component
+- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
+- This applies globally to all pages using PageHeader
 
-5. **SBFM Config**: API reports success with `managed_challenge`.
+### 3. Make category cards fill space better
+- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
+- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
+- Reduce grid gap slightly so cards feel more connected
 
-**But when I fetched `eclipserblx.com/products/battle-of-ypres-1917` AND `eclipserblx.com/share/products/battle-of-ypres-1917`, BOTH returned the raw SPA `index.html`** -- meaning NEITHER the Worker NOR the Redirect Rule is executing.
+### 4. Sidebar desktop alignment fix
+- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
+- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
+- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
 
-### Root Cause
-
-Two problems:
-
-**Problem 1: SBFM set to `managed_challenge` still blocks bots.** "Managed challenge" means Cloudflare serves a JavaScript challenge page to bots. Bots like Discordbot can't solve JS challenges, so they never reach the Worker. The setting needs to be `allow`, not `managed_challenge`.
-
-**Problem 2: The `/share/` redirect rule may have an expression issue.** Even for non-bot traffic, the redirect isn't firing. The `substring()` function in the dynamic redirect expression may be silently failing, or the rule was created in an incorrect state. The fix is to use a simpler, more reliable expression format.
-
-### Fix
-
-**File: `supabase/functions/deploy-cloudflare-worker/index.ts`**
-
-1. Change SBFM from `managed_challenge` to `allow` (line 474) -- this fully disables Bot Fight Mode so the Worker actually receives bot requests
-
-2. Simplify the redirect rule expression to use `regex_replace` instead of `substring` for broader compatibility:
-   ```
-   concat("https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy?path=", 
-          regex_replace(http.request.uri.path, "^/share", ""))
-   ```
-
-3. Add logging to the deploy function to output the actual Cloudflare API responses for the redirect rule, so we can diagnose if there's a silent failure
-
-4. After deploying, trigger the function to apply all changes
-
-### Why This Will Work
-
-- Setting SBFM to `allow` removes all bot interference, letting the Worker intercept Discordbot/Twitterbot requests directly
-- The WAF skip rule remains as a safety net
-- The `/share/` redirect with fixed expression provides a guaranteed fallback path
-- The Worker itself is already correct -- it just needs to actually receive the requests
+### Files to modify
+- `src/pages/Categories.tsx` — widen container, tighten spacing
+- `src/components/ui/PageHeader.tsx` — reduce bottom margin
+- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
 
