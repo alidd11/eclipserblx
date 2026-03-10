@@ -311,6 +311,11 @@ export default function SellerSettingsDomain() {
                     <strong>Click "Verify DNS"</strong> — once records propagate (up to 24h), your domain will go live with SSL
                   </li>
                 </ol>
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 mt-2">
+                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                    ⚠️ Cloudflare users: Your CNAME records <strong>must</strong> be set to <strong>DNS-only (grey cloud)</strong>, not Proxied (orange cloud). Using Proxied mode will cause a 1014 "Cross User Banned" error.
+                  </p>
+                </div>
                 <p className="text-xs text-muted-foreground/70">
                   DNS changes can take up to 24 hours to propagate. If verification fails, double-check your records and try again.
                 </p>
