@@ -242,10 +242,6 @@ Deno.serve(async (req) => {
         discordAvatarUrl = `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
       }
 
-      if (customId === "support_modal" || customId === "support_modal_reply") {
-        const isReply = customId === "support_modal_reply";
-        return await handleSupportModalSubmit(supabase, interaction, discordUserId, discordUsername, discordAvatarUrl, isReply);
-      }
     }
 
     return new Response(JSON.stringify({ type: PONG }), {
