@@ -56,7 +56,7 @@ const DEFAULT_ROLE_BADGES: Record<string, { label: string; className: string }> 
   seller: { label: 'Seller', className: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
 };
 
-const ROLE_PRIORITY: string[] = ['admin', 'lead_administrator', 'order_manager', 'support_agent', 'analyst', 'recruiter', 'seller'];
+const ROLE_PRIORITY: string[] = ['admin', 'lead_administrator', 'lead_manager', 'support_agent', 'analyst', 'recruiter', 'seller'];
 
 interface TypingUser {
   user_id: string;

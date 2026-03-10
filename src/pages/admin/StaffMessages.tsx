@@ -208,7 +208,7 @@ function StaffMessagesContent() {
   });
 
   // Fetch user roles - pick highest priority staff role per user
-  const ROLE_PRIORITY: string[] = ['admin', 'lead_administrator', 'order_manager', 'support_agent', 'analyst', 'recruiter', 'seller'];
+  const ROLE_PRIORITY: string[] = ['admin', 'lead_administrator', 'lead_manager', 'support_agent', 'analyst', 'recruiter', 'seller'];
 
   const { data: userRoles = {} } = useQuery({
     queryKey: ['staff-roles', messages.map(m => m.user_id)],
