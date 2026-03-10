@@ -251,6 +251,13 @@ export default function SellerStoreBuilder() {
 
   return (
     <SellerLayout>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h1 className="text-xl font-bold">Store Builder</h1>
+          <p className="text-sm text-muted-foreground">Drag sections to reorder your storefront</p>
+        </div>
+        {saveButton}
+      </div>
       {isMobile ? (
         <div className="space-y-4">
           {sidePanel}
