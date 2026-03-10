@@ -160,48 +160,83 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Step 3: Ensure route exists
+    // Step 3: Ensure OG worker routes exist for both apex + www
     const routesRes = await fetch(
       `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes`,
       { headers: { Authorization: `Bearer ${cfApiToken}`, "Content-Type": "application/json" } }
     );
     const routesData = await routesRes.json();
 
-    const desiredPattern = "eclipserblx.com/*";
-    const existingRoute = routesData.result?.find(
-      (r: any) => r.pattern === desiredPattern || r.pattern === "*.eclipserblx.com/*"
-    );
-
-    let routeResult;
-    if (existingRoute) {
-      const updateRes = await fetch(
-        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes/${existingRoute.id}`,
-        {
-          method: "PUT",
-          headers: { Authorization: `Bearer ${cfApiToken}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ pattern: desiredPattern, script: workerName }),
-        }
+    if (!routesData.success) {
+      return new Response(
+        JSON.stringify({ error: "Failed to fetch worker routes", details: routesData.errors }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
-      routeResult = await updateRes.json();
-    } else {
-      const createRes = await fetch(
-        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${cfApiToken}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ pattern: desiredPattern, script: workerName }),
-        }
-      );
-      routeResult = await createRes.json();
     }
+
+    const existingRoutes = Array.isArray(routesData.result) ? routesData.result : [];
+    const desiredPatterns = ["eclipserblx.com/*", "www.eclipserblx.com/*"];
+
+    const routeResults: Array<{
+      pattern: string;
+      action: "created" | "updated" | "unchanged";
+      success: boolean;
+      errors?: unknown;
+    }> = [];
+
+    for (const pattern of desiredPatterns) {
+      const existingRoute = existingRoutes.find((r: any) => r.pattern === pattern);
+
+      if (existingRoute) {
+        if (existingRoute.script === workerName) {
+          routeResults.push({ pattern, action: "unchanged", success: true });
+          continue;
+        }
+
+        const updateRes = await fetch(
+          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes/${existingRoute.id}`,
+          {
+            method: "PUT",
+            headers: { Authorization: `Bearer ${cfApiToken}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ pattern, script: workerName }),
+          }
+        );
+        const updateData = await updateRes.json();
+        routeResults.push({
+          pattern,
+          action: "updated",
+          success: !!updateData?.success,
+          errors: updateData?.errors,
+        });
+      } else {
+        const createRes = await fetch(
+          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes`,
+          {
+            method: "POST",
+            headers: { Authorization: `Bearer ${cfApiToken}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ pattern, script: workerName }),
+          }
+        );
+        const createData = await createRes.json();
+        routeResults.push({
+          pattern,
+          action: "created",
+          success: !!createData?.success,
+          errors: createData?.errors,
+        });
+      }
+    }
+
+    const routeUpdate = routeResults.every((r) => r.success);
 
     return new Response(
       JSON.stringify({
         success: true,
         worker: workerName,
-        route: desiredPattern,
+        routes: desiredPatterns,
         upload: uploadData.success,
-        routeUpdate: routeResult.success,
+        routeUpdate,
+        routeResults,
         message: "Worker deployed — human traffic passes through, only bots intercepted",
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
