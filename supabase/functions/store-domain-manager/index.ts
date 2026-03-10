@@ -395,6 +395,29 @@ async function healthCheckDomain(userId: string, domainId: string) {
   return jsonOk(healthCheck);
 }
 
+// ── Action: admin-health-check (service role only, no owner check) ──
+async function adminHealthCheck(domainId: string) {
+  const admin = getSupabaseAdmin();
+
+  const { data: domainRecord } = await admin
+    .from("store_domains")
+    .select("*")
+    .eq("id", domainId)
+    .single();
+
+  if (!domainRecord) return jsonError("Domain not found", 404);
+
+  const healthCheck = await performHealthCheck(domainRecord.domain);
+
+  await admin.from("store_domains").update({
+    last_health_check: healthCheck,
+    last_health_check_at: new Date().toISOString(),
+    is_cloudflare_zone: healthCheck.is_cloudflare_zone,
+  }).eq("id", domainId);
+
+  return jsonOk(healthCheck);
+}
+
 // ── Action: check-status ──
 async function checkStatus(userId: string, domainId: string) {
   const admin = getSupabaseAdmin();
