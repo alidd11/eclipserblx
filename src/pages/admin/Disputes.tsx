@@ -374,6 +374,7 @@ export default function Disputes() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead>Dispute</TableHead>
                         <TableHead>Customer</TableHead>
                         <TableHead>Store</TableHead>
                         <TableHead>Reason</TableHead>
