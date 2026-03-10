@@ -71,6 +71,40 @@ Deno.serve(async (req) => {
 
   const u = new URL(req.url);
   const path = u.searchParams.get("path") || "/";
+  const hostname = u.searchParams.get("hostname");
+
+  // --- Store subdomain / custom domain OG ---
+  if (hostname) {
+    const store = await resolveStoreByHostname(hostname);
+    if (store) {
+      const storeUrl = `https://${hostname}${path}`;
+      const desc = store.description
+        ? store.description.replace(/<[^>]*>/g, "").slice(0, 200)
+        : `Browse ${store.name}'s products on Eclipse — ${store.product_count || 0} items available.`;
+      const img = store.banner_url || store.logo_url || DEFAULT_IMAGE;
+
+      // If path matches a product slug, try to serve product-level OG
+      const pm = path.match(/^\/products\/([a-zA-Z0-9][a-zA-Z0-9\-_]{0,200})$/);
+      if (pm) {
+        const product = await pgQuery("products", "name,description,images,price,slug,store_id", `slug=eq.${pm[1]}&store_id=eq.${store.id}&is_active=eq.true`);
+        if (product) {
+          const pDesc = product.description ? product.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Check out ${product.name} on ${store.name}`;
+          const pImg = product.images?.[0] || img;
+          const priceExtra = product.price != null ? `<meta property="product:price:amount" content="${product.price}"/><meta property="product:price:currency" content="GBP"/>` : "";
+          return new Response(buildHtml(`${product.name} | ${store.name}`, pDesc, pImg, storeUrl, "product", priceExtra), {
+            headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300", ...corsHeaders },
+          });
+        }
+      }
+
+      // Default: store-level OG
+      return new Response(buildHtml(`${store.name} | ${SITE_NAME}`, desc, img, storeUrl, "profile"), {
+        headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=600", ...corsHeaders },
+      });
+    }
+    // Unknown hostname — redirect to main site
+    return new Response(null, { status: 302, headers: { Location: `${SITE_URL}${path}`, ...corsHeaders } });
+  }
 
   // Static pages
   const s = STATIC_PAGES[path];
