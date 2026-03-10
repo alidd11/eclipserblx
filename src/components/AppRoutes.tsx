@@ -113,7 +113,7 @@ const AdminSellerDocuments = lazy(() => import("@/pages/admin/SellerDocuments"))
 const AdminManualPayouts = lazy(() => import("@/pages/admin/ManualPayouts"));
 const AdminSellerTickets = lazy(() => import("@/pages/admin/SellerTickets"));
 const AdminRolePermissions = lazy(() => import("@/pages/admin/RolePermissions"));
-const AdminDiscordModmail = lazy(() => import("@/pages/admin/DiscordModmail"));
+
 const AdminCommunityAnnouncements = lazy(() => import("@/pages/admin/CommunityAnnouncements"));
 const AdminDiscordPolls = lazy(() => import("@/pages/admin/DiscordPolls"));
 const AdminDiscordQOTD = lazy(() => import("@/pages/admin/DiscordQOTD"));
