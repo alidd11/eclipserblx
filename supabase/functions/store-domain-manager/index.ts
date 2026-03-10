@@ -359,6 +359,7 @@ async function adminVerifyDomain(domainId: string) {
   return jsonOk({ verified: true, ssl_status: sslStatus, cloudflare_hostname_id: cfHostnameId });
 }
 
+Deno.serve(async (req) => {
   const corsResp = handleCors(req);
   if (corsResp) return corsResp;
 
