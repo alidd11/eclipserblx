@@ -95,7 +95,7 @@ function LayoutShellInner({
           <Suspense fallback={null}><UniversalBreadcrumb /></Suspense>
           <main
             id="main-content"
-            className={mainClassName ?? "flex-1 md:overflow-y-auto overflow-x-hidden"}
+            className={mainClassName ?? "flex-1 md:overflow-y-auto overflow-x-hidden max-w-full min-w-0"}
             style={mainStyle ?? { paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
             {contentClassName ? (
