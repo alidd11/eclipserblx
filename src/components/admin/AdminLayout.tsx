@@ -362,7 +362,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
       */}
       <div
         className={cn(
-          'flex w-full max-w-full min-w-0',
+          'flex w-full max-w-full min-w-0 overflow-x-hidden',
           isChatPage
             ? 'flex-row overflow-hidden bg-card'
             : 'min-h-screen bg-background'

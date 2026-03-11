@@ -18,10 +18,28 @@ const tabs = [
   { value: 'manual', label: 'Manual Payouts', icon: DollarSign },
 ] as const;
 
+const sellerStatusOptions = [
+  { value: 'pending', label: 'Pending' },
+  { value: 'awaiting_funds', label: 'Awaiting Funds' },
+  { value: 'processing', label: 'Processing' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'all', label: 'All Payouts' },
+] as const;
+
 export default function PayoutsHub() {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'seller';
-  const setActiveTab = (tab: string) => setSearchParams({ tab }, { replace: true });
+  const sellerStatus = searchParams.get('sellerStatus') || 'pending';
+
+  const updateSearchParam = (key: string, value: string) => {
+    const next = new URLSearchParams(searchParams);
+    next.set(key, value);
+    setSearchParams(next, { replace: true });
+  };
+
+  const setActiveTab = (tab: string) => updateSearchParam('tab', tab);
+  const setSellerStatus = (status: string) => updateSearchParam('sellerStatus', status);
 
   return (
     <AdminLayout requiredPermissions={['view_seller_payouts']}>
@@ -43,16 +61,31 @@ export default function PayoutsHub() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="hidden sm:grid w-full max-w-xl grid-cols-3">
-            {tabs.map(t => (
-              <TabsTrigger key={t.value} value={t.value} className="gap-2">
-                <t.icon className="h-4 w-4" />
-                {t.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="hidden sm:flex items-center justify-between gap-3">
+            <TabsList className="grid w-full max-w-xl grid-cols-3">
+              {tabs.map(t => (
+                <TabsTrigger key={t.value} value={t.value} className="gap-2">
+                  <t.icon className="h-4 w-4" />
+                  {t.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-          <div className="sm:hidden">
+            {activeTab === 'seller' && (
+              <Select value={sellerStatus} onValueChange={setSellerStatus}>
+                <SelectTrigger className="w-auto min-w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {sellerStatusOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+
+          <div className="sm:hidden flex items-center justify-between gap-2">
             <Select value={activeTab} onValueChange={setActiveTab}>
               <SelectTrigger className="w-auto min-w-[140px]">
                 <SelectValue />
@@ -63,6 +96,19 @@ export default function PayoutsHub() {
                 ))}
               </SelectContent>
             </Select>
+
+            {activeTab === 'seller' && (
+              <Select value={sellerStatus} onValueChange={setSellerStatus}>
+                <SelectTrigger className="w-auto min-w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {sellerStatusOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <AdminHubProvider>

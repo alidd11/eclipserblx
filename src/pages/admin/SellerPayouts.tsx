@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -35,10 +36,12 @@ import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 export default function SellerPayouts() {
   const isInsideHub = useIsInsideHub();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const [selectedPayout, setSelectedPayout] = useState<any>(null);
   const [notes, setNotes] = useState("");
-  const [filterStatus, setFilterStatus] = useState<string>("pending");
+  const [localFilterStatus, setLocalFilterStatus] = useState<string>("pending");
+  const filterStatus = isInsideHub ? (searchParams.get("sellerStatus") || "pending") : localFilterStatus;
 
   const { data: payouts, isLoading } = useQuery({
     queryKey: ["seller-payouts", filterStatus],
@@ -201,21 +204,23 @@ export default function SellerPayouts() {
           </div>
         )}
 
-        <div className="flex items-center justify-end">
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-auto min-w-[140px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="awaiting_funds">Awaiting Funds</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="all">All Payouts</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {!isInsideHub && (
+          <div className="flex items-center justify-end">
+            <Select value={filterStatus} onValueChange={setLocalFilterStatus}>
+              <SelectTrigger className="w-auto min-w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="awaiting_funds">Awaiting Funds</SelectItem>
+                <SelectItem value="processing">Processing</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="all">All Payouts</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {!isInsideHub && (
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-2 md:overflow-visible">
