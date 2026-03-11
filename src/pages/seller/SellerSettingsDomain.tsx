@@ -331,13 +331,9 @@ export default function SellerSettingsDomain() {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
       setCustomDomainInput('');
       if (data.is_cloudflare_zone) {
-        toast({ 
-          title: '⚠️ Cloudflare domain detected', 
-          description: 'Your domain uses Cloudflare DNS. Follow the Cloudflare-specific checklist carefully to avoid errors.',
-          variant: 'destructive',
-        });
+        toast.error('⚠️ Cloudflare domain detected', { description: 'Your domain uses Cloudflare DNS. Follow the Cloudflare-specific checklist carefully to avoid errors.' });
       } else {
-        toast({ title: 'Domain registered', description: 'Follow the DNS instructions below to verify.' });
+        toast.success('Domain registered', { description: 'Follow the DNS instructions below to verify.' });
       }
     },
     onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
