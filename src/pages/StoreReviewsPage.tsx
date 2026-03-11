@@ -57,7 +57,7 @@ export default function StoreReviewsPage() {
       // First get all product IDs for this store
       const { data: products } = await supabase
         .from('products')
-        .select('id, name, slug, images')
+        .select('id, name, slug, images, product_number')
         .eq('store_id', store.id);
 
       if (!products || products.length === 0) return [];
