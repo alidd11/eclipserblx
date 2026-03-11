@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -35,10 +36,12 @@ import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 export default function SellerPayouts() {
   const isInsideHub = useIsInsideHub();
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const [selectedPayout, setSelectedPayout] = useState<any>(null);
   const [notes, setNotes] = useState("");
-  const [filterStatus, setFilterStatus] = useState<string>("pending");
+  const [localFilterStatus, setLocalFilterStatus] = useState<string>("pending");
+  const filterStatus = isInsideHub ? (searchParams.get("sellerStatus") || "pending") : localFilterStatus;
 
   const { data: payouts, isLoading } = useQuery({
     queryKey: ["seller-payouts", filterStatus],

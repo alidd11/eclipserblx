@@ -18,10 +18,28 @@ const tabs = [
   { value: 'manual', label: 'Manual Payouts', icon: DollarSign },
 ] as const;
 
+const sellerStatusOptions = [
+  { value: 'pending', label: 'Pending' },
+  { value: 'awaiting_funds', label: 'Awaiting Funds' },
+  { value: 'processing', label: 'Processing' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'all', label: 'All Payouts' },
+] as const;
+
 export default function PayoutsHub() {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'seller';
-  const setActiveTab = (tab: string) => setSearchParams({ tab }, { replace: true });
+  const sellerStatus = searchParams.get('sellerStatus') || 'pending';
+
+  const updateSearchParam = (key: string, value: string) => {
+    const next = new URLSearchParams(searchParams);
+    next.set(key, value);
+    setSearchParams(next, { replace: true });
+  };
+
+  const setActiveTab = (tab: string) => updateSearchParam('tab', tab);
+  const setSellerStatus = (status: string) => updateSearchParam('sellerStatus', status);
 
   return (
     <AdminLayout requiredPermissions={['view_seller_payouts']}>
