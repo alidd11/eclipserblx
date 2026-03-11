@@ -210,7 +210,7 @@ export default function StoreApplications() {
       setSelectedApplication(null);
     },
     onError: (error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 
