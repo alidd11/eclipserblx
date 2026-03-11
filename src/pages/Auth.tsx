@@ -144,10 +144,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
         toast.error(t('common.error'), { description: 'Failed to send reset email. Please try again.' });
       } else {
         setMode('reset-verify');
-        toast({
-          title: t('auth.checkYourEmail'),
-          description: 'We sent you a 4-digit verification code.',
-        });
+        toast.success(t('auth.checkYourEmail'), { description: 'We sent you a 4-digit verification code.' });
       }
     } finally {
       setLoading(false);
