@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 export default function AdminReferrals() {
+  const isInsideHub = useIsInsideHub();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
