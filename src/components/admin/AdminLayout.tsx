@@ -138,7 +138,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
     <TooltipProvider delayDuration={0}>
       <LayoutShell
         desktopSidebar={
-          <AdminSidebar collapsed={false} onToggle={() => {}} className="hidden md:flex" />
+          <AdminSidebar collapsed={false} onToggle={() => {}} />
         }
         mobileSidebar={(onClose) => (
           <AdminSidebar
