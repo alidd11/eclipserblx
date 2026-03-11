@@ -219,7 +219,7 @@ serve(async (req) => {
                 title,
                 body,
                 tag: `scheduled-release-${product.id}`,
-                url: `/products/${product.slug}`,
+                url: `/products/${(product as any).product_number || product.slug}`,
                 requireInteraction: false,
               },
             }),
