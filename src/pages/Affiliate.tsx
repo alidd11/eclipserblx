@@ -306,12 +306,7 @@ export default function Affiliate() {
   const handleRequestPayout = () => {
     const amount = parseFloat(payoutAmount);
     if (isNaN(amount) || amount < affiliateSettings.minimumPayout) {
-      toast({
-        title: "Invalid Amount",
-        description: `Minimum payout is £${affiliateSettings.minimumPayout}`,
-        variant: "destructive",
-      });
-      return;
+      toast.error("Invalid Amount", { description: `Minimum payout is £${affiliateSettings.minimumPayout}` });
     }
     requestPayoutMutation.mutate(amount);
   };
