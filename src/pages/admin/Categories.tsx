@@ -420,11 +420,7 @@ export default function AdminCategories() {
 
   const handleSave = () => {
     if (!form.name.trim() || !form.slug.trim()) {
-      toast({
-        title: 'Validation error',
-        description: 'Name and slug are required.',
-        variant: 'destructive',
-      });
+      toast.error('Validation error', { description: 'Name and slug are required.' });
       return;
     }
     if (form.name.length > 100) {
