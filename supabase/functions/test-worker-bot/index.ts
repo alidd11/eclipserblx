@@ -59,27 +59,41 @@ Deno.serve(async (req) => {
     };
   }
 
-  // Test 4: Query the redirect rules directly via CF API to confirm they exist
+  // Test 4: Query redirect rules + ZONE SETUP TYPE
   const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
   const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
   if (cfToken && cfZoneId) {
     try {
-      const epRes = await fetch(
-        `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/phases/http_request_dynamic_redirect/entrypoint`,
-        { headers: { Authorization: `Bearer ${cfToken}` } }
-      );
-      const epData = await epRes.json();
+      const [epRes, zoneRes] = await Promise.all([
+        fetch(
+          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/phases/http_request_dynamic_redirect/entrypoint`,
+          { headers: { Authorization: `Bearer ${cfToken}` } }
+        ),
+        fetch(
+          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}`,
+          { headers: { Authorization: `Bearer ${cfToken}` } }
+        ),
+      ]);
+      const [epData, zoneData] = await Promise.all([epRes.json(), zoneRes.json()]);
+      
       tests["redirectRulesState"] = {
         success: epData.success,
         ruleCount: epData.result?.rules?.length || 0,
         rules: (epData.result?.rules || []).map((r: any) => ({
           description: r.description,
           enabled: r.enabled,
-          expression: r.expression?.slice(0, 150),
         })),
       };
+      
+      tests["zoneSetup"] = {
+        type: zoneData.result?.type,
+        status: zoneData.result?.status,
+        nameServers: zoneData.result?.name_servers,
+        originalNameServers: zoneData.result?.original_name_servers,
+        plan: zoneData.result?.plan?.name,
+      };
     } catch (e) {
-      tests["redirectRulesState"] = { error: (e as Error).message };
+      tests["error"] = (e as Error).message;
     }
   }
 
