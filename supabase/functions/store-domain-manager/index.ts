@@ -229,10 +229,20 @@ async function performHealthCheck(domain: string) {
 
       // Check for Cloudflare error pages
       const body = await httpResp.text();
-      if (body.includes("Error 1000")) {
+      const bodyLower = body.toLowerCase();
+      const hasError1000 =
+        /error\s*(code)?\s*1000/.test(bodyLower) ||
+        bodyLower.includes("error-1000") ||
+        bodyLower.includes("conflict within cloudflare");
+
+      if (hasError1000) {
         if (checks.is_cloudflare_zone) {
           checks.error_code = "1000";
-          checks.diagnosis = "DNS points to prohibited IP — cross-zone Cloudflare conflict detected.";
+          if (!checks.cname_target && checks.resolves_to_cloudflare) {
+            checks.diagnosis = "Error 1000 — apex/root domain is flattening through Cloudflare and causing cross-zone conflict. Use a DNS-only A record to 185.158.133.1 for the root domain.";
+          } else {
+            checks.diagnosis = "Error 1000 — cross-zone Cloudflare conflict detected.";
+          }
         } else {
           checks.error_code = "1000_non_cf";
           checks.diagnosis = "DNS conflict — your CNAME is being resolved through Cloudflare's proxy. Use an A record instead.";
@@ -250,7 +260,10 @@ async function performHealthCheck(domain: string) {
         checks.error_code = "redirect_loop";
         checks.diagnosis = "Redirect loop detected — check for conflicting redirect rules.";
       } else if (httpResp.status === 403 && checks.is_cloudflare_zone && checks.resolves_to_cloudflare) {
-        if (checks.cname_is_proxied) {
+        if (!checks.cname_target) {
+          checks.error_code = "1000";
+          checks.diagnosis = "403 with Cloudflare edge IPs and no visible CNAME usually indicates root-domain flattening conflict. Use a DNS-only A record to 185.158.133.1.";
+        } else if (checks.cname_is_proxied) {
           checks.error_code = "403_cloudflare";
           checks.diagnosis = "403 Forbidden — your CNAME is Proxied (orange cloud) which triggers Cloudflare cross-zone blocking. Switch to DNS-only (grey cloud).";
         } else {
