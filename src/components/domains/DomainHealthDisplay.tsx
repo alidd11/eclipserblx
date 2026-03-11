@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   CheckCircle, XCircle, AlertTriangle, Cloud, ChevronDown, ChevronUp,
-  Copy, ExternalLink, Info, Wrench,
+  Copy, ExternalLink, Info, Wrench, RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
