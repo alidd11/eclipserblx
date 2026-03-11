@@ -919,8 +919,12 @@ Deno.serve(async (req) => {
         if (!body.domain_id) return jsonError("domain_id required", 400);
         return await removeDomain(user.id, body.domain_id);
 
+      case "auto-fix-dns":
+        if (!body.domain_id) return jsonError("domain_id required", 400);
+        return await autoFixDns(user.id, body.domain_id);
+
       default:
-        return jsonError("Unknown action. Supported: claim-subdomain, request-custom-domain, verify-custom-domain, check-status, health-check, remove-domain, resolve-hostname", 400);
+        return jsonError("Unknown action. Supported: claim-subdomain, request-custom-domain, verify-custom-domain, check-status, health-check, remove-domain, auto-fix-dns, resolve-hostname", 400);
     }
   } catch (e) {
     return internalError(e);
