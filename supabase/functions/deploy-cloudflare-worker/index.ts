@@ -451,6 +451,12 @@ Deno.serve(async (req) => {
         redirect,
         sbfm,
         dns: dnsResults,
+        pageRules: pageRules.map((r: any) => ({
+          id: r.id,
+          targets: r.targets,
+          actions: r.actions?.map((a: any) => ({ id: a.id, value: a.value })),
+          status: r.status,
+        })),
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
