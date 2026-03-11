@@ -463,6 +463,7 @@ Deno.serve(async (req) => {
         redirect,
         sbfm,
         dns: dnsResults,
+        pagesProjects,
         pageRules: pageRules.map((r: any) => ({
           id: r.id,
           targets: r.targets,
