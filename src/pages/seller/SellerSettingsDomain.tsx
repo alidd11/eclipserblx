@@ -336,7 +336,7 @@ export default function SellerSettingsDomain() {
         toast.success('Domain registered', { description: 'Follow the DNS instructions below to verify.' });
       }
     },
-    onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
+    onError: (e: any) => toast.error('Error', { description: e.message }),
   });
 
   const verifyDomain = useMutation({
