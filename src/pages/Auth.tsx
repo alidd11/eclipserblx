@@ -245,11 +245,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       const { error } = await supabase.auth.updateUser({ password });
 
       if (error) {
-        toast({
-          title: t('common.error'),
-          description: error.message,
-          variant: 'destructive',
-        });
+        toast.error(t('common.error'), { description: error.message });
       } else {
         toast({
           title: t('auth.passwordUpdated'),
