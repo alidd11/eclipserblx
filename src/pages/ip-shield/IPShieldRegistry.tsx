@@ -302,7 +302,7 @@ export default function IPShieldRegistry() {
                     if (terms.length > 0) body.custom_search_terms = terms;
 
                     const { data: scanData } = await supabase.functions.invoke('scan-roblox-copies', { body });
-                    toast({ title: 'Scan complete', description: `Found ${scanData?.total_detected || 0} potential copies.` });
+                    toast.success('Scan complete', { description: `Found ${scanData?.total_detected || 0} potential copies.` });
                     queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
                     queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
                   } catch {
