@@ -784,7 +784,7 @@ export default function IPShield() {
     },
     onSuccess: (data) => { if (data.url) window.location.href = data.url; },
     onError: (error) => {
-      toast({ title: 'Checkout failed', description: error.message, variant: 'destructive' });
+      toast.error('Checkout failed', { description: error.message });
       setSubscribing(false);
     },
   });
