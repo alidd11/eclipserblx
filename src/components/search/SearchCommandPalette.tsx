@@ -61,7 +61,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
     const fetchTrending = async () => {
       const { data } = await supabase
         .from('products')
-        .select('id, name, slug, price, images, stores (is_active)')
+        .select('id, name, slug, product_number, price, images, stores (is_active)')
         .eq('is_active', true)
         .eq('is_featured', true)
         .limit(6);
