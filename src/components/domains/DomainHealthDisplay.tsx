@@ -94,12 +94,12 @@ const ERROR_INFO: Record<string, {
   '403_cloudflare': {
     severity: 'critical',
     title: '403: Cloudflare Blocking',
-    summary: 'Cloudflare is blocking requests, likely because the CNAME is proxied.',
+    summary: 'Cloudflare is blocking requests to your domain. This can happen if the CNAME is proxied (orange cloud) or the custom hostname isn\'t active yet.',
     steps: [
-      'Switch your CNAME to DNS-only (grey cloud)',
-      'Or delete the CNAME and use an A record → 185.158.133.1 (DNS-only)',
-      'Check your WAF rules and Bot Fight Mode settings',
-      'Disable any firewall rules targeting this domain',
+      'Ensure your CNAME is set to DNS-only (grey cloud)',
+      'If already DNS-only, wait 5-10 minutes — the custom hostname may still be provisioning',
+      'Re-run the health check after waiting',
+      'If the issue persists, try removing and re-adding your custom domain, or check WAF/Bot Fight Mode settings',
     ],
     icon: 'block',
   },
