@@ -78,11 +78,11 @@ export default function ProductDetail() {
 
 
   const handleRefresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ['product', slug] });
+    await queryClient.invalidateQueries({ queryKey: ['product', productNumber] });
     await queryClient.invalidateQueries({ queryKey: ['related-products'] });
-    await queryClient.invalidateQueries({ queryKey: ['product-reviews', slug] });
+    await queryClient.invalidateQueries({ queryKey: ['product-reviews', productNumber] });
     await queryClient.invalidateQueries({ queryKey: ['user-has-purchased'] });
-  }, [queryClient, slug]);
+  }, [queryClient, productNumber]);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', slug, isStaff],
