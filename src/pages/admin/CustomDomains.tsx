@@ -58,6 +58,7 @@ export default function AdminCustomDomains() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [runningHealthCheck, setRunningHealthCheck] = useState<string | null>(null);
+  const [fixingHostname, setFixingHostname] = useState<string | null>(null);
 
   const { data: domains, isLoading } = useQuery({
     queryKey: ['admin-custom-domains'],
