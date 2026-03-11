@@ -110,8 +110,8 @@ export default function SellerAgreements() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
-          <Card>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible">
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardDescription>Total Approved Stores</CardDescription>
               <CardTitle className="text-3xl">{stores?.length || 0}</CardTitle>
