@@ -388,8 +388,14 @@ export function AppRoutes() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
-        <Route path="/admin/income" element={<AdminIncome />} />
-        <Route path="/admin/income-sources" element={<AdminIncomeSources />} />
+        {/* Finance Hub routes */}
+        <Route path="/admin/revenue" element={<AdminRevenueHub />} />
+        <Route path="/admin/payouts" element={<AdminPayoutsHub />} />
+        <Route path="/admin/disputes-refunds" element={<AdminDisputesRefundsHub />} />
+        <Route path="/admin/affiliate-hub" element={<AdminAffiliateHub />} />
+        {/* Legacy redirects for old finance routes */}
+        <Route path="/admin/income" element={<Navigate to="/admin/revenue?tab=overview" replace />} />
+        <Route path="/admin/income-sources" element={<Navigate to="/admin/revenue?tab=sources" replace />} />
         <Route path="/admin/staff-activity" element={<AdminStaffActivity />} />
         <Route path="/admin/staff-messages" element={<AdminStaffMessages />} />
         <Route path="/admin/admin-chat" element={<AdminChat />} />
