@@ -430,7 +430,7 @@ export default function ProductDetail() {
           rating={averageRating || undefined}
           reviewCount={reviewCount || undefined}
           sku={product.id}
-          slug={product.slug}
+          slug={String((product as any).product_number)}
           brand={product.stores?.name || 'Eclipse'}
           category={(product as any).categories?.name}
         />
