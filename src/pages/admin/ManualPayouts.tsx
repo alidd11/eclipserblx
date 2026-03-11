@@ -46,6 +46,7 @@ const statusConfig = {
 };
 
 export default function ManualPayouts() {
+  const isInsideHub = useIsInsideHub();
   const queryClient = useQueryClient();
   const [selectedRequest, setSelectedRequest] = useState<PayoutRequest | null>(null);
   const [actionType, setActionType] = useState<"approve" | "reject" | null>(null);
