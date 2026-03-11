@@ -121,10 +121,7 @@ export function BecomeSellerCard() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: 'Application Submitted!',
-        description: 'We\'ll review your application and get back to you soon.',
-      });
+      toast.success('Application Submitted!', { description: "We'll review your application and get back to you soon." });
       queryClient.invalidateQueries({ queryKey: ['seller-application'] });
       setDialogOpen(false);
       resetForm();
