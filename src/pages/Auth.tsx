@@ -531,11 +531,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       window.location.href = data.url;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
-      toast({
-        title: 'Discord Sign-In Failed',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error('Discord Sign-In Failed', { description: errorMessage });
       setErrors({ social: errorMessage });
       setSocialLoading(false);
     }
