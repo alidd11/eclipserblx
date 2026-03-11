@@ -717,12 +717,26 @@ export default function SellerSettingsDomain() {
 
                   {/* Health check results */}
                   {lastHealthCheck && (
-                    <DomainHealthDisplay healthCheck={lastHealthCheck} domain={d.domain} isCloudflare={isCloudflare} />
+                    <DomainHealthDisplay
+                      healthCheck={lastHealthCheck}
+                      domain={d.domain}
+                      isCloudflare={isCloudflare}
+                      onAutoFix={() => autoFixDns.mutate(d.id)}
+                      isAutoFixing={autoFixDns.isPending && autoFixDns.variables === d.id}
+                      hasCloudflareCredentials={!!cfCreds?.cloudflare_api_token}
+                    />
                   )}
 
                   {/* Health check result from mutation (live) */}
                   {healthCheck.data && healthCheck.variables === d.id && !lastHealthCheck && (
-                    <DomainHealthDisplay healthCheck={healthCheck.data as any} domain={d.domain} isCloudflare={isCloudflare} />
+                    <DomainHealthDisplay
+                      healthCheck={healthCheck.data as any}
+                      domain={d.domain}
+                      isCloudflare={isCloudflare}
+                      onAutoFix={() => autoFixDns.mutate(d.id)}
+                      isAutoFixing={autoFixDns.isPending && autoFixDns.variables === d.id}
+                      hasCloudflareCredentials={!!cfCreds?.cloudflare_api_token}
+                    />
                   )}
 
                   {/* Setup instructions for pending/verifying/failed domains */}
