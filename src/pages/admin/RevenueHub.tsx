@@ -8,6 +8,7 @@ import { RobuxEarningsTab } from '@/components/admin/income/RobuxEarningsTab';
 import { CreditsAnalyticsTab } from '@/components/admin/income/CreditsAnalyticsTab';
 import { SellerEarningsTab } from '@/components/admin/income/SellerEarningsTab';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminHubProvider } from '@/components/admin/AdminHubContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
