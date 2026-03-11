@@ -82,11 +82,11 @@ export default function AdminCustomDomains() {
     onSuccess: (data, domainId) => {
       queryClient.invalidateQueries({ queryKey: ['admin-custom-domains'] });
       const isOk = !data.error_code && data.http_reachable;
-      toast({
-        title: isOk ? 'Domain is healthy' : `Issue: ${data.error_code || 'unknown'}`,
-        description: data.diagnosis || 'Health check complete',
-        variant: isOk ? 'default' : 'destructive',
-      });
+      if (isOk) {
+        toast.success('Domain is healthy', { description: data.diagnosis || 'Health check complete' });
+      } else {
+        toast.error(`Issue: ${data.error_code || 'unknown'}`, { description: data.diagnosis || 'Health check complete' });
+      }
     },
     onError: (err: any) => {
       toast({ title: 'Health check failed', description: err.message, variant: 'destructive' });
