@@ -352,13 +352,9 @@ export default function SellerSettingsDomain() {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
       if (data.verified) {
         if (data.health_check?.error_code) {
-          toast({ 
-            title: 'Verified but issue detected', 
-            description: `Domain verified & SSL provisioned, but a health check found: ${data.health_check.diagnosis}`,
-            variant: 'destructive',
-          });
+          toast.error('Verified but issue detected', { description: `Domain verified & SSL provisioned, but a health check found: ${data.health_check.diagnosis}` });
         } else {
-          toast({ title: 'Domain verified!', description: `SSL status: ${data.ssl_status}` });
+          toast.success('Domain verified!', { description: `SSL status: ${data.ssl_status}` });
         }
       } else {
         toast({ title: 'Not verified yet', description: data.message || 'DNS may still be propagating.', variant: 'destructive' });
