@@ -87,11 +87,7 @@ export default function NotificationPreferences() {
       toast.success('Preferences Saved', { description: 'Your notification preferences have been updated.' });
     },
     onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Failed to update preferences. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: 'Failed to update preferences. Please try again.' });
     },
   });
 
