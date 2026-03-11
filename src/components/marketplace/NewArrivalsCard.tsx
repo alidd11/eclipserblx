@@ -79,7 +79,7 @@ export function NewArrivalsCard() {
           products.map((product) => (
             <Link
               key={product.id}
-              to={`/products/${product.slug}`}
+              to={`/products/${(product as any).product_number}`}
               className="group flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors"
             >
               <div className="relative flex-shrink-0">

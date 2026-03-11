@@ -313,7 +313,7 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
   return (
     <Link 
       ref={ref}
-      to={`/products/${product.slug}`} 
+      to={`/products/${(product as any).product_number}`} 
       className="group rounded-xl border border-border bg-background/50 overflow-hidden hover:border-muted-foreground/30 transition-all duration-200"
     >
       {/* Media */}

@@ -95,7 +95,7 @@ export function FrequentlyBoughtTogether({ productId, categoryId, storeId }: Pro
         {products.map((product: any) => (
           <Link
             key={product.id}
-            to={`/products/${product.slug}`}
+            to={`/products/${(product as any).product_number}`}
             className="group block rounded-lg border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
           >
             <div className="aspect-square bg-muted overflow-hidden">
