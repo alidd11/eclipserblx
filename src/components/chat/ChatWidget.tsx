@@ -36,8 +36,10 @@ export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_pro
     ? 'calc(4rem + env(safe-area-inset-bottom, 0px))'
     : 'max(1.5rem, env(safe-area-inset-bottom, 0px) + 1rem)';
 
+  const { isCustomStoreDomain } = useStoreDomain();
+
   const isAdminRoute = location.pathname.startsWith('/admin');
-  if (isAdminRoute) return null;
+  if (isAdminRoute || isCustomStoreDomain) return null;
 
   return (
     <button
