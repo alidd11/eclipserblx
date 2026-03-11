@@ -77,7 +77,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export default function SellerTickets() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
