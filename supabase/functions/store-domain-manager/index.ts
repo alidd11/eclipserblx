@@ -298,7 +298,11 @@ async function performHealthCheck(domain: string) {
     } else if (checks.error_code === "1000_non_cf") {
       checks.recommended_fix = "USE_A_RECORD";
     } else if (checks.error_code === "1000" && checks.is_cloudflare_zone) {
-      checks.recommended_fix = "CLOUDFLARE_CROSS_ZONE";
+      if (!checks.cname_target && checks.resolves_to_cloudflare) {
+        checks.recommended_fix = "USE_A_RECORD";
+      } else {
+        checks.recommended_fix = "CLOUDFLARE_CROSS_ZONE";
+      }
     } else if (checks.error_code === "1014") {
       checks.recommended_fix = "DISABLE_PROXY";
     } else if (checks.error_code === "403_direct_a") {
