@@ -224,11 +224,7 @@ export default function Recruiter() {
   const handleRequestPayout = () => {
     const amount = parseFloat(payoutAmount);
     if (isNaN(amount) || amount < recruiterSettings.minimumPayout) {
-      toast({
-        title: "Invalid Amount",
-        description: `Minimum payout is £${recruiterSettings.minimumPayout}`,
-        variant: "destructive",
-      });
+      toast.error("Invalid Amount", { description: `Minimum payout is £${recruiterSettings.minimumPayout}` });
       return;
     }
     if (amount > (balance?.available_balance || 0)) {
