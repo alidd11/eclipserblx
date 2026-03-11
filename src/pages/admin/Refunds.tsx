@@ -86,6 +86,7 @@ interface SellerReversal {
 }
 
 export default function AdminRefunds() {
+  const isInsideHub = useIsInsideHub();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedOrder, setSelectedOrder] = useState<RefundedOrder | null>(null);
