@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { SellerLayout } from '@/components/seller/SellerLayout';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -401,27 +402,32 @@ export default function SellerSettingsDomain() {
 
   if (storeLoading || domainsLoading) {
     return (
-      <div className="space-y-4 p-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-40 w-full" />
-      </div>
+      <SellerLayout>
+        <div className="space-y-4 p-6">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      </SellerLayout>
     );
   }
 
   if (!store) {
     return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="py-8 text-center">
-            <Globe className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">You need an approved store to use custom domains.</p>
-          </CardContent>
-        </Card>
-      </div>
+      <SellerLayout>
+        <div className="p-6">
+          <Card>
+            <CardContent className="py-8 text-center">
+              <Globe className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">You need an approved store to use custom domains.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </SellerLayout>
     );
   }
 
   return (
+    <SellerLayout>
     <div className="space-y-6 p-6 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
@@ -689,5 +695,6 @@ export default function SellerSettingsDomain() {
         </CardContent>
       </Card>
     </div>
+    </SellerLayout>
   );
 }
