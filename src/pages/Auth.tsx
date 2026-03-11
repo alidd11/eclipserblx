@@ -492,11 +492,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      toast({
-        title: `${providerLabel} Sign-In Failed`,
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error(`${providerLabel} Sign-In Failed`, { description: errorMessage });
       setErrors({ social: errorMessage });
     } finally {
       setSocialLoading(false);
