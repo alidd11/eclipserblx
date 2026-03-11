@@ -36,7 +36,7 @@ import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 export default function SellerPayouts() {
   const isInsideHub = useIsInsideHub();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const [selectedPayout, setSelectedPayout] = useState<any>(null);
   const [notes, setNotes] = useState("");
