@@ -259,6 +259,8 @@ async function performHealthCheck(domain: string) {
       checks.recommended_fix = "CLOUDFLARE_CROSS_ZONE";
     } else if (checks.error_code === "1014") {
       checks.recommended_fix = "DISABLE_PROXY";
+    } else if (checks.error_code === "403_direct_a") {
+      checks.recommended_fix = "USE_CNAME";
     } else if (checks.error_code === "403_cloudflare") {
       checks.recommended_fix = "CLOUDFLARE_CROSS_ZONE";
     } else if (checks.error_code === "403") {
