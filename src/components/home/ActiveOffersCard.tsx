@@ -183,7 +183,7 @@ export const ActiveOffersCard = forwardRef<HTMLDivElement>(function ActiveOffers
     };
 
     return (
-      <Wrapper {...wrapperProps as any}>
+      <Wrapper ref={ref} {...wrapperProps as any}>
         <div className="rounded-lg border border-border bg-card p-4 md:p-5">
           <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 mb-3">
             <div className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center">
