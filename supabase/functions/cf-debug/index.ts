@@ -6,46 +6,27 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
-  const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
-  if (!cfToken || !cfZoneId) {
-    return new Response(JSON.stringify({ error: "Missing CF creds" }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
-  async function cfApi(path: string, opts: RequestInit = {}) {
-    const res = await fetch(`https://api.cloudflare.com/client/v4${path}`, {
-      ...opts,
-      headers: { Authorization: `Bearer ${cfToken}`, "Content-Type": "application/json", ...(opts.headers || {}) },
-    });
-    const text = await res.text();
-    try { return { status: res.status, data: JSON.parse(text) }; } catch { return { status: res.status, raw: text.slice(0, 500) }; }
-  }
-
-  const zone = await cfApi(`/zones/${cfZoneId}`);
-  const accountId = (zone as any).data?.result?.account?.id;
-
-  // 1. Check worker deployments for errors
-  const deployments = await cfApi(`/accounts/${accountId}/workers/scripts/eclipse-og-proxy/deployments`);
+  // Test worker directly via workers.dev subdomain
+  const workerUrl = "https://eclipse-og-proxy.mqddfqd5gs.workers.dev/products/13";
+  const ua = "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)";
   
-  // 2. Enable workers.dev subdomain for testing
-  const enableSubdomain = await cfApi(`/accounts/${accountId}/workers/scripts/eclipse-og-proxy/subdomain`, {
-    method: "POST",
-    body: JSON.stringify({ enabled: true }),
+  const res = await fetch(workerUrl, {
+    headers: { "User-Agent": ua, "Host": "eclipserblx.com" },
+    redirect: "manual",
   });
-
-  // 3. Get the workers subdomain
-  const subdomain = await cfApi(`/accounts/${accountId}/workers/subdomain`);
   
-  // 4. Check for script tails/errors
-  const scriptSettings = await cfApi(`/accounts/${accountId}/workers/scripts/eclipse-og-proxy/settings`);
+  const body = await res.text();
+  const headers: Record<string, string> = {};
+  res.headers.forEach((v, k) => { headers[k] = v; });
 
   return new Response(JSON.stringify({
-    deployments: (deployments as any).data?.result || deployments,
-    enableSubdomain: (enableSubdomain as any).data || enableSubdomain,
-    subdomain: (subdomain as any).data?.result || subdomain,
-    scriptSettings: (scriptSettings as any).data?.result || scriptSettings,
+    testedUrl: workerUrl,
+    status: res.status,
+    allHeaders: headers,
+    xWorker: headers['x-eclipse-worker'] || null,
+    hasProductOg: body.includes('og:title') && !body.includes('Eclipse | Roblox Marketplace'),
+    bodyLen: body.length,
+    first500: body.slice(0, 500),
   }, null, 2), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
