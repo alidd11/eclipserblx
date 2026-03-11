@@ -139,6 +139,7 @@ async function performHealthCheck(domain: string) {
     cname_target: null,
     cname_is_proxied: false,
     resolves_to_cloudflare: false,
+    resolves_to_lovable_ip: false,
     http_reachable: false,
     http_status: null,
     error_code: null,
