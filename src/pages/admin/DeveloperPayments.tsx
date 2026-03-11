@@ -152,7 +152,7 @@ export default function DeveloperPayments() {
        setNewPayment({ developer_id: '', amount: '', payment_type: 'salary', due_date: '', notes: '' });
      },
      onError: (error) => {
-       toast({ title: 'Error', description: error.message, variant: 'destructive' });
+       toast.error(error.message || 'Failed to create payment');
      },
    });
  
