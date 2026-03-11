@@ -288,7 +288,7 @@ Deno.serve(async (req) => {
               status: 'completed',
               processed_at: new Date().toISOString(),
               processed_by: null, // auto-processed
-              notes: `Auto-processed via Stripe Connect. Transfer: ${transfer.id}`,
+              notes: `Auto-processed via Stripe Connect${fallbackNote}. Transfer: ${transfer.id}`,
               auto_processed: true,
             })
             .eq('id', payoutId);
