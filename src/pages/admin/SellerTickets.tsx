@@ -242,7 +242,7 @@ export default function SellerTickets() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-seller-tickets'] });
-      toast({ title: 'Status Updated' });
+      toast.success('Status Updated');
     },
     onError: (error) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
