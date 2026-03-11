@@ -154,6 +154,24 @@ function getPreferredDnsRecord(domain: string, zoneName?: string | null) {
   };
 }
 
+function getPreferredWwwRecord(domain: string, apexRecordType: "A" | "CNAME") {
+  if (apexRecordType === "A") {
+    return {
+      type: "A" as const,
+      name: `www.${domain}`,
+      content: "185.158.133.1",
+      proxied: false,
+    };
+  }
+
+  return {
+    type: "CNAME" as const,
+    name: `www.${domain}`,
+    content: "stores.eclipserblx.com",
+    proxied: false,
+  };
+}
+
 // ── Helper: Health check a domain ──
 async function performHealthCheck(domain: string) {
   const checks: Record<string, any> = {
