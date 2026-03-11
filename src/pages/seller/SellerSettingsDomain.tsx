@@ -312,7 +312,7 @@ export default function SellerSettingsDomain() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
-      toast({ title: 'Subdomain claimed!', description: `${store?.slug}.eclipserblx.com is now active.` });
+      toast.success('Subdomain claimed!', { description: `${store?.slug}.eclipserblx.com is now active.` });
     },
     onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
   });
