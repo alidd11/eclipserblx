@@ -332,11 +332,7 @@ export default function AdminCategories() {
       toast.success(editingCategory ? 'Category updated' : 'Category created', { description: `"${form.name}" has been saved.` });
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: error.message });
     },
   });
 
