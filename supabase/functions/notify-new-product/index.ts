@@ -59,7 +59,7 @@ serve(async (req) => {
       );
     }
 
-    const { product_id, product_name, product_slug, product_price, category_name }: NewProductRequest = await req.json();
+    const { product_id, product_name, product_slug, product_number, product_price, category_name }: NewProductRequest = await req.json();
 
     if (!product_id || !product_name) {
       throw new Error('Missing product_id or product_name');
