@@ -525,7 +525,7 @@ export function AffiliateCard() {
                 size="sm"
                 onClick={() => {
                   navigator.clipboard.writeText(`${window.location.origin}?ref=${profile.referral_code}`);
-                  toast({ title: "Copied!", description: "Referral link copied to clipboard" });
+                  toast.success("Copied!", { description: "Referral link copied to clipboard" });
                 }}
               >
                 Copy

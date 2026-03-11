@@ -256,11 +256,7 @@ export function LinkedAccountsCard({
     } catch (err) {
       console.error("Roblox link error:", err);
       setIsLinkingRoblox(false);
-      toastHook({
-        title: "Link Failed",
-        description: err instanceof Error ? err.message : "Could not start Roblox linking",
-        variant: "destructive",
-      });
+      toast.error("Link Failed", { description: err instanceof Error ? err.message : "Could not start Roblox linking" });
     }
   };
 

@@ -127,11 +127,7 @@ export function BecomeSellerCard() {
       resetForm();
     },
     onError: (error) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to submit application',
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: error.message || 'Failed to submit application' });
     },
   });
 

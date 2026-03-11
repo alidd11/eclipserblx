@@ -306,7 +306,7 @@ export default function IPShieldRegistry() {
                     queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
                     queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
                   } catch {
-                    toast({ title: 'Scan failed', variant: 'destructive' });
+                    toast.error('Scan failed');
                   } finally {
                     setScanningId(null);
                   }

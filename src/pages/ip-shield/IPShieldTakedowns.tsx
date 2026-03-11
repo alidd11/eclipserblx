@@ -287,7 +287,7 @@ export default function IPShieldTakedowns() {
                               queryClient.invalidateQueries({ queryKey: ['ip-shield-cases'] });
                               toast.success(data.suspicious_count > 0 ? `⚠️ ${data.suspicious_count} suspicious find(s)` : '✅ No suspicious activity', { description: `Scanned ${data.total_creations} creations from offender.` });
                             } catch (err: any) {
-                              toast({ title: 'Re-check failed', description: err.message, variant: 'destructive' });
+                              toast.error('Re-check failed', { description: err.message });
                             } finally {
                               setRecheckingCaseId(null);
                             }

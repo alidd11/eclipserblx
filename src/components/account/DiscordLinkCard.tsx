@@ -188,11 +188,7 @@ export const DiscordLinkCard = ({
     } catch (error: unknown) {
       console.error("Error unlinking Discord:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to unlink Discord account";
-      toast({
-        title: "Unlink Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      toast.error("Unlink Failed", { description: errorMessage });
     } finally {
       setIsUnlinking(false);
     }

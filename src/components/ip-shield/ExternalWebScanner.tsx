@@ -142,7 +142,7 @@ export function ExternalWebScanner() {
       toast.success('Complaint Filed!', { description: `DMCA complaint sent to our legal team for forwarding to ${data.registrar || 'the registrar'}.` });
     },
     onError: (error: any) => {
-      toast({ title: 'Failed to File', description: error.message, variant: 'destructive' });
+      toast.error('Failed to File', { description: error.message });
     },
   });
 

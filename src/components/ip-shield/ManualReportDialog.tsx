@@ -172,7 +172,7 @@ export function ManualReportDialog({ open, onOpenChange, registryEntries, userId
       onOpenChange(false);
       onReported();
     } catch (err: any) {
-      toast({ title: 'Failed to report', description: err.message, variant: 'destructive' });
+      toast.error('Failed to report', { description: err.message });
     } finally {
       setSubmitting(false);
     }
