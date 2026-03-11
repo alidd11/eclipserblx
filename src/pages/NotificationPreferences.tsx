@@ -147,11 +147,7 @@ export default function NotificationPreferences() {
         toast.error('Test Failed', { description: result.error || 'Could not send test notification.' });
       }
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to send test notification.',
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: 'Failed to send test notification.' });
     } finally {
       setTestingPush(false);
     }

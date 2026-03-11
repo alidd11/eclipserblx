@@ -396,7 +396,7 @@ export default function SellerSettingsDomain() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({ title: 'Copied to clipboard' });
+    toast.success('Copied to clipboard');
   };
 
   if (storeLoading || domainsLoading) {

@@ -74,7 +74,7 @@ export default function DeveloperPaymentDetail() {
        setPaymentMethod('');
      },
      onError: (error) => {
-       toast({ title: 'Error', description: error.message, variant: 'destructive' });
+       toast.error('Error', { description: error.message });
      },
    });
  

@@ -640,7 +640,7 @@ export default function SellerTickets() {
                           const file = e.target.files?.[0];
                           if (file) {
                             if (file.size > 10 * 1024 * 1024) {
-                              toast({ title: 'File too large', description: 'Max 10MB', variant: 'destructive' });
+                              toast.error('File too large', { description: 'Max 10MB' });
                               return;
                             }
                             setAttachmentFile(file);
