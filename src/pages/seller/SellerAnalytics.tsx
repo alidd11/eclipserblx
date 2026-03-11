@@ -328,7 +328,7 @@ export default function SellerAnalytics() {
               {/* Mobile dropdown */}
               <div className="sm:hidden mb-4">
                 <Select value={chartTab} onValueChange={setChartTab}>
-                  <SelectTrigger className="w-full bg-background">
+                  <SelectTrigger className="w-auto min-w-[140px] bg-background">
                     <SelectValue placeholder="Select view" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-border z-50">

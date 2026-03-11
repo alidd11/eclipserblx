@@ -170,7 +170,7 @@ export default function AdAnalyticsPage() {
         {/* Mobile Tab Dropdown */}
         {isMobile && (
           <Select value={activeTab} onValueChange={setActiveTab}>
-            <SelectTrigger className="w-full bg-card">
+            <SelectTrigger className="w-auto min-w-[140px] bg-card">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="z-[100] bg-card">

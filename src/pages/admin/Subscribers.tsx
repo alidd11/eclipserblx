@@ -326,7 +326,7 @@ export default function Subscribers() {
                 />
               </div>
               <Select value={filterType} onValueChange={(v) => setFilterType(v as FilterType)}>
-                <SelectTrigger className="w-full sm:w-48">
+                <SelectTrigger className="w-auto min-w-[140px]">
                   <SelectValue placeholder="Filter by type" />
                 </SelectTrigger>
                 <SelectContent>

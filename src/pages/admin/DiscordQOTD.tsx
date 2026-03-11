@@ -443,7 +443,7 @@ export default function DiscordQOTD() {
           {/* Mobile dropdown */}
           <div className="block sm:hidden">
             <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-auto min-w-[140px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="z-[100] bg-card">

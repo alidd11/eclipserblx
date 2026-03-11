@@ -194,7 +194,7 @@ export default function RevenueHub() {
           {/* Mobile select */}
           <div className="sm:hidden">
             <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger>
+              <SelectTrigger className="w-auto min-w-[140px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

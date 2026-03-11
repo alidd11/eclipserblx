@@ -292,7 +292,7 @@ export default function AdminAffiliates() {
                     <CardDescription>Review and process affiliate payout requests</CardDescription>
                   </div>
                   <Select value={payoutStatusFilter} onValueChange={setPayoutStatusFilter}>
-                    <SelectTrigger className="w-40">
+                    <SelectTrigger className="w-auto min-w-[140px]">
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
                     <SelectContent>
