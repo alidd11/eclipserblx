@@ -151,7 +151,7 @@ export default function SellerSupport() {
       }).catch(err => console.error('Failed to send seller ticket notification:', err));
     },
     onSuccess: () => {
-      toast({ title: 'Ticket Created', description: 'Your support ticket has been submitted.' });
+      toast.success('Ticket Created', { description: 'Your support ticket has been submitted.' });
       queryClient.invalidateQueries({ queryKey: ['seller-support-tickets'] });
       setCreateDialogOpen(false);
       resetForm();
