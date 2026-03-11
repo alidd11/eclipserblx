@@ -111,7 +111,7 @@ export default function NotificationPreferences() {
       if (result.success) {
         toast.success('Push Enabled', { description: 'You will now receive push notifications.' });
       } else if (result.error) {
-        toast({ title: 'Error', description: result.error, variant: 'destructive' });
+        toast.error('Error', { description: result.error });
       }
     }
   };
