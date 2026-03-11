@@ -261,7 +261,7 @@ export async function notifyProductRelease(
       title,
       body,
       tag: `product-release-${product.id}-${Date.now()}`,
-      url: `/products/${product.slug}`,
+      url: `/products/${(product as any).product_number || product.slug}`,
       requireInteraction: false,
     });
   } catch (error) {

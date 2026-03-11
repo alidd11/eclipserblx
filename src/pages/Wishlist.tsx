@@ -168,7 +168,7 @@ export default function Wishlist() {
                             
                             {product.is_active && (
                               <Button asChild size="sm">
-                                <Link to={`/product/${product.slug}`}>
+                                <Link to={`/products/${(product as any).product_number || product.slug}`}>
                                   View Product
                                 </Link>
                               </Button>

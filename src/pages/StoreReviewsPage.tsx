@@ -383,7 +383,7 @@ export default function StoreReviewsPage() {
                       {/* Product Link */}
                       {review.product && (
                         <Link 
-                          to={`/product/${review.product.slug}`}
+                          to={`/products/${(review.product as any).product_number || review.product.slug}`}
                           className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
                         >
                           {review.product.images?.[0] && (
