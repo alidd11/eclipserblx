@@ -5,7 +5,7 @@ const MAX_ITEMS = 12;
 
 interface RecentProduct {
   id: string;
-  slug: string;
+  slug: string; // Now stores product_number as string
   name: string;
   image?: string;
   price: number;
