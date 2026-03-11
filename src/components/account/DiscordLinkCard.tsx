@@ -119,11 +119,7 @@ export const DiscordLinkCard = ({
         } catch (err: unknown) {
           console.error("OAuth callback error:", err);
           const errorMessage = err instanceof Error ? err.message : "Failed to link Discord account";
-          toast({
-            title: "Link Failed",
-            description: errorMessage,
-            variant: "destructive",
-          });
+          toast.error("Link Failed", { description: errorMessage });
         } finally {
           setIsProcessingOAuth(false);
         }
