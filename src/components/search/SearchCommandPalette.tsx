@@ -272,7 +272,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                 <CommandItem
                   key={product.id}
                   value={`trending-${product.name}`}
-                  onSelect={() => handleSelect(`/products/${product.slug}`)}
+                  onSelect={() => handleSelect(`/products/${(product as any).product_number}`)}
                   className="cursor-pointer group"
                 >
                   <TrendingUp className="mr-2.5 h-3.5 w-3.5 text-primary/50 group-data-[selected=true]:text-primary transition-colors" />

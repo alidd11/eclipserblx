@@ -240,7 +240,7 @@ export function MyPurchasesCard() {
                     className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
                     title="View Product"
                   >
-                    <Link to={`/products/${product.slug}`}>
+                    <Link to={`/products/${(product as any).product_number}`}>
                       <ExternalLink className="h-4 w-4" />
                     </Link>
                   </Button>

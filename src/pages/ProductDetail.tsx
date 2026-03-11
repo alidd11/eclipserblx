@@ -116,7 +116,7 @@ export default function ProductDetail() {
     if (product) {
       addToRecentlyViewed({
         id: product.id,
-        slug: product.slug,
+        slug: String((product as any).product_number),
         name: product.name,
         image: product.images?.[0],
         price: product.price,

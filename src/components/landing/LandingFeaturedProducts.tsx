@@ -37,7 +37,7 @@ const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct; fe
     const hasMemberDiscount = isEligible && memberPrice < product.price;
     
     return (
-      <Link ref={ref} to={`/products/${product.slug}`} className="group block h-full">
+      <Link ref={ref} to={`/products/${(product as any).product_number}`} className="group block h-full">
         <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200">
           {/* Image */}
           <div className={`relative overflow-hidden bg-muted ${featured ? 'aspect-[16/10]' : 'aspect-[4/3]'}`}>
