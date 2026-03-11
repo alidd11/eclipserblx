@@ -14,37 +14,32 @@ Deno.serve(async (req) => {
     });
   }
 
-  async function cfGet(path: string) {
-    const res = await fetch(`https://api.cloudflare.com/client/v4${path}`, {
-      headers: { Authorization: `Bearer ${cfToken}` },
-    });
-    const text = await res.text();
-    try { return JSON.parse(text); } catch { return { raw: text.slice(0, 200), status: res.status }; }
-  }
-
-  const zone = await cfGet(`/zones/${cfZoneId}`);
+  const zone = await fetch(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}`, {
+    headers: { Authorization: `Bearer ${cfToken}` },
+  }).then(r => r.json());
+  
   const accountId = zone.result?.account?.id;
-  const routes = await cfGet(`/zones/${cfZoneId}/workers/routes`);
-  const redirectRules = await cfGet(`/zones/${cfZoneId}/rulesets/phases/http_request_dynamic_redirect/entrypoint`);
-  const botMgmt = await cfGet(`/zones/${cfZoneId}/bot_management`);
-
-  let workerSettings = null;
-  if (accountId) {
-    workerSettings = await cfGet(`/accounts/${accountId}/workers/scripts/eclipse-og-proxy/settings`);
+  if (!accountId) {
+    return new Response(JSON.stringify({ error: "No account ID" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
+  // Fetch the actual deployed worker script content
+  const scriptRes = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy/content`,
+    { headers: { Authorization: `Bearer ${cfToken}` } }
+  );
+  
+  const scriptText = await scriptRes.text();
+  
   return new Response(JSON.stringify({
-    zone: { name: zone.result?.name, status: zone.result?.status, plan: zone.result?.plan?.name },
-    routes: routes.result?.map((r: any) => ({ pattern: r.pattern, script: r.script })),
-    workerSettings: workerSettings?.result || workerSettings,
-    redirectRules: redirectRules.result?.rules?.map((r: any) => ({ 
-      desc: r.description, expr: r.expression, enabled: r.enabled 
-    })),
-    botMgmt: {
-      sbfm_da: botMgmt.result?.sbfm_definitely_automated,
-      sbfm_vb: botMgmt.result?.sbfm_verified_bots,
-      fight_mode: botMgmt.result?.fight_mode,
-    },
+    status: scriptRes.status,
+    contentType: scriptRes.headers.get("content-type"),
+    scriptLength: scriptText.length,
+    // Show first 3000 chars to inspect for syntax errors
+    scriptPreview: scriptText.slice(0, 3000),
+    scriptEnd: scriptText.slice(-500),
   }, null, 2), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
