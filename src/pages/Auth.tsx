@@ -193,11 +193,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
         } else if (errorMessage.includes('Invalid')) {
           setErrors({ otp: 'Invalid code. Please check and try again.' });
         } else {
-          toast({
-            title: t('common.error'),
-            description: errorMessage,
-            variant: 'destructive',
-          });
+          toast.error(t('common.error'), { description: errorMessage });
         }
       } else {
         toast({
