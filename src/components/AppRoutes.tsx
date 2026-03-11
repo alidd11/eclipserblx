@@ -341,10 +341,12 @@ export function AppRoutes() {
         <Route path="/seller/products/new" element={<SellerProductEditor />} />
         <Route path="/seller/products/:productId/edit" element={<SellerProductEditor />} />
         <Route path="/seller/orders" element={<SellerOrders />} />
-        <Route path="/seller/balance" element={<SellerBalance />} />
-        <Route path="/seller/revenue" element={<SellerRevenueBreakdown />} />
-        <Route path="/seller/transactions" element={<SellerTransactionHistory />} />
-        <Route path="/seller/fees" element={<SellerTaxFeeSummary />} />
+        <Route path="/seller/finance" element={<SellerFinanceHub />} />
+        <Route path="/seller/balance" element={<Navigate to="/seller/finance?tab=overview" replace />} />
+        <Route path="/seller/revenue" element={<Navigate to="/seller/finance?tab=revenue" replace />} />
+        <Route path="/seller/transactions" element={<Navigate to="/seller/finance?tab=transactions" replace />} />
+        <Route path="/seller/fees" element={<Navigate to="/seller/finance?tab=fees" replace />} />
+        <Route path="/seller/tax-summary" element={<Navigate to="/seller/finance?tab=tax" replace />} />
         <Route path="/seller/tabs" element={<SellerStoreTabs />} />
         <Route path="/seller/store-builder" element={<SellerStoreBuilder />} />
         <Route path="/seller/categories" element={<SellerCategories />} />
