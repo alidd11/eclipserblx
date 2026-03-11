@@ -92,7 +92,7 @@ export default function RecruiterCommissions() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Commission marked as qualified' });
+      toast.success('Commission marked as qualified');
       queryClient.invalidateQueries({ queryKey: ['recruiter-commissions-admin'] });
       queryClient.invalidateQueries({ queryKey: ['recruiter-stats'] });
     },
