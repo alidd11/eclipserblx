@@ -97,7 +97,7 @@ export default function IPStaffInbox() {
             <Input placeholder="Search by name, email, or subject..." value={search} onChange={e => setSearch(e.target.value)} className="max-w-sm" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-auto min-w-[140px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
               <SelectItem value="open">Open</SelectItem>
