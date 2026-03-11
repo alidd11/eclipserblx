@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
     if (fetchError) throw new Error(`Failed to fetch payouts: ${fetchError.message}`);
     if (!payouts || payouts.length === 0) {
       logStep('No pending payouts to process');
-      return new Response(JSON.stringify({ success: true, message: 'No pending payouts', ...results }), {
+      return new Response(JSON.stringify({ success: true, message: 'No pending payouts', processed: 0, skipped: 0, failed: 0 }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
