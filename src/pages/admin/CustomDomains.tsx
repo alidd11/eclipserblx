@@ -96,6 +96,27 @@ export default function AdminCustomDomains() {
     onSettled: () => setRunningHealthCheck(null),
   });
 
+  const fixHostnameMutation = useMutation({
+    mutationFn: async (domainId: string) => {
+      setFixingHostname(domainId);
+      const { data, error } = await supabase.functions.invoke('store-domain-manager', {
+        body: { action: 'admin-fix-hostname', domain_id: domainId },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-custom-domains'] });
+      console.log('Fix hostname result:', data);
+      const fixes = data.fixes?.length ?? 0;
+      toast.success(`Hostname fix applied`, { description: `${fixes} change(s). Check console for details.` });
+    },
+    onError: (err: any) => {
+      toast.error('Fix hostname failed', { description: err.message });
+    },
+    onSettled: () => setFixingHostname(null),
+  });
+
   const filtered = (domains ?? []).filter(d => {
     if (!search) return true;
     const q = search.toLowerCase();
