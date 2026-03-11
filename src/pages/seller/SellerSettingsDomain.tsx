@@ -7,14 +7,20 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import {
   Globe, CheckCircle, CheckCircle2, Circle, ExternalLink, Copy, Trash2,
   RefreshCw, Zap, Link, ShoppingCart, ChevronDown, AlertTriangle,
-  Shield, CloudOff, XCircle, Info, Activity, Cloud,
+  Shield, CloudOff, XCircle, Info, Activity, Cloud, Key, Eye, EyeOff,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DomainHealthDisplay } from '@/components/domains/DomainHealthDisplay';
