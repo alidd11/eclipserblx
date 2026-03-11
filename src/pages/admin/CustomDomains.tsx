@@ -14,7 +14,7 @@ import {
   Activity, Search, ExternalLink, Shield, Clock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 function StatusBadge({ status }: { status: string }) {
