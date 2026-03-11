@@ -18,6 +18,7 @@ import { useStaffPresence } from '@/hooks/useStaffPresence';
 import { useAdminManifest } from '@/hooks/useAdminManifest';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useAdminTextScaling } from '@/hooks/useAdminTextScaling';
+import { useIsInsideHub } from './AdminHubContext';
 
 
 
