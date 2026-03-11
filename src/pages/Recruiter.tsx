@@ -228,11 +228,7 @@ export default function Recruiter() {
       return;
     }
     if (amount > (balance?.available_balance || 0)) {
-      toast({
-        title: "Insufficient Balance",
-        description: "You don't have enough available balance.",
-        variant: "destructive",
-      });
+      toast.error("Insufficient Balance", { description: "You don't have enough available balance." });
       return;
     }
     requestPayoutMutation.mutate(amount);
