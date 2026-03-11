@@ -300,7 +300,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                   value={product.name}
                   onSelect={() => {
                     addSearch(searchQuery);
-                    handleSelect(`/products/${product.slug}`);
+                    handleSelect(`/products/${(product as any).product_number}`);
                   }}
                   className="cursor-pointer group"
                 >
