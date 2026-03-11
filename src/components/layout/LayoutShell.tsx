@@ -86,7 +86,7 @@ function LayoutShellInner({
         </Sheet>
 
         {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 h-[100dvh]">
+      <div className="flex-1 flex flex-col min-w-0 md:h-[100dvh]">
           <Header
             showDesktopNav={false}
             onMenuClick={() => setMobileOpen(true)}
@@ -95,7 +95,7 @@ function LayoutShellInner({
           <Suspense fallback={null}><UniversalBreadcrumb /></Suspense>
           <main
             id="main-content"
-            className={mainClassName ?? "flex-1 overflow-y-auto overflow-x-hidden"}
+            className={mainClassName ?? "flex-1 md:overflow-y-auto overflow-x-hidden"}
             style={mainStyle ?? { paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
             {contentClassName ? (
