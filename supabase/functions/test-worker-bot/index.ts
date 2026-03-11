@@ -16,9 +16,9 @@ Deno.serve(async (req) => {
 
   const tests: Record<string, unknown> = {};
 
-  // Test 1: Direct product URL with Discord bot UA
-  const ua = "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)";
-  const res1 = await fetch(targetUrl, { headers: { "User-Agent": ua }, redirect: "manual" });
+  // Test 1: Direct URL with Discord bot UA
+  const botUa = "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)";
+  const res1 = await fetch(targetUrl, { headers: { "User-Agent": botUa }, redirect: "manual" });
   const body1 = await res1.text();
   const h1: Record<string, string> = {};
   res1.headers.forEach((v, k) => { h1[k] = v; });
@@ -27,75 +27,49 @@ Deno.serve(async (req) => {
     status: res1.status,
     location: h1["location"] || null,
     xWorker: h1["x-eclipse-worker"] || null,
-    server: h1["server"] || null,
-    cfRay: h1["cf-ray"] || null,
     hasOg: body1.includes("og:title"),
     first200: body1.slice(0, 200),
   };
 
-  // Test 2: /share/ URL (should trigger Cloudflare Redirect Rule)
-  const shareUrl = targetUrl.replace("eclipserblx.com/", "eclipserblx.com/share/");
-  const res2 = await fetch(shareUrl, { headers: { "User-Agent": ua }, redirect: "manual" });
+  // Test 2: Same URL with HUMAN UA (Chrome)
+  const humanUa = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+  const res2 = await fetch(targetUrl, { headers: { "User-Agent": humanUa }, redirect: "manual" });
   const body2 = await res2.text();
-  tests["shareRedirect"] = {
-    url: shareUrl,
+  const h2: Record<string, string> = {};
+  res2.headers.forEach((v, k) => { h2[k] = v; });
+  tests["directHuman"] = {
+    url: targetUrl,
     status: res2.status,
-    location: res2.headers.get("location"),
+    location: h2["location"] || null,
+    xWorker: h2["x-eclipse-worker"] || null,
     hasOg: body2.includes("og:title"),
-    first300: body2.slice(0, 300),
+    first200: body2.slice(0, 200),
   };
 
-  // Test 3: If /share/ redirected, follow it
-  if (res2.status >= 300 && res2.status < 400 && res2.headers.get("location")) {
-    const redirectTarget = res2.headers.get("location")!;
-    const res3 = await fetch(redirectTarget, { headers: { "User-Agent": ua }, redirect: "manual" });
-    const body3 = await res3.text();
-    tests["shareFollowed"] = {
-      url: redirectTarget,
+  // Test 3: If human got a redirect, follow it once
+  if (res2.status >= 300 && res2.status < 400 && h2["location"]) {
+    const res3 = await fetch(h2["location"], { headers: { "User-Agent": humanUa }, redirect: "manual" });
+    const h3: Record<string, string> = {};
+    res3.headers.forEach((v, k) => { h3[k] = v; });
+    tests["humanRedirectFollowed"] = {
+      url: h2["location"],
       status: res3.status,
-      hasOg: body3.includes("og:title"),
-      ogTitle: body3.match(/og:title[^>]*content="([^"]+)"/)?.[1] || null,
-      first300: body3.slice(0, 300),
+      location: h3["location"] || null,
+      xWorker: h3["x-eclipse-worker"] || null,
     };
   }
 
-  // Test 4: Query redirect rules + ZONE SETUP TYPE
-  const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
-  const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
-  if (cfToken && cfZoneId) {
-    try {
-      const [epRes, zoneRes] = await Promise.all([
-        fetch(
-          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/phases/http_request_dynamic_redirect/entrypoint`,
-          { headers: { Authorization: `Bearer ${cfToken}` } }
-        ),
-        fetch(
-          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}`,
-          { headers: { Authorization: `Bearer ${cfToken}` } }
-        ),
-      ]);
-      const [epData, zoneData] = await Promise.all([epRes.json(), zoneRes.json()]);
-      
-      tests["redirectRulesState"] = {
-        success: epData.success,
-        ruleCount: epData.result?.rules?.length || 0,
-        rules: (epData.result?.rules || []).map((r: any) => ({
-          description: r.description,
-          enabled: r.enabled,
-        })),
-      };
-      
-      tests["zoneSetup"] = {
-        type: zoneData.result?.type,
-        status: zoneData.result?.status,
-        nameServers: zoneData.result?.name_servers,
-        originalNameServers: zoneData.result?.original_name_servers,
-        plan: zoneData.result?.plan?.name,
-      };
-    } catch (e) {
-      tests["error"] = (e as Error).message;
-    }
-  }
+  // Test 4: Direct origin fetch (bypass Worker) to see if origin redirects
+  const originUrl = "https://roleplay-hub-shop.lovable.app/";
+  const res4 = await fetch(originUrl, { headers: { "User-Agent": humanUa }, redirect: "manual" });
+  const h4: Record<string, string> = {};
+  res4.headers.forEach((v, k) => { h4[k] = v; });
+  tests["originDirect"] = {
+    url: originUrl,
+    status: res4.status,
+    location: h4["location"] || null,
+    first200: (await res4.text()).slice(0, 200),
+  };
 
   return new Response(JSON.stringify(tests, null, 2), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },

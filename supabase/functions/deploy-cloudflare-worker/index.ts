@@ -85,12 +85,22 @@ async function fetchOrigin(request, tag) {
       body: request.body,
       redirect: "manual"
     });
-    // Pass the original hostname so the SPA can resolve the store
     newReq.headers.set("X-Forwarded-Host", hostname);
     var r = await fetch(newReq);
+    
+    // Origin may redirect (e.g. lovable.app → custom domain) — follow internally
+    // but return the final response under the store subdomain
+    var maxRedirects = 5;
+    while (r.status >= 300 && r.status < 400 && r.headers.get("Location") && maxRedirects-- > 0) {
+      var loc = r.headers.get("Location");
+      r = await fetch(loc, { redirect: "manual" });
+    }
+    
     var h = new Headers(r.headers);
     h.set("X-Eclipse-Worker", tag);
-    return new Response(r.body, { status: r.status, headers: h });
+    // Strip any Location header so browser stays on the subdomain
+    h.delete("Location");
+    return new Response(r.body, { status: r.status >= 300 && r.status < 400 ? 200 : r.status, headers: h });
   }
   
   // Main domain - normal passthrough
