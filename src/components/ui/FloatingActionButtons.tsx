@@ -1,15 +1,13 @@
 import { useState, useEffect, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, MessageCircle, ArrowUp } from 'lucide-react';
+import { ShoppingCart, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
-import { useChatPanel } from '@/hooks/useChatPanel';
 
 export const FloatingActionButtons = forwardRef<HTMLDivElement>(function FloatingActionButtons(_props, ref) {
   const navigate = useNavigate();
   const { items } = useCart();
-  const { openChat } = useChatPanel();
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -30,6 +28,7 @@ export const FloatingActionButtons = forwardRef<HTMLDivElement>(function Floatin
 
   const cartItemCount = items.length;
 
+  // Position FABs above the ChatWidget (which sits at ~1.5rem from bottom, h-14 = 3.5rem)
   return (
     <AnimatePresence>
       {isVisible && (
@@ -38,7 +37,11 @@ export const FloatingActionButtons = forwardRef<HTMLDivElement>(function Floatin
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className="fixed bottom-16 xs:bottom-20 right-3 xs:right-4 z-50 flex flex-col gap-2 xs:gap-3"
+          className="fixed z-50 flex flex-col gap-2 xs:gap-3"
+          style={{
+            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 5.75rem)',
+            right: 'max(1.5rem, env(safe-area-inset-right, 0px) + 1rem)',
+          }}
         >
           {/* Scroll to top */}
           <AnimatePresence>
@@ -58,15 +61,6 @@ export const FloatingActionButtons = forwardRef<HTMLDivElement>(function Floatin
               </motion.div>
             )}
           </AnimatePresence>
-
-          {/* Support chat */}
-          <Button
-            size="icon"
-            onClick={() => openChat()}
-            className="h-10 w-10 xs:h-12 xs:w-12 rounded-full shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground border-0 touch-target"
-          >
-            <MessageCircle className="h-4 w-4 xs:h-5 xs:w-5" />
-          </Button>
 
           {/* Cart with badge */}
           <div className="relative">
