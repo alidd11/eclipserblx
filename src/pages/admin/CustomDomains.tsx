@@ -53,7 +53,7 @@ function HealthBadge({ healthCheck }: { healthCheck: any }) {
 }
 
 export default function AdminCustomDomains() {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [runningHealthCheck, setRunningHealthCheck] = useState<string | null>(null);
