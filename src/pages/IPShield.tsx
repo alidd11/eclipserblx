@@ -179,7 +179,7 @@ function CopyDetectionTab({ userId }: { userId?: string }) {
       queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
       queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
     } catch (err: any) {
-      toast({ title: 'Scan failed', description: err.message, variant: 'destructive' });
+      toast.error('Scan failed', { description: err.message });
     } finally {
       setScanning(false);
     }
