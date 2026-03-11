@@ -105,6 +105,8 @@ Deno.serve(async (req) => {
   const runId = `auto-payout-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   try {
+    const results = { processed: 0, skipped: 0, failed: 0, details: [] as any[] };
+
     logStep('Starting auto-payout run', { runId });
 
     // Fetch pending payouts older than 5 minutes, limit to MAX_PAYOUTS_PER_RUN
@@ -125,7 +127,7 @@ Deno.serve(async (req) => {
     if (fetchError) throw new Error(`Failed to fetch payouts: ${fetchError.message}`);
     if (!payouts || payouts.length === 0) {
       logStep('No pending payouts to process');
-      return new Response(JSON.stringify({ success: true, message: 'No pending payouts', ...results }), {
+      return new Response(JSON.stringify({ success: true, message: 'No pending payouts', processed: 0, skipped: 0, failed: 0 }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
