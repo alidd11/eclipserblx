@@ -14,6 +14,7 @@ import {
   Activity, Search, ExternalLink, Shield, Clock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { DomainHealthDisplay } from '@/components/domains/DomainHealthDisplay';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -259,7 +260,9 @@ export default function AdminCustomDomains() {
                           </TableCell>
                           <TableCell><StatusBadge status={domain.status} /></TableCell>
                           <TableCell><SslBadge status={domain.ssl_status} /></TableCell>
-                          <TableCell><HealthBadge healthCheck={hc} /></TableCell>
+                          <TableCell>
+                            <DomainHealthDisplay healthCheck={hc} domain={domain.domain} isCloudflare={domain.is_cloudflare_zone} compact />
+                          </TableCell>
                           <TableCell>
                             {domain.is_cloudflare_zone ? (
                               <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-[10px]">
@@ -304,30 +307,27 @@ export default function AdminCustomDomains() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-destructive" />
-                Domains with Issues
+                Domains with Issues ({filtered.filter(d => (d.last_health_check as any)?.error_code).length})
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
               {filtered
                 .filter(d => (d.last_health_check as any)?.error_code)
                 .map(domain => {
                   const hc = domain.last_health_check as any;
                   return (
-                    <Alert key={domain.id} variant="destructive">
-                      <XCircle className="h-4 w-4" />
-                      <AlertTitle className="text-sm">{domain.domain}</AlertTitle>
-                      <AlertDescription className="text-xs mt-1 space-y-1">
-                        <p>{hc.diagnosis}</p>
-                        {hc.recommended_fix && (
-                          <p className="opacity-70">Fix: {hc.recommended_fix}</p>
-                        )}
-                        {domain.is_cloudflare_zone && (
-                          <p className="flex items-center gap-1 opacity-70">
-                            <Cloud className="h-3 w-3" /> Domain is on Cloudflare — seller must use DNS-only (grey cloud) or A record to 185.158.133.1
-                          </p>
-                        )}
-                      </AlertDescription>
-                    </Alert>
+                    <div key={domain.id} className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-sm font-medium">{domain.domain}</span>
+                        <span className="text-xs text-muted-foreground">— {(domain.stores as any)?.name}</span>
+                      </div>
+                      <DomainHealthDisplay
+                        healthCheck={hc}
+                        domain={domain.domain}
+                        isCloudflare={domain.is_cloudflare_zone}
+                      />
+                    </div>
                   );
                 })}
             </CardContent>
