@@ -1,12 +1,13 @@
-import { ReactNode, useLayoutEffect } from 'react';
+import { ReactNode, useState, useEffect, useLayoutEffect } from 'react';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { useIOSChatKeyboard } from '@/hooks/useIOSChatKeyboard';
 import { Navigate, useLocation } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminInstallPrompt } from './AdminInstallPrompt';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Menu, RefreshCw } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useSupportTicketNotifications } from '@/hooks/useSupportTicketNotifications';
 import { useSellerTicketNotifications } from '@/hooks/useSellerTicketNotifications';
@@ -16,6 +17,7 @@ import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useAdminTextScaling } from '@/hooks/useAdminTextScaling';
 import { useIsInsideHub } from './AdminHubContext';
 import { LayoutShell } from '@/components/layout/LayoutShell';
+import { EclipseLogo } from '@/components/ui/EclipseLogo';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -32,6 +34,16 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
     location.pathname.startsWith('/admin/admin-chat') ||
     location.pathname.startsWith('/admin/staff-messages') ||
     location.pathname.startsWith('/admin/live-chat');
+
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Check if running as PWA
+  useEffect(() => {
+    const standalone = window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+    setIsStandalone(standalone);
+  }, []);
 
   // iOS PWA: lock document scroll on chat pages to prevent rubber-banding
   useLayoutEffect(() => {
@@ -73,6 +85,15 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
   useStaffPresence();
   useAdminManifest();
   useAdminTextScaling();
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    if ('caches' in window) {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map(name => caches.delete(name)));
+    }
+    window.location.reload();
+  };
 
   const isGateLoading = loading || (!!user?.id && permissionsLoading);
 
@@ -148,7 +169,38 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
             isMobileDrawer
           />
         )}
-        headerProps={{ hideBrandName: true }}
+        customHeader={(onMenuClick) => (
+          <header className="sticky top-0 shrink-0 z-40 border-b border-border bg-card px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0 md:hidden"
+                onClick={onMenuClick}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              <EclipseLogo size="sm" />
+              <span className="font-display font-bold text-sm">Admin Dashboard</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {isStandalone && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                >
+                  <RefreshCw className={cn("h-5 w-5", isRefreshing && "animate-spin")} />
+                </Button>
+              )}
+            </div>
+          </header>
+        )}
+        showBreadcrumb={false}
+        showFooter={false}
+        showFABs={false}
         wrapperClassName={cn(
           'flex w-full bg-background overflow-x-hidden relative max-w-full min-w-0',
           isChatPage ? 'flex-col overflow-hidden bg-card' : 'min-h-[100dvh]'
