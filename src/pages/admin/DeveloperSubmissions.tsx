@@ -111,7 +111,7 @@
      },
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ['developer-submissions'] });
-       toast({ title: 'Submission created', description: 'Your product has been submitted for review.' });
+       toast.success('Submission created', { description: 'Your product has been submitted for review.' });
        setIsSubmitOpen(false);
        setNewSubmission({ product_name: '', product_description: '', category_id: '', price: '' });
      },
