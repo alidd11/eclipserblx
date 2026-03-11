@@ -134,7 +134,7 @@
      },
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ['developer-submissions'] });
-       toast({ title: 'Submission updated' });
+       toast.success('Submission updated');
        setIsReviewOpen(false);
        setSelectedSubmission(null);
        setReviewNotes('');
