@@ -347,6 +347,12 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
     }
   }
 
+  // When rendered inside a hub page, skip the layout chrome (sidebar, header, etc.)
+  // since the parent hub already provides it. Just render children directly.
+  if (isInsideHub) {
+    return <>{children}</>;
+  }
+
   return (
     <TooltipProvider delayDuration={0}>
       {/* 
