@@ -387,7 +387,7 @@ export default function AdminIncomeSources() {
             </div>
             <div className="flex items-center gap-2">
               <Select value={periodFilter} onValueChange={(v) => setPeriodFilter(v as TimePeriod)}>
-                <SelectTrigger className="w-[140px] h-8 text-xs">
+                <SelectTrigger className="w-auto min-w-[140px] h-8 text-xs">
                   <Calendar className="h-3 w-3 mr-1" />
                   <SelectValue />
                 </SelectTrigger>
