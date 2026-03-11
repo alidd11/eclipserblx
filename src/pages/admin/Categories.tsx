@@ -352,11 +352,7 @@ export default function AdminCategories() {
       toast.success('Category deleted', { description: 'The category has been removed.' });
     },
     onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete category.',
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: 'Failed to delete category.' });
     },
   });
 
