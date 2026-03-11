@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router-dom';
 import { Gift, FileText, Link2 } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminHubProvider } from '@/components/admin/AdminHubContext';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
