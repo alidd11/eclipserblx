@@ -181,11 +181,7 @@ export function LinkedAccountsCard({
           onUpdate();
         } catch (err: unknown) {
           console.error("OAuth callback error:", err);
-          toastHook({
-            title: "Link Failed",
-            description: err instanceof Error ? err.message : "Failed to link Discord account",
-            variant: "destructive",
-          });
+          toast.error("Link Failed", { description: err instanceof Error ? err.message : "Failed to link Discord account" });
         } finally {
           setIsProcessingOAuth(false);
         }
