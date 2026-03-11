@@ -165,10 +165,7 @@ export default function Subscribers() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Emails Sent',
-        description: `Successfully sent to ${data?.sent || emails.length} recipients.`,
-      });
+      toast.success('Emails Sent', { description: `Successfully sent to ${data?.sent || emails.length} recipients.` });
 
       setSendEmailOpen(false);
       setEmailSubject('');
