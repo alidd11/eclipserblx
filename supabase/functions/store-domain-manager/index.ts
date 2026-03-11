@@ -804,6 +804,106 @@ async function resolveHostname(hostname: string) {
   return jsonOk(data);
 }
 
+// ── Action: admin-fix-hostname (service role only — recreate custom hostname + check SSL) ──
+async function adminFixHostname(domainId: string) {
+  const admin = getSupabaseAdmin();
+  const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
+  const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
+  if (!cfToken || !cfZoneId) return jsonError("Missing Cloudflare credentials", 500);
+
+  const { data: domainRecord } = await admin.from("store_domains").select("*").eq("id", domainId).single();
+  if (!domainRecord) return jsonError("Domain not found", 404);
+
+  const domain = domainRecord.domain;
+  const fixes: string[] = [];
+  const details: Record<string, unknown> = {};
+
+  // 1. Check existing custom hostname status
+  if (domainRecord.cloudflare_hostname_id) {
+    const { data: chData } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames/${domainRecord.cloudflare_hostname_id}`);
+    if (chData?.success) {
+      details.existing_hostname = {
+        id: chData.result.id,
+        hostname: chData.result.hostname,
+        status: chData.result.status,
+        ssl_status: chData.result.ssl?.status,
+        ssl_method: chData.result.ssl?.method,
+        ssl_validation_errors: chData.result.ssl?.validation_errors,
+        ssl_validation_records: chData.result.ssl?.validation_records,
+        ownership_verification: chData.result.ownership_verification,
+        ownership_verification_http: chData.result.ownership_verification_http,
+      };
+
+      const sslStatus = chData.result.ssl?.status;
+      if (sslStatus === "active") {
+        await admin.from("store_domains").update({ ssl_status: "active" }).eq("id", domainId);
+        fixes.push("SSL already active — updated database");
+      } else {
+        fixes.push(`Current SSL status: ${sslStatus} — deleting and recreating hostname`);
+        await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames/${domainRecord.cloudflare_hostname_id}`, { method: "DELETE" });
+        fixes.push("Deleted old custom hostname");
+      }
+    } else {
+      details.existing_hostname_error = chData?.errors;
+      fixes.push("Old custom hostname not found or errored — will create new one");
+    }
+  }
+
+  // 2. Create new custom hostname if needed
+  const needsNew = !domainRecord.cloudflare_hostname_id || 
+    (details.existing_hostname && (details.existing_hostname as any).ssl_status !== "active");
+
+  if (needsNew) {
+    const { data: newCh } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames`, {
+      method: "POST",
+      body: JSON.stringify({
+        hostname: domain,
+        ssl: { method: "http", type: "dv", settings: { min_tls_version: "1.2" } },
+      }),
+    });
+
+    if (newCh?.success) {
+      const newId = newCh.result.id;
+      const newSslStatus = newCh.result.ssl?.status;
+      await admin.from("store_domains").update({
+        cloudflare_hostname_id: newId,
+        ssl_status: newSslStatus === "active" ? "active" : "pending",
+      }).eq("id", domainId);
+      fixes.push(`Created new custom hostname: ${newId}, SSL: ${newSslStatus}`);
+      details.new_hostname = {
+        id: newId,
+        ssl_status: newSslStatus,
+        ssl_validation_records: newCh.result.ssl?.validation_records,
+        ownership_verification: newCh.result.ownership_verification,
+      };
+    } else {
+      details.create_error = newCh?.errors;
+      const { data: listCh } = await cfFetch<any[]>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames?hostname=${encodeURIComponent(domain)}`);
+      if (listCh?.success && listCh.result?.length > 0) {
+        const existing = listCh.result[0];
+        await admin.from("store_domains").update({
+          cloudflare_hostname_id: existing.id,
+          ssl_status: existing.ssl?.status === "active" ? "active" : "pending",
+        }).eq("id", domainId);
+        fixes.push(`Found existing hostname: ${existing.id}, SSL: ${existing.ssl?.status}`);
+        details.found_existing = existing;
+      } else {
+        fixes.push("Failed to create custom hostname");
+      }
+    }
+  }
+
+  // 3. Re-run health check
+  const healthResult = await performHealthCheck(domain);
+  await admin.from("store_domains").update({
+    last_health_check: healthResult,
+    last_health_check_at: new Date().toISOString(),
+    is_cloudflare_zone: healthResult.is_cloudflare_zone,
+  }).eq("id", domainId);
+
+  return jsonOk({ domain, fixes, details, health_check: healthResult });
+}
+
 // ── Action: admin-verify-domain (service role only) ──
 async function adminVerifyDomain(domainId: string) {
   const admin = getSupabaseAdmin();
