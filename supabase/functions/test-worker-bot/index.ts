@@ -20,11 +20,15 @@ Deno.serve(async (req) => {
   const ua = "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)";
   const res1 = await fetch(targetUrl, { headers: { "User-Agent": ua }, redirect: "manual" });
   const body1 = await res1.text();
+  const h1: Record<string, string> = {};
+  res1.headers.forEach((v, k) => { h1[k] = v; });
   tests["directBot"] = {
     url: targetUrl,
     status: res1.status,
-    location: res1.headers.get("location"),
-    xWorker: res1.headers.get("x-eclipse-worker"),
+    location: h1["location"] || null,
+    xWorker: h1["x-eclipse-worker"] || null,
+    server: h1["server"] || null,
+    cfRay: h1["cf-ray"] || null,
     hasOg: body1.includes("og:title"),
     first200: body1.slice(0, 200),
   };
