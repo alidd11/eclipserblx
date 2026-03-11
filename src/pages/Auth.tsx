@@ -247,10 +247,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       if (error) {
         toast.error(t('common.error'), { description: error.message });
       } else {
-        toast({
-          title: t('auth.passwordUpdated'),
-          description: t('auth.passwordResetSuccess'),
-        });
+        toast.success(t('auth.passwordUpdated'), { description: t('auth.passwordResetSuccess') });
         navigate('/');
       }
     } finally {
