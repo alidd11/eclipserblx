@@ -402,10 +402,12 @@ export default function SellerSettingsDomain() {
 
   if (storeLoading || domainsLoading) {
     return (
-      <div className="space-y-4 p-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-40 w-full" />
-      </div>
+      <SellerLayout>
+        <div className="space-y-4 p-6">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      </SellerLayout>
     );
   }
 
