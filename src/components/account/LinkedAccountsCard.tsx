@@ -54,7 +54,7 @@ export function LinkedAccountsCard({
   onUpdate,
 }: LinkedAccountsCardProps) {
   const queryClient = useQueryClient();
-  const { toast: toastHook } = useToast();
+  
   
   // Discord state
   const [isLinkingDiscord, setIsLinkingDiscord] = useState(false);
