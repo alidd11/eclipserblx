@@ -510,7 +510,7 @@ This notice is sent under the Digital Millennium Copyright Act (DMCA), 17 U.S.C.
 
   const handleSubmit = async () => {
     if (!goodFaith || !accuracy || !ownership) {
-      toast({ title: 'Please confirm all statements', variant: 'destructive' });
+      toast.error('Please confirm all statements');
       return;
     }
     if (filingMethod === 'agent' && !agentAuth) {
