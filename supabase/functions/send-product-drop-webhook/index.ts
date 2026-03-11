@@ -78,7 +78,7 @@ serve(async (req) => {
     // Fetch product with store info
     const { data: product, error: productError } = await supabaseClient
       .from('products')
-      .select(`id, name, slug, price, images, description, stores!inner(name, slug)`)
+      .select(`id, name, slug, product_number, price, images, description, stores!inner(name, slug)`)
       .eq('id', productId)
       .single();
 
