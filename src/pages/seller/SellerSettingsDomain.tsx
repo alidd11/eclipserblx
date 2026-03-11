@@ -519,6 +519,26 @@ export default function SellerSettingsDomain() {
     onError: (e: any) => toast.error('Error', { description: e.message }),
   });
 
+  const autoFixDns = useMutation({
+    mutationFn: async (domainId: string) => {
+      const { data, error } = await supabase.functions.invoke('store-domain-manager', {
+        body: { action: 'auto-fix-dns', domain_id: domainId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['store-domains'] });
+      if (data.success) {
+        toast.success('DNS auto-fix complete!', { description: data.message });
+      } else {
+        toast.error('Auto-fix completed with errors', { description: data.message });
+      }
+    },
+    onError: (e: any) => toast.error('Auto-fix failed', { description: e.message }),
+  });
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard');
