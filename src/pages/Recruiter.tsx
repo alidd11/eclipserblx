@@ -66,7 +66,7 @@ interface RecruiterCommission {
 export default function Recruiter() {
   usePageMeta({ title: 'Recruiter Programme', description: 'Recruit new sellers to Eclipse and earn commissions when their stores qualify. Join the recruiter programme.', canonicalPath: '/recruiter' });
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const { settings: recruiterSettings, isLoading: settingsLoading } = useRecruiterSettings();
   const [payoutAmount, setPayoutAmount] = useState('');
