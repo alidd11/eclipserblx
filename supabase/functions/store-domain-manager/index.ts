@@ -154,6 +154,24 @@ function getPreferredDnsRecord(domain: string, zoneName?: string | null) {
   };
 }
 
+function getPreferredWwwRecord(domain: string, apexRecordType: "A" | "CNAME") {
+  if (apexRecordType === "A") {
+    return {
+      type: "A" as const,
+      name: `www.${domain}`,
+      content: "185.158.133.1",
+      proxied: false,
+    };
+  }
+
+  return {
+    type: "CNAME" as const,
+    name: `www.${domain}`,
+    content: "stores.eclipserblx.com",
+    proxied: false,
+  };
+}
+
 // ── Helper: Health check a domain ──
 async function performHealthCheck(domain: string) {
   const checks: Record<string, any> = {
@@ -654,45 +672,50 @@ async function autoFixDns(userId: string, domainId: string) {
         errors.push(`Failed to create ${preferredRecord.type}: ${JSON.stringify(createData?.errors)}`);
       }
     }
-    const wwwDomain = `www.${domain}`;
+    const preferredWwwRecord = getPreferredWwwRecord(domain, preferredRecord.type);
     const { data: wwwListData } = await cfFetch<any[]>(
       sellerToken,
-      `${CF_API}/zones/${sellerZoneId}/dns_records?name=${encodeURIComponent(wwwDomain)}`
+      `${CF_API}/zones/${sellerZoneId}/dns_records?name=${encodeURIComponent(preferredWwwRecord.name)}`
     );
     const wwwRecords = wwwListData?.result ?? [];
 
+    const hasPreferredWwwRecord = wwwRecords.some((rec: any) => {
+      if (preferredWwwRecord.type === "A") {
+        return rec.type === "A" && rec.content === preferredWwwRecord.content && rec.proxied === false;
+      }
+      return rec.type === "CNAME" && rec.content === preferredWwwRecord.content && rec.proxied === false;
+    });
+
     // Delete bad www records
     for (const rec of wwwRecords) {
-      if (rec.type === "CNAME" && rec.proxied === true) {
+      const shouldDelete = preferredWwwRecord.type === "A"
+        ? (rec.type === "CNAME" || (rec.type === "A" && (rec.content !== preferredWwwRecord.content || rec.proxied === true)))
+        : (rec.type === "A" || (rec.type === "CNAME" && (rec.content !== preferredWwwRecord.content || rec.proxied === true)));
+
+      if (shouldDelete) {
         await cfFetch<any>(sellerToken, `${CF_API}/zones/${sellerZoneId}/dns_records/${rec.id}`, { method: "DELETE" });
-        fixes.push(`Deleted proxied www CNAME`);
-      } else if (rec.type === "A") {
-        await cfFetch<any>(sellerToken, `${CF_API}/zones/${sellerZoneId}/dns_records/${rec.id}`, { method: "DELETE" });
-        fixes.push(`Deleted www A record`);
+        fixes.push(`Deleted conflicting www ${rec.type} record: ${rec.content}${rec.proxied ? " (proxied)" : ""}`);
       }
     }
 
-    // Create www CNAME if needed
-    const hasWwwCname = wwwRecords.some(
-      (r: any) => r.type === "CNAME" && r.content === "stores.eclipserblx.com" && !r.proxied
-    );
-    if (!hasWwwCname) {
+    // Create preferred www record if needed
+    if (!hasPreferredWwwRecord) {
       const { data: wwwData } = await cfFetch<any>(
         sellerToken,
         `${CF_API}/zones/${sellerZoneId}/dns_records`,
         {
           method: "POST",
           body: JSON.stringify({
-            type: "CNAME",
-            name: wwwDomain,
-            content: "stores.eclipserblx.com",
-            proxied: false,
+            type: preferredWwwRecord.type,
+            name: preferredWwwRecord.name,
+            content: preferredWwwRecord.content,
+            proxied: preferredWwwRecord.proxied,
             ttl: 1,
           }),
         }
       );
       if (wwwData?.success) {
-        fixes.push(`Created www CNAME: ${wwwDomain} → stores.eclipserblx.com (DNS-only)`);
+        fixes.push(`Created ${preferredWwwRecord.type} for www: ${preferredWwwRecord.name} → ${preferredWwwRecord.content} (DNS-only)`);
       }
     }
 
@@ -944,6 +967,61 @@ async function adminFixHostname(domainId: string) {
               errors.push(`Failed to create ${preferredRecord.type}: ${JSON.stringify(createData?.errors)}`);
             }
           }
+
+          const preferredWwwRecord = getPreferredWwwRecord(domain, preferredRecord.type);
+          const { data: wwwListData } = await cfFetch<any[]>(
+            sellerToken,
+            `${CF_API}/zones/${sellerZoneId}/dns_records?name=${encodeURIComponent(preferredWwwRecord.name)}`
+          );
+          const wwwRecords = wwwListData?.result ?? [];
+
+          const hasPreferredWwwRecord = wwwRecords.some((rec: any) => {
+            if (preferredWwwRecord.type === "A") {
+              return rec.type === "A" && rec.content === preferredWwwRecord.content && rec.proxied === false;
+            }
+            return rec.type === "CNAME" && rec.content === preferredWwwRecord.content && rec.proxied === false;
+          });
+
+          for (const rec of wwwRecords) {
+            const shouldDelete = preferredWwwRecord.type === "A"
+              ? (rec.type === "CNAME" || (rec.type === "A" && (rec.content !== preferredWwwRecord.content || rec.proxied === true)))
+              : (rec.type === "A" || (rec.type === "CNAME" && (rec.content !== preferredWwwRecord.content || rec.proxied === true)));
+
+            if (shouldDelete) {
+              const { data: delData } = await cfFetch<any>(
+                sellerToken,
+                `${CF_API}/zones/${sellerZoneId}/dns_records/${rec.id}`,
+                { method: "DELETE" }
+              );
+              if (delData?.success) {
+                fixes.push(`Deleted conflicting www ${rec.type} record: ${rec.content}${rec.proxied ? " (proxied)" : ""}`);
+              } else {
+                errors.push(`Failed to delete www ${rec.type} record: ${JSON.stringify(delData?.errors)}`);
+              }
+            }
+          }
+
+          if (!hasPreferredWwwRecord) {
+            const { data: createWwwData } = await cfFetch<any>(
+              sellerToken,
+              `${CF_API}/zones/${sellerZoneId}/dns_records`,
+              {
+                method: "POST",
+                body: JSON.stringify({
+                  type: preferredWwwRecord.type,
+                  name: preferredWwwRecord.name,
+                  content: preferredWwwRecord.content,
+                  proxied: preferredWwwRecord.proxied,
+                  ttl: 1,
+                }),
+              }
+            );
+            if (createWwwData?.success) {
+              fixes.push(`Created ${preferredWwwRecord.type} for www: ${preferredWwwRecord.name} → ${preferredWwwRecord.content} (DNS-only)`);
+            } else {
+              errors.push(`Failed to create www ${preferredWwwRecord.type}: ${JSON.stringify(createWwwData?.errors)}`);
+            }
+          }
         } else {
           errors.push("Seller Cloudflare credentials are invalid");
         }
@@ -956,6 +1034,9 @@ async function adminFixHostname(domainId: string) {
   }
 
   // ── Step B: Fix custom hostname on OUR Cloudflare zone ──
+  const preHostnameHealth = await performHealthCheck(domain);
+  details.pre_hostname_fix_health = preHostnameHealth;
+
   if (domainRecord.cloudflare_hostname_id) {
     const { data: chData } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames/${domainRecord.cloudflare_hostname_id}`);
     if (chData?.success) {
@@ -967,12 +1048,20 @@ async function adminFixHostname(domainId: string) {
         ssl_validation_errors: chData.result.ssl?.validation_errors,
       };
 
+      const hostnameStatus = chData.result.status;
       const sslStatus = chData.result.ssl?.status;
-      if (sslStatus === "active") {
+      const shouldRecreate =
+        hostnameStatus !== "active" ||
+        sslStatus !== "active" ||
+        preHostnameHealth.error_code === "1000";
+
+      if (!shouldRecreate) {
         await admin.from("store_domains").update({ ssl_status: "active" }).eq("id", domainId);
-        fixes.push("SSL already active — updated database");
+        fixes.push("SSL and hostname are already active — updated database");
       } else {
-        fixes.push(`Current SSL status: ${sslStatus} — deleting and recreating hostname`);
+        fixes.push(
+          `Recreating custom hostname (status=${hostnameStatus}, ssl=${sslStatus}, pre_check_error=${preHostnameHealth.error_code ?? "none"})`
+        );
         await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames/${domainRecord.cloudflare_hostname_id}`, { method: "DELETE" });
         fixes.push("Deleted old custom hostname");
       }
@@ -983,8 +1072,13 @@ async function adminFixHostname(domainId: string) {
   }
 
   // Create new custom hostname if needed
-  const needsNew = !domainRecord.cloudflare_hostname_id || 
-    (details.existing_hostname && (details.existing_hostname as any).ssl_status !== "active");
+  const existingHostname = details.existing_hostname as any;
+  const needsNew =
+    !domainRecord.cloudflare_hostname_id ||
+    !existingHostname ||
+    existingHostname.ssl_status !== "active" ||
+    existingHostname.status !== "active" ||
+    preHostnameHealth.error_code === "1000";
 
   if (needsNew) {
     const { data: newCh } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames`, {
