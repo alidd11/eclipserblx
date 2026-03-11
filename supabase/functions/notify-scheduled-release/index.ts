@@ -183,7 +183,7 @@ serve(async (req) => {
         title,
         message: body,
         type: 'scheduled_release',
-        link: `/products/${product.slug}`,
+        link: `/products/${(product as any).product_number || product.slug}`,
       }));
 
       const { error: notifError } = await supabase
