@@ -1,36 +1,51 @@
 
 
-## Issues Identified
+## Consistent Mobile Dropdowns — One-Line Layout
 
-**Issue 1: Sidebar positioned at top of screen on desktop**
-The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
+### Problem
+On mobile, hub tab selectors and page filter dropdowns (e.g. "Seller Payouts" + "Pending") stack vertically, each taking a full line. This wastes space and looks inconsistent across pages.
 
-**Issue 2: Excessive black empty space in the content area**
-The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
+### Solution
+1. **Hub tab selectors**: Keep as full-width on mobile (these are the primary navigation for the page — they should be prominent).
 
-## Plan
+2. **Filter dropdowns inside hub child pages**: When a child page renders inside a hub, its filter dropdown(s) should sit on the same line as the hub tab selector. We do this by making the filter row use `flex` with `items-center gap-3` and ensuring filter selects use a compact width (`w-auto min-w-[120px]`) instead of fixed `w-48`.
 
-### 1. Widen the content area on the Categories page
-- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
-- Reduce vertical padding between the header and grid
-- Tighten the gap between the page title/description and the cards
+3. **Standalone pages with header + filter**: Ensure the header and filter are on one row via `flex items-center justify-between`.
 
-### 2. Improve the PageHeader component
-- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
-- This applies globally to all pages using PageHeader
+### Files to Update
 
-### 3. Make category cards fill space better
-- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
-- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
-- Reduce grid gap slightly so cards feel more connected
+**Hub pages** — wrap the mobile tab selector `<div className="sm:hidden">` to allow inline filters:
+- `PayoutsHub.tsx` — no change needed (tab selector only, filter is in child)
+- `DisputesRefundsHub.tsx` — same pattern
+- `AffiliateHub.tsx` — same pattern
+- `RevenueHub.tsx` — same pattern
+- `SellerFinanceHub.tsx` — same pattern
 
-### 4. Sidebar desktop alignment fix
-- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
-- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
-- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
+**Child/standalone pages with filter selects** — make filter row compact and inline:
+1. `SellerPayouts.tsx` — change `<div className="flex items-center justify-end">` + `w-48` trigger to `w-auto min-w-[140px]`
+2. `IPReports.tsx` — header + filter already in a flex row; make `w-48` → `w-auto min-w-[140px]`  
+3. `SellerProductReview.tsx` — same pattern
+4. `SellerProductsAll.tsx` — has multiple filters in a row; make `w-48` → `w-auto min-w-[140px]`
+5. `SellerTickets.tsx` — filter row; same fix
+6. `SellerRefunds.tsx` — filter; same fix
+7. `Analytics.tsx` — mobile tab dropdown
+8. `RobloxSettings.tsx` — mobile tab dropdown
 
-### Files to modify
-- `src/pages/Categories.tsx` — widen container, tighten spacing
-- `src/components/ui/PageHeader.tsx` — reduce bottom margin
-- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
+### Specific Changes
+
+**Pattern for filter `SelectTrigger`s:**
+```
+Before: className="w-48"
+After:  className="w-auto min-w-[140px]"
+```
+
+**Pattern for hub mobile tab selectors** (currently each takes full width on its own line):
+No structural change needed — the tab selector is intentionally full-width as it's the primary nav. The issue in the screenshot is the child page's filter also being full-width below it.
+
+**SellerPayouts.tsx line 204-218** — the filter wrapper `<div className="flex items-center justify-end">` stays, but the trigger gets `w-auto min-w-[140px]` so it doesn't stretch unnecessarily.
+
+For pages where **both** a hub tab selector AND a filter appear on mobile, we'll keep them stacked but make each compact (not full-width), so they don't dominate.
+
+### Summary
+~8 files updated, all select triggers changed from fixed `w-48` to `w-auto min-w-[140px]`, ensuring dropdowns are compact and don't dominate the mobile viewport.
 
