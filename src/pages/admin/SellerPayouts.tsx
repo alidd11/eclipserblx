@@ -45,8 +45,7 @@ export default function SellerPayouts() {
         .from("seller_payouts")
         .select(`
           *,
-          stores (name, store_id, payout_method),
-          store_payment_details!inner(paypal_email),
+          stores (name, store_id, payout_method, store_payment_details (paypal_email)),
           profiles!seller_payouts_seller_id_fkey (display_name, email)
         `)
         .order("created_at", { ascending: false });
