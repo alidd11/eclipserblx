@@ -9566,7 +9566,7 @@ export type Database = {
       }
       claim_payout_for_processing: {
         Args: {
-          p_expected_status?: string
+          p_expected_status: string
           p_lock_id: string
           p_payout_id: string
         }
