@@ -139,11 +139,7 @@ export default function Subscribers() {
   // Send mass email
   const handleSendEmail = async () => {
     if (!emailSubject.trim() || !emailContent.trim()) {
-      toast({
-        title: 'Missing Fields',
-        description: 'Please fill in subject and message.',
-        variant: 'destructive',
-      });
+      toast.error('Missing Fields', { description: 'Please fill in subject and message.' });
       return;
     }
 
