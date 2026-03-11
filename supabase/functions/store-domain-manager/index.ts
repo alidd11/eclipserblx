@@ -804,21 +804,108 @@ async function resolveHostname(hostname: string) {
   return jsonOk(data);
 }
 
-// ── Action: admin-fix-hostname (service role only — recreate custom hostname + check SSL) ──
+// ── Action: admin-fix-hostname (service role / admin — recreate custom hostname + fix seller DNS) ──
 async function adminFixHostname(domainId: string) {
   const admin = getSupabaseAdmin();
   const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
   const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
   if (!cfToken || !cfZoneId) return jsonError("Missing Cloudflare credentials", 500);
 
-  const { data: domainRecord } = await admin.from("store_domains").select("*").eq("id", domainId).single();
+  const { data: domainRecord } = await admin.from("store_domains").select("*, stores!inner(id)").eq("id", domainId).single();
   if (!domainRecord) return jsonError("Domain not found", 404);
 
   const domain = domainRecord.domain;
+  const storeId = (domainRecord as any).stores?.id;
   const fixes: string[] = [];
   const details: Record<string, unknown> = {};
+  const errors: string[] = [];
 
-  // 1. Check existing custom hostname status
+  // ── Step A: Fix seller's DNS using their Cloudflare credentials (if available) ──
+  if (storeId) {
+    const { data: creds } = await admin
+      .from("store_credentials")
+      .select("cloudflare_api_token, cloudflare_zone_id")
+      .eq("store_id", storeId)
+      .single();
+
+    if (creds?.cloudflare_api_token && creds?.cloudflare_zone_id) {
+      const sellerToken = creds.cloudflare_api_token;
+      const sellerZoneId = creds.cloudflare_zone_id;
+
+      try {
+        // Verify seller token works
+        const { data: verifyData } = await cfFetch<any>(sellerToken, `${CF_API}/zones/${sellerZoneId}`);
+        if (verifyData?.success) {
+          fixes.push("Seller Cloudflare credentials verified");
+
+          // List existing DNS records
+          const { data: dnsListData } = await cfFetch<any[]>(
+            sellerToken,
+            `${CF_API}/zones/${sellerZoneId}/dns_records?name=${encodeURIComponent(domain)}`
+          );
+          const existingRecords = dnsListData?.result ?? [];
+          details.seller_dns_records = existingRecords.map((r: any) => ({
+            type: r.type, name: r.name, content: r.content, proxied: r.proxied,
+          }));
+
+          // Delete conflicting records
+          for (const rec of existingRecords) {
+            const shouldDelete =
+              (rec.type === "CNAME" && rec.proxied === true) ||
+              (rec.type === "A") ||
+              (rec.type === "CNAME" && rec.content !== "stores.eclipserblx.com");
+
+            if (shouldDelete) {
+              const { data: delData } = await cfFetch<any>(
+                sellerToken,
+                `${CF_API}/zones/${sellerZoneId}/dns_records/${rec.id}`,
+                { method: "DELETE" }
+              );
+              if (delData?.success) {
+                fixes.push(`Deleted ${rec.type} record: ${rec.name} → ${rec.content}${rec.proxied ? " (proxied)" : ""}`);
+              } else {
+                errors.push(`Failed to delete ${rec.type} record ${rec.name}: ${JSON.stringify(delData?.errors)}`);
+              }
+            }
+          }
+
+          // Create correct CNAME → stores.eclipserblx.com (DNS-only)
+          const hasCorrectCname = existingRecords.some(
+            (r: any) => r.type === "CNAME" && r.content === "stores.eclipserblx.com" && !r.proxied
+          );
+          if (!hasCorrectCname) {
+            const { data: cnameData } = await cfFetch<any>(
+              sellerToken,
+              `${CF_API}/zones/${sellerZoneId}/dns_records`,
+              {
+                method: "POST",
+                body: JSON.stringify({
+                  type: "CNAME",
+                  name: domain,
+                  content: "stores.eclipserblx.com",
+                  proxied: false,
+                  ttl: 1,
+                }),
+              }
+            );
+            if (cnameData?.success) {
+              fixes.push(`Created CNAME: ${domain} → stores.eclipserblx.com (DNS-only)`);
+            } else {
+              errors.push(`Failed to create CNAME: ${JSON.stringify(cnameData?.errors)}`);
+            }
+          }
+        } else {
+          errors.push("Seller Cloudflare credentials are invalid");
+        }
+      } catch (e: any) {
+        errors.push(`Seller DNS fix error: ${e.message}`);
+      }
+    } else {
+      details.seller_dns = "No Cloudflare credentials stored for this store";
+    }
+  }
+
+  // ── Step B: Fix custom hostname on OUR Cloudflare zone ──
   if (domainRecord.cloudflare_hostname_id) {
     const { data: chData } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames/${domainRecord.cloudflare_hostname_id}`);
     if (chData?.success) {
@@ -827,11 +914,7 @@ async function adminFixHostname(domainId: string) {
         hostname: chData.result.hostname,
         status: chData.result.status,
         ssl_status: chData.result.ssl?.status,
-        ssl_method: chData.result.ssl?.method,
         ssl_validation_errors: chData.result.ssl?.validation_errors,
-        ssl_validation_records: chData.result.ssl?.validation_records,
-        ownership_verification: chData.result.ownership_verification,
-        ownership_verification_http: chData.result.ownership_verification_http,
       };
 
       const sslStatus = chData.result.ssl?.status;
@@ -849,7 +932,7 @@ async function adminFixHostname(domainId: string) {
     }
   }
 
-  // 2. Create new custom hostname if needed
+  // Create new custom hostname if needed
   const needsNew = !domainRecord.cloudflare_hostname_id || 
     (details.existing_hostname && (details.existing_hostname as any).ssl_status !== "active");
 
@@ -870,14 +953,10 @@ async function adminFixHostname(domainId: string) {
         ssl_status: newSslStatus === "active" ? "active" : "pending",
       }).eq("id", domainId);
       fixes.push(`Created new custom hostname: ${newId}, SSL: ${newSslStatus}`);
-      details.new_hostname = {
-        id: newId,
-        ssl_status: newSslStatus,
-        ssl_validation_records: newCh.result.ssl?.validation_records,
-        ownership_verification: newCh.result.ownership_verification,
-      };
+      details.new_hostname = { id: newId, ssl_status: newSslStatus };
     } else {
       details.create_error = newCh?.errors;
+      // Try to find existing
       const { data: listCh } = await cfFetch<any[]>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames?hostname=${encodeURIComponent(domain)}`);
       if (listCh?.success && listCh.result?.length > 0) {
         const existing = listCh.result[0];
@@ -886,14 +965,13 @@ async function adminFixHostname(domainId: string) {
           ssl_status: existing.ssl?.status === "active" ? "active" : "pending",
         }).eq("id", domainId);
         fixes.push(`Found existing hostname: ${existing.id}, SSL: ${existing.ssl?.status}`);
-        details.found_existing = existing;
       } else {
-        fixes.push("Failed to create custom hostname");
+        errors.push("Failed to create custom hostname");
       }
     }
   }
 
-  // 3. Re-run health check
+  // ── Step C: Re-run health check ──
   const healthResult = await performHealthCheck(domain);
   await admin.from("store_domains").update({
     last_health_check: healthResult,
@@ -901,7 +979,16 @@ async function adminFixHostname(domainId: string) {
     is_cloudflare_zone: healthResult.is_cloudflare_zone,
   }).eq("id", domainId);
 
-  return jsonOk({ domain, fixes, details, health_check: healthResult });
+  return jsonOk({
+    domain,
+    fixes,
+    errors,
+    details,
+    health_check: healthResult,
+    message: errors.length === 0
+      ? `Fixed! ${fixes.length} change(s) applied. DNS may take 2-5 minutes to propagate.`
+      : `Completed with ${errors.length} error(s). ${fixes.length} fix(es) applied.`,
+  });
 }
 
 // ── Action: admin-verify-domain (service role only) ──
