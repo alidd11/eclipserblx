@@ -8,29 +8,24 @@ import { useIdentityVerification } from '@/hooks/useIdentityVerification';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { 
   Shield, Plus, Clock, CheckCircle, XCircle, AlertTriangle,
   FileText, Send, Eye, LogIn, UserCheck, Loader2, ExternalLink,
-  CreditCard, Crown, Search, Radar, Users,
-  TrendingUp, TrendingDown, Minus, Gavel, ShieldCheck, History,
-  Copy, Mail, BarChart3, Target, Zap, CheckSquare
+  CreditCard, Crown, Mail,
 } from 'lucide-react';
-import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { IPShieldContactDialog } from '@/components/ip-shield/IPShieldContactDialog';
 import { useIPShieldSubscription } from '@/hooks/useIPShieldSubscription';
+import { IP_SHIELD_TIERS, TierCard, CustomPlanCard } from '@/components/ip-shield/IPShieldPricingSection';
 
+// ─── Constants ───
 
 const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof Clock }> = {
   submitted: { label: 'Submitted', variant: 'secondary', icon: Clock },
@@ -42,694 +37,14 @@ const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'secon
 };
 
 const PLATFORM_LABELS: Record<string, string> = {
-  roblox: 'Roblox',
-  discord: 'Discord',
-  youtube: 'YouTube',
-  tiktok: 'TikTok',
-  other_marketplace: 'Other Marketplace',
-  other: 'Other',
+  roblox: 'Roblox', discord: 'Discord', youtube: 'YouTube',
+  tiktok: 'TikTok', other_marketplace: 'Other Marketplace', other: 'Other',
 };
 
 const TYPE_LABELS: Record<string, string> = {
-  copyright: 'Copyright Infringement',
-  trademark: 'Trademark Violation',
-  stolen_asset: 'Stolen Asset',
-  unauthorized_resale: 'Unauthorized Resale',
-  other: 'Other',
+  copyright: 'Copyright Infringement', trademark: 'Trademark Violation',
+  stolen_asset: 'Stolen Asset', unauthorized_resale: 'Unauthorized Resale', other: 'Other',
 };
-
-// ─── ANALYTICS DASHBOARD ───
-function AnalyticsDashboard({ userId }: { userId?: string }) {
-  const { data: stats } = useQuery({
-    queryKey: ['ip-shield-analytics', userId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('ip_shield_stats' as any)
-        .select('*')
-        .eq('creator_id', userId!)
-        .single();
-      if (error) return null;
-      return data as any;
-    },
-    enabled: !!userId,
-  });
-
-  const { data: recentDetections } = useQuery({
-    queryKey: ['recent-detections-count', userId],
-    queryFn: async () => {
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const { count } = await supabase
-        .from('ip_copy_detections' as any)
-        .select('*', { count: 'exact', head: true })
-        .eq('creator_id', userId!)
-        .gte('created_at', sevenDaysAgo)
-        .is('dismissed_at', null);
-      return count || 0;
-    },
-    enabled: !!userId,
-  });
-
-  if (!stats) return null;
-
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-      <Card className="border-destructive/20">
-        <CardContent className="pt-4 pb-3">
-          <div className="flex items-center gap-2 mb-1">
-            <Target className="h-4 w-4 text-destructive" />
-            <span className="text-xs text-muted-foreground">Active Threats</span>
-          </div>
-          <div className="text-2xl font-bold">{stats.active_detections || 0}</div>
-          <div className="flex gap-1 mt-1">
-            {stats.high_threat_count > 0 && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">🔴 {stats.high_threat_count}</Badge>}
-            {stats.medium_threat_count > 0 && <Badge className="text-[10px] px-1.5 py-0">🟡 {stats.medium_threat_count}</Badge>}
-            {stats.low_threat_count > 0 && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">🟢 {stats.low_threat_count}</Badge>}
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="pt-4 pb-3">
-          <div className="flex items-center gap-2 mb-1">
-            <Gavel className="h-4 w-4 text-primary" />
-            <span className="text-xs text-muted-foreground">Takedowns Filed</span>
-          </div>
-          <div className="text-2xl font-bold">{stats.takedowns_filed || 0}</div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="pt-4 pb-3">
-          <div className="flex items-center gap-2 mb-1">
-            <Radar className="h-4 w-4 text-primary" />
-            <span className="text-xs text-muted-foreground">Unique Copies</span>
-          </div>
-          <div className="text-2xl font-bold">{stats.unique_copies_found || 0}</div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="pt-4 pb-3">
-          <div className="flex items-center gap-2 mb-1">
-            <BarChart3 className="h-4 w-4 text-primary" />
-            <span className="text-xs text-muted-foreground">Avg Similarity</span>
-          </div>
-          <div className="text-2xl font-bold">{Math.round(stats.avg_similarity || 0)}%</div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="pt-4 pb-3">
-          <div className="flex items-center gap-2 mb-1">
-            <Zap className="h-4 w-4 text-primary" />
-            <span className="text-xs text-muted-foreground">New This Week</span>
-          </div>
-          <div className="text-2xl font-bold">{recentDetections || 0}</div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-// ─── COPY DETECTION TAB (with bulk takedowns) ───
-function CopyDetectionTab({ userId }: { userId?: string }) {
-  const queryClient = useQueryClient();
-  const [scanning, setScanning] = useState(false);
-  const [takedownTarget, setTakedownTarget] = useState<any>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [bulkMode, setBulkMode] = useState(false);
-
-  const { data: detections, isLoading } = useQuery({
-    queryKey: ['copy-detections', userId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('ip_copy_detections' as any)
-        .select('*')
-        .eq('creator_id', userId!)
-        .is('dismissed_at', null)
-        .order('similarity_score', { ascending: false });
-      if (error) throw error;
-      return data as any[];
-    },
-    enabled: !!userId,
-  });
-
-  const runScan = async () => {
-    setScanning(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('scan-roblox-copies');
-      if (error) throw error;
-      toast.success('Scan complete', { description: `Found ${data?.total_detected || 0} potential copies. ${data?.thumbnails_analyzed || 0} thumbnails analysed.` });
-      queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
-      queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
-    } catch (err: any) {
-      toast.error('Scan failed', { description: err.message });
-    } finally {
-      setScanning(false);
-    }
-  };
-
-  const dismissDetection = async (id: string) => {
-    const { error } = await supabase
-      .from('ip_copy_detections' as any)
-      .update({ dismissed_at: new Date().toISOString(), status: 'dismissed' } as any)
-      .eq('id', id);
-    if (!error) {
-      queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
-      queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
-    }
-  };
-
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const selectAllHigh = () => {
-    const highIds = (detections || []).filter((d: any) => d.similarity_score >= 50 && !d.creator_verified && !d.takedown_request_id).map((d: any) => d.id);
-    setSelectedIds(new Set(highIds));
-  };
-
-  const bulkFileTakedowns = async () => {
-    if (selectedIds.size === 0) return;
-    const selected = (detections || []).filter((d: any) => selectedIds.has(d.id));
-    
-    let filed = 0;
-    for (const detection of selected) {
-      const gameUrl = `https://www.roblox.com/games/${detection.detected_place_id || detection.detected_universe_id}`;
-      const matchReasons = (detection.match_reasons || []).join(', ');
-      
-      const { data, error } = await supabase
-        .from('takedown_requests')
-        .insert({
-          creator_id: userId,
-          status: 'submitted',
-          priority: detection.similarity_score >= 70 ? 'high' : 'medium',
-          infringement_type: 'copyright',
-          target_platform: 'roblox',
-          infringing_url: gameUrl,
-          original_work_description: `Auto-detected copy. Game: "${detection.game_name}" by ${detection.game_creator_name}. Similarity: ${detection.similarity_score}%. Matches: ${matchReasons}.`,
-          evidence_notes: `Bulk filed. Score: ${detection.similarity_score}%. ${matchReasons}`,
-          good_faith_statement: true,
-          accuracy_statement: true,
-          ownership_confirmed: true,
-          filing_method: 'agent',
-          agent_authorization: true,
-        } as any)
-        .select('id, case_number')
-        .single();
-
-      if (!error && data?.id) {
-        await supabase
-          .from('ip_copy_detections' as any)
-          .update({ takedown_request_id: data.id, status: 'takedown_filed' } as any)
-          .eq('id', detection.id);
-
-        // Fire agent filing
-        await supabase.functions.invoke('file-dmca-takedown', {
-          body: { takedown_id: data.id },
-        });
-        filed++;
-      }
-    }
-
-    toast.success(`${filed} takedowns filed`, { description: 'DMCA notices queued for review and sending.' });
-    setSelectedIds(new Set());
-    setBulkMode(false);
-    queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
-    queryClient.invalidateQueries({ queryKey: ['takedown-requests'] });
-    queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
-  };
-
-  const TrendIcon = ({ trend }: { trend: string }) => {
-    if (trend === 'rising') return <TrendingUp className="h-3 w-3 text-destructive" />;
-    if (trend === 'falling') return <TrendingDown className="h-3 w-3 text-green-500" />;
-    return <Minus className="h-3 w-3 text-muted-foreground" />;
-  };
-
-  const actionableDetections = (detections || []).filter((d: any) => !d.creator_verified && !d.takedown_request_id && d.similarity_score >= 30);
-
-  return (
-    <TabsContent value="copies" className="space-y-4 mt-4">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <p className="text-sm text-muted-foreground">
-          Multi-source Roblox scan using AI thumbnails, name matching, and description plagiarism detection.
-        </p>
-        <div className="flex items-center gap-2">
-          {actionableDetections.length > 0 && (
-            <Button
-              variant={bulkMode ? "default" : "outline"}
-              size="sm"
-              onClick={() => { setBulkMode(!bulkMode); setSelectedIds(new Set()); }}
-            >
-              <CheckSquare className="h-4 w-4 mr-1" />
-              {bulkMode ? 'Cancel Bulk' : 'Bulk Takedown'}
-            </Button>
-          )}
-          <Button variant="outline" size="sm" onClick={runScan} disabled={scanning}>
-            {scanning ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
-            {scanning ? 'Scanning...' : 'Run Scan'}
-          </Button>
-        </div>
-      </div>
-
-      {bulkMode && selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-destructive/5 border border-destructive/20">
-          <span className="text-sm font-medium">{selectedIds.size} selected</span>
-          <Button variant="outline" size="sm" onClick={selectAllHigh}>Select All High/Medium</Button>
-          <div className="flex-1" />
-          <Button variant="destructive" size="sm" onClick={bulkFileTakedowns} className="gap-1">
-            <Gavel className="h-3.5 w-3.5" />
-            File {selectedIds.size} Takedown{selectedIds.size > 1 ? 's' : ''}
-          </Button>
-        </div>
-      )}
-
-      {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 w-full" />)}
-        </div>
-      ) : !detections || detections.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Radar className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-            <h3 className="font-semibold text-lg">No copies detected</h3>
-            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
-              Register works in the IP Registry with search keywords, then run a scan to find potential copies on Roblox.
-            </p>
-            <Button className="mt-4" variant="outline" onClick={runScan} disabled={scanning}>
-              {scanning ? 'Scanning...' : 'Run Your First Scan'}
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-3">
-          {detections.map((d: any) => {
-            const score = d.similarity_score || 0;
-            const reasons: string[] = d.match_reasons || [];
-            const hasThumbMatch = reasons.some((r: string) => r.startsWith('thumbnail_similar'));
-            const hasDescMatch = reasons.some((r: string) => r.includes('description') || r.includes('plagiarism') || r.includes('sentence'));
-            const hasSuspicious = reasons.some((r: string) => r.startsWith('suspicious_phrase'));
-            const creatorVerified = d.creator_verified;
-            const ownsGroup = reasons.includes('creator_owns_group');
-            const trend = d.player_count_trend || 'stable';
-            const detectionCount = d.detection_count || 1;
-            const threatLevel = creatorVerified ? 'secondary' : score >= 70 ? 'destructive' : score >= 40 ? 'default' : 'secondary';
-            const isSelected = selectedIds.has(d.id);
-            const canSelect = bulkMode && !creatorVerified && !d.takedown_request_id && score >= 30;
-
-            return (
-              <Card key={d.id} className={`transition-colors ${isSelected ? 'border-destructive ring-1 ring-destructive/20' : !creatorVerified && score >= 70 ? 'border-destructive/40' : 'hover:border-destructive/20'}`}>
-                <CardContent className="py-4">
-                  <div className="flex items-start gap-3">
-                    {canSelect && (
-                      <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={() => toggleSelect(d.id)}
-                        className="mt-1"
-                      />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium">{d.game_name}</span>
-                        {creatorVerified ? (
-                          <Badge variant="secondary" className="text-xs gap-1">
-                            <ShieldCheck className="h-3 w-3" />
-                            Verified Owner
-                          </Badge>
-                        ) : (
-                          <Badge variant={threatLevel as any} className="text-xs">
-                            {score >= 70 ? '🔴 High Match' : score >= 40 ? '🟡 Moderate' : '🟢 Low'}
-                            {score > 0 && ` · ${score}%`}
-                          </Badge>
-                        )}
-                        {d.takedown_request_id && (
-                          <Badge variant="outline" className="text-xs gap-1 text-primary">
-                            <Gavel className="h-3 w-3" />
-                            Takedown Filed
-                          </Badge>
-                        )}
-                        {d.player_count > 0 && (
-                          <Badge variant="outline" className="text-xs gap-1">
-                            <Users className="h-3 w-3" />
-                            {d.player_count.toLocaleString()}
-                            <TrendIcon trend={trend} />
-                          </Badge>
-                        )}
-                        {detectionCount > 1 && (
-                          <Badge variant="outline" className="text-xs gap-1">
-                            <History className="h-3 w-3" />
-                            Seen {detectionCount}x
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Created by <span className="font-medium text-foreground">{d.game_creator_name}</span>
-                        {d.game_creator_type === 'Group' && (
-                          <span>
-                            {' (Group'}
-                            {d.creator_group_name && `: ${d.creator_group_name}`}
-                            {ownsGroup && ' — you are a member'}
-                            {')'}
-                          </span>
-                        )}
-                        {' · '}Keyword: "{d.search_keyword}"
-                      </p>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        {hasThumbMatch && <Badge variant="outline" className="text-xs">🖼️ Thumbnail Match</Badge>}
-                        {hasDescMatch && <Badge variant="outline" className="text-xs">📝 Description Match</Badge>}
-                        {hasSuspicious && <Badge variant="outline" className="text-xs text-destructive">⚠️ Suspicious Phrases</Badge>}
-                        {d.thumbnail_analyzed && !hasThumbMatch && (
-                          <Badge variant="outline" className="text-xs text-muted-foreground">✓ Thumbnail Clear</Badge>
-                        )}
-                        {d.previous_player_count != null && d.previous_player_count !== d.player_count && (
-                          <Badge variant="outline" className="text-xs text-muted-foreground">
-                            Was {d.previous_player_count.toLocaleString()} players
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Universe ID: {d.detected_universe_id}
-                        {' · '}First seen {format(new Date(d.first_detected_at || d.created_at), 'MMM d, yyyy')}
-                        {d.last_seen_at && ` · Last seen ${format(new Date(d.last_seen_at), 'MMM d')}`}
-                        {d.game_created_at && ` · Game created ${format(new Date(d.game_created_at), 'MMM yyyy')}`}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {!creatorVerified && score >= 30 && !d.takedown_request_id && !bulkMode && (
-                        <Button variant="destructive" size="sm" className="gap-1" onClick={() => setTakedownTarget(d)}>
-                          <Gavel className="h-3.5 w-3.5" />
-                          Takedown
-                        </Button>
-                      )}
-                      <a
-                        href={`https://www.roblox.com/games/${d.detected_place_id || d.detected_universe_id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Button variant="outline" size="sm" className="gap-1">
-                          <ExternalLink className="h-3.5 w-3.5" />
-                          View
-                        </Button>
-                      </a>
-                      {!bulkMode && (
-                        <Button variant="ghost" size="sm" onClick={() => dismissDetection(d.id)}>
-                          Dismiss
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
-      <TakedownFromDetectionDialog
-        detection={takedownTarget}
-        onClose={() => setTakedownTarget(null)}
-        userId={userId}
-      />
-    </TabsContent>
-  );
-}
-
-// ─── TAKEDOWN DIALOG ───
-function TakedownFromDetectionDialog({ detection, onClose, userId }: { detection: any; onClose: () => void; userId?: string }) {
-  const queryClient = useQueryClient();
-  const [submitting, setSubmitting] = useState(false);
-  const [evidenceNotes, setEvidenceNotes] = useState('');
-  const [goodFaith, setGoodFaith] = useState(false);
-  const [accuracy, setAccuracy] = useState(false);
-  const [ownership, setOwnership] = useState(false);
-  const [filingMethod, setFilingMethod] = useState<'self' | 'agent'>('self');
-  const [agentAuth, setAgentAuth] = useState(false);
-  const [templateCopied, setTemplateCopied] = useState(false);
-
-  if (!detection) return null;
-
-  const gameUrl = `https://www.roblox.com/games/${detection.detected_place_id || detection.detected_universe_id}`;
-  const matchReasons = (detection.match_reasons || []).join(', ');
-
-  const dmcaTemplate = `Dear Roblox Trust & Safety Team,
-
-I am writing to report copyright infringement on your platform.
-
-IDENTIFICATION OF COPYRIGHTED WORK:
-I am the original creator of the work being infringed. My original work is registered with Eclipse IP Shield (case pending).
-
-IDENTIFICATION OF INFRINGING MATERIAL:
-Game URL: ${gameUrl}
-Game Name: "${detection.game_name}"
-Creator: ${detection.game_creator_name}
-Universe ID: ${detection.detected_universe_id}
-
-This game has been identified as a potential copy with ${detection.similarity_score}% similarity to my original work.
-Detection details: ${matchReasons || 'Name match'}
-
-${evidenceNotes ? `ADDITIONAL EVIDENCE:\n${evidenceNotes}\n` : ''}
-STATEMENTS:
-1. I have a good faith belief that use of the copyrighted materials described above is not authorised by the copyright owner, its agent, or the law.
-2. The information in this notification is accurate.
-3. Under penalty of perjury, I am the copyright owner or authorised to act on behalf of the owner.
-
-CONTACT INFORMATION:
-[Your Full Legal Name]
-[Your Email Address]
-[Your Address]
-
-This notice is sent under the Digital Millennium Copyright Act (DMCA), 17 U.S.C. § 512(c).`;
-
-  const copyTemplate = () => {
-    navigator.clipboard.writeText(dmcaTemplate);
-    setTemplateCopied(true);
-    setTimeout(() => setTemplateCopied(false), 2000);
-    toast.success('DMCA template copied to clipboard');
-  };
-
-  const handleSubmit = async () => {
-    if (!goodFaith || !accuracy || !ownership) {
-      toast.error('Please confirm all statements');
-      return;
-    }
-    if (filingMethod === 'agent' && !agentAuth) {
-      toast.error('Please authorise us to act on your behalf');
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const { data, error } = await supabase
-        .from('takedown_requests')
-        .insert({
-          creator_id: userId,
-          status: 'submitted',
-          priority: detection.similarity_score >= 70 ? 'high' : 'medium',
-          infringement_type: 'copyright',
-          target_platform: 'roblox',
-          infringing_url: gameUrl,
-          original_work_description: `Auto-detected copy of registered work. Game: "${detection.game_name}" by ${detection.game_creator_name}. Similarity: ${detection.similarity_score}%. Match reasons: ${matchReasons}.`,
-          evidence_notes: evidenceNotes || `Automated detection found this game with ${detection.similarity_score}% similarity score. ${matchReasons}`,
-          good_faith_statement: true,
-          accuracy_statement: true,
-          ownership_confirmed: true,
-          filing_method: filingMethod,
-          agent_authorization: filingMethod === 'agent',
-        } as any)
-        .select('id, case_number')
-        .single();
-
-      if (error) throw error;
-
-      if (data?.id) {
-        await supabase
-          .from('ip_copy_detections' as any)
-          .update({ takedown_request_id: data.id, status: 'takedown_filed' } as any)
-          .eq('id', detection.id);
-      }
-
-      if (filingMethod === 'agent' && data?.id) {
-        const { error: dmcaError } = await supabase.functions.invoke('file-dmca-takedown', {
-          body: { takedown_id: data.id },
-        });
-        if (dmcaError) {
-          toast.error('Case created but DMCA sending failed', { description: 'Our team will follow up manually.' });
-        } else {
-          toast.success('DMCA filed on your behalf!', { description: `Case ${data.case_number} — notice sent for review and forwarding.` });
-        }
-      } else {
-        toast.success('Takedown case created!', { description: `Case ${data?.case_number}. Use the copied template to submit your DMCA notice directly.` });
-      }
-
-      queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
-      queryClient.invalidateQueries({ queryKey: ['takedown-requests'] });
-      queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
-      onClose();
-    } catch (err: any) {
-      toast.error('Failed to file takedown', { description: err.message });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <Dialog open={!!detection} onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Gavel className="h-5 w-5" />
-            File Takedown Request
-          </DialogTitle>
-          <DialogDescription>
-            Pre-filled from detection: <strong>{detection.game_name}</strong> ({detection.similarity_score}% match)
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          <div className="rounded-md bg-muted p-3 text-sm space-y-1">
-            <p><strong>Target:</strong> {detection.game_name}</p>
-            <p><strong>Creator:</strong> {detection.game_creator_name} ({detection.game_creator_type})</p>
-            <p><strong>Platform:</strong> Roblox</p>
-            <p><strong>Similarity:</strong> {detection.similarity_score}%</p>
-            <p><strong>Match Reasons:</strong> {matchReasons || 'Name match'}</p>
-            {detection.player_count > 0 && <p><strong>Players:</strong> {detection.player_count.toLocaleString()}</p>}
-            {detection.game_created_at && <p><strong>Game Created:</strong> {format(new Date(detection.game_created_at), 'MMM d, yyyy')}</p>}
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium mb-2 block">How would you like to file?</Label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setFilingMethod('self')}
-                className={`p-3 rounded-lg border text-left transition-colors ${
-                  filingMethod === 'self' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <Copy className="h-4 w-4" />
-                  <span className="font-medium text-sm">Self-File</span>
-                </div>
-                <p className="text-xs text-muted-foreground">Get a pre-filled DMCA template to submit yourself</p>
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilingMethod('agent')}
-                className={`p-3 rounded-lg border text-left transition-colors ${
-                  filingMethod === 'agent' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <Mail className="h-4 w-4" />
-                  <span className="font-medium text-sm">We File For You</span>
-                </div>
-                <p className="text-xs text-muted-foreground">Authorise us to send the DMCA on your behalf</p>
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <Label>Additional Evidence Notes (optional)</Label>
-            <Textarea
-              value={evidenceNotes}
-              onChange={(e) => setEvidenceNotes(e.target.value)}
-              placeholder="Add any additional context about why this is infringing..."
-              rows={3}
-            />
-          </div>
-
-          {filingMethod === 'self' && (
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <Label className="text-sm">DMCA Notice Template</Label>
-                <Button variant="outline" size="sm" onClick={copyTemplate} className="gap-1">
-                  <Copy className="h-3 w-3" />
-                  {templateCopied ? 'Copied!' : 'Copy'}
-                </Button>
-              </div>
-              <div className="rounded-md bg-muted p-3 text-xs font-mono whitespace-pre-wrap max-h-40 overflow-y-auto">
-                {dmcaTemplate}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Send this to <strong>dmca@roblox.com</strong> from your own email. Fill in your contact details.
-              </p>
-            </div>
-          )}
-
-          {filingMethod === 'agent' && (
-            <div className="rounded-md border border-primary/30 bg-primary/5 p-3 space-y-2">
-              <p className="text-sm font-medium">Agent Authorisation</p>
-              <p className="text-xs text-muted-foreground">
-                By authorising us, Eclipse IP Shield will submit the DMCA notice on your behalf as your designated agent.
-              </p>
-              <div className="flex items-start gap-2">
-                <Checkbox id="agent-auth" checked={agentAuth} onCheckedChange={(v) => setAgentAuth(!!v)} />
-                <Label htmlFor="agent-auth" className="text-xs">
-                  I authorise Eclipse IP Shield to act as my agent and file DMCA notices on my behalf for this case.
-                </Label>
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-3">
-            <div className="flex items-start gap-2">
-              <Checkbox id="gf" checked={goodFaith} onCheckedChange={(v) => setGoodFaith(!!v)} />
-              <Label htmlFor="gf" className="text-xs">I have a good faith belief that the use of the material is not authorised.</Label>
-            </div>
-            <div className="flex items-start gap-2">
-              <Checkbox id="ac" checked={accuracy} onCheckedChange={(v) => setAccuracy(!!v)} />
-              <Label htmlFor="ac" className="text-xs">The information in this notice is accurate.</Label>
-            </div>
-            <div className="flex items-start gap-2">
-              <Checkbox id="ow" checked={ownership} onCheckedChange={(v) => setOwnership(!!v)} />
-              <Label htmlFor="ow" className="text-xs">I am the owner or authorised to act on behalf of the owner.</Label>
-            </div>
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button
-            variant="destructive"
-            onClick={handleSubmit}
-            disabled={submitting || !goodFaith || !accuracy || !ownership || (filingMethod === 'agent' && !agentAuth)}
-          >
-            {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : filingMethod === 'agent' ? <Mail className="h-4 w-4 mr-2" /> : <Gavel className="h-4 w-4 mr-2" />}
-            {filingMethod === 'agent' ? 'File DMCA On My Behalf' : 'Create Case & Copy Template'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ─── CASE TIMELINE ───
-function CaseTimeline({ caseData }: { caseData: any }) {
-  const steps = [
-    { key: 'submitted', label: 'Submitted', date: caseData.created_at },
-    { key: 'notice_sent', label: 'Notice Sent', date: caseData.dmca_sent_at || caseData.notice_sent_at },
-    { key: 'reviewing', label: 'Under Review', date: caseData.status === 'reviewing' ? caseData.updated_at : null },
-    { key: 'resolved', label: 'Resolved', date: caseData.resolved_at },
-  ];
-  
-  const currentIdx = steps.findIndex(s => s.key === caseData.status);
-  const progressPct = caseData.status === 'resolved' ? 100 : caseData.status === 'rejected' ? 100 : Math.max(((currentIdx + 1) / steps.length) * 100, 25);
-
-  return (
-    <div className="space-y-2">
-      <Progress value={progressPct} className="h-1.5" />
-      <div className="flex justify-between text-[10px] text-muted-foreground">
-        {steps.map((step, i) => (
-          <div key={step.key} className={`text-center ${i <= currentIdx ? 'text-primary font-medium' : ''}`}>
-            <div>{step.label}</div>
-            {step.date && <div>{format(new Date(step.date), 'MMM d')}</div>}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 // ─── MAIN COMPONENT ───
 export default function IPShield() {
@@ -747,15 +62,13 @@ export default function IPShield() {
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: 'Custom IP Shield Plan', message: '' });
   const [contactSubmitting, setContactSubmitting] = useState(false);
-  // Check IP Shield subscription status via shared hook (DB-first, edge function only for Stripe sync)
-  const { data: subscriptionStatus, isLoading: subLoading, refetch: refetchSubscription } = useIPShieldSubscription();
 
+  const { data: subscriptionStatus, isLoading: subLoading, refetch: refetchSubscription } = useIPShieldSubscription();
   const isSubscribed = isStaff || subscriptionStatus?.subscribed === true;
-  // Check identity verification status (skip for staff)
+
   const { data: verificationStatus, isLoading: verifyLoading, refetch: refetchVerification } = useIdentityVerification(
     !!user && !isStaff && isSubscribed
   );
-
   const isVerified = isStaff || verificationStatus?.verified === true;
 
   useEffect(() => {
@@ -895,7 +208,6 @@ export default function IPShield() {
       setRegistryForm({ title: '', description: '', work_type: '', proof_urls: '', roblox_asset_ids: '', roblox_universe_ids: '', search_keywords: '' });
       queryClient.invalidateQueries({ queryKey: ['ip-registry'] });
       
-      // Auto-scan for newly registered entry
       if (data?.id) {
         try {
           const { data: scanData } = await supabase.functions.invoke('scan-roblox-copies', {
@@ -928,32 +240,7 @@ export default function IPShield() {
   const activeCases = cases?.filter(c => !['resolved', 'rejected'].includes(c.status)) || [];
   const closedCases = cases?.filter(c => ['resolved', 'rejected'].includes(c.status)) || [];
 
-  const tiers = [
-    {
-      id: 'starter', name: 'Starter', price: '24.99',
-      description: 'Essential protection for individual creators',
-      features: ['3 takedown requests/month', '15 registered works', 'Case tracking & updates', 'Cross-platform enforcement'],
-      disabledFeatures: ['Priority handling', 'Monitoring & alerts', 'Dedicated agent'],
-      popular: false,
-    },
-    {
-      id: 'pro', name: 'Pro', price: '39.99',
-      description: 'Advanced protection for serious creators',
-      features: ['15 takedown requests/month', 'Unlimited registered works', 'Case tracking & updates', 'Cross-platform enforcement', 'Priority handling', 'Monitoring & alerts'],
-      disabledFeatures: ['Dedicated agent'],
-      popular: true,
-    },
-    {
-      id: 'enterprise', name: 'Enterprise', price: '79.99',
-      description: 'Complete protection with dedicated support',
-      features: ['Unlimited takedown requests', 'Unlimited registered works', 'Case tracking & updates', 'Cross-platform enforcement', 'Priority handling', 'Monitoring & alerts', 'Dedicated DMCA agent'],
-      disabledFeatures: [],
-      popular: false,
-    },
-  ];
-
-
-  // Not logged in
+  // ─── Not logged in — Landing page ───
   if (!user) {
     const highlights = [
       { icon: Shield, title: 'DMCA Takedown Service', description: 'We file professional DMCA takedown notices on your behalf across Roblox, Discord, YouTube and more.' },
@@ -964,7 +251,6 @@ export default function IPShield() {
 
     return (
       <MainLayout>
-        {/* Hero */}
         <div className="relative w-full overflow-hidden -mt-4">
           <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 39px, hsl(var(--foreground)) 39px, hsl(var(--foreground)) 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, hsl(var(--foreground)) 39px, hsl(var(--foreground)) 40px)' }} />
           <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 py-20 md:py-28 lg:py-36">
@@ -983,7 +269,6 @@ export default function IPShield() {
         </div>
 
         <div className="px-4 sm:px-6 lg:px-8 -mt-12 relative z-10 pb-16 pt-0">
-
           <div className="grid sm:grid-cols-2 gap-5 mb-16">
             {highlights.map((h) => (
               <Card key={h.title}>
@@ -1006,50 +291,22 @@ export default function IPShield() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 mb-12">
-            {tiers.map((tier) => (
-              <Card key={tier.id} className={`relative flex flex-col ${tier.popular ? 'border-primary shadow-lg shadow-primary/10 scale-[1.02]' : ''}`}>
-                {tier.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground px-3">Most Popular</Badge>
-                  </div>
-                )}
-                <CardContent className="pt-6 flex flex-col flex-1">
-                  <div className="mb-4">
-                    <h3 className="text-lg font-bold">{tier.name}</h3>
-                    <p className="text-xs text-muted-foreground mt-1">{tier.description}</p>
-                  </div>
-                  <div className="mb-5">
-                    <span className="text-3xl font-bold">£{tier.price}</span>
-                    <span className="text-muted-foreground text-sm">/mo</span>
-                  </div>
-                  <ul className="space-y-2 text-sm flex-1 mb-6">
-                    {tier.features.map((f) => (
-                      <li key={f} className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" />{f}</li>
-                    ))}
-                    {tier.disabledFeatures.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-muted-foreground/50"><XCircle className="h-4 w-4 shrink-0" />{f}</li>
-                    ))}
-                  </ul>
+            {IP_SHIELD_TIERS.map((tier) => (
+              <TierCard
+                key={tier.id}
+                tier={tier}
+                action={
                   <Button className="w-full gap-2" variant={tier.popular ? 'default' : 'outline'} asChild>
                     <Link to="/auth"><LogIn className="h-4 w-4" /> Sign In to Subscribe</Link>
                   </Button>
-                </CardContent>
-              </Card>
+                }
+              />
             ))}
           </div>
 
-          <Card className="max-w-md mx-auto mt-6 border-dashed">
-            <CardContent className="pt-6 text-center">
-              <Users className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
-              <h3 className="text-lg font-bold mb-1">Custom Plan</h3>
-              <p className="text-sm text-muted-foreground mb-4">Need a tailored plan with specific limits? Contact us and we'll create a bespoke plan for you.</p>
-              <Button variant="outline" onClick={() => setShowContactForm(true)}>
-                  <Mail className="h-4 w-4 mr-2" /> Contact Us
-              </Button>
-            </CardContent>
-          </Card>
+          <CustomPlanCard onContact={() => setShowContactForm(true)} />
 
-          <div className="text-center text-sm text-muted-foreground">
+          <div className="text-center text-sm text-muted-foreground mt-6">
             <p>Already have an account? <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to manage your IP Shield subscription.</p>
           </div>
         </div>
@@ -1058,6 +315,7 @@ export default function IPShield() {
     );
   }
 
+  // ─── Loading subscription ───
   if (subLoading) {
     return (
       <MainLayout>
@@ -1070,6 +328,7 @@ export default function IPShield() {
     );
   }
 
+  // ─── Not subscribed — Pricing gate ───
   if (!isSubscribed) {
     return (
       <MainLayout>
@@ -1083,30 +342,11 @@ export default function IPShield() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {tiers.map((tier) => (
-              <Card key={tier.id} className={`relative flex flex-col ${tier.popular ? 'border-primary shadow-lg shadow-primary/10 scale-[1.02]' : ''}`}>
-                {tier.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground px-3">Most Popular</Badge>
-                  </div>
-                )}
-                <CardContent className="pt-6 flex flex-col flex-1">
-                  <div className="mb-4">
-                    <h3 className="text-lg font-bold">{tier.name}</h3>
-                    <p className="text-xs text-muted-foreground mt-1">{tier.description}</p>
-                  </div>
-                  <div className="mb-5">
-                    <span className="text-3xl font-bold">£{tier.price}</span>
-                    <span className="text-muted-foreground text-sm">/mo</span>
-                  </div>
-                  <ul className="space-y-2 text-sm flex-1 mb-6">
-                    {tier.features.map((f) => (
-                      <li key={f} className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" />{f}</li>
-                    ))}
-                    {tier.disabledFeatures.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-muted-foreground/50"><XCircle className="h-4 w-4 shrink-0" />{f}</li>
-                    ))}
-                  </ul>
+            {IP_SHIELD_TIERS.map((tier) => (
+              <TierCard
+                key={tier.id}
+                tier={tier}
+                action={
                   <Button
                     className="w-full gap-2"
                     variant={tier.popular ? 'default' : 'outline'}
@@ -1119,27 +359,19 @@ export default function IPShield() {
                       <><CreditCard className="h-4 w-4" /> Get {tier.name}</>
                     )}
                   </Button>
-                </CardContent>
-              </Card>
+                }
+              />
             ))}
           </div>
 
-          <Card className="max-w-md mx-auto mt-6 border-dashed">
-            <CardContent className="pt-6 text-center">
-              <Users className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
-              <h3 className="text-lg font-bold mb-1">Custom Plan</h3>
-              <p className="text-sm text-muted-foreground mb-4">Need a tailored plan with specific limits? Contact us and we'll create a bespoke plan for you.</p>
-              <Button variant="outline" onClick={() => setShowContactForm(true)}>
-                  <Mail className="h-4 w-4 mr-2" /> Contact Us
-              </Button>
-            </CardContent>
-          </Card>
+          <CustomPlanCard onContact={() => setShowContactForm(true)} />
         </div>
         <IPShieldContactDialog open={showContactForm} onOpenChange={setShowContactForm} />
       </MainLayout>
     );
   }
 
+  // ─── Loading verification ───
   if (verifyLoading) {
     return (
       <MainLayout>
@@ -1152,6 +384,7 @@ export default function IPShield() {
     );
   }
 
+  // ─── Not verified — Identity gate ───
   if (!isVerified) {
     const isPending = verificationStatus?.status === 'processing';
     return (
