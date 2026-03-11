@@ -307,10 +307,7 @@ export default function SellerTickets() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ 
-        title: 'Link Change Applied', 
-        description: 'Username(s) updated. User will need to re-verify the account(s).' 
-      });
+      toast.success('Link Change Applied', { description: 'Username(s) updated. User will need to re-verify the account(s).' });
     },
     onError: (error) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
