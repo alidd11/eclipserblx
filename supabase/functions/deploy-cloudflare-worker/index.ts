@@ -128,14 +128,14 @@ export default {
       // Main domain — only intercept relevant paths
       var isDynamic = /^\\/(products|store)\\/[^\\/?#]+/.test(path);
       var isStatic = STATIC_OG_PATHS.has(path);
-      if (!isDynamic && !isStatic) return passthrough(request, "pass-no-match");
-      if (isTestingTool(ua)) return passthrough(request, "pass-test-tool");
-      if (!isBot(ua)) return passthrough(request, "pass-human");
+      if (!isDynamic && !isStatic) return fetchOrigin(request, "pass-no-match");
+      if (isTestingTool(ua)) return fetchOrigin(request, "pass-test-tool");
+      if (!isBot(ua)) return fetchOrigin(request, "pass-human");
 
       // Bot detected on a relevant page — serve OG
       var ogRes = await serveOg(path, null);
       if (ogRes) return ogRes;
-      return passthrough(request, "pass-og-miss");
+      return fetchOrigin(request, "pass-og-miss");
 
     } catch (err) {
       return new Response("Worker error: " + err.message, {
