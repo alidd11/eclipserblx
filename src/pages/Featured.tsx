@@ -124,7 +124,7 @@ export default function Featured() {
                     key={product.id}
                     id={product.id}
                     name={product.name}
-                    slug={product.slug}
+                    slug={String((product as any).product_number)}
                     price={Number(product.price)}
                     image={product.images?.[0]}
                     images={product.images}
