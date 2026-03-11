@@ -38,7 +38,7 @@ interface Permission {
 
 interface RolePermission {
   id: string;
-  role: AppRole;
+  role: string;
   permission_id: string;
 }
 
