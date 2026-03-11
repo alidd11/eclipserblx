@@ -132,7 +132,7 @@ export default function ProductDetail() {
       : product?.name
         ? `Buy ${product.name} on Eclipse marketplace`
         : undefined,
-    canonicalPath: slug ? `/products/${slug}` : undefined,
+    canonicalPath: productNumber ? `/products/${productNumber}` : undefined,
     ogImage: product?.images?.[0] || undefined,
   });
 
