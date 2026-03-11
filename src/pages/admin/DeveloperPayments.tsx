@@ -218,9 +218,8 @@ export default function DeveloperPayments() {
             </div>
           </div>
         )}
-            
             {/* Only admins can add payments */}
-            {isAdmin && (
+            {isAdmin && !isInsideHub && (
               <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
                 <DialogTrigger asChild>
                   <Button>

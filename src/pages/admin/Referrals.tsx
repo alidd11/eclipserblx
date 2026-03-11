@@ -199,7 +199,9 @@ export default function AdminReferrals() {
               </div>
             </CardContent>
           </Card>
-        </div>
+            </div>
+          </>
+        )}
 
         {/* Referrals Table */}
         <Card className="bg-card border-border">
