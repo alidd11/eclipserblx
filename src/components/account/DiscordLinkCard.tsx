@@ -97,10 +97,7 @@ export const DiscordLinkCard = ({
             throw new Error(data.error);
           }
 
-          toast({
-            title: "Discord Linked!",
-            description: `Connected as ${data.discord_username || data.discord_global_name || "Discord User"}`,
-          });
+          toast.success("Discord Linked!", { description: `Connected as ${data.discord_username || data.discord_global_name || "Discord User"}` });
 
           // If user has Eclipse+, trigger webhook to assign role
           if (hasEclipsePlus) {
