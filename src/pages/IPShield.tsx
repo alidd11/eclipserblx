@@ -253,7 +253,7 @@ function CopyDetectionTab({ userId }: { userId?: string }) {
       }
     }
 
-    toast({ title: `${filed} takedowns filed`, description: 'DMCA notices queued for review and sending.' });
+    toast.success(`${filed} takedowns filed`, { description: 'DMCA notices queued for review and sending.' });
     setSelectedIds(new Set());
     setBulkMode(false);
     queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
