@@ -14,6 +14,7 @@ function buildWorkerScript(): string {
   return `
 const OG_PROXY = "${OG_PROXY}";
 const SITE_URL = "${SITE}";
+const ORIGIN_URL = "${ORIGIN}";
 
 const BOT_PATTERNS = [
   "Discordbot", "Twitterbot", "facebookexternalhit", "LinkedInBot",
