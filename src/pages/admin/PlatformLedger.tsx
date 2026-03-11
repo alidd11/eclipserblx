@@ -180,7 +180,7 @@ export default function PlatformLedger() {
                 />
               </div>
               <Select value={typeFilter} onValueChange={v => { setTypeFilter(v); setPage(1); }}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-auto min-w-[140px]">
                   <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>
