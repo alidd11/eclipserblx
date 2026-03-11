@@ -258,7 +258,7 @@ export default function SearchResults() {
                   key={product.id}
                   id={product.id}
                   name={product.name}
-                  slug={product.slug}
+                  slug={String((product as any).product_number)}
                   price={product.price}
                   images={product.images}
                   category={product.categories?.name}

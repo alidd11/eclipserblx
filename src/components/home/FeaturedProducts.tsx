@@ -149,7 +149,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
                     <ProductCard
                       id={currentProduct.id}
                       name={currentProduct.name}
-                      slug={currentProduct.slug}
+                      slug={String((currentProduct as any).product_number)}
                       price={Number(currentProduct.price)}
                       image={currentProduct.images?.[0]}
                       images={currentProduct.images}
