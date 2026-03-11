@@ -260,7 +260,9 @@ export default function AdminCustomDomains() {
                           </TableCell>
                           <TableCell><StatusBadge status={domain.status} /></TableCell>
                           <TableCell><SslBadge status={domain.ssl_status} /></TableCell>
-                          <TableCell><HealthBadge healthCheck={hc} /></TableCell>
+                          <TableCell>
+                            <DomainHealthDisplay healthCheck={hc} domain={domain.domain} isCloudflare={domain.is_cloudflare_zone} compact />
+                          </TableCell>
                           <TableCell>
                             {domain.is_cloudflare_zone ? (
                               <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-[10px]">
