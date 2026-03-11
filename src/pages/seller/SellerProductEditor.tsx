@@ -428,7 +428,7 @@ export default function SellerProductEditor() {
         const { data: insertedProduct, error } = await supabase
           .from('products')
           .insert(productData)
-          .select('id')
+          .select('id, product_number')
           .single();
 
         if (error) {
@@ -437,7 +437,7 @@ export default function SellerProductEditor() {
           }
           throw error;
         }
-        return { productId: insertedProduct.id, isAutoApproved: shouldAutoApprove };
+        return { productId: insertedProduct.id, isAutoApproved: shouldAutoApprove, productNumber: (insertedProduct as any).product_number };
       }
     },
     onSuccess: async (result) => {
