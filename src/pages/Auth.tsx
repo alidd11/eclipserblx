@@ -418,10 +418,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
           }
         }
         
-        toast({
-          title: t('auth.emailVerified'),
-          description: t('auth.accountVerified'),
-        });
+        toast.success(t('auth.emailVerified'), { description: t('auth.accountVerified') });
         navigate('/');
       }
     } finally {
