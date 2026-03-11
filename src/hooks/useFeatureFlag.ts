@@ -31,7 +31,7 @@ export function useFeatureFlag(flagName: string): UseFeatureFlagResult {
           .from('feature_flags')
           .select('id, enabled, user_ids')
           .eq('name', flagName)
-          .single();
+          .maybeSingle();
 
         if (flagError) {
           // Flag doesn't exist - no access
