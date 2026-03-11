@@ -458,7 +458,7 @@ export function AppRoutes() {
         <Route path="/admin/ip-reports" element={<AdminIPReports />} />
         <Route path="/admin/ip-shield-custom-plans" element={<AdminIPShieldCustomPlans />} />
         <Route path="/admin/developer-submissions" element={<AdminDeveloperSubmissions />} />
-        <Route path="/admin/developer-payments" element={<AdminDeveloperPayments />} />
+        <Route path="/admin/developer-payments" element={<Navigate to="/admin/payouts?tab=developer" replace />} />
         <Route path="/admin/developer-payments/:id" element={<AdminDeveloperPaymentDetail />} />
         <Route path="/admin/recruiters" element={<AdminRecruiters />} />
         <Route path="/admin/recruiter-applications" element={<AdminRecruiterApplications />} />
