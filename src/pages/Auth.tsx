@@ -141,11 +141,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       });
 
       if (response.error) {
-        toast({
-          title: t('common.error'),
-          description: 'Failed to send reset email. Please try again.',
-          variant: 'destructive',
-        });
+        toast.error(t('common.error'), { description: 'Failed to send reset email. Please try again.' });
       } else {
         setMode('reset-verify');
         toast({
