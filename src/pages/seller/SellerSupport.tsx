@@ -57,7 +57,7 @@ interface Ticket {
 export default function SellerSupport() {
   const { user } = useAuth();
   const { store } = useSellerStatus();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
