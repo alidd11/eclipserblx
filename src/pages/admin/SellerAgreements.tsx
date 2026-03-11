@@ -117,7 +117,7 @@ export default function SellerAgreements() {
               <CardTitle className="text-3xl">{stores?.length || 0}</CardTitle>
             </CardHeader>
           </Card>
-          <Card className="border-green-500/30">
+          <Card className="border-green-500/30 min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-500" />
