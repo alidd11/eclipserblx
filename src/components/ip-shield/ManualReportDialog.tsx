@@ -132,7 +132,7 @@ export function ManualReportDialog({ open, onOpenChange, registryEntries, userId
         .limit(1);
 
       if (existing && existing.length > 0) {
-        toast({ title: 'Already reported', description: 'This game is already in your detections for this registry entry.', variant: 'destructive' });
+        toast.error('Already reported', { description: 'This game is already in your detections for this registry entry.' });
         setSubmitting(false);
         return;
       }
