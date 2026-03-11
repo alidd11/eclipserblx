@@ -148,11 +148,7 @@ export function LinkedAccountsCard({
           onUpdate();
         } catch (err: unknown) {
           console.error("Roblox OAuth callback error:", err);
-          toastHook({
-            title: "Link Failed",
-            description: err instanceof Error ? err.message : "Failed to link Roblox account",
-            variant: "destructive",
-          });
+          toast.error("Link Failed", { description: err instanceof Error ? err.message : "Failed to link Roblox account" });
         } finally {
           setIsProcessingRobloxOAuth(false);
         }
