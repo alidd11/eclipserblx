@@ -153,11 +153,17 @@ function buildWorkerScript(): string {
     'return oh(s.name+" | "+SN,d,s.banner_url||s.logo_url||DI,SU_URL+"/store/"+slug,"profile","");}'
   );
 
-  // Response helper
+  // Response helpers
   lines.push("function oR(html,tag){");
   lines.push(
     'return new Response(html,{status:200,headers:{"Content-Type":"text/html;charset=utf-8","Cache-Control":"public,max-age=300","X-Eclipse-Worker":tag}});}'
   );
+  // Passthrough helper — clones origin response but adds diagnostic header
+  lines.push("async function pt(request,tag){");
+  lines.push("var r=await fetch(request);");
+  lines.push("var h=new Headers(r.headers);");
+  lines.push('h.set("X-Eclipse-Worker",tag);');
+  lines.push("return new Response(r.body,{status:r.status,headers:h});}");
 
   // Main fetch handler
   lines.push("export default{async fetch(request){try{");
