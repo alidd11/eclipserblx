@@ -147,7 +147,7 @@ export default function DeveloperPayments() {
      },
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ['developer-payments'] });
-       toast({ title: 'Payment record created' });
+       toast.success('Payment record created');
        setIsAddOpen(false);
        setNewPayment({ developer_id: '', amount: '', payment_type: 'salary', due_date: '', notes: '' });
      },
