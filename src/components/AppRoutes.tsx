@@ -133,6 +133,10 @@ const AdminRecruiterApplications = lazy(() => import("@/pages/admin/RecruiterApp
 const AdminRecruiterPayouts = lazy(() => import("@/pages/admin/RecruiterPayouts"));
 const AdminRecruiterCommissions = lazy(() => import("@/pages/admin/RecruiterCommissions"));
 const AdminGDPRCompliance = lazy(() => import("@/pages/admin/GDPRCompliance"));
+const AdminRevenueHub = lazy(() => import("@/pages/admin/RevenueHub"));
+const AdminPayoutsHub = lazy(() => import("@/pages/admin/PayoutsHub"));
+const AdminDisputesRefundsHub = lazy(() => import("@/pages/admin/DisputesRefundsHub"));
+const AdminAffiliateHub = lazy(() => import("@/pages/admin/AffiliateHub"));
 const AdminPlatformLedger = lazy(() => import("@/pages/admin/PlatformLedger"));
 const AdminCustomDomains = lazy(() => import("@/pages/admin/CustomDomains"));
 
