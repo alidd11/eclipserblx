@@ -910,7 +910,7 @@ export default function IPShield() {
       }
     },
     onError: (error) => {
-      toast({ title: 'Failed to register', description: error.message, variant: 'destructive' });
+      toast.error('Failed to register', { description: error.message });
     },
   });
 
