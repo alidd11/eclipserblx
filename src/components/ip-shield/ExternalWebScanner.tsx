@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   Globe, Search, Loader2, ExternalLink, Shield, AlertTriangle,
   Send, FileWarning, Link2, Server, Mail, CheckCircle2, Clock, Eye
