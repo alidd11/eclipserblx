@@ -5,10 +5,14 @@ import { useCookieConsent } from '@/hooks/useCookieConsent';
 import { CookieSettingsDialog } from './CookieSettingsDialog';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useStoreDomain } from '@/hooks/useStoreDomain';
 
 export const CookieConsentBanner = forwardRef<HTMLDivElement>(function CookieConsentBanner(_props, _ref) {
   const { showBanner, showSettings, acceptAll, rejectNonEssential, openSettings } = useCookieConsent();
   const { t } = useTranslation();
+  const { isCustomStoreDomain } = useStoreDomain();
+
+  if (isCustomStoreDomain) return null;
 
   return (
     <>
