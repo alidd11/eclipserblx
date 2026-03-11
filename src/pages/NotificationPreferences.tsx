@@ -16,7 +16,7 @@ import { sendPushNotification } from '@/lib/pushNotifications';
 
 export default function NotificationPreferences() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const { isSubscribed, subscribe, unsubscribe, isLoading: pushLoading, isSupported: pushSupported } = useBackgroundPush();
 
