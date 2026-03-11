@@ -9,6 +9,7 @@ import { Receipt, Percent, DollarSign, TrendingDown } from 'lucide-react';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 export default function SellerTaxFeeSummary() {
+  const isInsideHub = useIsInsideHub();
   const { store } = useSellerStatus();
 
   const { data: transactions = [], isLoading } = useQuery({
