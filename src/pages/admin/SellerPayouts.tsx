@@ -231,7 +231,7 @@ export default function SellerPayouts() {
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
               <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
                 <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
                   Pending Requests

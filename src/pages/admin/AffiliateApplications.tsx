@@ -77,7 +77,7 @@ const AffiliateApplications = () => {
                   </div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
                 <CardContent className="p-3 md:p-4">
                   <div className="flex items-center gap-2 md:gap-3">
                     <div className="p-1.5 md:p-2 rounded-lg bg-green-500/10">

@@ -80,9 +80,9 @@ export default function SellerTaxFeeSummary() {
       )}
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
         {cards.map(card => (
-          <Card key={card.label}>
+          <Card key={card.label} className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-muted"><card.icon className={`h-5 w-5 ${card.color}`} /></div>

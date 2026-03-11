@@ -126,7 +126,7 @@ export default function SellerAgreements() {
               <CardTitle className="text-3xl text-green-500">{signedCount}</CardTitle>
             </CardHeader>
           </Card>
-          <Card className="border-amber-500/30">
+          <Card className="border-amber-500/30 min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-amber-500" />

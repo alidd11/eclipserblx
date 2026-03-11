@@ -94,7 +94,7 @@ export default function SellerPromotions() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardContent className="p-3 flex items-center gap-2">
               <div className="p-2 rounded-lg bg-amber-500/10">
                 <Coins className="h-4 w-4 text-amber-500" />
