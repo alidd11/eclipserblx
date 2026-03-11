@@ -114,11 +114,7 @@ export function LinkedAccountsCard({
       }
 
       if (error) {
-        toastHook({
-          title: "Authorization Failed",
-          description: urlParams.get("error_description") || "Authorization was cancelled or failed",
-          variant: "destructive",
-        });
+        toast.error("Authorization Failed", { description: urlParams.get("error_description") || "Authorization was cancelled or failed" });
         return;
       }
 
