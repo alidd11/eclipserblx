@@ -318,7 +318,7 @@ Deno.serve(async (req) => {
           results.processed++;
           results.details.push({ payoutId, status: 'completed', method: 'stripe', transferId: transfer.id });
 
-        } else if (payoutMethod === 'bank') {
+        } else if (effectiveMethod === 'bank') {
           // === WISE / BANK TRANSFER ===
           if (!wiseApiKey) {
             logStep(`No Wise API key, skipping`, { payoutId });
