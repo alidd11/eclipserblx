@@ -901,7 +901,7 @@ export default function IPShield() {
           const { data: scanData } = await supabase.functions.invoke('scan-roblox-copies', {
             body: { registry_entry_id: data.id },
           });
-          toast({ title: 'Initial scan complete', description: `Found ${scanData?.total_detected || 0} potential copies.` });
+          toast.success('Initial scan complete', { description: `Found ${scanData?.total_detected || 0} potential copies.` });
           queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
           queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
         } catch {
