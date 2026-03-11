@@ -14,6 +14,7 @@ import {
   Activity, Search, ExternalLink, Shield, Clock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { DomainHealthDisplay } from '@/components/domains/DomainHealthDisplay';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
