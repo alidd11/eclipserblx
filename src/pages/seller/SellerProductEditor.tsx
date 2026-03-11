@@ -365,7 +365,7 @@ export default function SellerProductEditor() {
 
   // Save product mutation
   const saveProduct = useMutation({
-    mutationFn: async (data: ProductFormData): Promise<{ productId: string; isAutoApproved: boolean }> => {
+    mutationFn: async (data: ProductFormData): Promise<{ productId: string; isAutoApproved: boolean; productNumber?: number }> => {
       if (!store?.id || !user?.id) throw new Error('Missing store or user');
 
       // Calculate release_at value
