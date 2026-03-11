@@ -357,7 +357,7 @@ export default function SellerSettingsDomain() {
           toast.success('Domain verified!', { description: `SSL status: ${data.ssl_status}` });
         }
       } else {
-        toast({ title: 'Not verified yet', description: data.message || 'DNS may still be propagating.', variant: 'destructive' });
+        toast.error('Not verified yet', { description: data.message || 'DNS may still be propagating.' });
       }
     },
     onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
