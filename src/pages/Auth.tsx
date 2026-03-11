@@ -564,11 +564,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       window.location.href = data.url;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
-      toast({
-        title: 'Roblox Sign-In Failed',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error('Roblox Sign-In Failed', { description: errorMessage });
       setErrors({ social: errorMessage });
       setSocialLoading(false);
     }
