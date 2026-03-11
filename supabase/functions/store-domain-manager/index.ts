@@ -203,8 +203,13 @@ async function performHealthCheck(domain: string) {
       // Check for Cloudflare error pages
       const body = await httpResp.text();
       if (body.includes("Error 1000")) {
-        checks.error_code = "1000";
-        checks.diagnosis = "DNS points to prohibited IP — cross-zone Cloudflare conflict detected.";
+        if (checks.is_cloudflare_zone) {
+          checks.error_code = "1000";
+          checks.diagnosis = "DNS points to prohibited IP — cross-zone Cloudflare conflict detected.";
+        } else {
+          checks.error_code = "1000_non_cf";
+          checks.diagnosis = "DNS conflict — your CNAME is being resolved through Cloudflare's proxy. Use an A record instead.";
+        }
       } else if (body.includes("Error 1014")) {
         checks.error_code = "1014";
         checks.diagnosis = "CNAME Cross-User Banned — your CNAME is set to Proxied (orange cloud). Switch to DNS-only (grey cloud).";
