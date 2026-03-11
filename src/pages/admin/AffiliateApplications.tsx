@@ -63,8 +63,8 @@ const AffiliateApplications = () => {
               <p className="text-sm text-muted-foreground">Active affiliates in the program</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-2">
-              <Card>
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-2 md:overflow-visible">
+              <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
                 <CardContent className="p-3 md:p-4">
                   <div className="flex items-center gap-2 md:gap-3">
                     <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
