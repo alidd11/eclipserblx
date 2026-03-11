@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
-  Shield, FileText, Plus, Search, Loader2
+  Shield, FileText, Plus, Search, Loader2, Gavel, Radar
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
