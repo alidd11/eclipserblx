@@ -31,7 +31,7 @@ type Subscriber = {
 type FilterType = 'all' | 'updates' | 'discounts' | 'newsletters';
 
 export default function Subscribers() {
-  const { toast } = useToast();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [sendEmailOpen, setSendEmailOpen] = useState(false);
