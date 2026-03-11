@@ -34,7 +34,7 @@ export function NewArrivalsCard() {
       const { data, error } = await supabase
         .from('products')
         .select(`
-          id,
+          id, product_number,
           name,
           slug,
           price,

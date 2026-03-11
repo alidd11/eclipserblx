@@ -83,7 +83,7 @@ export default function Products() {
       let query = supabase
         .from('products')
         .select(`
-          id, name, slug, price, images, is_active, is_featured,
+          id, name, slug, product_number, price, images, is_active, is_featured,
           category_id, store_id, created_at, is_resellable, download_count,
           categories (name, slug),
           stores (name, slug, logo_url, is_verified, is_trusted, is_active, eclipse_plus_discount_enabled)

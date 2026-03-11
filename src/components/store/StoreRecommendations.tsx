@@ -68,7 +68,7 @@ export const StoreRecommendations = ({
       // Fallback: Just get popular products from other stores
       const { data: popularProducts } = await supabase
         .from('products')
-        .select('id, name, slug, price, images, is_resellable, categories(name)')
+        .select('id, name, slug, product_number, price, images, is_resellable, categories(name)')
         .neq('store_id', storeId)
         .eq('is_active', true)
         .eq('moderation_status', 'approved')

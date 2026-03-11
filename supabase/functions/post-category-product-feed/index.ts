@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
 
       const storeName = (product as any).stores?.name || "Unknown Store";
       const categoryName = (product as any).categories?.name || "Unknown";
-      const productUrl = `https://eclipserblx.com/products/${encodeURIComponent(product.slug)}`;
+      const productUrl = `https://eclipserblx.com/products/${product.product_number || encodeURIComponent(product.slug)}`;
       const images: string[] = product.images as string[];
 
       // Strip HTML from description

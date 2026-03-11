@@ -1973,7 +1973,7 @@ async function handleShowcaseCommand(supabase: any, serverContext: ServerContext
     // Pick a random product from the featured list
     const product = products[Math.floor(Math.random() * products.length)];
     const store = product.stores;
-    const productUrl = `https://eclipserblx.com/products/${product.slug}`;
+    const productUrl = `https://eclipserblx.com/products/${(product as any).product_number || product.slug}`;
     const storeUrl = `https://eclipserblx.com/stores/${store.slug}`;
     
     // Build verification badges

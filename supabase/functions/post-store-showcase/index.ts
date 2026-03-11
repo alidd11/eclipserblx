@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
       if (products && products.length > 0) {
         productList = products
           .map((p: any) => {
-            const productUrl = `https://eclipserblx.com/products/${encodeURIComponent(p.slug)}`;
+            const productUrl = `https://eclipserblx.com/products/${p.product_number || encodeURIComponent(p.slug)}`;
             return `• [${p.name}](${productUrl}) — £${Number(p.price).toFixed(2)}`;
           })
           .join("\n");

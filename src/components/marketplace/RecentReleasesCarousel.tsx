@@ -44,7 +44,7 @@ export function RecentReleasesCarousel() {
       const { data, error } = await supabase
         .from('products')
         .select(`
-          id, name, slug, price, images, created_at, category_id, is_resellable,
+          id, name, slug, product_number, price, images, created_at, category_id, is_resellable,
           categories (name, slug),
           stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
         `)
