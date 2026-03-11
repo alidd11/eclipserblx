@@ -31,8 +31,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { format, formatDistanceToNow } from "date-fns";
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 export default function SellerPayouts() {
+  const isInsideHub = useIsInsideHub();
   const queryClient = useQueryClient();
   const [selectedPayout, setSelectedPayout] = useState<any>(null);
   const [notes, setNotes] = useState("");
