@@ -61,6 +61,7 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
  const paymentTypes = ['salary', 'commission', 'bonus', 'freelance', 'other'];
  
 export default function DeveloperPayments() {
+  const isInsideHub = useIsInsideHub();
   const { user } = useAuth();
   const { isAdmin, hasRole } = useAdminAuth();
   const navigate = useNavigate();
