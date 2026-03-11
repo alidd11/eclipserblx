@@ -168,6 +168,25 @@ Deno.serve(async (req) => {
     });
   }
 
+  // Legacy slug-based product pages: /products/my-product-slug
+  const slugPm = path.match(/^\/products\/([a-zA-Z][a-zA-Z0-9\-_]{0,200})$/);
+  if (slugPm) {
+    const slugVal = slugPm[1];
+    const product = await pgQuery("products", "name,description,images,price,product_number,stores(name)", `slug=eq.${slugVal}&is_active=eq.true`);
+    if (product) {
+      const canonicalUrl = product.product_number ? `${SITE_URL}/products/${product.product_number}` : `${SITE_URL}/products/${encodeURIComponent(slugVal)}`;
+      const storeName = product.stores?.name;
+      const rawDesc = product.description ? product.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Check out ${product.name} on Eclipse`;
+      const desc = storeName ? `By ${storeName} — ${rawDesc}` : rawDesc;
+      const img = product.images?.[0] || DEFAULT_IMAGE;
+      const priceExtra = product.price != null ? `<meta property="product:price:amount" content="${product.price}"/><meta property="product:price:currency" content="GBP"/>` : "";
+
+      return new Response(buildHtml(`${product.name} | ${SITE_NAME}`, desc, img, canonicalUrl, "product", priceExtra), {
+        headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300", ...corsHeaders },
+      });
+    }
+  }
+
   // Store pages
   const sm = path.match(/^\/store\/([a-zA-Z0-9][a-zA-Z0-9\-_]{0,200})$/);
   if (sm) {
