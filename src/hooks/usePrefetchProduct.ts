@@ -10,19 +10,19 @@ export function usePrefetchProduct() {
   const queryClient = useQueryClient();
 
   const prefetch = useCallback(
-    (slug: string) => {
+    (productNumber: string | number) => {
       queryClient.prefetchQuery({
-        queryKey: ['product', slug],
+        queryKey: ['product', String(productNumber)],
         queryFn: async () => {
           const { data } = await supabase
             .from('products')
             .select(
               `id, name, slug, description, price, images, category_id, is_resellable, is_active,
-               average_rating, review_count, sales_count,
+               average_rating, review_count, sales_count, product_number,
                stores!inner(id, name, slug, logo_url, is_verified, is_trusted, accent_color, eclipse_plus_discount_enabled),
                categories(name, slug)`
             )
-            .eq('slug', slug)
+            .eq('product_number' as any, Number(productNumber))
             .eq('is_active', true)
             .maybeSingle();
           return data;
