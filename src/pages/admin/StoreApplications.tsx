@@ -249,7 +249,7 @@ export default function StoreApplications() {
       }
     },
     onSuccess: () => {
-      toast({ title: 'Application Rejected' });
+      toast.success('Application Rejected');
       queryClient.invalidateQueries({ queryKey: ['admin-store-applications'] });
       setShowRejectDialog(false);
       setSelectedApplication(null);
