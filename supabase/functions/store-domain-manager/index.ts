@@ -653,7 +653,52 @@ async function autoFixDns(userId: string, domainId: string) {
       }
     }
 
-    // 8. Re-run health check
+    // 8. Check and fix custom hostname SSL if pending
+    const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
+    const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
+    if (cfToken && cfZoneId && domainRecord.cloudflare_hostname_id) {
+      const { data: chData } = await cfFetch<any>(
+        cfToken,
+        `${CF_API}/zones/${cfZoneId}/custom_hostnames/${domainRecord.cloudflare_hostname_id}`
+      );
+      if (chData?.success) {
+        const sslStatus = chData.result?.ssl?.status;
+        if (sslStatus === "active") {
+          await admin.from("store_domains").update({ ssl_status: "active" }).eq("id", domainId);
+          fixes.push("SSL certificate is now active");
+        } else if (sslStatus === "pending_validation" || sslStatus === "pending_issuance" || sslStatus === "pending_deployment") {
+          fixes.push(`SSL is ${sslStatus} — should activate within a few minutes`);
+        } else if (sslStatus === "initializing") {
+          // Try to trigger re-validation by patching the custom hostname
+          await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames/${domainRecord.cloudflare_hostname_id}`, {
+            method: "PATCH",
+            body: JSON.stringify({ ssl: { method: "http", type: "dv" } }),
+          });
+          fixes.push("Triggered SSL re-validation on custom hostname");
+        }
+      } else {
+        // Custom hostname may be broken, try recreating it
+        await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames/${domainRecord.cloudflare_hostname_id}`, { method: "DELETE" });
+        const { data: newCh } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames`, {
+          method: "POST",
+          body: JSON.stringify({
+            hostname: domain,
+            ssl: { method: "http", type: "dv", settings: { min_tls_version: "1.2" } },
+          }),
+        });
+        if (newCh?.success) {
+          await admin.from("store_domains").update({
+            cloudflare_hostname_id: newCh.result.id,
+            ssl_status: "pending",
+          }).eq("id", domainId);
+          fixes.push("Recreated custom hostname for SSL provisioning");
+        } else {
+          errors.push(`Failed to recreate custom hostname: ${JSON.stringify(newCh?.errors)}`);
+        }
+      }
+    }
+
+    // 9. Re-run health check
     const healthResult = await performHealthCheck(domain);
     await admin.from("store_domains").update({
       last_health_check: healthResult,
