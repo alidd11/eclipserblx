@@ -46,7 +46,7 @@ interface RecruiterCommission {
 }
 
 export default function RecruiterCommissions() {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('pending');
   const [searchQuery, setSearchQuery] = useState('');
