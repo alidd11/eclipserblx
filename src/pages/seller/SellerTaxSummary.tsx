@@ -165,7 +165,6 @@ export default function SellerTaxSummary() {
               <Printer className="h-4 w-4 mr-1" />
               Print / PDF
             </Button>
-          </div>
         </div>
 
         {/* Disclaimer */}

@@ -405,9 +405,6 @@ export default function AdminIncomeSources() {
         )}
 
 
-          </div>
-        </div>
-
         {/* Grand total */}
         <Card className="bg-card border-border">
           <CardContent className="pt-6">
