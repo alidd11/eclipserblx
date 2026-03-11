@@ -133,9 +133,11 @@ Deno.serve(async (req) => {
     }
 
     logStep(`Found ${payouts.length} pending payouts`);
+    logStep('Raw payout sample', { first: payouts[0] ? { id: payouts[0].id, store_id: payouts[0].store_id, stores: payouts[0].stores } : null });
 
     // Pre-fetch restricted stores to skip
     const storeIds = [...new Set(payouts.map((p: any) => p.store_id).filter(Boolean))];
+    logStep('Resolved storeIds for pre-fetch', { storeIds });
     const { data: restrictedStores } = await supabase
       .from('seller_security_scores')
       .select('store_id')
@@ -145,11 +147,12 @@ Deno.serve(async (req) => {
     const restrictedStoreIds = new Set((restrictedStores || []).map((s: any) => s.store_id));
 
     // Pre-fetch store_payment_details for Stripe Connect info
-    const { data: paymentDetails } = await supabase
+    const { data: paymentDetails, error: pdError } = await supabase
       .from('store_payment_details')
       .select('store_id, stripe_account_id, payouts_enabled, bank_account_number, bank_routing_number, bank_swift_bic, bank_country, bank_account_holder_name, paypal_email')
       .in('store_id', storeIds);
 
+    logStep('Payment details fetch', { count: paymentDetails?.length, error: pdError?.message, storeIds, details: paymentDetails });
     const paymentDetailsMap = new Map((paymentDetails || []).map((pd: any) => [pd.store_id, pd]));
 
     // Initialize Stripe
