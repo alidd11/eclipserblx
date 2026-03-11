@@ -42,7 +42,7 @@ const INITIAL_SELLER_FORM = {
 export function BecomeSellerCard() {
   const { user } = useAuth();
   const { store, application, hasPendingApplication, applicationRejected, isSeller, loading } = useSellerStatus();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
 
