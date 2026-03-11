@@ -2,6 +2,7 @@ import { useLocation } from 'react-router-dom';
 import { MessageCircle } from 'lucide-react';
 import { useChatPanel } from '@/hooks/useChatPanel';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
+import { useStoreDomain } from '@/hooks/useStoreDomain';
 import { forwardRef } from 'react';
 
 // Opening hours configuration (24-hour format)
