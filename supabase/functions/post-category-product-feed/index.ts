@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     const { data: products, error: fetchError } = await supabase
       .from("products")
       .select(`
-        id, name, slug, price, images, description, category_id,
+        id, name, slug, product_number, price, images, description, category_id,
         stores ( name, slug ),
         categories ( name )
       `)
