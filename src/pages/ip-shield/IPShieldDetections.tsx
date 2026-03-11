@@ -104,7 +104,7 @@ export default function IPShieldDetections() {
       queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
       queryClient.invalidateQueries({ queryKey: ['last-scan-run'] });
     } catch (err: any) {
-      toast({ title: 'Scan failed', description: err.message, variant: 'destructive' });
+      toast.error('Scan failed', { description: err.message });
     } finally {
       setScanning(false);
     }
