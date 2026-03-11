@@ -104,6 +104,7 @@ Deno.serve(async (req) => {
 
   const runId = `auto-payout-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+  try {
     const results = { processed: 0, skipped: 0, failed: 0, details: [] as any[] };
 
     logStep('Starting auto-payout run', { runId });
