@@ -8,6 +8,7 @@ const corsHeaders = {
 function buildWorkerScript(): string {
   const OG_PROXY = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy";
   const SITE = "https://eclipserblx.com";
+  const ORIGIN = "https://roleplay-hub-shop.lovable.app";
 
   // Use a clean, readable script instead of line-by-line concatenation
   return `
