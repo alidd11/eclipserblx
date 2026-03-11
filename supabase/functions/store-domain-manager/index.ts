@@ -967,6 +967,61 @@ async function adminFixHostname(domainId: string) {
               errors.push(`Failed to create ${preferredRecord.type}: ${JSON.stringify(createData?.errors)}`);
             }
           }
+
+          const preferredWwwRecord = getPreferredWwwRecord(domain, preferredRecord.type);
+          const { data: wwwListData } = await cfFetch<any[]>(
+            sellerToken,
+            `${CF_API}/zones/${sellerZoneId}/dns_records?name=${encodeURIComponent(preferredWwwRecord.name)}`
+          );
+          const wwwRecords = wwwListData?.result ?? [];
+
+          const hasPreferredWwwRecord = wwwRecords.some((rec: any) => {
+            if (preferredWwwRecord.type === "A") {
+              return rec.type === "A" && rec.content === preferredWwwRecord.content && rec.proxied === false;
+            }
+            return rec.type === "CNAME" && rec.content === preferredWwwRecord.content && rec.proxied === false;
+          });
+
+          for (const rec of wwwRecords) {
+            const shouldDelete = preferredWwwRecord.type === "A"
+              ? (rec.type === "CNAME" || (rec.type === "A" && (rec.content !== preferredWwwRecord.content || rec.proxied === true)))
+              : (rec.type === "A" || (rec.type === "CNAME" && (rec.content !== preferredWwwRecord.content || rec.proxied === true)));
+
+            if (shouldDelete) {
+              const { data: delData } = await cfFetch<any>(
+                sellerToken,
+                `${CF_API}/zones/${sellerZoneId}/dns_records/${rec.id}`,
+                { method: "DELETE" }
+              );
+              if (delData?.success) {
+                fixes.push(`Deleted conflicting www ${rec.type} record: ${rec.content}${rec.proxied ? " (proxied)" : ""}`);
+              } else {
+                errors.push(`Failed to delete www ${rec.type} record: ${JSON.stringify(delData?.errors)}`);
+              }
+            }
+          }
+
+          if (!hasPreferredWwwRecord) {
+            const { data: createWwwData } = await cfFetch<any>(
+              sellerToken,
+              `${CF_API}/zones/${sellerZoneId}/dns_records`,
+              {
+                method: "POST",
+                body: JSON.stringify({
+                  type: preferredWwwRecord.type,
+                  name: preferredWwwRecord.name,
+                  content: preferredWwwRecord.content,
+                  proxied: preferredWwwRecord.proxied,
+                  ttl: 1,
+                }),
+              }
+            );
+            if (createWwwData?.success) {
+              fixes.push(`Created ${preferredWwwRecord.type} for www: ${preferredWwwRecord.name} → ${preferredWwwRecord.content} (DNS-only)`);
+            } else {
+              errors.push(`Failed to create www ${preferredWwwRecord.type}: ${JSON.stringify(createWwwData?.errors)}`);
+            }
+          }
         } else {
           errors.push("Seller Cloudflare credentials are invalid");
         }
