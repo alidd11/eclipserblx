@@ -62,10 +62,7 @@ export default function Affiliate() {
   // Handle Stripe onboarding return
   useEffect(() => {
     if (searchParams.get('stripe_onboarding') === 'complete') {
-      toast({
-        title: "Stripe Connected!",
-        description: "Your Stripe account has been connected successfully.",
-      });
+      toast.success("Stripe Connected!", { description: "Your Stripe account has been connected successfully." });
       queryClient.invalidateQueries({ queryKey: ['affiliate-connect-status'] });
     }
     if (searchParams.get('stripe_refresh') === 'true') {
