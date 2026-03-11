@@ -360,7 +360,7 @@ export default function SellerSettingsDomain() {
         toast.error('Not verified yet', { description: data.message || 'DNS may still be propagating.' });
       }
     },
-    onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
+    onError: (e: any) => toast.error('Error', { description: e.message }),
   });
 
   const healthCheck = useMutation({
