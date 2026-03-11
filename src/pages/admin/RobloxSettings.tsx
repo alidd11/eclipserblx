@@ -231,7 +231,7 @@ export default function RobloxSettings() {
           {/* Mobile dropdown */}
           <div className="sm:hidden">
             <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full bg-background">
+              <SelectTrigger className="w-auto min-w-[140px] bg-background">
                 <SelectValue placeholder="Select section" />
               </SelectTrigger>
               <SelectContent className="bg-card border-border z-50">

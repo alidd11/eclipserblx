@@ -304,7 +304,7 @@ export default function Transcripts() {
             setActiveTab(val);
             setExpandedTranscript(null);
           }}>
-            <SelectTrigger className="w-full max-w-md bg-card">
+            <SelectTrigger className="w-auto min-w-[140px] bg-card">
               <SelectValue placeholder="Select department" />
             </SelectTrigger>
             <SelectContent className="bg-card border-border z-[100]">

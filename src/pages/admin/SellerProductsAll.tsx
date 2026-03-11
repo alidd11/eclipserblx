@@ -205,7 +205,7 @@ export default function SellerProductsAll() {
             />
           </div>
           <Select value={filterStatus} onValueChange={handleFilterStatus}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-auto min-w-[140px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>

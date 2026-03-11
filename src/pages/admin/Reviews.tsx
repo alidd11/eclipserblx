@@ -410,7 +410,7 @@ export default function AdminReviews() {
                     </Button>
                   )}
                   <Select value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
-                    <SelectTrigger className="w-full sm:w-[150px]">
+                    <SelectTrigger className="w-auto min-w-[140px]">
                       <SelectValue placeholder="Filter" />
                     </SelectTrigger>
                     <SelectContent>

@@ -220,7 +220,7 @@ export default function AdminOrders() {
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-40 bg-background">
+                <SelectTrigger className="w-auto min-w-[140px] bg-background">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>

@@ -363,7 +363,7 @@ export default function EmailTemplates() {
           {/* Mobile dropdown */}
           <div className="sm:hidden mb-4">
             <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full bg-background">
+              <SelectTrigger className="w-auto min-w-[140px] bg-background">
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
               <SelectContent className="bg-card border-border z-50">

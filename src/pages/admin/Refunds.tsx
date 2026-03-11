@@ -259,7 +259,7 @@ export default function AdminRefunds() {
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-[180px] bg-background/50">
+                <SelectTrigger className="w-auto min-w-[140px] bg-background/50">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>

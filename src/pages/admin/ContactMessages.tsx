@@ -406,7 +406,7 @@ export default function ContactMessages() {
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-[150px] h-9">
+                <SelectTrigger className="w-auto min-w-[140px] h-9">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
