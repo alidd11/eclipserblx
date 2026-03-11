@@ -155,8 +155,8 @@ export default function SellerReviews() {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible">
+          <Card className="min-w-[200px] flex-shrink-0 md:min-w-0">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
