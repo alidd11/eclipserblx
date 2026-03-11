@@ -535,7 +535,7 @@ Deno.serve(async (req) => {
           results.processed++;
           results.details.push({ payoutId, status: 'processing', method: 'wise', transferId: transfer.id });
 
-        } else if (payoutMethod === 'paypal') {
+        } else if (effectiveMethod === 'paypal') {
           // === PAYPAL PAYOUTS API ===
           const paypalClientId = Deno.env.get('PAYPAL_CLIENT_ID');
           const paypalClientSecret = Deno.env.get('PAYPAL_CLIENT_SECRET');
