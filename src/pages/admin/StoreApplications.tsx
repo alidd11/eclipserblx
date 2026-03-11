@@ -85,7 +85,7 @@ interface StoreApplication {
 
 export default function StoreApplications() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [selectedApplication, setSelectedApplication] = useState<StoreApplication | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
