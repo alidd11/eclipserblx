@@ -245,7 +245,7 @@ export default function SellerTickets() {
       toast.success('Status Updated');
     },
     onError: (error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 
