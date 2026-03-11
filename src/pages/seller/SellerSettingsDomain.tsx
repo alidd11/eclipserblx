@@ -76,6 +76,11 @@ function HealthCheckResult({ data }: { data: any }) {
       message: 'Your Cloudflare zone is blocking requests to this domain, likely because the CNAME is proxied (orange cloud).',
       fix: 'In your Cloudflare dashboard, switch your CNAME record to DNS-only (grey cloud), OR delete the CNAME and create an A record pointing to 185.158.133.1 (also DNS-only). This bypasses the cross-zone conflict.',
     },
+    '403_direct_a': {
+      title: '403 Forbidden — Wrong DNS Record Type',
+      message: 'Your domain has an A record pointing directly to the origin server (185.158.133.1). This bypasses the proxy and the server doesn\'t recognise your domain.',
+      fix: 'Delete the A record for your domain and instead add a CNAME record pointing to stores.eclipserblx.com — set it to DNS-only (grey cloud). This ensures traffic is routed correctly through the proxy.',
+    },
     '403': {
       title: '403 Forbidden',
       message: 'Access to this domain is being blocked.',
