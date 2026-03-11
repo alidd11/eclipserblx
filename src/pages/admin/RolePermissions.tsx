@@ -163,13 +163,13 @@ export default function RolePermissions() {
       if (enabled) {
         const { error } = await supabase
           .from('role_permissions')
-          .insert({ role: role as AppRole, permission_id: permissionId });
+          .insert({ role, permission_id: permissionId });
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('role_permissions')
           .delete()
-          .eq('role', role as AppRole)
+          .eq('role', role)
           .eq('permission_id', permissionId);
         if (error) throw error;
       }
