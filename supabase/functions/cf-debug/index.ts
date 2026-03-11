@@ -107,6 +107,16 @@ Deno.serve(async (req) => {
       return jsonOk(data);
     }
 
+    if (action === "get-ruleset") {
+      const rulesetId = body?.ruleset_id;
+      if (!rulesetId) return jsonError("ruleset_id required", 400);
+      const resp = await fetch(`${CF_API}/zones/${cfZoneId}/rulesets/${rulesetId}`, {
+        headers: { Authorization: `Bearer ${cfToken}` },
+      });
+      const data = await resp.json();
+      return jsonOk(data);
+    }
+
     return jsonError("Unknown action", 400);
   } catch (e: any) {
     return jsonError(e.message, 500);
