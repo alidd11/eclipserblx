@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 interface PayoutRequest {
   id: string;
