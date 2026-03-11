@@ -76,7 +76,7 @@ export function RevenueSummaryStats() {
   }
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
       {items.map((item) => (
         <Card key={item.label} className="p-4">
           <div className="flex items-center gap-2 mb-1">
