@@ -150,7 +150,7 @@ export default function DiscordPolls() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* Dropdown for all devices */}
           <Select value={activeTab} onValueChange={setActiveTab}>
-            <SelectTrigger className="w-full max-w-md bg-card">
+            <SelectTrigger className="w-auto min-w-[140px] bg-card">
               <SelectValue placeholder="Select section" />
             </SelectTrigger>
             <SelectContent className="bg-card border-border z-[100]">

@@ -241,7 +241,7 @@ export default function SellerReviews() {
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={handleSortChange}>
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-auto min-w-[140px]">
               <ArrowUpDown className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>

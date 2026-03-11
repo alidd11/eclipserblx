@@ -255,7 +255,7 @@ export default function RolePermissions() {
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'assign' | 'manage')}>
           {/* Dropdown for all devices */}
           <Select value={activeTab} onValueChange={(v) => setActiveTab(v as 'assign' | 'manage')}>
-            <SelectTrigger className="w-full bg-card border-2 border-primary/20 hover:border-primary/40 transition-colors">
+            <SelectTrigger className="w-auto min-w-[140px] bg-card border-2 border-primary/20 hover:border-primary/40 transition-colors">
               <SelectValue placeholder="Select section" />
             </SelectTrigger>
             <SelectContent className="bg-card border-border z-[100]">
