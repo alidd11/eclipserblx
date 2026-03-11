@@ -218,7 +218,7 @@ export default function SellerTickets() {
       setAttachmentFile(null);
     },
     onError: (error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 
