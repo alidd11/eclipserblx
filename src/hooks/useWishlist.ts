@@ -128,6 +128,7 @@ export function useWishlistItems() {
             description,
             is_active,
             store_id,
+            product_number,
             stores (
               name,
               slug
