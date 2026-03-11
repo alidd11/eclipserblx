@@ -25,7 +25,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 import { format } from 'date-fns';
 
