@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { useToast } from '@/hooks/use-toast';
+
 import { openExternalUrl } from '@/lib/externalBrowser';
 import { 
   Link2, 
