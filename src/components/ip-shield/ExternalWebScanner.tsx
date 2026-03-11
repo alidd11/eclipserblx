@@ -139,10 +139,7 @@ export function ExternalWebScanner() {
       queryClient.invalidateQueries({ queryKey: ['abuse-complaints'] });
       setComplaintDialogOpen(false);
       setComplaintForm({ original_work_title: '', original_work_description: '' });
-      toast({
-        title: 'Complaint Filed!',
-        description: `DMCA complaint sent to our legal team for forwarding to ${data.registrar || 'the registrar'}.`,
-      });
+      toast.success('Complaint Filed!', { description: `DMCA complaint sent to our legal team for forwarding to ${data.registrar || 'the registrar'}.` });
     },
     onError: (error: any) => {
       toast({ title: 'Failed to File', description: error.message, variant: 'destructive' });
