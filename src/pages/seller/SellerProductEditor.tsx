@@ -442,7 +442,9 @@ export default function SellerProductEditor() {
     },
     onSuccess: async (result) => {
       // Submit to search engines if auto-approved
-      if (result.isAutoApproved && formData.slug) {
+      if (result.isAutoApproved && result.productNumber) {
+        submitProductUrl(result.productNumber);
+      } else if (result.isAutoApproved && formData.slug) {
         submitProductUrl(formData.slug);
       }
       // Send Discord announcement for auto-approved new products
