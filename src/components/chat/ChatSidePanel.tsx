@@ -18,6 +18,7 @@ import { SecureCodeInput } from './SecureCodeInput';
 import { CodeVerificationMessage } from './CodeVerificationMessage';
 import { cn } from '@/lib/utils';
 import { parseMessageWithLinks } from '@/lib/chatLinks';
+import { useStoreDomain } from '@/hooks/useStoreDomain';
 import { motion, AnimatePresence } from 'framer-motion';
 import { performSecurityScan } from '@/lib/secureFileUpload';
 import { notifyNewLiveChat } from '@/lib/pushNotifications';
@@ -84,6 +85,7 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isOpen, closeChat } = useChatPanel();
+  const { isCustomStoreDomain } = useStoreDomain();
   const openingStatus = getOpeningStatus();
 
   const { playSound } = useNotificationSound();
@@ -588,6 +590,8 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
       setIsMinimized(false);
     }
   }, [isOpen]);
+
+  if (isCustomStoreDomain) return null;
 
   return (
     <AnimatePresence>
