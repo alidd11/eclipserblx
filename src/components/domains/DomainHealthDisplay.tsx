@@ -294,6 +294,33 @@ export function DomainHealthDisplay({ healthCheck, domain, isCloudflare, compact
               </Button>
             </div>
           )}
+
+          {/* Auto-Fix button */}
+          {onAutoFix && hasCloudflareCredentials && healthCheck.error_code && FIXABLE_ERRORS.includes(healthCheck.error_code) && (
+            <div className="border-t border-border/50 bg-primary/5 p-4">
+              <Button
+                onClick={onAutoFix}
+                disabled={isAutoFixing}
+                size="sm"
+                className="w-full"
+              >
+                {isAutoFixing ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Fixing DNS…
+                  </>
+                ) : (
+                  <>
+                    <Wrench className="h-4 w-4 mr-2" />
+                    Auto-Fix DNS via Cloudflare API
+                  </>
+                )}
+              </Button>
+              <p className="text-[10px] text-muted-foreground text-center mt-1.5">
+                Uses your saved Cloudflare token to correct DNS records automatically
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Raw diagnosis (collapsible) */}
