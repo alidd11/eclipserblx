@@ -14,30 +14,33 @@ Deno.serve(async (req) => {
     targetUrl = "https://eclipserblx.com/products/13";
   }
 
-  // Test directly on the real domain — the WAF skip rule should allow Discordbot through
+  const ua = "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)";
+  
   const res = await fetch(targetUrl, {
-    headers: { "User-Agent": "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)" },
-    redirect: "follow",
+    headers: { "User-Agent": ua },
+    redirect: "manual",
   });
+  
   const body = await res.text();
   const headers: Record<string, string> = {};
   res.headers.forEach((v, k) => { headers[k] = v; });
 
-  const ogTitle = body.match(/<meta\s+property="og:title"\s+content="([^"]*)"/)?.[1] || null;
-  const ogImage = body.match(/<meta\s+property="og:image"\s+content="([^"]*)"/)?.[1] || null;
-  const ogUrl = body.match(/<meta\s+property="og:url"\s+content="([^"]*)"/)?.[1] || null;
-  const xWorker = headers['x-eclipse-worker'] || null;
-
   return new Response(JSON.stringify({
     testedUrl: targetUrl,
     status: res.status,
-    xWorker,
-    ogTitle,
-    ogImage: ogImage ? ogImage.slice(0, 150) : null,
-    ogUrl,
-    hasProductOg: !!ogTitle && ogTitle !== 'Eclipse' && !ogTitle.startsWith('Eclipse |'),
+    redirected: res.redirected,
+    finalUrl: res.url,
+    xWorker: headers['x-eclipse-worker'] || null,
+    cfRay: headers['cf-ray'] || null,
+    server: headers['server'] || null,
+    via: headers['via'] || null,
+    xPoweredBy: headers['x-powered-by'] || null,
+    contentType: headers['content-type'] || null,
+    location: headers['location'] || null,
+    allHeaderKeys: Object.keys(headers),
+    hasProductOg: body.includes('og:title') && !body.includes('Eclipse | Roblox Marketplace'),
     bodyLen: body.length,
-    bodyPreview: body.slice(0, 600),
+    first200: body.slice(0, 200),
   }, null, 2), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
