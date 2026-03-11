@@ -72,7 +72,28 @@ async function serveOg(path, hostname) {
   });
 }
 
-async function passthrough(request, tag) {
+async function fetchOrigin(request, tag) {
+  var url = new URL(request.url);
+  var hostname = url.hostname;
+  
+  // Store subdomains use a dummy AAAA record - rewrite to real origin
+  if (isStoreHostname(hostname)) {
+    var originUrl = ORIGIN_URL + url.pathname + url.search;
+    var newReq = new Request(originUrl, {
+      method: request.method,
+      headers: request.headers,
+      body: request.body,
+      redirect: "manual"
+    });
+    // Pass the original hostname so the SPA can resolve the store
+    newReq.headers.set("X-Forwarded-Host", hostname);
+    var r = await fetch(newReq);
+    var h = new Headers(r.headers);
+    h.set("X-Eclipse-Worker", tag);
+    return new Response(r.body, { status: r.status, headers: h });
+  }
+  
+  // Main domain - normal passthrough
   var r = await fetch(request);
   var h = new Headers(r.headers);
   h.set("X-Eclipse-Worker", tag);
