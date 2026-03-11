@@ -133,6 +133,10 @@ const AdminRecruiterApplications = lazy(() => import("@/pages/admin/RecruiterApp
 const AdminRecruiterPayouts = lazy(() => import("@/pages/admin/RecruiterPayouts"));
 const AdminRecruiterCommissions = lazy(() => import("@/pages/admin/RecruiterCommissions"));
 const AdminGDPRCompliance = lazy(() => import("@/pages/admin/GDPRCompliance"));
+const AdminRevenueHub = lazy(() => import("@/pages/admin/RevenueHub"));
+const AdminPayoutsHub = lazy(() => import("@/pages/admin/PayoutsHub"));
+const AdminDisputesRefundsHub = lazy(() => import("@/pages/admin/DisputesRefundsHub"));
+const AdminAffiliateHub = lazy(() => import("@/pages/admin/AffiliateHub"));
 const AdminPlatformLedger = lazy(() => import("@/pages/admin/PlatformLedger"));
 const AdminCustomDomains = lazy(() => import("@/pages/admin/CustomDomains"));
 
@@ -384,8 +388,14 @@ export function AppRoutes() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
-        <Route path="/admin/income" element={<AdminIncome />} />
-        <Route path="/admin/income-sources" element={<AdminIncomeSources />} />
+        {/* Finance Hub routes */}
+        <Route path="/admin/revenue" element={<AdminRevenueHub />} />
+        <Route path="/admin/payouts" element={<AdminPayoutsHub />} />
+        <Route path="/admin/disputes-refunds" element={<AdminDisputesRefundsHub />} />
+        <Route path="/admin/affiliate-hub" element={<AdminAffiliateHub />} />
+        {/* Legacy redirects for old finance routes */}
+        <Route path="/admin/income" element={<Navigate to="/admin/revenue?tab=overview" replace />} />
+        <Route path="/admin/income-sources" element={<Navigate to="/admin/revenue?tab=sources" replace />} />
         <Route path="/admin/staff-activity" element={<AdminStaffActivity />} />
         <Route path="/admin/staff-messages" element={<AdminStaffMessages />} />
         <Route path="/admin/admin-chat" element={<AdminChat />} />
@@ -395,8 +405,8 @@ export function AppRoutes() {
         <Route path="/admin/categories" element={<AdminCategories />} />
         <Route path="/admin/promotions" element={<AdminPromotions />} />
         <Route path="/admin/orders" element={<AdminOrders />} />
-        <Route path="/admin/refunds" element={<AdminRefunds />} />
-        <Route path="/admin/disputes" element={<AdminDisputes />} />
+        <Route path="/admin/refunds" element={<Navigate to="/admin/disputes-refunds?tab=refunds" replace />} />
+        <Route path="/admin/disputes" element={<Navigate to="/admin/disputes-refunds?tab=disputes" replace />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
         <Route path="/admin/discord-settings" element={<AdminDiscordSettings />} />
@@ -409,8 +419,8 @@ export function AppRoutes() {
         <Route path="/admin/help" element={<AdminHelp />} />
         <Route path="/admin/subscribers" element={<AdminSubscribers />} />
         <Route path="/admin/ip-bans" element={<AdminIpBans />} />
-        <Route path="/admin/referrals" element={<AdminReferrals />} />
-        <Route path="/admin/affiliates" element={<AdminAffiliates />} />
+        <Route path="/admin/referrals" element={<Navigate to="/admin/affiliate-hub?tab=referrals" replace />} />
+        <Route path="/admin/affiliates" element={<Navigate to="/admin/affiliate-hub?tab=overview" replace />} />
         <Route path="/admin/bot-codes" element={<AdminBotCodes />} />
         <Route path="/admin/bot-requests" element={<AdminBotRequests />} />
         <Route path="/admin/bot-servers" element={<AdminBotServers />} />
@@ -421,20 +431,20 @@ export function AppRoutes() {
         <Route path="/admin/job-channels" element={<AdminJobChannels />} />
         <Route path="/admin/staff-directory" element={<AdminStaffDirectory />} />
         <Route path="/admin/staff/:userId" element={<AdminStaffProfile />} />
-        <Route path="/admin/affiliate-applications" element={<AdminAffiliateApplications />} />
+        <Route path="/admin/affiliate-applications" element={<Navigate to="/admin/affiliate-hub?tab=applications" replace />} />
         <Route path="/admin/store-applications" element={<AdminStoreApplications />} />
         <Route path="/admin/seller-product-review" element={<AdminSellerProductReview />} />
         <Route path="/admin/seo-indexing" element={<AdminSEOIndexing />} />
         <Route path="/admin/seller-products" element={<AdminSellerProductsAll />} />
         <Route path="/admin/seller-commissions" element={<AdminSellerCommissions />} />
         <Route path="/admin/seller-commissions/:storeId" element={<AdminSellerStoreDetail />} />
-        <Route path="/admin/seller-payouts" element={<AdminSellerPayouts />} />
+        <Route path="/admin/seller-payouts" element={<Navigate to="/admin/payouts?tab=seller" replace />} />
         <Route path="/admin/seller-agreements" element={<AdminSellerAgreements />} />
         <Route path="/admin/staff-documents" element={<AdminStaffDocuments />} />
         <Route path="/admin/public-documents" element={<AdminPublicDocuments />} />
         <Route path="/admin/seller-documents" element={<AdminSellerDocuments />} />
         <Route path="/admin/seller-recruitment" element={<AdminSellerRecruitment />} />
-        <Route path="/admin/manual-payouts" element={<AdminManualPayouts />} />
+        <Route path="/admin/manual-payouts" element={<Navigate to="/admin/payouts?tab=manual" replace />} />
         <Route path="/admin/seller-tickets" element={<AdminSellerTickets />} />
         <Route path="/admin/role-permissions" element={<AdminRolePermissions />} />
         
@@ -448,7 +458,7 @@ export function AppRoutes() {
         <Route path="/admin/ip-reports" element={<AdminIPReports />} />
         <Route path="/admin/ip-shield-custom-plans" element={<AdminIPShieldCustomPlans />} />
         <Route path="/admin/developer-submissions" element={<AdminDeveloperSubmissions />} />
-        <Route path="/admin/developer-payments" element={<AdminDeveloperPayments />} />
+        <Route path="/admin/developer-payments" element={<Navigate to="/admin/payouts?tab=developer" replace />} />
         <Route path="/admin/developer-payments/:id" element={<AdminDeveloperPaymentDetail />} />
         <Route path="/admin/recruiters" element={<AdminRecruiters />} />
         <Route path="/admin/recruiter-applications" element={<AdminRecruiterApplications />} />

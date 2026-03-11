@@ -18,6 +18,7 @@ import { useStaffPresence } from '@/hooks/useStaffPresence';
 import { useAdminManifest } from '@/hooks/useAdminManifest';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useAdminTextScaling } from '@/hooks/useAdminTextScaling';
+import { useIsInsideHub } from './AdminHubContext';
 
 
 
@@ -30,6 +31,7 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children, requiredRoles = [], requiredPermissions = [] }: AdminLayoutProps) {
+  const isInsideHub = useIsInsideHub();
   const { user, isStaff, isAdmin, hasRole, loading } = useAdminAuth();
   const { hasAnyPermission, isLoading: permissionsLoading } = useUserPermissions();
   const isMobile = useIsMobile();
@@ -343,6 +345,12 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
         </div>
       );
     }
+  }
+
+  // When rendered inside a hub page, skip the layout chrome (sidebar, header, etc.)
+  // since the parent hub already provides it. Just render children directly.
+  if (isInsideHub) {
+    return <>{children}</>;
   }
 
   return (
