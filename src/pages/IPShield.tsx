@@ -771,7 +771,7 @@ export default function IPShield() {
     },
     onSuccess: (data) => { if (data.url) window.location.href = data.url; },
     onError: (error) => {
-      toast({ title: 'Verification failed', description: error.message, variant: 'destructive' });
+      toast.error('Verification failed', { description: error.message });
       setVerifying(false);
     },
   });
