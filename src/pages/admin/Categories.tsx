@@ -329,10 +329,7 @@ export default function AdminCategories() {
       setDialogOpen(false);
       setEditingCategory(null);
       setForm(emptyForm);
-      toast({
-        title: editingCategory ? 'Category updated' : 'Category created',
-        description: `"${form.name}" has been saved.`,
-      });
+      toast.success(editingCategory ? 'Category updated' : 'Category created', { description: `"${form.name}" has been saved.` });
     },
     onError: (error: Error) => {
       toast({
