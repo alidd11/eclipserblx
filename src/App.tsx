@@ -63,7 +63,6 @@ const App = forwardRef<HTMLDivElement>((_, ref) => (
               <ChatPanelProvider>
                 <StoreDomainProvider>
                 <TooltipProvider>
-                  <Toaster />
                   <Sonner />
                   <BrowserRouter>
                     <GlobalBackground />
