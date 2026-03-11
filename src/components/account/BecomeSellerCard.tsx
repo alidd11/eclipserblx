@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useSellerVerification, VerificationResults } from '@/hooks/useSellerVerification';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 
