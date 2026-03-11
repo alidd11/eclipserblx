@@ -233,7 +233,7 @@ function SortableMobileCard({
 }
 
 export default function AdminCategories() {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
