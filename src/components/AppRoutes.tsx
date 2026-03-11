@@ -438,7 +438,7 @@ export function AppRoutes() {
         <Route path="/admin/seller-products" element={<AdminSellerProductsAll />} />
         <Route path="/admin/seller-commissions" element={<AdminSellerCommissions />} />
         <Route path="/admin/seller-commissions/:storeId" element={<AdminSellerStoreDetail />} />
-        <Route path="/admin/seller-payouts" element={<AdminSellerPayouts />} />
+        <Route path="/admin/seller-payouts" element={<Navigate to="/admin/payouts?tab=seller" replace />} />
         <Route path="/admin/seller-agreements" element={<AdminSellerAgreements />} />
         <Route path="/admin/staff-documents" element={<AdminStaffDocuments />} />
         <Route path="/admin/public-documents" element={<AdminPublicDocuments />} />
