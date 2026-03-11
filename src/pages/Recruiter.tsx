@@ -17,7 +17,7 @@ import { Progress } from '@/components/ui/progress';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useRecruiterSettings, getCommissionTier } from '@/hooks/useRecruiterSettings';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { format } from 'date-fns';
