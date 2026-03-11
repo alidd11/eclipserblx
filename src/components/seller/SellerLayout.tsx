@@ -65,7 +65,12 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   const canAccessSellerDashboard = hasSellerRole || isApprovedSeller;
   const canAccessMarketplace = hasAccess || isApprovedSeller;
 
-  if (loading) {
+  const isInsideHub = useIsInsideHub();
+
+  // When rendered inside a hub tab, skip the full layout chrome
+  if (isInsideHub) return <>{children}</>;
+
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
