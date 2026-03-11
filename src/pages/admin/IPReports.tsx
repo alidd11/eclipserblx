@@ -142,7 +142,7 @@ export default function IPReports() {
             <p className="text-muted-foreground">Review and manage intellectual property violation reports</p>
           </div>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-auto min-w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

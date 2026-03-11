@@ -298,7 +298,7 @@ export default function SellerProducts() {
             <p className="text-muted-foreground">Review and moderate seller product submissions</p>
           </div>
           <Select value={filterStatus} onValueChange={handleFilterChange}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-auto min-w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

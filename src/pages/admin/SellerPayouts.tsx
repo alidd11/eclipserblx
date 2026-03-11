@@ -203,7 +203,7 @@ export default function SellerPayouts() {
 
         <div className="flex items-center justify-end">
           <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-auto min-w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
