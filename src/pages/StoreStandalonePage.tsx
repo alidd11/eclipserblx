@@ -83,10 +83,10 @@ function StoreStandaloneContent({
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Navigate to={`/store/${storeSlug}`} replace />} />
-          <Route path={`/store/${storeSlug}`} element={<StorePage />} />
-          <Route path={`/store/${storeSlug}/reviews`} element={<StoreReviewsPage />} />
-          <Route path={`/store/${storeSlug}/about`} element={<StoreAbout />} />
-          <Route path={`/store/${storeSlug}/page/:pageSlug`} element={<StoreCustomPage />} />
+          <Route path="/store/:storeSlug" element={<StorePage />} />
+          <Route path="/store/:storeSlug/reviews" element={<StoreReviewsPage />} />
+          <Route path="/store/:storeSlug/about" element={<StoreAbout />} />
+          <Route path="/store/:storeSlug/page/:pageSlug" element={<StoreCustomPage />} />
           <Route path="/products/:slug" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
