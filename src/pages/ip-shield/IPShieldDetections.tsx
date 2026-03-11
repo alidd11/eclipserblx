@@ -113,7 +113,7 @@ export default function IPShieldDetections() {
   const runCustomScan = () => {
     const terms = customKeywords.split(',').map(s => s.trim()).filter(Boolean);
     if (terms.length === 0) {
-      toast({ title: 'Enter keywords', description: 'Add comma-separated keywords to search for.', variant: 'destructive' });
+      toast.error('Enter keywords', { description: 'Add comma-separated keywords to search for.' });
       return;
     }
     runScan({ 
