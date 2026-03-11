@@ -858,7 +858,7 @@ export default function IPShield() {
       queryClient.invalidateQueries({ queryKey: ['takedown-requests'] });
     },
     onError: (error) => {
-      toast({ title: 'Failed to submit', description: error.message, variant: 'destructive' });
+      toast.error('Failed to submit', { description: error.message });
     },
   });
 
