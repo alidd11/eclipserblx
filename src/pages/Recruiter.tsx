@@ -212,10 +212,7 @@ export default function Recruiter() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: "Payout Requested",
-        description: "Your payout request has been submitted for processing.",
-      });
+      toast.success("Payout Requested", { description: "Your payout request has been submitted for processing." });
       setPayoutAmount('');
       queryClient.invalidateQueries({ queryKey: ['recruiter-payouts', user?.id] });
     },
