@@ -338,7 +338,7 @@ function HeroProductCard({ product }: { product: any }) {
 
   return (
     <Link 
-      to={`/products/${product.slug}`}
+      to={`/products/${(product as any).product_number}`}
       className="block max-w-4xl mx-auto group"
     >
       <div className="relative rounded-2xl overflow-hidden border border-border bg-card shadow-xl">
