@@ -268,7 +268,7 @@ export default function Checkout() {
         onError={handlePaymentError}
       />
 
-      <div className="container py-8 max-w-4xl space-y-8 overflow-x-hidden px-4 sm:px-6 w-full box-border">
+      <div className="container py-8 max-w-4xl space-y-8 px-4 sm:px-6 w-full box-border">
         <Link to="/cart" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft className="h-4 w-4" />
           {t('checkout.backToCart')}
