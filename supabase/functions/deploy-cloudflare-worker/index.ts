@@ -416,28 +416,40 @@ Deno.serve(async (req) => {
     );
     const pageRules = Array.isArray(pageRulesData.result) ? pageRulesData.result : [];
 
-    // DNS proxy check
+    // Check for Pages projects that might override Worker Routes
+    let pagesProjects: unknown[] = [];
+    try {
+      const pagesData = await cfApi(
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects`,
+        cfToken
+      );
+      if (pagesData.success && Array.isArray(pagesData.result)) {
+        pagesProjects = pagesData.result.map((p: any) => ({
+          name: p.name,
+          subdomain: p.subdomain,
+          domains: p.domains,
+          production_branch: p.production_branch,
+        }));
+      }
+    } catch { /* ignore */ }
+
+    // DNS proxy check — include record type and content for diagnosis
     const dnsData = await cfApi(
       `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records`,
       cfToken
     );
     const dnsResults: Record<string, unknown>[] = [];
     if (dnsData.success) {
-      const targets = ["eclipserblx.com", "www.eclipserblx.com", "*.eclipserblx.com"];
       const recs = (dnsData.result || []).filter(
-        (r: any) => targets.includes(r.name) && ["A", "AAAA", "CNAME"].includes(r.type)
+        (r: any) => ["A", "AAAA", "CNAME"].includes(r.type)
       );
       for (const rec of recs) {
-        if (!rec.proxied) {
-          await cfApi(
-            `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records/${rec.id}`,
-            cfToken,
-            { method: "PATCH", body: JSON.stringify({ proxied: true }) }
-          );
-          dnsResults.push({ name: rec.name, action: "enabled_proxy" });
-        } else {
-          dnsResults.push({ name: rec.name, action: "ok" });
-        }
+        dnsResults.push({
+          name: rec.name,
+          type: rec.type,
+          content: rec.content,
+          proxied: rec.proxied,
+        });
       }
     }
 
