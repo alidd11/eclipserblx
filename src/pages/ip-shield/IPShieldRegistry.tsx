@@ -295,7 +295,7 @@ export default function IPShieldRegistry() {
                   setScanningId(entryId);
 
                   const terms = customSearchTerms.split('\n').map(s => s.trim()).filter(Boolean);
-                  toast({ title: 'Scanning...', description: terms.length > 0 ? `Searching ${terms.length} custom term${terms.length > 1 ? 's' : ''} for "${title}"` : `Running auto-scan for "${title}"` });
+                  toast.info('Scanning...', { description: terms.length > 0 ? `Searching ${terms.length} custom term${terms.length > 1 ? 's' : ''} for "${title}"` : `Running auto-scan for "${title}"` });
 
                   try {
                     const body: Record<string, unknown> = { registry_entry_id: entryId };
