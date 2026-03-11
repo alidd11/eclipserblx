@@ -147,7 +147,7 @@ Deno.serve(async (req) => {
     // Pre-fetch store_payment_details for Stripe Connect info
     const { data: paymentDetails } = await supabase
       .from('store_payment_details')
-      .select('store_id, stripe_account_id, payouts_enabled, bank_account_number, bank_routing_number, bank_swift_bic, bank_country, bank_account_holder_name, paypal_email')
+      .select('store_id, stripe_account_id, payouts_enabled, bank_account_number, bank_routing_number, bank_swift_bic, bank_country, bank_account_holder, paypal_email')
       .in('store_id', storeIds);
 
     const paymentDetailsMap = new Map((paymentDetails || []).map((pd: any) => [pd.store_id, pd]));
@@ -158,8 +158,10 @@ Deno.serve(async (req) => {
     // Process each payout
     for (const payout of payouts) {
       const payoutId = payout.id;
-      const storeId = payout.stores?.id;
-      const payoutMethod = payout.stores?.payout_method;
+      // stores may be an array (no FK) or object — normalize
+      const storeData = Array.isArray(payout.stores) ? payout.stores[0] : payout.stores;
+      const storeId = storeData?.id || payout.store_id;
+      const payoutMethod = storeData?.payout_method;
 
       try {
         // === ATOMIC CLAIM: Prevent duplicate processing by concurrent runs ===
@@ -199,6 +201,7 @@ Deno.serve(async (req) => {
         let effectiveMethod = payoutMethod || 'stripe';
         const storePayment = storeId ? paymentDetailsMap.get(storeId) : null;
         let fallbackUsed = false;
+        
 
         if (effectiveMethod === 'stripe' && !storePayment?.stripe_account_id) {
           // Stripe selected but no Connect account — try PayPal fallback
