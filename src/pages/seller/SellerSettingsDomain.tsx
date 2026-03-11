@@ -375,7 +375,7 @@ export default function SellerSettingsDomain() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
     },
-    onError: (e: any) => toast({ title: 'Health check failed', description: e.message, variant: 'destructive' }),
+    onError: (e: any) => toast.error('Health check failed', { description: e.message }),
   });
 
   const removeDomain = useMutation({
