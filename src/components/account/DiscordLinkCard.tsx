@@ -127,7 +127,7 @@ export const DiscordLinkCard = ({
     };
 
     handleOAuthCallback();
-  }, [userId, currentDiscordId, hasEclipsePlus, onUpdate, toast]);
+  }, [userId, currentDiscordId, hasEclipsePlus, onUpdate]);
 
   const handleLinkWithOAuth = async () => {
     const clientId = getDiscordClientId();
