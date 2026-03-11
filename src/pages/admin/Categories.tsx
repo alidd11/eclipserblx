@@ -428,7 +428,7 @@ export default function AdminCategories() {
       return;
     }
     if (form.slug.length > 100) {
-      toast({ title: 'Validation error', description: 'Slug must be under 100 characters.', variant: 'destructive' });
+      toast.error('Validation error', { description: 'Slug must be under 100 characters.' });
       return;
     }
     if (form.description.length > 500) {
