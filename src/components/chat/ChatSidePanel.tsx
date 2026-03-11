@@ -86,8 +86,6 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
   const { user, loading: authLoading } = useAuth();
   const { isOpen, closeChat } = useChatPanel();
   const { isCustomStoreDomain } = useStoreDomain();
-
-  if (isCustomStoreDomain) return null;
   const openingStatus = getOpeningStatus();
 
   const { playSound } = useNotificationSound();
