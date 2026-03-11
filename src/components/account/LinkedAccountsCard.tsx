@@ -189,7 +189,7 @@ export function LinkedAccountsCard({
     };
 
     handleOAuthCallback();
-  }, [userId, discordId, hasEclipsePlus, onUpdate, toastHook]);
+  }, [userId, discordId, hasEclipsePlus, onUpdate]);
 
   const handleLinkDiscord = async () => {
     setIsLinkingDiscord(true);
