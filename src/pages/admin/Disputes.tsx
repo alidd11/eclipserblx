@@ -88,6 +88,7 @@ function buildTimeline(d: any) {
 }
 
 export default function Disputes() {
+  const isInsideHub = useIsInsideHub();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
