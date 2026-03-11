@@ -20,6 +20,7 @@ import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 export default function AdminAffiliates() {
+  const isInsideHub = useIsInsideHub();
   const [search, setSearch] = useState('');
   const [payoutStatusFilter, setPayoutStatusFilter] = useState<string>('all');
   const queryClient = useQueryClient();
