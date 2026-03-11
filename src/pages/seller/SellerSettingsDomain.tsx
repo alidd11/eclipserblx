@@ -389,7 +389,7 @@ export default function SellerSettingsDomain() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
-      toast({ title: 'Domain removed' });
+      toast.success('Domain removed');
     },
     onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
   });
