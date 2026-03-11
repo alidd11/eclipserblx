@@ -977,7 +977,7 @@ export default function ProductDetail() {
                 {relatedProducts.map((p) => (
                   <Link 
                     key={p.id} 
-                    to={`/products/${p.slug}`}
+                    to={`/products/${(p as any).product_number}`}
                     className="group rounded-lg overflow-hidden bg-muted/30 hover:bg-muted/50 transition-colors"
                   >
                     <div className="aspect-video bg-muted overflow-hidden">
