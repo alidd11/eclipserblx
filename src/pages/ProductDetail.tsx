@@ -42,8 +42,8 @@ import { FrequentlyBoughtTogether } from '@/components/product/FrequentlyBoughtT
 import { PriceAlertButton } from '@/components/product/PriceAlertButton';
 
 export default function ProductDetail() {
-  const { slug } = useParams<{ slug: string }>();
-  usePageTracking({ pagePath: `/products/${slug}` });
+  const { productNumber } = useParams<{ productNumber: string }>();
+  usePageTracking({ pagePath: `/products/${productNumber}` });
   const location = useLocation();
   const queryClient = useQueryClient();
   const { addItem, isInCart } = useCart();
@@ -78,19 +78,19 @@ export default function ProductDetail() {
 
 
   const handleRefresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ['product', slug] });
+    await queryClient.invalidateQueries({ queryKey: ['product', productNumber] });
     await queryClient.invalidateQueries({ queryKey: ['related-products'] });
-    await queryClient.invalidateQueries({ queryKey: ['product-reviews', slug] });
+    await queryClient.invalidateQueries({ queryKey: ['product-reviews', productNumber] });
     await queryClient.invalidateQueries({ queryKey: ['user-has-purchased'] });
-  }, [queryClient, slug]);
+  }, [queryClient, productNumber]);
 
   const { data: product, isLoading } = useQuery({
-    queryKey: ['product', slug, isStaff],
+    queryKey: ['product', productNumber, isStaff],
     queryFn: async () => {
       let query = supabase
         .from('products')
         .select(`*, categories(name, slug), stores(${STORE_LISTING_COLUMNS})`)
-        .eq('slug', slug);
+        .eq('product_number' as any, Number(productNumber));
 
       // Customers should only see active + released products.
       // Staff can preview scheduled and inactive products.
@@ -104,7 +104,7 @@ export default function ProductDetail() {
       if (error) throw error;
       return data;
     },
-    enabled: !adminLoading && slug !== undefined,
+    enabled: !adminLoading && productNumber !== undefined,
     staleTime: 0, // Always refetch when isStaff changes
   });
 
@@ -116,7 +116,7 @@ export default function ProductDetail() {
     if (product) {
       addToRecentlyViewed({
         id: product.id,
-        slug: product.slug,
+        slug: String((product as any).product_number),
         name: product.name,
         image: product.images?.[0],
         price: product.price,
@@ -132,7 +132,7 @@ export default function ProductDetail() {
       : product?.name
         ? `Buy ${product.name} on Eclipse marketplace`
         : undefined,
-    canonicalPath: slug ? `/products/${slug}` : undefined,
+    canonicalPath: productNumber ? `/products/${productNumber}` : undefined,
     ogImage: product?.images?.[0] || undefined,
   });
 
@@ -143,10 +143,10 @@ export default function ProductDetail() {
       items.push({ name: product.categories.name, url: `https://eclipserblx.com/products?category=${product.categories.slug}` });
     }
     if (product?.name) {
-      items.push({ name: product.name, url: `https://eclipserblx.com/products/${slug}` });
+      items.push({ name: product.name, url: `https://eclipserblx.com/products/${(product as any).product_number}` });
     }
     return items;
-  }, [product?.categories?.name, product?.categories?.slug, product?.name, slug]);
+  }, [product?.categories?.name, product?.categories?.slug, product?.name, productNumber]);
 
   const { data: relatedProducts } = useQuery({
     queryKey: ['related-products', product?.category_id, isStaff],
@@ -430,7 +430,7 @@ export default function ProductDetail() {
           rating={averageRating || undefined}
           reviewCount={reviewCount || undefined}
           sku={product.id}
-          slug={product.slug}
+          slug={String((product as any).product_number)}
           brand={product.stores?.name || 'Eclipse'}
           category={(product as any).categories?.name}
         />
@@ -776,7 +776,7 @@ export default function ProductDetail() {
                 size="sm"
                 className="flex-1 text-muted-foreground hover:text-foreground"
                 onClick={async () => {
-                  const shareUrl = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID || 'qlnbergwjfrmgkjhrbkj'}.supabase.co/functions/v1/og-proxy?path=/products/${slug}`;
+                  const shareUrl = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID || 'qlnbergwjfrmgkjhrbkj'}.supabase.co/functions/v1/og-proxy?path=/products/${(product as any).product_number}`;
                   if (navigator.share) {
                     try {
                       await navigator.share({ title: product.name, text: `Check out ${product.name} on Eclipse`, url: shareUrl });
@@ -977,7 +977,7 @@ export default function ProductDetail() {
                 {relatedProducts.map((p) => (
                   <Link 
                     key={p.id} 
-                    to={`/products/${p.slug}`}
+                    to={`/products/${(p as any).product_number}`}
                     className="group rounded-lg overflow-hidden bg-muted/30 hover:bg-muted/50 transition-colors"
                   >
                     <div className="aspect-video bg-muted overflow-hidden">

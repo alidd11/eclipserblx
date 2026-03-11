@@ -282,7 +282,7 @@ export function AppRoutes() {
         <Route path="/featured" element={<Featured />} />
         <Route path="/categories" element={<Categories />} />
         
-        <Route path="/products/:slug" element={<ProductDetail />} />
+        <Route path="/products/:productNumber" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/order-success" element={<OrderSuccess />} />

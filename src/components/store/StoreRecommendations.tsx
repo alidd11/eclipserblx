@@ -115,7 +115,7 @@ export const StoreRecommendations = ({
             name={product.name}
             price={product.price}
             image={product.images?.[0] || '/placeholder.svg'}
-            slug={product.slug}
+            slug={String((product as any).product_number)}
             category={product.categories?.name}
             isResellable={product.is_resellable}
           />

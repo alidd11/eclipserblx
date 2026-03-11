@@ -4899,6 +4899,7 @@ export type Database = {
           moderation_status: string | null
           name: string
           price: number
+          product_number: number
           release_at: string | null
           release_notified_at: string | null
           robux_enabled: boolean | null
@@ -4939,6 +4940,7 @@ export type Database = {
           moderation_status?: string | null
           name: string
           price: number
+          product_number?: number
           release_at?: string | null
           release_notified_at?: string | null
           robux_enabled?: boolean | null
@@ -4979,6 +4981,7 @@ export type Database = {
           moderation_status?: string | null
           name?: string
           price?: number
+          product_number?: number
           release_at?: string | null
           release_notified_at?: string | null
           robux_enabled?: boolean | null

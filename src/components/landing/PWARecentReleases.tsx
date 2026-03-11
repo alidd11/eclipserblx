@@ -18,7 +18,7 @@ const SpotlightCard = memo(function SpotlightCard({ product }: { product: Scored
   const hasMemberDiscount = isEligible && memberPrice < product.price;
 
   return (
-    <Link to={`/products/${product.slug}`} className="group block">
+    <Link to={`/products/${(product as any).product_number}`} className="group block">
       <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
         <div className="aspect-[16/9] relative overflow-hidden bg-muted">
           {product.images?.[0] ? (
@@ -71,7 +71,7 @@ const GridCard = memo(function GridCard({ product }: { product: ScoredProduct })
   const hasMemberDiscount = isEligible && memberPrice < product.price;
 
   return (
-    <Link to={`/products/${product.slug}`} className="group block h-full">
+    <Link to={`/products/${(product as any).product_number}`} className="group block h-full">
       <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200">
         <div className="aspect-[4/3] relative overflow-hidden bg-muted">
           {product.images?.[0] ? (

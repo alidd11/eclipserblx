@@ -36,7 +36,7 @@ function PopularProductCard({ product, rank }: { product: PopularProduct; rank: 
   const hasMemberDiscount = isEligible && memberPrice < product.price;
 
   return (
-    <Link to={`/products/${product.slug}`} className="group block">
+    <Link to={`/products/${(product as any).product_number}`} className="group block">
       <div className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors">
         {/* Rank badge */}
         <div className="flex-shrink-0 w-7 h-7 rounded-md bg-muted flex items-center justify-center">

@@ -559,9 +559,9 @@ export default function MyPurchases() {
                                   {isDownloading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{downloadProgress?.progress || 0}%</> : !hasAsset ? <><Package className="h-4 w-4 mr-2" />No file</> : <><Download className="h-4 w-4 mr-2" />Download</>}
                                 </Button>
                               )}
-                              {item.product?.slug && (
+                              {(item.product as any)?.product_number && (
                                 <Button asChild variant="outline" size="sm" className="border-yellow-500/30 text-yellow-500 hover:bg-yellow-500/10">
-                                  <Link to={`/products/${item.product.slug}#reviews`}><Star className="h-4 w-4 mr-2" />Review</Link>
+                                  <Link to={`/products/${(item.product as any).product_number}#reviews`}><Star className="h-4 w-4 mr-2" />Review</Link>
                                 </Button>
                               )}
                               <Button asChild variant="outline" size="sm">

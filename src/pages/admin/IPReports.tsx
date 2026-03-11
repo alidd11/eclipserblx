@@ -195,9 +195,9 @@ export default function IPReports() {
                       </CardDescription>
                     </div>
                     <div className="flex gap-2">
-                      {report.products?.slug && (
+                      {(report.products as any)?.product_number && (
                         <Button variant="outline" size="sm" asChild>
-                          <Link to={`/products/${report.products.slug}`} target="_blank">
+                          <Link to={`/products/${(report.products as any).product_number}`} target="_blank">
                             <ExternalLink className="h-4 w-4 mr-1" />
                             View Product
                           </Link>

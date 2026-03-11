@@ -144,7 +144,7 @@ const StoreCardSkeleton = forwardRef<HTMLDivElement>(function StoreCardSkeleton(
   );
 });
 
-const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; average_rating?: number | null; categories?: { name: string } | null; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
+const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; product_number?: number; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; average_rating?: number | null; categories?: { name: string } | null; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const prefetch = usePrefetchProduct();
@@ -155,7 +155,7 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
   const hasMemberDiscount = isEligible && memberPrice < product.price;
 
   return (
-    <Link to={`/products/${product.slug}`} className="group block h-full" onMouseEnter={() => prefetch(product.slug)}>
+    <Link to={`/products/${(product as any).product_number}`} className="group block h-full" onMouseEnter={() => prefetch(String((product as any).product_number))}>
       <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200">
         <div className="aspect-[4/3] relative overflow-hidden bg-muted">
           {product.images?.[0] ? (
@@ -403,7 +403,7 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
                     {/* Two spotlight products side by side */}
                     <div className="grid grid-cols-2 gap-3 sm:gap-6">
                       {spotlights.map((spotlight) => (
-                        <Link key={spotlight.id} to={`/products/${spotlight.slug}`} className="group block">
+                        <Link key={spotlight.id} to={`/products/${(spotlight as any).product_number}`} className="group block">
                           <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
                             <div className="aspect-[16/9] relative overflow-hidden bg-muted">
                               {spotlight.images?.[0] ? (

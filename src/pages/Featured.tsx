@@ -124,7 +124,7 @@ export default function Featured() {
                     key={product.id}
                     id={product.id}
                     name={product.name}
-                    slug={product.slug}
+                    slug={String((product as any).product_number)}
                     price={Number(product.price)}
                     image={product.images?.[0]}
                     images={product.images}
@@ -188,7 +188,7 @@ export default function Featured() {
                     key={product.id}
                     id={product.id}
                     name={product.name}
-                    slug={product.slug}
+                    slug={String((product as any).product_number)}
                     price={Number(product.price)}
                     image={product.images?.[0]}
                     images={product.images}
@@ -265,7 +265,7 @@ export default function Featured() {
                     key={product.id}
                     id={product.id}
                     name={product.name}
-                    slug={product.slug}
+                    slug={String((product as any).product_number)}
                     price={Number(product.price)}
                     image={product.images?.[0]}
                     images={product.images}
@@ -338,7 +338,7 @@ function HeroProductCard({ product }: { product: any }) {
 
   return (
     <Link 
-      to={`/products/${product.slug}`}
+      to={`/products/${(product as any).product_number}`}
       className="block max-w-4xl mx-auto group"
     >
       <div className="relative rounded-2xl overflow-hidden border border-border bg-card shadow-xl">

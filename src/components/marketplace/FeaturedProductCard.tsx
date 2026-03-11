@@ -116,7 +116,7 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
   return (
     <div className="space-y-2">
       <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Featured</span>
-      <Link to={`/products/${displayProduct.slug}`} className="group block">
+      <Link to={`/products/${(displayProduct as any).product_number}`} className="group block">
         <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
           {/* Product image */}
           <div className="aspect-[2.5/1] sm:aspect-[3/1] relative overflow-hidden bg-black/20">

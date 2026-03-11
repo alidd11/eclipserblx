@@ -19,7 +19,7 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
   
   return (
     <Link 
-      to={`/products/${product.slug}`}
+      to={`/products/${(product as any).product_number}`}
       className="block rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors active:scale-[0.98]"
     >
       {/* Image */}
