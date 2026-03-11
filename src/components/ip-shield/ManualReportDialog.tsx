@@ -167,7 +167,7 @@ export function ManualReportDialog({ open, onOpenChange, registryEntries, userId
 
       if (error) throw error;
 
-      toast({ title: 'Game reported', description: `"${gamePreview.name}" has been added to your detections.` });
+      toast.success('Game reported', { description: `"${gamePreview.name}" has been added to your detections.` });
       reset();
       onOpenChange(false);
       onReported();
