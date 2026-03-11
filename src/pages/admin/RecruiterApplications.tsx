@@ -12,7 +12,7 @@ import {
 import { Clock, CheckCircle, XCircle, Loader2, User, Mail, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
 interface RecruiterApplication {
