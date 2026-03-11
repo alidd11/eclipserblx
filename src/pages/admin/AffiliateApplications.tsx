@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { User, Search, Users, DollarSign, Hash, MessageSquare } from "lucide-react";
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 interface Affiliate {
   id: string;
