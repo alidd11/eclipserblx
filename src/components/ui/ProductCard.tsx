@@ -134,7 +134,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
   return (
     <Link 
       ref={ref}
-      to={`/products/${slug}`} 
+      to={`/products/${slug}`}
       className="group block h-full"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
