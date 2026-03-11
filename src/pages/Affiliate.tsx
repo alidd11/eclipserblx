@@ -68,7 +68,7 @@ export default function Affiliate() {
     if (searchParams.get('stripe_refresh') === 'true') {
       toast.error("Session Expired", { description: "Please try connecting your Stripe account again." });
     }
-  }, [searchParams, toast, queryClient]);
+  }, [searchParams, queryClient]);
 
   // Check if user has an application
   const { data: application, isLoading: applicationLoading } = useQuery({
