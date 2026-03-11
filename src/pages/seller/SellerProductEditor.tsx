@@ -365,7 +365,7 @@ export default function SellerProductEditor() {
 
   // Save product mutation
   const saveProduct = useMutation({
-    mutationFn: async (data: ProductFormData): Promise<{ productId: string; isAutoApproved: boolean }> => {
+    mutationFn: async (data: ProductFormData): Promise<{ productId: string; isAutoApproved: boolean; productNumber?: number }> => {
       if (!store?.id || !user?.id) throw new Error('Missing store or user');
 
       // Calculate release_at value
@@ -414,7 +414,7 @@ export default function SellerProductEditor() {
           .eq('store_id', store.id);
 
         if (error) throw error;
-        return { productId, isAutoApproved: shouldAutoApprove };
+        return { productId, isAutoApproved: shouldAutoApprove, productNumber: undefined as number | undefined };
       } else {
         // Ensure slug has a unique suffix for new products
         if (!productData.slug || productData.slug.length < 3) {
@@ -428,7 +428,7 @@ export default function SellerProductEditor() {
         const { data: insertedProduct, error } = await supabase
           .from('products')
           .insert(productData)
-          .select('id')
+          .select('id, product_number')
           .single();
 
         if (error) {
@@ -437,12 +437,14 @@ export default function SellerProductEditor() {
           }
           throw error;
         }
-        return { productId: insertedProduct.id, isAutoApproved: shouldAutoApprove };
+        return { productId: insertedProduct.id, isAutoApproved: shouldAutoApprove, productNumber: (insertedProduct as any).product_number };
       }
     },
     onSuccess: async (result) => {
       // Submit to search engines if auto-approved
-      if (result.isAutoApproved && formData.slug) {
+      if (result.isAutoApproved && result.productNumber) {
+        submitProductUrl(result.productNumber);
+      } else if (result.isAutoApproved && formData.slug) {
         submitProductUrl(formData.slug);
       }
       // Send Discord announcement for auto-approved new products

@@ -11,6 +11,7 @@ interface NewProductRequest {
   product_id: string;
   product_name: string;
   product_slug: string;
+  product_number?: number;
   product_price: number;
   category_name?: string;
 }
@@ -58,7 +59,7 @@ serve(async (req) => {
       );
     }
 
-    const { product_id, product_name, product_slug, product_price, category_name }: NewProductRequest = await req.json();
+    const { product_id, product_name, product_slug, product_number, product_price, category_name }: NewProductRequest = await req.json();
 
     if (!product_id || !product_name) {
       throw new Error('Missing product_id or product_name');
@@ -98,13 +99,16 @@ serve(async (req) => {
       ? `${product_name} is now available in ${category_name} for ${formattedPrice}`
       : `${product_name} is now available for ${formattedPrice}`;
 
+    // Use product_number for links (numeric URL), fall back to slug
+    const productPath = product_number ? `/products/${product_number}` : `/products/${product_slug}`;
+
     // Create in-app notifications for all users
     const notifications = userIds.map(userId => ({
       user_id: userId,
       title,
       message: body,
       type: 'new_product',
-      link: `/products/${product_slug}`,
+      link: productPath,
     }));
 
     const { error: notifError } = await supabase
@@ -130,7 +134,7 @@ serve(async (req) => {
           title,
           body,
           tag: `new-product-${product_id}`,
-          url: `/products/${product_slug}`,
+          url: productPath,
           requireInteraction: false,
         },
       }),

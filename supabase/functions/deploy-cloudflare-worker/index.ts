@@ -116,10 +116,14 @@ function buildWorkerScript(): string {
   );
   lines.push("return true;}");
 
-  // Product OG
-  lines.push("async function pOg(slug){");
+  // Product OG — supports both numeric product_number and legacy slug
+  lines.push("async function pOg(token){");
+  lines.push('var isNum=/^\\d+$/.test(token);');
   lines.push(
-    'var p=await dg("products","name,description,images,price,slug,stores(name)","slug=eq."+slug+"&is_active=eq.true");'
+    'var filter=isNum?"product_number=eq."+token+"&is_active=eq.true":"slug=eq."+encodeURIComponent(token)+"&is_active=eq.true";'
+  );
+  lines.push(
+    'var p=await dg("products","name,description,images,price,slug,product_number,stores(name)",filter);'
   );
   lines.push("if(!p)return null;");
   lines.push("var sn=p.stores?p.stores.name:null;");
@@ -128,11 +132,12 @@ function buildWorkerScript(): string {
   );
   lines.push('var d=sn?"By "+sn+" \\u2014 "+rd:rd;');
   lines.push("var img=(p.images&&p.images[0])||DI;");
+  lines.push('var canon=p.product_number?p.product_number:token;');
   lines.push(
     "var pe=p.price!=null?'<meta property=\"product:price:amount\" content=\"'+p.price+'\"/><meta property=\"product:price:currency\" content=\"GBP\"/>':\"\";"
   );
   lines.push(
-    'return oh(p.name+" | "+SN,d,img,SU_URL+"/products/"+slug,"product",pe);}'
+    'return oh(p.name+" | "+SN,d,img,SU_URL+"/products/"+canon,"product",pe);}'
   );
 
   // Store OG

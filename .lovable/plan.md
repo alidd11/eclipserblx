@@ -1,65 +1,36 @@
 
-Comprehensive check result: I found a concrete root cause plus a few remaining consistency gaps.
 
-1) What is broken right now
-- The Cloudflare worker generator still builds product OG lookups by `slug` only (`deploy-cloudflare-worker` → `pOg(slug)` with `slug=eq.<value>`).
-- Numeric links like `/products/13` are matched, but then looked up as slug `"13"`, so the worker falls back to the generic site HTML (exactly what your Discord screenshot shows).
-- I verified this behavior path is active: `test-worker-bot` returned generic page meta, not product OG, even for an existing active product slug.
-- Database state is good: product numbers exist for all products, no nulls/duplicates, and affected products have images.
-- `og-proxy` function endpoint currently returns 404 when called directly (so app share links using that endpoint are currently unreliable).
+## Issues Identified
 
-2) One-pass fix plan (no partial patching)
-- Update `supabase/functions/deploy-cloudflare-worker/index.ts` worker script builder:
-  - Change product resolver to accept `token` and detect numeric vs slug.
-  - Numeric token → query by `product_number`.
-  - Non-numeric token → query by `slug`, but canonical OG URL should still point to numeric URL when available.
-  - URL-encode filter values safely in generated script.
-  - Keep fallback to default page only when product truly not found.
-- Ensure worker responses include diagnostic header values for hit/miss (`X-Eclipse-Worker`) so we can prove behavior quickly.
-- Redeploy worker by invoking `deploy-cloudflare-worker` after code update.
+**Issue 1: Sidebar positioned at top of screen on desktop**
+The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
 
-3) Clean all remaining product URL emitters to numeric-first
-- Backend functions:
-  - `supabase/functions/notify-new-product/index.ts` (currently slug-only links).
-  - `supabase/functions/submit-indexnow/index.ts` (currently submits slug URLs).
-- Frontend helpers/callers:
-  - `src/lib/submitIndexNow.ts` (currently `submitProductUrl(slug)`).
-  - Call sites in:
-    - `src/pages/admin/Products.tsx`
-    - `src/pages/seller/SellerProductEditor.tsx`
-  - Switch to passing/storing `product_number` for product URL submission and notifications.
-- Keep slug fallback only where it serves backward compatibility (not for new outgoing links).
+**Issue 2: Excessive black empty space in the content area**
+The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
 
-4) Share-link reliability fix
-- `src/pages/ProductDetail.tsx` currently builds share URL using `/functions/v1/og-proxy?...`.
-- Replace with stable public product URL (`https://eclipserblx.com/products/<product_number>`) once worker fix is live.
-- This removes dependency on a function endpoint that is currently returning 404.
+## Plan
 
-5) End-to-end verification checklist (must all pass)
-- Worker direct bot tests:
-  - Existing slug product URL returns product OG title/image.
-  - Existing numeric product URL returns same product OG title/image.
-  - Nonexistent product URL falls back cleanly.
-- Discord real-world test:
-  - Post one slug URL + one numeric URL in Discord and confirm both show correct product image/title (not generic Eclipse card).
-- Functional consistency:
-  - New product notifications generate numeric URLs.
-  - Index submission payload contains numeric product URLs.
-  - Product share button sends a working public URL.
+### 1. Widen the content area on the Categories page
+- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
+- Reduce vertical padding between the header and grid
+- Tighten the gap between the page title/description and the cards
 
-Technical details (implementation targets)
-- Primary root-cause file: `supabase/functions/deploy-cloudflare-worker/index.ts` (generated worker logic is stale for numeric routing).
-- Secondary consistency files:
-  - `supabase/functions/notify-new-product/index.ts`
-  - `supabase/functions/submit-indexnow/index.ts`
-  - `src/lib/submitIndexNow.ts`
-  - `src/pages/admin/Products.tsx`
-  - `src/pages/seller/SellerProductEditor.tsx`
-  - `src/pages/ProductDetail.tsx`
+### 2. Improve the PageHeader component
+- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
+- This applies globally to all pages using PageHeader
 
-Execution order
-1. Fix worker generator logic.
-2. Deploy worker.
-3. Update URL emitters to numeric-first.
-4. Run full verification matrix (including Discord live test).
-5. Only then close the issue.
+### 3. Make category cards fill space better
+- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
+- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
+- Reduce grid gap slightly so cards feel more connected
+
+### 4. Sidebar desktop alignment fix
+- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
+- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
+- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
+
+### Files to modify
+- `src/pages/Categories.tsx` — widen container, tighten spacing
+- `src/components/ui/PageHeader.tsx` — reduce bottom margin
+- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
+
