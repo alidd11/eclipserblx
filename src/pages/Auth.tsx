@@ -389,11 +389,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
         } else if (error.message.includes('invalid')) {
           setErrors({ otp: 'Invalid code. Please check and try again.' });
         } else {
-          toast({
-            title: 'Verification Failed',
-            description: error.message,
-            variant: 'destructive',
-          });
+          toast.error('Verification Failed', { description: error.message });
         }
       } else {
         const pendingRefCode = sessionStorage.getItem('pendingReferralCode');
