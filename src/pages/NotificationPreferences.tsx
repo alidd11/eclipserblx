@@ -84,10 +84,7 @@ export default function NotificationPreferences() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['email-subscription', user?.id] });
-      toast({
-        title: 'Preferences Saved',
-        description: 'Your notification preferences have been updated.',
-      });
+      toast.success('Preferences Saved', { description: 'Your notification preferences have been updated.' });
     },
     onError: () => {
       toast({
