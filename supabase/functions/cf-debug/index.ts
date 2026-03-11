@@ -107,6 +107,25 @@ Deno.serve(async (req) => {
       return jsonOk(data);
     }
 
+    if (action === "update-dns-record") {
+      const recordId = body?.record_id;
+      if (!recordId) return jsonError("record_id required", 400);
+      const updateBody: Record<string, any> = {};
+      if (body.proxied !== undefined) updateBody.proxied = body.proxied;
+      if (body.content) updateBody.content = body.content;
+      if (body.type) updateBody.type = body.type;
+      if (body.name) updateBody.name = body.name;
+      updateBody.ttl = body.ttl ?? 1;
+      
+      const resp = await fetch(`${CF_API}/zones/${cfZoneId}/dns_records/${recordId}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${cfToken}`, "Content-Type": "application/json" },
+        body: JSON.stringify(updateBody),
+      });
+      const data = await resp.json();
+      return jsonOk(data);
+    }
+
     if (action === "get-ruleset") {
       const rulesetId = body?.ruleset_id;
       if (!rulesetId) return jsonError("ruleset_id required", 400);
