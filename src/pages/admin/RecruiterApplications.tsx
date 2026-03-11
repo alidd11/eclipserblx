@@ -32,7 +32,7 @@ interface RecruiterApplication {
 
 export default function RecruiterApplications() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [selectedApp, setSelectedApp] = useState<RecruiterApplication | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
