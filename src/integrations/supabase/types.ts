@@ -7560,6 +7560,8 @@ export type Database = {
       }
       store_credentials: {
         Row: {
+          cloudflare_api_token: string | null
+          cloudflare_zone_id: string | null
           created_at: string
           discord_bot_token: string | null
           discord_guild_id: string | null
@@ -7573,6 +7575,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cloudflare_api_token?: string | null
+          cloudflare_zone_id?: string | null
           created_at?: string
           discord_bot_token?: string | null
           discord_guild_id?: string | null
@@ -7586,6 +7590,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cloudflare_api_token?: string | null
+          cloudflare_zone_id?: string | null
           created_at?: string
           discord_bot_token?: string | null
           discord_guild_id?: string | null
