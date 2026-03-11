@@ -142,10 +142,7 @@ export function LinkedAccountsCard({
           if (invokeError) throw invokeError;
           if (data?.error) throw new Error(data.error);
 
-          toastHook({
-            title: "Roblox Linked!",
-            description: `Connected as ${data.roblox_username}`,
-          });
+          toast.success("Roblox Linked!", { description: `Connected as ${data.roblox_username}` });
 
           queryClient.invalidateQueries({ queryKey: ['profile', userId] });
           onUpdate();
