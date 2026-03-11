@@ -144,11 +144,7 @@ export default function NotificationPreferences() {
       if (result.success) {
         toast.success('Test Sent', { description: 'Check your device for the notification.' });
       } else {
-        toast({
-          title: 'Test Failed',
-          description: result.error || 'Could not send test notification.',
-          variant: 'destructive',
-        });
+        toast.error('Test Failed', { description: result.error || 'Could not send test notification.' });
       }
     } catch (error) {
       toast({
