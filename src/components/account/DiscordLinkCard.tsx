@@ -183,10 +183,7 @@ export const DiscordLinkCard = ({
 
       if (error) throw error;
 
-      toast({
-        title: "Discord Unlinked",
-        description: "Your Discord account has been unlinked.",
-      });
+      toast.success("Discord Unlinked", { description: "Your Discord account has been unlinked." });
       onUpdate();
     } catch (error: unknown) {
       console.error("Error unlinking Discord:", error);
