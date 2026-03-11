@@ -13,7 +13,8 @@
  import { Textarea } from '@/components/ui/textarea';
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
  import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
- import { toast } from '@/hooks/use-toast';
+ import { toast } from 'sonner';
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
  import { format } from 'date-fns';
