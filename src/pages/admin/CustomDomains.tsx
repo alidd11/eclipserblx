@@ -11,7 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   Globe, CheckCircle, XCircle, Cloud, AlertTriangle, RefreshCw,
-  Activity, Search, ExternalLink, Shield, Clock,
+  Activity, Search, ExternalLink, Shield, Clock, Wrench,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DomainHealthDisplay } from '@/components/domains/DomainHealthDisplay';
@@ -58,6 +58,7 @@ export default function AdminCustomDomains() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [runningHealthCheck, setRunningHealthCheck] = useState<string | null>(null);
+  const [fixingHostname, setFixingHostname] = useState<string | null>(null);
 
   const { data: domains, isLoading } = useQuery({
     queryKey: ['admin-custom-domains'],
@@ -93,6 +94,27 @@ export default function AdminCustomDomains() {
       toast.error('Health check failed', { description: err.message });
     },
     onSettled: () => setRunningHealthCheck(null),
+  });
+
+  const fixHostnameMutation = useMutation({
+    mutationFn: async (domainId: string) => {
+      setFixingHostname(domainId);
+      const { data, error } = await supabase.functions.invoke('store-domain-manager', {
+        body: { action: 'admin-fix-hostname', domain_id: domainId },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-custom-domains'] });
+      console.log('Fix hostname result:', data);
+      const fixes = data.fixes?.length ?? 0;
+      toast.success(`Hostname fix applied`, { description: `${fixes} change(s). Check console for details.` });
+    },
+    onError: (err: any) => {
+      toast.error('Fix hostname failed', { description: err.message });
+    },
+    onSettled: () => setFixingHostname(null),
   });
 
   const filtered = (domains ?? []).filter(d => {
@@ -282,14 +304,28 @@ export default function AdminCustomDomains() {
                             )}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              disabled={runningHealthCheck === domain.id}
-                              onClick={() => healthCheckMutation.mutate(domain.id)}
-                            >
-                              <RefreshCw className={cn("h-3.5 w-3.5", runningHealthCheck === domain.id && "animate-spin")} />
-                            </Button>
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={runningHealthCheck === domain.id}
+                                onClick={() => healthCheckMutation.mutate(domain.id)}
+                                title="Health Check"
+                              >
+                                <RefreshCw className={cn("h-3.5 w-3.5", runningHealthCheck === domain.id && "animate-spin")} />
+                              </Button>
+                              {domain.domain_type === 'custom' && (hc?.error_code || domain.ssl_status === 'pending') && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={fixingHostname === domain.id}
+                                  onClick={() => fixHostnameMutation.mutate(domain.id)}
+                                  title="Fix Hostname (recreate custom hostname + SSL)"
+                                >
+                                  <Wrench className={cn("h-3.5 w-3.5 text-amber-500", fixingHostname === domain.id && "animate-spin")} />
+                                </Button>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
