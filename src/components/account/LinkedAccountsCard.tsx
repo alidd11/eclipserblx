@@ -205,11 +205,7 @@ export function LinkedAccountsCard({
     } catch (err) {
       console.error("Discord link error:", err);
       setIsLinkingDiscord(false);
-      toastHook({
-        title: "Link Failed",
-        description: err instanceof Error ? err.message : "Could not start Discord linking",
-        variant: "destructive",
-      });
+      toast.error("Link Failed", { description: err instanceof Error ? err.message : "Could not start Discord linking" });
     }
   };
 
