@@ -50,7 +50,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
 
   // Check for password reset flow (when user clicks reset link from email)
   // Also check for referral code and track clicks
