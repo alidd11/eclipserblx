@@ -591,6 +591,8 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
     }
   }, [isOpen]);
 
+  if (isCustomStoreDomain) return null;
+
   return (
     <AnimatePresence>
       {isOpen && (
