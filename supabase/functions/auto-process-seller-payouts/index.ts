@@ -682,7 +682,7 @@ Deno.serve(async (req) => {
               status: 'completed',
               processed_at: new Date().toISOString(),
               processed_by: null,
-              notes: `Auto-processed via PayPal Payouts. Batch: ${batchId}`,
+              notes: `Auto-processed via PayPal Payouts${fallbackNote}. Batch: ${batchId}`,
               auto_processed: true,
             })
             .eq('id', payoutId);
