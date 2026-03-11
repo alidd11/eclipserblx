@@ -43,7 +43,7 @@ export const DiscordLinkCard = ({
   const [isUnlinking, setIsUnlinking] = useState(false);
   const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
   const [copiedRedirect, setCopiedRedirect] = useState(false);
-  const { toast } = useToast();
+  
 
   const copyRedirectUri = async () => {
     const redirectUri = getRedirectUri();
