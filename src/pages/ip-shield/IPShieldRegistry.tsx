@@ -86,7 +86,7 @@ export default function IPShieldRegistry() {
       }
     },
     onSuccess: async (result) => {
-      toast({ title: editingId ? 'Work updated' : 'Work registered', description: editingId ? 'Changes saved.' : 'Running initial copy scan...' });
+      toast.success(editingId ? 'Work updated' : 'Work registered', { description: editingId ? 'Changes saved.' : 'Running initial copy scan...' });
       setShowDialog(false);
       setRegistryForm(EMPTY_FORM);
       setEditingId(null);
