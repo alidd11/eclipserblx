@@ -15,28 +15,66 @@ Deno.serve(async (req: Request) => {
       return r.json();
     };
 
-    const [pageRules, workerRoutes, zone] = await Promise.all([
-      cfFetch(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}/pagerules`),
-      cfFetch(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/routes`),
-      cfFetch(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}`),
-    ]);
-
+    // Get account ID
+    const zone = await cfFetch(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}`);
     const accountId = zone.result?.account?.id;
-    let workerInfo = null;
-    let deployments = null;
-    if (accountId) {
-      [workerInfo, deployments] = await Promise.all([
-        cfFetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy`),
-        cfFetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy/deployments`),
-      ]);
+
+    // Get worker script metadata
+    const workerSettings = await cfFetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy/settings`
+    );
+    
+    // Get worker deployments
+    const deployments = await cfFetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy/deployments`
+    );
+
+    // Get worker tail (recent invocations)
+    const usage = await cfFetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy/usage-model`
+    );
+
+    // Get subdomain  
+    const subdomain = await cfFetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/subdomain`
+    );
+
+    // Check if there's a workers.dev route enabled
+    const workerScript = await cfFetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy`
+    );
+
+    // Also check if there are Configuration Rules that might disable features
+    const configRulesPhases = [
+      "http_config_settings",
+      "http_request_cache_settings", 
+    ];
+    const configResults: Record<string, unknown> = {};
+    for (const phase of configRulesPhases) {
+      try {
+        const r = await cfFetch(
+          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/phases/${phase}/entrypoint`
+        );
+        configResults[phase] = r.result?.rules?.map((rule: any) => ({
+          description: rule.description,
+          expression: rule.expression,
+          action: rule.action,
+          enabled: rule.enabled,
+        })) || [];
+      } catch {
+        configResults[phase] = "not found";
+      }
     }
 
     return new Response(JSON.stringify({
-      pageRules: pageRules.result || [],
-      workerRoutes: workerRoutes.result || [],
-      workerExists: !!workerInfo?.result,
-      deployments: deployments?.result || null,
       accountId,
+      workerSettings: workerSettings.result || workerSettings.errors,
+      deployments: deployments.result || deployments.errors,
+      usage: usage.result || usage.errors,
+      subdomain: subdomain.result || subdomain.errors,
+      workerModifiedOn: workerScript.result?.modified_on,
+      workerCompatDate: workerScript.result?.compatibility_date,
+      configRules: configResults,
     }, null, 2), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
