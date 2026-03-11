@@ -166,10 +166,7 @@ export function LinkedAccountsCard({
           if (invokeError) throw invokeError;
           if (data?.error) throw new Error(data.error);
 
-          toastHook({
-            title: "Discord Linked!",
-            description: `Connected as ${data.discord_username || data.discord_global_name || "Discord User"}`,
-          });
+          toast.success("Discord Linked!", { description: `Connected as ${data.discord_username || data.discord_global_name || "Discord User"}` });
 
           if (hasEclipsePlus) {
             try {
