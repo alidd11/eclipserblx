@@ -1,36 +1,103 @@
 
 
-## Issues Identified
+# Cloudflare Auto-Fix: Seller API Token Integration
 
-**Issue 1: Sidebar positioned at top of screen on desktop**
-The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
+## Overview
+Let sellers save their Cloudflare API Token and Zone ID so the system can automatically fix DNS issues (wrong record types, proxied CNAMEs, missing records) with one click. Includes clear guidance on what Cloudflare permissions to set.
 
-**Issue 2: Excessive black empty space in the content area**
-The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
+## Database Changes
 
-## Plan
+Add two columns to `store_credentials`:
+```sql
+ALTER TABLE public.store_credentials
+  ADD COLUMN IF NOT EXISTS cloudflare_api_token TEXT,
+  ADD COLUMN IF NOT EXISTS cloudflare_zone_id TEXT;
+```
 
-### 1. Widen the content area on the Categories page
-- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
-- Reduce vertical padding between the header and grid
-- Tighten the gap between the page title/description and the cards
+No new RLS needed — existing policies already restrict `store_credentials` to store owners (read/write) and staff (read).
 
-### 2. Improve the PageHeader component
-- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
-- This applies globally to all pages using PageHeader
+## Backend: New `auto-fix-dns` action in `store-domain-manager`
 
-### 3. Make category cards fill space better
-- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
-- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
-- Reduce grid gap slightly so cards feel more connected
+When a seller calls `{ action: "auto-fix-dns", domain_id: "..." }`:
 
-### 4. Sidebar desktop alignment fix
-- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
-- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
-- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
+1. Authenticate the seller, verify they own the store linked to the domain
+2. Fetch `cloudflare_api_token` and `cloudflare_zone_id` from `store_credentials`
+3. Using the seller's token, call Cloudflare API to:
+   - List existing DNS records for the domain
+   - Delete any proxied CNAME or conflicting A records
+   - Create a CNAME → `stores.eclipserblx.com` (DNS-only, `proxied: false`)
+   - Create www CNAME → `stores.eclipserblx.com` (DNS-only)
+   - Ensure TXT verification record exists
+4. Re-run health check and return updated results
+5. Update `store_domains.last_health_check` with new results
 
-### Files to modify
-- `src/pages/Categories.tsx` — widen container, tighten spacing
-- `src/components/ui/PageHeader.tsx` — reduce bottom margin
-- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
+## Frontend Changes
+
+### `SellerSettingsDomain.tsx` — New "Cloudflare Integration" card
+
+Shown below the custom domain card. Contains:
+- **Permissions guide** (see below) explaining exactly what token scopes to create
+- Two masked input fields: API Token + Zone ID
+- Save button that upserts to `store_credentials`
+- Token is write-only after save (displayed as `••••••••last4`)
+
+### `DomainHealthDisplay.tsx` — "Auto-Fix" button
+
+When a fixable error is detected (`1000`, `1014`, `proxied_cname`, `403_direct_a`, `403_cloudflare`) AND the seller has saved Cloudflare credentials:
+- Show an "Auto-Fix DNS" button alongside the manual steps
+- On click, calls `store-domain-manager` with `action: "auto-fix-dns"`
+- Shows loading state, then success/failure with updated health check
+
+## Cloudflare Token Permissions Guide (shown in UI)
+
+The seller settings page will display clear instructions:
+
+**How to create your Cloudflare API Token:**
+
+1. Go to [dash.cloudflare.com](https://dash.cloudflare.com) → My Profile → API Tokens
+2. Click **Create Token**
+3. Use the **"Edit zone DNS"** template, or create a custom token with:
+   - **Permissions:** Zone → DNS → Edit
+   - **Zone Resources:** Include → Specific zone → *(select your domain)*
+4. Click **Continue to summary** → **Create Token**
+5. Copy the token and paste it below
+
+**How to find your Zone ID:**
+
+1. Go to [dash.cloudflare.com](https://dash.cloudflare.com) → select your domain
+2. On the Overview page, scroll down to the right sidebar
+3. Copy the **Zone ID** value
+
+The minimum required permission is **Zone:DNS:Edit** scoped to the seller's specific zone. No account-level access is needed.
+
+## Security
+
+- Tokens stored in `store_credentials`, protected by existing RLS (owner-only write, owner+staff read)
+- Edge function validates store ownership before accessing credentials
+- After save, frontend only displays masked token (`••••last4`), never the full value
+- Token is scoped to a single zone with DNS-edit only — minimal blast radius
+
+## Technical Flow
+
+```text
+Seller Settings Page          Edge Function              Cloudflare API
+┌──────────────────┐          ┌──────────────────┐       ┌──────────────┐
+│ Save CF Token    │─────────>│ store_credentials │       │              │
+│ + Zone ID        │          │ (upsert)         │       │              │
+└──────────────────┘          └──────────────────┘       │              │
+                                                         │              │
+┌──────────────────┐ auto-fix ┌──────────────────┐       │  Seller's    │
+│ Health Error +   │─────────>│ store-domain-    │──────>│  Zone        │
+│ "Auto-Fix" btn   │          │ manager          │       │  (DNS Edit)  │
+│                  │<─────────│ (reads creds,    │<──────│              │
+│ Updated health   │  result  │  fixes DNS)      │ done  │              │
+└──────────────────┘          └──────────────────┘       └──────────────┘
+```
+
+## Files to create/modify
+
+1. **Migration SQL** — add `cloudflare_api_token` and `cloudflare_zone_id` to `store_credentials`
+2. **`supabase/functions/store-domain-manager/index.ts`** — add `auto-fix-dns` action
+3. **`src/pages/seller/SellerSettingsDomain.tsx`** — add Cloudflare credentials card with permissions guide + auto-fix button integration
+4. **`src/components/domains/DomainHealthDisplay.tsx`** — add "Auto-Fix DNS" button when credentials exist and error is fixable
 
