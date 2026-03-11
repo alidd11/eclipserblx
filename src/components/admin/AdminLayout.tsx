@@ -31,6 +31,7 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children, requiredRoles = [], requiredPermissions = [] }: AdminLayoutProps) {
+  const isInsideHub = useIsInsideHub();
   const { user, isStaff, isAdmin, hasRole, loading } = useAdminAuth();
   const { hasAnyPermission, isLoading: permissionsLoading } = useUserPermissions();
   const isMobile = useIsMobile();
