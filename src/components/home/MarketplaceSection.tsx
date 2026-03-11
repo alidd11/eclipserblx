@@ -403,7 +403,7 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
                     {/* Two spotlight products side by side */}
                     <div className="grid grid-cols-2 gap-3 sm:gap-6">
                       {spotlights.map((spotlight) => (
-                        <Link key={spotlight.id} to={`/products/${spotlight.slug}`} className="group block">
+                        <Link key={spotlight.id} to={`/products/${(spotlight as any).product_number}`} className="group block">
                           <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
                             <div className="aspect-[16/9] relative overflow-hidden bg-muted">
                               {spotlight.images?.[0] ? (

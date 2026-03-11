@@ -145,7 +145,7 @@ export function RecentReleasesCarousel() {
           return (
             <Link
               key={product.id}
-              to={`/products/${product.slug}`}
+              to={`/products/${(product as any).product_number}`}
               className="flex-shrink-0 w-[280px] sm:w-[300px] group snap-start"
             >
               <div className="overflow-hidden rounded-lg border border-border bg-card hover:border-primary/30 transition-colors">

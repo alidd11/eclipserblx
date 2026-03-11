@@ -35,7 +35,7 @@ function CompactProductCard({ product, index }: { product: HeroProduct; index: n
       transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
     >
       <Link 
-        to={`/products/${product.slug}`}
+        to={`/products/${(product as any).product_number}`}
         className="group flex gap-3 p-2.5 rounded-lg bg-card/50 border border-border/50 hover:border-primary/30 hover:bg-card transition-all duration-300"
       >
         {/* Thumbnail */}
