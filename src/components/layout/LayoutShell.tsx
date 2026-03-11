@@ -26,6 +26,14 @@ interface LayoutShellProps {
     showDesktopNav?: boolean;
     hideBrandName?: boolean;
   };
+  /** Completely replace the default Header with a custom element */
+  customHeader?: (onMenuClick: () => void) => ReactNode;
+  /** Show the universal breadcrumb below the header (default: true) */
+  showBreadcrumb?: boolean;
+  /** Show the footer at the bottom of main (default: true) */
+  showFooter?: boolean;
+  /** Show floating action buttons (default: true) */
+  showFABs?: boolean;
   /** Extra content rendered after the layout (e.g. ChatWidget) */
   extra?: ReactNode;
   /** Custom main padding style */
@@ -43,6 +51,10 @@ function LayoutShellInner({
   desktopSidebar,
   mobileSidebar,
   headerProps = {},
+  customHeader,
+  showBreadcrumb = true,
+  showFooter = true,
+  showFABs = true,
   extra,
   mainStyle,
   contentClassName,
@@ -87,12 +99,18 @@ function LayoutShellInner({
 
         {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 md:h-[100dvh]">
-          <Header
-            showDesktopNav={false}
-            onMenuClick={() => setMobileOpen(true)}
-            {...headerProps}
-          />
-          <Suspense fallback={null}><UniversalBreadcrumb /></Suspense>
+          {customHeader ? (
+            customHeader(() => setMobileOpen(true))
+          ) : (
+            <Header
+              showDesktopNav={false}
+              onMenuClick={() => setMobileOpen(true)}
+              {...headerProps}
+            />
+          )}
+          {showBreadcrumb && (
+            <Suspense fallback={null}><UniversalBreadcrumb /></Suspense>
+          )}
           <main
             id="main-content"
             className={mainClassName ?? "flex-1 md:overflow-y-auto overflow-x-hidden max-w-full min-w-0"}
@@ -103,14 +121,18 @@ function LayoutShellInner({
             ) : (
               children
             )}
-            <Suspense fallback={null}><Footer /></Suspense>
+            {showFooter && (
+              <Suspense fallback={null}><Footer /></Suspense>
+            )}
           </main>
         </div>
       </div>
 
-      <Suspense fallback={null}>
-        <FloatingActionButtons />
-      </Suspense>
+      {showFABs && (
+        <Suspense fallback={null}>
+          <FloatingActionButtons />
+        </Suspense>
+      )}
       {searchOpen && (
         <Suspense fallback={null}>
           <SearchCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
