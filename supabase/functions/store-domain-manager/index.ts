@@ -97,11 +97,11 @@ async function detectProxiedCname(domain: string): Promise<{ is_proxied: boolean
     );
     const cnameData = await cnameResp.json();
     const cnameRecords = (cnameData?.Answer ?? []).filter((a: any) => a.type === 5);
-    
+
     if (cnameRecords.length === 0) return { is_proxied: false, cname_target: null };
-    
+
     const cnameTarget = cnameRecords[0].data?.replace(/\.$/, "") ?? null;
-    
+
     // If CNAME exists but A records resolve to Cloudflare proxy IPs, the CNAME is proxied
     const aResp = await fetch(
       `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`,
@@ -109,7 +109,7 @@ async function detectProxiedCname(domain: string): Promise<{ is_proxied: boolean
     );
     const aData = await aResp.json();
     const aRecords = (aData?.Answer ?? []).filter((a: any) => a.type === 1);
-    
+
     if (aRecords.length > 0) {
       const ips = aRecords.map((a: any) => a.data);
       const isCloudflareProxy = ips.some((ip: string) => {
@@ -123,11 +123,35 @@ async function detectProxiedCname(domain: string): Promise<{ is_proxied: boolean
         return { is_proxied: true, cname_target: cnameTarget };
       }
     }
-    
+
     return { is_proxied: false, cname_target: cnameTarget };
   } catch {
     return { is_proxied: false, cname_target: null };
   }
+}
+
+function getPreferredDnsRecord(domain: string, zoneName?: string | null) {
+  const normalizedDomain = domain.toLowerCase();
+  const normalizedZone = (zoneName ?? "").toLowerCase();
+  const isApexDomain = normalizedZone ? normalizedDomain === normalizedZone : false;
+
+  if (isApexDomain) {
+    return {
+      type: "A" as const,
+      name: domain,
+      content: "185.158.133.1",
+      proxied: false,
+      is_apex: true,
+    };
+  }
+
+  return {
+    type: "CNAME" as const,
+    name: domain,
+    content: "stores.eclipserblx.com",
+    proxied: false,
+    is_apex: false,
+  };
 }
 
 // ── Helper: Health check a domain ──
