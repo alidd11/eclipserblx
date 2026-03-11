@@ -559,7 +559,7 @@ This notice is sent under the Digital Millennium Copyright Act (DMCA), 17 U.S.C.
           toast.success('DMCA filed on your behalf!', { description: `Case ${data.case_number} — notice sent for review and forwarding.` });
         }
       } else {
-        toast({ title: 'Takedown case created!', description: `Case ${data?.case_number}. Use the copied template to submit your DMCA notice directly.` });
+        toast.success('Takedown case created!', { description: `Case ${data?.case_number}. Use the copied template to submit your DMCA notice directly.` });
       }
 
       queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
