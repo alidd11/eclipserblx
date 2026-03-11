@@ -94,7 +94,7 @@ export default function RecruiterApplications() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Application rejected' });
+      toast.success('Application rejected');
       queryClient.invalidateQueries({ queryKey: ['recruiter-applications-pending'] });
       queryClient.invalidateQueries({ queryKey: ['recruiter-stats'] });
       setSelectedApp(null);
