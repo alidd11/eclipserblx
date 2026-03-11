@@ -52,11 +52,7 @@ export const DiscordLinkCard = ({
       setCopiedRedirect(true);
       setTimeout(() => setCopiedRedirect(false), 1500);
     } catch {
-      toast({
-        title: "Copy failed",
-        description: "Could not copy the redirect URI. Please copy it manually.",
-        variant: "destructive",
-      });
+      toast.error("Copy failed", { description: "Could not copy the redirect URI. Please copy it manually." });
     }
   };
 
