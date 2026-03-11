@@ -349,10 +349,7 @@ export default function AdminCategories() {
       queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
       setDeleteDialogOpen(false);
       setDeletingCategory(null);
-      toast({
-        title: 'Category deleted',
-        description: 'The category has been removed.',
-      });
+      toast.success('Category deleted', { description: 'The category has been removed.' });
     },
     onError: () => {
       toast({
