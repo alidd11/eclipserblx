@@ -172,8 +172,10 @@ function SeverityIcon({ severity }: { severity: 'critical' | 'warning' | 'info' 
   return <Info className="h-5 w-5 text-blue-500 shrink-0" />;
 }
 
+const FIXABLE_ERRORS = ['1000', '1014', 'proxied_cname', '403_direct_a', '403_cloudflare', '1000_non_cf'];
+
 /** Full health display card — used on seller settings page */
-export function DomainHealthDisplay({ healthCheck, domain, isCloudflare, compact }: DomainHealthDisplayProps) {
+export function DomainHealthDisplay({ healthCheck, domain, isCloudflare, compact, onAutoFix, isAutoFixing, hasCloudflareCredentials }: DomainHealthDisplayProps) {
   const [expanded, setExpanded] = useState(false);
 
   if (!healthCheck) return null;
