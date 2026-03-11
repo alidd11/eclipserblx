@@ -107,6 +107,21 @@ Deno.serve(async (req) => {
       return jsonOk(data);
     }
 
+    if (action === "create-custom-hostname") {
+      const hostname = body?.hostname;
+      if (!hostname) return jsonError("hostname required", 400);
+      const resp = await fetch(`${CF_API}/zones/${cfZoneId}/custom_hostnames`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${cfToken}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          hostname,
+          ssl: { method: "http", type: "dv", settings: { min_tls_version: "1.2" } },
+        }),
+      });
+      const data = await resp.json();
+      return jsonOk(data);
+    }
+
     if (action === "update-dns-record") {
       const recordId = body?.record_id;
       if (!recordId) return jsonError("record_id required", 400);
