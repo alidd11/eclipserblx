@@ -7,11 +7,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   let targetUrl: string;
-  let followRedirects = true;
   try {
     const body = await req.json();
     targetUrl = body.url || "https://eclipserblx.com/products/13";
-    if (body.noRedirect) followRedirects = false;
   } catch {
     targetUrl = "https://eclipserblx.com/products/13";
   }
@@ -20,34 +18,29 @@ Deno.serve(async (req) => {
   
   const res = await fetch(targetUrl, {
     headers: { "User-Agent": ua },
-    redirect: followRedirects ? "follow" : "manual",
+    redirect: "manual",
   });
   
   const body = await res.text();
   const headers: Record<string, string> = {};
   res.headers.forEach((v, k) => { headers[k] = v; });
 
-  const ogTitle = body.match(/<meta\s+property="og:title"\s+content="([^"]*)"/)?.[1] || null;
-  const ogImage = body.match(/<meta\s+property="og:image"\s+content="([^"]*)"/)?.[1] || null;
-  const ogUrl = body.match(/<meta\s+property="og:url"\s+content="([^"]*)"/)?.[1] || null;
-
   return new Response(JSON.stringify({
     testedUrl: targetUrl,
-    userAgent: ua,
-    followedRedirects: followRedirects,
     status: res.status,
     redirected: res.redirected,
     finalUrl: res.url,
-    allHeaders: headers,
     xWorker: headers['x-eclipse-worker'] || null,
     cfRay: headers['cf-ray'] || null,
     server: headers['server'] || null,
-    ogTitle,
-    ogImage: ogImage ? ogImage.slice(0, 200) : null,
-    ogUrl,
-    hasProductOg: !!ogTitle && ogTitle !== 'Eclipse' && !ogTitle.startsWith('Eclipse |'),
+    via: headers['via'] || null,
+    xPoweredBy: headers['x-powered-by'] || null,
+    contentType: headers['content-type'] || null,
+    location: headers['location'] || null,
+    allHeaderKeys: Object.keys(headers),
+    hasProductOg: body.includes('og:title') && !body.includes('Eclipse | Roblox Marketplace'),
     bodyLen: body.length,
-    bodyPreview: body.slice(0, 500),
+    first200: body.slice(0, 200),
   }, null, 2), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
