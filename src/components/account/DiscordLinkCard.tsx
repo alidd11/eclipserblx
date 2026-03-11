@@ -151,11 +151,7 @@ export const DiscordLinkCard = ({
     } catch (err) {
       console.error("Discord link error:", err);
       setIsLinking(false);
-      toast({
-        title: "Link Failed",
-        description: err instanceof Error ? err.message : "Could not start Discord linking",
-        variant: "destructive",
-      });
+      toast.error("Link Failed", { description: err instanceof Error ? err.message : "Could not start Discord linking" });
     }
   };
 
