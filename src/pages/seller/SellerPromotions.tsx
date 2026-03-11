@@ -60,8 +60,8 @@ export default function SellerPromotions() {
         </div>
 
         {/* Stats strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Card>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardContent className="p-3 flex items-center gap-2">
               <div className="p-2 rounded-lg bg-primary/10">
                 <Megaphone className="h-4 w-4 text-primary" />
@@ -72,7 +72,7 @@ export default function SellerPromotions() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardContent className="p-3 flex items-center gap-2">
               <div className="p-2 rounded-lg bg-muted">
                 <Eye className="h-4 w-4 text-muted-foreground" />
@@ -83,7 +83,7 @@ export default function SellerPromotions() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardContent className="p-3 flex items-center gap-2">
               <div className="p-2 rounded-lg bg-muted">
                 <MousePointerClick className="h-4 w-4 text-muted-foreground" />

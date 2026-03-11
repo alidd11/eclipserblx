@@ -79,51 +79,59 @@ export default function AdvertisementAnalytics() {
         </div>
 
         {/* Summary Stats */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
           <AdminStatCard
             label="Total Ads"
             value={summary.totalAds}
             subtitle={`${summary.postedAds} posted, ${summary.pendingAds} pending`}
+            className="min-w-[160px] flex-shrink-0 md:min-w-0"
           />
           <AdminStatCard
             label="Total Clicks"
             value={summary.totalClicks.toLocaleString()}
             subtitle={`${summary.uniqueClicks.toLocaleString()} unique`}
             valueColor="blue"
+            className="min-w-[160px] flex-shrink-0 md:min-w-0"
           />
           <AdminStatCard
             label="Total Revenue"
             value={formatCurrency(summary.totalRevenue + summary.totalPingRevenue)}
             subtitle={`${formatCurrency(summary.totalPingRevenue)} from pings`}
             valueColor="green"
+            className="min-w-[160px] flex-shrink-0 md:min-w-0"
           />
           <AdminStatCard
             label="This Month"
             value={formatCurrency(monthlyRevenue)}
             subtitle="Revenue this month"
             valueColor="primary"
+            className="min-w-[160px] flex-shrink-0 md:min-w-0"
           />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
           <AdminStatCard
             label="Active Subscriptions"
             value={summary.activeSubscriptions}
             valueColor="blue"
+            className="min-w-[160px] flex-shrink-0 md:min-w-0"
           />
           <AdminStatCard
             label="Avg Clicks/Ad"
             value={summary.avgClicksPerAd}
+            className="min-w-[160px] flex-shrink-0 md:min-w-0"
           />
           <AdminStatCard
             label="Posted Ads"
             value={summary.postedAds}
             valueColor="green"
+            className="min-w-[160px] flex-shrink-0 md:min-w-0"
           />
           <AdminStatCard
             label="Pending Ads"
             value={summary.pendingAds}
             valueColor="yellow"
+            className="min-w-[160px] flex-shrink-0 md:min-w-0"
           />
         </div>
 

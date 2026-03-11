@@ -116,8 +116,8 @@ export default function AdminCustomDomains() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Card>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
                 <Globe className="h-4 w-4 text-muted-foreground" />
@@ -128,7 +128,7 @@ export default function AdminCustomDomains() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-emerald-500" />
@@ -139,7 +139,7 @@ export default function AdminCustomDomains() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
                 <Cloud className="h-4 w-4 text-amber-500" />
@@ -150,7 +150,7 @@ export default function AdminCustomDomains() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-destructive" />
