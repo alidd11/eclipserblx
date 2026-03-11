@@ -881,6 +881,10 @@ async function adminFixHostname(domainId: string) {
         if (verifyData?.success) {
           fixes.push("Seller Cloudflare credentials verified");
 
+          // Determine preferred record type using seller zone apex
+          const sellerZoneName = (verifyData?.result?.name ?? "").toLowerCase();
+          const preferredRecord = getPreferredDnsRecord(domain, sellerZoneName);
+
           // List existing DNS records
           const { data: dnsListData } = await cfFetch<any[]>(
             sellerToken,
@@ -891,12 +895,18 @@ async function adminFixHostname(domainId: string) {
             type: r.type, name: r.name, content: r.content, proxied: r.proxied,
           }));
 
+          const hasPreferredRecord = existingRecords.some((rec: any) => {
+            if (preferredRecord.type === "A") {
+              return rec.type === "A" && rec.content === preferredRecord.content && rec.proxied === false;
+            }
+            return rec.type === "CNAME" && rec.content === preferredRecord.content && rec.proxied === false;
+          });
+
           // Delete conflicting records
           for (const rec of existingRecords) {
-            const shouldDelete =
-              (rec.type === "CNAME" && rec.proxied === true) ||
-              (rec.type === "A") ||
-              (rec.type === "CNAME" && rec.content !== "stores.eclipserblx.com");
+            const shouldDelete = preferredRecord.type === "A"
+              ? (rec.type === "CNAME" || (rec.type === "A" && (rec.content !== preferredRecord.content || rec.proxied === true)))
+              : (rec.type === "A" || (rec.type === "CNAME" && (rec.content !== preferredRecord.content || rec.proxied === true)));
 
             if (shouldDelete) {
               const { data: delData } = await cfFetch<any>(
@@ -912,29 +922,26 @@ async function adminFixHostname(domainId: string) {
             }
           }
 
-          // Create correct CNAME → stores.eclipserblx.com (DNS-only)
-          const hasCorrectCname = existingRecords.some(
-            (r: any) => r.type === "CNAME" && r.content === "stores.eclipserblx.com" && !r.proxied
-          );
-          if (!hasCorrectCname) {
-            const { data: cnameData } = await cfFetch<any>(
+          // Create preferred record if needed
+          if (!hasPreferredRecord) {
+            const { data: createData } = await cfFetch<any>(
               sellerToken,
               `${CF_API}/zones/${sellerZoneId}/dns_records`,
               {
                 method: "POST",
                 body: JSON.stringify({
-                  type: "CNAME",
-                  name: domain,
-                  content: "stores.eclipserblx.com",
-                  proxied: false,
+                  type: preferredRecord.type,
+                  name: preferredRecord.name,
+                  content: preferredRecord.content,
+                  proxied: preferredRecord.proxied,
                   ttl: 1,
                 }),
               }
             );
-            if (cnameData?.success) {
-              fixes.push(`Created CNAME: ${domain} → stores.eclipserblx.com (DNS-only)`);
+            if (createData?.success) {
+              fixes.push(`Created ${preferredRecord.type}: ${preferredRecord.name} → ${preferredRecord.content} (DNS-only)`);
             } else {
-              errors.push(`Failed to create CNAME: ${JSON.stringify(cnameData?.errors)}`);
+              errors.push(`Failed to create ${preferredRecord.type}: ${JSON.stringify(createData?.errors)}`);
             }
           }
         } else {
