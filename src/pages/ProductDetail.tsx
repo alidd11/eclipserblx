@@ -401,7 +401,7 @@ export default function ProductDetail() {
         name: product.name,
         price: effectivePrice,
         image: product.images?.[0],
-        slug: product.slug,
+        slug: String((product as any).product_number || product.slug),
         category_slug: product.categories?.slug,
         category_id: product.category_id,
         is_resellable: product.is_resellable,

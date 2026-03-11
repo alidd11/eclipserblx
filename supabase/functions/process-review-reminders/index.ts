@@ -103,11 +103,13 @@ serve(async (req) => {
         if (reminder.product_id) {
           const { data: product } = await supabase
             .from("products")
-            .select("slug")
+            .select("slug, product_number")
             .eq("id", reminder.product_id)
             .single();
           
-          if (product?.slug) {
+          if (product?.product_number) {
+            productLink = `/products/${product.product_number}#reviews`;
+          } else if (product?.slug) {
             productLink = `/products/${product.slug}#reviews`;
           }
         }

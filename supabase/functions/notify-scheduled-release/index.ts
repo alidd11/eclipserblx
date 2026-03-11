@@ -84,6 +84,7 @@ serve(async (req) => {
         id,
         name,
         slug,
+        product_number,
         price,
         store_id,
         release_at,
@@ -182,7 +183,7 @@ serve(async (req) => {
         title,
         message: body,
         type: 'scheduled_release',
-        link: `/products/${product.slug}`,
+        link: `/products/${(product as any).product_number || product.slug}`,
       }));
 
       const { error: notifError } = await supabase
@@ -218,7 +219,7 @@ serve(async (req) => {
                 title,
                 body,
                 tag: `scheduled-release-${product.id}`,
-                url: `/products/${product.slug}`,
+                url: `/products/${(product as any).product_number || product.slug}`,
                 requireInteraction: false,
               },
             }),

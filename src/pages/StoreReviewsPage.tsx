@@ -57,7 +57,7 @@ export default function StoreReviewsPage() {
       // First get all product IDs for this store
       const { data: products } = await supabase
         .from('products')
-        .select('id, name, slug, images')
+        .select('id, name, slug, images, product_number')
         .eq('store_id', store.id);
 
       if (!products || products.length === 0) return [];
@@ -383,7 +383,7 @@ export default function StoreReviewsPage() {
                       {/* Product Link */}
                       {review.product && (
                         <Link 
-                          to={`/product/${review.product.slug}`}
+                          to={`/products/${(review.product as any).product_number || review.product.slug}`}
                           className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
                         >
                           {review.product.images?.[0] && (

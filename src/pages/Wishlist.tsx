@@ -100,7 +100,7 @@ export default function Wishlist() {
                     <div className="flex gap-4">
                       {/* Product Image */}
                       <Link 
-                        to={`/product/${product.slug}`}
+                        to={`/products/${(product as any).product_number || product.slug}`}
                         className="flex-shrink-0 w-32 h-32 bg-muted"
                       >
                         <img
@@ -117,7 +117,7 @@ export default function Wishlist() {
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
                             <Link 
-                              to={`/product/${product.slug}`}
+                              to={`/products/${(product as any).product_number || product.slug}`}
                               className="font-semibold text-lg hover:text-primary transition-colors line-clamp-1"
                             >
                               {product.name}
@@ -168,7 +168,7 @@ export default function Wishlist() {
                             
                             {product.is_active && (
                               <Button asChild size="sm">
-                                <Link to={`/product/${product.slug}`}>
+                                <Link to={`/products/${(product as any).product_number || product.slug}`}>
                                   View Product
                                 </Link>
                               </Button>

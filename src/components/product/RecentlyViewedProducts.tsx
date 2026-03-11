@@ -24,7 +24,7 @@ export function RecentlyViewedProducts({ currentProductId }: Props) {
         {products.map(product => (
           <Link
             key={product.id}
-            to={`/products/${product.slug}`}
+            to={`/products/${product.slug}`} /* slug field stores product_number */
             className="group block rounded-lg border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
           >
             <div className="aspect-square bg-black/10 overflow-hidden">
