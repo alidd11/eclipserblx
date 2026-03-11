@@ -116,7 +116,7 @@ export function useFeaturedProducts({
       const { data, error } = await supabase
         .from('products')
         .select(`
-          id, name, slug, price, images, category_id, is_resellable, is_featured, created_at, download_count,
+          id, name, slug, price, images, category_id, is_resellable, is_featured, created_at, download_count, product_number,
           categories (name, slug),
           stores!inner (name, slug, logo_url, banner_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
         `)
