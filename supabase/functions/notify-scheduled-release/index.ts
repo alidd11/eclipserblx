@@ -84,6 +84,7 @@ serve(async (req) => {
         id,
         name,
         slug,
+        product_number,
         price,
         store_id,
         release_at,
