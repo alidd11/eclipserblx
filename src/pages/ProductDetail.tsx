@@ -143,7 +143,7 @@ export default function ProductDetail() {
       items.push({ name: product.categories.name, url: `https://eclipserblx.com/products?category=${product.categories.slug}` });
     }
     if (product?.name) {
-      items.push({ name: product.name, url: `https://eclipserblx.com/products/${slug}` });
+      items.push({ name: product.name, url: `https://eclipserblx.com/products/${(product as any).product_number}` });
     }
     return items;
   }, [product?.categories?.name, product?.categories?.slug, product?.name, slug]);
