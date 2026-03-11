@@ -65,12 +65,29 @@ export function StoreDomainProvider({ children }: { children: ReactNode }) {
     const resolve = async () => {
       try {
         console.log('[StoreDomain] Resolving hostname:', hostname);
+        
+        // Primary: direct database query (most reliable, avoids edge function invoke issues on proxied domains)
+        const { data: directData, error: directError } = await supabase
+          .from('store_domains')
+          .select('store_id, domain, domain_type, is_primary, stores!inner(slug, name, logo_url, accent_color, banner_url)')
+          .eq('domain', hostname.toLowerCase())
+          .eq('status', 'active')
+          .single();
+        
+        console.log('[StoreDomain] Direct query result:', { directData, directError });
+        
+        if (directData && directData.store_id) {
+          setStoreDomainData(directData as unknown as StoreDomainData);
+          return;
+        }
+        
+        // Fallback: edge function (in case RLS blocks the direct query)
+        console.log('[StoreDomain] Direct query failed, trying edge function...');
         const { data, error } = await supabase.functions.invoke('store-domain-manager', {
           body: { action: 'resolve-hostname', hostname },
         });
-        console.log('[StoreDomain] Response:', { data, error, dataType: typeof data });
+        console.log('[StoreDomain] Edge function response:', { data, error, dataType: typeof data });
         
-        // Handle case where data might be a string (some Supabase versions)
         let parsed = data;
         if (typeof data === 'string') {
           try { parsed = JSON.parse(data); } catch { /* not JSON string */ }
@@ -78,19 +95,6 @@ export function StoreDomainProvider({ children }: { children: ReactNode }) {
         
         if (parsed && parsed.store_id) {
           setStoreDomainData(parsed as StoreDomainData);
-        } else if (error) {
-          console.error('[StoreDomain] Edge function error:', error);
-          // Fallback: try direct REST query
-          const { data: fallbackData } = await supabase
-            .from('store_domains')
-            .select('store_id, domain, domain_type, is_primary, stores!inner(slug, name, logo_url, accent_color, banner_url)')
-            .eq('domain', hostname.toLowerCase())
-            .eq('status', 'active')
-            .single();
-          console.log('[StoreDomain] Fallback result:', fallbackData);
-          if (fallbackData && fallbackData.store_id) {
-            setStoreDomainData(fallbackData as unknown as StoreDomainData);
-          }
         }
       } catch (e) {
         console.error('[StoreDomain] Failed to resolve store domain:', e);
