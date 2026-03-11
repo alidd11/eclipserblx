@@ -142,10 +142,7 @@ export default function NotificationPreferences() {
       });
       
       if (result.success) {
-        toast({
-          title: 'Test Sent',
-          description: 'Check your device for the notification.',
-        });
+        toast.success('Test Sent', { description: 'Check your device for the notification.' });
       } else {
         toast({
           title: 'Test Failed',
