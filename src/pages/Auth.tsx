@@ -348,11 +348,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
         const { error } = await signUp(email, password, displayName || undefined);
         if (error) {
           if (error.message.includes('already registered')) {
-            toast({
-              title: t('auth.accountExists'),
-              description: t('auth.accountExistsDesc'),
-              variant: 'destructive',
-            });
+            toast.error(t('auth.accountExists'), { description: t('auth.accountExistsDesc') });
           } else {
             toast({
               title: t('auth.signUpFailed'),
