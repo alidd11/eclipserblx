@@ -21,13 +21,13 @@ import {
   LayoutDashboard,
   ChevronDown,
   ChevronUp,
-  Lock
+  Lock,
+  Wallet,
+  ShieldCheck,
 } from 'lucide-react';
 import { RoleManagementCard } from '@/components/admin/RoleManagementCard';
 import { RoleSelector } from '@/components/admin/RoleSelector';
 import { PermissionCategory } from '@/components/admin/PermissionCategory';
-
-type AppRole = 'admin' | 'lead_administrator' | 'lead_manager' | 'support_agent' | 'analyst' | 'recruiter';
 
 interface Permission {
   id: string;
@@ -38,7 +38,7 @@ interface Permission {
 
 interface RolePermission {
   id: string;
-  role: AppRole;
+  role: string;
   permission_id: string;
 }
 
@@ -90,21 +90,31 @@ const PERMISSION_CATEGORIES = {
     icon: <Gift className="h-5 w-5" />,
     order: 7,
   },
+  finance: {
+    label: 'Finance & Payouts',
+    icon: <Wallet className="h-5 w-5" />,
+    order: 8,
+  },
+  ip_shield: {
+    label: 'IP Shield',
+    icon: <ShieldCheck className="h-5 w-5" />,
+    order: 9,
+  },
   system: {
     label: 'System & Settings',
     icon: <Settings className="h-5 w-5" />,
-    order: 8,
+    order: 10,
   },
   // Fallback for uncategorized
   actions: {
     label: 'Other Actions',
     icon: <BarChart3 className="h-5 w-5" />,
-    order: 9,
+    order: 11,
   },
   pages: {
     label: 'Other Pages',
     icon: <LayoutDashboard className="h-5 w-5" />,
-    order: 10,
+    order: 12,
   },
 };
 
@@ -163,13 +173,13 @@ export default function RolePermissions() {
       if (enabled) {
         const { error } = await supabase
           .from('role_permissions')
-          .insert({ role: role as AppRole, permission_id: permissionId });
+          .insert({ role, permission_id: permissionId });
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('role_permissions')
           .delete()
-          .eq('role', role as AppRole)
+          .eq('role', role)
           .eq('permission_id', permissionId);
         if (error) throw error;
       }
@@ -235,7 +245,7 @@ export default function RolePermissions() {
     <AdminLayout requiredPermissions={['manage_permissions']}>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Role Permissions</h1>
+          <h1 className="text-2xl font-display font-bold tracking-tight">Role Permissions</h1>
           <p className="text-muted-foreground">
             Manage roles, permissions, and access control.
           </p>
