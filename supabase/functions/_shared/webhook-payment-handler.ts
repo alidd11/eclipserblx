@@ -202,7 +202,7 @@ async function processSellerEarnings(
       .select("is_seller_product, store_id, price, stores(owner_id, commission_rate, custom_commission_rate, custom_rate_expires_at, name)")
       .eq("id", item.id).single();
 
-    if (!product?.is_seller_product || !product.store_id) continue;
+    if (!product?.store_id) continue;
 
     const store = (product.stores as any)?.[0] || product.stores;
     const sellerId = store?.owner_id;
