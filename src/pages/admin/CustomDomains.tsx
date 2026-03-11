@@ -109,7 +109,13 @@ export default function AdminCustomDomains() {
       queryClient.invalidateQueries({ queryKey: ['admin-custom-domains'] });
       console.log('Fix hostname result:', data);
       const fixes = data.fixes?.length ?? 0;
-      toast.success(`Hostname fix applied`, { description: `${fixes} change(s). Check console for details.` });
+      const errs = data.errors?.length ?? 0;
+      const fixList = (data.fixes ?? []).join('; ');
+      if (errs > 0) {
+        toast.warning(`Fix completed with ${errs} error(s)`, { description: fixList || 'Check console for details.' });
+      } else {
+        toast.success(`${fixes} fix(es) applied`, { description: fixList || 'DNS may take 2-5 min to propagate.' });
+      }
     },
     onError: (err: any) => {
       toast.error('Fix hostname failed', { description: err.message });
