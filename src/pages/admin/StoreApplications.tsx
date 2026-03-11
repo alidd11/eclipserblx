@@ -205,7 +205,7 @@ export default function StoreApplications() {
       return store;
     },
     onSuccess: () => {
-      toast({ title: 'Application Approved', description: 'Store has been created successfully.' });
+      toast.success('Application Approved', { description: 'Store has been created successfully.' });
       queryClient.invalidateQueries({ queryKey: ['admin-store-applications'] });
       setSelectedApplication(null);
     },
