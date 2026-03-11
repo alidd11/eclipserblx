@@ -172,7 +172,7 @@ export default function SellerReviews() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[200px] flex-shrink-0 md:min-w-0">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
