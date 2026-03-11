@@ -84,10 +84,7 @@ export function ExternalWebScanner() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['external-detections'] });
-      toast({
-        title: 'Scan Complete',
-        description: `Found ${data.detections_found} results across external websites.`,
-      });
+      toast.success('Scan Complete', { description: `Found ${data.detections_found} results across external websites.` });
     },
     onError: (error: any) => {
       toast({
