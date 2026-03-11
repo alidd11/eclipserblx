@@ -11,7 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   Globe, CheckCircle, XCircle, Cloud, AlertTriangle, RefreshCw,
-  Activity, Search, ExternalLink, Shield, Clock,
+  Activity, Search, ExternalLink, Shield, Clock, Wrench,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DomainHealthDisplay } from '@/components/domains/DomainHealthDisplay';
