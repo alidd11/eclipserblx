@@ -207,14 +207,17 @@ export default function DeveloperPayments() {
  
    return (
      <AdminLayout requiredRoles={['admin', 'developer']}>
-       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="space-y-6">
+        {!isInsideHub && (
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-2xl font-bold">{isDeveloperOnly ? 'My Payments' : 'Developer Payments'}</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-2xl font-display font-bold">{isDeveloperOnly ? 'My Payments' : 'Developer Payments'}</h1>
+              <p className="text-sm text-muted-foreground">
                 {isDeveloperOnly ? 'View your payment history' : 'Track payments owed and paid to developers'}
               </p>
             </div>
+          </div>
+        )}
             
             {/* Only admins can add payments */}
             {isAdmin && (
