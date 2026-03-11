@@ -8,11 +8,13 @@ const corsHeaders = {
 function buildWorkerScript(): string {
   const OG_PROXY = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy";
   const SITE = "https://eclipserblx.com";
+  const ORIGIN = "https://roleplay-hub-shop.lovable.app";
 
   // Use a clean, readable script instead of line-by-line concatenation
   return `
 const OG_PROXY = "${OG_PROXY}";
 const SITE_URL = "${SITE}";
+const ORIGIN_URL = "${ORIGIN}";
 
 const BOT_PATTERNS = [
   "Discordbot", "Twitterbot", "facebookexternalhit", "LinkedInBot",
@@ -70,7 +72,28 @@ async function serveOg(path, hostname) {
   });
 }
 
-async function passthrough(request, tag) {
+async function fetchOrigin(request, tag) {
+  var url = new URL(request.url);
+  var hostname = url.hostname;
+  
+  // Store subdomains use a dummy AAAA record - rewrite to real origin
+  if (isStoreHostname(hostname)) {
+    var originUrl = ORIGIN_URL + url.pathname + url.search;
+    var newReq = new Request(originUrl, {
+      method: request.method,
+      headers: request.headers,
+      body: request.body,
+      redirect: "manual"
+    });
+    // Pass the original hostname so the SPA can resolve the store
+    newReq.headers.set("X-Forwarded-Host", hostname);
+    var r = await fetch(newReq);
+    var h = new Headers(r.headers);
+    h.set("X-Eclipse-Worker", tag);
+    return new Response(r.body, { status: r.status, headers: h });
+  }
+  
+  // Main domain - normal passthrough
   var r = await fetch(request);
   var h = new Headers(r.headers);
   h.set("X-Eclipse-Worker", tag);
@@ -95,24 +118,24 @@ export default {
 
       // Store subdomain / custom domain
       if (isStoreHostname(hostname)) {
-        if (isTestingTool(ua)) return passthrough(request, "pass-store-test");
-        if (!isBot(ua)) return passthrough(request, "pass-store-human");
+        if (isTestingTool(ua)) return fetchOrigin(request, "pass-store-test");
+        if (!isBot(ua)) return fetchOrigin(request, "pass-store-human");
         var ogRes = await serveOg(path, hostname);
         if (ogRes) return ogRes;
-        return passthrough(request, "pass-store-miss");
+        return fetchOrigin(request, "pass-store-miss");
       }
 
       // Main domain — only intercept relevant paths
       var isDynamic = /^\\/(products|store)\\/[^\\/?#]+/.test(path);
       var isStatic = STATIC_OG_PATHS.has(path);
-      if (!isDynamic && !isStatic) return passthrough(request, "pass-no-match");
-      if (isTestingTool(ua)) return passthrough(request, "pass-test-tool");
-      if (!isBot(ua)) return passthrough(request, "pass-human");
+      if (!isDynamic && !isStatic) return fetchOrigin(request, "pass-no-match");
+      if (isTestingTool(ua)) return fetchOrigin(request, "pass-test-tool");
+      if (!isBot(ua)) return fetchOrigin(request, "pass-human");
 
       // Bot detected on a relevant page — serve OG
       var ogRes = await serveOg(path, null);
       if (ogRes) return ogRes;
-      return passthrough(request, "pass-og-miss");
+      return fetchOrigin(request, "pass-og-miss");
 
     } catch (err) {
       return new Response("Worker error: " + err.message, {
