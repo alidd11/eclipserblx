@@ -73,11 +73,7 @@ export const DiscordLinkCard = ({
       }
 
       if (error) {
-        toast({
-          title: "Discord Authorization Failed",
-          description: urlParams.get("error_description") || "Authorization was cancelled or failed",
-          variant: "destructive",
-        });
+        toast.error("Discord Authorization Failed", { description: urlParams.get("error_description") || "Authorization was cancelled or failed" });
         return;
       }
 
