@@ -139,6 +139,13 @@ export function StoreDomainProvider({ children }: { children: ReactNode }) {
     return () => { cancelled = true; };
   }, [hostname, isCustomStoreDomain]);
 
+  return (
+    <StoreDomainContext.Provider value={{ isCustomStoreDomain, storeDomainData, loading }}>
+      {children}
+    </StoreDomainContext.Provider>
+  );
+}
+
 export function useStoreDomain() {
   return useContext(StoreDomainContext);
 }
