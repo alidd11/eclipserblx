@@ -11,6 +11,7 @@ interface NewProductRequest {
   product_id: string;
   product_name: string;
   product_slug: string;
+  product_number?: number;
   product_price: number;
   category_name?: string;
 }
