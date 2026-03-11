@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   CheckCircle, XCircle, AlertTriangle, Cloud, ChevronDown, ChevronUp,
-  Copy, ExternalLink, Info, Wrench,
+  Copy, ExternalLink, Info, Wrench, RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -28,6 +28,12 @@ interface DomainHealthDisplayProps {
   isCloudflare?: boolean;
   /** Compact mode for table rows / admin views */
   compact?: boolean;
+  /** Callback when the auto-fix button is clicked */
+  onAutoFix?: () => void;
+  /** Whether auto-fix is currently running */
+  isAutoFixing?: boolean;
+  /** Whether the seller has saved Cloudflare credentials */
+  hasCloudflareCredentials?: boolean;
 }
 
 const ERROR_INFO: Record<string, {
@@ -166,8 +172,10 @@ function SeverityIcon({ severity }: { severity: 'critical' | 'warning' | 'info' 
   return <Info className="h-5 w-5 text-blue-500 shrink-0" />;
 }
 
+const FIXABLE_ERRORS = ['1000', '1014', 'proxied_cname', '403_direct_a', '403_cloudflare', '1000_non_cf'];
+
 /** Full health display card — used on seller settings page */
-export function DomainHealthDisplay({ healthCheck, domain, isCloudflare, compact }: DomainHealthDisplayProps) {
+export function DomainHealthDisplay({ healthCheck, domain, isCloudflare, compact, onAutoFix, isAutoFixing, hasCloudflareCredentials }: DomainHealthDisplayProps) {
   const [expanded, setExpanded] = useState(false);
 
   if (!healthCheck) return null;
@@ -284,6 +292,33 @@ export function DomainHealthDisplay({ healthCheck, domain, isCloudflare, compact
               <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => copyText('185.158.133.1')}>
                 <Copy className="h-3 w-3 mr-1" />A record IP
               </Button>
+            </div>
+          )}
+
+          {/* Auto-Fix button */}
+          {onAutoFix && hasCloudflareCredentials && healthCheck.error_code && FIXABLE_ERRORS.includes(healthCheck.error_code) && (
+            <div className="border-t border-border/50 bg-primary/5 p-4">
+              <Button
+                onClick={onAutoFix}
+                disabled={isAutoFixing}
+                size="sm"
+                className="w-full"
+              >
+                {isAutoFixing ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Fixing DNS…
+                  </>
+                ) : (
+                  <>
+                    <Wrench className="h-4 w-4 mr-2" />
+                    Auto-Fix DNS via Cloudflare API
+                  </>
+                )}
+              </Button>
+              <p className="text-[10px] text-muted-foreground text-center mt-1.5">
+                Uses your saved Cloudflare token to correct DNS records automatically
+              </p>
             </div>
           )}
         </div>

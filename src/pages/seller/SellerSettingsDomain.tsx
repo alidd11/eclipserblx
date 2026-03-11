@@ -7,14 +7,20 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import {
   Globe, CheckCircle, CheckCircle2, Circle, ExternalLink, Copy, Trash2,
   RefreshCw, Zap, Link, ShoppingCart, ChevronDown, AlertTriangle,
-  Shield, CloudOff, XCircle, Info, Activity, Cloud,
+  Shield, CloudOff, XCircle, Info, Activity, Cloud, Key, Eye, EyeOff,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DomainHealthDisplay } from '@/components/domains/DomainHealthDisplay';
@@ -173,6 +179,212 @@ function CloudflareChecklist({ domain, verificationToken, isCloudflare }: { doma
   );
 }
 
+// ── Cloudflare Credentials Card ──
+function CloudflareCredentialsCard({ storeId }: { storeId: string }) {
+  const [tokenInput, setTokenInput] = useState('');
+  const [zoneIdInput, setZoneIdInput] = useState('');
+  const [showToken, setShowToken] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: creds, isLoading } = useQuery({
+    queryKey: ['cf-creds', storeId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('store_credentials')
+        .select('cloudflare_api_token, cloudflare_zone_id')
+        .eq('store_id', storeId)
+        .single();
+      return data;
+    },
+  });
+
+  const hasToken = !!creds?.cloudflare_api_token;
+  const hasZoneId = !!creds?.cloudflare_zone_id;
+  const maskedToken = hasToken ? `••••••••${(creds.cloudflare_api_token as string).slice(-4)}` : '';
+
+  const saveCreds = useMutation({
+    mutationFn: async () => {
+      const updates: Record<string, string> = {};
+      if (tokenInput.trim()) updates.cloudflare_api_token = tokenInput.trim();
+      if (zoneIdInput.trim()) updates.cloudflare_zone_id = zoneIdInput.trim();
+      if (Object.keys(updates).length === 0) throw new Error('Enter at least one field');
+      
+      const { error } = await supabase
+        .from('store_credentials')
+        .update(updates)
+        .eq('store_id', storeId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cf-creds'] });
+      setTokenInput('');
+      setZoneIdInput('');
+      toast.success('Cloudflare credentials saved');
+    },
+    onError: (e: any) => toast.error('Error', { description: e.message }),
+  });
+
+  const clearCreds = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('store_credentials')
+        .update({ cloudflare_api_token: null, cloudflare_zone_id: null })
+        .eq('store_id', storeId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cf-creds'] });
+      toast.success('Cloudflare credentials removed');
+    },
+    onError: (e: any) => toast.error('Error', { description: e.message }),
+  });
+
+  if (isLoading) return <Skeleton className="h-32 w-full" />;
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Key className="w-4 h-4 text-primary" />
+              Cloudflare Integration
+              <Badge variant="outline" className="text-xs">Optional</Badge>
+            </CardTitle>
+            <CardDescription>
+              Save your Cloudflare API Token to enable one-click DNS auto-fix when issues are detected.
+            </CardDescription>
+          </div>
+          {hasToken && (
+            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+              <CheckCircle className="w-3 h-3 mr-1" /> Connected
+            </Badge>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Permissions Guide */}
+        <Collapsible open={guideOpen} onOpenChange={setGuideOpen}>
+          <CollapsibleTrigger asChild>
+            <button className="flex items-center gap-2 text-sm text-primary hover:underline w-full text-left">
+              <Info className="w-4 h-4 shrink-0" />
+              <span>How to create your Cloudflare API Token</span>
+              <ChevronDown className={cn("w-4 h-4 ml-auto transition-transform", guideOpen && "rotate-180")} />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="mt-3 rounded-lg border border-border bg-muted/30 p-4 space-y-4">
+              <div>
+                <p className="text-sm font-semibold text-foreground mb-2">Create your API Token:</p>
+                <ol className="space-y-1.5 text-xs text-muted-foreground list-decimal list-inside">
+                  <li>Go to <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">dash.cloudflare.com → My Profile → API Tokens</a></li>
+                  <li>Click <strong className="text-foreground">Create Token</strong></li>
+                  <li>Use the <strong className="text-foreground">"Edit zone DNS"</strong> template, or create a custom token with:
+                    <ul className="ml-4 mt-1 space-y-0.5 list-disc">
+                      <li><strong className="text-foreground">Permissions:</strong> Zone → DNS → Edit</li>
+                      <li><strong className="text-foreground">Zone Resources:</strong> Include → Specific zone → <em>(select your domain)</em></li>
+                    </ul>
+                  </li>
+                  <li>Click <strong className="text-foreground">Continue to summary</strong> → <strong className="text-foreground">Create Token</strong></li>
+                  <li>Copy the token and paste it below</li>
+                </ol>
+              </div>
+
+              <Separator />
+
+              <div>
+                <p className="text-sm font-semibold text-foreground mb-2">Find your Zone ID:</p>
+                <ol className="space-y-1.5 text-xs text-muted-foreground list-decimal list-inside">
+                  <li>Go to <a href="https://dash.cloudflare.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">dash.cloudflare.com</a> → select your domain</li>
+                  <li>On the Overview page, scroll down to the <strong className="text-foreground">right sidebar</strong></li>
+                  <li>Copy the <strong className="text-foreground">Zone ID</strong> value</li>
+                </ol>
+              </div>
+
+              <Alert className="border-primary/20 bg-primary/5">
+                <Shield className="h-4 w-4 text-primary" />
+                <AlertTitle className="text-sm">Minimum permissions needed</AlertTitle>
+                <AlertDescription className="text-xs text-muted-foreground">
+                  Only <strong className="text-foreground">Zone:DNS:Edit</strong> scoped to your specific zone. No account-level access required. Your token is stored securely and only used when you click "Auto-Fix".
+                </AlertDescription>
+              </Alert>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Current status */}
+        {hasToken && (
+          <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-3 py-2">
+            <Key className="w-4 h-4 text-muted-foreground shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted-foreground">API Token</p>
+              <p className="text-sm font-mono text-foreground">{maskedToken}</p>
+            </div>
+            {hasZoneId && (
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-muted-foreground">Zone ID</p>
+                <p className="text-sm font-mono text-foreground truncate">{creds.cloudflare_zone_id}</p>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => clearCreds.mutate()}
+              disabled={clearCreds.isPending}
+            >
+              <Trash2 className="w-4 h-4 text-destructive" />
+            </Button>
+          </div>
+        )}
+
+        {/* Input fields */}
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="cf-token" className="text-xs">API Token {hasToken && '(leave blank to keep current)'}</Label>
+            <div className="relative">
+              <Input
+                id="cf-token"
+                type={showToken ? 'text' : 'password'}
+                placeholder={hasToken ? '••••••••' : 'Paste your Cloudflare API token'}
+                value={tokenInput}
+                onChange={(e) => setTokenInput(e.target.value)}
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowToken(!showToken)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="cf-zone" className="text-xs">Zone ID {hasZoneId && '(leave blank to keep current)'}</Label>
+            <Input
+              id="cf-zone"
+              placeholder={hasZoneId ? creds.cloudflare_zone_id ?? '' : 'Paste your Cloudflare Zone ID'}
+              value={zoneIdInput}
+              onChange={(e) => setZoneIdInput(e.target.value)}
+            />
+          </div>
+
+          <Button
+            onClick={() => saveCreds.mutate()}
+            disabled={saveCreds.isPending || (!tokenInput.trim() && !zoneIdInput.trim())}
+            size="sm"
+          >
+            {saveCreds.isPending ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Key className="w-4 h-4 mr-2" />}
+            {hasToken ? 'Update Credentials' : 'Save Credentials'}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function SellerSettingsDomain() {
   const { user } = useAuth();
   
@@ -206,6 +418,20 @@ export default function SellerSettingsDomain() {
         .neq('status', 'removed')
         .order('created_at', { ascending: true });
       return data ?? [];
+    },
+    enabled: !!store,
+  });
+
+  const { data: cfCreds } = useQuery({
+    queryKey: ['cf-creds', store?.id],
+    queryFn: async () => {
+      if (!store) return null;
+      const { data } = await supabase
+        .from('store_credentials')
+        .select('cloudflare_api_token, cloudflare_zone_id')
+        .eq('store_id', store.id)
+        .single();
+      return data;
     },
     enabled: !!store,
   });
@@ -305,6 +531,26 @@ export default function SellerSettingsDomain() {
       toast.success('Domain removed');
     },
     onError: (e: any) => toast.error('Error', { description: e.message }),
+  });
+
+  const autoFixDns = useMutation({
+    mutationFn: async (domainId: string) => {
+      const { data, error } = await supabase.functions.invoke('store-domain-manager', {
+        body: { action: 'auto-fix-dns', domain_id: domainId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['store-domains'] });
+      if (data.success) {
+        toast.success('DNS auto-fix complete!', { description: data.message });
+      } else {
+        toast.error('Auto-fix completed with errors', { description: data.message });
+      }
+    },
+    onError: (e: any) => toast.error('Auto-fix failed', { description: e.message }),
   });
 
   const copyToClipboard = (text: string) => {
@@ -485,12 +731,26 @@ export default function SellerSettingsDomain() {
 
                   {/* Health check results */}
                   {lastHealthCheck && (
-                    <DomainHealthDisplay healthCheck={lastHealthCheck} domain={d.domain} isCloudflare={isCloudflare} />
+                    <DomainHealthDisplay
+                      healthCheck={lastHealthCheck}
+                      domain={d.domain}
+                      isCloudflare={isCloudflare}
+                      onAutoFix={() => autoFixDns.mutate(d.id)}
+                      isAutoFixing={autoFixDns.isPending && autoFixDns.variables === d.id}
+                      hasCloudflareCredentials={!!cfCreds?.cloudflare_api_token}
+                    />
                   )}
 
                   {/* Health check result from mutation (live) */}
                   {healthCheck.data && healthCheck.variables === d.id && !lastHealthCheck && (
-                    <DomainHealthDisplay healthCheck={healthCheck.data as any} domain={d.domain} isCloudflare={isCloudflare} />
+                    <DomainHealthDisplay
+                      healthCheck={healthCheck.data as any}
+                      domain={d.domain}
+                      isCloudflare={isCloudflare}
+                      onAutoFix={() => autoFixDns.mutate(d.id)}
+                      isAutoFixing={autoFixDns.isPending && autoFixDns.variables === d.id}
+                      hasCloudflareCredentials={!!cfCreds?.cloudflare_api_token}
+                    />
                   )}
 
                   {/* Setup instructions for pending/verifying/failed domains */}
@@ -608,6 +868,9 @@ export default function SellerSettingsDomain() {
           )}
         </CardContent>
       </Card>
+
+      {/* Cloudflare Integration */}
+      {store && <CloudflareCredentialsCard storeId={store.id} />}
     </div>
     </SellerLayout>
   );

@@ -505,6 +505,171 @@ async function adminHealthCheck(domainId: string) {
   return jsonOk(healthCheck);
 }
 
+// ── Action: auto-fix-dns (uses seller's own Cloudflare token) ──
+async function autoFixDns(userId: string, domainId: string) {
+  const admin = getSupabaseAdmin();
+
+  // 1. Get domain record + verify ownership
+  const { data: domainRecord } = await admin
+    .from("store_domains")
+    .select("*, stores!inner(owner_id, id)")
+    .eq("id", domainId)
+    .single();
+
+  if (!domainRecord) return jsonError("Domain not found", 404);
+  const storeData = domainRecord as any;
+  if (storeData.stores?.owner_id !== userId) return jsonError("Not your domain", 403);
+
+  const storeId = storeData.stores.id;
+  const domain = domainRecord.domain;
+
+  // 2. Fetch seller's Cloudflare credentials
+  const { data: creds } = await admin
+    .from("store_credentials")
+    .select("cloudflare_api_token, cloudflare_zone_id")
+    .eq("store_id", storeId)
+    .single();
+
+  if (!creds?.cloudflare_api_token || !creds?.cloudflare_zone_id) {
+    return jsonError("No Cloudflare credentials saved. Add your API Token and Zone ID in domain settings first.", 400);
+  }
+
+  const sellerToken = creds.cloudflare_api_token;
+  const sellerZoneId = creds.cloudflare_zone_id;
+  const fixes: string[] = [];
+  const errors: string[] = [];
+
+  try {
+    // 3. Verify the token works
+    const { data: verifyData } = await cfFetch<any>(sellerToken, `${CF_API}/zones/${sellerZoneId}`);
+    if (!verifyData?.success) {
+      return jsonError("Invalid Cloudflare credentials. Check your API Token has Zone:DNS:Edit permission and the Zone ID is correct.", 403);
+    }
+
+    // 4. List existing DNS records for this domain
+    const { data: dnsListData } = await cfFetch<any[]>(
+      sellerToken,
+      `${CF_API}/zones/${sellerZoneId}/dns_records?name=${encodeURIComponent(domain)}`
+    );
+
+    const existingRecords = dnsListData?.result ?? [];
+
+    // 5. Delete conflicting records (proxied CNAMEs, A records pointing elsewhere)
+    for (const rec of existingRecords) {
+      const shouldDelete =
+        // Delete proxied CNAMEs
+        (rec.type === "CNAME" && rec.proxied === true) ||
+        // Delete A records (we want CNAME instead)
+        (rec.type === "A") ||
+        // Delete CNAMEs pointing to wrong target
+        (rec.type === "CNAME" && rec.content !== "stores.eclipserblx.com");
+
+      if (shouldDelete) {
+        const { data: delData } = await cfFetch<any>(
+          sellerToken,
+          `${CF_API}/zones/${sellerZoneId}/dns_records/${rec.id}`,
+          { method: "DELETE" }
+        );
+        if (delData?.success) {
+          fixes.push(`Deleted ${rec.type} record: ${rec.name} → ${rec.content}${rec.proxied ? " (proxied)" : ""}`);
+        } else {
+          errors.push(`Failed to delete ${rec.type} record ${rec.name}: ${JSON.stringify(delData?.errors)}`);
+        }
+      }
+    }
+
+    // 6. Create correct CNAME → stores.eclipserblx.com (DNS-only)
+    const { data: cnameData } = await cfFetch<any>(
+      sellerToken,
+      `${CF_API}/zones/${sellerZoneId}/dns_records`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          type: "CNAME",
+          name: domain,
+          content: "stores.eclipserblx.com",
+          proxied: false,
+          ttl: 1, // auto
+        }),
+      }
+    );
+    if (cnameData?.success) {
+      fixes.push(`Created CNAME: ${domain} → stores.eclipserblx.com (DNS-only)`);
+    } else {
+      // May already exist — try update
+      const existingCname = existingRecords.find(
+        (r: any) => r.type === "CNAME" && r.name === domain
+      );
+      if (!existingCname) {
+        errors.push(`Failed to create CNAME: ${JSON.stringify(cnameData?.errors)}`);
+      }
+    }
+
+    // 7. Handle www subdomain
+    const wwwDomain = `www.${domain}`;
+    const { data: wwwListData } = await cfFetch<any[]>(
+      sellerToken,
+      `${CF_API}/zones/${sellerZoneId}/dns_records?name=${encodeURIComponent(wwwDomain)}`
+    );
+    const wwwRecords = wwwListData?.result ?? [];
+
+    // Delete bad www records
+    for (const rec of wwwRecords) {
+      if (rec.type === "CNAME" && rec.proxied === true) {
+        await cfFetch<any>(sellerToken, `${CF_API}/zones/${sellerZoneId}/dns_records/${rec.id}`, { method: "DELETE" });
+        fixes.push(`Deleted proxied www CNAME`);
+      } else if (rec.type === "A") {
+        await cfFetch<any>(sellerToken, `${CF_API}/zones/${sellerZoneId}/dns_records/${rec.id}`, { method: "DELETE" });
+        fixes.push(`Deleted www A record`);
+      }
+    }
+
+    // Create www CNAME if needed
+    const hasWwwCname = wwwRecords.some(
+      (r: any) => r.type === "CNAME" && r.content === "stores.eclipserblx.com" && !r.proxied
+    );
+    if (!hasWwwCname) {
+      const { data: wwwData } = await cfFetch<any>(
+        sellerToken,
+        `${CF_API}/zones/${sellerZoneId}/dns_records`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            type: "CNAME",
+            name: wwwDomain,
+            content: "stores.eclipserblx.com",
+            proxied: false,
+            ttl: 1,
+          }),
+        }
+      );
+      if (wwwData?.success) {
+        fixes.push(`Created www CNAME: ${wwwDomain} → stores.eclipserblx.com (DNS-only)`);
+      }
+    }
+
+    // 8. Re-run health check
+    const healthResult = await performHealthCheck(domain);
+    await admin.from("store_domains").update({
+      last_health_check: healthResult,
+      last_health_check_at: new Date().toISOString(),
+      is_cloudflare_zone: healthResult.is_cloudflare_zone,
+    }).eq("id", domainId);
+
+    return jsonOk({
+      success: errors.length === 0,
+      fixes,
+      errors,
+      health_check: healthResult,
+      message: errors.length === 0
+        ? `DNS fixed successfully! ${fixes.length} change(s) applied. DNS may take 2-5 minutes to propagate.`
+        : `Completed with ${errors.length} error(s). ${fixes.length} fix(es) applied.`,
+    });
+  } catch (e: any) {
+    return jsonError(`Auto-fix failed: ${e.message}`, 500);
+  }
+}
+
 // ── Action: check-status ──
 async function checkStatus(userId: string, domainId: string) {
   const admin = getSupabaseAdmin();
@@ -754,8 +919,12 @@ Deno.serve(async (req) => {
         if (!body.domain_id) return jsonError("domain_id required", 400);
         return await removeDomain(user.id, body.domain_id);
 
+      case "auto-fix-dns":
+        if (!body.domain_id) return jsonError("domain_id required", 400);
+        return await autoFixDns(user.id, body.domain_id);
+
       default:
-        return jsonError("Unknown action. Supported: claim-subdomain, request-custom-domain, verify-custom-domain, check-status, health-check, remove-domain, resolve-hostname", 400);
+        return jsonError("Unknown action. Supported: claim-subdomain, request-custom-domain, verify-custom-domain, check-status, health-check, remove-domain, auto-fix-dns, resolve-hostname", 400);
     }
   } catch (e) {
     return internalError(e);
