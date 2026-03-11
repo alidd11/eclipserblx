@@ -12,6 +12,7 @@ import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 
 export default function SellerRevenueBreakdown() {
+  const isInsideHub = useIsInsideHub();
   const { store } = useSellerStatus();
   const [period, setPeriod] = useState<'7' | '30' | '90'>('30');
 
