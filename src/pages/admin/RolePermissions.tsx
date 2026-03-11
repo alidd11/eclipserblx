@@ -21,13 +21,13 @@ import {
   LayoutDashboard,
   ChevronDown,
   ChevronUp,
-  Lock
+  Lock,
+  Wallet,
+  ShieldCheck,
 } from 'lucide-react';
 import { RoleManagementCard } from '@/components/admin/RoleManagementCard';
 import { RoleSelector } from '@/components/admin/RoleSelector';
 import { PermissionCategory } from '@/components/admin/PermissionCategory';
-
-type AppRole = 'admin' | 'lead_administrator' | 'lead_manager' | 'support_agent' | 'analyst' | 'recruiter';
 
 interface Permission {
   id: string;
