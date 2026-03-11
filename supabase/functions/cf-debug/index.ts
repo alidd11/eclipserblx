@@ -69,6 +69,44 @@ Deno.serve(async (req) => {
       return jsonOk(data);
     }
 
+    // Check if harleys subdomain is accidentally a custom hostname
+    if (action === "search-custom-hostname") {
+      const hostname = body?.hostname;
+      if (!hostname) return jsonError("hostname required", 400);
+      const resp = await fetch(`${CF_API}/zones/${cfZoneId}/custom_hostnames?hostname=${encodeURIComponent(hostname)}`, {
+        headers: { Authorization: `Bearer ${cfToken}` },
+      });
+      const data = await resp.json();
+      return jsonOk(data);
+    }
+
+    // Check WAF/Firewall rules that might block subdomains
+    if (action === "list-firewall-rules") {
+      const resp = await fetch(`${CF_API}/zones/${cfZoneId}/firewall/rules?per_page=50`, {
+        headers: { Authorization: `Bearer ${cfToken}` },
+      });
+      const data = await resp.json();
+      return jsonOk(data);
+    }
+
+    // Check page rules
+    if (action === "list-page-rules") {
+      const resp = await fetch(`${CF_API}/zones/${cfZoneId}/pagerules?per_page=50`, {
+        headers: { Authorization: `Bearer ${cfToken}` },
+      });
+      const data = await resp.json();
+      return jsonOk(data);
+    }
+
+    // Check rulesets (WAF managed rules)
+    if (action === "list-rulesets") {
+      const resp = await fetch(`${CF_API}/zones/${cfZoneId}/rulesets?per_page=50`, {
+        headers: { Authorization: `Bearer ${cfToken}` },
+      });
+      const data = await resp.json();
+      return jsonOk(data);
+    }
+
     return jsonError("Unknown action", 400);
   } catch (e: any) {
     return jsonError(e.message, 500);
