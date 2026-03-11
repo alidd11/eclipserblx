@@ -96,7 +96,7 @@ export default function RecruiterPayouts() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Payout marked as completed' });
+      toast.success('Payout marked as completed');
       queryClient.invalidateQueries({ queryKey: ['recruiter-payouts-admin'] });
       queryClient.invalidateQueries({ queryKey: ['recruiter-stats'] });
     },
