@@ -6,6 +6,7 @@ import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RevolutBarChart } from '@/components/ui/revolut-chart';
 import { Receipt, Percent, DollarSign, TrendingDown } from 'lucide-react';
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 export default function SellerTaxFeeSummary() {
   const { store } = useSellerStatus();
