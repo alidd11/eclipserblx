@@ -296,7 +296,7 @@ export default function Affiliate() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['affiliate-application', user?.id] });
-      toast({ title: "Payout settings updated" });
+      toast.success("Payout settings updated");
     },
     onError: (error: Error) => {
       toast({
