@@ -356,10 +356,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
           if (subscribeToEmails) {
             sessionStorage.setItem('pendingEmailSubscription', 'true');
           }
-          toast({
-            title: t('auth.checkYourEmail'),
-            description: 'We sent you a 6-digit verification code.',
-          });
+          toast.success(t('auth.checkYourEmail'), { description: 'We sent you a 6-digit verification code.' });
           setMode('verify');
         }
       }
