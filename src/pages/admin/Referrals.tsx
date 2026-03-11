@@ -143,8 +143,8 @@ export default function AdminReferrals() {
               <p className="text-sm text-muted-foreground">Track and manage user referrals</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Card className="bg-card border-border">
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
+          <Card className="bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardContent className="p-3 md:pt-6 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
