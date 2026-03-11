@@ -28,7 +28,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 export default function Affiliate() {
   usePageMeta({ title: 'Affiliate Programme', description: 'Earn commissions by referring customers to Eclipse marketplace. Join our affiliate programme today.', canonicalPath: '/affiliate' });
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const { settings: affiliateSettings, isLoading: settingsLoading } = useAffiliateSettings();
