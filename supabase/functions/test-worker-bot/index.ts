@@ -14,12 +14,10 @@ Deno.serve(async (req) => {
     targetUrl = "https://eclipserblx.com/products/13";
   }
 
-  // Use the Cloudflare Worker subdomain directly to bypass SBFM
-  const workerUrl = targetUrl.replace("https://eclipserblx.com", "https://eclipse-og-proxy.mqddfqd5gs.workers.dev");
-
-  const res = await fetch(workerUrl, {
+  // Test directly on the real domain — the WAF skip rule should allow Discordbot through
+  const res = await fetch(targetUrl, {
     headers: { "User-Agent": "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)" },
-    redirect: "manual",
+    redirect: "follow",
   });
   const body = await res.text();
   const headers: Record<string, string> = {};
@@ -28,16 +26,18 @@ Deno.serve(async (req) => {
   const ogTitle = body.match(/<meta\s+property="og:title"\s+content="([^"]*)"/)?.[1] || null;
   const ogImage = body.match(/<meta\s+property="og:image"\s+content="([^"]*)"/)?.[1] || null;
   const ogUrl = body.match(/<meta\s+property="og:url"\s+content="([^"]*)"/)?.[1] || null;
+  const xWorker = headers['x-eclipse-worker'] || null;
 
   return new Response(JSON.stringify({
+    testedUrl: targetUrl,
     status: res.status,
-    eclipseHeaders: Object.fromEntries(Object.entries(headers).filter(([k]) => k.startsWith('x-eclipse'))),
+    xWorker,
     ogTitle,
-    ogImage: ogImage ? ogImage.slice(0, 120) + '...' : null,
+    ogImage: ogImage ? ogImage.slice(0, 150) : null,
     ogUrl,
     hasProductOg: !!ogTitle && ogTitle !== 'Eclipse' && !ogTitle.startsWith('Eclipse |'),
     bodyLen: body.length,
-    bodyPreview: body.slice(0, 500),
+    bodyPreview: body.slice(0, 600),
   }, null, 2), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
