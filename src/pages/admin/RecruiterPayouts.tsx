@@ -40,7 +40,7 @@ interface RecruiterPayout {
 
 export default function RecruiterPayouts() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('pending');
   const [selectedPayout, setSelectedPayout] = useState<RecruiterPayout | null>(null);
