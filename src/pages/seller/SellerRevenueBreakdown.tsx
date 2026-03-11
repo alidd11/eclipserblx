@@ -106,8 +106,8 @@ export default function SellerRevenueBreakdown() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card>
+      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible">
+        <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10"><DollarSign className="h-5 w-5 text-primary" /></div>
@@ -118,7 +118,7 @@ export default function SellerRevenueBreakdown() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10"><TrendingUp className="h-5 w-5 text-primary" /></div>
@@ -129,7 +129,7 @@ export default function SellerRevenueBreakdown() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10"><Package className="h-5 w-5 text-primary" /></div>

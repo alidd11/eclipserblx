@@ -137,7 +137,7 @@ export default function PlatformLedger() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-5 md:overflow-visible">
           <SummaryCard
             label="Gross Sales"
             value={fmt(summary?.totalGross || 0)}
@@ -319,7 +319,7 @@ export default function PlatformLedger() {
 
 function SummaryCard({ label, value, icon, highlight }: { label: string; value: string; icon: React.ReactNode; highlight?: boolean }) {
   return (
-    <Card className={cn(highlight && 'border-green-500/30 bg-green-500/5')}>
+    <Card className={cn('min-w-[160px] flex-shrink-0 md:min-w-0', highlight && 'border-green-500/30 bg-green-500/5')}>
       <CardContent className="pt-4 pb-3 px-4">
         <div className="flex items-center gap-2 text-muted-foreground mb-1">
           {icon}

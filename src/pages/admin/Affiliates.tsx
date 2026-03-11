@@ -254,12 +254,12 @@ export default function AdminAffiliates() {
               <p className="text-sm text-muted-foreground">Manage commissions, payouts, and affiliate settings</p>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-              <AdminStatCard label="Affiliates" value={stats?.totalAffiliates || 0} valueColor="primary" />
-              <AdminStatCard label="Total Commissions" value={formatAmount(stats?.totalCommissions || 0)} valueColor="green" />
-              <AdminStatCard label="Pending" value={formatAmount(stats?.pendingCommissions || 0)} valueColor="yellow" />
-              <AdminStatCard label="Payout Requests" value={stats?.pendingPayoutCount || 0} valueColor="orange" />
-              <AdminStatCard label="Total Paid Out" value={formatAmount(stats?.totalPaidOut || 0)} valueColor="blue" />
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-5 md:overflow-visible">
+              <AdminStatCard label="Affiliates" value={stats?.totalAffiliates || 0} valueColor="primary" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+              <AdminStatCard label="Total Commissions" value={formatAmount(stats?.totalCommissions || 0)} valueColor="green" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+              <AdminStatCard label="Pending" value={formatAmount(stats?.pendingCommissions || 0)} valueColor="yellow" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+              <AdminStatCard label="Payout Requests" value={stats?.pendingPayoutCount || 0} valueColor="orange" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+              <AdminStatCard label="Total Paid Out" value={formatAmount(stats?.totalPaidOut || 0)} valueColor="blue" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
             </div>
           </>
         )}

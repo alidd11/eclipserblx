@@ -294,32 +294,32 @@ export default function AdminApplications() {
         </Card>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <Card className="glass-card">
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-5 md:overflow-visible">
+          <Card className="glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardContent className="pt-6 text-center">
               <p className="text-2xl font-bold">{stats.total}</p>
               <p className="text-sm text-muted-foreground">Total</p>
             </CardContent>
           </Card>
-          <Card className="glass-card">
+          <Card className="glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardContent className="pt-6 text-center">
               <p className="text-2xl font-bold text-yellow-400">{stats.pending}</p>
               <p className="text-sm text-muted-foreground">Pending</p>
             </CardContent>
           </Card>
-          <Card className="glass-card">
+          <Card className="glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardContent className="pt-6 text-center">
               <p className="text-2xl font-bold text-blue-400">{stats.reviewing}</p>
               <p className="text-sm text-muted-foreground">Reviewing</p>
             </CardContent>
           </Card>
-          <Card className="glass-card">
+          <Card className="glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardContent className="pt-6 text-center">
               <p className="text-2xl font-bold text-green-400">{stats.accepted}</p>
               <p className="text-sm text-muted-foreground">Accepted</p>
             </CardContent>
           </Card>
-          <Card className="glass-card">
+          <Card className="glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
             <CardContent className="pt-6 text-center">
               <p className="text-2xl font-bold text-red-400">{stats.rejected}</p>
               <p className="text-sm text-muted-foreground">Rejected</p>

@@ -262,8 +262,8 @@ export default function Subscribers() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Card>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
               <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
                 <Users className="h-3 w-3 md:h-4 md:w-4" />
@@ -274,7 +274,7 @@ export default function Subscribers() {
               <p className="text-lg md:text-2xl font-bold">{stats.total}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
               <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
                 <Bell className="h-3 w-3 md:h-4 md:w-4" />
@@ -285,7 +285,7 @@ export default function Subscribers() {
               <p className="text-lg md:text-2xl font-bold">{stats.updates}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
               <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
                 <Tag className="h-3 w-3 md:h-4 md:w-4" />
@@ -296,7 +296,7 @@ export default function Subscribers() {
               <p className="text-lg md:text-2xl font-bold">{stats.discounts}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
               <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
                 <Newspaper className="h-3 w-3 md:h-4 md:w-4" />

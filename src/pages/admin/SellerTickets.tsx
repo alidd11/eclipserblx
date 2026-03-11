@@ -372,20 +372,20 @@ export default function SellerTickets() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-5 md:overflow-visible">
           {escalatedCount > 0 && (
             <AdminStatCard 
               label="Escalated" 
               value={escalatedCount} 
               valueColor="destructive" 
               subtitle="24h+ no response"
-              className="border-destructive bg-destructive/5"
+              className="border-destructive bg-destructive/5 min-w-[160px] flex-shrink-0 md:min-w-0"
             />
           )}
-          <AdminStatCard label="Open" value={openCount} valueColor="blue" />
-          <AdminStatCard label="In Progress" value={inProgressCount} valueColor="yellow" />
-          <AdminStatCard label="Awaiting Seller" value={awaitingCount} valueColor="orange" />
-          <AdminStatCard label="Total" value={tickets?.length || 0} />
+          <AdminStatCard label="Open" value={openCount} valueColor="blue" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+          <AdminStatCard label="In Progress" value={inProgressCount} valueColor="yellow" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+          <AdminStatCard label="Awaiting Seller" value={awaitingCount} valueColor="orange" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+          <AdminStatCard label="Total" value={tickets?.length || 0} className="min-w-[160px] flex-shrink-0 md:min-w-0" />
         </div>
 
         {/* Filters */}

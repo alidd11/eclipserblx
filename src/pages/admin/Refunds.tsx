@@ -236,11 +236,11 @@ export default function AdminRefunds() {
               </Button>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <AdminStatCard label="Total Refunds" value={stats.totalRefunds} />
-              <AdminStatCard label="Total Refunded" value={formatCurrency(stats.totalRefundedAmount)} valueColor="destructive" />
-              <AdminStatCard label="Full Refunds" value={stats.fullRefunds} valueColor="destructive" />
-              <AdminStatCard label="Partial Refunds" value={stats.partialRefunds} valueColor="orange" />
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
+              <AdminStatCard label="Total Refunds" value={stats.totalRefunds} className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+              <AdminStatCard label="Total Refunded" value={formatCurrency(stats.totalRefundedAmount)} valueColor="destructive" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+              <AdminStatCard label="Full Refunds" value={stats.fullRefunds} valueColor="destructive" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+              <AdminStatCard label="Partial Refunds" value={stats.partialRefunds} valueColor="orange" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
             </div>
           </>
         )}

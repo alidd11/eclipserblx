@@ -259,11 +259,11 @@ export default function AdminBotCodes() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <AdminStatCard label="Total Codes" value={totalCodes} />
-          <AdminStatCard label="Active" value={activeCodes} valueColor="primary" />
-          <AdminStatCard label="Claimed" value={usedCodes} valueColor="green" />
-          <AdminStatCard label="Expired" value={expiredCodes} valueColor="destructive" />
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
+          <AdminStatCard label="Total Codes" value={totalCodes} className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+          <AdminStatCard label="Active" value={activeCodes} valueColor="primary" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+          <AdminStatCard label="Claimed" value={usedCodes} valueColor="green" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+          <AdminStatCard label="Expired" value={expiredCodes} valueColor="destructive" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
         </div>
 
         {/* Search */}

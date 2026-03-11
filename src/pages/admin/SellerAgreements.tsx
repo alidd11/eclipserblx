@@ -110,14 +110,14 @@ export default function SellerAgreements() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
-          <Card>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible">
+          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardDescription>Total Approved Stores</CardDescription>
               <CardTitle className="text-3xl">{stores?.length || 0}</CardTitle>
             </CardHeader>
           </Card>
-          <Card className="border-green-500/30">
+          <Card className="border-green-500/30 min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -126,7 +126,7 @@ export default function SellerAgreements() {
               <CardTitle className="text-3xl text-green-500">{signedCount}</CardTitle>
             </CardHeader>
           </Card>
-          <Card className="border-amber-500/30">
+          <Card className="border-amber-500/30 min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-amber-500" />

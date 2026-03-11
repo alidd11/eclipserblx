@@ -113,8 +113,8 @@ export default function AdAnalyticsPage() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="bg-card border-border">
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
+          <Card className="bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Clicks</CardTitle>
               <MousePointerClick className="h-4 w-4 text-primary" />
@@ -127,7 +127,7 @@ export default function AdAnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Posted Ads</CardTitle>
               <Megaphone className="h-4 w-4 text-green-500" />
@@ -140,7 +140,7 @@ export default function AdAnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Avg. Clicks/Ad</CardTitle>
               <TrendingUp className="h-4 w-4 text-blue-500" />
@@ -153,7 +153,7 @@ export default function AdAnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Spent</CardTitle>
               <PoundSterling className="h-4 w-4 text-yellow-500" />

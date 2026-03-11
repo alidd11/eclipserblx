@@ -219,12 +219,12 @@ export default function StaffActivityPage() {
         </Card>
 
         {/* Today's Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-          <AdminStatCard label="Logins Today" value={todayStats?.logins ?? 0} valueColor="green" />
-          <AdminStatCard label="Chats Claimed" value={todayStats?.chats_claimed ?? 0} valueColor="blue" />
-          <AdminStatCard label="Chats Completed" value={todayStats?.chats_completed ?? 0} valueColor="primary" />
-          <AdminStatCard label="Tickets Claimed" value={todayStats?.tickets_claimed ?? 0} valueColor="orange" />
-          <AdminStatCard label="Tickets Completed" value={todayStats?.tickets_completed ?? 0} valueColor="green" />
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-5 md:overflow-visible">
+          <AdminStatCard label="Logins Today" value={todayStats?.logins ?? 0} valueColor="green" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+          <AdminStatCard label="Chats Claimed" value={todayStats?.chats_claimed ?? 0} valueColor="blue" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+          <AdminStatCard label="Chats Completed" value={todayStats?.chats_completed ?? 0} valueColor="primary" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+          <AdminStatCard label="Tickets Claimed" value={todayStats?.tickets_claimed ?? 0} valueColor="orange" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+          <AdminStatCard label="Tickets Completed" value={todayStats?.tickets_completed ?? 0} valueColor="green" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
         </div>
 
         {/* Filters */}
