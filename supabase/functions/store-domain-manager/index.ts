@@ -278,14 +278,45 @@ async function claimSubdomain(userId: string, storeId: string, slug: string) {
     .limit(1);
   if (storeExisting && storeExisting.length > 0) return jsonError("Store already has a subdomain", 409);
 
+  // Register as Cloudflare Custom Hostname for SSL & routing via fallback origin
+  const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
+  const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
+  let sslStatus = "active";
+  let cfHostnameId = null;
+
+  if (cfToken && cfZoneId) {
+    try {
+      const { data: cfData } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames`, {
+        method: "POST",
+        body: JSON.stringify({
+          hostname: domain,
+          ssl: { method: "http", type: "dv", settings: { min_tls_version: "1.2" } },
+        }),
+      });
+
+      if (cfData?.success) {
+        cfHostnameId = cfData.result?.id;
+        sslStatus = cfData.result?.ssl?.status === "active" ? "active" : "pending";
+      } else {
+        console.error("Cloudflare custom hostname error for subdomain:", cfData?.errors);
+        // Still create the record but mark SSL as pending
+        sslStatus = "pending";
+      }
+    } catch (e) {
+      console.error("Cloudflare API error for subdomain:", e);
+      sslStatus = "pending";
+    }
+  }
+
   const { data: record, error } = await admin.from("store_domains").insert({
     store_id: storeId,
     domain,
     domain_type: "subdomain",
     status: "active",
-    ssl_status: "active",
+    ssl_status: sslStatus,
     verified_at: new Date().toISOString(),
     is_primary: true,
+    cloudflare_hostname_id: cfHostnameId,
   }).select().single();
 
   if (error) return jsonError(error.message, 500);
