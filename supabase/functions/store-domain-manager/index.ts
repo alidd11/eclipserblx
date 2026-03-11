@@ -97,11 +97,11 @@ async function detectProxiedCname(domain: string): Promise<{ is_proxied: boolean
     );
     const cnameData = await cnameResp.json();
     const cnameRecords = (cnameData?.Answer ?? []).filter((a: any) => a.type === 5);
-    
+
     if (cnameRecords.length === 0) return { is_proxied: false, cname_target: null };
-    
+
     const cnameTarget = cnameRecords[0].data?.replace(/\.$/, "") ?? null;
-    
+
     // If CNAME exists but A records resolve to Cloudflare proxy IPs, the CNAME is proxied
     const aResp = await fetch(
       `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`,
@@ -109,7 +109,7 @@ async function detectProxiedCname(domain: string): Promise<{ is_proxied: boolean
     );
     const aData = await aResp.json();
     const aRecords = (aData?.Answer ?? []).filter((a: any) => a.type === 1);
-    
+
     if (aRecords.length > 0) {
       const ips = aRecords.map((a: any) => a.data);
       const isCloudflareProxy = ips.some((ip: string) => {
@@ -123,11 +123,35 @@ async function detectProxiedCname(domain: string): Promise<{ is_proxied: boolean
         return { is_proxied: true, cname_target: cnameTarget };
       }
     }
-    
+
     return { is_proxied: false, cname_target: cnameTarget };
   } catch {
     return { is_proxied: false, cname_target: null };
   }
+}
+
+function getPreferredDnsRecord(domain: string, zoneName?: string | null) {
+  const normalizedDomain = domain.toLowerCase();
+  const normalizedZone = (zoneName ?? "").toLowerCase();
+  const isApexDomain = normalizedZone ? normalizedDomain === normalizedZone : false;
+
+  if (isApexDomain) {
+    return {
+      type: "A" as const,
+      name: domain,
+      content: "185.158.133.1",
+      proxied: false,
+      is_apex: true,
+    };
+  }
+
+  return {
+    type: "CNAME" as const,
+    name: domain,
+    content: "stores.eclipserblx.com",
+    proxied: false,
+    is_apex: false,
+  };
 }
 
 // ── Helper: Health check a domain ──
@@ -205,10 +229,20 @@ async function performHealthCheck(domain: string) {
 
       // Check for Cloudflare error pages
       const body = await httpResp.text();
-      if (body.includes("Error 1000")) {
+      const bodyLower = body.toLowerCase();
+      const hasError1000 =
+        /error\s*(code)?\s*1000/.test(bodyLower) ||
+        bodyLower.includes("error-1000") ||
+        bodyLower.includes("conflict within cloudflare");
+
+      if (hasError1000) {
         if (checks.is_cloudflare_zone) {
           checks.error_code = "1000";
-          checks.diagnosis = "DNS points to prohibited IP — cross-zone Cloudflare conflict detected.";
+          if (!checks.cname_target && checks.resolves_to_cloudflare) {
+            checks.diagnosis = "Error 1000 — apex/root domain is flattening through Cloudflare and causing cross-zone conflict. Use a DNS-only A record to 185.158.133.1 for the root domain.";
+          } else {
+            checks.diagnosis = "Error 1000 — cross-zone Cloudflare conflict detected.";
+          }
         } else {
           checks.error_code = "1000_non_cf";
           checks.diagnosis = "DNS conflict — your CNAME is being resolved through Cloudflare's proxy. Use an A record instead.";
@@ -226,7 +260,10 @@ async function performHealthCheck(domain: string) {
         checks.error_code = "redirect_loop";
         checks.diagnosis = "Redirect loop detected — check for conflicting redirect rules.";
       } else if (httpResp.status === 403 && checks.is_cloudflare_zone && checks.resolves_to_cloudflare) {
-        if (checks.cname_is_proxied) {
+        if (!checks.cname_target) {
+          checks.error_code = "1000";
+          checks.diagnosis = "403 with Cloudflare edge IPs and no visible CNAME usually indicates root-domain flattening conflict. Use a DNS-only A record to 185.158.133.1.";
+        } else if (checks.cname_is_proxied) {
           checks.error_code = "403_cloudflare";
           checks.diagnosis = "403 Forbidden — your CNAME is Proxied (orange cloud) which triggers Cloudflare cross-zone blocking. Switch to DNS-only (grey cloud).";
         } else {
@@ -261,7 +298,11 @@ async function performHealthCheck(domain: string) {
     } else if (checks.error_code === "1000_non_cf") {
       checks.recommended_fix = "USE_A_RECORD";
     } else if (checks.error_code === "1000" && checks.is_cloudflare_zone) {
-      checks.recommended_fix = "CLOUDFLARE_CROSS_ZONE";
+      if (!checks.cname_target && checks.resolves_to_cloudflare) {
+        checks.recommended_fix = "USE_A_RECORD";
+      } else {
+        checks.recommended_fix = "CLOUDFLARE_CROSS_ZONE";
+      }
     } else if (checks.error_code === "1014") {
       checks.recommended_fix = "DISABLE_PROXY";
     } else if (checks.error_code === "403_direct_a") {
@@ -551,7 +592,11 @@ async function autoFixDns(userId: string, domainId: string) {
       return jsonError("Invalid Cloudflare credentials. Check your API Token has Zone:DNS:Edit permission and the Zone ID is correct.", 403);
     }
 
-    // 4. List existing DNS records for this domain
+    // 4. Determine preferred record type (apex domains should use A to avoid flattening conflicts)
+    const sellerZoneName = (verifyData?.result?.name ?? "").toLowerCase();
+    const preferredRecord = getPreferredDnsRecord(domain, sellerZoneName);
+
+    // 5. List existing DNS records for this domain
     const { data: dnsListData } = await cfFetch<any[]>(
       sellerToken,
       `${CF_API}/zones/${sellerZoneId}/dns_records?name=${encodeURIComponent(domain)}`
@@ -559,15 +604,18 @@ async function autoFixDns(userId: string, domainId: string) {
 
     const existingRecords = dnsListData?.result ?? [];
 
-    // 5. Delete conflicting records (proxied CNAMEs, A records pointing elsewhere)
+    const hasPreferredRecord = existingRecords.some((rec: any) => {
+      if (preferredRecord.type === "A") {
+        return rec.type === "A" && rec.content === preferredRecord.content && rec.proxied === false;
+      }
+      return rec.type === "CNAME" && rec.content === preferredRecord.content && rec.proxied === false;
+    });
+
+    // 6. Delete conflicting records
     for (const rec of existingRecords) {
-      const shouldDelete =
-        // Delete proxied CNAMEs
-        (rec.type === "CNAME" && rec.proxied === true) ||
-        // Delete A records (we want CNAME instead)
-        (rec.type === "A") ||
-        // Delete CNAMEs pointing to wrong target
-        (rec.type === "CNAME" && rec.content !== "stores.eclipserblx.com");
+      const shouldDelete = preferredRecord.type === "A"
+        ? (rec.type === "CNAME" || (rec.type === "A" && (rec.content !== preferredRecord.content || rec.proxied === true)))
+        : (rec.type === "A" || (rec.type === "CNAME" && (rec.content !== preferredRecord.content || rec.proxied === true)));
 
       if (shouldDelete) {
         const { data: delData } = await cfFetch<any>(
@@ -583,34 +631,29 @@ async function autoFixDns(userId: string, domainId: string) {
       }
     }
 
-    // 6. Create correct CNAME → stores.eclipserblx.com (DNS-only)
-    const { data: cnameData } = await cfFetch<any>(
-      sellerToken,
-      `${CF_API}/zones/${sellerZoneId}/dns_records`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          type: "CNAME",
-          name: domain,
-          content: "stores.eclipserblx.com",
-          proxied: false,
-          ttl: 1, // auto
-        }),
-      }
-    );
-    if (cnameData?.success) {
-      fixes.push(`Created CNAME: ${domain} → stores.eclipserblx.com (DNS-only)`);
-    } else {
-      // May already exist — try update
-      const existingCname = existingRecords.find(
-        (r: any) => r.type === "CNAME" && r.name === domain
+    // 7. Create preferred DNS-only record if missing
+    if (!hasPreferredRecord) {
+      const { data: createData } = await cfFetch<any>(
+        sellerToken,
+        `${CF_API}/zones/${sellerZoneId}/dns_records`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            type: preferredRecord.type,
+            name: preferredRecord.name,
+            content: preferredRecord.content,
+            proxied: preferredRecord.proxied,
+            ttl: 1,
+          }),
+        }
       );
-      if (!existingCname) {
-        errors.push(`Failed to create CNAME: ${JSON.stringify(cnameData?.errors)}`);
+
+      if (createData?.success) {
+        fixes.push(`Created ${preferredRecord.type}: ${preferredRecord.name} → ${preferredRecord.content} (DNS-only)`);
+      } else {
+        errors.push(`Failed to create ${preferredRecord.type}: ${JSON.stringify(createData?.errors)}`);
       }
     }
-
-    // 7. Handle www subdomain
     const wwwDomain = `www.${domain}`;
     const { data: wwwListData } = await cfFetch<any[]>(
       sellerToken,
@@ -838,6 +881,10 @@ async function adminFixHostname(domainId: string) {
         if (verifyData?.success) {
           fixes.push("Seller Cloudflare credentials verified");
 
+          // Determine preferred record type using seller zone apex
+          const sellerZoneName = (verifyData?.result?.name ?? "").toLowerCase();
+          const preferredRecord = getPreferredDnsRecord(domain, sellerZoneName);
+
           // List existing DNS records
           const { data: dnsListData } = await cfFetch<any[]>(
             sellerToken,
@@ -848,12 +895,18 @@ async function adminFixHostname(domainId: string) {
             type: r.type, name: r.name, content: r.content, proxied: r.proxied,
           }));
 
+          const hasPreferredRecord = existingRecords.some((rec: any) => {
+            if (preferredRecord.type === "A") {
+              return rec.type === "A" && rec.content === preferredRecord.content && rec.proxied === false;
+            }
+            return rec.type === "CNAME" && rec.content === preferredRecord.content && rec.proxied === false;
+          });
+
           // Delete conflicting records
           for (const rec of existingRecords) {
-            const shouldDelete =
-              (rec.type === "CNAME" && rec.proxied === true) ||
-              (rec.type === "A") ||
-              (rec.type === "CNAME" && rec.content !== "stores.eclipserblx.com");
+            const shouldDelete = preferredRecord.type === "A"
+              ? (rec.type === "CNAME" || (rec.type === "A" && (rec.content !== preferredRecord.content || rec.proxied === true)))
+              : (rec.type === "A" || (rec.type === "CNAME" && (rec.content !== preferredRecord.content || rec.proxied === true)));
 
             if (shouldDelete) {
               const { data: delData } = await cfFetch<any>(
@@ -869,29 +922,26 @@ async function adminFixHostname(domainId: string) {
             }
           }
 
-          // Create correct CNAME → stores.eclipserblx.com (DNS-only)
-          const hasCorrectCname = existingRecords.some(
-            (r: any) => r.type === "CNAME" && r.content === "stores.eclipserblx.com" && !r.proxied
-          );
-          if (!hasCorrectCname) {
-            const { data: cnameData } = await cfFetch<any>(
+          // Create preferred record if needed
+          if (!hasPreferredRecord) {
+            const { data: createData } = await cfFetch<any>(
               sellerToken,
               `${CF_API}/zones/${sellerZoneId}/dns_records`,
               {
                 method: "POST",
                 body: JSON.stringify({
-                  type: "CNAME",
-                  name: domain,
-                  content: "stores.eclipserblx.com",
-                  proxied: false,
+                  type: preferredRecord.type,
+                  name: preferredRecord.name,
+                  content: preferredRecord.content,
+                  proxied: preferredRecord.proxied,
                   ttl: 1,
                 }),
               }
             );
-            if (cnameData?.success) {
-              fixes.push(`Created CNAME: ${domain} → stores.eclipserblx.com (DNS-only)`);
+            if (createData?.success) {
+              fixes.push(`Created ${preferredRecord.type}: ${preferredRecord.name} → ${preferredRecord.content} (DNS-only)`);
             } else {
-              errors.push(`Failed to create CNAME: ${JSON.stringify(cnameData?.errors)}`);
+              errors.push(`Failed to create ${preferredRecord.type}: ${JSON.stringify(createData?.errors)}`);
             }
           }
         } else {
