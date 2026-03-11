@@ -134,7 +134,7 @@ export default function RecruiterPayouts() {
       // Note: In a real implementation, you might want to handle this differently
     },
     onSuccess: () => {
-      toast({ title: 'Payout rejected' });
+      toast.success('Payout rejected');
       queryClient.invalidateQueries({ queryKey: ['recruiter-payouts-admin'] });
       queryClient.invalidateQueries({ queryKey: ['recruiter-stats'] });
       setShowRejectDialog(false);
