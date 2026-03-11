@@ -118,11 +118,11 @@ export default {
 
       // Store subdomain / custom domain
       if (isStoreHostname(hostname)) {
-        if (isTestingTool(ua)) return passthrough(request, "pass-store-test");
-        if (!isBot(ua)) return passthrough(request, "pass-store-human");
+        if (isTestingTool(ua)) return fetchOrigin(request, "pass-store-test");
+        if (!isBot(ua)) return fetchOrigin(request, "pass-store-human");
         var ogRes = await serveOg(path, hostname);
         if (ogRes) return ogRes;
-        return passthrough(request, "pass-store-miss");
+        return fetchOrigin(request, "pass-store-miss");
       }
 
       // Main domain — only intercept relevant paths
