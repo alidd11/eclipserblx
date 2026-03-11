@@ -583,11 +583,13 @@ export default function SellerSettingsDomain() {
                   </div>
 
                   {/* Health check results */}
-                  {lastHealthCheck && <HealthCheckResult data={lastHealthCheck} />}
+                  {lastHealthCheck && (
+                    <DomainHealthDisplay healthCheck={lastHealthCheck} domain={d.domain} isCloudflare={isCloudflare} />
+                  )}
 
                   {/* Health check result from mutation (live) */}
                   {healthCheck.data && healthCheck.variables === d.id && !lastHealthCheck && (
-                    <HealthCheckResult data={healthCheck.data} />
+                    <DomainHealthDisplay healthCheck={healthCheck.data as any} domain={d.domain} isCloudflare={isCloudflare} />
                   )}
 
                   {/* Setup instructions for pending/verifying/failed domains */}
