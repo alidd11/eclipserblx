@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RevolutAreaChart, RevolutBarChart } from '@/components/ui/revolut-chart';
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { TrendingUp, Package, DollarSign, Layers } from 'lucide-react';
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 
 export default function SellerRevenueBreakdown() {
