@@ -42,9 +42,14 @@ function HealthCheckResult({ data }: { data: any }) {
       fix: 'In your DNS provider dashboard (e.g. Cloudflare), click the ORANGE CLOUD icon next to your CNAME record to switch it to DNS-only (GREY cloud). This is the #1 cause of domain connection failures.',
     },
     '1000': {
-      title: 'Error 1000: DNS Conflict',
-      message: 'Your domain resolves to a prohibited IP due to a cross-zone Cloudflare conflict.',
-      fix: 'Your domain is managed by Cloudflare, which conflicts with our Cloudflare setup. You need to either: (1) Switch your CNAME to DNS-only (grey cloud), (2) Use an A record pointing to 185.158.133.1 with DNS-only, or (3) Move DNS to a non-Cloudflare provider.',
+      title: 'Error 1000: DNS Conflict (Cloudflare Zone)',
+      message: 'Your domain is on Cloudflare which conflicts with our Cloudflare setup.',
+      fix: 'Since your domain uses Cloudflare DNS, you need to either: (1) Switch your CNAME to DNS-only (grey cloud), (2) Use an A record pointing to 185.158.133.1 with DNS-only, or (3) Move DNS to a non-Cloudflare provider.',
+    },
+    '1000_non_cf': {
+      title: 'Error 1000: DNS Configuration Issue',
+      message: 'Your CNAME record is causing a conflict. This happens when a CNAME points to a Cloudflare-protected domain.',
+      fix: 'Delete your CNAME record and create an A record instead. Point it to 185.158.133.1 — this bypasses the conflict entirely. If you\'re unsure how, check your DNS provider\'s help docs for "adding an A record".',
     },
     '1014': {
       title: 'Error 1014: Cross-User Banned',
