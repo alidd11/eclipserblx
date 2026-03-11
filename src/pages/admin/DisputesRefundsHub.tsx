@@ -61,17 +61,19 @@ export default function DisputesRefundsHub() {
             </Select>
           </div>
 
-          <TabsContent value="refunds">
-            <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-              <RefundsPage />
-            </Suspense>
-          </TabsContent>
+          <AdminHubProvider>
+            <TabsContent value="refunds">
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <RefundsPage />
+              </Suspense>
+            </TabsContent>
 
-          <TabsContent value="disputes">
-            <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-              <DisputesPage />
-            </Suspense>
-          </TabsContent>
+            <TabsContent value="disputes">
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <DisputesPage />
+              </Suspense>
+            </TabsContent>
+          </AdminHubProvider>
         </Tabs>
       </div>
     </AdminLayout>

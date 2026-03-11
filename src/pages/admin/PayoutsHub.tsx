@@ -65,23 +65,25 @@ export default function PayoutsHub() {
             </Select>
           </div>
 
-          <TabsContent value="seller">
-            <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-              <SellerPayoutsPage />
-            </Suspense>
-          </TabsContent>
+          <AdminHubProvider>
+            <TabsContent value="seller">
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <SellerPayoutsPage />
+              </Suspense>
+            </TabsContent>
 
-          <TabsContent value="developer">
-            <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-              <DeveloperPaymentsPage />
-            </Suspense>
-          </TabsContent>
+            <TabsContent value="developer">
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <DeveloperPaymentsPage />
+              </Suspense>
+            </TabsContent>
 
-          <TabsContent value="manual">
-            <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-              <ManualPayoutsPage />
-            </Suspense>
-          </TabsContent>
+            <TabsContent value="manual">
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <ManualPayoutsPage />
+              </Suspense>
+            </TabsContent>
+          </AdminHubProvider>
         </Tabs>
       </div>
     </AdminLayout>

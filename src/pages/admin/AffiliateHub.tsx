@@ -63,23 +63,25 @@ export default function AffiliateHub() {
             </Select>
           </div>
 
-          <TabsContent value="overview">
-            <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-              <AffiliatesPage />
-            </Suspense>
-          </TabsContent>
+          <AdminHubProvider>
+            <TabsContent value="overview">
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <AffiliatesPage />
+              </Suspense>
+            </TabsContent>
 
-          <TabsContent value="applications">
-            <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-              <AffiliateApplicationsPage />
-            </Suspense>
-          </TabsContent>
+            <TabsContent value="applications">
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <AffiliateApplicationsPage />
+              </Suspense>
+            </TabsContent>
 
-          <TabsContent value="referrals">
-            <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-              <ReferralsPage />
-            </Suspense>
-          </TabsContent>
+            <TabsContent value="referrals">
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <ReferralsPage />
+              </Suspense>
+            </TabsContent>
+          </AdminHubProvider>
         </Tabs>
       </div>
     </AdminLayout>
