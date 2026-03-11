@@ -14,6 +14,7 @@ import { Receipt, Download, Printer, Calendar, PoundSterling, TrendingUp, AlertT
 import { Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { SITE_NAME } from '@/lib/constants';
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 // UK tax year: 6 April – 5 April
 function getTaxYears(): { label: string; startDate: string; endDate: string }[] {
