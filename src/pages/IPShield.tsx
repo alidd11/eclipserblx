@@ -175,11 +175,11 @@ function CopyDetectionTab({ userId }: { userId?: string }) {
     try {
       const { data, error } = await supabase.functions.invoke('scan-roblox-copies');
       if (error) throw error;
-      toast({ title: 'Scan complete', description: `Found ${data?.total_detected || 0} potential copies. ${data?.thumbnails_analyzed || 0} thumbnails analysed.` });
+      toast.success('Scan complete', { description: `Found ${data?.total_detected || 0} potential copies. ${data?.thumbnails_analyzed || 0} thumbnails analysed.` });
       queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
       queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
     } catch (err: any) {
-      toast({ title: 'Scan failed', description: err.message, variant: 'destructive' });
+      toast.error('Scan failed', { description: err.message });
     } finally {
       setScanning(false);
     }
@@ -253,7 +253,7 @@ function CopyDetectionTab({ userId }: { userId?: string }) {
       }
     }
 
-    toast({ title: `${filed} takedowns filed`, description: 'DMCA notices queued for review and sending.' });
+    toast.success(`${filed} takedowns filed`, { description: 'DMCA notices queued for review and sending.' });
     setSelectedIds(new Set());
     setBulkMode(false);
     queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
@@ -505,16 +505,16 @@ This notice is sent under the Digital Millennium Copyright Act (DMCA), 17 U.S.C.
     navigator.clipboard.writeText(dmcaTemplate);
     setTemplateCopied(true);
     setTimeout(() => setTemplateCopied(false), 2000);
-    toast({ title: 'DMCA template copied to clipboard' });
+    toast.success('DMCA template copied to clipboard');
   };
 
   const handleSubmit = async () => {
     if (!goodFaith || !accuracy || !ownership) {
-      toast({ title: 'Please confirm all statements', variant: 'destructive' });
+      toast.error('Please confirm all statements');
       return;
     }
     if (filingMethod === 'agent' && !agentAuth) {
-      toast({ title: 'Please authorise us to act on your behalf', variant: 'destructive' });
+      toast.error('Please authorise us to act on your behalf');
       return;
     }
 
@@ -554,12 +554,12 @@ This notice is sent under the Digital Millennium Copyright Act (DMCA), 17 U.S.C.
           body: { takedown_id: data.id },
         });
         if (dmcaError) {
-          toast({ title: 'Case created but DMCA sending failed', description: 'Our team will follow up manually.', variant: 'destructive' });
+          toast.error('Case created but DMCA sending failed', { description: 'Our team will follow up manually.' });
         } else {
-          toast({ title: 'DMCA filed on your behalf!', description: `Case ${data.case_number} — notice sent for review and forwarding.` });
+          toast.success('DMCA filed on your behalf!', { description: `Case ${data.case_number} — notice sent for review and forwarding.` });
         }
       } else {
-        toast({ title: 'Takedown case created!', description: `Case ${data?.case_number}. Use the copied template to submit your DMCA notice directly.` });
+        toast.success('Takedown case created!', { description: `Case ${data?.case_number}. Use the copied template to submit your DMCA notice directly.` });
       }
 
       queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
@@ -567,7 +567,7 @@ This notice is sent under the Digital Millennium Copyright Act (DMCA), 17 U.S.C.
       queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
       onClose();
     } catch (err: any) {
-      toast({ title: 'Failed to file takedown', description: err.message, variant: 'destructive' });
+      toast.error('Failed to file takedown', { description: err.message });
     } finally {
       setSubmitting(false);
     }
@@ -771,7 +771,7 @@ export default function IPShield() {
     },
     onSuccess: (data) => { if (data.url) window.location.href = data.url; },
     onError: (error) => {
-      toast({ title: 'Verification failed', description: error.message, variant: 'destructive' });
+      toast.error('Verification failed', { description: error.message });
       setVerifying(false);
     },
   });
@@ -784,7 +784,7 @@ export default function IPShield() {
     },
     onSuccess: (data) => { if (data.url) window.location.href = data.url; },
     onError: (error) => {
-      toast({ title: 'Checkout failed', description: error.message, variant: 'destructive' });
+      toast.error('Checkout failed', { description: error.message });
       setSubscribing(false);
     },
   });
@@ -852,13 +852,13 @@ export default function IPShield() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Takedown request submitted', description: 'We will review your case and notify you of any updates.' });
+      toast.success('Takedown request submitted', { description: 'We will review your case and notify you of any updates.' });
       setShowNewRequest(false);
       resetForm();
       queryClient.invalidateQueries({ queryKey: ['takedown-requests'] });
     },
     onError: (error) => {
-      toast({ title: 'Failed to submit', description: error.message, variant: 'destructive' });
+      toast.error('Failed to submit', { description: error.message });
     },
   });
 
@@ -890,7 +890,7 @@ export default function IPShield() {
       return data;
     },
     onSuccess: async (data) => {
-      toast({ title: 'Work registered', description: 'Running initial copy scan...' });
+      toast.success('Work registered', { description: 'Running initial copy scan...' });
       setShowAddWork(false);
       setRegistryForm({ title: '', description: '', work_type: '', proof_urls: '', roblox_asset_ids: '', roblox_universe_ids: '', search_keywords: '' });
       queryClient.invalidateQueries({ queryKey: ['ip-registry'] });
@@ -901,7 +901,7 @@ export default function IPShield() {
           const { data: scanData } = await supabase.functions.invoke('scan-roblox-copies', {
             body: { registry_entry_id: data.id },
           });
-          toast({ title: 'Initial scan complete', description: `Found ${scanData?.total_detected || 0} potential copies.` });
+          toast.success('Initial scan complete', { description: `Found ${scanData?.total_detected || 0} potential copies.` });
           queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
           queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
         } catch {
@@ -910,7 +910,7 @@ export default function IPShield() {
       }
     },
     onError: (error) => {
-      toast({ title: 'Failed to register', description: error.message, variant: 'destructive' });
+      toast.error('Failed to register', { description: error.message });
     },
   });
 
