@@ -106,7 +106,7 @@ export default function IPShieldRegistry() {
       }
     },
     onError: (error) => {
-      toast({ title: editingId ? 'Failed to update' : 'Failed to register', description: error.message, variant: 'destructive' });
+      toast.error(editingId ? 'Failed to update' : 'Failed to register', { description: error.message });
     },
   });
 
