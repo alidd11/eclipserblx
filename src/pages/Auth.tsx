@@ -522,11 +522,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       });
       
       if (error || data?.error) {
-        toast({
-          title: 'Discord Sign-In Failed',
-          description: data?.error || 'Failed to initiate Discord sign-in',
-          variant: 'destructive',
-        });
+        toast.error('Discord Sign-In Failed', { description: data?.error || 'Failed to initiate Discord sign-in' });
         setErrors({ social: data?.error || 'Discord sign-in failed' });
         setSocialLoading(false);
         return;
