@@ -314,7 +314,7 @@ export default function SellerSettingsDomain() {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
       toast.success('Subdomain claimed!', { description: `${store?.slug}.eclipserblx.com is now active.` });
     },
-    onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
+    onError: (e: any) => toast.error('Error', { description: e.message }),
   });
 
   const requestCustom = useMutation({
