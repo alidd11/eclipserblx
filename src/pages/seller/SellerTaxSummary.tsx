@@ -39,6 +39,7 @@ function getTaxYears(): { label: string; startDate: string; endDate: string }[] 
 }
 
 export default function SellerTaxSummary() {
+  const isInsideHub = useIsInsideHub();
   const { store } = useSellerStatus();
   const taxYears = getTaxYears();
   const [selectedYear, setSelectedYear] = useState(taxYears[0].label);
