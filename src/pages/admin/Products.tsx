@@ -433,6 +433,7 @@ export default function AdminProducts() {
               product_id: newProduct.id,
               product_name: payload.name,
               product_slug: payload.slug,
+              product_number: (newProduct as any).product_number,
               product_price: payload.price,
               category_name: categoryName,
             },
