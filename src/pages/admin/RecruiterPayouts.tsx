@@ -13,7 +13,7 @@ import {
 import { Clock, CheckCircle, XCircle, Loader2, DollarSign, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
 interface RecruiterPayout {
@@ -40,7 +40,7 @@ interface RecruiterPayout {
 
 export default function RecruiterPayouts() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('pending');
   const [selectedPayout, setSelectedPayout] = useState<RecruiterPayout | null>(null);
@@ -96,12 +96,12 @@ export default function RecruiterPayouts() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Payout marked as completed' });
+      toast.success('Payout marked as completed');
       queryClient.invalidateQueries({ queryKey: ['recruiter-payouts-admin'] });
       queryClient.invalidateQueries({ queryKey: ['recruiter-stats'] });
     },
     onError: (error: Error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 
@@ -134,7 +134,7 @@ export default function RecruiterPayouts() {
       // Note: In a real implementation, you might want to handle this differently
     },
     onSuccess: () => {
-      toast({ title: 'Payout rejected' });
+      toast.success('Payout rejected');
       queryClient.invalidateQueries({ queryKey: ['recruiter-payouts-admin'] });
       queryClient.invalidateQueries({ queryKey: ['recruiter-stats'] });
       setShowRejectDialog(false);
@@ -142,7 +142,7 @@ export default function RecruiterPayouts() {
       setSelectedPayout(null);
     },
     onError: (error: Error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 

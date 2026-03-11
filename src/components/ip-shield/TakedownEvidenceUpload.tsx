@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Upload, X, Loader2, ImageIcon } from 'lucide-react';
 
 interface TakedownEvidenceUploadProps {
@@ -31,7 +31,7 @@ export function TakedownEvidenceUpload({
     if (!selectedFiles || selectedFiles.length === 0) return;
 
     if (files.length + selectedFiles.length > maxFiles) {
-      toast({ title: `Maximum ${maxFiles} files allowed`, variant: 'destructive' });
+      toast.error(`Maximum ${maxFiles} files allowed`);
       return;
     }
 
@@ -41,12 +41,12 @@ export function TakedownEvidenceUpload({
     for (const file of Array.from(selectedFiles)) {
       // Validate file type
       if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
-        toast({ title: `${file.name}: Only images and PDFs allowed`, variant: 'destructive' });
+        toast.error(`${file.name}: Only images and PDFs allowed`);
         continue;
       }
       // Validate file size (10MB max)
       if (file.size > 10 * 1024 * 1024) {
-        toast({ title: `${file.name}: File too large (max 10MB)`, variant: 'destructive' });
+        toast.error(`${file.name}: File too large (max 10MB)`);
         continue;
       }
 
@@ -60,7 +60,7 @@ export function TakedownEvidenceUpload({
 
       if (error) {
         console.error('Upload error:', error);
-        toast({ title: `Failed to upload ${file.name}`, description: error.message, variant: 'destructive' });
+        toast.error(`Failed to upload ${file.name}`, { description: error.message });
       } else {
         newPaths.push(path);
       }

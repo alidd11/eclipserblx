@@ -5,13 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
 export function EmailSubscriptionCard() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   
   const [updates, setUpdates] = useState(true);
@@ -74,17 +73,10 @@ export function EmailSubscriptionCard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['email-subscription', user?.id] });
-      toast({
-        title: 'Preferences Updated',
-        description: 'Your email subscription preferences have been saved.',
-      });
+      toast.success('Preferences Updated', { description: 'Your email subscription preferences have been saved.' });
     },
     onError: (error) => {
-      toast({
-        title: 'Error',
-        description: 'Failed to update preferences. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: 'Failed to update preferences. Please try again.' });
       console.error('Subscription update error:', error);
     },
   });

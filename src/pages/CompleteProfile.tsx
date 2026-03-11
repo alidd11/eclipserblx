@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Loader2, Mail, ArrowRight } from 'lucide-react';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
@@ -15,7 +15,6 @@ const emailSchema = z.string().trim().email('Please enter a valid email address'
 export default function CompleteProfile() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -59,10 +58,7 @@ export default function CompleteProfile() {
       // Refresh the session to get updated user data
       await supabase.auth.refreshSession();
 
-      toast({
-        title: 'Email Added!',
-        description: 'Your account is now fully set up.',
-      });
+      toast.success('Email Added!', { description: 'Your account is now fully set up.' });
 
       navigate('/', { replace: true });
     } catch (err) {

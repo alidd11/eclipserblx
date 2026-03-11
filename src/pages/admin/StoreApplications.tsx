@@ -13,7 +13,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 
 interface VerificationResults {
@@ -85,7 +85,7 @@ interface StoreApplication {
 
 export default function StoreApplications() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [selectedApplication, setSelectedApplication] = useState<StoreApplication | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -205,12 +205,12 @@ export default function StoreApplications() {
       return store;
     },
     onSuccess: () => {
-      toast({ title: 'Application Approved', description: 'Store has been created successfully.' });
+      toast.success('Application Approved', { description: 'Store has been created successfully.' });
       queryClient.invalidateQueries({ queryKey: ['admin-store-applications'] });
       setSelectedApplication(null);
     },
     onError: (error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 
@@ -249,14 +249,14 @@ export default function StoreApplications() {
       }
     },
     onSuccess: () => {
-      toast({ title: 'Application Rejected' });
+      toast.success('Application Rejected');
       queryClient.invalidateQueries({ queryKey: ['admin-store-applications'] });
       setShowRejectDialog(false);
       setSelectedApplication(null);
       setRejectionReason('');
     },
     onError: (error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 

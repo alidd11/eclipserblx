@@ -12,7 +12,7 @@ import {
 import { Clock, CheckCircle, XCircle, Loader2, User, Mail, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
 interface RecruiterApplication {
@@ -32,7 +32,7 @@ interface RecruiterApplication {
 
 export default function RecruiterApplications() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [selectedApp, setSelectedApp] = useState<RecruiterApplication | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -68,13 +68,13 @@ export default function RecruiterApplications() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Application approved', description: 'Recruiter role has been assigned.' });
+      toast.success('Application approved', { description: 'Recruiter role has been assigned.' });
       queryClient.invalidateQueries({ queryKey: ['recruiter-applications-pending'] });
       queryClient.invalidateQueries({ queryKey: ['recruiter-stats'] });
       setSelectedApp(null);
     },
     onError: (error: Error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 
@@ -94,7 +94,7 @@ export default function RecruiterApplications() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Application rejected' });
+      toast.success('Application rejected');
       queryClient.invalidateQueries({ queryKey: ['recruiter-applications-pending'] });
       queryClient.invalidateQueries({ queryKey: ['recruiter-stats'] });
       setSelectedApp(null);
@@ -102,7 +102,7 @@ export default function RecruiterApplications() {
       setRejectionReason('');
     },
     onError: (error: Error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 

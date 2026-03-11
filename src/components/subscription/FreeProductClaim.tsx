@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Gift, Loader2, Check, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -70,20 +70,13 @@ export function FreeProductClaim({
     setIsClaiming(true);
     try {
       await claimFreeProduct(productId);
-      toast({
-        title: 'Product Claimed!',
-        description: `"${productName}" has been added to your downloads for free.`,
-      });
+      toast.success('Product Claimed!', { description: `"${productName}" has been added to your downloads for free.` });
       onClaimed?.();
       setShowConfirm(false);
       // Redirect to downloads page after successful claim
       navigate('/downloads');
     } catch (error) {
-      toast({
-        title: 'Claim Failed',
-        description: error instanceof Error ? error.message : 'Failed to claim product',
-        variant: 'destructive',
-      });
+      toast.error('Claim Failed', { description: error instanceof Error ? error.message : 'Failed to claim product' });
       setIsClaiming(false);
       setShowConfirm(false);
     }
