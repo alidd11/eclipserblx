@@ -868,6 +868,9 @@ export default function SellerSettingsDomain() {
           )}
         </CardContent>
       </Card>
+
+      {/* Cloudflare Integration */}
+      {store && <CloudflareCredentialsCard storeId={store.id} />}
     </div>
     </SellerLayout>
   );
