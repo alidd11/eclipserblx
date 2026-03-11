@@ -250,7 +250,7 @@ export default function SellerAnalytics() {
             </p>
           </div>
           <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-auto min-w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
