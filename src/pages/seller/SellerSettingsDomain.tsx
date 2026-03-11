@@ -422,6 +422,20 @@ export default function SellerSettingsDomain() {
     enabled: !!store,
   });
 
+  const { data: cfCreds } = useQuery({
+    queryKey: ['cf-creds', store?.id],
+    queryFn: async () => {
+      if (!store) return null;
+      const { data } = await supabase
+        .from('store_credentials')
+        .select('cloudflare_api_token, cloudflare_zone_id')
+        .eq('store_id', store.id)
+        .single();
+      return data;
+    },
+    enabled: !!store,
+  });
+
   const subdomain = domains?.find(d => d.domain_type === 'subdomain');
   const customDomains = domains?.filter(d => d.domain_type === 'custom') ?? [];
 
