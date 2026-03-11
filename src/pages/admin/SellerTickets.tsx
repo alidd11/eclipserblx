@@ -268,7 +268,7 @@ export default function SellerTickets() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-seller-tickets'] });
-      toast({ title: 'Ticket Resolved' });
+      toast.success('Ticket Resolved');
       setShowResolveDialog(false);
       setResolutionNotes('');
       setSelectedTicket(null);
