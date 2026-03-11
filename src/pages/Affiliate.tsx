@@ -221,10 +221,7 @@ export default function Affiliate() {
       }
     },
     onSuccess: () => {
-      toast({
-        title: "Welcome to the Affiliate Program!",
-        description: "Your account is now active. Start earning by sharing your referral link!",
-      });
+      toast.success("Welcome to the Affiliate Program!", { description: "Your account is now active. Start earning by sharing your referral link!" });
       queryClient.invalidateQueries({ queryKey: ['affiliate-application', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['affiliate-balance', user?.id] });
     },
