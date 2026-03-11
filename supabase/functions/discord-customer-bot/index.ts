@@ -1957,7 +1957,7 @@ async function handleShowcaseCommand(supabase: any, serverContext: ServerContext
     const { data: products, error } = await supabase
       .from("products")
       .select(`
-        id, name, slug, price, images, description,
+        id, name, slug, product_number, price, images, description,
         stores!inner (name, slug, logo_url, is_verified, is_trusted)
       `)
       .eq("is_active", true)
