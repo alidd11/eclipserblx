@@ -1,5 +1,6 @@
 import { ReactNode, useLayoutEffect } from 'react';
 import { PageTransition } from '@/components/layout/PageTransition';
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 import { Navigate, useLocation } from 'react-router-dom';
 import { SellerSidebar } from './SellerSidebar';
 import { useAuth } from '@/hooks/useAuth';
