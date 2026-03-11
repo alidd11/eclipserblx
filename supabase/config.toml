@@ -380,8 +380,3 @@ verify_jwt = false
 [functions.store-domain-manager]
 verify_jwt = false
 
-[functions.cloudflare-dns-admin]
-verify_jwt = false
-
-[functions.cf-debug]
-verify_jwt = false
