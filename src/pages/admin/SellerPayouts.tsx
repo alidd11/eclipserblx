@@ -204,21 +204,23 @@ export default function SellerPayouts() {
           </div>
         )}
 
-        <div className="flex items-center justify-end">
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-auto min-w-[140px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="awaiting_funds">Awaiting Funds</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="all">All Payouts</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {!isInsideHub && (
+          <div className="flex items-center justify-end">
+            <Select value={filterStatus} onValueChange={setLocalFilterStatus}>
+              <SelectTrigger className="w-auto min-w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="awaiting_funds">Awaiting Funds</SelectItem>
+                <SelectItem value="processing">Processing</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="all">All Payouts</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {!isInsideHub && (
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-2 md:overflow-visible">

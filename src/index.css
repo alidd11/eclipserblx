@@ -620,6 +620,9 @@
   html {
     @apply bg-background text-foreground;
     overscroll-behavior: none;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
     background-color: hsl(var(--background));
     transition: background-color 0.3s ease, color 0.3s ease;
   }
@@ -629,6 +632,8 @@
     font-family: 'Manrope', sans-serif;
     -webkit-overflow-scrolling: touch;
     overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
     min-height: 100vh;
     min-height: 100dvh;
     -webkit-user-select: none;

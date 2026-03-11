@@ -61,16 +61,31 @@ export default function PayoutsHub() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="hidden sm:grid w-full max-w-xl grid-cols-3">
-            {tabs.map(t => (
-              <TabsTrigger key={t.value} value={t.value} className="gap-2">
-                <t.icon className="h-4 w-4" />
-                {t.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="hidden sm:flex items-center justify-between gap-3">
+            <TabsList className="grid w-full max-w-xl grid-cols-3">
+              {tabs.map(t => (
+                <TabsTrigger key={t.value} value={t.value} className="gap-2">
+                  <t.icon className="h-4 w-4" />
+                  {t.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-          <div className="sm:hidden">
+            {activeTab === 'seller' && (
+              <Select value={sellerStatus} onValueChange={setSellerStatus}>
+                <SelectTrigger className="w-auto min-w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {sellerStatusOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+
+          <div className="sm:hidden flex items-center justify-between gap-2">
             <Select value={activeTab} onValueChange={setActiveTab}>
               <SelectTrigger className="w-auto min-w-[140px]">
                 <SelectValue />
@@ -81,6 +96,19 @@ export default function PayoutsHub() {
                 ))}
               </SelectContent>
             </Select>
+
+            {activeTab === 'seller' && (
+              <Select value={sellerStatus} onValueChange={setSellerStatus}>
+                <SelectTrigger className="w-auto min-w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {sellerStatusOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <AdminHubProvider>
