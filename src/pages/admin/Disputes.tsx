@@ -273,60 +273,54 @@ export default function Disputes() {
   return (
     <AdminLayout requiredPermissions={['manage_orders']}>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-destructive/10">
-                <AlertTriangle className="h-6 w-6 text-destructive" />
-              </div>
-              Disputes & Escrow
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Manage customer disputes. Funds are frozen during active disputes.
-            </p>
-          </div>
-        </div>
+        {!isInsideHub && (
+          <>
+            <div>
+              <h1 className="text-2xl font-display font-bold">Disputes & Escrow</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Manage customer disputes. Funds are frozen during active disputes.
+              </p>
+            </div>
 
-        {/* Overdue Alert Banner */}
-        {stats.overdue > 0 && (
-          <Card className="border-destructive/30 bg-destructive/5">
-            <CardContent className="flex items-center gap-3 py-3 px-4">
-              <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-destructive">
-                  {stats.overdue} dispute{stats.overdue > 1 ? 's' : ''} overdue — seller 48h window expired
-                </p>
-                <p className="text-xs text-muted-foreground">Consider escalating or resolving these directly.</p>
-              </div>
-              <Button size="sm" variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => setStatusFilter('pending')}>
-                View Pending
-              </Button>
-            </CardContent>
-          </Card>
+            {stats.overdue > 0 && (
+              <Card className="border-destructive/30 bg-destructive/5">
+                <CardContent className="flex items-center gap-3 py-3 px-4">
+                  <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-destructive">
+                      {stats.overdue} dispute{stats.overdue > 1 ? 's' : ''} overdue — seller 48h window expired
+                    </p>
+                    <p className="text-xs text-muted-foreground">Consider escalating or resolving these directly.</p>
+                  </div>
+                  <Button size="sm" variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => setStatusFilter('pending')}>
+                    View Pending
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {[
+                { label: 'Total', value: stats.total, icon: FileText, color: 'text-foreground' },
+                { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-yellow-500' },
+                { label: 'Overdue', value: stats.overdue, icon: AlertCircle, color: 'text-destructive' },
+                { label: 'Escalated', value: stats.escalated, icon: ShieldAlert, color: 'text-amber-500' },
+                { label: 'Resolved', value: stats.resolved, icon: CheckCircle, color: 'text-emerald-500' },
+                { label: 'Funds Frozen', value: stats.frozen, icon: Snowflake, color: 'text-sky-400' },
+              ].map((stat) => (
+                <Card key={stat.label} className="bg-card border-border">
+                  <CardContent className="pt-4 pb-3 px-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
+                      <stat.icon className={cn('h-4 w-4', stat.color)} />
+                    </div>
+                    <p className={cn('text-2xl font-bold mt-1', stat.color)}>{stat.value}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </>
         )}
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {[
-            { label: 'Total', value: stats.total, icon: FileText, color: 'text-foreground' },
-            { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-yellow-500' },
-            { label: 'Overdue', value: stats.overdue, icon: AlertCircle, color: 'text-destructive' },
-            { label: 'Escalated', value: stats.escalated, icon: ShieldAlert, color: 'text-amber-500' },
-            { label: 'Resolved', value: stats.resolved, icon: CheckCircle, color: 'text-emerald-500' },
-            { label: 'Funds Frozen', value: stats.frozen, icon: Snowflake, color: 'text-sky-400' },
-          ].map((stat) => (
-            <Card key={stat.label} className="bg-card border-border">
-              <CardContent className="pt-4 pb-3 px-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
-                  <stat.icon className={cn('h-4 w-4', stat.color)} />
-                </div>
-                <p className={cn('text-2xl font-bold mt-1', stat.color)}>{stat.value}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
         {/* Table */}
         <Card>

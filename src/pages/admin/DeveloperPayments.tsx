@@ -309,7 +309,6 @@ export default function DeveloperPayments() {
                 </DialogContent>
               </Dialog>
             )}
-          </div>
  
          {!isInsideHub && (
            <div className="flex gap-3">
