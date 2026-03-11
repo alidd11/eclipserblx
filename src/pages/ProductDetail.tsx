@@ -85,12 +85,12 @@ export default function ProductDetail() {
   }, [queryClient, productNumber]);
 
   const { data: product, isLoading } = useQuery({
-    queryKey: ['product', slug, isStaff],
+    queryKey: ['product', productNumber, isStaff],
     queryFn: async () => {
       let query = supabase
         .from('products')
         .select(`*, categories(name, slug), stores(${STORE_LISTING_COLUMNS})`)
-        .eq('slug', slug);
+        .eq('product_number' as any, Number(productNumber));
 
       // Customers should only see active + released products.
       // Staff can preview scheduled and inactive products.
@@ -104,7 +104,7 @@ export default function ProductDetail() {
       if (error) throw error;
       return data;
     },
-    enabled: !adminLoading && slug !== undefined,
+    enabled: !adminLoading && productNumber !== undefined,
     staleTime: 0, // Always refetch when isStaff changes
   });
 
