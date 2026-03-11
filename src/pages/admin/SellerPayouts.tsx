@@ -218,8 +218,8 @@ export default function SellerPayouts() {
         </div>
 
         {!isInsideHub && (
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-2">
-            <Card>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-2 md:overflow-visible">
+            <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
               <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
                 <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
                   Pending Payouts
