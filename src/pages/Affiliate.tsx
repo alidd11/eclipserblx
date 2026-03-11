@@ -260,10 +260,7 @@ export default function Affiliate() {
       return data;
     },
     onSuccess: (data) => {
-      toast({
-        title: data.method === 'stripe' ? "Payout Complete!" : "Payout Requested",
-        description: data.message,
-      });
+      toast.success(data.method === 'stripe' ? "Payout Complete!" : "Payout Requested", { description: data.message });
       setPayoutAmount('');
       queryClient.invalidateQueries({ queryKey: ['affiliate-payouts', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['affiliate-balance', user?.id] });
