@@ -104,7 +104,7 @@ export default function NotificationPreferences() {
     if (isSubscribed) {
       const success = await unsubscribe();
       if (success) {
-        toast({ title: 'Push Disabled', description: 'You will no longer receive push notifications.' });
+        toast.success('Push Disabled', { description: 'You will no longer receive push notifications.' });
       }
     } else {
       const result = await subscribe();
