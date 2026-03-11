@@ -158,7 +158,7 @@ export default function AdminReferrals() {
             </CardContent>
           </Card>
           
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
             <CardContent className="p-3 md:pt-6 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="p-1.5 md:p-2 rounded-lg bg-green-500/10">
