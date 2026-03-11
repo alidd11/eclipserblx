@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, differenceInDays } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 interface RecruiterCommission {
