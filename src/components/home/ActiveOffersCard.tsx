@@ -346,4 +346,4 @@ export const ActiveOffersCard = forwardRef<HTMLDivElement>(function ActiveOffers
         </div>
       </Wrapper>
     );
-}
+});
