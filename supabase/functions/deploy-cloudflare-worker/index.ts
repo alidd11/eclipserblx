@@ -409,6 +409,13 @@ Deno.serve(async (req) => {
       sbfm = { success: !!d.success };
     } catch { /* ignore */ }
 
+    // Check page rules that might override workers
+    const pageRulesData = await cfApi(
+      `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/pagerules`,
+      cfToken
+    );
+    const pageRules = Array.isArray(pageRulesData.result) ? pageRulesData.result : [];
+
     // DNS proxy check
     const dnsData = await cfApi(
       `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records`,
