@@ -196,10 +196,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
           toast.error(t('common.error'), { description: errorMessage });
         }
       } else {
-        toast({
-          title: t('auth.passwordUpdated'),
-          description: t('auth.passwordResetSuccess') + ' ' + t('auth.pleaseSignIn'),
-        });
+        toast.success(t('auth.passwordUpdated'), { description: t('auth.passwordResetSuccess') + ' ' + t('auth.pleaseSignIn') });
         setMode('login');
         setOtpCode('');
         setPassword('');
