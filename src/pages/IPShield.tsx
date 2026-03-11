@@ -554,7 +554,7 @@ This notice is sent under the Digital Millennium Copyright Act (DMCA), 17 U.S.C.
           body: { takedown_id: data.id },
         });
         if (dmcaError) {
-          toast({ title: 'Case created but DMCA sending failed', description: 'Our team will follow up manually.', variant: 'destructive' });
+          toast.error('Case created but DMCA sending failed', { description: 'Our team will follow up manually.' });
         } else {
           toast({ title: 'DMCA filed on your behalf!', description: `Case ${data.case_number} — notice sent for review and forwarding.` });
         }
