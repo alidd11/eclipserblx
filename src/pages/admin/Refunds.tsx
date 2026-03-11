@@ -42,6 +42,7 @@ import {
   TrendingDown,
   ExternalLink,
 } from "lucide-react";
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 interface RefundedOrder {
   id: string;
