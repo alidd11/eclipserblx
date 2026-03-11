@@ -505,7 +505,7 @@ This notice is sent under the Digital Millennium Copyright Act (DMCA), 17 U.S.C.
     navigator.clipboard.writeText(dmcaTemplate);
     setTemplateCopied(true);
     setTimeout(() => setTemplateCopied(false), 2000);
-    toast({ title: 'DMCA template copied to clipboard' });
+    toast.success('DMCA template copied to clipboard');
   };
 
   const handleSubmit = async () => {
