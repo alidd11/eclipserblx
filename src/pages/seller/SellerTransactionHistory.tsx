@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 export default function SellerTransactionHistory() {
+  const isInsideHub = useIsInsideHub();
   const { store } = useSellerStatus();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
