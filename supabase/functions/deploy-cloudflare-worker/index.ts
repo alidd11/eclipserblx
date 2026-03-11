@@ -196,10 +196,10 @@ function buildWorkerScript(): string {
   lines.push(
     "var isBot=BP.some(function(b){return ua.toLowerCase().includes(b.toLowerCase());});"
   );
-  lines.push("if(!isBot){var r=await fetch(request);return new Response(r.body,{status:r.status,headers:new Headers(r.headers)});}");
+  lines.push("if(!isBot){return pt(request,'pass-subdomain-human');}");
   lines.push("var sub=h.replace('.eclipserblx.com','');");
   lines.push(
-    'var html=await sOg(sub);if(html)return oR(html,"og-subdomain");var r=await fetch(request);return new Response(r.body,{status:r.status,headers:new Headers(r.headers)});}'
+    'var html=await sOg(sub);if(html)return oR(html,"og-subdomain");return pt(request,"pass-subdomain-miss");}'
   );
 
   // Main domain handler
@@ -207,14 +207,14 @@ function buildWorkerScript(): string {
     'var isDyn=/^\\/(products|store)\\/[^\\/?#]+/.test(path);'
   );
   lines.push("var isStat=SP.hasOwnProperty(path);");
-  lines.push("if(!isDyn&&!isStat){var r=await fetch(request);return new Response(r.body,{status:r.status,headers:new Headers(r.headers)});}");
+  lines.push("if(!isDyn&&!isStat){return pt(request,'pass-no-match');}");
   lines.push(
-    "if(NB.some(function(p){return ua.toLowerCase().includes(p.toLowerCase());})){var r=await fetch(request);return new Response(r.body,{status:r.status,headers:new Headers(r.headers)});}"
+    "if(NB.some(function(p){return ua.toLowerCase().includes(p.toLowerCase());})){return pt(request,'pass-testing-tool');}"
   );
   lines.push(
     "var isBot=BP.some(function(b){return ua.toLowerCase().includes(b.toLowerCase());});"
   );
-  lines.push("if(!isBot){var r=await fetch(request);return new Response(r.body,{status:r.status,headers:new Headers(r.headers)});}");
+  lines.push("if(!isBot){return pt(request,'pass-human');}");
   lines.push(
     'if(isStat){var sp=SP[path];return oR(oh(sp[0],sp[1],DI,SU_URL+path),"og-static");}'
   );
@@ -230,9 +230,9 @@ function buildWorkerScript(): string {
   lines.push(
     'if(sm){var html=await sOg(sm[1]);if(html)return oR(html,"og-store");}'
   );
-  lines.push("var r=await fetch(request);return new Response(r.body,{status:r.status,headers:new Headers(r.headers)});");
+  lines.push("return pt(request,'pass-fallback');");
   lines.push(
-    '}catch(err){return new Response("Worker error: "+err.message,{status:500});}}};'
+    '}catch(err){return new Response("Worker error: "+err.message,{status:500,headers:{"X-Eclipse-Worker":"error"}});}}};'
   );
 
   return lines.join("\n");
