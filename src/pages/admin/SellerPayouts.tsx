@@ -358,7 +358,7 @@ export default function SellerPayouts() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">PayPal Email:</span>
                     <span className="font-medium">
-                      {selectedPayout?.stores?.paypal_email || "Not set"}
+                      {selectedPayout?.stores?.store_payment_details?.[0]?.paypal_email || selectedPayout?.stores?.store_payment_details?.paypal_email || "Not set"}
                     </span>
                   </div>
                 )}
