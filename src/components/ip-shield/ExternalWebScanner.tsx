@@ -87,11 +87,7 @@ export function ExternalWebScanner() {
       toast.success('Scan Complete', { description: `Found ${data.detections_found} results across external websites.` });
     },
     onError: (error: any) => {
-      toast({
-        title: 'Scan Failed',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error('Scan Failed', { description: error.message });
     },
   });
 
