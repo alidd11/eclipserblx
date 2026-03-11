@@ -201,6 +201,7 @@ Deno.serve(async (req) => {
         let effectiveMethod = payoutMethod || 'stripe';
         const storePayment = storeId ? paymentDetailsMap.get(storeId) : null;
         let fallbackUsed = false;
+        logStep('Payment method resolution', { payoutId, storeId, effectiveMethod, hasStorePayment: !!storePayment, paypalEmail: storePayment?.paypal_email, mapKeys: Array.from(paymentDetailsMap.keys()) });
 
         if (effectiveMethod === 'stripe' && !storePayment?.stripe_account_id) {
           // Stripe selected but no Connect account — try PayPal fallback
