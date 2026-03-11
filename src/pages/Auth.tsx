@@ -337,11 +337,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
         const { error } = await signIn(email, password);
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
-            toast({
-              title: t('auth.loginFailed'),
-              description: t('auth.invalidCredentials'),
-              variant: 'destructive',
-            });
+            toast.error(t('auth.loginFailed'), { description: t('auth.invalidCredentials') });
           } else {
             toast({
               title: t('auth.loginFailed'),
