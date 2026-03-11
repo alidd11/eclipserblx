@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { Search, Download, ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 export default function SellerTransactionHistory() {
   const { store } = useSellerStatus();
