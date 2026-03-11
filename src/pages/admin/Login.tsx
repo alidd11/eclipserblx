@@ -8,7 +8,7 @@ import { useAdminManifest } from '@/hooks/useAdminManifest';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Loader2, Shield, Eye, EyeOff, Fingerprint, Smartphone } from 'lucide-react';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,7 +31,6 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
   const { signIn, user } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const {
     isSupported,
@@ -72,11 +71,7 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
   const handleBiometricLogin = async () => {
     const storedUserId = getStoredUserId();
     if (!storedUserId) {
-      toast({
-        title: 'No biometric enrolled',
-        description: 'Please log in with password first.',
-        variant: 'destructive',
-      });
+      toast.error('No biometric enrolled', { description: 'Please log in with password first.' });
       return;
     }
 
@@ -87,19 +82,11 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
       if (session) {
         navigate('/admin');
       } else {
-        toast({
-          title: 'Session expired',
-          description: 'Please log in with your password.',
-          variant: 'destructive',
-        });
+        toast.error('Session expired', { description: 'Please log in with your password.' });
       }
     } else {
       if (result.error !== 'Authentication cancelled') {
-        toast({
-          title: 'Biometric failed',
-          description: result.error,
-          variant: 'destructive',
-        });
+        toast.error('Biometric failed', { description: result.error });
       }
     }
   };
@@ -109,16 +96,9 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
 
     const result = await enrollBiometric(pendingUserId, pendingEmail);
     if (result.success) {
-      toast({
-        title: 'Biometric enrolled!',
-        description: 'You can now use Face ID/Touch ID to log in.',
-      });
+      toast.success('Biometric enrolled!', { description: 'You can now use Face ID/Touch ID to log in.' });
     } else {
-      toast({
-        title: 'Enrollment failed',
-        description: result.error,
-        variant: 'destructive',
-      });
+      toast.error('Enrollment failed', { description: result.error });
     }
     setShowEnrollPrompt(false);
     navigate('/admin');
@@ -150,17 +130,9 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
       const { error } = await signIn(email, password);
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
-          toast({
-            title: 'Login Failed',
-            description: 'Invalid email or password. Please try again.',
-            variant: 'destructive',
-          });
+          toast.error('Login Failed', { description: 'Invalid email or password. Please try again.' });
         } else {
-          toast({
-            title: 'Login Failed',
-            description: error.message,
-            variant: 'destructive',
-          });
+          toast.error('Login Failed', { description: error.message });
         }
       } else {
         // Wait for roles to be fetched then redirect

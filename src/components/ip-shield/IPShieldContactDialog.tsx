@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Send, Loader2 } from 'lucide-react';
 
 interface IPShieldContactDialogProps {
@@ -26,7 +26,7 @@ export function IPShieldContactDialog({ open, onOpenChange }: IPShieldContactDia
 
   const handleSubmit = async () => {
     if (!form.name || !form.email || !form.subject || !form.message) {
-      toast({ title: 'Please fill in all fields', variant: 'destructive' });
+      toast.error('Please fill in all fields');
       return;
     }
     setSubmitting(true);
@@ -35,11 +35,11 @@ export function IPShieldContactDialog({ open, onOpenChange }: IPShieldContactDia
         body: form,
       });
       if (error) throw error;
-      toast({ title: 'Message sent!', description: 'Our IP Shield team will get back to you soon.' });
+      toast.success('Message sent!', { description: 'Our IP Shield team will get back to you soon.' });
       onOpenChange(false);
       setForm({ name: '', email: user?.email || '', subject: 'Custom IP Shield Plan', message: '' });
     } catch (err: any) {
-      toast({ title: 'Failed to send', description: err.message, variant: 'destructive' });
+      toast.error('Failed to send', { description: err.message });
     } finally {
       setSubmitting(false);
     }

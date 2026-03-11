@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
 export default function AuthRobloxCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -19,22 +18,14 @@ export default function AuthRobloxCallback() {
       if (errorParam) {
         console.error('Roblox OAuth error:', errorParam, errorDescription);
         setError(errorDescription || 'Roblox authentication was cancelled');
-        toast({
-          title: 'Authentication Failed',
-          description: errorDescription || 'Roblox authentication was cancelled',
-          variant: 'destructive',
-        });
+        toast.error('Authentication Failed', { description: errorDescription || 'Roblox authentication was cancelled' });
         setTimeout(() => navigate('/auth'), 3000);
         return;
       }
 
       if (!code) {
         setError('No authorization code received');
-        toast({
-          title: 'Authentication Failed',
-          description: 'No authorization code received from Roblox',
-          variant: 'destructive',
-        });
+        toast.error('Authentication Failed', { description: 'No authorization code received from Roblox' });
         setTimeout(() => navigate('/auth'), 3000);
         return;
       }
@@ -75,10 +66,7 @@ export default function AuthRobloxCallback() {
           if (invokeError) throw invokeError;
           if (data?.error) throw new Error(data.error);
 
-          toast({
-            title: 'Roblox Linked!',
-            description: `Connected as ${data.roblox_username}`,
-          });
+          toast.success('Roblox Linked!', { description: `Connected as ${data.roblox_username}` });
           navigate('/account');
           return;
         } catch (err) {
@@ -101,11 +89,7 @@ export default function AuthRobloxCallback() {
         if (fnError || data?.error) {
           console.error('Roblox auth error:', fnError || data?.error);
           setError(data?.error || 'Failed to authenticate with Roblox');
-          toast({
-            title: 'Authentication Failed',
-            description: data?.error || 'Failed to authenticate with Roblox',
-            variant: 'destructive',
-          });
+          toast.error('Authentication Failed', { description: data?.error || 'Failed to authenticate with Roblox' });
           setTimeout(() => navigate('/auth'), 3000);
           return;
         }
@@ -119,17 +103,12 @@ export default function AuthRobloxCallback() {
           if (sessionError) {
             console.error('Failed to set session:', sessionError);
             setError('Failed to complete sign-in');
-            toast({
-              title: 'Authentication Failed',
-              description: 'Failed to complete sign-in',
-              variant: 'destructive',
-            });
+            toast.error('Authentication Failed', { description: 'Failed to complete sign-in' });
             setTimeout(() => navigate('/auth'), 3000);
             return;
           }
 
-          toast({
-            title: data.isNewUser ? 'Account Created!' : 'Welcome Back!',
+          toast.success(data.isNewUser ? 'Account Created!' : 'Welcome Back!', {
             description: data.isNewUser
               ? 'Your account has been created successfully.'
               : 'You have been signed in successfully.',
@@ -167,27 +146,19 @@ export default function AuthRobloxCallback() {
           }
         } else {
           setError('No session received');
-          toast({
-            title: 'Authentication Failed',
-            description: 'No session received from server',
-            variant: 'destructive',
-          });
+          toast.error('Authentication Failed', { description: 'No session received from server' });
           setTimeout(() => navigate('/auth'), 3000);
         }
       } catch (err) {
         console.error('Roblox callback error:', err);
         setError('An unexpected error occurred');
-        toast({
-          title: 'Authentication Failed',
-          description: 'An unexpected error occurred',
-          variant: 'destructive',
-        });
+        toast.error('Authentication Failed', { description: 'An unexpected error occurred' });
         setTimeout(() => navigate('/auth'), 3000);
       }
     };
 
     handleCallback();
-  }, [searchParams, navigate, toast]);
+  }, [searchParams, navigate]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
