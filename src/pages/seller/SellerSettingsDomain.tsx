@@ -413,14 +413,16 @@ export default function SellerSettingsDomain() {
 
   if (!store) {
     return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="py-8 text-center">
-            <Globe className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">You need an approved store to use custom domains.</p>
-          </CardContent>
-        </Card>
-      </div>
+      <SellerLayout>
+        <div className="p-6">
+          <Card>
+            <CardContent className="py-8 text-center">
+              <Globe className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">You need an approved store to use custom domains.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </SellerLayout>
     );
   }
 
