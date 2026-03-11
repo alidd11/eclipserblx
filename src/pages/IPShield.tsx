@@ -890,7 +890,7 @@ export default function IPShield() {
       return data;
     },
     onSuccess: async (data) => {
-      toast({ title: 'Work registered', description: 'Running initial copy scan...' });
+      toast.success('Work registered', { description: 'Running initial copy scan...' });
       setShowAddWork(false);
       setRegistryForm({ title: '', description: '', work_type: '', proof_urls: '', roblox_asset_ids: '', roblox_universe_ids: '', search_keywords: '' });
       queryClient.invalidateQueries({ queryKey: ['ip-registry'] });
