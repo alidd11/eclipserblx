@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Radar, Search, Loader2, ExternalLink, Gavel, Users,
@@ -99,15 +99,12 @@ export default function IPShieldDetections() {
       
       const { data, error } = await supabase.functions.invoke('scan-roblox-copies', { body });
       if (error) throw error;
-      toast({ 
-        title: 'Scan complete', 
-        description: `Found ${data?.total_detected || 0} potential copies. ${data?.thumbnails_analyzed || 0} thumbnails analysed. ${data?.evidence_collected || 0} evidence collected.` 
-      });
+      toast.success('Scan complete', { description: `Found ${data?.total_detected || 0} potential copies. ${data?.thumbnails_analyzed || 0} thumbnails analysed. ${data?.evidence_collected || 0} evidence collected.` });
       queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
       queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
       queryClient.invalidateQueries({ queryKey: ['last-scan-run'] });
     } catch (err: any) {
-      toast({ title: 'Scan failed', description: err.message, variant: 'destructive' });
+      toast.error('Scan failed', { description: err.message });
     } finally {
       setScanning(false);
     }
@@ -116,7 +113,7 @@ export default function IPShieldDetections() {
   const runCustomScan = () => {
     const terms = customKeywords.split(',').map(s => s.trim()).filter(Boolean);
     if (terms.length === 0) {
-      toast({ title: 'Enter keywords', description: 'Add comma-separated keywords to search for.', variant: 'destructive' });
+      toast.error('Enter keywords', { description: 'Add comma-separated keywords to search for.' });
       return;
     }
     runScan({ 
@@ -183,7 +180,7 @@ export default function IPShieldDetections() {
         filed++;
       }
     }
-    toast({ title: `${filed} takedowns filed`, description: 'DMCA notices queued for review and sending.' });
+    toast.success(`${filed} takedowns filed`, { description: 'DMCA notices queued for review and sending.' });
     setSelectedIds(new Set());
     setBulkMode(false);
     queryClient.invalidateQueries({ queryKey: ['copy-detections'] });

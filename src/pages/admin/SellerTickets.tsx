@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 
@@ -77,7 +77,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export default function SellerTickets() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
@@ -218,7 +218,7 @@ export default function SellerTickets() {
       setAttachmentFile(null);
     },
     onError: (error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 
@@ -242,10 +242,10 @@ export default function SellerTickets() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-seller-tickets'] });
-      toast({ title: 'Status Updated' });
+      toast.success('Status Updated');
     },
     onError: (error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 
@@ -268,13 +268,13 @@ export default function SellerTickets() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-seller-tickets'] });
-      toast({ title: 'Ticket Resolved' });
+      toast.success('Ticket Resolved');
       setShowResolveDialog(false);
       setResolutionNotes('');
       setSelectedTicket(null);
     },
     onError: (error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 
@@ -307,13 +307,10 @@ export default function SellerTickets() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ 
-        title: 'Link Change Applied', 
-        description: 'Username(s) updated. User will need to re-verify the account(s).' 
-      });
+      toast.success('Link Change Applied', { description: 'Username(s) updated. User will need to re-verify the account(s).' });
     },
     onError: (error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 
@@ -643,7 +640,7 @@ export default function SellerTickets() {
                           const file = e.target.files?.[0];
                           if (file) {
                             if (file.size > 10 * 1024 * 1024) {
-                              toast({ title: 'File too large', description: 'Max 10MB', variant: 'destructive' });
+                              toast.error('File too large', { description: 'Max 10MB' });
                               return;
                             }
                             setAttachmentFile(file);

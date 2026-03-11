@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, GripVertical, Car, Code, Box, Layout, Percent, Bot, Gamepad2, Palette, Zap, Shield, Wrench, Sparkles, Package, FileCode, Layers, ChevronDown } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -233,7 +233,7 @@ function SortableMobileCard({
 }
 
 export default function AdminCategories() {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -329,17 +329,10 @@ export default function AdminCategories() {
       setDialogOpen(false);
       setEditingCategory(null);
       setForm(emptyForm);
-      toast({
-        title: editingCategory ? 'Category updated' : 'Category created',
-        description: `"${form.name}" has been saved.`,
-      });
+      toast.success(editingCategory ? 'Category updated' : 'Category created', { description: `"${form.name}" has been saved.` });
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: error.message });
     },
   });
 
@@ -356,17 +349,10 @@ export default function AdminCategories() {
       queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
       setDeleteDialogOpen(false);
       setDeletingCategory(null);
-      toast({
-        title: 'Category deleted',
-        description: 'The category has been removed.',
-      });
+      toast.success('Category deleted', { description: 'The category has been removed.' });
     },
     onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete category.',
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: 'Failed to delete category.' });
     },
   });
 
@@ -385,11 +371,7 @@ export default function AdminCategories() {
       queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
     },
     onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Failed to reorder categories.',
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: 'Failed to reorder categories.' });
     },
   });
 
@@ -438,23 +420,19 @@ export default function AdminCategories() {
 
   const handleSave = () => {
     if (!form.name.trim() || !form.slug.trim()) {
-      toast({
-        title: 'Validation error',
-        description: 'Name and slug are required.',
-        variant: 'destructive',
-      });
+      toast.error('Validation error', { description: 'Name and slug are required.' });
       return;
     }
     if (form.name.length > 100) {
-      toast({ title: 'Validation error', description: 'Category name must be under 100 characters.', variant: 'destructive' });
+      toast.error('Validation error', { description: 'Category name must be under 100 characters.' });
       return;
     }
     if (form.slug.length > 100) {
-      toast({ title: 'Validation error', description: 'Slug must be under 100 characters.', variant: 'destructive' });
+      toast.error('Validation error', { description: 'Slug must be under 100 characters.' });
       return;
     }
     if (form.description.length > 500) {
-      toast({ title: 'Validation error', description: 'Description must be under 500 characters.', variant: 'destructive' });
+      toast.error('Validation error', { description: 'Description must be under 500 characters.' });
       return;
     }
     saveMutation.mutate({ form, id: editingCategory?.id });

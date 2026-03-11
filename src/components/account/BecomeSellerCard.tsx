@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useSellerVerification, VerificationResults } from '@/hooks/useSellerVerification';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 
@@ -42,7 +42,7 @@ const INITIAL_SELLER_FORM = {
 export function BecomeSellerCard() {
   const { user } = useAuth();
   const { store, application, hasPendingApplication, applicationRejected, isSeller, loading } = useSellerStatus();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -121,20 +121,13 @@ export function BecomeSellerCard() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: 'Application Submitted!',
-        description: 'We\'ll review your application and get back to you soon.',
-      });
+      toast.success('Application Submitted!', { description: "We'll review your application and get back to you soon." });
       queryClient.invalidateQueries({ queryKey: ['seller-application'] });
       setDialogOpen(false);
       resetForm();
     },
     onError: (error) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to submit application',
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: error.message || 'Failed to submit application' });
     },
   });
 

@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   Globe, Search, Loader2, ExternalLink, Shield, AlertTriangle,
   Send, FileWarning, Link2, Server, Mail, CheckCircle2, Clock, Eye
@@ -84,17 +84,10 @@ export function ExternalWebScanner() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['external-detections'] });
-      toast({
-        title: 'Scan Complete',
-        description: `Found ${data.detections_found} results across external websites.`,
-      });
+      toast.success('Scan Complete', { description: `Found ${data.detections_found} results across external websites.` });
     },
     onError: (error: any) => {
-      toast({
-        title: 'Scan Failed',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error('Scan Failed', { description: error.message });
     },
   });
 
@@ -115,7 +108,7 @@ export function ExternalWebScanner() {
       if (error) throw error;
       setWhoisData(data);
     } catch (err: any) {
-      toast({ title: 'Lookup Failed', description: err.message, variant: 'destructive' });
+      toast.error('Lookup Failed', { description: err.message });
     } finally {
       setLookingUp(false);
     }
@@ -146,13 +139,10 @@ export function ExternalWebScanner() {
       queryClient.invalidateQueries({ queryKey: ['abuse-complaints'] });
       setComplaintDialogOpen(false);
       setComplaintForm({ original_work_title: '', original_work_description: '' });
-      toast({
-        title: 'Complaint Filed!',
-        description: `DMCA complaint sent to our legal team for forwarding to ${data.registrar || 'the registrar'}.`,
-      });
+      toast.success('Complaint Filed!', { description: `DMCA complaint sent to our legal team for forwarding to ${data.registrar || 'the registrar'}.` });
     },
     onError: (error: any) => {
-      toast({ title: 'Failed to File', description: error.message, variant: 'destructive' });
+      toast.error('Failed to File', { description: error.message });
     },
   });
 

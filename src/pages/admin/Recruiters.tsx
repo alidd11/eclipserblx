@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
+
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
@@ -39,7 +39,7 @@ interface RecruiterStats {
 
 export default function Recruiters() {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('approved');

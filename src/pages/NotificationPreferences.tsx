@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useBackgroundPush } from '@/hooks/useBackgroundPush';
@@ -16,7 +16,7 @@ import { sendPushNotification } from '@/lib/pushNotifications';
 
 export default function NotificationPreferences() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const { isSubscribed, subscribe, unsubscribe, isLoading: pushLoading, isSupported: pushSupported } = useBackgroundPush();
 
@@ -84,17 +84,10 @@ export default function NotificationPreferences() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['email-subscription', user?.id] });
-      toast({
-        title: 'Preferences Saved',
-        description: 'Your notification preferences have been updated.',
-      });
+      toast.success('Preferences Saved', { description: 'Your notification preferences have been updated.' });
     },
     onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Failed to update preferences. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: 'Failed to update preferences. Please try again.' });
     },
   });
 
@@ -111,14 +104,14 @@ export default function NotificationPreferences() {
     if (isSubscribed) {
       const success = await unsubscribe();
       if (success) {
-        toast({ title: 'Push Disabled', description: 'You will no longer receive push notifications.' });
+        toast.success('Push Disabled', { description: 'You will no longer receive push notifications.' });
       }
     } else {
       const result = await subscribe();
       if (result.success) {
-        toast({ title: 'Push Enabled', description: 'You will now receive push notifications.' });
+        toast.success('Push Enabled', { description: 'You will now receive push notifications.' });
       } else if (result.error) {
-        toast({ title: 'Error', description: result.error, variant: 'destructive' });
+        toast.error('Error', { description: result.error });
       }
     }
   };
@@ -149,23 +142,12 @@ export default function NotificationPreferences() {
       });
       
       if (result.success) {
-        toast({
-          title: 'Test Sent',
-          description: 'Check your device for the notification.',
-        });
+        toast.success('Test Sent', { description: 'Check your device for the notification.' });
       } else {
-        toast({
-          title: 'Test Failed',
-          description: result.error || 'Could not send test notification.',
-          variant: 'destructive',
-        });
+        toast.error('Test Failed', { description: result.error || 'Could not send test notification.' });
       }
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to send test notification.',
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: 'Failed to send test notification.' });
     } finally {
       setTestingPush(false);
     }

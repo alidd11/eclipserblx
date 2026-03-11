@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, differenceInDays } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 interface RecruiterCommission {
@@ -46,7 +46,7 @@ interface RecruiterCommission {
 }
 
 export default function RecruiterCommissions() {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('pending');
   const [searchQuery, setSearchQuery] = useState('');
@@ -92,12 +92,12 @@ export default function RecruiterCommissions() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Commission marked as qualified' });
+      toast.success('Commission marked as qualified');
       queryClient.invalidateQueries({ queryKey: ['recruiter-commissions-admin'] });
       queryClient.invalidateQueries({ queryKey: ['recruiter-stats'] });
     },
     onError: (error: Error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 

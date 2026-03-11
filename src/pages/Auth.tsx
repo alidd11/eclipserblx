@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, ArrowLeft, CheckCircle, Eye, EyeOff, Mail, Check, X } from 'lucide-react';
 import { z } from 'zod';
@@ -50,7 +50,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
 
   // Check for password reset flow (when user clicks reset link from email)
   // Also check for referral code and track clicks
@@ -141,17 +141,10 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       });
 
       if (response.error) {
-        toast({
-          title: t('common.error'),
-          description: 'Failed to send reset email. Please try again.',
-          variant: 'destructive',
-        });
+        toast.error(t('common.error'), { description: 'Failed to send reset email. Please try again.' });
       } else {
         setMode('reset-verify');
-        toast({
-          title: t('auth.checkYourEmail'),
-          description: 'We sent you a 4-digit verification code.',
-        });
+        toast.success(t('auth.checkYourEmail'), { description: 'We sent you a 4-digit verification code.' });
       }
     } finally {
       setLoading(false);
@@ -200,17 +193,10 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
         } else if (errorMessage.includes('Invalid')) {
           setErrors({ otp: 'Invalid code. Please check and try again.' });
         } else {
-          toast({
-            title: t('common.error'),
-            description: errorMessage,
-            variant: 'destructive',
-          });
+          toast.error(t('common.error'), { description: errorMessage });
         }
       } else {
-        toast({
-          title: t('auth.passwordUpdated'),
-          description: t('auth.passwordResetSuccess') + ' ' + t('auth.pleaseSignIn'),
-        });
+        toast.success(t('auth.passwordUpdated'), { description: t('auth.passwordResetSuccess') + ' ' + t('auth.pleaseSignIn') });
         setMode('login');
         setOtpCode('');
         setPassword('');
@@ -229,16 +215,9 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       });
 
       if (response.error) {
-        toast({
-          title: t('common.error'),
-          description: 'Failed to resend code. Please try again.',
-          variant: 'destructive',
-        });
+        toast.error(t('common.error'), { description: 'Failed to resend code. Please try again.' });
       } else {
-        toast({
-          title: t('auth.codeSent'),
-          description: t('auth.newCodeSent'),
-        });
+        toast.success(t('auth.codeSent'), { description: t('auth.newCodeSent') });
         setOtpCode('');
       }
     } finally {
@@ -266,16 +245,9 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       const { error } = await supabase.auth.updateUser({ password });
 
       if (error) {
-        toast({
-          title: t('common.error'),
-          description: error.message,
-          variant: 'destructive',
-        });
+        toast.error(t('common.error'), { description: error.message });
       } else {
-        toast({
-          title: t('auth.passwordUpdated'),
-          description: t('auth.passwordResetSuccess'),
-        });
+        toast.success(t('auth.passwordUpdated'), { description: t('auth.passwordResetSuccess') });
         navigate('/');
       }
     } finally {
@@ -353,11 +325,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
           if (!vpnError && vpnData?.isVpn) {
             setLoading(false);
             setErrors({ vpn: t('auth.vpnDetected') });
-            toast({
-              title: 'VPN Detected',
-              description: t('auth.vpnDetected'),
-              variant: 'destructive',
-            });
+            toast.error('VPN Detected', { description: t('auth.vpnDetected') });
             return;
           }
         } catch (vpnCheckError) {
@@ -369,17 +337,9 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
         const { error } = await signIn(email, password);
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
-            toast({
-              title: t('auth.loginFailed'),
-              description: t('auth.invalidCredentials'),
-              variant: 'destructive',
-            });
+            toast.error(t('auth.loginFailed'), { description: t('auth.invalidCredentials') });
           } else {
-            toast({
-              title: t('auth.loginFailed'),
-              description: error.message,
-              variant: 'destructive',
-            });
+            toast.error(t('auth.loginFailed'), { description: error.message });
           }
         } else {
           navigate('/');
@@ -388,26 +348,15 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
         const { error } = await signUp(email, password, displayName || undefined);
         if (error) {
           if (error.message.includes('already registered')) {
-            toast({
-              title: t('auth.accountExists'),
-              description: t('auth.accountExistsDesc'),
-              variant: 'destructive',
-            });
+            toast.error(t('auth.accountExists'), { description: t('auth.accountExistsDesc') });
           } else {
-            toast({
-              title: t('auth.signUpFailed'),
-              description: error.message,
-              variant: 'destructive',
-            });
+            toast.error(t('auth.signUpFailed'), { description: error.message });
           }
         } else {
           if (subscribeToEmails) {
             sessionStorage.setItem('pendingEmailSubscription', 'true');
           }
-          toast({
-            title: t('auth.checkYourEmail'),
-            description: 'We sent you a 6-digit verification code.',
-          });
+          toast.success(t('auth.checkYourEmail'), { description: 'We sent you a 6-digit verification code.' });
           setMode('verify');
         }
       }
@@ -440,11 +389,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
         } else if (error.message.includes('invalid')) {
           setErrors({ otp: 'Invalid code. Please check and try again.' });
         } else {
-          toast({
-            title: 'Verification Failed',
-            description: error.message,
-            variant: 'destructive',
-          });
+          toast.error('Verification Failed', { description: error.message });
         }
       } else {
         const pendingRefCode = sessionStorage.getItem('pendingReferralCode');
@@ -473,10 +418,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
           }
         }
         
-        toast({
-          title: t('auth.emailVerified'),
-          description: t('auth.accountVerified'),
-        });
+        toast.success(t('auth.emailVerified'), { description: t('auth.accountVerified') });
         navigate('/');
       }
     } finally {
@@ -493,16 +435,9 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       });
 
       if (error) {
-        toast({
-          title: t('common.error'),
-          description: error.message,
-          variant: 'destructive',
-        });
+        toast.error(t('common.error'), { description: error.message });
       } else {
-        toast({
-          title: t('auth.codeSent'),
-          description: t('auth.newCodeSent'),
-        });
+        toast.success(t('auth.codeSent'), { description: t('auth.newCodeSent') });
         setOtpCode('');
       }
     } finally {
@@ -557,11 +492,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      toast({
-        title: `${providerLabel} Sign-In Failed`,
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error(`${providerLabel} Sign-In Failed`, { description: errorMessage });
       setErrors({ social: errorMessage });
     } finally {
       setSocialLoading(false);
@@ -591,11 +522,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       });
       
       if (error || data?.error) {
-        toast({
-          title: 'Discord Sign-In Failed',
-          description: data?.error || 'Failed to initiate Discord sign-in',
-          variant: 'destructive',
-        });
+        toast.error('Discord Sign-In Failed', { description: data?.error || 'Failed to initiate Discord sign-in' });
         setErrors({ social: data?.error || 'Discord sign-in failed' });
         setSocialLoading(false);
         return;
@@ -604,11 +531,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       window.location.href = data.url;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
-      toast({
-        title: 'Discord Sign-In Failed',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error('Discord Sign-In Failed', { description: errorMessage });
       setErrors({ social: errorMessage });
       setSocialLoading(false);
     }
@@ -628,11 +551,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       });
       
       if (error || data?.error) {
-        toast({
-          title: 'Roblox Sign-In Failed',
-          description: data?.error || 'Failed to initiate Roblox sign-in',
-          variant: 'destructive',
-        });
+        toast.error('Roblox Sign-In Failed', { description: data?.error || 'Failed to initiate Roblox sign-in' });
         setErrors({ social: data?.error || 'Roblox sign-in failed' });
         setSocialLoading(false);
         return;
@@ -645,11 +564,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       window.location.href = data.url;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
-      toast({
-        title: 'Roblox Sign-In Failed',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error('Roblox Sign-In Failed', { description: errorMessage });
       setErrors({ social: errorMessage });
       setSocialLoading(false);
     }

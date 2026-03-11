@@ -25,13 +25,13 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 import { format } from 'date-fns';
 
 export function AffiliateCard() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const { settings } = useAffiliateSettings();
   const [payoutAmount, setPayoutAmount] = useState('');
@@ -183,19 +183,12 @@ export function AffiliateCard() {
       }
     },
     onSuccess: () => {
-      toast({
-        title: "Welcome to the Affiliate Program!",
-        description: "Your account is now active. Start earning by sharing your referral link!",
-      });
+      toast.success("Welcome to the Affiliate Program!", { description: "Your account is now active. Start earning by sharing your referral link!" });
       queryClient.invalidateQueries({ queryKey: ['affiliate-application', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['affiliate-balance', user?.id] });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
     },
   });
 
@@ -210,11 +203,7 @@ export function AffiliateCard() {
       window.location.href = data.url;
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
       setIsConnectingStripe(false);
     },
   });
@@ -233,31 +222,20 @@ export function AffiliateCard() {
       return data;
     },
     onSuccess: (data) => {
-      toast({
-        title: data.method === 'stripe' ? "Payout Complete!" : "Payout Requested",
-        description: data.message,
-      });
+      toast.success(data.method === 'stripe' ? "Payout Complete!" : "Payout Requested", { description: data.message });
       setPayoutAmount('');
       queryClient.invalidateQueries({ queryKey: ['affiliate-payouts', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['affiliate-balance', user?.id] });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
     },
   });
 
   const handleRequestPayout = () => {
     const amount = parseFloat(payoutAmount);
     if (isNaN(amount) || amount < MINIMUM_PAYOUT) {
-      toast({
-        title: "Invalid Amount",
-        description: `Minimum payout is £${MINIMUM_PAYOUT}`,
-        variant: "destructive",
-      });
+      toast.error("Invalid Amount", { description: `Minimum payout is £${MINIMUM_PAYOUT}` });
       return;
     }
     requestPayoutMutation.mutate(amount);
@@ -547,7 +525,7 @@ export function AffiliateCard() {
                 size="sm"
                 onClick={() => {
                   navigator.clipboard.writeText(`${window.location.origin}?ref=${profile.referral_code}`);
-                  toast({ title: "Copied!", description: "Referral link copied to clipboard" });
+                  toast.success("Copied!", { description: "Referral link copied to clipboard" });
                 }}
               >
                 Copy

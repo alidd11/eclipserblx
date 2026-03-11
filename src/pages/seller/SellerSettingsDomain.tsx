@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -262,7 +262,7 @@ function CloudflareChecklist({ domain, verificationToken, isCloudflare }: { doma
 
 export default function SellerSettingsDomain() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [customDomainInput, setCustomDomainInput] = useState('');
 
@@ -312,9 +312,9 @@ export default function SellerSettingsDomain() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
-      toast({ title: 'Subdomain claimed!', description: `${store?.slug}.eclipserblx.com is now active.` });
+      toast.success('Subdomain claimed!', { description: `${store?.slug}.eclipserblx.com is now active.` });
     },
-    onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
+    onError: (e: any) => toast.error('Error', { description: e.message }),
   });
 
   const requestCustom = useMutation({
@@ -331,16 +331,12 @@ export default function SellerSettingsDomain() {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
       setCustomDomainInput('');
       if (data.is_cloudflare_zone) {
-        toast({ 
-          title: '⚠️ Cloudflare domain detected', 
-          description: 'Your domain uses Cloudflare DNS. Follow the Cloudflare-specific checklist carefully to avoid errors.',
-          variant: 'destructive',
-        });
+        toast.error('⚠️ Cloudflare domain detected', { description: 'Your domain uses Cloudflare DNS. Follow the Cloudflare-specific checklist carefully to avoid errors.' });
       } else {
-        toast({ title: 'Domain registered', description: 'Follow the DNS instructions below to verify.' });
+        toast.success('Domain registered', { description: 'Follow the DNS instructions below to verify.' });
       }
     },
-    onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
+    onError: (e: any) => toast.error('Error', { description: e.message }),
   });
 
   const verifyDomain = useMutation({
@@ -356,19 +352,15 @@ export default function SellerSettingsDomain() {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
       if (data.verified) {
         if (data.health_check?.error_code) {
-          toast({ 
-            title: 'Verified but issue detected', 
-            description: `Domain verified & SSL provisioned, but a health check found: ${data.health_check.diagnosis}`,
-            variant: 'destructive',
-          });
+          toast.error('Verified but issue detected', { description: `Domain verified & SSL provisioned, but a health check found: ${data.health_check.diagnosis}` });
         } else {
-          toast({ title: 'Domain verified!', description: `SSL status: ${data.ssl_status}` });
+          toast.success('Domain verified!', { description: `SSL status: ${data.ssl_status}` });
         }
       } else {
-        toast({ title: 'Not verified yet', description: data.message || 'DNS may still be propagating.', variant: 'destructive' });
+        toast.error('Not verified yet', { description: data.message || 'DNS may still be propagating.' });
       }
     },
-    onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
+    onError: (e: any) => toast.error('Error', { description: e.message }),
   });
 
   const healthCheck = useMutation({
@@ -383,7 +375,7 @@ export default function SellerSettingsDomain() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
     },
-    onError: (e: any) => toast({ title: 'Health check failed', description: e.message, variant: 'destructive' }),
+    onError: (e: any) => toast.error('Health check failed', { description: e.message }),
   });
 
   const removeDomain = useMutation({
@@ -397,14 +389,14 @@ export default function SellerSettingsDomain() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
-      toast({ title: 'Domain removed' });
+      toast.success('Domain removed');
     },
-    onError: (e: any) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
+    onError: (e: any) => toast.error('Error', { description: e.message }),
   });
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({ title: 'Copied to clipboard' });
+    toast.success('Copied to clipboard');
   };
 
   if (storeLoading || domainsLoading) {

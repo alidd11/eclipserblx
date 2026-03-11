@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { 
   Shield, Plus, Clock, CheckCircle, XCircle, AlertTriangle,
   FileText, Send, Eye, LogIn, UserCheck, Loader2, ExternalLink,

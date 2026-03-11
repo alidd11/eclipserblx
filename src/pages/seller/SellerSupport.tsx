@@ -16,7 +16,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 
 const TICKET_CATEGORIES = [
@@ -57,7 +57,7 @@ interface Ticket {
 export default function SellerSupport() {
   const { user } = useAuth();
   const { store } = useSellerStatus();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -151,13 +151,13 @@ export default function SellerSupport() {
       }).catch(err => console.error('Failed to send seller ticket notification:', err));
     },
     onSuccess: () => {
-      toast({ title: 'Ticket Created', description: 'Your support ticket has been submitted.' });
+      toast.success('Ticket Created', { description: 'Your support ticket has been submitted.' });
       queryClient.invalidateQueries({ queryKey: ['seller-support-tickets'] });
       setCreateDialogOpen(false);
       resetForm();
     },
     onError: (error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 
@@ -200,7 +200,7 @@ export default function SellerSupport() {
       setAttachmentFile(null);
     },
     onError: (error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 
@@ -623,7 +623,7 @@ export default function SellerSupport() {
                             const file = e.target.files?.[0];
                             if (file) {
                               if (file.size > 10 * 1024 * 1024) {
-                                toast({ title: 'File too large', description: 'Max 10MB', variant: 'destructive' });
+                                toast.error('File too large', { description: 'Max 10MB' });
                                 return;
                               }
                               setAttachmentFile(file);

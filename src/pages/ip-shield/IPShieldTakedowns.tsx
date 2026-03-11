@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   Shield, Plus, Clock, CheckCircle, XCircle, AlertTriangle,
   FileText, Send, Eye, Loader2, ExternalLink, Gavel, Radar,
@@ -178,7 +178,7 @@ export default function IPShieldTakedowns() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Takedown request submitted', description: 'Our team will review your request shortly.' });
+      toast.success('Takedown request submitted', { description: 'Our team will review your request shortly.' });
       setShowNewRequest(false);
       setForm({ claimant_name: '', claimant_email: '', claimant_address: '', infringement_type: '', target_platform: '', target_platform_other: '', infringing_url: '', original_work_url: '', original_work_description: '', evidence_notes: '', good_faith_statement: false, accuracy_statement: false, ownership_confirmed: false });
       setOriginalProofFiles([]);
@@ -186,7 +186,7 @@ export default function IPShieldTakedowns() {
       queryClient.invalidateQueries({ queryKey: ['ip-shield-cases'] });
     },
     onError: (error) => {
-      toast({ title: 'Submission failed', description: error.message, variant: 'destructive' });
+      toast.error('Submission failed', { description: error.message });
     },
   });
 
@@ -285,9 +285,9 @@ export default function IPShieldTakedowns() {
                                 totalCreations: data.total_creations || 0,
                               });
                               queryClient.invalidateQueries({ queryKey: ['ip-shield-cases'] });
-                              toast({ title: data.suspicious_count > 0 ? `⚠️ ${data.suspicious_count} suspicious find(s)` : '✅ No suspicious activity', description: `Scanned ${data.total_creations} creations from offender.` });
+                              toast.success(data.suspicious_count > 0 ? `⚠️ ${data.suspicious_count} suspicious find(s)` : '✅ No suspicious activity', { description: `Scanned ${data.total_creations} creations from offender.` });
                             } catch (err: any) {
-                              toast({ title: 'Re-check failed', description: err.message, variant: 'destructive' });
+                              toast.error('Re-check failed', { description: err.message });
                             } finally {
                               setRecheckingCaseId(null);
                             }

@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { FileText, Plus, Pencil, Search, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -86,7 +86,7 @@ export default function IPShieldRegistry() {
       }
     },
     onSuccess: async (result) => {
-      toast({ title: editingId ? 'Work updated' : 'Work registered', description: editingId ? 'Changes saved.' : 'Running initial copy scan...' });
+      toast.success(editingId ? 'Work updated' : 'Work registered', { description: editingId ? 'Changes saved.' : 'Running initial copy scan...' });
       setShowDialog(false);
       setRegistryForm(EMPTY_FORM);
       setEditingId(null);
@@ -97,7 +97,7 @@ export default function IPShieldRegistry() {
           const { data: scanData } = await supabase.functions.invoke('scan-roblox-copies', {
             body: { registry_entry_id: result.id },
           });
-          toast({ title: 'Initial scan complete', description: `Found ${scanData?.total_detected || 0} potential copies.` });
+          toast.success('Initial scan complete', { description: `Found ${scanData?.total_detected || 0} potential copies.` });
           queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
           queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
         } catch {
@@ -106,7 +106,7 @@ export default function IPShieldRegistry() {
       }
     },
     onError: (error) => {
-      toast({ title: editingId ? 'Failed to update' : 'Failed to register', description: error.message, variant: 'destructive' });
+      toast.error(editingId ? 'Failed to update' : 'Failed to register', { description: error.message });
     },
   });
 
@@ -295,18 +295,18 @@ export default function IPShieldRegistry() {
                   setScanningId(entryId);
 
                   const terms = customSearchTerms.split('\n').map(s => s.trim()).filter(Boolean);
-                  toast({ title: 'Scanning...', description: terms.length > 0 ? `Searching ${terms.length} custom term${terms.length > 1 ? 's' : ''} for "${title}"` : `Running auto-scan for "${title}"` });
+                  toast.info('Scanning...', { description: terms.length > 0 ? `Searching ${terms.length} custom term${terms.length > 1 ? 's' : ''} for "${title}"` : `Running auto-scan for "${title}"` });
 
                   try {
                     const body: Record<string, unknown> = { registry_entry_id: entryId };
                     if (terms.length > 0) body.custom_search_terms = terms;
 
                     const { data: scanData } = await supabase.functions.invoke('scan-roblox-copies', { body });
-                    toast({ title: 'Scan complete', description: `Found ${scanData?.total_detected || 0} potential copies.` });
+                    toast.success('Scan complete', { description: `Found ${scanData?.total_detected || 0} potential copies.` });
                     queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
                     queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
                   } catch {
-                    toast({ title: 'Scan failed', variant: 'destructive' });
+                    toast.error('Scan failed');
                   } finally {
                     setScanningId(null);
                   }

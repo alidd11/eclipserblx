@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { format } from 'date-fns';
@@ -68,13 +68,13 @@ export default function DeveloperPaymentDetail() {
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ['developer-payment', id] });
        queryClient.invalidateQueries({ queryKey: ['developer-payments'] });
-       toast({ title: 'Payment marked as completed' });
+       toast.success('Payment marked as completed');
        setIsMarkPaidOpen(false);
        setPaymentReference('');
        setPaymentMethod('');
      },
      onError: (error) => {
-       toast({ title: 'Error', description: error.message, variant: 'destructive' });
+       toast.error('Error', { description: error.message });
      },
    });
  

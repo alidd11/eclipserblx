@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { useToast } from '@/hooks/use-toast';
+
 import { openExternalUrl } from '@/lib/externalBrowser';
 import { 
   Link2, 
@@ -54,7 +54,7 @@ export function LinkedAccountsCard({
   onUpdate,
 }: LinkedAccountsCardProps) {
   const queryClient = useQueryClient();
-  const { toast: toastHook } = useToast();
+  
   
   // Discord state
   const [isLinkingDiscord, setIsLinkingDiscord] = useState(false);
@@ -114,11 +114,7 @@ export function LinkedAccountsCard({
       }
 
       if (error) {
-        toastHook({
-          title: "Authorization Failed",
-          description: urlParams.get("error_description") || "Authorization was cancelled or failed",
-          variant: "destructive",
-        });
+        toast.error("Authorization Failed", { description: urlParams.get("error_description") || "Authorization was cancelled or failed" });
         return;
       }
 
@@ -146,20 +142,13 @@ export function LinkedAccountsCard({
           if (invokeError) throw invokeError;
           if (data?.error) throw new Error(data.error);
 
-          toastHook({
-            title: "Roblox Linked!",
-            description: `Connected as ${data.roblox_username}`,
-          });
+          toast.success("Roblox Linked!", { description: `Connected as ${data.roblox_username}` });
 
           queryClient.invalidateQueries({ queryKey: ['profile', userId] });
           onUpdate();
         } catch (err: unknown) {
           console.error("Roblox OAuth callback error:", err);
-          toastHook({
-            title: "Link Failed",
-            description: err instanceof Error ? err.message : "Failed to link Roblox account",
-            variant: "destructive",
-          });
+          toast.error("Link Failed", { description: err instanceof Error ? err.message : "Failed to link Roblox account" });
         } finally {
           setIsProcessingRobloxOAuth(false);
         }
@@ -177,10 +166,7 @@ export function LinkedAccountsCard({
           if (invokeError) throw invokeError;
           if (data?.error) throw new Error(data.error);
 
-          toastHook({
-            title: "Discord Linked!",
-            description: `Connected as ${data.discord_username || data.discord_global_name || "Discord User"}`,
-          });
+          toast.success("Discord Linked!", { description: `Connected as ${data.discord_username || data.discord_global_name || "Discord User"}` });
 
           if (hasEclipsePlus) {
             try {
@@ -195,11 +181,7 @@ export function LinkedAccountsCard({
           onUpdate();
         } catch (err: unknown) {
           console.error("OAuth callback error:", err);
-          toastHook({
-            title: "Link Failed",
-            description: err instanceof Error ? err.message : "Failed to link Discord account",
-            variant: "destructive",
-          });
+          toast.error("Link Failed", { description: err instanceof Error ? err.message : "Failed to link Discord account" });
         } finally {
           setIsProcessingOAuth(false);
         }
@@ -207,7 +189,7 @@ export function LinkedAccountsCard({
     };
 
     handleOAuthCallback();
-  }, [userId, discordId, hasEclipsePlus, onUpdate, toastHook]);
+  }, [userId, discordId, hasEclipsePlus, onUpdate]);
 
   const handleLinkDiscord = async () => {
     setIsLinkingDiscord(true);
@@ -223,11 +205,7 @@ export function LinkedAccountsCard({
     } catch (err) {
       console.error("Discord link error:", err);
       setIsLinkingDiscord(false);
-      toastHook({
-        title: "Link Failed",
-        description: err instanceof Error ? err.message : "Could not start Discord linking",
-        variant: "destructive",
-      });
+      toast.error("Link Failed", { description: err instanceof Error ? err.message : "Could not start Discord linking" });
     }
   };
 
@@ -278,11 +256,7 @@ export function LinkedAccountsCard({
     } catch (err) {
       console.error("Roblox link error:", err);
       setIsLinkingRoblox(false);
-      toastHook({
-        title: "Link Failed",
-        description: err instanceof Error ? err.message : "Could not start Roblox linking",
-        variant: "destructive",
-      });
+      toast.error("Link Failed", { description: err instanceof Error ? err.message : "Could not start Roblox linking" });
     }
   };
 

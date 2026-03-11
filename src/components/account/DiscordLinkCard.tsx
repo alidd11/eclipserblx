@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { supabase } from "@/integrations/supabase/client";
 import { Link2, Unlink, Sparkles, Loader2, Copy, Check } from "lucide-react";
 import { openExternalUrl } from "@/lib/externalBrowser";
@@ -43,7 +43,7 @@ export const DiscordLinkCard = ({
   const [isUnlinking, setIsUnlinking] = useState(false);
   const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
   const [copiedRedirect, setCopiedRedirect] = useState(false);
-  const { toast } = useToast();
+  
 
   const copyRedirectUri = async () => {
     const redirectUri = getRedirectUri();
@@ -52,11 +52,7 @@ export const DiscordLinkCard = ({
       setCopiedRedirect(true);
       setTimeout(() => setCopiedRedirect(false), 1500);
     } catch {
-      toast({
-        title: "Copy failed",
-        description: "Could not copy the redirect URI. Please copy it manually.",
-        variant: "destructive",
-      });
+      toast.error("Copy failed", { description: "Could not copy the redirect URI. Please copy it manually." });
     }
   };
 
@@ -77,11 +73,7 @@ export const DiscordLinkCard = ({
       }
 
       if (error) {
-        toast({
-          title: "Discord Authorization Failed",
-          description: urlParams.get("error_description") || "Authorization was cancelled or failed",
-          variant: "destructive",
-        });
+        toast.error("Discord Authorization Failed", { description: urlParams.get("error_description") || "Authorization was cancelled or failed" });
         return;
       }
 
@@ -105,10 +97,7 @@ export const DiscordLinkCard = ({
             throw new Error(data.error);
           }
 
-          toast({
-            title: "Discord Linked!",
-            description: `Connected as ${data.discord_username || data.discord_global_name || "Discord User"}`,
-          });
+          toast.success("Discord Linked!", { description: `Connected as ${data.discord_username || data.discord_global_name || "Discord User"}` });
 
           // If user has Eclipse+, trigger webhook to assign role
           if (hasEclipsePlus) {
@@ -120,10 +109,7 @@ export const DiscordLinkCard = ({
                   granted_by_admin: false,
                 },
               });
-              toast({
-                title: "Eclipse+ Role Requested",
-                description: "Your Eclipse+ role should be assigned shortly.",
-              });
+              toast.success("Eclipse+ Role Requested", { description: "Your Eclipse+ role should be assigned shortly." });
             } catch (webhookError) {
               console.error("Webhook error:", webhookError);
             }
@@ -133,11 +119,7 @@ export const DiscordLinkCard = ({
         } catch (err: unknown) {
           console.error("OAuth callback error:", err);
           const errorMessage = err instanceof Error ? err.message : "Failed to link Discord account";
-          toast({
-            title: "Link Failed",
-            description: errorMessage,
-            variant: "destructive",
-          });
+          toast.error("Link Failed", { description: errorMessage });
         } finally {
           setIsProcessingOAuth(false);
         }
@@ -145,16 +127,12 @@ export const DiscordLinkCard = ({
     };
 
     handleOAuthCallback();
-  }, [userId, currentDiscordId, hasEclipsePlus, onUpdate, toast]);
+  }, [userId, currentDiscordId, hasEclipsePlus, onUpdate]);
 
   const handleLinkWithOAuth = async () => {
     const clientId = getDiscordClientId();
     if (!clientId) {
-      toast({
-        title: "Configuration Error",
-        description: "Discord OAuth is not configured. Please contact support.",
-        variant: "destructive",
-      });
+      toast.error("Configuration Error", { description: "Discord OAuth is not configured. Please contact support." });
       return;
     }
     setIsLinking(true);
@@ -173,11 +151,7 @@ export const DiscordLinkCard = ({
     } catch (err) {
       console.error("Discord link error:", err);
       setIsLinking(false);
-      toast({
-        title: "Link Failed",
-        description: err instanceof Error ? err.message : "Could not start Discord linking",
-        variant: "destructive",
-      });
+      toast.error("Link Failed", { description: err instanceof Error ? err.message : "Could not start Discord linking" });
     }
   };
 
@@ -209,19 +183,12 @@ export const DiscordLinkCard = ({
 
       if (error) throw error;
 
-      toast({
-        title: "Discord Unlinked",
-        description: "Your Discord account has been unlinked.",
-      });
+      toast.success("Discord Unlinked", { description: "Your Discord account has been unlinked." });
       onUpdate();
     } catch (error: unknown) {
       console.error("Error unlinking Discord:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to unlink Discord account";
-      toast({
-        title: "Unlink Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      toast.error("Unlink Failed", { description: errorMessage });
     } finally {
       setIsUnlinking(false);
     }

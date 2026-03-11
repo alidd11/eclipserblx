@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Mail, Users, Tag, Newspaper, Bell, Search, Download, Send, Loader2 } from 'lucide-react';
 
@@ -31,7 +31,7 @@ type Subscriber = {
 type FilterType = 'all' | 'updates' | 'discounts' | 'newsletters';
 
 export default function Subscribers() {
-  const { toast } = useToast();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [sendEmailOpen, setSendEmailOpen] = useState(false);
@@ -133,20 +133,13 @@ export default function Subscribers() {
     a.click();
     URL.revokeObjectURL(url);
 
-    toast({
-      title: 'Export Complete',
-      description: `Exported ${filteredSubscribers.length} subscribers.`,
-    });
+    toast.success('Export Complete', { description: `Exported ${filteredSubscribers.length} subscribers.` });
   };
 
   // Send mass email
   const handleSendEmail = async () => {
     if (!emailSubject.trim() || !emailContent.trim()) {
-      toast({
-        title: 'Missing Fields',
-        description: 'Please fill in subject and message.',
-        variant: 'destructive',
-      });
+      toast.error('Missing Fields', { description: 'Please fill in subject and message.' });
       return;
     }
 
@@ -172,10 +165,7 @@ export default function Subscribers() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Emails Sent',
-        description: `Successfully sent to ${data?.sent || emails.length} recipients.`,
-      });
+      toast.success('Emails Sent', { description: `Successfully sent to ${data?.sent || emails.length} recipients.` });
 
       setSendEmailOpen(false);
       setEmailSubject('');
@@ -183,11 +173,7 @@ export default function Subscribers() {
       setEmailTarget('all');
     } catch (error: any) {
       console.error('Error sending emails:', error);
-      toast({
-        title: 'Send Failed',
-        description: error.message || 'Failed to send emails.',
-        variant: 'destructive',
-      });
+      toast.error('Send Failed', { description: error.message || 'Failed to send emails.' });
     } finally {
       setIsSending(false);
     }

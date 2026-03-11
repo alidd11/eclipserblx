@@ -17,7 +17,7 @@ import { Progress } from '@/components/ui/progress';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useRecruiterSettings, getCommissionTier } from '@/hooks/useRecruiterSettings';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { format } from 'date-fns';
@@ -66,7 +66,7 @@ interface RecruiterCommission {
 export default function Recruiter() {
   usePageMeta({ title: 'Recruiter Programme', description: 'Recruit new sellers to Eclipse and earn commissions when their stores qualify. Join the recruiter programme.', canonicalPath: '/recruiter' });
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const { settings: recruiterSettings, isLoading: settingsLoading } = useRecruiterSettings();
   const [payoutAmount, setPayoutAmount] = useState('');
@@ -186,18 +186,11 @@ export default function Recruiter() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: "Application Submitted!",
-        description: "We'll review your application and get back to you soon.",
-      });
+      toast.success("Application Submitted!", { description: "We'll review your application and get back to you soon." });
       queryClient.invalidateQueries({ queryKey: ['recruiter-application', user?.id] });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
     },
   });
 
@@ -219,38 +212,23 @@ export default function Recruiter() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: "Payout Requested",
-        description: "Your payout request has been submitted for processing.",
-      });
+      toast.success("Payout Requested", { description: "Your payout request has been submitted for processing." });
       setPayoutAmount('');
       queryClient.invalidateQueries({ queryKey: ['recruiter-payouts', user?.id] });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
     },
   });
 
   const handleRequestPayout = () => {
     const amount = parseFloat(payoutAmount);
     if (isNaN(amount) || amount < recruiterSettings.minimumPayout) {
-      toast({
-        title: "Invalid Amount",
-        description: `Minimum payout is £${recruiterSettings.minimumPayout}`,
-        variant: "destructive",
-      });
+      toast.error("Invalid Amount", { description: `Minimum payout is £${recruiterSettings.minimumPayout}` });
       return;
     }
     if (amount > (balance?.available_balance || 0)) {
-      toast({
-        title: "Insufficient Balance",
-        description: "You don't have enough available balance.",
-        variant: "destructive",
-      });
+      toast.error("Insufficient Balance", { description: "You don't have enough available balance." });
       return;
     }
     requestPayoutMutation.mutate(amount);
@@ -259,7 +237,7 @@ export default function Recruiter() {
   const copyReferralLink = () => {
     if (application?.recruiter_id) {
       navigator.clipboard.writeText(`${window.location.origin}/sell?ref=${application.recruiter_id}`);
-      toast({ title: "Copied!", description: "Referral link copied to clipboard" });
+      toast.success("Copied!", { description: "Referral link copied to clipboard" });
     }
   };
 

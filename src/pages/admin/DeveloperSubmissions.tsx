@@ -11,7 +11,7 @@
  import { Label } from '@/components/ui/label';
  import { Textarea } from '@/components/ui/textarea';
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
- import { toast } from '@/hooks/use-toast';
+ import { toast } from 'sonner';
  import { useAdminAuth } from '@/hooks/useAdminAuth';
  import { useAuth } from '@/hooks/useAuth';
  import { format } from 'date-fns';
@@ -111,12 +111,12 @@
      },
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ['developer-submissions'] });
-       toast({ title: 'Submission created', description: 'Your product has been submitted for review.' });
+       toast.success('Submission created', { description: 'Your product has been submitted for review.' });
        setIsSubmitOpen(false);
        setNewSubmission({ product_name: '', product_description: '', category_id: '', price: '' });
      },
      onError: (error) => {
-       toast({ title: 'Error', description: error.message, variant: 'destructive' });
+       toast.error('Error', { description: error.message });
      },
    });
  
@@ -134,13 +134,13 @@
      },
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ['developer-submissions'] });
-       toast({ title: 'Submission updated' });
+       toast.success('Submission updated');
        setIsReviewOpen(false);
        setSelectedSubmission(null);
        setReviewNotes('');
      },
      onError: (error) => {
-       toast({ title: 'Error', description: error.message, variant: 'destructive' });
+       toast.error('Error', { description: error.message });
      },
    });
  

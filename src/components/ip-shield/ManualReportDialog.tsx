@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, AlertTriangle, CheckCircle2, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface ManualReportDialogProps {
   open: boolean;
@@ -132,7 +132,7 @@ export function ManualReportDialog({ open, onOpenChange, registryEntries, userId
         .limit(1);
 
       if (existing && existing.length > 0) {
-        toast({ title: 'Already reported', description: 'This game is already in your detections for this registry entry.', variant: 'destructive' });
+        toast.error('Already reported', { description: 'This game is already in your detections for this registry entry.' });
         setSubmitting(false);
         return;
       }
@@ -167,12 +167,12 @@ export function ManualReportDialog({ open, onOpenChange, registryEntries, userId
 
       if (error) throw error;
 
-      toast({ title: 'Game reported', description: `"${gamePreview.name}" has been added to your detections.` });
+      toast.success('Game reported', { description: `"${gamePreview.name}" has been added to your detections.` });
       reset();
       onOpenChange(false);
       onReported();
     } catch (err: any) {
-      toast({ title: 'Failed to report', description: err.message, variant: 'destructive' });
+      toast.error('Failed to report', { description: err.message });
     } finally {
       setSubmitting(false);
     }
