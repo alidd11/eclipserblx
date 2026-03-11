@@ -170,7 +170,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
           />
         )}
         customHeader={(onMenuClick) => (
-          <header className="sticky top-0 shrink-0 z-40 border-b border-border bg-card px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
+          <header className={cn("shrink-0 z-40 border-b border-border bg-card px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between", !isStandalone && "sticky top-0")}>
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
