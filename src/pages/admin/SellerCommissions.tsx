@@ -173,7 +173,7 @@ export default function SellerCommissions() {
                   className="w-[200px]"
                 />
                 <Select value={storeFilter} onValueChange={(v) => setStoreFilter(v as StoreFilter)}>
-                  <SelectTrigger className="w-[150px]">
+                  <SelectTrigger className="w-auto min-w-[140px]">
                     <SelectValue placeholder="Filter" />
                   </SelectTrigger>
                   <SelectContent>

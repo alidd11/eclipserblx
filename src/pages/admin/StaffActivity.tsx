@@ -254,9 +254,9 @@ export default function StaffActivityPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-64">
+              <div>
                 <Select value={filterStaff} onValueChange={setFilterStaff}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-auto min-w-[140px]">
                     <SelectValue placeholder="Filter by staff member" />
                   </SelectTrigger>
                   <SelectContent>

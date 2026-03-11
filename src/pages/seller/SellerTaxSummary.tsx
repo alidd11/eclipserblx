@@ -149,7 +149,7 @@ export default function SellerTaxSummary() {
         )}
         <div className="flex items-center justify-end gap-2">
             <Select value={selectedYear} onValueChange={setSelectedYear}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-auto min-w-[140px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

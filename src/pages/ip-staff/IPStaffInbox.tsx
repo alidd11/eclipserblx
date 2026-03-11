@@ -164,7 +164,7 @@ export default function IPStaffInbox() {
                   value={selectedMessage?.status}
                   onValueChange={(status) => updateMessage.mutate({ id: selectedMessage.id, updates: { status } })}
                 >
-                  <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="w-auto min-w-[140px]"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="open">Open</SelectItem>
                     <SelectItem value="in_progress">In Progress</SelectItem>

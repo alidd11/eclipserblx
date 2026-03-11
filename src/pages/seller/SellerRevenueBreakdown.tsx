@@ -94,7 +94,7 @@ export default function SellerRevenueBreakdown() {
       )}
       <div className="flex items-center justify-end">
         <Select value={period} onValueChange={(v) => setPeriod(v as any)}>
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="w-auto min-w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

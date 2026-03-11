@@ -553,7 +553,7 @@ export default function AdminIncomeSources() {
                       />
                     </div>
                     <Select value={sourceFilter} onValueChange={(v) => setSourceFilter(v as IncomeSource)}>
-                      <SelectTrigger className="w-[130px] h-8 text-xs">
+                      <SelectTrigger className="w-auto min-w-[140px] h-8 text-xs">
                         <Filter className="h-3 w-3 mr-1" />
                         <SelectValue />
                       </SelectTrigger>

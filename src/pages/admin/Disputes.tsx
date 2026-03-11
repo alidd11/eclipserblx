@@ -338,7 +338,7 @@ export default function Disputes() {
                   />
                 </div>
                 <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0); }}>
-                  <SelectTrigger className="w-[130px]">
+                  <SelectTrigger className="w-auto min-w-[140px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
