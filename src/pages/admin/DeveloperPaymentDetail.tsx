@@ -68,7 +68,7 @@ export default function DeveloperPaymentDetail() {
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ['developer-payment', id] });
        queryClient.invalidateQueries({ queryKey: ['developer-payments'] });
-       toast({ title: 'Payment marked as completed' });
+       toast.success('Payment marked as completed');
        setIsMarkPaidOpen(false);
        setPaymentReference('');
        setPaymentMethod('');
