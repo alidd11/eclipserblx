@@ -109,7 +109,7 @@ export default function NotificationPreferences() {
     } else {
       const result = await subscribe();
       if (result.success) {
-        toast({ title: 'Push Enabled', description: 'You will now receive push notifications.' });
+        toast.success('Push Enabled', { description: 'You will now receive push notifications.' });
       } else if (result.error) {
         toast({ title: 'Error', description: result.error, variant: 'destructive' });
       }
