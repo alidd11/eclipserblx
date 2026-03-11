@@ -27,6 +27,7 @@ interface Affiliate {
 }
 
 const AffiliateApplications = () => {
+  const isInsideHub = useIsInsideHub();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAffiliate, setSelectedAffiliate] = useState<Affiliate | null>(null);
 
