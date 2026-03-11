@@ -216,7 +216,7 @@ export default function SellerProductsAll() {
             </SelectContent>
           </Select>
           <Select value={filterStore} onValueChange={handleFilterStore}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-auto min-w-[140px]">
               <SelectValue placeholder="Store" />
             </SelectTrigger>
             <SelectContent>

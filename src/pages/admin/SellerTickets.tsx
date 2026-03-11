@@ -678,7 +678,7 @@ export default function SellerTickets() {
                         value={selectedTicket.status} 
                         onValueChange={(val) => updateStatus.mutate(val)}
                       >
-                        <SelectTrigger className="w-48">
+                        <SelectTrigger className="w-auto min-w-[140px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
