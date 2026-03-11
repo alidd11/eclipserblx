@@ -325,11 +325,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
           if (!vpnError && vpnData?.isVpn) {
             setLoading(false);
             setErrors({ vpn: t('auth.vpnDetected') });
-            toast({
-              title: 'VPN Detected',
-              description: t('auth.vpnDetected'),
-              variant: 'destructive',
-            });
+            toast.error('VPN Detected', { description: t('auth.vpnDetected') });
             return;
           }
         } catch (vpnCheckError) {
