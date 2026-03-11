@@ -852,7 +852,7 @@ export default function IPShield() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Takedown request submitted', description: 'We will review your case and notify you of any updates.' });
+      toast.success('Takedown request submitted', { description: 'We will review your case and notify you of any updates.' });
       setShowNewRequest(false);
       resetForm();
       queryClient.invalidateQueries({ queryKey: ['takedown-requests'] });
