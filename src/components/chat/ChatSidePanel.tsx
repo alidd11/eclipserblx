@@ -18,6 +18,7 @@ import { SecureCodeInput } from './SecureCodeInput';
 import { CodeVerificationMessage } from './CodeVerificationMessage';
 import { cn } from '@/lib/utils';
 import { parseMessageWithLinks } from '@/lib/chatLinks';
+import { useStoreDomain } from '@/hooks/useStoreDomain';
 import { motion, AnimatePresence } from 'framer-motion';
 import { performSecurityScan } from '@/lib/secureFileUpload';
 import { notifyNewLiveChat } from '@/lib/pushNotifications';
