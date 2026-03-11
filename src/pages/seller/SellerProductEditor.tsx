@@ -414,7 +414,7 @@ export default function SellerProductEditor() {
           .eq('store_id', store.id);
 
         if (error) throw error;
-        return { productId, isAutoApproved: shouldAutoApprove };
+        return { productId, isAutoApproved: shouldAutoApprove, productNumber: undefined as number | undefined };
       } else {
         // Ensure slug has a unique suffix for new products
         if (!productData.slug || productData.slug.length < 3) {
