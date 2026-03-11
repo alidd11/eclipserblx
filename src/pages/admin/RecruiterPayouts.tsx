@@ -101,7 +101,7 @@ export default function RecruiterPayouts() {
       queryClient.invalidateQueries({ queryKey: ['recruiter-stats'] });
     },
     onError: (error: Error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 
