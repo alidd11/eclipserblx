@@ -1,0 +1,1 @@
+UPDATE permissions SET category = 'ip_shield' WHERE category = 'IP Shield';
