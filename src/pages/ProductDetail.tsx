@@ -146,7 +146,7 @@ export default function ProductDetail() {
       items.push({ name: product.name, url: `https://eclipserblx.com/products/${(product as any).product_number}` });
     }
     return items;
-  }, [product?.categories?.name, product?.categories?.slug, product?.name, slug]);
+  }, [product?.categories?.name, product?.categories?.slug, product?.name, productNumber]);
 
   const { data: relatedProducts } = useQuery({
     queryKey: ['related-products', product?.category_id, isStaff],
