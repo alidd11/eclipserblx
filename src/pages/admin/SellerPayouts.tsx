@@ -45,7 +45,7 @@ export default function SellerPayouts() {
         .from("seller_payouts")
         .select(`
           *,
-          stores (name, store_id, payout_method, paypal_email),
+          stores (name, store_id, payout_method, store_payment_details (paypal_email)),
           profiles!seller_payouts_seller_id_fkey (display_name, email)
         `)
         .order("created_at", { ascending: false });
@@ -281,7 +281,7 @@ export default function SellerPayouts() {
                       </TableCell>
                       <TableCell className="text-sm">
                         {payout.stores?.payout_method === 'paypal' 
-                          ? payout.stores?.paypal_email || "Not set"
+                          ? payout.stores?.store_payment_details?.[0]?.paypal_email || payout.stores?.store_payment_details?.paypal_email || "Not set"
                           : payout.stores?.payout_method === 'bank' 
                             ? "Bank Transfer"
                             : payout.stores?.payout_method === 'stripe' 
@@ -358,7 +358,7 @@ export default function SellerPayouts() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">PayPal Email:</span>
                     <span className="font-medium">
-                      {selectedPayout?.stores?.paypal_email || "Not set"}
+                      {selectedPayout?.stores?.store_payment_details?.[0]?.paypal_email || selectedPayout?.stores?.store_payment_details?.paypal_email || "Not set"}
                     </span>
                   </div>
                 )}
