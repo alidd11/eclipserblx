@@ -90,21 +90,31 @@ const PERMISSION_CATEGORIES = {
     icon: <Gift className="h-5 w-5" />,
     order: 7,
   },
+  finance: {
+    label: 'Finance & Payouts',
+    icon: <Wallet className="h-5 w-5" />,
+    order: 8,
+  },
+  ip_shield: {
+    label: 'IP Shield',
+    icon: <ShieldCheck className="h-5 w-5" />,
+    order: 9,
+  },
   system: {
     label: 'System & Settings',
     icon: <Settings className="h-5 w-5" />,
-    order: 8,
+    order: 10,
   },
   // Fallback for uncategorized
   actions: {
     label: 'Other Actions',
     icon: <BarChart3 className="h-5 w-5" />,
-    order: 9,
+    order: 11,
   },
   pages: {
     label: 'Other Pages',
     icon: <LayoutDashboard className="h-5 w-5" />,
-    order: 10,
+    order: 12,
   },
 };
 
