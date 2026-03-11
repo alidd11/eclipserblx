@@ -262,7 +262,7 @@ function CloudflareChecklist({ domain, verificationToken, isCloudflare }: { doma
 
 export default function SellerSettingsDomain() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [customDomainInput, setCustomDomainInput] = useState('');
 
