@@ -100,7 +100,7 @@ export default function Wishlist() {
                     <div className="flex gap-4">
                       {/* Product Image */}
                       <Link 
-                        to={`/product/${product.slug}`}
+                        to={`/products/${(product as any).product_number || product.slug}`}
                         className="flex-shrink-0 w-32 h-32 bg-muted"
                       >
                         <img
