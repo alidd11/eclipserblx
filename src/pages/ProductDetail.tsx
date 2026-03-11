@@ -42,8 +42,8 @@ import { FrequentlyBoughtTogether } from '@/components/product/FrequentlyBoughtT
 import { PriceAlertButton } from '@/components/product/PriceAlertButton';
 
 export default function ProductDetail() {
-  const { slug } = useParams<{ slug: string }>();
-  usePageTracking({ pagePath: `/products/${slug}` });
+  const { productNumber } = useParams<{ productNumber: string }>();
+  usePageTracking({ pagePath: `/products/${productNumber}` });
   const location = useLocation();
   const queryClient = useQueryClient();
   const { addItem, isInCart } = useCart();
