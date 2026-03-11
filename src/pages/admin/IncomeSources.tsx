@@ -403,21 +403,8 @@ export default function AdminIncomeSources() {
             </div>
           </div>
         )}
-          <div className="flex items-center gap-2">
-            <Select value={periodFilter} onValueChange={(v) => setPeriodFilter(v as TimePeriod)}>
-              <SelectTrigger className="w-[140px] h-8 text-xs">
-                <Calendar className="h-3 w-3 mr-1" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(periodLabels).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>{v}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="sm" onClick={exportCSV} className="h-8 text-xs">
-              <Download className="h-3 w-3 mr-1" /> Export
-            </Button>
+
+
           </div>
         </div>
 
