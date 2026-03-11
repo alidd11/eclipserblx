@@ -707,7 +707,7 @@ export default function StaffProfile() {
               <div className="space-y-3 p-4 rounded-lg border border-border bg-muted/20">
                 <div className="flex gap-2">
                   <Select value={newNoteType} onValueChange={setNewNoteType}>
-                    <SelectTrigger className="w-[160px]">
+                    <SelectTrigger className="w-auto min-w-[140px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

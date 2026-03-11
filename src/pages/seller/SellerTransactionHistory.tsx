@@ -89,7 +89,7 @@ export default function SellerTransactionHistory() {
             </div>
             <div className="flex items-center gap-2">
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-auto min-w-[140px]">
                   <SelectValue placeholder="All types" />
                 </SelectTrigger>
                 <SelectContent>

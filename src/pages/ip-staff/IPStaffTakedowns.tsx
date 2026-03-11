@@ -85,7 +85,7 @@ export default function IPStaffTakedowns() {
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-auto min-w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -135,7 +135,7 @@ export default function IPStaffTakedowns() {
                       value={t.status}
                       onValueChange={(status) => updateStatus.mutate({ id: t.id, status })}
                     >
-                      <SelectTrigger className="w-[130px]">
+                      <SelectTrigger className="w-auto min-w-[140px]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

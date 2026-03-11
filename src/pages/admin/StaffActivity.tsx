@@ -238,9 +238,9 @@ export default function StaffActivityPage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap items-center gap-4 mb-6">
-              <div className="w-48">
+              <div>
                 <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-auto min-w-[140px]">
                     <SelectValue placeholder="Filter by type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -254,9 +254,9 @@ export default function StaffActivityPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-64">
+              <div>
                 <Select value={filterStaff} onValueChange={setFilterStaff}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-auto min-w-[140px]">
                     <SelectValue placeholder="Filter by staff member" />
                   </SelectTrigger>
                   <SelectContent>
