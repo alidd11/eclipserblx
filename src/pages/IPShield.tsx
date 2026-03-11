@@ -175,7 +175,7 @@ function CopyDetectionTab({ userId }: { userId?: string }) {
     try {
       const { data, error } = await supabase.functions.invoke('scan-roblox-copies');
       if (error) throw error;
-      toast({ title: 'Scan complete', description: `Found ${data?.total_detected || 0} potential copies. ${data?.thumbnails_analyzed || 0} thumbnails analysed.` });
+      toast.success('Scan complete', { description: `Found ${data?.total_detected || 0} potential copies. ${data?.thumbnails_analyzed || 0} thumbnails analysed.` });
       queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
       queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
     } catch (err: any) {
