@@ -84,11 +84,15 @@ export default function SellerRevenueBreakdown() {
 
   return (
     <SellerLayout><div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-display font-bold">Revenue Breakdown</h1>
-          <p className="text-sm text-muted-foreground">Detailed view of your earnings by product, category, and time.</p>
+      {!isInsideHub && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-display font-bold">Revenue Breakdown</h1>
+            <p className="text-sm text-muted-foreground">Detailed view of your earnings by product, category, and time.</p>
+          </div>
         </div>
+      )}
+      <div className="flex items-center justify-end">
         <Select value={period} onValueChange={(v) => setPeriod(v as any)}>
           <SelectTrigger className="w-32">
             <SelectValue />

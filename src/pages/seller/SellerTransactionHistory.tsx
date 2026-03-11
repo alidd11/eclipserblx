@@ -73,10 +73,12 @@ export default function SellerTransactionHistory() {
 
   return (
     <SellerLayout><div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold">Transaction History</h1>
-        <p className="text-sm text-muted-foreground">Complete log of every sale, refund, and fee.</p>
-      </div>
+      {!isInsideHub && (
+        <div>
+          <h1 className="text-2xl font-display font-bold">Transaction History</h1>
+          <p className="text-sm text-muted-foreground">Complete log of every sale, refund, and fee.</p>
+        </div>
+      )}
 
       <Card>
         <CardHeader className="pb-3">

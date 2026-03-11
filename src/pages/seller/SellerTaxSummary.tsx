@@ -137,17 +137,17 @@ export default function SellerTaxSummary() {
     <SellerLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-3">
-            <Receipt className="h-8 w-8 text-primary" />
+        {!isInsideHub && (
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
-              <h1 className="text-2xl font-bold">Tax Summary</h1>
-              <p className="text-muted-foreground text-sm">
+              <h1 className="text-2xl font-display font-bold">Tax Summary</h1>
+              <p className="text-sm text-muted-foreground">
                 Annual earnings statement for your tax return
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+        )}
+        <div className="flex items-center justify-end gap-2">
             <Select value={selectedYear} onValueChange={setSelectedYear}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue />
