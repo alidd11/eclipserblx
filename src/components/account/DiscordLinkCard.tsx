@@ -109,10 +109,7 @@ export const DiscordLinkCard = ({
                   granted_by_admin: false,
                 },
               });
-              toast({
-                title: "Eclipse+ Role Requested",
-                description: "Your Eclipse+ role should be assigned shortly.",
-              });
+              toast.success("Eclipse+ Role Requested", { description: "Your Eclipse+ role should be assigned shortly." });
             } catch (webhookError) {
               console.error("Webhook error:", webhookError);
             }
