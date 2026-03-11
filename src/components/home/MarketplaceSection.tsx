@@ -155,7 +155,7 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
   const hasMemberDiscount = isEligible && memberPrice < product.price;
 
   return (
-    <Link to={`/products/${product.slug}`} className="group block h-full" onMouseEnter={() => prefetch(product.slug)}>
+    <Link to={`/products/${(product as any).product_number}`} className="group block h-full" onMouseEnter={() => prefetch(String((product as any).product_number))}>
       <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200">
         <div className="aspect-[4/3] relative overflow-hidden bg-muted">
           {product.images?.[0] ? (
