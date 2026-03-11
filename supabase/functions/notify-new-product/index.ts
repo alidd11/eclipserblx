@@ -99,13 +99,16 @@ serve(async (req) => {
       ? `${product_name} is now available in ${category_name} for ${formattedPrice}`
       : `${product_name} is now available for ${formattedPrice}`;
 
+    // Use product_number for links (numeric URL), fall back to slug
+    const productPath = product_number ? `/products/${product_number}` : `/products/${product_slug}`;
+
     // Create in-app notifications for all users
     const notifications = userIds.map(userId => ({
       user_id: userId,
       title,
       message: body,
       type: 'new_product',
-      link: `/products/${product_slug}`,
+      link: productPath,
     }));
 
     const { error: notifError } = await supabase
