@@ -31,7 +31,7 @@ import { format } from 'date-fns';
 
 export function AffiliateCard() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const { settings } = useAffiliateSettings();
   const [payoutAmount, setPayoutAmount] = useState('');
