@@ -8,9 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RevolutAreaChart, RevolutBarChart } from '@/components/ui/revolut-chart';
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { TrendingUp, Package, DollarSign, Layers } from 'lucide-react';
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 
 export default function SellerRevenueBreakdown() {
+  const isInsideHub = useIsInsideHub();
   const { store } = useSellerStatus();
   const [period, setPeriod] = useState<'7' | '30' | '90'>('30');
 
@@ -82,11 +84,15 @@ export default function SellerRevenueBreakdown() {
 
   return (
     <SellerLayout><div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-display font-bold">Revenue Breakdown</h1>
-          <p className="text-sm text-muted-foreground">Detailed view of your earnings by product, category, and time.</p>
+      {!isInsideHub && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-display font-bold">Revenue Breakdown</h1>
+            <p className="text-sm text-muted-foreground">Detailed view of your earnings by product, category, and time.</p>
+          </div>
         </div>
+      )}
+      <div className="flex items-center justify-end">
         <Select value={period} onValueChange={(v) => setPeriod(v as any)}>
           <SelectTrigger className="w-32">
             <SelectValue />

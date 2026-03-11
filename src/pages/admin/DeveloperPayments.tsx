@@ -13,7 +13,8 @@
  import { Textarea } from '@/components/ui/textarea';
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
  import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
- import { toast } from '@/hooks/use-toast';
+ import { toast } from 'sonner';
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
  import { format } from 'date-fns';
@@ -60,6 +61,7 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
  const paymentTypes = ['salary', 'commission', 'bonus', 'freelance', 'other'];
  
 export default function DeveloperPayments() {
+  const isInsideHub = useIsInsideHub();
   const { user } = useAuth();
   const { isAdmin, hasRole } = useAdminAuth();
   const navigate = useNavigate();
@@ -145,12 +147,12 @@ export default function DeveloperPayments() {
      },
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ['developer-payments'] });
-       toast({ title: 'Payment record created' });
+       toast.success('Payment record created');
        setIsAddOpen(false);
        setNewPayment({ developer_id: '', amount: '', payment_type: 'salary', due_date: '', notes: '' });
      },
      onError: (error) => {
-       toast({ title: 'Error', description: error.message, variant: 'destructive' });
+       toast.error(error.message || 'Failed to create payment');
      },
    });
  
@@ -169,14 +171,14 @@ export default function DeveloperPayments() {
      },
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ['developer-payments'] });
-       toast({ title: 'Payment marked as completed' });
+       toast.success('Payment marked as completed');
        setIsMarkPaidOpen(false);
        setSelectedPayment(null);
        setPaymentReference('');
        setPaymentMethod('');
      },
      onError: (error) => {
-       toast({ title: 'Error', description: error.message, variant: 'destructive' });
+       toast.error(error.message || 'Failed to mark as paid');
      },
    });
  
@@ -205,17 +207,19 @@ export default function DeveloperPayments() {
  
    return (
      <AdminLayout requiredRoles={['admin', 'developer']}>
-       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="space-y-6">
+        {!isInsideHub && (
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-2xl font-bold">{isDeveloperOnly ? 'My Payments' : 'Developer Payments'}</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-2xl font-display font-bold">{isDeveloperOnly ? 'My Payments' : 'Developer Payments'}</h1>
+              <p className="text-sm text-muted-foreground">
                 {isDeveloperOnly ? 'View your payment history' : 'Track payments owed and paid to developers'}
               </p>
             </div>
-            
+          </div>
+        )}
             {/* Only admins can add payments */}
-            {isAdmin && (
+            {isAdmin && !isInsideHub && (
               <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
                 <DialogTrigger asChild>
                   <Button>
@@ -305,10 +309,9 @@ export default function DeveloperPayments() {
                 </DialogContent>
               </Dialog>
             )}
-          </div>
  
-         {/* Summary Cards */}
-          <div className="flex gap-3">
+         {!isInsideHub && (
+           <div className="flex gap-3">
             <Card className="flex-1 min-w-0">
               <CardHeader className="flex flex-row items-center justify-between pb-2 p-3">
                 <CardTitle className="text-xs font-medium truncate">Total Owed</CardTitle>
@@ -336,7 +339,8 @@ export default function DeveloperPayments() {
                 <div className="text-lg font-bold truncate">£{stats.paidThisMonth.toFixed(2)}</div>
               </CardContent>
             </Card>
-         </div>
+           </div>
+         )}
  
          <Tabs value={activeTab} onValueChange={setActiveTab}>
            <TabsList>

@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 import { format, subDays, startOfMonth, startOfYear, isAfter, differenceInDays } from 'date-fns';
 import { showSuccessNotification } from '@/lib/nativeNotification';
 import { cn } from '@/lib/utils';
@@ -76,6 +77,7 @@ function Sparkline({ data, color, height = 32 }: { data: number[]; color: string
 }
 
 export default function AdminIncomeSources() {
+  const isInsideHub = useIsInsideHub();
   const [sourceFilter, setSourceFilter] = useState<IncomeSource>('all');
   const [periodFilter, setPeriodFilter] = useState<TimePeriod>('30d');
   const [searchQuery, setSearchQuery] = useState('');
@@ -375,33 +377,33 @@ export default function AdminIncomeSources() {
     <AdminLayout requiredPermissions={['view_income']}>
       <div className="space-y-6 w-full">
         {/* Page header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-display font-bold flex items-center gap-2">
-              <DollarSign className="h-6 w-6 text-primary" />
-              Income Sources
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Revenue breakdown across all platform streams
-            </p>
+        {!isInsideHub && (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-display font-bold">Income Sources</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Revenue breakdown across all platform streams
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Select value={periodFilter} onValueChange={(v) => setPeriodFilter(v as TimePeriod)}>
+                <SelectTrigger className="w-[140px] h-8 text-xs">
+                  <Calendar className="h-3 w-3 mr-1" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(periodLabels).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" onClick={exportCSV} className="h-8 text-xs">
+                <Download className="h-3 w-3 mr-1" /> Export
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Select value={periodFilter} onValueChange={(v) => setPeriodFilter(v as TimePeriod)}>
-              <SelectTrigger className="w-[140px] h-8 text-xs">
-                <Calendar className="h-3 w-3 mr-1" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(periodLabels).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>{v}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="sm" onClick={exportCSV} className="h-8 text-xs">
-              <Download className="h-3 w-3 mr-1" /> Export
-            </Button>
-          </div>
-        </div>
+        )}
+
 
         {/* Grand total */}
         <Card className="bg-card border-border">

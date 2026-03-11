@@ -13,8 +13,10 @@ import { format } from 'date-fns';
 import { Search, Download, ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 export default function SellerTransactionHistory() {
+  const isInsideHub = useIsInsideHub();
   const { store } = useSellerStatus();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -71,10 +73,12 @@ export default function SellerTransactionHistory() {
 
   return (
     <SellerLayout><div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold">Transaction History</h1>
-        <p className="text-sm text-muted-foreground">Complete log of every sale, refund, and fee.</p>
-      </div>
+      {!isInsideHub && (
+        <div>
+          <h1 className="text-2xl font-display font-bold">Transaction History</h1>
+          <p className="text-sm text-muted-foreground">Complete log of every sale, refund, and fee.</p>
+        </div>
+      )}
 
       <Card>
         <CardHeader className="pb-3">

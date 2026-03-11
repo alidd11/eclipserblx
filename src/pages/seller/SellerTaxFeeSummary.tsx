@@ -6,8 +6,10 @@ import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RevolutBarChart } from '@/components/ui/revolut-chart';
 import { Receipt, Percent, DollarSign, TrendingDown } from 'lucide-react';
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 export default function SellerTaxFeeSummary() {
+  const isInsideHub = useIsInsideHub();
   const { store } = useSellerStatus();
 
   const { data: transactions = [], isLoading } = useQuery({
@@ -70,10 +72,12 @@ export default function SellerTaxFeeSummary() {
 
   return (
     <SellerLayout><div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold">Tax & Fee Summary</h1>
-        <p className="text-sm text-muted-foreground">Understand your platform fees, processing costs, and net earnings.</p>
-      </div>
+      {!isInsideHub && (
+        <div>
+          <h1 className="text-2xl font-display font-bold">Tax & Fee Summary</h1>
+          <p className="text-sm text-muted-foreground">Understand your platform fees, processing costs, and net earnings.</p>
+        </div>
+      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

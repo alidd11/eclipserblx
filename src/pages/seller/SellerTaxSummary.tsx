@@ -14,6 +14,7 @@ import { Receipt, Download, Printer, Calendar, PoundSterling, TrendingUp, AlertT
 import { Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { SITE_NAME } from '@/lib/constants';
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 // UK tax year: 6 April – 5 April
 function getTaxYears(): { label: string; startDate: string; endDate: string }[] {
@@ -38,6 +39,7 @@ function getTaxYears(): { label: string; startDate: string; endDate: string }[] 
 }
 
 export default function SellerTaxSummary() {
+  const isInsideHub = useIsInsideHub();
   const { store } = useSellerStatus();
   const taxYears = getTaxYears();
   const [selectedYear, setSelectedYear] = useState(taxYears[0].label);
@@ -135,17 +137,17 @@ export default function SellerTaxSummary() {
     <SellerLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-3">
-            <Receipt className="h-8 w-8 text-primary" />
+        {!isInsideHub && (
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
-              <h1 className="text-2xl font-bold">Tax Summary</h1>
-              <p className="text-muted-foreground text-sm">
+              <h1 className="text-2xl font-display font-bold">Tax Summary</h1>
+              <p className="text-sm text-muted-foreground">
                 Annual earnings statement for your tax return
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+        )}
+        <div className="flex items-center justify-end gap-2">
             <Select value={selectedYear} onValueChange={setSelectedYear}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue />
@@ -163,7 +165,6 @@ export default function SellerTaxSummary() {
               <Printer className="h-4 w-4 mr-1" />
               Print / PDF
             </Button>
-          </div>
         </div>
 
         {/* Disclaimer */}

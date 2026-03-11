@@ -31,16 +31,17 @@ export function useFeatureFlag(flagName: string): UseFeatureFlagResult {
           .from('feature_flags')
           .select('id, enabled, user_ids')
           .eq('name', flagName)
-          .single();
+          .maybeSingle();
 
         if (flagError) {
-          // Flag doesn't exist - no access
-          if (flagError.code === 'PGRST116') {
-            setHasAccess(false);
-            setLoading(false);
-            return;
-          }
           throw flagError;
+        }
+
+        if (!flag) {
+          // Flag doesn't exist - no access
+          setHasAccess(false);
+          setLoading(false);
+          return;
         }
 
         // Check if flag is enabled and user is in the allowed list

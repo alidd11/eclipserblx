@@ -17,8 +17,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 export default function AdminAffiliates() {
+  const isInsideHub = useIsInsideHub();
   const [search, setSearch] = useState('');
   const [payoutStatusFilter, setPayoutStatusFilter] = useState<string>('all');
   const queryClient = useQueryClient();
@@ -245,19 +247,22 @@ export default function AdminAffiliates() {
   return (
     <AdminLayout requiredPermissions={['view_affiliates']}>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-display font-bold">Affiliate Program</h1>
-          <p className="text-muted-foreground">Manage commissions, payouts, and affiliate settings</p>
-        </div>
+        {!isInsideHub && (
+          <>
+            <div>
+              <h1 className="text-2xl font-display font-bold">Affiliate Program</h1>
+              <p className="text-sm text-muted-foreground">Manage commissions, payouts, and affiliate settings</p>
+            </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-          <AdminStatCard label="Affiliates" value={stats?.totalAffiliates || 0} valueColor="primary" />
-          <AdminStatCard label="Total Commissions" value={formatAmount(stats?.totalCommissions || 0)} valueColor="green" />
-          <AdminStatCard label="Pending" value={formatAmount(stats?.pendingCommissions || 0)} valueColor="yellow" />
-          <AdminStatCard label="Payout Requests" value={stats?.pendingPayoutCount || 0} valueColor="orange" />
-          <AdminStatCard label="Total Paid Out" value={formatAmount(stats?.totalPaidOut || 0)} valueColor="blue" />
-        </div>
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+              <AdminStatCard label="Affiliates" value={stats?.totalAffiliates || 0} valueColor="primary" />
+              <AdminStatCard label="Total Commissions" value={formatAmount(stats?.totalCommissions || 0)} valueColor="green" />
+              <AdminStatCard label="Pending" value={formatAmount(stats?.pendingCommissions || 0)} valueColor="yellow" />
+              <AdminStatCard label="Payout Requests" value={stats?.pendingPayoutCount || 0} valueColor="orange" />
+              <AdminStatCard label="Total Paid Out" value={formatAmount(stats?.totalPaidOut || 0)} valueColor="blue" />
+            </div>
+          </>
+        )}
 
         {/* Tabs */}
         <Tabs defaultValue="payouts" className="space-y-4">

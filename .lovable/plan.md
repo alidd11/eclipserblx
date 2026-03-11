@@ -1,97 +1,36 @@
 
 
-## Full Website Consistency Audit
+## Issues Identified
 
-After scanning the entire codebase, here are all the issues found, grouped by category.
+**Issue 1: Sidebar positioned at top of screen on desktop**
+The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
 
----
+**Issue 2: Excessive black empty space in the content area**
+The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
 
-### 1. Duplicate Headers Inside Hubs (Critical — visually broken)
+## Plan
 
-When child pages render inside hub tabs via `AdminHubProvider`, the `AdminLayout`/`SellerLayout` chrome is stripped. But each child page still renders its **own page header and stat cards**, duplicating content the hub already shows.
+### 1. Widen the content area on the Categories page
+- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
+- Reduce vertical padding between the header and grid
+- Tighten the gap between the page title/description and the cards
 
-**Admin pages (9 files):**
-- `SellerPayouts.tsx` — renders `<h1>Seller Payouts</h1>` + stat cards inside PayoutsHub
-- `DeveloperPayments.tsx` — renders `<h1>Developer Payments</h1>` + stat cards inside PayoutsHub
-- `ManualPayouts.tsx` — renders `<h1>Manual Payouts</h1>` + stat cards inside PayoutsHub
-- `Refunds.tsx` — renders `<h1>Refunds</h1>` with icon + stat cards inside DisputesRefundsHub
-- `Disputes.tsx` — renders `<h1>Disputes & Escrow</h1>` with icon + stat cards inside DisputesRefundsHub
-- `Affiliates.tsx` — renders `<h1>Affiliate Program</h1>` inside AffiliateHub
-- `AffiliateApplications.tsx` — renders `<h1>Affiliates</h1>` + stat cards inside AffiliateHub
-- `Referrals.tsx` — renders `<h1>Referrals</h1>` + stat cards inside AffiliateHub
-- `IncomeSources.tsx` — renders `<h1>Income Sources</h1>` with icon inside RevenueHub
+### 2. Improve the PageHeader component
+- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
+- This applies globally to all pages using PageHeader
 
-**Seller pages (5 files):**
-- `SellerBalance.tsx` — renders `<h1>Balance & Payouts</h1>` **AND** 3 duplicate summary cards (identical to SellerFinanceHub header cards)
-- `SellerRevenueBreakdown.tsx` — renders `<h1>Revenue Breakdown</h1>`
-- `SellerTransactionHistory.tsx` — renders `<h1>Transaction History</h1>`
-- `SellerTaxFeeSummary.tsx` — renders `<h1>Tax & Fee Summary</h1>`
-- `SellerTaxSummary.tsx` — renders `<h1>Tax Summary</h1>` with icon
+### 3. Make category cards fill space better
+- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
+- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
+- Reduce grid gap slightly so cards feel more connected
 
-**Fix:** Import `useIsInsideHub` and wrap headers/duplicate stats in `{!isInsideHub && (...)}` blocks in all 14 files.
+### 4. Sidebar desktop alignment fix
+- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
+- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
+- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
 
----
-
-### 2. Inconsistent Header Styling
-
-Headers across child pages use different patterns:
-
-| Pattern | Files |
-|---------|-------|
-| `text-3xl font-bold` | SellerPayouts, SellerBalance, Disputes |
-| `text-2xl font-bold` | DeveloperPayments, ManualPayouts, AffiliateApplications |
-| `text-2xl font-display font-bold` | Affiliates, Referrals, IncomeSources, SellerRevenueBreakdown, SellerTransactionHistory, SellerTaxFeeSummary |
-| `text-2xl font-bold` (no font-display) | SellerTaxSummary |
-
-Icons in headers: Refunds, Disputes, IncomeSources, SellerTaxSummary include icons in `<h1>`. Others do not.
-
-**Fix:** Standardise all to `text-2xl font-display font-bold` (the established project convention). Remove icons from standalone h1 elements (icons belong in hub headers only).
-
----
-
-### 3. Inconsistent Toast Import (Mixed `sonner` and `@/hooks/use-toast`)
-
-26 files use the deprecated `@/hooks/use-toast` import with the old `toast({ title, description })` API. 68 files use the correct `sonner` import with `toast.success()` / `toast.error()` API.
-
-**Affected files include:** `DeveloperPayments.tsx`, `DeveloperPaymentDetail.tsx`, `Recruiters.tsx`, `RecruiterPayouts.tsx`, `RecruiterCommissions.tsx`, `CustomDomains.tsx`, `Login.tsx`, `Subscribers.tsx`, `StoreApplications.tsx`, `SellerSettingsDomain.tsx`, `Recruiter.tsx`, `NotificationPreferences.tsx`, plus IP Shield pages and others.
-
-**Fix:** Migrate all 26 files from `import { toast } from '@/hooks/use-toast'` / `import { useToast } from '@/hooks/use-toast'` to `import { toast } from 'sonner'` and update call sites to use `toast.success(msg)` / `toast.error(msg)`.
-
----
-
-### 4. PWADiscordBanner forwardRef Warning (Console Error)
-
-The console shows: `Function components cannot be given refs`. The `PWADiscordBanner` component is a function component that receives a ref from `ScrollReveal` on the Landing page, but it doesn't use `forwardRef`. Interestingly, it does use `forwardRef` for its internal `DiscordLogo` SVG, but the component itself is not wrapped with `forwardRef`.
-
-**Fix:** Wrap `PWADiscordBanner` with `forwardRef` or remove the ref from the parent `ScrollReveal`.
-
----
-
-### 5. Feature Flag 406 Error (Non-blocking)
-
-Network request to `feature_flags?name=eq.marketplace` returns 406 because the flag row doesn't exist but the query expects a single object (`Accept: application/vnd.pgrst.object+json`). The code handles this gracefully (falls back), but it generates a network error on every page load.
-
-**Fix:** Change the query to use `.maybeSingle()` instead of `.single()` so PostgREST doesn't return a 406 when the row is missing.
-
----
-
-### Summary of Changes
-
-| Category | Files Affected | Severity |
-|----------|---------------|----------|
-| Duplicate headers in hubs | 14 pages | High (visual) |
-| Header style inconsistency | 14 pages | Medium (polish) |
-| Toast import inconsistency | ~26 files | Medium (maintenance) |
-| PWADiscordBanner ref warning | 1 component | Low (console noise) |
-| Feature flag 406 error | 1 hook | Low (network noise) |
-
-### Implementation Order
-
-1. Fix duplicate headers (14 files) — highest visual impact
-2. Standardise header typography (same 14 files, done together)
-3. Fix PWADiscordBanner ref warning (1 file)
-4. Fix feature flag 406 error (1 hook)
-5. Migrate toast imports (26 files — can be batched)
-
-No database changes required.
+### Files to modify
+- `src/pages/Categories.tsx` — widen container, tighten spacing
+- `src/components/ui/PageHeader.tsx` — reduce bottom margin
+- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
 

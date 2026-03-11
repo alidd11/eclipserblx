@@ -9,8 +9,10 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 export default function AdminReferrals() {
+  const isInsideHub = useIsInsideHub();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -134,13 +136,14 @@ export default function AdminReferrals() {
   return (
     <AdminLayout requiredPermissions={['view_referrals']}>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-display font-bold">Referrals</h1>
-          <p className="text-muted-foreground">Track and manage user referrals</p>
-        </div>
+        {!isInsideHub && (
+          <>
+            <div>
+              <h1 className="text-2xl font-display font-bold">Referrals</h1>
+              <p className="text-sm text-muted-foreground">Track and manage user referrals</p>
+            </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <Card className="bg-card border-border">
             <CardContent className="p-3 md:pt-6 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">
@@ -196,7 +199,9 @@ export default function AdminReferrals() {
               </div>
             </CardContent>
           </Card>
-        </div>
+            </div>
+          </>
+        )}
 
         {/* Referrals Table */}
         <Card className="bg-card border-border">
