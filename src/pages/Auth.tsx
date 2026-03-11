@@ -551,11 +551,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       });
       
       if (error || data?.error) {
-        toast({
-          title: 'Roblox Sign-In Failed',
-          description: data?.error || 'Failed to initiate Roblox sign-in',
-          variant: 'destructive',
-        });
+        toast.error('Roblox Sign-In Failed', { description: data?.error || 'Failed to initiate Roblox sign-in' });
         setErrors({ social: data?.error || 'Roblox sign-in failed' });
         setSocialLoading(false);
         return;
