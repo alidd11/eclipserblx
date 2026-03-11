@@ -178,7 +178,7 @@ export default function IPShieldTakedowns() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Takedown request submitted', description: 'Our team will review your request shortly.' });
+      toast.success('Takedown request submitted', { description: 'Our team will review your request shortly.' });
       setShowNewRequest(false);
       setForm({ claimant_name: '', claimant_email: '', claimant_address: '', infringement_type: '', target_platform: '', target_platform_other: '', infringing_url: '', original_work_url: '', original_work_description: '', evidence_notes: '', good_faith_statement: false, accuracy_statement: false, ownership_confirmed: false });
       setOriginalProofFiles([]);
