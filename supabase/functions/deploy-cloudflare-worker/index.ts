@@ -222,41 +222,81 @@ async function ensureWafSkipRule(token: string, zoneId: string) {
 
 async function ensureRedirectRule(token: string, zoneId: string) {
   const phase = "http_request_dynamic_redirect";
-  const name = "Eclipse /share/ OG proxy redirect";
   const ep = await cfApi(
     `https://api.cloudflare.com/client/v4/zones/${zoneId}/rulesets/phases/${phase}/entrypoint`,
     token
   );
 
-  const rule = {
+  const OG_PROXY = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy";
+
+  // Bot UA detection expression for Cloudflare Rules
+  const botExpr = [
+    'http.user_agent contains "Discordbot"',
+    'http.user_agent contains "Twitterbot"',
+    'http.user_agent contains "facebookexternalhit"',
+    'http.user_agent contains "LinkedInBot"',
+    'http.user_agent contains "Slackbot"',
+    'http.user_agent contains "TelegramBot"',
+    'http.user_agent contains "WhatsApp"',
+    'http.user_agent contains "Embedly"',
+    'http.user_agent contains "Iframely"',
+    'http.user_agent contains "vkShare"',
+    'http.user_agent contains "Pinterestbot"',
+  ].join(" or ");
+
+  // Dynamic paths (/products/*, /store/*) — redirect bots to og-proxy
+  const botRedirectName = "Eclipse Bot OG Redirect";
+  const botRule = {
     action: "redirect",
     action_parameters: {
       from_value: {
         status_code: 302,
         target_url: {
-          expression: `concat("https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy?path=", substring(http.request.uri.path, 6))`,
+          expression: `concat("${OG_PROXY}?path=", http.request.uri.path)`,
+        },
+        preserve_query_string: false,
+      },
+    },
+    expression: `(starts_with(http.request.uri.path, "/products/") or starts_with(http.request.uri.path, "/store/")) and (${botExpr})`,
+    description: botRedirectName,
+    enabled: true,
+  };
+
+  // /share/ prefix — always redirect (for explicit share links)
+  const shareName = "Eclipse /share/ OG proxy redirect";
+  const shareRule = {
+    action: "redirect",
+    action_parameters: {
+      from_value: {
+        status_code: 302,
+        target_url: {
+          expression: `concat("${OG_PROXY}?path=", substring(http.request.uri.path, 6))`,
         },
         preserve_query_string: false,
       },
     },
     expression: `starts_with(http.request.uri.path, "/share/")`,
-    description: name,
+    description: shareName,
     enabled: true,
   };
 
+  const desiredRules = [botRule, shareRule];
+
   if (ep.success && ep.result?.id) {
-    const rules = ep.result.rules || [];
-    const idx = rules.findIndex((r: any) => r.description === name);
-    const updated = [...rules];
-    if (idx >= 0) updated[idx] = { ...updated[idx], ...rule };
-    else updated.unshift(rule);
+    const existingRules = ep.result.rules || [];
+    // Remove our managed rules, keep others
+    const otherRules = existingRules.filter(
+      (r: any) => r.description !== botRedirectName && r.description !== shareName
+    );
+    const allRules = [...desiredRules, ...otherRules];
+
     const res = await cfApi(
       `https://api.cloudflare.com/client/v4/zones/${zoneId}/rulesets/${ep.result.id}`,
       token,
       {
         method: "PUT",
         body: JSON.stringify({
-          rules: updated.map((r: any) => ({
+          rules: allRules.map((r: any) => ({
             action: r.action,
             action_parameters: r.action_parameters,
             expression: r.expression,
@@ -266,7 +306,7 @@ async function ensureRedirectRule(token: string, zoneId: string) {
         }),
       }
     );
-    return { success: !!res.success, action: idx >= 0 ? "updated" : "added" };
+    return { success: !!res.success, rules: desiredRules.length };
   }
 
   const res = await cfApi(
@@ -278,7 +318,7 @@ async function ensureRedirectRule(token: string, zoneId: string) {
         name: "Eclipse Redirect Rules",
         kind: "zone",
         phase,
-        rules: [rule],
+        rules: desiredRules,
       }),
     }
   );
@@ -416,28 +456,40 @@ Deno.serve(async (req) => {
     );
     const pageRules = Array.isArray(pageRulesData.result) ? pageRulesData.result : [];
 
-    // DNS proxy check
+    // Check for Pages projects that might override Worker Routes
+    let pagesProjects: unknown[] = [];
+    try {
+      const pagesData = await cfApi(
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects`,
+        cfToken
+      );
+      if (pagesData.success && Array.isArray(pagesData.result)) {
+        pagesProjects = pagesData.result.map((p: any) => ({
+          name: p.name,
+          subdomain: p.subdomain,
+          domains: p.domains,
+          production_branch: p.production_branch,
+        }));
+      }
+    } catch { /* ignore */ }
+
+    // DNS proxy check — include record type and content for diagnosis
     const dnsData = await cfApi(
       `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records`,
       cfToken
     );
     const dnsResults: Record<string, unknown>[] = [];
     if (dnsData.success) {
-      const targets = ["eclipserblx.com", "www.eclipserblx.com", "*.eclipserblx.com"];
       const recs = (dnsData.result || []).filter(
-        (r: any) => targets.includes(r.name) && ["A", "AAAA", "CNAME"].includes(r.type)
+        (r: any) => ["A", "AAAA", "CNAME"].includes(r.type)
       );
       for (const rec of recs) {
-        if (!rec.proxied) {
-          await cfApi(
-            `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/dns_records/${rec.id}`,
-            cfToken,
-            { method: "PATCH", body: JSON.stringify({ proxied: true }) }
-          );
-          dnsResults.push({ name: rec.name, action: "enabled_proxy" });
-        } else {
-          dnsResults.push({ name: rec.name, action: "ok" });
-        }
+        dnsResults.push({
+          name: rec.name,
+          type: rec.type,
+          content: rec.content,
+          proxied: rec.proxied,
+        });
       }
     }
 
@@ -451,6 +503,7 @@ Deno.serve(async (req) => {
         redirect,
         sbfm,
         dns: dnsResults,
+        pagesProjects,
         pageRules: pageRules.map((r: any) => ({
           id: r.id,
           targets: r.targets,

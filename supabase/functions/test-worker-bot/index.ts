@@ -14,34 +14,90 @@ Deno.serve(async (req) => {
     targetUrl = "https://eclipserblx.com/products/13";
   }
 
-  const ua = "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)";
-  
-  const res = await fetch(targetUrl, {
-    headers: { "User-Agent": ua },
-    redirect: "manual",
-  });
-  
-  const body = await res.text();
-  const headers: Record<string, string> = {};
-  res.headers.forEach((v, k) => { headers[k] = v; });
+  const tests: Record<string, unknown> = {};
 
-  return new Response(JSON.stringify({
-    testedUrl: targetUrl,
-    status: res.status,
-    redirected: res.redirected,
-    finalUrl: res.url,
-    xWorker: headers['x-eclipse-worker'] || null,
-    cfRay: headers['cf-ray'] || null,
-    server: headers['server'] || null,
-    via: headers['via'] || null,
-    xPoweredBy: headers['x-powered-by'] || null,
-    contentType: headers['content-type'] || null,
-    location: headers['location'] || null,
-    allHeaderKeys: Object.keys(headers),
-    hasProductOg: body.includes('og:title') && !body.includes('Eclipse | Roblox Marketplace'),
-    bodyLen: body.length,
-    first200: body.slice(0, 200),
-  }, null, 2), {
+  // Test 1: Direct product URL with Discord bot UA
+  const ua = "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)";
+  const res1 = await fetch(targetUrl, { headers: { "User-Agent": ua }, redirect: "manual" });
+  const body1 = await res1.text();
+  const h1: Record<string, string> = {};
+  res1.headers.forEach((v, k) => { h1[k] = v; });
+  tests["directBot"] = {
+    url: targetUrl,
+    status: res1.status,
+    location: h1["location"] || null,
+    xWorker: h1["x-eclipse-worker"] || null,
+    server: h1["server"] || null,
+    cfRay: h1["cf-ray"] || null,
+    hasOg: body1.includes("og:title"),
+    first200: body1.slice(0, 200),
+  };
+
+  // Test 2: /share/ URL (should trigger Cloudflare Redirect Rule)
+  const shareUrl = targetUrl.replace("eclipserblx.com/", "eclipserblx.com/share/");
+  const res2 = await fetch(shareUrl, { headers: { "User-Agent": ua }, redirect: "manual" });
+  const body2 = await res2.text();
+  tests["shareRedirect"] = {
+    url: shareUrl,
+    status: res2.status,
+    location: res2.headers.get("location"),
+    hasOg: body2.includes("og:title"),
+    first300: body2.slice(0, 300),
+  };
+
+  // Test 3: If /share/ redirected, follow it
+  if (res2.status >= 300 && res2.status < 400 && res2.headers.get("location")) {
+    const redirectTarget = res2.headers.get("location")!;
+    const res3 = await fetch(redirectTarget, { headers: { "User-Agent": ua }, redirect: "manual" });
+    const body3 = await res3.text();
+    tests["shareFollowed"] = {
+      url: redirectTarget,
+      status: res3.status,
+      hasOg: body3.includes("og:title"),
+      ogTitle: body3.match(/og:title[^>]*content="([^"]+)"/)?.[1] || null,
+      first300: body3.slice(0, 300),
+    };
+  }
+
+  // Test 4: Query redirect rules + ZONE SETUP TYPE
+  const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
+  const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
+  if (cfToken && cfZoneId) {
+    try {
+      const [epRes, zoneRes] = await Promise.all([
+        fetch(
+          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/phases/http_request_dynamic_redirect/entrypoint`,
+          { headers: { Authorization: `Bearer ${cfToken}` } }
+        ),
+        fetch(
+          `https://api.cloudflare.com/client/v4/zones/${cfZoneId}`,
+          { headers: { Authorization: `Bearer ${cfToken}` } }
+        ),
+      ]);
+      const [epData, zoneData] = await Promise.all([epRes.json(), zoneRes.json()]);
+      
+      tests["redirectRulesState"] = {
+        success: epData.success,
+        ruleCount: epData.result?.rules?.length || 0,
+        rules: (epData.result?.rules || []).map((r: any) => ({
+          description: r.description,
+          enabled: r.enabled,
+        })),
+      };
+      
+      tests["zoneSetup"] = {
+        type: zoneData.result?.type,
+        status: zoneData.result?.status,
+        nameServers: zoneData.result?.name_servers,
+        originalNameServers: zoneData.result?.original_name_servers,
+        plan: zoneData.result?.plan?.name,
+      };
+    } catch (e) {
+      tests["error"] = (e as Error).message;
+    }
+  }
+
+  return new Response(JSON.stringify(tests, null, 2), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 });
