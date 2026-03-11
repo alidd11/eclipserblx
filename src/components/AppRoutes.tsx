@@ -405,8 +405,8 @@ export function AppRoutes() {
         <Route path="/admin/categories" element={<AdminCategories />} />
         <Route path="/admin/promotions" element={<AdminPromotions />} />
         <Route path="/admin/orders" element={<AdminOrders />} />
-        <Route path="/admin/refunds" element={<AdminRefunds />} />
-        <Route path="/admin/disputes" element={<AdminDisputes />} />
+        <Route path="/admin/refunds" element={<Navigate to="/admin/disputes-refunds?tab=refunds" replace />} />
+        <Route path="/admin/disputes" element={<Navigate to="/admin/disputes-refunds?tab=disputes" replace />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
         <Route path="/admin/discord-settings" element={<AdminDiscordSettings />} />
