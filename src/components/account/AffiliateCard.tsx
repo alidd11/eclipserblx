@@ -228,11 +228,7 @@ export function AffiliateCard() {
       queryClient.invalidateQueries({ queryKey: ['affiliate-balance', user?.id] });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
     },
   });
 
