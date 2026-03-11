@@ -228,6 +228,12 @@ async function performHealthCheck(domain: string) {
       } else if (httpResp.status === 403 && checks.is_cloudflare_zone && checks.resolves_to_cloudflare) {
         checks.error_code = "403_cloudflare";
         checks.diagnosis = "403 Forbidden — the seller's Cloudflare zone is blocking requests. The CNAME must use DNS-only (grey cloud) mode, or switch to an A record pointing to 185.158.133.1.";
+      } else if (httpResp.status === 403 && checks.is_cloudflare_zone && checks.resolves_to_lovable_ip) {
+        checks.error_code = "403_direct_a";
+        checks.diagnosis = "403 Forbidden — your A record points directly to the origin server, bypassing the proxy. Since your domain is on Cloudflare, you must use a CNAME record instead so traffic routes through the proxy correctly.";
+      } else if (httpResp.status === 403 && !checks.is_cloudflare_zone && checks.resolves_to_lovable_ip) {
+        checks.error_code = "403_direct_a";
+        checks.diagnosis = "403 Forbidden — your A record points to the origin but the domain is not registered as a custom hostname. Use a CNAME record pointing to stores.eclipserblx.com instead.";
       } else if (httpResp.status === 403) {
         checks.error_code = "403";
         checks.diagnosis = "403 Forbidden — access is being blocked. Check WAF rules or Cloudflare settings on the domain.";
