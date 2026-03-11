@@ -171,6 +171,8 @@ async function performHealthCheck(domain: string) {
     if (aRecords.length > 0) {
       checks.dns_ok = true;
       const ips = aRecords.map((a: any) => a.data);
+      checks.resolved_ips = ips;
+      checks.resolves_to_lovable_ip = ips.includes("185.158.133.1");
       // Cloudflare proxy IPs are in 104.16-31.x.x, 172.64-71.x.x ranges
       checks.resolves_to_cloudflare = ips.some((ip: string) => {
         const parts = ip.split(".").map(Number);
