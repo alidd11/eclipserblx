@@ -83,12 +83,8 @@ const navGroups: NavGroup[] = [
     title: 'Finance',
     icon: DollarSign,
     items: [
-      { title: 'Balance & Payouts', icon: DollarSign, href: '/seller/balance' },
-      { title: 'Revenue', icon: LineChart, href: '/seller/revenue' },
-      { title: 'Transactions', icon: Receipt, href: '/seller/transactions' },
-      { title: 'Fees & Summary', icon: TrendingUp, href: '/seller/fees' },
+      { title: 'Finance', icon: DollarSign, href: '/seller/finance' },
       { title: 'Documents', icon: FileText, href: '/seller/documents' },
-      { title: 'Tax Summary', icon: Calculator, href: '/seller/tax-summary' },
     ],
   },
   {

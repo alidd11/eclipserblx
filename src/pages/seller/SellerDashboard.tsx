@@ -94,7 +94,7 @@ export default function SellerDashboard() {
     { title: 'Analytics', href: '/seller/analytics', icon: BarChart3, description: 'View store metrics' },
     { title: 'Products', href: '/seller/products', icon: Package, description: 'Manage listings' },
     { title: 'Orders', href: '/seller/orders', icon: ShoppingCart, description: 'View sales' },
-    { title: 'Balance', href: '/seller/balance', icon: DollarSign, description: 'Payouts & earnings' },
+    { title: 'Balance', href: '/seller/finance', icon: DollarSign, description: 'Payouts & earnings' },
     { title: 'Discounts', href: '/seller/discounts', icon: Tag, description: 'Create promos' },
     { title: 'Categories', href: '/seller/tabs', icon: LayoutGrid, description: 'Customize pages' },
     { title: 'Promote', href: '/seller/promote', icon: Megaphone, description: 'Boost products' },

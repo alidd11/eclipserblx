@@ -1,5 +1,6 @@
 import { ReactNode, useLayoutEffect } from 'react';
 import { PageTransition } from '@/components/layout/PageTransition';
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 import { Navigate, useLocation } from 'react-router-dom';
 import { SellerSidebar } from './SellerSidebar';
 import { useAuth } from '@/hooks/useAuth';
@@ -63,6 +64,11 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   const loading = authLoading || sellerLoading || flagLoading || roleLoading;
   const canAccessSellerDashboard = hasSellerRole || isApprovedSeller;
   const canAccessMarketplace = hasAccess || isApprovedSeller;
+
+  const isInsideHub = useIsInsideHub();
+
+  // When rendered inside a hub tab, skip the full layout chrome
+  if (isInsideHub) return <>{children}</>;
 
   if (loading) {
     return (
