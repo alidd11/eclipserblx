@@ -99,10 +99,7 @@ export default function IPShieldDetections() {
       
       const { data, error } = await supabase.functions.invoke('scan-roblox-copies', { body });
       if (error) throw error;
-      toast({ 
-        title: 'Scan complete', 
-        description: `Found ${data?.total_detected || 0} potential copies. ${data?.thumbnails_analyzed || 0} thumbnails analysed. ${data?.evidence_collected || 0} evidence collected.` 
-      });
+      toast.success('Scan complete', { description: `Found ${data?.total_detected || 0} potential copies. ${data?.thumbnails_analyzed || 0} thumbnails analysed. ${data?.evidence_collected || 0} evidence collected.` });
       queryClient.invalidateQueries({ queryKey: ['copy-detections'] });
       queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
       queryClient.invalidateQueries({ queryKey: ['last-scan-run'] });
