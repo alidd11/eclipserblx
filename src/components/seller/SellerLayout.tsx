@@ -70,7 +70,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   // When rendered inside a hub tab, skip the full layout chrome
   if (isInsideHub) return <>{children}</>;
 
-
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
