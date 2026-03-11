@@ -226,8 +226,13 @@ async function performHealthCheck(domain: string) {
         checks.error_code = "redirect_loop";
         checks.diagnosis = "Redirect loop detected — check for conflicting redirect rules.";
       } else if (httpResp.status === 403 && checks.is_cloudflare_zone && checks.resolves_to_cloudflare) {
-        checks.error_code = "403_cloudflare";
-        checks.diagnosis = "403 Forbidden — the seller's Cloudflare zone is blocking requests. The CNAME must use DNS-only (grey cloud) mode, or switch to an A record pointing to 185.158.133.1.";
+        if (checks.cname_is_proxied) {
+          checks.error_code = "403_cloudflare";
+          checks.diagnosis = "403 Forbidden — your CNAME is Proxied (orange cloud) which triggers Cloudflare cross-zone blocking. Switch to DNS-only (grey cloud).";
+        } else {
+          checks.error_code = "403_cloudflare";
+          checks.diagnosis = "403 Forbidden — your DNS-only CNAME resolves through Cloudflare but the custom hostname may not be active yet. This can happen if the domain was recently added. Wait 5-10 minutes and re-check, or verify the custom hostname is active in your domain settings.";
+        }
       } else if (httpResp.status === 403 && checks.is_cloudflare_zone && checks.resolves_to_lovable_ip) {
         checks.error_code = "403_direct_a";
         checks.diagnosis = "403 Forbidden — your A record points directly to the origin server, bypassing the proxy. Since your domain is on Cloudflare, you must use a CNAME record instead so traffic routes through the proxy correctly.";
