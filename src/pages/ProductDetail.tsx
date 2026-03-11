@@ -784,7 +784,7 @@ export default function ProductDetail() {
                 size="sm"
                 className="flex-1 text-muted-foreground hover:text-foreground"
                 onClick={async () => {
-                  const shareUrl = `https://eclipserblx.com/share/products/${(product as any).product_number || productNumber}`;
+                  const shareUrl = `https://eclipserblx.com/products/${(product as any).product_number || productNumber}`;
                   if (navigator.share) {
                     try {
                       await navigator.share({ title: product.name, text: `Check out ${product.name} on Eclipse`, url: shareUrl });
