@@ -256,7 +256,7 @@ export default function StoreApplications() {
       setRejectionReason('');
     },
     onError: (error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error('Error', { description: error.message });
     },
   });
 

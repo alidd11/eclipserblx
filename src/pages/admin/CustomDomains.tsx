@@ -89,7 +89,7 @@ export default function AdminCustomDomains() {
       }
     },
     onError: (err: any) => {
-      toast({ title: 'Health check failed', description: err.message, variant: 'destructive' });
+      toast.error('Health check failed', { description: err.message });
     },
     onSettled: () => setRunningHealthCheck(null),
   });
