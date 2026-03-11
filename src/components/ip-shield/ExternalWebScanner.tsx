@@ -108,7 +108,7 @@ export function ExternalWebScanner() {
       if (error) throw error;
       setWhoisData(data);
     } catch (err: any) {
-      toast({ title: 'Lookup Failed', description: err.message, variant: 'destructive' });
+      toast.error('Lookup Failed', { description: err.message });
     } finally {
       setLookingUp(false);
     }
