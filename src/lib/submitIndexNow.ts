@@ -16,8 +16,9 @@ export async function submitUrlsToSearchEngines(urls: string[]) {
 
 const SITE_URL = 'https://eclipserblx.com';
 
-export function submitProductUrl(slug: string) {
-  submitUrlsToSearchEngines([`${SITE_URL}/products/${slug}`]);
+/** Submit a product URL using its numeric product_number (preferred). */
+export function submitProductUrl(productNumber: string | number) {
+  submitUrlsToSearchEngines([`${SITE_URL}/products/${productNumber}`]);
 }
 
 export function submitStoreUrl(slug: string) {

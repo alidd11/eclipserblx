@@ -134,7 +134,7 @@ serve(async (req) => {
           title,
           body,
           tag: `new-product-${product_id}`,
-          url: `/products/${product_slug}`,
+          url: productPath,
           requireInteraction: false,
         },
       }),

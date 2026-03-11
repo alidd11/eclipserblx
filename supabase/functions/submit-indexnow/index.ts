@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
 
       urlsToSubmit = [
         ...staticPages.map((p) => `${SITE_URL}${p}`),
-        ...products.map((p: any) => `${SITE_URL}/products/${p.slug}`),
+        ...products.map((p: any) => `${SITE_URL}/products/${p.product_number}`),
         ...stores.map((s: any) => `${SITE_URL}/store/${s.slug}`),
       ];
     }
