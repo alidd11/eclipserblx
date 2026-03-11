@@ -133,10 +133,7 @@ export default function Subscribers() {
     a.click();
     URL.revokeObjectURL(url);
 
-    toast({
-      title: 'Export Complete',
-      description: `Exported ${filteredSubscribers.length} subscribers.`,
-    });
+    toast.success('Export Complete', { description: `Exported ${filteredSubscribers.length} subscribers.` });
   };
 
   // Send mass email
