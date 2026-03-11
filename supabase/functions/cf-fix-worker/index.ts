@@ -6,42 +6,49 @@ Deno.serve(async (req) => {
 
   try {
     const CF_TOKEN = Deno.env.get("CLOUDFLARE_API_TOKEN");
-    const CF_ACCOUNT_ID = Deno.env.get("CLOUDFLARE_ACCOUNT_ID");
-    if (!CF_TOKEN || !CF_ACCOUNT_ID) {
+    const CF_ZONE_ID = Deno.env.get("CLOUDFLARE_ZONE_ID");
+    if (!CF_TOKEN || !CF_ZONE_ID) {
       return jsonOk({ error: "Missing CF secrets" }, 500);
     }
 
     const body = await req.json().catch(() => ({}));
     const action = body.action || "read";
+    const headers = { Authorization: `Bearer ${CF_TOKEN}`, "Content-Type": "application/json" };
+
+    // First get account ID from zone
+    const zoneResp = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}`, { headers });
+    const zoneData = await zoneResp.json();
+    const accountId = zoneData?.result?.account?.id;
+    if (!accountId) {
+      return jsonOk({ error: "Could not get account ID from zone", zoneData }, 500);
+    }
+
     const workerName = "eclipse-og-proxy";
 
-    const headers = {
-      Authorization: `Bearer ${CF_TOKEN}`,
-    };
-
     if (action === "read") {
-      // Read current worker script
       const resp = await fetch(
-        `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/workers/scripts/${workerName}`,
-        { headers }
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}`,
+        { headers: { Authorization: `Bearer ${CF_TOKEN}` } }
       );
-      const text = await resp.text();
-      return jsonOk({ status: resp.status, script: text.substring(0, 5000) });
+      const contentType = resp.headers.get("content-type") || "";
+      if (contentType.includes("multipart") || contentType.includes("javascript")) {
+        const text = await resp.text();
+        return jsonOk({ status: resp.status, content_type: contentType, script: text.substring(0, 8000) });
+      }
+      const data = await resp.json().catch(() => null);
+      return jsonOk({ status: resp.status, content_type: contentType, data });
     }
 
     if (action === "update") {
-      // Updated Worker script that properly preserves Content-Type headers
       const workerScript = `
 export default {
   async fetch(request, env) {
     var url = new URL(request.url);
     var hostname = url.hostname;
 
-    // Only intercept *.eclipserblx.com subdomains (not the main domain)
     var isSubdomain = hostname.endsWith('.eclipserblx.com') && hostname !== 'eclipserblx.com' && hostname !== 'www.eclipserblx.com';
 
     if (!isSubdomain) {
-      // For the main domain, handle OG bot detection as before
       var ua = (request.headers.get('user-agent') || '').toLowerCase();
       var bots = ['twitterbot', 'facebookexternalhit', 'linkedinbot', 'discordbot', 'slackbot', 'telegrambot', 'whatsapp', 'googlebot', 'bingbot'];
       var isBot = bots.some(function(b) { return ua.indexOf(b) !== -1; });
@@ -59,7 +66,7 @@ export default {
       return fetch(request);
     }
 
-    // For subdomains: proxy to origin, preserving all headers
+    // For subdomains: proxy to origin preserving all headers including Content-Type
     return fetchOrigin(request, url);
   }
 }
@@ -68,7 +75,6 @@ async function fetchOrigin(request, url) {
   var originHost = 'roleplay-hub-shop.lovable.app';
   var originUrl = 'https://' + originHost + url.pathname + url.search;
   
-  // Clone headers but override Host
   var newHeaders = new Headers(request.headers);
   newHeaders.set('Host', originHost);
   newHeaders.set('X-Forwarded-Host', url.hostname);
@@ -80,9 +86,8 @@ async function fetchOrigin(request, url) {
     redirect: 'follow'
   });
 
-  // Create new response preserving ALL original headers (including Content-Type)
+  // Clone response preserving ALL headers (especially Content-Type for JS/CSS files)
   var respHeaders = new Headers(originResp.headers);
-  // Remove headers that shouldn't be forwarded
   respHeaders.delete('transfer-encoding');
   
   return new Response(originResp.body, {
@@ -93,19 +98,16 @@ async function fetchOrigin(request, url) {
 }
 `;
 
-      // Upload as ES module using multipart form data
       const formData = new FormData();
-      
       const metadata = JSON.stringify({
         main_module: "worker.mjs",
         compatibility_date: "2024-01-01",
       });
-      
       formData.append("metadata", new Blob([metadata], { type: "application/json" }));
       formData.append("worker.mjs", new Blob([workerScript], { type: "application/javascript+module" }), "worker.mjs");
       
       const resp = await fetch(
-        `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/workers/scripts/${workerName}`,
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${CF_TOKEN}` },
@@ -116,7 +118,7 @@ async function fetchOrigin(request, url) {
       return jsonOk({ status: resp.status, success: result.success, errors: result.errors });
     }
 
-    return jsonOk({ error: "Unknown action. Use 'read' or 'update'" }, 400);
+    return jsonOk({ error: "Unknown action" }, 400);
   } catch (e) {
     return internalError(e);
   }
