@@ -118,10 +118,10 @@ Deno.serve(async (req) => {
         : `Browse ${store.name}'s products on Eclipse — ${store.product_count || 0} items available.`;
       const img = store.banner_url || store.logo_url || DEFAULT_IMAGE;
 
-      // If path matches a product slug, try to serve product-level OG
-      const pm = path.match(/^\/products\/([a-zA-Z0-9][a-zA-Z0-9\-_]{0,200})$/);
+      // If path matches a product number, try to serve product-level OG
+      const pm = path.match(/^\/products\/(\d+)$/);
       if (pm) {
-        const product = await pgQuery("products", "name,description,images,price,slug,store_id", `slug=eq.${pm[1]}&store_id=eq.${store.id}&is_active=eq.true`);
+        const product = await pgQuery("products", "name,description,images,price,product_number,store_id", `product_number=eq.${pm[1]}&store_id=eq.${store.id}&is_active=eq.true`);
         if (product) {
           const pDesc = product.description ? product.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Check out ${product.name} on ${store.name}`;
           const pImg = product.images?.[0] || img;
@@ -149,12 +149,12 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Product pages
-  const pm = path.match(/^\/products\/([a-zA-Z0-9][a-zA-Z0-9\-_]{0,200})$/);
+  // Product pages — now numeric: /products/12345
+  const pm = path.match(/^\/products\/(\d+)$/);
   if (pm) {
-    const slug = pm[1];
-    const product = await pgQuery("products", "name,description,images,price,slug,stores(name)", `slug=eq.${slug}&is_active=eq.true`);
-    const pageUrl = `${SITE_URL}/products/${encodeURIComponent(slug)}`;
+    const productNumber = pm[1];
+    const product = await pgQuery("products", "name,description,images,price,product_number,stores(name)", `product_number=eq.${productNumber}&is_active=eq.true`);
+    const pageUrl = `${SITE_URL}/products/${encodeURIComponent(productNumber)}`;
     if (!product) return new Response(null, { status: 302, headers: { Location: pageUrl, ...corsHeaders } });
 
     const storeName = product.stores?.name;

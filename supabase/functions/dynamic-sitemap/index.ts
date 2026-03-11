@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
     // Fetch all active, approved products
     const { data: products } = await supabase
       .from('products')
-      .select('slug, created_at')
+      .select('product_number, created_at')
       .eq('is_active', true)
       .eq('moderation_status', 'approved')
       .order('created_at', { ascending: false })
@@ -71,11 +71,11 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Individual product pages
+    // Individual product pages (now using product_number)
     if (products) {
       for (const p of products) {
         const lastmod = p.created_at ? p.created_at.split('T')[0] : '';
-        xml += `\n  <url><loc>${SITE_URL}/products/${p.slug}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}<changefreq>weekly</changefreq><priority>0.8</priority></url>`;
+        xml += `\n  <url><loc>${SITE_URL}/products/${(p as any).product_number}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}<changefreq>weekly</changefreq><priority>0.8</priority></url>`;
       }
     }
 

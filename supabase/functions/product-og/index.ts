@@ -10,8 +10,8 @@ const SITE_URL = "https://eclipserblx.com";
 const FALLBACK_IMAGE = "https://storage.googleapis.com/gpt-engineer-file-uploads/6XoLGVy9Aseup6dIxodIWS9uGsS2/social-images/social-1770521924890-IMG_4300.png";
 const SITE_NAME = "Eclipse";
 
-// Validate slug format: alphanumeric, hyphens, underscores only
-const SLUG_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9\-_]{0,200}$/;
+// Validate product number: digits only
+const NUMBER_REGEX = /^\d{1,20}$/;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -19,10 +19,10 @@ Deno.serve(async (req) => {
   }
 
   const url = new URL(req.url);
-  const slug = url.searchParams.get("slug");
+  const productNumber = url.searchParams.get("product_number") || url.searchParams.get("slug");
 
-  if (!slug || !SLUG_REGEX.test(slug)) {
-    return new Response("Invalid or missing slug parameter", { status: 400 });
+  if (!productNumber || !NUMBER_REGEX.test(productNumber)) {
+    return new Response("Invalid or missing product_number parameter", { status: 400 });
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -31,12 +31,12 @@ Deno.serve(async (req) => {
 
   const { data: product } = await supabase
     .from("products")
-    .select("name, description, images, price, slug, stores(name)")
-    .eq("slug", slug)
+    .select("name, description, images, price, product_number, stores(name)")
+    .eq("product_number", Number(productNumber))
     .eq("is_active", true)
     .maybeSingle();
 
-  const productUrl = `${SITE_URL}/products/${encodeURIComponent(slug)}`;
+  const productUrl = `${SITE_URL}/products/${encodeURIComponent(productNumber)}`;
 
   if (!product) {
     // Redirect to the product page anyway
