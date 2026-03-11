@@ -137,7 +137,7 @@ export default function PlatformLedger() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-5 md:overflow-visible">
           <SummaryCard
             label="Gross Sales"
             value={fmt(summary?.totalGross || 0)}
