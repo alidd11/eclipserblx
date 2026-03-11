@@ -444,7 +444,7 @@ export function AppRoutes() {
         <Route path="/admin/public-documents" element={<AdminPublicDocuments />} />
         <Route path="/admin/seller-documents" element={<AdminSellerDocuments />} />
         <Route path="/admin/seller-recruitment" element={<AdminSellerRecruitment />} />
-        <Route path="/admin/manual-payouts" element={<AdminManualPayouts />} />
+        <Route path="/admin/manual-payouts" element={<Navigate to="/admin/payouts?tab=manual" replace />} />
         <Route path="/admin/seller-tickets" element={<AdminSellerTickets />} />
         <Route path="/admin/role-permissions" element={<AdminRolePermissions />} />
         
