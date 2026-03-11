@@ -132,11 +132,7 @@ export const DiscordLinkCard = ({
   const handleLinkWithOAuth = async () => {
     const clientId = getDiscordClientId();
     if (!clientId) {
-      toast({
-        title: "Configuration Error",
-        description: "Discord OAuth is not configured. Please contact support.",
-        variant: "destructive",
-      });
+      toast.error("Configuration Error", { description: "Discord OAuth is not configured. Please contact support." });
       return;
     }
     setIsLinking(true);
