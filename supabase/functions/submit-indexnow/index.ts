@@ -27,13 +27,12 @@ Deno.serve(async (req) => {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-      // Fetch active product slugs
+      // Fetch active product numbers
       const productsRes = await fetch(
-        `${supabaseUrl}/rest/v1/products?select=slug&is_active=eq.true&moderation_status=eq.approved&limit=1000`,
+        `${supabaseUrl}/rest/v1/products?select=product_number&is_active=eq.true&moderation_status=eq.approved&limit=1000`,
         { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } }
       );
       const products = await productsRes.json();
-
       // Fetch active store slugs
       const storesRes = await fetch(
         `${supabaseUrl}/rest/v1/stores?select=slug&is_active=eq.true&limit=1000`,
