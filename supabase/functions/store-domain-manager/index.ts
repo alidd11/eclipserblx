@@ -290,7 +290,6 @@ async function claimSubdomain(userId: string, storeId: string, slug: string) {
     ssl_status: sslStatus,
     verified_at: new Date().toISOString(),
     is_primary: true,
-    cloudflare_hostname_id: cfHostnameId,
   }).select().single();
 
   if (error) return jsonError(error.message, 500);
