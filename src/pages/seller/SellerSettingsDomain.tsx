@@ -17,6 +17,7 @@ import {
   Shield, CloudOff, XCircle, Info, Activity, Cloud,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { DomainHealthDisplay } from '@/components/domains/DomainHealthDisplay';
 
 function StatusBadge({ status }: { status: string }) {
   const variants: Record<string, { className: string; label: string }> = {
