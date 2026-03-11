@@ -281,7 +281,7 @@ export default function SellerPayouts() {
                       </TableCell>
                       <TableCell className="text-sm">
                         {payout.stores?.payout_method === 'paypal' 
-                          ? payout.stores?.paypal_email || "Not set"
+                          ? payout.stores?.store_payment_details?.[0]?.paypal_email || payout.stores?.store_payment_details?.paypal_email || "Not set"
                           : payout.stores?.payout_method === 'bank' 
                             ? "Bank Transfer"
                             : payout.stores?.payout_method === 'stripe' 
