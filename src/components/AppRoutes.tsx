@@ -190,6 +190,7 @@ const SellerTaxSummary = lazy(() => import("@/pages/seller/SellerTaxSummary"));
 const SellerSettingsDomain = lazy(() => import("@/pages/seller/SellerSettingsDomain"));
 const SellerStorePages = lazy(() => import("@/pages/seller/SellerStorePages"));
 const SellerStoreBuilder = lazy(() => import("@/pages/seller/SellerStoreBuilder"));
+const SellerFinanceHub = lazy(() => import("@/pages/seller/SellerFinanceHub"));
 
 // Store custom page
 const StoreCustomPage = lazy(() => import("@/pages/StoreCustomPage"));
