@@ -299,11 +299,7 @@ export default function Affiliate() {
       toast.success("Payout settings updated");
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error", { description: error.message });
     },
   });
 
