@@ -68,7 +68,7 @@ export default function RecruiterApplications() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Application approved', description: 'Recruiter role has been assigned.' });
+      toast.success('Application approved', { description: 'Recruiter role has been assigned.' });
       queryClient.invalidateQueries({ queryKey: ['recruiter-applications-pending'] });
       queryClient.invalidateQueries({ queryKey: ['recruiter-stats'] });
       setSelectedApp(null);
