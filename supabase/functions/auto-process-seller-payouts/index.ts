@@ -195,8 +195,54 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Route by payout method
-        if (payoutMethod === 'stripe' || (!payoutMethod && storeId)) {
+        // === SMART FALLBACK: resolve effective payout method ===
+        let effectiveMethod = payoutMethod || 'stripe';
+        const storePayment = storeId ? paymentDetailsMap.get(storeId) : null;
+        let fallbackUsed = false;
+
+        if (effectiveMethod === 'stripe' && !storePayment?.stripe_account_id) {
+          // Stripe selected but no Connect account — try PayPal fallback
+          if (storePayment?.paypal_email) {
+            logStep('Falling back from stripe to paypal (no Stripe account)', { payoutId, storeId });
+            effectiveMethod = 'paypal';
+            fallbackUsed = true;
+          } else {
+            logStep('No Stripe account and no PayPal email — skipping', { payoutId, storeId });
+            results.skipped++;
+            results.details.push({ payoutId, status: 'skipped', reason: 'no_payment_method_available' });
+            continue;
+          }
+        } else if (effectiveMethod === 'paypal' && !storePayment?.paypal_email) {
+          // PayPal selected but no email — try Stripe fallback
+          if (storePayment?.stripe_account_id && storePayment?.payouts_enabled) {
+            logStep('Falling back from paypal to stripe (no PayPal email)', { payoutId, storeId });
+            effectiveMethod = 'stripe';
+            fallbackUsed = true;
+          } else {
+            logStep('No PayPal email and no Stripe account — skipping', { payoutId, storeId });
+            results.skipped++;
+            results.details.push({ payoutId, status: 'skipped', reason: 'no_payment_method_available' });
+            continue;
+          }
+        }
+
+        // Auto-correct the store's payout_method to prevent repeated fallbacks
+        if (fallbackUsed && storeId) {
+          try {
+            await supabase
+              .from('stores')
+              .update({ payout_method: effectiveMethod })
+              .eq('id', storeId);
+            logStep('Auto-corrected store payout_method', { storeId, from: payoutMethod, to: effectiveMethod });
+          } catch (e) {
+            logStep('Warning: failed to auto-correct payout_method', { storeId });
+          }
+        }
+
+        const fallbackNote = fallbackUsed ? ` (auto-fallback from ${payoutMethod})` : '';
+
+        // Route by effective payout method
+        if (effectiveMethod === 'stripe') {
           // === STRIPE CONNECT ===
           if (!stripe) {
             logStep(`No Stripe key, skipping`, { payoutId });
@@ -205,7 +251,6 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          const storePayment = storeId ? paymentDetailsMap.get(storeId) : null;
           if (!storePayment?.stripe_account_id) {
             logStep(`No Stripe account for store`, { payoutId, storeId });
             results.skipped++;
