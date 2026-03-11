@@ -371,11 +371,7 @@ export default function AdminCategories() {
       queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
     },
     onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Failed to reorder categories.',
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: 'Failed to reorder categories.' });
     },
   });
 
