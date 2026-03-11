@@ -238,11 +238,13 @@ export default function RevenueHub() {
             </Tabs>
           </TabsContent>
 
-          <TabsContent value="sources">
-            <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-              <IncomeSourcesContent />
-            </Suspense>
-          </TabsContent>
+          <AdminHubProvider>
+            <TabsContent value="sources">
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <AdminIncomeSources />
+              </Suspense>
+            </TabsContent>
+          </AdminHubProvider>
 
           <TabsContent value="sellers">
             <SellerEarningsTab />
@@ -251,11 +253,4 @@ export default function RevenueHub() {
       </div>
     </AdminLayout>
   );
-}
-
-/** Inline the IncomeSources page content without AdminLayout wrapper */
-function IncomeSourcesContent() {
-  // We lazy-load the full page but it wraps in AdminLayout — we need just the content
-  // Instead, render the full page as-is since it has its own AdminLayout
-  return <AdminIncomeSources />;
 }
