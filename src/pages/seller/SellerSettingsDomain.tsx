@@ -695,5 +695,6 @@ export default function SellerSettingsDomain() {
         </CardContent>
       </Card>
     </div>
+    </SellerLayout>
   );
 }
