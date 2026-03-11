@@ -672,45 +672,50 @@ async function autoFixDns(userId: string, domainId: string) {
         errors.push(`Failed to create ${preferredRecord.type}: ${JSON.stringify(createData?.errors)}`);
       }
     }
-    const wwwDomain = `www.${domain}`;
+    const preferredWwwRecord = getPreferredWwwRecord(domain, preferredRecord.type);
     const { data: wwwListData } = await cfFetch<any[]>(
       sellerToken,
-      `${CF_API}/zones/${sellerZoneId}/dns_records?name=${encodeURIComponent(wwwDomain)}`
+      `${CF_API}/zones/${sellerZoneId}/dns_records?name=${encodeURIComponent(preferredWwwRecord.name)}`
     );
     const wwwRecords = wwwListData?.result ?? [];
 
+    const hasPreferredWwwRecord = wwwRecords.some((rec: any) => {
+      if (preferredWwwRecord.type === "A") {
+        return rec.type === "A" && rec.content === preferredWwwRecord.content && rec.proxied === false;
+      }
+      return rec.type === "CNAME" && rec.content === preferredWwwRecord.content && rec.proxied === false;
+    });
+
     // Delete bad www records
     for (const rec of wwwRecords) {
-      if (rec.type === "CNAME" && rec.proxied === true) {
+      const shouldDelete = preferredWwwRecord.type === "A"
+        ? (rec.type === "CNAME" || (rec.type === "A" && (rec.content !== preferredWwwRecord.content || rec.proxied === true)))
+        : (rec.type === "A" || (rec.type === "CNAME" && (rec.content !== preferredWwwRecord.content || rec.proxied === true)));
+
+      if (shouldDelete) {
         await cfFetch<any>(sellerToken, `${CF_API}/zones/${sellerZoneId}/dns_records/${rec.id}`, { method: "DELETE" });
-        fixes.push(`Deleted proxied www CNAME`);
-      } else if (rec.type === "A") {
-        await cfFetch<any>(sellerToken, `${CF_API}/zones/${sellerZoneId}/dns_records/${rec.id}`, { method: "DELETE" });
-        fixes.push(`Deleted www A record`);
+        fixes.push(`Deleted conflicting www ${rec.type} record: ${rec.content}${rec.proxied ? " (proxied)" : ""}`);
       }
     }
 
-    // Create www CNAME if needed
-    const hasWwwCname = wwwRecords.some(
-      (r: any) => r.type === "CNAME" && r.content === "stores.eclipserblx.com" && !r.proxied
-    );
-    if (!hasWwwCname) {
+    // Create preferred www record if needed
+    if (!hasPreferredWwwRecord) {
       const { data: wwwData } = await cfFetch<any>(
         sellerToken,
         `${CF_API}/zones/${sellerZoneId}/dns_records`,
         {
           method: "POST",
           body: JSON.stringify({
-            type: "CNAME",
-            name: wwwDomain,
-            content: "stores.eclipserblx.com",
-            proxied: false,
+            type: preferredWwwRecord.type,
+            name: preferredWwwRecord.name,
+            content: preferredWwwRecord.content,
+            proxied: preferredWwwRecord.proxied,
             ttl: 1,
           }),
         }
       );
       if (wwwData?.success) {
-        fixes.push(`Created www CNAME: ${wwwDomain} → stores.eclipserblx.com (DNS-only)`);
+        fixes.push(`Created ${preferredWwwRecord.type} for www: ${preferredWwwRecord.name} → ${preferredWwwRecord.content} (DNS-only)`);
       }
     }
 
