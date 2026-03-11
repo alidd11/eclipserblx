@@ -217,10 +217,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       if (response.error) {
         toast.error(t('common.error'), { description: 'Failed to resend code. Please try again.' });
       } else {
-        toast({
-          title: t('auth.codeSent'),
-          description: t('auth.newCodeSent'),
-        });
+        toast.success(t('auth.codeSent'), { description: t('auth.newCodeSent') });
         setOtpCode('');
       }
     } finally {
