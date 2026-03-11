@@ -28,6 +28,12 @@ interface DomainHealthDisplayProps {
   isCloudflare?: boolean;
   /** Compact mode for table rows / admin views */
   compact?: boolean;
+  /** Callback when the auto-fix button is clicked */
+  onAutoFix?: () => void;
+  /** Whether auto-fix is currently running */
+  isAutoFixing?: boolean;
+  /** Whether the seller has saved Cloudflare credentials */
+  hasCloudflareCredentials?: boolean;
 }
 
 const ERROR_INFO: Record<string, {
