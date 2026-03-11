@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
       // Fetch products with images first, then others
       const { data: productsWithImages } = await supabase
         .from("products")
-        .select("id, name, slug, price, images")
+        .select("id, name, slug, product_number, price, images")
         .eq("store_id", store.id)
         .eq("is_active", true)
         .eq("moderation_status", "approved")
