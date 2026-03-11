@@ -62,48 +62,81 @@ export function StoreDomainProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    let cancelled = false;
+
     const resolve = async () => {
+      const hn = hostname.toLowerCase();
+      console.log('[StoreDomain] Resolving hostname:', hn);
+
+      // ── Attempt 1: Direct Supabase client query ──
       try {
-        console.log('[StoreDomain] Resolving hostname:', hostname);
-        
-        // Primary: direct database query (most reliable, avoids edge function invoke issues on proxied domains)
-        const { data: directData, error: directError } = await supabase
+        const { data, error } = await supabase
           .from('store_domains')
           .select('store_id, domain, domain_type, is_primary, stores!inner(slug, name, logo_url, accent_color, banner_url)')
-          .eq('domain', hostname.toLowerCase())
+          .eq('domain', hn)
           .eq('status', 'active')
-          .single();
-        
-        console.log('[StoreDomain] Direct query result:', { directData, directError });
-        
-        if (directData && directData.store_id) {
-          setStoreDomainData(directData as unknown as StoreDomainData);
+          .maybeSingle();
+
+        console.log('[StoreDomain] Direct query:', { data, error: error?.message });
+
+        if (!cancelled && data?.store_id) {
+          setStoreDomainData(data as unknown as StoreDomainData);
+          setLoading(false);
           return;
         }
-        
-        // Fallback: edge function (in case RLS blocks the direct query)
-        console.log('[StoreDomain] Direct query failed, trying edge function...');
+      } catch (e) {
+        console.warn('[StoreDomain] Direct query exception:', e);
+      }
+
+      // ── Attempt 2: Edge function ──
+      try {
         const { data, error } = await supabase.functions.invoke('store-domain-manager', {
-          body: { action: 'resolve-hostname', hostname },
+          body: { action: 'resolve-hostname', hostname: hn },
         });
-        console.log('[StoreDomain] Edge function response:', { data, error, dataType: typeof data });
-        
+        console.log('[StoreDomain] Edge fn:', { data, error: error?.message, type: typeof data });
+
         let parsed = data;
         if (typeof data === 'string') {
-          try { parsed = JSON.parse(data); } catch { /* not JSON string */ }
+          try { parsed = JSON.parse(data); } catch { /* ignore */ }
         }
-        
-        if (parsed && parsed.store_id) {
+        if (!cancelled && parsed?.store_id) {
           setStoreDomainData(parsed as StoreDomainData);
+          setLoading(false);
+          return;
         }
       } catch (e) {
-        console.error('[StoreDomain] Failed to resolve store domain:', e);
-      } finally {
-        setLoading(false);
+        console.warn('[StoreDomain] Edge fn exception:', e);
       }
+
+      // ── Attempt 3: Raw fetch to REST API ──
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const restUrl = `${supabaseUrl}/rest/v1/store_domains?select=store_id,domain,domain_type,is_primary,stores!inner(slug,name,logo_url,accent_color,banner_url)&domain=eq.${encodeURIComponent(hn)}&status=eq.active`;
+        const res = await fetch(restUrl, {
+          headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${anonKey}`,
+            Accept: 'application/json',
+          },
+        });
+        const arr = await res.json();
+        console.log('[StoreDomain] Raw fetch:', arr);
+        if (!cancelled && Array.isArray(arr) && arr.length > 0 && arr[0].store_id) {
+          setStoreDomainData(arr[0] as unknown as StoreDomainData);
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        console.warn('[StoreDomain] Raw fetch exception:', e);
+      }
+
+      console.error('[StoreDomain] All resolution methods failed for:', hn);
+      if (!cancelled) setLoading(false);
     };
 
     resolve();
+    return () => { cancelled = true; };
   }, [hostname, isCustomStoreDomain]);
 
   return (
