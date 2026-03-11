@@ -158,8 +158,10 @@ Deno.serve(async (req) => {
     // Process each payout
     for (const payout of payouts) {
       const payoutId = payout.id;
-      const storeId = payout.stores?.id;
-      const payoutMethod = payout.stores?.payout_method;
+      // stores may be an array (no FK) or object — normalize
+      const storeData = Array.isArray(payout.stores) ? payout.stores[0] : payout.stores;
+      const storeId = storeData?.id || payout.store_id;
+      const payoutMethod = storeData?.payout_method;
 
       try {
         // === ATOMIC CLAIM: Prevent duplicate processing by concurrent runs ===
