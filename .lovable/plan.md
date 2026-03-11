@@ -1,36 +1,48 @@
 
 
-## Issues Identified
+## Comprehensive SelectTrigger Width Standardization
 
-**Issue 1: Sidebar positioned at top of screen on desktop**
-The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
+### Problem
+Despite previous rounds of fixes, many filter/dropdown triggers across the dashboards still use inconsistent fixed widths (`w-32`, `w-[130px]`, `w-[140px]`, `w-[150px]`, `w-[160px]`, `w-[180px]`) or have wrapper divs with fixed widths (`w-48`, `w-64`). This creates visual inconsistency on mobile.
 
-**Issue 2: Excessive black empty space in the content area**
-The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
+### Standard
+All dashboard filter `SelectTrigger` components should use: `w-auto min-w-[140px]`
 
-## Plan
+Exceptions (left unchanged):
+- Form fields inside dialogs/modals (these should fill their container)
+- Inline table cell selects (role changers, status updaters inside rows)
+- Sort selectors on public pages (SearchResults, AllStores) -- these have intentional fixed widths with icons
 
-### 1. Widen the content area on the Categories page
-- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
-- Reduce vertical padding between the header and grid
-- Tighten the gap between the page title/description and the cards
+### Files to Update
 
-### 2. Improve the PageHeader component
-- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
-- This applies globally to all pages using PageHeader
+**Seller pages (4 files):**
+1. `SellerAnalytics.tsx` line 253 -- `w-32` to `w-auto min-w-[140px]`
+2. `SellerTransactionHistory.tsx` line 92 -- `w-32` to `w-auto min-w-[140px]`
+3. `SellerRevenueBreakdown.tsx` line 97 -- `w-32` to `w-auto min-w-[140px]`
+4. `SellerTaxSummary.tsx` line 152 -- `w-[140px]` to `w-auto min-w-[140px]`
 
-### 3. Make category cards fill space better
-- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
-- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
-- Reduce grid gap slightly so cards feel more connected
+**Admin pages (7 files):**
+5. `Referrals.tsx` line 222 -- `w-32` to `w-auto min-w-[140px]`
+6. `Disputes.tsx` line 341 -- `w-[130px]` to `w-auto min-w-[140px]`
+7. `PlatformLedger.tsx` lines 183, 193 -- `w-[140px]` and `w-[180px]` to `w-auto min-w-[140px]`
+8. `Applications.tsx` line 344 -- `w-[180px]` to `w-auto min-w-[140px]`
+9. `SellerCommissions.tsx` line 176 -- `w-[150px]` to `w-auto min-w-[140px]`
+10. `IncomeSources.tsx` lines 390, 556 -- `w-[140px]` and `w-[130px]` to `w-auto min-w-[140px]`
+11. `StaffActivity.tsx` lines 241, 257 -- remove wrapper `div` fixed widths (`w-48`, `w-64`), add `w-auto min-w-[140px]` to the triggers
 
-### 4. Sidebar desktop alignment fix
-- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
-- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
-- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
+**IP Staff pages (1 file):**
+12. `IPStaffTakedowns.tsx` lines 88, 138 -- `w-[140px]` and `w-[130px]` to `w-auto min-w-[140px]`
+13. `IPStaffInbox.tsx` lines 100, 167 -- `w-[140px]` to `w-auto min-w-[140px]`
 
-### Files to modify
-- `src/pages/Categories.tsx` — widen container, tighten spacing
-- `src/components/ui/PageHeader.tsx` — reduce bottom margin
-- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
+**Other (1 file):**
+14. `StaffProfile.tsx` line 710 -- `w-[160px]` to `w-auto min-w-[140px]`
+
+### What stays unchanged
+- `SelectTrigger` inside forms/dialogs (no className or full-width -- correct)
+- `SellerSettingsTeam.tsx` inline role selectors in table rows
+- `SearchResults.tsx`, `AllStores.tsx` sort selectors (public page, intentional design)
+- All triggers already using `w-auto min-w-[140px]`
+
+### Approach
+Single class replacement per trigger. ~15 files, ~20 triggers total. No logic changes.
 
