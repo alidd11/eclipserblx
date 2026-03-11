@@ -64,14 +64,36 @@ export function StoreDomainProvider({ children }: { children: ReactNode }) {
 
     const resolve = async () => {
       try {
-        const { data } = await supabase.functions.invoke('store-domain-manager', {
+        console.log('[StoreDomain] Resolving hostname:', hostname);
+        const { data, error } = await supabase.functions.invoke('store-domain-manager', {
           body: { action: 'resolve-hostname', hostname },
         });
-        if (data && data.store_id) {
-          setStoreDomainData(data as StoreDomainData);
+        console.log('[StoreDomain] Response:', { data, error, dataType: typeof data });
+        
+        // Handle case where data might be a string (some Supabase versions)
+        let parsed = data;
+        if (typeof data === 'string') {
+          try { parsed = JSON.parse(data); } catch { /* not JSON string */ }
+        }
+        
+        if (parsed && parsed.store_id) {
+          setStoreDomainData(parsed as StoreDomainData);
+        } else if (error) {
+          console.error('[StoreDomain] Edge function error:', error);
+          // Fallback: try direct REST query
+          const { data: fallbackData } = await supabase
+            .from('store_domains')
+            .select('store_id, domain, domain_type, is_primary, stores!inner(slug, name, logo_url, accent_color, banner_url)')
+            .eq('domain', hostname.toLowerCase())
+            .eq('status', 'active')
+            .single();
+          console.log('[StoreDomain] Fallback result:', fallbackData);
+          if (fallbackData && fallbackData.store_id) {
+            setStoreDomainData(fallbackData as unknown as StoreDomainData);
+          }
         }
       } catch (e) {
-        console.error('Failed to resolve store domain:', e);
+        console.error('[StoreDomain] Failed to resolve store domain:', e);
       } finally {
         setLoading(false);
       }
