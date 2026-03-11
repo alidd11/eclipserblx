@@ -514,7 +514,7 @@ This notice is sent under the Digital Millennium Copyright Act (DMCA), 17 U.S.C.
       return;
     }
     if (filingMethod === 'agent' && !agentAuth) {
-      toast({ title: 'Please authorise us to act on your behalf', variant: 'destructive' });
+      toast.error('Please authorise us to act on your behalf');
       return;
     }
 
