@@ -77,6 +77,7 @@ function Sparkline({ data, color, height = 32 }: { data: number[]; color: string
 }
 
 export default function AdminIncomeSources() {
+  const isInsideHub = useIsInsideHub();
   const [sourceFilter, setSourceFilter] = useState<IncomeSource>('all');
   const [periodFilter, setPeriodFilter] = useState<TimePeriod>('30d');
   const [searchQuery, setSearchQuery] = useState('');
