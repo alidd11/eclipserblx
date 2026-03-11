@@ -66,11 +66,7 @@ export default function Affiliate() {
       queryClient.invalidateQueries({ queryKey: ['affiliate-connect-status'] });
     }
     if (searchParams.get('stripe_refresh') === 'true') {
-      toast({
-        title: "Session Expired",
-        description: "Please try connecting your Stripe account again.",
-        variant: "destructive",
-      });
+      toast.error("Session Expired", { description: "Please try connecting your Stripe account again." });
     }
   }, [searchParams, toast, queryClient]);
 
