@@ -45,8 +45,10 @@ import {
   Minus
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
 export default function SellerBalance() {
+  const isInsideHub = useIsInsideHub();
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { store, balance, balanceLoading } = useSellerStatus();
