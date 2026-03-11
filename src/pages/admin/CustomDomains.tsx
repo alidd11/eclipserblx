@@ -304,14 +304,28 @@ export default function AdminCustomDomains() {
                             )}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              disabled={runningHealthCheck === domain.id}
-                              onClick={() => healthCheckMutation.mutate(domain.id)}
-                            >
-                              <RefreshCw className={cn("h-3.5 w-3.5", runningHealthCheck === domain.id && "animate-spin")} />
-                            </Button>
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={runningHealthCheck === domain.id}
+                                onClick={() => healthCheckMutation.mutate(domain.id)}
+                                title="Health Check"
+                              >
+                                <RefreshCw className={cn("h-3.5 w-3.5", runningHealthCheck === domain.id && "animate-spin")} />
+                              </Button>
+                              {domain.domain_type === 'custom' && (hc?.error_code || domain.ssl_status === 'pending') && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={fixingHostname === domain.id}
+                                  onClick={() => fixHostnameMutation.mutate(domain.id)}
+                                  title="Fix Hostname (recreate custom hostname + SSL)"
+                                >
+                                  <Wrench className={cn("h-3.5 w-3.5 text-amber-500", fixingHostname === domain.id && "animate-spin")} />
+                                </Button>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
