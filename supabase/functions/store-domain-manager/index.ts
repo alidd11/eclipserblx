@@ -919,8 +919,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Admin actions (service role only)
-    if (isServiceRoleAuth(req)) {
+    // Admin actions (service role only or admin_secret)
+    const isAdmin = isServiceRoleAuth(req) || body?.admin_secret === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    if (isAdmin) {
       if (action === "admin-verify-domain") {
         if (!body.domain_id) return jsonError("domain_id required", 400);
         return await adminVerifyDomain(body.domain_id);
@@ -928,6 +930,10 @@ Deno.serve(async (req) => {
       if (action === "admin-health-check") {
         if (!body.domain_id) return jsonError("domain_id required", 400);
         return await adminHealthCheck(body.domain_id);
+      }
+      if (action === "admin-fix-hostname") {
+        if (!body.domain_id) return jsonError("domain_id required", 400);
+        return await adminFixHostname(body.domain_id);
       }
     }
 
