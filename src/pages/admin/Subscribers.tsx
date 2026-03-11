@@ -173,11 +173,7 @@ export default function Subscribers() {
       setEmailTarget('all');
     } catch (error: any) {
       console.error('Error sending emails:', error);
-      toast({
-        title: 'Send Failed',
-        description: error.message || 'Failed to send emails.',
-        variant: 'destructive',
-      });
+      toast.error('Send Failed', { description: error.message || 'Failed to send emails.' });
     } finally {
       setIsSending(false);
     }

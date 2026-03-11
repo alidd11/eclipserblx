@@ -237,7 +237,7 @@ export default function Recruiter() {
   const copyReferralLink = () => {
     if (application?.recruiter_id) {
       navigator.clipboard.writeText(`${window.location.origin}/sell?ref=${application.recruiter_id}`);
-      toast({ title: "Copied!", description: "Referral link copied to clipboard" });
+      toast.success("Copied!", { description: "Referral link copied to clipboard" });
     }
   };
 

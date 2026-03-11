@@ -319,7 +319,7 @@ export default function Affiliate() {
   const copyReferralLink = () => {
     if (profile?.referral_code) {
       navigator.clipboard.writeText(`${window.location.origin}/auth?ref=${profile.referral_code}`);
-      toast({ title: "Copied!", description: "Referral link copied to clipboard" });
+      toast.success("Copied!", { description: "Referral link copied to clipboard" });
     }
   };
 

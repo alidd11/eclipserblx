@@ -39,7 +39,7 @@ interface RecruiterStats {
 
 export default function Recruiters() {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('approved');

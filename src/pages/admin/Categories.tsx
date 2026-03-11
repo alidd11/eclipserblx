@@ -432,7 +432,7 @@ export default function AdminCategories() {
       return;
     }
     if (form.description.length > 500) {
-      toast({ title: 'Validation error', description: 'Description must be under 500 characters.', variant: 'destructive' });
+      toast.error('Validation error', { description: 'Description must be under 500 characters.' });
       return;
     }
     saveMutation.mutate({ form, id: editingCategory?.id });
