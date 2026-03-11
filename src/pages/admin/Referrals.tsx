@@ -136,13 +136,14 @@ export default function AdminReferrals() {
   return (
     <AdminLayout requiredPermissions={['view_referrals']}>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-display font-bold">Referrals</h1>
-          <p className="text-muted-foreground">Track and manage user referrals</p>
-        </div>
+        {!isInsideHub && (
+          <>
+            <div>
+              <h1 className="text-2xl font-display font-bold">Referrals</h1>
+              <p className="text-sm text-muted-foreground">Track and manage user referrals</p>
+            </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <Card className="bg-card border-border">
             <CardContent className="p-3 md:pt-6 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">

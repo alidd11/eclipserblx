@@ -192,11 +192,16 @@ export default function SellerPayouts() {
   return (
     <AdminLayout requiredPermissions={['view_seller_payouts']}>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Seller Payouts</h1>
-            <p className="text-muted-foreground">Process seller payout requests</p>
+        {!isInsideHub && (
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-display font-bold">Seller Payouts</h1>
+              <p className="text-sm text-muted-foreground">Process seller payout requests</p>
+            </div>
           </div>
+        )}
+
+        <div className="flex items-center justify-end">
           <Select value={filterStatus} onValueChange={setFilterStatus}>
             <SelectTrigger className="w-48">
               <SelectValue />
@@ -212,32 +217,34 @@ export default function SellerPayouts() {
           </Select>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-2">
-          <Card>
-            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
-                Pending Payouts
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-              <div className="text-lg md:text-2xl font-bold">
-                £{pendingTotal.toFixed(2)}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
-                Pending Requests
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-              <div className="text-lg md:text-2xl font-bold">
-                {payouts?.filter((p: any) => p.status === "pending").length || 0}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {!isInsideHub && (
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-2">
+            <Card>
+              <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
+                <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
+                  Pending Payouts
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+                <div className="text-lg md:text-2xl font-bold">
+                  £{pendingTotal.toFixed(2)}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
+                <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
+                  Pending Requests
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+                <div className="text-lg md:text-2xl font-bold">
+                  {payouts?.filter((p: any) => p.status === "pending").length || 0}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         <Card>
           <CardContent className="p-0">

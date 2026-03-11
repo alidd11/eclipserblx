@@ -119,38 +119,40 @@ export default function ManualPayouts() {
   return (
     <AdminLayout requiredPermissions={['manage_affiliates']}>
       <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold">Manual Payouts</h1>
-          <p className="text-muted-foreground">
-            Review and process manual payout requests from affiliates
-          </p>
-        </div>
+        {!isInsideHub && (
+          <>
+            <div>
+              <h1 className="text-2xl font-display font-bold">Manual Payouts</h1>
+              <p className="text-sm text-muted-foreground">
+                Review and process manual payout requests from affiliates
+              </p>
+            </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 md:gap-3">
-          <Card className="bg-card">
-            <CardContent className="p-3 text-center">
-              <Clock className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
-              <div className="text-xl md:text-2xl font-bold">{pendingRequests.length}</div>
-              <p className="text-xs md:text-sm text-muted-foreground">Pending</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-card">
-            <CardContent className="p-3 text-center">
-              <DollarSign className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
-              <div className="text-xl md:text-2xl font-bold">£{totalPending.toFixed(2)}</div>
-              <p className="text-xs md:text-sm text-muted-foreground">Pending Amount</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-card">
-            <CardContent className="p-3 text-center">
-              <CheckCircle className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
-              <div className="text-xl md:text-2xl font-bold">{processedRequests.length}</div>
-              <p className="text-xs md:text-sm text-muted-foreground">Processed</p>
-            </CardContent>
-          </Card>
-        </div>
+            <div className="grid grid-cols-3 gap-2 md:gap-3">
+              <Card className="bg-card">
+                <CardContent className="p-3 text-center">
+                  <Clock className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+                  <div className="text-xl md:text-2xl font-bold">{pendingRequests.length}</div>
+                  <p className="text-xs md:text-sm text-muted-foreground">Pending</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-card">
+                <CardContent className="p-3 text-center">
+                  <DollarSign className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+                  <div className="text-xl md:text-2xl font-bold">£{totalPending.toFixed(2)}</div>
+                  <p className="text-xs md:text-sm text-muted-foreground">Pending Amount</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-card">
+                <CardContent className="p-3 text-center">
+                  <CheckCircle className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+                  <div className="text-xl md:text-2xl font-bold">{processedRequests.length}</div>
+                  <p className="text-xs md:text-sm text-muted-foreground">Processed</p>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        )}
 
         {/* Tabs */}
         <Tabs defaultValue="pending" className="space-y-4">

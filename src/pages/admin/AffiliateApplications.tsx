@@ -56,42 +56,45 @@ const AffiliateApplications = () => {
   return (
     <AdminLayout requiredPermissions={['review_affiliate_applications']}>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Affiliates</h1>
-          <p className="text-muted-foreground">Active affiliates in the program</p>
-        </div>
+        {!isInsideHub && (
+          <>
+            <div>
+              <h1 className="text-2xl font-display font-bold">Affiliates</h1>
+              <p className="text-sm text-muted-foreground">Active affiliates in the program</p>
+            </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-2">
-          <Card>
-            <CardContent className="p-3 md:p-4">
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
-                  <Users className="w-4 h-4 md:w-5 md:h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-lg md:text-2xl font-bold">{affiliates.length}</p>
-                  <p className="text-xs text-muted-foreground">Total Affiliates</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-3 md:p-4">
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="p-1.5 md:p-2 rounded-lg bg-green-500/10">
-                  <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-green-500" />
-                </div>
-                <div>
-                  <p className="text-lg md:text-2xl font-bold">
-                    {affiliates.filter((a) => a.paypal_email).length}
-                  </p>
-                  <p className="text-xs text-muted-foreground">With Payout Info</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-2">
+              <Card>
+                <CardContent className="p-3 md:p-4">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
+                      <Users className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-lg md:text-2xl font-bold">{affiliates.length}</p>
+                      <p className="text-xs text-muted-foreground">Total Affiliates</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-3 md:p-4">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <div className="p-1.5 md:p-2 rounded-lg bg-green-500/10">
+                      <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-green-500" />
+                    </div>
+                    <div>
+                      <p className="text-lg md:text-2xl font-bold">
+                        {affiliates.filter((a) => a.paypal_email).length}
+                      </p>
+                      <p className="text-xs text-muted-foreground">With Payout Info</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        )}
 
         {/* Search */}
         <div className="relative">

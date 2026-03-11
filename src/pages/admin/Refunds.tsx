@@ -221,30 +221,29 @@ export default function AdminRefunds() {
   return (
     <AdminLayout requiredPermissions={['manage_orders']}>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <RotateCcw className="h-6 w-6 text-destructive" />
-              Refunds
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Track refunded orders and commission/earnings reversals
-            </p>
-          </div>
-          <Button onClick={() => refetch()} variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-        </div>
+        {!isInsideHub && (
+          <>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h1 className="text-2xl font-display font-bold">Refunds</h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Track refunded orders and commission/earnings reversals
+                </p>
+              </div>
+              <Button onClick={() => refetch()} variant="outline" size="sm">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <AdminStatCard label="Total Refunds" value={stats.totalRefunds} />
-          <AdminStatCard label="Total Refunded" value={formatCurrency(stats.totalRefundedAmount)} valueColor="destructive" />
-          <AdminStatCard label="Full Refunds" value={stats.fullRefunds} valueColor="destructive" />
-          <AdminStatCard label="Partial Refunds" value={stats.partialRefunds} valueColor="orange" />
-        </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <AdminStatCard label="Total Refunds" value={stats.totalRefunds} />
+              <AdminStatCard label="Total Refunded" value={formatCurrency(stats.totalRefundedAmount)} valueColor="destructive" />
+              <AdminStatCard label="Full Refunds" value={stats.fullRefunds} valueColor="destructive" />
+              <AdminStatCard label="Partial Refunds" value={stats.partialRefunds} valueColor="orange" />
+            </div>
+          </>
+        )}
 
         {/* Filters */}
         <Card className="bg-card/50 backdrop-blur border-border/50">

@@ -312,8 +312,8 @@ export default function DeveloperPayments() {
             )}
           </div>
  
-         {/* Summary Cards */}
-          <div className="flex gap-3">
+         {!isInsideHub && (
+           <div className="flex gap-3">
             <Card className="flex-1 min-w-0">
               <CardHeader className="flex flex-row items-center justify-between pb-2 p-3">
                 <CardTitle className="text-xs font-medium truncate">Total Owed</CardTitle>
@@ -341,7 +341,8 @@ export default function DeveloperPayments() {
                 <div className="text-lg font-bold truncate">£{stats.paidThisMonth.toFixed(2)}</div>
               </CardContent>
             </Card>
-         </div>
+           </div>
+         )}
  
          <Tabs value={activeTab} onValueChange={setActiveTab}>
            <TabsList>
