@@ -186,7 +186,7 @@ export default function IPShieldTakedowns() {
       queryClient.invalidateQueries({ queryKey: ['ip-shield-cases'] });
     },
     onError: (error) => {
-      toast({ title: 'Submission failed', description: error.message, variant: 'destructive' });
+      toast.error('Submission failed', { description: error.message });
     },
   });
 
