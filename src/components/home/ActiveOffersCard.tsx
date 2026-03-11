@@ -40,7 +40,7 @@ const PROMO_BENEFIT_KEYS = [
   "offers.benefits.memberDiscounts",
 ];
 
-export function ActiveOffersCard() {
+export const ActiveOffersCard = forwardRef<HTMLDivElement>(function ActiveOffersCard(_props, ref) {
   const { user, loading: authLoading, session } = useAuth();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
