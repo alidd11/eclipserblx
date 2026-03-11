@@ -78,7 +78,7 @@ serve(async (req) => {
     // Fetch product with store info
     const { data: product, error: productError } = await supabaseClient
       .from('products')
-      .select(`id, name, slug, price, images, description, stores!inner(name, slug)`)
+      .select(`id, name, slug, product_number, price, images, description, stores!inner(name, slug)`)
       .eq('id', productId)
       .single();
 
@@ -112,7 +112,7 @@ serve(async (req) => {
     }
 
     // Build payload
-    const productLink = `https://eclipserblx.com/products/${encodeURIComponent(product.slug)}`;
+    const productLink = `https://eclipserblx.com/products/${(product as any).product_number || encodeURIComponent(product.slug)}`;
     const images = product.images || [];
     const storeName = (product as any).stores?.name || 'Unknown Store';
     const color = isEarlyAccess ? 0x8B5CF6 : 0x00CED1;

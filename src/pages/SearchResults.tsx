@@ -76,7 +76,7 @@ export default function SearchResults() {
   const buildQuery = useCallback((offset: number) => {
     let q = supabase
       .from('products')
-      .select('id, name, slug, price, images, description, is_featured, categories (name, slug), stores!inner (name, is_active)', { count: 'exact' })
+      .select('id, name, slug, product_number, price, images, description, is_featured, categories (name, slug), stores!inner (name, is_active)', { count: 'exact' })
       .eq('is_active', true)
       .eq('stores.is_active', true);
 

@@ -61,7 +61,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
     const fetchTrending = async () => {
       const { data } = await supabase
         .from('products')
-        .select('id, name, slug, price, images, stores (is_active)')
+        .select('id, name, slug, product_number, price, images, stores (is_active)')
         .eq('is_active', true)
         .eq('is_featured', true)
         .limit(6);
@@ -98,7 +98,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
         const [productRes, storeRes] = await Promise.all([
           supabase
             .from('products')
-            .select('id, name, slug, price, images, stores!inner (is_active)')
+            .select('id, name, slug, product_number, price, images, stores!inner (is_active)')
             .eq('is_active', true)
             .eq('stores.is_active', true)
             .or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)

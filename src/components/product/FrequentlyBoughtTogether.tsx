@@ -68,7 +68,7 @@ export function FrequentlyBoughtTogether({ productId, categoryId, storeId }: Pro
       const productIds = sorted.map(([id]) => id);
       const { data: fullProducts } = await supabase
         .from('products')
-        .select('id, name, slug, price, images, is_active')
+        .select('id, name, slug, product_number, price, images, is_active')
         .in('id', productIds)
         .eq('is_active', true);
 

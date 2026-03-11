@@ -45,7 +45,7 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
         .select(`
           id, product_id,
           products!inner (
-            id, name, slug, price, images, description, category_id, is_resellable, download_count,
+            id, name, slug, product_number, price, images, description, category_id, is_resellable, download_count,
             categories (name, slug),
             stores!inner (name, slug, logo_url, banner_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
           )
@@ -74,7 +74,7 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
       const { data, error } = await supabase
         .from('products')
         .select(`
-          id, name, slug, price, images, description, category_id, is_resellable, download_count,
+          id, name, slug, product_number, price, images, description, category_id, is_resellable, download_count,
           categories (name, slug),
           stores!inner (name, slug, logo_url, banner_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
         `)

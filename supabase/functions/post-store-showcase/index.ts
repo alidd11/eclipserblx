@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
       // Fetch products with images first, then others
       const { data: productsWithImages } = await supabase
         .from("products")
-        .select("id, name, slug, price, images")
+        .select("id, name, slug, product_number, price, images")
         .eq("store_id", store.id)
         .eq("is_active", true)
         .eq("moderation_status", "approved")
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
 
       const { data: productsAll } = await supabase
         .from("products")
-        .select("id, name, slug, price, images")
+        .select("id, name, slug, product_number, price, images")
         .eq("store_id", store.id)
         .eq("is_active", true)
         .eq("moderation_status", "approved")
@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
       if (products && products.length > 0) {
         productList = products
           .map((p: any) => {
-            const productUrl = `https://eclipserblx.com/products/${encodeURIComponent(p.slug)}`;
+            const productUrl = `https://eclipserblx.com/products/${p.product_number || encodeURIComponent(p.slug)}`;
             return `• [${p.name}](${productUrl}) — £${Number(p.price).toFixed(2)}`;
           })
           .join("\n");

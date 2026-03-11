@@ -93,7 +93,7 @@ export function MostPopularSection() {
       const { data, error } = await supabase
         .from('products')
         .select(`
-          id, name, slug, price, images, category_id, is_resellable, download_count,
+          id, name, slug, product_number, price, images, category_id, is_resellable, download_count,
           categories (name),
           stores!inner (name, logo_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
         `)

@@ -84,13 +84,21 @@ export default function ProductDetail() {
     await queryClient.invalidateQueries({ queryKey: ['user-has-purchased'] });
   }, [queryClient, productNumber]);
 
+  const isNumericParam = /^\d+$/.test(productNumber || '');
+
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', productNumber, isStaff],
     queryFn: async () => {
       let query = supabase
         .from('products')
-        .select(`*, categories(name, slug), stores(${STORE_LISTING_COLUMNS})`)
-        .eq('product_number' as any, Number(productNumber));
+        .select(`*, categories(name, slug), stores(${STORE_LISTING_COLUMNS})`);
+
+      // If param is numeric, query by product_number; otherwise fall back to slug (legacy URLs)
+      if (isNumericParam) {
+        query = query.eq('product_number' as any, Number(productNumber));
+      } else {
+        query = query.eq('slug', productNumber!);
+      }
 
       // Customers should only see active + released products.
       // Staff can preview scheduled and inactive products.

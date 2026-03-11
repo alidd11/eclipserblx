@@ -1957,7 +1957,7 @@ async function handleShowcaseCommand(supabase: any, serverContext: ServerContext
     const { data: products, error } = await supabase
       .from("products")
       .select(`
-        id, name, slug, price, images, description,
+        id, name, slug, product_number, price, images, description,
         stores!inner (name, slug, logo_url, is_verified, is_trusted)
       `)
       .eq("is_active", true)
@@ -1973,7 +1973,7 @@ async function handleShowcaseCommand(supabase: any, serverContext: ServerContext
     // Pick a random product from the featured list
     const product = products[Math.floor(Math.random() * products.length)];
     const store = product.stores;
-    const productUrl = `https://eclipserblx.com/products/${product.slug}`;
+    const productUrl = `https://eclipserblx.com/products/${(product as any).product_number || product.slug}`;
     const storeUrl = `https://eclipserblx.com/stores/${store.slug}`;
     
     // Build verification badges

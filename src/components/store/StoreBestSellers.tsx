@@ -23,7 +23,7 @@ export function StoreBestSellers({
       // Optimized: Select only needed columns (note: average_rating is not stored on products table)
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, slug, price, images, is_resellable, download_count, categories(name)')
+        .select('id, name, slug, product_number, price, images, is_resellable, download_count, categories(name)')
         .eq('store_id', storeId)
         .eq('is_active', true)
         .eq('moderation_status', 'approved')

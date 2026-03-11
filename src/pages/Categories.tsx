@@ -85,7 +85,7 @@ function useCategoriesWithProducts(sourceFilter: string | null) {
 
           let topQ = supabase
             .from('products')
-            .select('id, name, slug, price, images')
+            .select('id, name, slug, product_number, price, images')
             .in('category_id', catIds)
             .eq('is_active', true)
             .eq('moderation_status', 'approved')
