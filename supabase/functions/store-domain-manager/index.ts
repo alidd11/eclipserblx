@@ -682,7 +682,7 @@ Deno.serve(async (req) => {
       return await resolveHostname(body.hostname);
     }
 
-    // Admin health check — requires service role or apikey header match
+    // Admin health check — requires service role OR authenticated admin/moderator
     if (action === "admin-health-check") {
       const apiKey = req.headers.get("apikey") ?? "";
       const authToken = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
@@ -690,6 +690,17 @@ Deno.serve(async (req) => {
       if (apiKey === serviceKey || authToken === serviceKey) {
         if (!body.domain_id) return jsonError("domain_id required", 400);
         return await adminHealthCheck(body.domain_id);
+      }
+      // Also allow authenticated admin/moderator users
+      const adminUser = await getAuthUser(req);
+      if (adminUser) {
+        const adminDb = getSupabaseAdmin();
+        const { data: roles } = await adminDb.from("user_roles").select("role").eq("user_id", adminUser.id);
+        const isAdmin = roles?.some((r: any) => r.role === "admin" || r.role === "moderator");
+        if (isAdmin) {
+          if (!body.domain_id) return jsonError("domain_id required", 400);
+          return await adminHealthCheck(body.domain_id);
+        }
       }
     }
 
