@@ -567,7 +567,7 @@ This notice is sent under the Digital Millennium Copyright Act (DMCA), 17 U.S.C.
       queryClient.invalidateQueries({ queryKey: ['ip-shield-analytics'] });
       onClose();
     } catch (err: any) {
-      toast({ title: 'Failed to file takedown', description: err.message, variant: 'destructive' });
+      toast.error('Failed to file takedown', { description: err.message });
     } finally {
       setSubmitting(false);
     }
