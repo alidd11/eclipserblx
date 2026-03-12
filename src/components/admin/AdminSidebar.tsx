@@ -40,6 +40,7 @@ interface NavGroup {
 // Top-level items (no group)
 const topLevelItems: NavItem[] = [
   { title: 'Dashboard', icon: LayoutDashboard, href: '/admin', permissions: [] },
+  { title: 'Moderation Queue', icon: ClipboardList, href: '/admin/moderation-queue', permissions: ['view_seller_stores'] },
 ];
 
 const navGroups: NavGroup[] = [
