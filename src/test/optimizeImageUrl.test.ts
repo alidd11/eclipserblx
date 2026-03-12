@@ -1,5 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { optimizeImageUrl } from "@/utils/optimizeImageUrl";
+
+// Mock getNetworkQuality to return 'high' by default
+vi.mock("@/hooks/useNetworkQuality", () => ({
+  getNetworkQuality: () => "high" as const,
+}));
 
 describe("optimizeImageUrl", () => {
   it("returns empty string for null/undefined", () => {
@@ -19,7 +24,7 @@ describe("optimizeImageUrl", () => {
     expect(result).not.toContain("/storage/v1/object/public/");
   });
 
-  it("applies 2x width for retina", () => {
+  it("applies 2x width for retina on high quality network", () => {
     const url = "https://abc.supabase.co/storage/v1/object/public/images/photo.jpg";
     const result = optimizeImageUrl(url, 150);
     expect(result).toContain("width=300");
@@ -43,7 +48,7 @@ describe("optimizeImageUrl", () => {
     expect(result).toContain("resize=contain");
   });
 
-  it("sets quality to 80", () => {
+  it("sets quality to 80 on high quality network", () => {
     const url = "https://abc.supabase.co/storage/v1/object/public/images/photo.jpg";
     const result = optimizeImageUrl(url, 150);
     expect(result).toContain("quality=80");
