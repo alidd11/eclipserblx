@@ -130,12 +130,20 @@ async function detectProxiedCname(domain: string): Promise<{ is_proxied: boolean
   }
 }
 
-function getPreferredDnsRecord(domain: string, zoneName?: string | null) {
+function getPreferredDnsRecord(
+  domain: string,
+  zoneName?: string | null,
+  isCloudflareManagedZone = false,
+) {
   const normalizedDomain = domain.toLowerCase();
   const normalizedZone = (zoneName ?? "").toLowerCase();
   const isApexDomain = normalizedZone ? normalizedDomain === normalizedZone : false;
 
-  if (isApexDomain) {
+  // Cloudflare-managed apex domains should use DNS-only CNAME.
+  // Using a direct A record to our anycast IP can trigger Cloudflare Error 1000 (prohibited IP).
+  const shouldUseCnameForApex = isApexDomain && isCloudflareManagedZone;
+
+  if (isApexDomain && !shouldUseCnameForApex) {
     return {
       type: "A" as const,
       name: domain,
@@ -150,7 +158,7 @@ function getPreferredDnsRecord(domain: string, zoneName?: string | null) {
     name: domain,
     content: "stores.eclipserblx.com",
     proxied: false,
-    is_apex: false,
+    is_apex: isApexDomain,
   };
 }
 
@@ -256,8 +264,10 @@ async function performHealthCheck(domain: string) {
       if (hasError1000) {
         if (checks.is_cloudflare_zone) {
           checks.error_code = "1000";
-          if (!checks.cname_target && checks.resolves_to_cloudflare) {
-            checks.diagnosis = "Error 1000 — apex/root domain is flattening through Cloudflare and causing cross-zone conflict. Use a DNS-only A record to 185.158.133.1 for the root domain.";
+          if (checks.resolves_to_lovable_ip && !checks.cname_target) {
+            checks.diagnosis = "Error 1000 — your root domain is using a direct A record to 185.158.133.1 while the zone is on Cloudflare. Cloudflare treats this as a prohibited cross-zone target. Use a DNS-only CNAME to stores.eclipserblx.com instead.";
+          } else if (!checks.cname_target && checks.resolves_to_cloudflare) {
+            checks.diagnosis = "Error 1000 — Cloudflare flattening/proxy conflict detected on the root domain. Use a DNS-only CNAME to stores.eclipserblx.com and remove conflicting A/AAAA records.";
           } else {
             checks.diagnosis = "Error 1000 — cross-zone Cloudflare conflict detected.";
           }
@@ -316,8 +326,8 @@ async function performHealthCheck(domain: string) {
     } else if (checks.error_code === "1000_non_cf") {
       checks.recommended_fix = "USE_A_RECORD";
     } else if (checks.error_code === "1000" && checks.is_cloudflare_zone) {
-      if (!checks.cname_target && checks.resolves_to_cloudflare) {
-        checks.recommended_fix = "USE_A_RECORD";
+      if (!checks.cname_target && (checks.resolves_to_lovable_ip || checks.resolves_to_cloudflare)) {
+        checks.recommended_fix = "USE_CNAME";
       } else {
         checks.recommended_fix = "CLOUDFLARE_CROSS_ZONE";
       }
@@ -360,16 +370,12 @@ async function claimSubdomain(userId: string, storeId: string, slug: string) {
     .limit(1);
   if (storeExisting && storeExisting.length > 0) return jsonError("Store already has a subdomain", 409);
 
-  // Subdomains on eclipserblx.com are same-zone — they use the proxied wildcard AAAA record
-  // and Worker routing. Do NOT create Custom Hostnames for same-zone subdomains (causes Error 1000).
-  const sslStatus = "active"; // SSL handled by wildcard + Worker
-
   const { data: record, error } = await admin.from("store_domains").insert({
     store_id: storeId,
     domain,
     domain_type: "subdomain",
     status: "active",
-    ssl_status: sslStatus,
+    ssl_status: "active",
     verified_at: new Date().toISOString(),
     is_primary: true,
   }).select().single();
@@ -378,7 +384,7 @@ async function claimSubdomain(userId: string, storeId: string, slug: string) {
   return jsonOk({ domain: record });
 }
 
-// ── Action: request-custom-domain (with Cloudflare auto-detection) ──
+// ── Action: request-custom-domain ──
 async function requestCustomDomain(userId: string, storeId: string, domain: string) {
   const admin = getSupabaseAdmin();
 
@@ -397,8 +403,8 @@ async function requestCustomDomain(userId: string, storeId: string, domain: stri
 
   await admin.from("store_domains").delete().eq("domain", domain).eq("status", "removed");
 
-  // Auto-detect Cloudflare zone
   const isCloudflare = await detectCloudflareZone(domain);
+  const verificationToken = crypto.randomUUID().replace(/-/g, "");
 
   const { data: record, error } = await admin.from("store_domains").insert({
     store_id: storeId,
@@ -408,28 +414,19 @@ async function requestCustomDomain(userId: string, storeId: string, domain: stri
     ssl_status: "pending",
     is_primary: false,
     is_cloudflare_zone: isCloudflare,
+    verification_token: verificationToken,
   }).select().single();
 
   if (error) return jsonError(error.message, 500);
 
-  // Return different instructions based on detection
-  const instructions = isCloudflare
-    ? {
-        warning: "CLOUDFLARE_DETECTED",
-        message: "Your domain uses Cloudflare DNS. To avoid Error 1000 (cross-zone conflict), you MUST follow these specific steps:",
-        step1: `In your Cloudflare dashboard, add a CNAME record: ${domain} → stores.eclipserblx.com — set it to DNS-only (grey cloud)`,
-        step2: `Add a TXT record: _eclipsestore-verify.${domain} → ${record.verification_token}`,
-        step3: "CRITICAL: Ensure the CNAME proxy status shows a GREY cloud icon, NOT orange",
-        step4: "If you still see Error 1000 after verifying, you may need to pause Cloudflare on your domain or use a non-Cloudflare DNS provider",
-        alternative: `Alternative: Add an A record for ${domain} → 185.158.133.1 (DNS-only/grey cloud) instead of a CNAME. This may avoid the cross-zone conflict.`,
-      }
-    : {
-        step1: `Add a CNAME record: ${domain} → stores.eclipserblx.com (DNS-only / grey cloud — do NOT proxy your CNAME)`,
-        step2: `Add a TXT record: _eclipsestore-verify.${domain} → ${record.verification_token}`,
-        step3: "Click 'Verify DNS' once records are set up",
-      };
-
-  return jsonOk({ domain: record, instructions, is_cloudflare_zone: isCloudflare });
+  return jsonOk({
+    domain: record,
+    verification: {
+      txt_name: `_eclipsestore-verify.${domain}`,
+      txt_value: verificationToken,
+      expected_target: isCloudflare ? "stores.eclipserblx.com (CNAME DNS-only for Cloudflare apex)" : "185.158.133.1 (A record)",
+    },
+  });
 }
 
 // ── Action: verify-custom-domain ──
@@ -451,18 +448,14 @@ async function verifyCustomDomain(userId: string, domainId: string) {
     headers: { Accept: "application/dns-json" },
   });
   const dohData = await dohResp.json();
-  
+
   const txtRecords: string[] = (dohData?.Answer ?? [])
     .filter((a: any) => a.type === 16)
     .map((a: any) => (a.data ?? "").replace(/"/g, ""));
 
   const tokenMatch = txtRecords.some((txt: string) => txt === domainRecord.verification_token);
-
   if (!tokenMatch) {
-    // Also re-check Cloudflare status
-    const isCloudflare = await detectCloudflareZone(domainRecord.domain);
-    await admin.from("store_domains").update({ status: "verifying", is_cloudflare_zone: isCloudflare }).eq("id", domainId);
-    return jsonOk({ verified: false, message: "TXT record not found yet. DNS may still be propagating.", expected_token: domainRecord.verification_token, is_cloudflare_zone: isCloudflare });
+    return jsonOk({ verified: false, message: "TXT record not found", expected_token: domainRecord.verification_token, found_records: txtRecords });
   }
 
   const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
@@ -472,29 +465,20 @@ async function verifyCustomDomain(userId: string, domainId: string) {
   let cfHostnameId = null;
 
   if (cfToken && cfZoneId) {
-    try {
-      const { data } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames`, {
-        method: "POST",
-        body: JSON.stringify({
-          hostname: domainRecord.domain,
-          ssl: { method: "http", type: "dv", settings: { min_tls_version: "1.2" } },
-        }),
-      });
+    const { data } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames`, {
+      method: "POST",
+      body: JSON.stringify({
+        hostname: domainRecord.domain,
+        ssl: { method: "http", type: "dv", settings: { min_tls_version: "1.2" } },
+      }),
+    });
 
-      if (data?.success) {
-        cfHostnameId = data.result?.id;
-        sslStatus = data.result?.ssl?.status === "active" ? "active" : "pending";
-      } else {
-        console.error("Cloudflare custom hostname error:", data?.errors);
-        sslStatus = "failed";
-      }
-    } catch (e) {
-      console.error("Cloudflare API error:", e);
-      sslStatus = "failed";
+    if (data?.success) {
+      cfHostnameId = data.result?.id;
+      sslStatus = data.result?.ssl?.status === "active" ? "active" : "pending";
     }
   }
 
-  // Re-detect Cloudflare status
   const isCloudflare = await detectCloudflareZone(domainRecord.domain);
 
   await admin.from("store_domains").update({
@@ -506,19 +490,13 @@ async function verifyCustomDomain(userId: string, domainId: string) {
     updated_at: new Date().toISOString(),
   }).eq("id", domainId);
 
-  // Auto-run health check after verification
   const healthCheck = await performHealthCheck(domainRecord.domain);
   await admin.from("store_domains").update({
     last_health_check: healthCheck,
     last_health_check_at: new Date().toISOString(),
   }).eq("id", domainId);
 
-  return jsonOk({ 
-    verified: true, 
-    ssl_status: sslStatus, 
-    is_cloudflare_zone: isCloudflare,
-    health_check: healthCheck,
-  });
+  return jsonOk({ verified: true, ssl_status: sslStatus, cloudflare_hostname_id: cfHostnameId, is_cloudflare_zone: isCloudflare, health_check: healthCheck });
 }
 
 // ── Action: health-check (public for domain owners) ──
@@ -610,9 +588,9 @@ async function autoFixDns(userId: string, domainId: string) {
       return jsonError("Invalid Cloudflare credentials. Check your API Token has Zone:DNS:Edit permission and the Zone ID is correct.", 403);
     }
 
-    // 4. Determine preferred record type (apex domains should use A to avoid flattening conflicts)
+    // 4. Determine preferred record type (Cloudflare apex domains should use DNS-only CNAME)
     const sellerZoneName = (verifyData?.result?.name ?? "").toLowerCase();
-    const preferredRecord = getPreferredDnsRecord(domain, sellerZoneName);
+    const preferredRecord = getPreferredDnsRecord(domain, sellerZoneName, true);
 
     // 5. List existing DNS records for this domain
     const { data: dnsListData } = await cfFetch<any[]>(
@@ -904,9 +882,9 @@ async function adminFixHostname(domainId: string) {
         if (verifyData?.success) {
           fixes.push("Seller Cloudflare credentials verified");
 
-          // Determine preferred record type using seller zone apex
+          // Determine preferred record type using seller zone apex (Cloudflare apex uses DNS-only CNAME)
           const sellerZoneName = (verifyData?.result?.name ?? "").toLowerCase();
-          const preferredRecord = getPreferredDnsRecord(domain, sellerZoneName);
+          const preferredRecord = getPreferredDnsRecord(domain, sellerZoneName, true);
 
           // List existing DNS records
           const { data: dnsListData } = await cfFetch<any[]>(
