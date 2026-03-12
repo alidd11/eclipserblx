@@ -3,6 +3,8 @@
  * 
  * ARCHITECTURE: This worker ONLY intercepts bot/crawler requests to serve
  * rich OG meta tags. Human traffic passes through untouched via fetch(request).
+ * Additionally, it validates ALL requests against known route patterns and
+ * returns proper 404 status codes for unknown paths (fixing SPA soft-404 issues).
  * 
  * Supports:
  * - Main site (eclipserblx.com / www.eclipserblx.com)
@@ -47,6 +49,74 @@ const STATIC_OG_PATHS = new Set([
 const MAIN_DOMAINS = ['eclipserblx.com', 'www.eclipserblx.com'];
 const RESERVED_SUBS = ['guard', 'www', 'api', 'admin', 'mail', 'stores'];
 
+/**
+ * Valid route patterns derived from AppRoutes.tsx
+ * Static assets (JS/CSS/images/fonts) are always passed through before this check.
+ */
+const VALID_ROUTE_PATTERNS = [
+  /^\/$/,
+  /^\/auth$/,
+  /^\/auth\/discord\/callback$/,
+  /^\/auth\/roblox\/callback$/,
+  /^\/complete-profile$/,
+  /^\/account$/,
+  /^\/messages$/,
+  /^\/purchases$/,
+  /^\/downloads$/,
+  /^\/orders$/,
+  /^\/products$/,
+  /^\/search$/,
+  /^\/featured$/,
+  /^\/categories$/,
+  /^\/products\/[^/?#]+$/,
+  /^\/cart$/,
+  /^\/checkout$/,
+  /^\/order-success$/,
+  /^\/chat-history$/,
+  /^\/support\/tickets$/,
+  /^\/support\/tickets\/[^/?#]+$/,
+  /^\/support\/chat$/,
+  /^\/support$/,
+  /^\/jobs$/,
+  /^\/refunds$/,
+  /^\/privacy$/,
+  /^\/terms$/,
+  /^\/dmca$/,
+  /^\/ip-shield$/,
+  /^\/ip-dashboard$/,
+  /^\/ip-shield\/dashboard(\/.*)?$/,
+  /^\/ip-staff(\/.*)?$/,
+  /^\/faq$/,
+  /^\/help-center(\/.*)?$/,
+  /^\/contact$/,
+  /^\/status$/,
+  /^\/bot-installation$/,
+  /^\/bot-dashboard$/,
+  /^\/notifications$/,
+  /^\/eclipse-plus$/,
+  /^\/marketplace$/,
+  /^\/stores$/,
+  /^\/affiliate$/,
+  /^\/recruiter$/,
+  /^\/advertise$/,
+  /^\/credits$/,
+  /^\/sell$/,
+  /^\/live-chat$/,
+  /^\/wishlist$/,
+  /^\/store-messages$/,
+  /^\/account\/advertisements$/,
+  /^\/account\/ad-analytics$/,
+  /^\/account\/following$/,
+  /^\/seller(\/.*)?$/,
+  /^\/store\/[^/?#]+(\/.*)?$/,
+  /^\/admin(\/.*)?$/,
+  /^\/guard(\/.*)?$/,
+  /^\/share\/.+$/,
+];
+
+/** Static asset extensions — always pass through */
+const STATIC_ASSET_RE = /\.(js|mjs|css|png|jpg|jpeg|gif|svg|webp|avif|ico|woff2?|ttf|eot|map|json|txt|xml|webmanifest)$/i;
+
 function isStoreHostname(hostname) {
   if (MAIN_DOMAINS.includes(hostname)) return false;
   if (hostname.endsWith('.eclipserblx.com')) {
@@ -55,6 +125,10 @@ function isStoreHostname(hostname) {
   }
   if (hostname.endsWith('.lovable.app') || hostname.endsWith('.lovableproject.com')) return false;
   return true;
+}
+
+function isValidRoute(pathname) {
+  return VALID_ROUTE_PATTERNS.some(re => re.test(pathname));
 }
 
 async function serveOg(path, userAgent, hostname) {
@@ -77,6 +151,25 @@ const DEAD_PREFIXES = [
   "/wp-includes/", "/wp-login.php", "/xmlrpc.php",
 ];
 
+function serve404() {
+  const html = `<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"/><title>Page Not Found | Eclipse</title>
+<meta name="robots" content="noindex"/>
+<meta http-equiv="refresh" content="3;url=https://eclipserblx.com/"/>
+</head><body style="font-family:system-ui;text-align:center;padding:60px 20px;background:#0a0a0a;color:#fff">
+<h1>404 — Page Not Found</h1>
+<p>The page you're looking for doesn't exist. Redirecting to <a href="https://eclipserblx.com/" style="color:#7c3aed">Eclipse</a>…</p>
+</body></html>`;
+  return new Response(html, {
+    status: 404,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "X-Robots-Tag": "noindex",
+      "Cache-Control": "public, max-age=60",
+    },
+  });
+}
+
 export default {
   async fetch(request) {
     const url = new URL(request.url);
@@ -88,7 +181,7 @@ export default {
     }
     const hostname = url.hostname;
 
-    // --- Store subdomain / custom domain ---
+    // --- Store subdomain / custom domain (all paths valid — SPA handles routing) ---
     if (isStoreHostname(hostname)) {
       const isTestingTool = NOT_BOT_PATTERNS.some((p) =>
         userAgent.toLowerCase().includes(p.toLowerCase())
@@ -117,6 +210,17 @@ export default {
       }
     }
 
+    // --- Static assets — always pass through ---
+    if (STATIC_ASSET_RE.test(url.pathname) || url.pathname.startsWith('/assets/')) {
+      return fetch(request);
+    }
+
+    // --- Route validation: return 404 for unknown paths on main domain ---
+    if (!isValidRoute(url.pathname)) {
+      return serve404();
+    }
+
+    // --- OG handling for bots on known pages ---
     const isDynamicPage = /^\/(products|store)\/[^/?#]+/.test(url.pathname);
     const isStaticOgPage = STATIC_OG_PATHS.has(url.pathname);
 
