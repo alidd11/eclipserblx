@@ -5,12 +5,12 @@ import { useCart } from '@/hooks/useCart';
 import { hapticTap } from '@/lib/haptics';
 import { useAuth } from '@/hooks/useAuth';
 
-const TAB_ITEMS = [
+const TAB_ITEMS: { icon: typeof Home; label: string; href: string; showBadge?: boolean }[] = [
   { icon: Home, label: 'Home', href: '/' },
   { icon: Search, label: 'Explore', href: '/products' },
   { icon: ShoppingCart, label: 'Cart', href: '/cart', showBadge: true },
   { icon: User, label: 'Account', href: '/account' },
-] as const;
+];
 
 /** Hidden routes where the tab bar should not appear */
 const HIDDEN_PREFIXES = ['/admin', '/seller', '/ip-shield/dashboard', '/ip-staff', '/auth', '/checkout', '/guard'];
