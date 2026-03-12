@@ -1,36 +1,46 @@
 
 
-## Issues Identified
+# Revenue Page Crash: Root Cause and Fix
 
-**Issue 1: Sidebar positioned at top of screen on desktop**
-The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
+## Root Cause
 
-**Issue 2: Excessive black empty space in the content area**
-The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
+The crash loop is caused by **two systems fighting each other**:
 
-## Plan
+1. **Password verification** stores `isVerified` in React state (memory only)
+2. **App version check** (`useAppVersionCheck`) detects `force_update: true` in the database (version `1.0.81`) and triggers `window.location.reload()` after a 2-second delay
+3. After reload, React state is wiped -- `isVerified` resets to `false` -- so the password form shows again
+4. The user re-enters password, the version check fires again, and the cycle repeats
+5. After 2 reload attempts, the version check stops, but Safari's "A problem repeatedly occurred" error has already triggered
 
-### 1. Widen the content area on the Categories page
-- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
-- Reduce vertical padding between the header and grid
-- Tighten the gap between the page title/description and the cards
+**Evidence**: The browser URL after navigation shows `?__v=1.0.81&__t=...&__ra=1`, confirming the version check already triggered a forced reload. The `force_update` flag is still `true` in the `app_version` table from March 4th.
 
-### 2. Improve the PageHeader component
-- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
-- This applies globally to all pages using PageHeader
+## Fix
 
-### 3. Make category cards fill space better
-- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
-- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
-- Reduce grid gap slightly so cards feel more connected
+### 1. Persist verification state in sessionStorage (RevenueHub.tsx)
 
-### 4. Sidebar desktop alignment fix
-- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
-- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
-- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
+When password verification succeeds, store the timestamp in `sessionStorage`. On mount, check if a valid (non-expired) verification exists and skip the password gate. This survives page reloads within the same tab while still respecting the 10-minute timeout.
 
-### Files to modify
-- `src/pages/Categories.tsx` — widen container, tighten spacing
-- `src/components/ui/PageHeader.tsx` — reduce bottom margin
-- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
+```
+// On verify success:
+sessionStorage.setItem('revenue_verified_at', Date.now().toString())
+
+// On mount:
+const stored = sessionStorage.getItem('revenue_verified_at')
+if (stored && Date.now() - parseInt(stored) < SESSION_TIMEOUT_MS) {
+  setIsVerified(true)
+}
+```
+
+### 2. Apply the same fix to Income.tsx
+
+The legacy `AdminIncome` page at `/admin/income` has the same vulnerability -- its `isVerified` state is also memory-only.
+
+### 3. Clear stale force_update flag
+
+Set `force_update` to `false` in the `app_version` table since version `1.0.81` has been deployed for 8 days and all clients should have it by now. This prevents unnecessary reload triggers.
+
+---
+
+**Files changed**: `src/pages/admin/RevenueHub.tsx`, `src/pages/admin/Income.tsx`
+**Database**: Update `app_version` to set `force_update = false`
 
