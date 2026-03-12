@@ -275,33 +275,80 @@ async function performHealthCheck(domain: string) {
           checks.error_code = "1000_non_cf";
           checks.diagnosis = "DNS conflict — your CNAME is being resolved through Cloudflare's proxy. Use an A record instead.";
         }
+      } else if (body.includes("Error 1014")) {
+        checks.error_code = "1014";
+        checks.diagnosis = "CNAME Cross-User Banned — your CNAME is set to Proxied (orange cloud). Switch to DNS-only (grey cloud).";
+      } else if (body.includes("Error 522")) {
+        checks.error_code = "522";
+        checks.diagnosis = "Connection timed out — the origin server is not responding.";
+      } else if (body.includes("Error 523")) {
+        checks.error_code = "523";
+        checks.diagnosis = "Origin is unreachable — check DNS records are correct.";
+      } else if (body.includes("ERR_TOO_MANY_REDIRECTS") || httpResp.status === 301 || httpResp.status === 302) {
+        checks.error_code = "redirect_loop";
+        checks.diagnosis = "Redirect loop detected — check for conflicting redirect rules.";
+      } else if (httpResp.status === 403 && checks.is_cloudflare_zone && checks.resolves_to_cloudflare) {
+        if (!checks.cname_target) {
+          checks.error_code = "1000";
+          checks.diagnosis = "403 with Cloudflare edge IPs and no visible CNAME usually indicates root-domain flattening conflict. Use a DNS-only A record to 185.158.133.1.";
+        } else if (checks.cname_is_proxied) {
+          checks.error_code = "403_cloudflare";
+          checks.diagnosis = "403 Forbidden — your CNAME is Proxied (orange cloud) which triggers Cloudflare cross-zone blocking. Switch to DNS-only (grey cloud).";
+        } else {
+          checks.error_code = "403_cloudflare";
+          checks.diagnosis = "403 Forbidden — your DNS-only CNAME resolves through Cloudflare but the custom hostname may not be active yet. This can happen if the domain was recently added. Wait 5-10 minutes and re-check, or verify the custom hostname is active in your domain settings.";
+        }
+      } else if (httpResp.status === 403 && checks.is_cloudflare_zone && checks.resolves_to_lovable_ip) {
+        checks.error_code = "403_direct_a";
+        checks.diagnosis = "403 Forbidden — your A record points directly to the origin server, bypassing the proxy. Since your domain is on Cloudflare, you must use a CNAME record instead so traffic routes through the proxy correctly.";
+      } else if (httpResp.status === 403 && !checks.is_cloudflare_zone && checks.resolves_to_lovable_ip) {
+        checks.error_code = "403_direct_a";
+        checks.diagnosis = "403 Forbidden — your A record points to the origin but the domain is not registered as a custom hostname. Use a CNAME record pointing to stores.eclipserblx.com instead.";
+      } else if (httpResp.status === 403) {
+        checks.error_code = "403";
+        checks.diagnosis = "403 Forbidden — access is being blocked. Check WAF rules or Cloudflare settings on the domain.";
+      } else if (httpResp.status >= 200 && httpResp.status < 400) {
+        checks.error_code = null;
+        checks.diagnosis = "Domain appears to be working correctly.";
       }
+    } catch (fetchErr: any) {
+      checks.http_reachable = false;
+      checks.diagnosis = `Could not reach domain: ${fetchErr.message}`;
+    }
 
-  // Re-detect Cloudflare status
-  const isCloudflare = await detectCloudflareZone(domainRecord.domain);
+    // 5. Generate recommended fix
+    if (checks.cname_is_proxied) {
+      checks.recommended_fix = "DISABLE_PROXY";
+      if (!checks.error_code) {
+        checks.error_code = "proxied_cname";
+        checks.diagnosis = "Your CNAME record is Proxied (orange cloud). This will cause errors. Switch it to DNS-only (grey cloud) immediately.";
+      }
+    } else if (checks.error_code === "1000_non_cf") {
+      checks.recommended_fix = "USE_A_RECORD";
+    } else if (checks.error_code === "1000" && checks.is_cloudflare_zone) {
+      if (!checks.cname_target && (checks.resolves_to_lovable_ip || checks.resolves_to_cloudflare)) {
+        checks.recommended_fix = "USE_CNAME";
+      } else {
+        checks.recommended_fix = "CLOUDFLARE_CROSS_ZONE";
+      }
+    } else if (checks.error_code === "1014") {
+      checks.recommended_fix = "DISABLE_PROXY";
+    } else if (checks.error_code === "403_direct_a") {
+      checks.recommended_fix = "USE_CNAME";
+    } else if (checks.error_code === "403_cloudflare") {
+      checks.recommended_fix = "CLOUDFLARE_CROSS_ZONE";
+    } else if (checks.error_code === "403") {
+      checks.recommended_fix = "CHECK_WAF";
+    } else if (checks.error_code === "1000") {
+      checks.recommended_fix = "CHECK_DNS";
+    } else if (!checks.dns_ok) {
+      checks.recommended_fix = "ADD_DNS_RECORDS";
+    }
+  } catch (e: any) {
+    checks.diagnosis = `Health check failed: ${e.message}`;
+  }
 
-  await admin.from("store_domains").update({
-    status: "active",
-    verified_at: new Date().toISOString(),
-    ssl_status: sslStatus,
-    cloudflare_hostname_id: cfHostnameId,
-    is_cloudflare_zone: isCloudflare,
-    updated_at: new Date().toISOString(),
-  }).eq("id", domainId);
-
-  // Auto-run health check after verification
-  const healthCheck = await performHealthCheck(domainRecord.domain);
-  await admin.from("store_domains").update({
-    last_health_check: healthCheck,
-    last_health_check_at: new Date().toISOString(),
-  }).eq("id", domainId);
-
-  return jsonOk({ 
-    verified: true, 
-    ssl_status: sslStatus, 
-    is_cloudflare_zone: isCloudflare,
-    health_check: healthCheck,
-  });
+  return checks;
 }
 
 // ── Action: health-check (public for domain owners) ──
