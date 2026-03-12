@@ -336,6 +336,7 @@ export function AppRoutes() {
         <Route path="/store-messages" element={<StoreMessages />} />
         {/* Seller routes */}
         <Route path="/seller" element={<SellerDashboard />} />
+        <Route path="/seller/setup" element={<SellerSetup />} />
         <Route path="/seller/analytics" element={<SellerAnalytics />} />
         <Route path="/seller/products" element={<SellerProducts />} />
         <Route path="/seller/bots" element={<SellerBots />} />
