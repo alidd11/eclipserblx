@@ -233,9 +233,8 @@ export default function Recruiters() {
                     {filteredApplications.map((app) => (
                       <div
                         key={app.id}
-                        onClick={() => navigate(`/admin/recruiters/${app.user_id}`)}
                         className={cn(
-                          "flex items-center justify-between p-4 rounded-lg border bg-card cursor-pointer",
+                          "flex items-center justify-between p-4 rounded-lg border bg-card",
                           "transition-all duration-150 hover:bg-muted/50 hover:border-primary/30"
                         )}
                       >
