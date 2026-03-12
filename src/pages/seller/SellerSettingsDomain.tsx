@@ -468,6 +468,30 @@ export default function SellerSettingsDomain() {
     onError: (e: any) => toast.error('Error', { description: e.message }),
   });
 
+  const handleAddDomain = useCallback(async () => {
+    const domain = customDomainInput.trim().toLowerCase();
+    if (!domain) return;
+    setPreChecking(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('store-domain-manager', {
+        body: { action: 'pre-check-domain', domain },
+      });
+      if (error) throw error;
+      if (data?.warnings?.length > 0) {
+        setCfWarning({ warnings: data.warnings, domain: data.domain, is_cloudflare: data.is_cloudflare, has_proxied_records: data.has_proxied_records });
+        return; // Show dialog instead of proceeding
+      }
+      // No warnings — proceed directly
+      requestCustom.mutate(domain);
+    } catch (e: any) {
+      // Pre-check failed — proceed anyway (don't block the user)
+      console.warn('Pre-check failed, proceeding:', e);
+      requestCustom.mutate(domain);
+    } finally {
+      setPreChecking(false);
+    }
+  }, [customDomainInput, requestCustom]);
+
   const requestCustom = useMutation({
     mutationFn: async (domain: string) => {
       if (!store) throw new Error('No store');
@@ -481,6 +505,7 @@ export default function SellerSettingsDomain() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
       setCustomDomainInput('');
+      setCfWarning(null);
       if (data.is_cloudflare_zone) {
         toast.error('⚠️ Cloudflare domain detected', { description: 'Your domain uses Cloudflare DNS. Follow the Cloudflare-specific checklist carefully to avoid errors.' });
       } else {
