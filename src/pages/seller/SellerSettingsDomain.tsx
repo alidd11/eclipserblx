@@ -400,8 +400,23 @@ export default function SellerSettingsDomain() {
   
   const queryClient = useQueryClient();
   const [customDomainInput, setCustomDomainInput] = useState('');
-  const [cfWarning, setCfWarning] = useState<{ warnings: string[]; domain: string; is_cloudflare: boolean; has_proxied_records: boolean } | null>(null);
+  const [preCheckResult, setPreCheckResult] = useState<{
+    domain: string;
+    is_cloudflare: boolean;
+    has_proxied_records: boolean;
+    has_conflicting_records: boolean;
+    dns_ready: boolean;
+    records_to_remove: Array<{ type: string; name: string; content: string; reason: string }>;
+    records_to_add: Array<{ type: string; name: string; content: string; proxied: boolean; note: string }>;
+    warnings: string[];
+    existing_a_records: string[];
+    existing_aaaa_records: string[];
+    cname_target: string | null;
+    cname_is_proxied: boolean;
+  } | null>(null);
   const [preChecking, setPreChecking] = useState(false);
+  const [wizardStep, setWizardStep] = useState<'check' | 'fix' | 'ready'>('check');
+  const [recheckLoading, setRecheckLoading] = useState(false);
 
   const { data: store, isLoading: storeLoading } = useQuery({
     queryKey: ['seller-store-for-domain', user?.id],
@@ -481,9 +496,10 @@ export default function SellerSettingsDomain() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
       setCustomDomainInput('');
-      setCfWarning(null);
+      setPreCheckResult(null);
+      setWizardStep('check');
       if (data.is_cloudflare_zone) {
-        toast.error('⚠️ Cloudflare domain detected', { description: 'Your domain uses Cloudflare DNS. Follow the Cloudflare-specific checklist carefully to avoid errors.' });
+        toast.success('Domain registered', { description: 'Your domain was added. Follow the DNS instructions below to verify.' });
       } else {
         toast.success('Domain registered', { description: 'Follow the DNS instructions below to verify.' });
       }
@@ -491,20 +507,36 @@ export default function SellerSettingsDomain() {
     onError: (e: any) => toast.error('Error', { description: e.message }),
   });
 
+  const runPreCheck = useCallback(async (domain: string) => {
+    const { data, error } = await supabase.functions.invoke('store-domain-manager', {
+      body: { action: 'pre-check-domain', domain },
+    });
+    if (error) throw error;
+    return data;
+  }, []);
+
   const handleAddDomain = useCallback(async () => {
     const domain = customDomainInput.trim().toLowerCase();
     if (!domain) return;
     setPreChecking(true);
     try {
-      const { data, error } = await supabase.functions.invoke('store-domain-manager', {
-        body: { action: 'pre-check-domain', domain },
-      });
-      if (error) throw error;
-      if (data?.warnings?.length > 0) {
-        setCfWarning({ warnings: data.warnings, domain: data.domain, is_cloudflare: data.is_cloudflare, has_proxied_records: data.has_proxied_records });
-        return; // Show dialog instead of proceeding
+      const data = await runPreCheck(domain);
+      
+      if (data?.has_proxied_records || data?.has_conflicting_records) {
+        // Show the wizard with issues to fix
+        setPreCheckResult(data);
+        setWizardStep('fix');
+        return;
       }
-      // No warnings — proceed directly
+      
+      if (data?.is_cloudflare && !data?.dns_ready) {
+        // Cloudflare zone but no blocking issues — show info then allow proceed
+        setPreCheckResult(data);
+        setWizardStep('ready');
+        return;
+      }
+      
+      // No issues — proceed directly
       requestCustom.mutate(domain);
     } catch (e: any) {
       // Pre-check failed — proceed anyway (don't block the user)
@@ -513,7 +545,26 @@ export default function SellerSettingsDomain() {
     } finally {
       setPreChecking(false);
     }
-  }, [customDomainInput, requestCustom]);
+  }, [customDomainInput, requestCustom, runPreCheck]);
+
+  const handleRecheckDns = useCallback(async () => {
+    if (!preCheckResult?.domain) return;
+    setRecheckLoading(true);
+    try {
+      const data = await runPreCheck(preCheckResult.domain);
+      setPreCheckResult(data);
+      if (data?.dns_ready || (!data?.has_proxied_records && !data?.has_conflicting_records)) {
+        setWizardStep('ready');
+        toast.success('DNS looks good!', { description: 'Your records are correctly configured. You can now proceed.' });
+      } else {
+        toast.error('Issues still detected', { description: 'Please fix the DNS records listed below and try again.' });
+      }
+    } catch (e: any) {
+      toast.error('Re-check failed', { description: e.message });
+    } finally {
+      setRecheckLoading(false);
+    }
+  }, [preCheckResult?.domain, runPreCheck]);
 
   const verifyDomain = useMutation({
     mutationFn: async (domainId: string) => {
