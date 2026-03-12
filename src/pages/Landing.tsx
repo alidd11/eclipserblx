@@ -17,8 +17,13 @@ import { LazySection } from '@/components/ui/LazySection';
 const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
   usePageMeta({ canonicalPath: '/' });
 
+  const handleRefresh = useCallback(async () => {
+    window.location.reload();
+  }, []);
+
   return (
     <MainLayout>
+      <PullToRefresh onRefresh={handleRefresh}>
       <OrganizationSchema />
       <WebsiteSearchSchema />
       <SiteNavigationSchema />
