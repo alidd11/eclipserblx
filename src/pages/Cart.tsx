@@ -207,6 +207,10 @@ export default function Cart() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Cart Upsells */}
+          <CartUpsells />
+          </div>
         </div>
       </div>
     </MainLayout>
