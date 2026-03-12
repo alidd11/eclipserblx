@@ -318,6 +318,21 @@ Deno.serve(async (req) => {
             action_url: '/seller/payouts',
           });
 
+          // Push notification for Stripe payout
+          try {
+            await supabase.functions.invoke("send-push-notification", {
+              body: {
+                user_ids: [payout.seller_id],
+                payload: {
+                  title: "💰 Payout Completed",
+                  body: `Your payout of £${payout.amount.toFixed(2)} has been sent to your Stripe account.`,
+                  tag: `payout-completed-${payoutId}`,
+                  url: "/seller/payouts",
+                },
+              },
+            });
+          } catch (_) { /* best effort */ }
+
           results.processed++;
           results.details.push({ payoutId, status: 'completed', method: 'stripe', transferId: transfer.id });
 
@@ -535,6 +550,21 @@ Deno.serve(async (req) => {
             action_url: '/seller/payouts',
           });
 
+          // Push notification for Wise payout
+          try {
+            await supabase.functions.invoke("send-push-notification", {
+              body: {
+                user_ids: [payout.seller_id],
+                payload: {
+                  title: "💰 Payout Processing",
+                  body: `Your bank transfer of £${payout.amount.toFixed(2)} is being processed.`,
+                  tag: `payout-wise-${payoutId}`,
+                  url: "/seller/payouts",
+                },
+              },
+            });
+          } catch (_) { /* best effort */ }
+
           results.processed++;
           results.details.push({ payoutId, status: 'processing', method: 'wise', transferId: transfer.id });
 
@@ -712,6 +742,21 @@ Deno.serve(async (req) => {
             action_url: '/seller/payouts',
           });
 
+          // Push notification for payout completion
+          try {
+            await supabase.functions.invoke("send-push-notification", {
+              body: {
+                user_ids: [payout.seller_id],
+                payload: {
+                  title: "💰 Payout Completed",
+                  body: `Your payout of £${payout.amount.toFixed(2)} has been sent to your PayPal.`,
+                  tag: `payout-completed-${payoutId}`,
+                  url: "/seller/payouts",
+                },
+              },
+            });
+          } catch (_) { /* best effort */ }
+
           results.processed++;
           results.details.push({ payoutId, status: 'completed', method: 'paypal', batchId });
 
@@ -734,6 +779,20 @@ Deno.serve(async (req) => {
             title: 'Payout Issue',
             message: `There was an issue processing your payout of £${payout.amount?.toFixed(2)}. Our team has been notified.`,
             action_url: '/seller/payouts',
+          });
+
+          // Push notification for payout failure
+          await supabase.functions.invoke("send-push-notification", {
+            body: {
+              user_ids: [payout.seller_id],
+              payload: {
+                title: "Payout Issue",
+                body: `There was an issue processing your payout of £${payout.amount?.toFixed(2)}. Our team has been notified.`,
+                tag: `payout-failed-${payoutId}`,
+                url: "/seller/payouts",
+                requireInteraction: true,
+              },
+            },
           });
         } catch (_) { /* best effort */ }
       }

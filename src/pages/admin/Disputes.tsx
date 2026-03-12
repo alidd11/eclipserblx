@@ -160,7 +160,7 @@ export default function Disputes() {
   });
 
   const updateDispute = useMutation({
-    mutationFn: async ({ id, status, response }: { id: string; status: string; response: string }) => {
+    mutationFn: async ({ id, status, response, customerId }: { id: string; status: string; response: string; customerId?: string }) => {
       const updateData: any = {
         status,
         admin_response: response || null,
@@ -172,6 +172,33 @@ export default function Disputes() {
       }
       const { error } = await supabase.from('refund_requests').update(updateData).eq('id', id);
       if (error) throw error;
+
+      // Notify buyer about admin resolution
+      if (customerId && ['resolved', 'approved', 'denied'].includes(status)) {
+        const statusText = status === 'approved' ? 'approved — your refund will be processed' : status === 'denied' ? 'denied by our team' : 'resolved by our team';
+        await supabase.from('notifications').insert({
+          user_id: customerId,
+          type: 'order_update',
+          title: `Dispute ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+          message: `Your dispute has been ${statusText}.`,
+          link: '/account/orders',
+        });
+
+        try {
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              user_ids: [customerId],
+              payload: {
+                title: `Dispute ${status === 'approved' ? 'Approved ✅' : status === 'denied' ? 'Denied' : 'Resolved'}`,
+                body: `Your dispute has been ${statusText}.`,
+                tag: `dispute-admin-${id}`,
+                url: '/account/orders',
+                requireInteraction: status === 'approved',
+              },
+            },
+          });
+        } catch (_) { /* best effort */ }
+      }
     },
     onSuccess: () => {
       toast.success('Dispute updated successfully');
@@ -715,7 +742,7 @@ export default function Disputes() {
                 <div className="flex justify-end gap-2 pt-2">
                   <Button variant="outline" onClick={() => setSelectedDispute(null)}>Cancel</Button>
                   <Button
-                    onClick={() => updateDispute.mutate({ id: selectedDispute.id, status: newStatus, response: adminResponse })}
+                    onClick={() => updateDispute.mutate({ id: selectedDispute.id, status: newStatus, response: adminResponse, customerId: selectedDispute.customer_id })}
                     disabled={updateDispute.isPending || !newStatus}
                   >
                     {updateDispute.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

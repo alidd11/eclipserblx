@@ -51,7 +51,7 @@ export default function SellerRefunds() {
   });
 
   const respondMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: 'approved' | 'denied' }) => {
+    mutationFn: async ({ id, status, customerId }: { id: string; status: 'approved' | 'denied'; customerId?: string }) => {
       const { error } = await supabase.from('refund_requests').update({
         status,
         seller_response: response.trim(),
@@ -59,6 +59,33 @@ export default function SellerRefunds() {
         updated_at: new Date().toISOString(),
       }).eq('id', id);
       if (error) throw error;
+
+      // Notify the buyer about the dispute response
+      if (customerId) {
+        const statusText = status === 'approved' ? 'approved' : 'denied';
+        await supabase.from('notifications').insert({
+          user_id: customerId,
+          type: 'order_update',
+          title: `Dispute ${status === 'approved' ? 'Approved' : 'Denied'}`,
+          message: `The seller has ${statusText} your dispute.${status === 'approved' ? ' Your refund will be processed shortly.' : ''}`,
+          link: '/account/orders',
+        });
+
+        // Send push notification to buyer
+        try {
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              user_ids: [customerId],
+              payload: {
+                title: `Dispute ${status === 'approved' ? 'Approved ✅' : 'Denied'}`,
+                body: `The seller has ${statusText} your dispute.${status === 'approved' ? ' Your refund will be processed shortly.' : ''}`,
+                tag: `dispute-response-${id}`,
+                url: '/account/orders',
+              },
+            },
+          });
+        } catch (_) { /* best effort */ }
+      }
     },
     onSuccess: (_, { status }) => {
       toast.success(`Refund ${status === 'approved' ? 'approved' : 'denied'}`);
@@ -66,7 +93,7 @@ export default function SellerRefunds() {
       setSelectedRequest(null);
       setResponse('');
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e: any) => toast.error(e.message),
   });
 
   const filtered = (refundRequests || []).filter((r: any) => 
@@ -329,7 +356,7 @@ function SellerDisputeDetail({ request, response, setResponse, respondMutation, 
           <div className="flex gap-2">
             <Button 
               className="flex-1 bg-green-600 hover:bg-green-700"
-              onClick={() => respondMutation.mutate({ id: request.id, status: 'approved' })}
+              onClick={() => respondMutation.mutate({ id: request.id, status: 'approved', customerId: request.customer_id })}
               disabled={respondMutation.isPending}
             >
               <Check className="h-4 w-4 mr-2" />Approve Refund
@@ -337,7 +364,7 @@ function SellerDisputeDetail({ request, response, setResponse, respondMutation, 
             <Button 
               variant="destructive"
               className="flex-1"
-              onClick={() => respondMutation.mutate({ id: request.id, status: 'denied' })}
+              onClick={() => respondMutation.mutate({ id: request.id, status: 'denied', customerId: request.customer_id })}
               disabled={respondMutation.isPending}
             >
               <X className="h-4 w-4 mr-2" />Deny
