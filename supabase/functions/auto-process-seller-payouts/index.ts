@@ -750,6 +750,20 @@ Deno.serve(async (req) => {
             message: `There was an issue processing your payout of £${payout.amount?.toFixed(2)}. Our team has been notified.`,
             action_url: '/seller/payouts',
           });
+
+          // Push notification for payout failure
+          await supabase.functions.invoke("send-push-notification", {
+            body: {
+              user_ids: [payout.seller_id],
+              payload: {
+                title: "Payout Issue",
+                body: `There was an issue processing your payout of £${payout.amount?.toFixed(2)}. Our team has been notified.`,
+                tag: `payout-failed-${payoutId}`,
+                url: "/seller/payouts",
+                requireInteraction: true,
+              },
+            },
+          });
         } catch (_) { /* best effort */ }
       }
     }
