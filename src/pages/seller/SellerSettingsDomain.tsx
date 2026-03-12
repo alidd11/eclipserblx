@@ -468,6 +468,29 @@ export default function SellerSettingsDomain() {
     onError: (e: any) => toast.error('Error', { description: e.message }),
   });
 
+  const requestCustom = useMutation({
+    mutationFn: async (domain: string) => {
+      if (!store) throw new Error('No store');
+      const { data, error } = await supabase.functions.invoke('store-domain-manager', {
+        body: { action: 'request-custom-domain', store_id: store.id, domain },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['store-domains'] });
+      setCustomDomainInput('');
+      setCfWarning(null);
+      if (data.is_cloudflare_zone) {
+        toast.error('⚠️ Cloudflare domain detected', { description: 'Your domain uses Cloudflare DNS. Follow the Cloudflare-specific checklist carefully to avoid errors.' });
+      } else {
+        toast.success('Domain registered', { description: 'Follow the DNS instructions below to verify.' });
+      }
+    },
+    onError: (e: any) => toast.error('Error', { description: e.message }),
+  });
+
   const handleAddDomain = useCallback(async () => {
     const domain = customDomainInput.trim().toLowerCase();
     if (!domain) return;
@@ -491,29 +514,6 @@ export default function SellerSettingsDomain() {
       setPreChecking(false);
     }
   }, [customDomainInput, requestCustom]);
-
-  const requestCustom = useMutation({
-    mutationFn: async (domain: string) => {
-      if (!store) throw new Error('No store');
-      const { data, error } = await supabase.functions.invoke('store-domain-manager', {
-        body: { action: 'request-custom-domain', store_id: store.id, domain },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      return data;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['store-domains'] });
-      setCustomDomainInput('');
-      setCfWarning(null);
-      if (data.is_cloudflare_zone) {
-        toast.error('⚠️ Cloudflare domain detected', { description: 'Your domain uses Cloudflare DNS. Follow the Cloudflare-specific checklist carefully to avoid errors.' });
-      } else {
-        toast.success('Domain registered', { description: 'Follow the DNS instructions below to verify.' });
-      }
-    },
-    onError: (e: any) => toast.error('Error', { description: e.message }),
-  });
 
   const verifyDomain = useMutation({
     mutationFn: async (domainId: string) => {
