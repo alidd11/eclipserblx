@@ -912,9 +912,9 @@ async function adminFixHostname(domainId: string) {
         if (verifyData?.success) {
           fixes.push("Seller Cloudflare credentials verified");
 
-          // Determine preferred record type using seller zone apex
+          // Determine preferred record type using seller zone apex (Cloudflare apex uses DNS-only CNAME)
           const sellerZoneName = (verifyData?.result?.name ?? "").toLowerCase();
-          const preferredRecord = getPreferredDnsRecord(domain, sellerZoneName);
+          const preferredRecord = getPreferredDnsRecord(domain, sellerZoneName, true);
 
           // List existing DNS records
           const { data: dnsListData } = await cfFetch<any[]>(
