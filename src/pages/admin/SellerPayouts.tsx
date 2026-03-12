@@ -253,99 +253,168 @@ export default function SellerPayouts() {
 
         <Card>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Seller</TableHead>
-                  <TableHead>Store</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Payout Method</TableHead>
-                  <TableHead>Payout Details</TableHead>
-                  <TableHead>Requested</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
+            {/* Desktop table */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
-                      Loading...
-                    </TableCell>
+                    <TableHead>Seller</TableHead>
+                    <TableHead>Store</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Payout Method</TableHead>
+                    <TableHead>Payout Details</TableHead>
+                    <TableHead>Requested</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ) : payouts?.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      No payout requests found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  payouts?.map((payout: any) => (
-                    <TableRow key={payout.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{payout.profiles?.display_name}</p>
-                          <p className="text-sm text-muted-foreground">{payout.profiles?.email}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>{payout.stores?.name}</TableCell>
-                      <TableCell className="font-medium">£{payout.amount?.toFixed(2)}</TableCell>
-                      <TableCell>
-                        {getPayoutMethodBadge(payout)}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {payout.stores?.payout_method === 'paypal' 
-                          ? payout.stores?.store_payment_details?.[0]?.paypal_email || payout.stores?.store_payment_details?.paypal_email || "Not set"
-                          : payout.stores?.payout_method === 'bank' 
-                            ? "Bank Transfer"
-                            : payout.stores?.payout_method === 'stripe' 
-                              ? "Automatic via Stripe"
-                              : "Not configured"}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {format(new Date(payout.created_at), "dd MMM yyyy")}
-                      </TableCell>
-                      <TableCell>{getStatusBadge(payout.status, payout)}</TableCell>
-                      <TableCell>
-                        {payout.status === "pending" && (
-                          <Button
-                            size="sm"
-                            variant="default"
-                            onClick={() => setSelectedPayout(payout)}
-                          >
-                            <Check className="h-4 w-4 mr-1" />
-                            Process
-                          </Button>
-                        )}
-                        {payout.status === "awaiting_funds" && (
-                          <div className="flex flex-col gap-1">
-                            <span className="text-xs text-amber-400 flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              Stripe → Wise funding in progress
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              Est. arrival: {getEstimatedArrival(payout)}
-                            </span>
-                            {payout.failure_reason && (
-                              <span className="text-xs text-destructive flex items-center gap-1">
-                                <AlertCircle className="h-3 w-3" />
-                                {payout.failure_reason}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        {payout.status === "processing" && (
-                          <span className="text-sm text-muted-foreground flex items-center gap-1">
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                            Wise transfer in progress
-                          </span>
-                        )}
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-8">
+                        Loading...
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : payouts?.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                        No payout requests found
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    payouts?.map((payout: any) => (
+                      <TableRow key={payout.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{payout.profiles?.display_name}</p>
+                            <p className="text-sm text-muted-foreground">{payout.profiles?.email}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>{payout.stores?.name}</TableCell>
+                        <TableCell className="font-medium">£{payout.amount?.toFixed(2)}</TableCell>
+                        <TableCell>
+                          {getPayoutMethodBadge(payout)}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {payout.stores?.payout_method === 'paypal' 
+                            ? payout.stores?.store_payment_details?.[0]?.paypal_email || payout.stores?.store_payment_details?.paypal_email || "Not set"
+                            : payout.stores?.payout_method === 'bank' 
+                              ? "Bank Transfer"
+                              : payout.stores?.payout_method === 'stripe' 
+                                ? "Automatic via Stripe"
+                                : "Not configured"}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {format(new Date(payout.created_at), "dd MMM yyyy")}
+                        </TableCell>
+                        <TableCell>{getStatusBadge(payout.status, payout)}</TableCell>
+                        <TableCell>
+                          {payout.status === "pending" && (
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => setSelectedPayout(payout)}
+                            >
+                              <Check className="h-4 w-4 mr-1" />
+                              Process
+                            </Button>
+                          )}
+                          {payout.status === "awaiting_funds" && (
+                            <div className="flex flex-col gap-1">
+                              <span className="text-xs text-amber-400 flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                Stripe → Wise funding in progress
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                Est. arrival: {getEstimatedArrival(payout)}
+                              </span>
+                              {payout.failure_reason && (
+                                <span className="text-xs text-destructive flex items-center gap-1">
+                                  <AlertCircle className="h-3 w-3" />
+                                  {payout.failure_reason}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          {payout.status === "processing" && (
+                            <span className="text-sm text-muted-foreground flex items-center gap-1">
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                              Wise transfer in progress
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile card layout */}
+            <div className="md:hidden">
+              {isLoading ? (
+                <div className="p-8 text-center text-muted-foreground">Loading...</div>
+              ) : payouts?.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground">No payout requests found</div>
+              ) : (
+                <div className="divide-y divide-border">
+                  {payouts?.map((payout: any) => (
+                    <div key={payout.id} className="p-4 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{payout.profiles?.display_name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{payout.stores?.name}</p>
+                        </div>
+                        <span className="text-lg font-bold flex-shrink-0">£{payout.amount?.toFixed(2)}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {getStatusBadge(payout.status, payout)}
+                        {getPayoutMethodBadge(payout)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        <span>{format(new Date(payout.created_at), "dd MMM yyyy")}</span>
+                        {payout.stores?.payout_method === 'paypal' && (
+                          <span className="ml-2">
+                            PayPal: {payout.stores?.store_payment_details?.[0]?.paypal_email || payout.stores?.store_payment_details?.paypal_email || "Not set"}
+                          </span>
+                        )}
+                      </div>
+                      {payout.status === "pending" && (
+                        <Button
+                          size="sm"
+                          variant="default"
+                          className="w-full"
+                          onClick={() => setSelectedPayout(payout)}
+                        >
+                          <Check className="h-4 w-4 mr-1" />
+                          Process
+                        </Button>
+                      )}
+                      {payout.status === "awaiting_funds" && (
+                        <div className="text-xs space-y-0.5">
+                          <span className="text-amber-400 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            Funding in progress · Est: {getEstimatedArrival(payout)}
+                          </span>
+                          {payout.failure_reason && (
+                            <span className="text-destructive flex items-center gap-1">
+                              <AlertCircle className="h-3 w-3" />
+                              {payout.failure_reason}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {payout.status === "processing" && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Wise transfer in progress
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
