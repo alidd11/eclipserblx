@@ -38,7 +38,7 @@ interface RecruiterStats {
 }
 
 export default function Recruiters() {
-  const navigate = useNavigate();
+  
   
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
