@@ -27,6 +27,8 @@ import { EmailGuard } from "@/components/auth/EmailGuard";
 const ChatWidget = lazy(() => import("@/components/chat/ChatWidget").then(m => ({ default: m.ChatWidget })));
 const ChatSidePanel = lazy(() => import("@/components/chat/ChatSidePanel").then(m => ({ default: m.ChatSidePanel })));
 const CookieConsentBanner = lazy(() => import("@/components/cookies/CookieConsentBanner").then(m => ({ default: m.CookieConsentBanner })));
+const ConnectivityBanner = lazy(() => import("@/components/ConnectivityBanner").then(m => ({ default: m.ConnectivityBanner })));
+const BackgroundRefreshIndicator = lazy(() => import("@/components/BackgroundRefreshIndicator").then(m => ({ default: m.BackgroundRefreshIndicator })));
 
 // Optimized QueryClient with better caching
 const queryClient = new QueryClient({
