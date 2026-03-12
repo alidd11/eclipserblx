@@ -245,6 +245,9 @@ async function performHealthCheck(domain: string) {
     is_cloudflare_zone: false,
     diagnosis: "",
     recommended_fix: "",
+    custom_hostname_status: null,
+    custom_hostname_ssl_status: null,
+    custom_hostname_provisioning: false,
   };
 
   try {
@@ -272,7 +275,6 @@ async function performHealthCheck(domain: string) {
       const ips = aRecords.map((a: any) => a.data);
       checks.resolved_ips = ips;
       checks.resolves_to_lovable_ip = ips.includes("185.158.133.1");
-      // Cloudflare proxy IPs are in 104.16-31.x.x, 172.64-71.x.x ranges
       checks.resolves_to_cloudflare = ips.some((ip: string) => {
         const parts = ip.split(".").map(Number);
         return (parts[0] === 104 && parts[1] >= 16 && parts[1] <= 31) ||
@@ -283,7 +285,13 @@ async function performHealthCheck(domain: string) {
     // 3. Check NS to detect Cloudflare zone
     checks.is_cloudflare_zone = await detectCloudflareZone(domain);
 
-    // 3.5. Detect proxied CNAME
+    // 3.5. Check custom hostname provisioning status in our Cloudflare zone
+    const hostnameState = await getCustomHostnameState(domain);
+    checks.custom_hostname_status = hostnameState.status;
+    checks.custom_hostname_ssl_status = hostnameState.ssl_status;
+    checks.custom_hostname_provisioning = hostnameState.is_provisioning;
+
+    // 3.6. Detect proxied CNAME
     const proxiedCheck = await detectProxiedCname(domain);
     checks.cname_is_proxied = proxiedCheck.is_proxied;
     if (proxiedCheck.cname_target) checks.cname_target = proxiedCheck.cname_target;
@@ -298,7 +306,7 @@ async function performHealthCheck(domain: string) {
         headers: { "User-Agent": "EclipseHealthCheck/1.0" },
       });
       clearTimeout(timeout);
-      
+
       checks.http_status = httpResp.status;
       checks.http_reachable = true;
 
@@ -312,12 +320,17 @@ async function performHealthCheck(domain: string) {
 
       if (hasError1000) {
         if (checks.is_cloudflare_zone) {
-          checks.error_code = "1000";
-          if (checks.resolves_to_lovable_ip && !checks.cname_target) {
-            checks.diagnosis = "Error 1000 — your root domain is using a direct A record to 185.158.133.1 while the zone is on Cloudflare. Cloudflare treats this as a prohibited cross-zone target. Use a DNS-only CNAME to stores.eclipserblx.com instead.";
+          if (hostnameState.exists && hostnameState.is_provisioning) {
+            checks.error_code = "hostname_provisioning";
+            checks.diagnosis = `Custom hostname is still provisioning (status: ${hostnameState.status ?? "pending"}, ssl: ${hostnameState.ssl_status ?? "pending"}). Temporary Error 1000 can occur until activation finishes.`;
+          } else if (checks.resolves_to_lovable_ip && !checks.cname_target) {
+            checks.error_code = "1000";
+            checks.diagnosis = "Error 1000 — your root domain is using a direct A record to 185.158.133.1 while the zone is on Cloudflare. Use a DNS-only CNAME to stores.eclipserblx.com instead.";
           } else if (!checks.cname_target && checks.resolves_to_cloudflare) {
+            checks.error_code = "1000";
             checks.diagnosis = "Error 1000 — Cloudflare flattening/proxy conflict detected on the root domain. Use a DNS-only CNAME to stores.eclipserblx.com and remove conflicting A/AAAA records.";
           } else {
+            checks.error_code = "1000";
             checks.diagnosis = "Error 1000 — cross-zone Cloudflare conflict detected.";
           }
         } else {
@@ -338,18 +351,23 @@ async function performHealthCheck(domain: string) {
         checks.diagnosis = "Redirect loop detected — check for conflicting redirect rules.";
       } else if (httpResp.status === 403 && checks.is_cloudflare_zone && checks.resolves_to_cloudflare) {
         if (!checks.cname_target) {
-          checks.error_code = "1000";
-          checks.diagnosis = "403 with Cloudflare edge IPs and no visible CNAME usually indicates root-domain flattening conflict. Use a DNS-only A record to 185.158.133.1.";
+          if (hostnameState.exists && hostnameState.is_provisioning) {
+            checks.error_code = "hostname_provisioning";
+            checks.diagnosis = `Custom hostname is still provisioning (status: ${hostnameState.status ?? "pending"}, ssl: ${hostnameState.ssl_status ?? "pending"}). Temporary 403/1000 responses are expected during this stage.`;
+          } else {
+            checks.error_code = "1000";
+            checks.diagnosis = "403 with Cloudflare edge IPs and no visible apex CNAME can indicate flattening/cross-zone conflict. Keep apex on a DNS-only CNAME to stores.eclipserblx.com and remove conflicting A/AAAA records.";
+          }
         } else if (checks.cname_is_proxied) {
           checks.error_code = "403_cloudflare";
           checks.diagnosis = "403 Forbidden — your CNAME is Proxied (orange cloud) which triggers Cloudflare cross-zone blocking. Switch to DNS-only (grey cloud).";
         } else {
           checks.error_code = "403_cloudflare";
-          checks.diagnosis = "403 Forbidden — your DNS-only CNAME resolves through Cloudflare but the custom hostname may not be active yet. This can happen if the domain was recently added. Wait 5-10 minutes and re-check, or verify the custom hostname is active in your domain settings.";
+          checks.diagnosis = "403 Forbidden — your DNS-only CNAME resolves through Cloudflare but the custom hostname may still be provisioning. Wait 5-10 minutes and re-check.";
         }
       } else if (httpResp.status === 403 && checks.is_cloudflare_zone && checks.resolves_to_lovable_ip) {
         checks.error_code = "403_direct_a";
-        checks.diagnosis = "403 Forbidden — your A record points directly to the origin server, bypassing the proxy. Since your domain is on Cloudflare, you must use a CNAME record instead so traffic routes through the proxy correctly.";
+        checks.diagnosis = "403 Forbidden — your A record points directly to the origin server, bypassing expected routing. Use a DNS-only CNAME to stores.eclipserblx.com.";
       } else if (httpResp.status === 403 && !checks.is_cloudflare_zone && checks.resolves_to_lovable_ip) {
         checks.error_code = "403_direct_a";
         checks.diagnosis = "403 Forbidden — your A record points to the origin but the domain is not registered as a custom hostname. Use a CNAME record pointing to stores.eclipserblx.com instead.";
@@ -362,11 +380,21 @@ async function performHealthCheck(domain: string) {
       }
     } catch (fetchErr: any) {
       checks.http_reachable = false;
-      checks.diagnosis = `Could not reach domain: ${fetchErr.message}`;
+      const message = fetchErr?.message ?? "Unknown fetch error";
+      if (checks.dns_ok && /dns error|no address associated with hostname|nxdomain/i.test(message.toLowerCase())) {
+        checks.error_code = "dns_propagating";
+        checks.diagnosis = "DNS is still propagating across resolvers after recent record updates. Wait 5-15 minutes and check again.";
+      } else {
+        checks.diagnosis = `Could not reach domain: ${message}`;
+      }
     }
 
     // 5. Generate recommended fix
-    if (checks.cname_is_proxied) {
+    if (checks.error_code === "hostname_provisioning") {
+      checks.recommended_fix = "WAIT_PROVISIONING";
+    } else if (checks.error_code === "dns_propagating") {
+      checks.recommended_fix = "WAIT_DNS_PROPAGATION";
+    } else if (checks.cname_is_proxied) {
       checks.recommended_fix = "DISABLE_PROXY";
       if (!checks.error_code) {
         checks.error_code = "proxied_cname";
