@@ -742,7 +742,7 @@ export default function Disputes() {
                 <div className="flex justify-end gap-2 pt-2">
                   <Button variant="outline" onClick={() => setSelectedDispute(null)}>Cancel</Button>
                   <Button
-                    onClick={() => updateDispute.mutate({ id: selectedDispute.id, status: newStatus, response: adminResponse })}
+                    onClick={() => updateDispute.mutate({ id: selectedDispute.id, status: newStatus, response: adminResponse, customerId: selectedDispute.customer_id })}
                     disabled={updateDispute.isPending || !newStatus}
                   >
                     {updateDispute.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
