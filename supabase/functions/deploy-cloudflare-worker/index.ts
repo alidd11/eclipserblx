@@ -115,6 +115,93 @@ const DEAD_PREFIXES = [
   "/wp-includes/", "/wp-login.php", "/xmlrpc.php"
 ];
 
+var VALID_ROUTE_PATTERNS = [
+  /^\\/$/,
+  /^\\/auth$/,
+  /^\\/auth\\/discord\\/callback$/,
+  /^\\/auth\\/roblox\\/callback$/,
+  /^\\/complete-profile$/,
+  /^\\/account$/,
+  /^\\/messages$/,
+  /^\\/purchases$/,
+  /^\\/downloads$/,
+  /^\\/orders$/,
+  /^\\/products$/,
+  /^\\/search$/,
+  /^\\/featured$/,
+  /^\\/categories$/,
+  /^\\/products\\/[^/?#]+$/,
+  /^\\/cart$/,
+  /^\\/checkout$/,
+  /^\\/order-success$/,
+  /^\\/chat-history$/,
+  /^\\/support\\/tickets$/,
+  /^\\/support\\/tickets\\/[^/?#]+$/,
+  /^\\/support\\/chat$/,
+  /^\\/support$/,
+  /^\\/jobs$/,
+  /^\\/refunds$/,
+  /^\\/privacy$/,
+  /^\\/terms$/,
+  /^\\/dmca$/,
+  /^\\/ip-shield$/,
+  /^\\/ip-dashboard$/,
+  /^\\/ip-shield\\/dashboard(\\/.*)?$/,
+  /^\\/ip-staff(\\/.*)?$/,
+  /^\\/faq$/,
+  /^\\/help-center(\\/.*)?$/,
+  /^\\/contact$/,
+  /^\\/status$/,
+  /^\\/bot-installation$/,
+  /^\\/bot-dashboard$/,
+  /^\\/notifications$/,
+  /^\\/eclipse-plus$/,
+  /^\\/marketplace$/,
+  /^\\/stores$/,
+  /^\\/affiliate$/,
+  /^\\/recruiter$/,
+  /^\\/advertise$/,
+  /^\\/credits$/,
+  /^\\/sell$/,
+  /^\\/live-chat$/,
+  /^\\/wishlist$/,
+  /^\\/store-messages$/,
+  /^\\/account\\/advertisements$/,
+  /^\\/account\\/ad-analytics$/,
+  /^\\/account\\/following$/,
+  /^\\/seller(\\/.*)?$/,
+  /^\\/store\\/[^/?#]+(\\/.*)?$/,
+  /^\\/admin(\\/.*)?$/,
+  /^\\/guard(\\/.*)?$/,
+  /^\\/share\\/.+$/
+];
+
+var STATIC_ASSET_RE = /\\.(js|mjs|css|png|jpg|jpeg|gif|svg|webp|avif|ico|woff2?|ttf|eot|map|json|txt|xml|webmanifest)$/i;
+
+function isValidRoute(pathname) {
+  return VALID_ROUTE_PATTERNS.some(function(re) { return re.test(pathname); });
+}
+
+function serve404() {
+  var html = '<!DOCTYPE html><html lang="en"><head>' +
+    '<meta charset="utf-8"/><title>Page Not Found | Eclipse</title>' +
+    '<meta name="robots" content="noindex"/>' +
+    '<meta http-equiv="refresh" content="3;url=https://eclipserblx.com/"/>' +
+    '</head><body style="font-family:system-ui;text-align:center;padding:60px 20px;background:#0a0a0a;color:#fff">' +
+    '<h1>404 \\u2014 Page Not Found</h1>' +
+    '<p>The page you\\u2019re looking for doesn\\u2019t exist. Redirecting to <a href="https://eclipserblx.com/" style="color:#7c3aed">Eclipse</a>\\u2026</p>' +
+    '</body></html>';
+  return new Response(html, {
+    status: 404,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "X-Robots-Tag": "noindex",
+      "Cache-Control": "public, max-age=60",
+      "X-Eclipse-Worker": "404-not-found"
+    }
+  });
+}
+
 export default {
   async fetch(request) {
     try {
@@ -134,7 +221,7 @@ export default {
         return Response.redirect(SITE_URL + realPath, 302);
       }
 
-      // Store subdomain / custom domain
+      // Store subdomain / custom domain (all paths valid — store SPA handles routing)
       if (isStoreHostname(hostname)) {
         if (isTestingTool(ua)) return fetchOrigin(request, "pass-store-test");
         if (!isBot(ua)) return fetchOrigin(request, "pass-store-human");
@@ -143,10 +230,20 @@ export default {
         return fetchOrigin(request, "pass-store-miss");
       }
 
-      // Main domain — only intercept relevant paths
+      // Static assets — always pass through
+      if (STATIC_ASSET_RE.test(path) || path.startsWith("/assets/")) {
+        return fetchOrigin(request, "pass-asset");
+      }
+
+      // Route validation: return 404 for unknown paths on main domain
+      if (!isValidRoute(path)) {
+        return serve404();
+      }
+
+      // OG handling for bots on known pages
       var isDynamic = /^\\/(products|store)\\/[^\\/?#]+/.test(path);
       var isStatic = STATIC_OG_PATHS.has(path);
-      if (!isDynamic && !isStatic) return fetchOrigin(request, "pass-no-match");
+      if (!isDynamic && !isStatic) return fetchOrigin(request, "pass-valid-no-og");
       if (isTestingTool(ua)) return fetchOrigin(request, "pass-test-tool");
       if (!isBot(ua)) return fetchOrigin(request, "pass-human");
 
