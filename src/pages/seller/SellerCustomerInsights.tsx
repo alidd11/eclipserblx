@@ -22,10 +22,10 @@ export default function SellerCustomerInsights() {
 
       const since = new Date(Date.now() - daysBack * 86400000).toISOString();
 
-      // Get orders for this store's products
+      // Get orders for this store's products, join to orders for buyer info
       const { data: transactions } = await supabase
         .from('seller_transactions')
-        .select('order_id, buyer_id, gross_amount, created_at')
+        .select('order_id, gross_amount, created_at, orders!inner(user_id)')
         .eq('store_id', store.id)
         .eq('type', 'sale')
         .is('refunded_at', null)
@@ -40,8 +40,8 @@ export default function SellerCustomerInsights() {
 
       // Aggregate by buyer
       const buyerMap = new Map<string, { orders: number; total: number; lastOrder: string }>();
-      transactions.forEach(tx => {
-        const id = tx.buyer_id || 'anonymous';
+      transactions.forEach((tx: any) => {
+        const id = tx.orders?.user_id || 'anonymous';
         const existing = buyerMap.get(id);
         if (existing) {
           existing.orders++;
@@ -54,7 +54,7 @@ export default function SellerCustomerInsights() {
 
       const totalCustomers = buyerMap.size;
       const repeatCustomers = Array.from(buyerMap.values()).filter(b => b.orders > 1).length;
-      const totalRevenue = transactions.reduce((sum, tx) => sum + Number(tx.gross_amount || 0), 0);
+      const totalRevenue = (transactions as any[]).reduce((sum: number, tx: any) => sum + Number(tx.gross_amount || 0), 0);
       const avgOrderValue = transactions.length > 0 ? totalRevenue / transactions.length : 0;
 
       // Top customers by spend

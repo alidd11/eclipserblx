@@ -219,7 +219,7 @@ export default function SellerGoals() {
               const achieved = goal.current_amount >= goal.target_amount;
 
               return (
-                <Card key={goal.id} className={achieved ? 'border-green-500/30 bg-green-500/5' : ''}>
+                <Card key={goal.id} className={achieved ? 'border-primary/30 bg-primary/5' : ''}>
                   <CardContent className="py-5">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
