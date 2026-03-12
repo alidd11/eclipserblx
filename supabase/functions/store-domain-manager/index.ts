@@ -1505,7 +1505,7 @@ Deno.serve(async (req) => {
         return await autoFixDns(user.id, body.domain_id);
 
       default:
-        return jsonError("Unknown action. Supported: claim-subdomain, request-custom-domain, verify-custom-domain, check-status, health-check, remove-domain, auto-fix-dns, resolve-hostname", 400);
+        return jsonError("Unknown action. Supported: pre-check-domain, claim-subdomain, request-custom-domain, verify-custom-domain, check-status, health-check, remove-domain, auto-fix-dns, resolve-hostname", 400);
     }
   } catch (e) {
     return internalError(e);
