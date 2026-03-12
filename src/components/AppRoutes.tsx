@@ -340,6 +340,7 @@ export function AppRoutes() {
         {/* Legacy compatibility redirect */}
         <Route path="/live-chat" element={<Navigate to="/support/chat" replace />} />
         <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/compare" element={<Compare />} />
         <Route path="/store-messages" element={<StoreMessages />} />
         {/* Seller routes */}
         <Route path="/seller" element={<SellerDashboard />} />
