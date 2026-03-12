@@ -155,8 +155,8 @@ export default function ManualPayouts() {
         )}
 
         {/* Tabs */}
-        <Tabs defaultValue="pending" className="space-y-4">
-          <TabsList>
+        <Tabs value={manualTab} onValueChange={setManualTab} className="space-y-4">
+          <TabsList className="hidden sm:inline-flex">
             <TabsTrigger value="pending" className="gap-2">
               <Clock className="h-4 w-4" />
               Pending ({pendingRequests.length})
@@ -166,6 +166,17 @@ export default function ManualPayouts() {
               Processed ({processedRequests.length})
             </TabsTrigger>
           </TabsList>
+          <div className="sm:hidden">
+            <Select value={manualTab} onValueChange={setManualTab}>
+              <SelectTrigger className="w-auto min-w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending ({pendingRequests.length})</SelectItem>
+                <SelectItem value="processed">Processed ({processedRequests.length})</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <TabsContent value="pending" className="space-y-4">
             {isLoading ? (
