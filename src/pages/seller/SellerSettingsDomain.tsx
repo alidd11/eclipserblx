@@ -758,30 +758,46 @@ export default function SellerSettingsDomain() {
                     <div className="bg-card rounded-lg p-4 border border-border space-y-4">
                       <div className="space-y-2 text-sm">
                         <p className="text-sm font-medium text-foreground">DNS Records to Add:</p>
-                        <div className="flex items-start gap-2">
-                          <span className="font-medium text-primary min-w-[24px]">1.</span>
-                          <div>
-                            <p className="text-muted-foreground">Add a <strong>CNAME</strong> record:</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <code className="bg-muted px-2 py-0.5 rounded text-xs">{d.domain} → stores.eclipserblx.com</code>
-                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard('stores.eclipserblx.com')}>
-                                <Copy className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <span className="font-medium text-primary min-w-[24px]">2.</span>
-                          <div>
-                            <p className="text-muted-foreground">Add a <strong>CNAME</strong> for <strong>www</strong>:</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <code className="bg-muted px-2 py-0.5 rounded text-xs">www.{d.domain} → stores.eclipserblx.com</code>
-                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard('stores.eclipserblx.com')}>
-                                <Copy className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
+                        
+                        {/* Dynamic DNS instructions based on domain type */}
+                        {(() => {
+                          // For Cloudflare zones, recommend CNAME; for others, CNAME too (backend determines)
+                          const apexTarget = isCloudflare ? 'stores.eclipserblx.com' : 'stores.eclipserblx.com';
+                          const apexType = isCloudflare ? 'CNAME' : 'CNAME';
+                          
+                          return (
+                            <>
+                              <div className="flex items-start gap-2">
+                                <span className="font-medium text-primary min-w-[24px]">1.</span>
+                                <div>
+                                  <p className="text-muted-foreground">Add a <strong>{apexType}</strong> record:</p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <code className="bg-muted px-2 py-0.5 rounded text-xs">{d.domain} → {apexTarget}</code>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(apexTarget)}>
+                                      <Copy className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                  <p className="text-[10px] text-muted-foreground mt-1 italic">
+                                    This points your domain to our edge router, which then routes traffic to your store.
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <span className="font-medium text-primary min-w-[24px]">2.</span>
+                                <div>
+                                  <p className="text-muted-foreground">Add a <strong>CNAME</strong> for <strong>www</strong>:</p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <code className="bg-muted px-2 py-0.5 rounded text-xs">www.{d.domain} → {apexTarget}</code>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(apexTarget)}>
+                                      <Copy className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </>
+                          );
+                        })()}
+                        
                         <div className="flex items-start gap-2">
                           <span className="font-medium text-primary min-w-[24px]">3.</span>
                           <div>
@@ -796,20 +812,14 @@ export default function SellerSettingsDomain() {
                         </div>
 
                         {isCloudflare && (
-                          <div className="flex items-start gap-2">
-                            <span className="font-medium text-amber-500 min-w-[24px]">⚠️</span>
-                            <div>
-                              <p className="text-amber-600 dark:text-amber-400 font-medium text-xs">
-                                Alternative for Cloudflare users: Use an A record instead of CNAME
-                              </p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <code className="bg-muted px-2 py-0.5 rounded text-xs">{d.domain} → 185.158.133.1 (A record, DNS-only)</code>
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard('185.158.133.1')}>
-                                  <Copy className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
+                          <Alert className="border-amber-500/30 bg-amber-500/5 mt-2">
+                            <AlertTriangle className="h-4 w-4 text-amber-500" />
+                            <AlertTitle className="text-xs text-amber-600 dark:text-amber-400">Cloudflare users: DNS-only is critical</AlertTitle>
+                            <AlertDescription className="text-xs text-muted-foreground">
+                              All records <strong className="text-foreground">MUST</strong> be set to DNS-only (grey cloud). 
+                              Proxied (orange cloud) will cause Error 1000 or Error 1014.
+                            </AlertDescription>
+                          </Alert>
                         )}
                       </div>
 
