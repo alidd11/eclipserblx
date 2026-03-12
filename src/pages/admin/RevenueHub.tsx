@@ -74,7 +74,15 @@ export default function RevenueHub() {
     if (!user?.email || !password) return;
     setVerifying(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email: user.email, password });
+      // Use a separate Supabase client instance for verification to avoid
+      // triggering onAuthStateChange which causes re-renders and crashes on mobile Safari
+      const { createClient } = await import('@supabase/supabase-js');
+      const verifyClient = createClient(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        { auth: { persistSession: false, autoRefreshToken: false } }
+      );
+      const { error } = await verifyClient.auth.signInWithPassword({ email: user.email, password });
       if (error) {
         showErrorNotification('Authentication Failed', 'Incorrect password. Please try again.');
         setPassword('');
