@@ -284,11 +284,17 @@ export default function Categories() {
   const sourceFilter = searchParams.get('source');
   const isMarketplace = sourceFilter === 'marketplace';
   const sourceParam = isMarketplace ? '&source=marketplace' : '';
+  const queryClient = useQueryClient();
 
   const { data: categories, isLoading } = useCategoriesWithProducts(sourceFilter);
 
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['categories-with-products'] });
+  }, [queryClient]);
+
   return (
     <MainLayout>
+      <PullToRefresh onRefresh={handleRefresh}>
       <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <PageHeader
           title="Browse Categories"
@@ -327,6 +333,7 @@ export default function Categories() {
           );
         })()}
       </div>
+      </PullToRefresh>
     </MainLayout>
   );
 }
