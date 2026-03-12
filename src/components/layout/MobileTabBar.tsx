@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Grid3X3, ShoppingCart, User, Search } from 'lucide-react';
+import { Home, Grid3X3, ShoppingCart, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/hooks/useCart';
 import { hapticTap } from '@/lib/haptics';
