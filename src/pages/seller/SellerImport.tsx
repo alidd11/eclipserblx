@@ -3,6 +3,7 @@ import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Download, History, CheckCircle, ChevronRight, RefreshCw } from 'lucide-react';
 import { ExternalProduct } from '@/lib/api/productImport';
 import { motion, AnimatePresence } from 'framer-motion';
