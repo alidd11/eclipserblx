@@ -550,6 +550,21 @@ Deno.serve(async (req) => {
             action_url: '/seller/payouts',
           });
 
+          // Push notification for Wise payout
+          try {
+            await supabase.functions.invoke("send-push-notification", {
+              body: {
+                user_ids: [payout.seller_id],
+                payload: {
+                  title: "💰 Payout Processing",
+                  body: `Your bank transfer of £${payout.amount.toFixed(2)} is being processed.`,
+                  tag: `payout-wise-${payoutId}`,
+                  url: "/seller/payouts",
+                },
+              },
+            });
+          } catch (_) { /* best effort */ }
+
           results.processed++;
           results.details.push({ payoutId, status: 'processing', method: 'wise', transferId: transfer.id });
 
