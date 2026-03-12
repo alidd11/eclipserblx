@@ -715,11 +715,11 @@ export default function SellerSettingsDomain() {
               className="flex-1"
             />
             <Button
-              onClick={() => requestCustom.mutate(customDomainInput)}
-              disabled={!customDomainInput.trim() || requestCustom.isPending}
+              onClick={handleAddDomain}
+              disabled={!customDomainInput.trim() || requestCustom.isPending || preChecking}
             >
-              {requestCustom.isPending ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Link className="w-4 h-4 mr-2" />}
-              Add Domain
+              {(requestCustom.isPending || preChecking) ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Link className="w-4 h-4 mr-2" />}
+              {preChecking ? 'Checking…' : 'Add Domain'}
             </Button>
           </div>
 
