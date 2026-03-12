@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import marketplaceLogo from '@/assets/marketplace-logo-icon.webp';
-import marketplaceLogoSm from '@/assets/marketplace-logo-icon-sm-optimized.webp';
+import marketplaceLogoSm from '@/assets/marketplace-logo-icon-sm.webp';
 
 interface EclipseLogoProps {
   className?: string;
