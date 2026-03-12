@@ -17,10 +17,23 @@ import { showSuccessNotification, showInfoNotification, showErrorNotification } 
 import { useAuth } from '@/hooks/useAuth';
 
 const SESSION_TIMEOUT_MS = 10 * 60 * 1000;
+const INCOME_VERIFIED_KEY = 'income_verified_at';
+
+function getPersistedVerification(): boolean {
+  try {
+    const stored = sessionStorage.getItem(INCOME_VERIFIED_KEY);
+    if (stored) {
+      const elapsed = Date.now() - parseInt(stored, 10);
+      if (!isNaN(elapsed) && elapsed < SESSION_TIMEOUT_MS) return true;
+      sessionStorage.removeItem(INCOME_VERIFIED_KEY);
+    }
+  } catch {}
+  return false;
+}
 
 export default function AdminIncome() {
   const { user } = useAuth();
-  const [isVerified, setIsVerified] = useState(false);
+  const [isVerified, setIsVerified] = useState(() => getPersistedVerification());
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -39,6 +52,7 @@ export default function AdminIncome() {
       if (elapsed >= SESSION_TIMEOUT_MS) {
         setIsVerified(false);
         setPassword('');
+        try { sessionStorage.removeItem(INCOME_VERIFIED_KEY); } catch {}
         showInfoNotification('Session Expired', 'Session expired due to inactivity. Please re-verify.');
       }
     }, 1000);
@@ -61,8 +75,10 @@ export default function AdminIncome() {
         showErrorNotification('Authentication Failed', 'Incorrect password. Please try again.');
         setPassword('');
       } else {
+        const now = Date.now();
         setIsVerified(true);
-        setLastActivity(Date.now());
+        setLastActivity(now);
+        try { sessionStorage.setItem(INCOME_VERIFIED_KEY, now.toString()); } catch {}
         await supabase.from('audit_logs').insert({
           user_id: user.id, action: 'access', resource: 'income_analytics',
           details: { timestamp: new Date().toISOString() },

@@ -24,6 +24,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 const AdminIncomeSources = lazy(() => import('@/pages/admin/IncomeSources').then(m => ({ default: m.default })));
 
 const SESSION_TIMEOUT_MS = 10 * 60 * 1000;
+const REVENUE_VERIFIED_KEY = 'revenue_verified_at';
 
 // Tab config for mobile select
 const tabs = [
@@ -32,10 +33,22 @@ const tabs = [
   { value: 'sellers', label: 'Seller Earnings', icon: Wallet },
 ] as const;
 
+function getPersistedVerification(): boolean {
+  try {
+    const stored = sessionStorage.getItem(REVENUE_VERIFIED_KEY);
+    if (stored) {
+      const elapsed = Date.now() - parseInt(stored, 10);
+      if (!isNaN(elapsed) && elapsed < SESSION_TIMEOUT_MS) return true;
+      sessionStorage.removeItem(REVENUE_VERIFIED_KEY);
+    }
+  } catch {}
+  return false;
+}
+
 export default function RevenueHub() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isVerified, setIsVerified] = useState(false);
+  const [isVerified, setIsVerified] = useState(() => getPersistedVerification());
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -57,6 +70,7 @@ export default function RevenueHub() {
       if (elapsed >= SESSION_TIMEOUT_MS) {
         setIsVerified(false);
         setPassword('');
+        try { sessionStorage.removeItem(REVENUE_VERIFIED_KEY); } catch {}
         showInfoNotification('Session Expired', 'Session expired due to inactivity. Please re-verify.');
       }
     }, 1000);
@@ -87,8 +101,10 @@ export default function RevenueHub() {
         showErrorNotification('Authentication Failed', 'Incorrect password. Please try again.');
         setPassword('');
       } else {
+        const now = Date.now();
         setIsVerified(true);
-        setLastActivity(Date.now());
+        setLastActivity(now);
+        try { sessionStorage.setItem(REVENUE_VERIFIED_KEY, now.toString()); } catch {}
         await supabase.from('audit_logs').insert({
           user_id: user.id, action: 'access', resource: 'revenue_hub',
           details: { timestamp: new Date().toISOString() },
