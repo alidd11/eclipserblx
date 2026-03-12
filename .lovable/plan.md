@@ -1,36 +1,62 @@
 
 
-## Issues Identified
+# Fix Team Invites + Multi-Store Access
 
-**Issue 1: Sidebar positioned at top of screen on desktop**
-The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
+## Problem 1: Team Invites Showing "Expired"
 
-**Issue 2: Excessive black empty space in the content area**
-The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
+Two root causes:
 
-## Plan
+1. **Broken redirect URL**: When unauthenticated users click the email link, the "Sign In" button links to `/auth?redirect=/seller/team/accept?token=XXX`. The `?token=` part is ambiguous — it gets parsed as a second query parameter on `/auth` instead of being part of the redirect path. After login, the redirect loses the token.
 
-### 1. Widen the content area on the Categories page
-- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
-- Reduce vertical padding between the header and grid
-- Tighten the gap between the page title/description and the cards
+2. **RLS blocks token lookup**: The SELECT policy on `store_team_invites` restricts rows to `email = get_user_email(auth.uid())`. If the query returns null (RLS filtering), the code treats it as "expired" instead of distinguishing "not found" from "not your invite". This is actually correct behavior, but the error message is misleading.
 
-### 2. Improve the PageHeader component
-- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
-- This applies globally to all pages using PageHeader
+3. **Silent RLS failures**: When `maybeSingle()` returns null due to RLS (not actual expiry), the user sees "expired" with no useful guidance.
 
-### 3. Make category cards fill space better
-- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
-- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
-- Reduce grid gap slightly so cards feel more connected
+### Fix
+- **Encode the redirect URL properly** using `encodeURIComponent` so the full path including `?token=` is preserved as one value.
+- **Use an edge function** (or a security-definer DB function) to validate invites by token without RLS restrictions, returning status info (valid/expired/wrong-email/not-found) so the UI can show the correct message.
+- Improve error states to distinguish between "expired", "wrong email", and "not found".
 
-### 4. Sidebar desktop alignment fix
-- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
-- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
-- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
+## Problem 2: Multi-Store Access (Team Member Stores)
 
-### Files to modify
-- `src/pages/Categories.tsx` — widen container, tighten spacing
-- `src/components/ui/PageHeader.tsx` — reduce bottom margin
-- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
+Currently `useSellerStatus` only fetches stores the user **owns**. Users who are team members of other stores have no way to see or switch to those stores.
+
+### Fix
+- Create a `useStoreAccess` hook that fetches both owned stores and stores where the user is an accepted team member.
+- Add a store switcher dropdown in the seller sidebar header when the user has access to multiple stores.
+- Store the active store selection in localStorage so it persists across sessions.
+- Update `useSellerStatus` to accept an optional `storeId` override from the switcher context.
+
+## Implementation Steps
+
+### Database
+1. Create a `validate_team_invite` security-definer function that takes a token and user_id, bypasses RLS, and returns invite status with details (valid/expired/wrong_email/not_found/already_member).
+
+### Frontend - Invite Fix
+2. Update `AcceptTeamInvite.tsx`:
+   - Fix the redirect URL encoding in the "Sign In" link.
+   - Call the new `validate_team_invite` DB function instead of direct table query.
+   - Show distinct UI states for "wrong email" vs "expired" vs "not found".
+   - After accepting, use the DB function to insert (already has an RLS policy for this).
+
+### Frontend - Multi-Store
+3. Create `src/hooks/useStoreAccess.ts` — fetches owned stores + team member stores, manages active store selection.
+4. Create `src/components/seller/StoreSwitcher.tsx` — dropdown component showing all accessible stores with role badges.
+5. Integrate `StoreSwitcher` into `SellerSidebar.tsx` header area.
+6. Create a `StoreContext` provider so all seller pages can access the currently active store.
+7. Update `useSellerStatus` to respect the active store from context (backward-compatible — defaults to first owned store if no selection).
+
+### Files to Create
+- `src/hooks/useStoreAccess.ts`
+- `src/components/seller/StoreSwitcher.tsx`
+- `src/contexts/ActiveStoreContext.tsx`
+
+### Files to Edit
+- `src/pages/seller/AcceptTeamInvite.tsx` (redirect URL fix + validation logic)
+- `src/components/seller/SellerSidebar.tsx` (add StoreSwitcher)
+- `src/components/seller/SellerLayout.tsx` (wrap with ActiveStoreProvider)
+- `src/hooks/useSellerStatus.ts` (accept optional storeId override)
+
+### Migration
+- One migration: `validate_team_invite(p_token text, p_user_id uuid)` security-definer function.
 
