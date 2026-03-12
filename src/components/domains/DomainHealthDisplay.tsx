@@ -203,6 +203,38 @@ function SeverityIcon({ severity }: { severity: 'critical' | 'warning' | 'info' 
 
 const FIXABLE_ERRORS = ['1000', '1014', 'proxied_cname', '403_direct_a', '403_cloudflare', '1000_non_cf'];
 
+/** Generate dynamic fix steps from expected_dns_records */
+function getDynamicSteps(errorCode: string, expectedRecords?: ExpectedDnsRecord[]): string[] {
+  if (!expectedRecords || expectedRecords.length === 0) {
+    // Fallback generic steps
+    if (errorCode === '1000' || errorCode === '1000_non_cf') {
+      return [
+        'Check your DNS records at your provider',
+        'Ensure records match the expected configuration shown above',
+        'Set all records to DNS-only (grey cloud) if using Cloudflare',
+        'Wait 2–5 minutes and run the health check again',
+      ];
+    }
+    return [];
+  }
+
+  const steps: string[] = [];
+  steps.push('Remove any existing A, AAAA, or conflicting CNAME records for your domain');
+  
+  for (const rec of expectedRecords) {
+    if (rec.type === 'CNAME') {
+      steps.push(`Create a CNAME record: ${rec.name} → ${rec.content} (DNS-only, grey cloud)`);
+    } else if (rec.type === 'A') {
+      steps.push(`Create an A record: ${rec.name} → ${rec.content} (DNS-only)`);
+    }
+  }
+  
+  steps.push('Set all records to DNS-only (grey cloud) — NOT Proxied (orange cloud)');
+  steps.push('Wait 2–5 minutes and run the health check again');
+  
+  return steps;
+}
+
 /** Full health display card — used on seller settings page */
 export function DomainHealthDisplay({ healthCheck, domain, isCloudflare, compact, onAutoFix, isAutoFixing, hasCloudflareCredentials }: DomainHealthDisplayProps) {
   const [expanded, setExpanded] = useState(false);
@@ -210,8 +242,16 @@ export function DomainHealthDisplay({ healthCheck, domain, isCloudflare, compact
   if (!healthCheck) return null;
 
   const isOk = !healthCheck.error_code && healthCheck.http_reachable;
-  const errorInfo = healthCheck.error_code ? ERROR_INFO[healthCheck.error_code] : null;
+  const rawErrorInfo = healthCheck.error_code ? ERROR_INFO[healthCheck.error_code] : null;
   const cfDetected = isCloudflare || healthCheck.is_cloudflare_zone;
+
+  // Build errorInfo with dynamic steps if needed
+  const errorInfo = rawErrorInfo ? {
+    ...rawErrorInfo,
+    steps: rawErrorInfo.steps.length > 0 
+      ? rawErrorInfo.steps 
+      : getDynamicSteps(healthCheck.error_code!, healthCheck.expected_dns_records),
+  } : null;
 
   // ── Healthy state ──
   if (isOk) {
