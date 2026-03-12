@@ -107,6 +107,7 @@ function LayoutShellInner({
             <Header
               showDesktopNav={false}
               onMenuClick={() => setMobileOpen(true)}
+              className={scrollDirection === 'down' ? 'md:translate-y-0 -translate-y-full' : ''}
               {...headerProps}
             />
           )}
