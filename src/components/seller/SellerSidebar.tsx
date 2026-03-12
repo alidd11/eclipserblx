@@ -37,6 +37,7 @@ const topLevelItems: NavItem[] = [
   { title: 'Dashboard', icon: LayoutDashboard, href: '/seller' },
   { title: 'Orders', icon: ShoppingCart, href: '/seller/orders' },
   { title: 'Analytics', icon: BarChart3, href: '/seller/analytics' },
+  { title: 'Goals', icon: TrendingUp, href: '/seller/goals' },
 ];
 
 const navGroups: NavGroup[] = [
