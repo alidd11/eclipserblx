@@ -364,7 +364,7 @@ function SellerDisputeDetail({ request, response, setResponse, respondMutation, 
             <Button 
               variant="destructive"
               className="flex-1"
-              onClick={() => respondMutation.mutate({ id: request.id, status: 'denied' })}
+              onClick={() => respondMutation.mutate({ id: request.id, status: 'denied', customerId: request.customer_id })}
               disabled={respondMutation.isPending}
             >
               <X className="h-4 w-4 mr-2" />Deny
