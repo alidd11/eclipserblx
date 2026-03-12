@@ -1445,33 +1445,133 @@ Deno.serve(async (req) => {
       case "pre-check-domain": {
         if (!body.domain) return jsonError("domain required", 400);
         const rawDomain = body.domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
-        const [isCloudflare, proxied, aRes] = await Promise.all([
+        const [isCloudflare, proxied, aRes, aaaaRes] = await Promise.all([
           detectCloudflareZone(rawDomain),
           detectProxiedCname(rawDomain),
           fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(rawDomain)}&type=A`, {
             headers: { Accept: "application/dns-json" },
           }).then(r => r.json()).catch(() => ({ Answer: [] })),
+          fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(rawDomain)}&type=AAAA`, {
+            headers: { Accept: "application/dns-json" },
+          }).then(r => r.json()).catch(() => ({ Answer: [] })),
         ]);
         const aRecords = (aRes?.Answer ?? []).filter((a: any) => a.type === 1).map((a: any) => a.data);
+        const aaaaRecords = (aaaaRes?.Answer ?? []).filter((a: any) => a.type === 28).map((a: any) => a.data);
         const resolvesToCloudflare = aRecords.some((ip: string) => {
           const p = ip.split(".").map(Number);
           return (p[0] === 104 && p[1] >= 16 && p[1] <= 31) || (p[0] === 172 && p[1] >= 64 && p[1] <= 71);
         });
+        const resolvesToOurIp = aRecords.includes("185.158.133.1");
+
+        // Determine what DNS records the seller needs
+        const preferredApex = getPreferredDnsRecord(rawDomain, rawDomain, isCloudflare);
+        const preferredWww = getPreferredWwwRecord(rawDomain, preferredApex.type);
+
+        // Build list of conflicting records to remove
+        const records_to_remove: Array<{ type: string; name: string; content: string; reason: string }> = [];
+        const records_to_add: Array<{ type: string; name: string; content: string; proxied: boolean; note: string }> = [];
+
+        // Check for conflicting A records (not pointing to us)
+        for (const ip of aRecords) {
+          if (ip !== "185.158.133.1") {
+            records_to_remove.push({
+              type: "A",
+              name: rawDomain,
+              content: ip,
+              reason: resolvesToCloudflare
+                ? "Points to Cloudflare proxy IPs — causes Error 1000 cross-zone conflict"
+                : "Points to a different server",
+            });
+          }
+        }
+
+        // AAAA records always conflict with our setup
+        for (const ip of aaaaRecords) {
+          records_to_remove.push({
+            type: "AAAA",
+            name: rawDomain,
+            content: ip,
+            reason: "IPv6 records interfere with routing — must be removed",
+          });
+        }
+
+        // Check for conflicting CNAME
+        if (proxied.cname_target) {
+          const target = proxied.cname_target.toLowerCase();
+          if (target !== "stores.eclipserblx.com") {
+            records_to_remove.push({
+              type: "CNAME",
+              name: rawDomain,
+              content: proxied.cname_target,
+              reason: proxied.is_proxied
+                ? "CNAME is Proxied (orange cloud) — causes Error 1000/1014"
+                : "Points to a different target",
+            });
+          } else if (proxied.is_proxied) {
+            records_to_remove.push({
+              type: "CNAME",
+              name: rawDomain,
+              content: proxied.cname_target,
+              reason: "Correct target but Proxied (orange cloud) — must be DNS-only (grey cloud)",
+            });
+          }
+        }
+
+        // Build records to add
+        const alreadyCorrectApex =
+          (preferredApex.type === "A" && resolvesToOurIp && !resolvesToCloudflare) ||
+          (preferredApex.type === "CNAME" && proxied.cname_target?.toLowerCase() === "stores.eclipserblx.com" && !proxied.is_proxied);
+
+        if (!alreadyCorrectApex) {
+          records_to_add.push({
+            type: preferredApex.type,
+            name: preferredApex.name,
+            content: preferredApex.content,
+            proxied: false,
+            note: preferredApex.type === "CNAME"
+              ? "CNAME flattening at apex — must be DNS-only (grey cloud)"
+              : "A record — must be DNS-only (grey cloud) if using Cloudflare",
+          });
+        }
+
+        records_to_add.push({
+          type: preferredWww.type,
+          name: preferredWww.name,
+          content: preferredWww.content,
+          proxied: false,
+          note: "www subdomain — must be DNS-only (grey cloud) if using Cloudflare",
+        });
+
+        // Determine severity
+        const has_blocking_issues = proxied.is_proxied || resolvesToCloudflare;
+        const has_conflicting_records = records_to_remove.length > 0;
+        const dns_ready = !has_blocking_issues && !has_conflicting_records && alreadyCorrectApex;
+
         const warnings: string[] = [];
-        if (isCloudflare && (proxied.is_proxied || resolvesToCloudflare)) {
-          warnings.push("Your domain is on a Cloudflare zone with proxied (orange-cloud) DNS records. This WILL cause Error 1000 (DNS points to prohibited IP). You must set ALL DNS records for this domain to DNS-only (grey cloud) before connecting.");
+        if (isCloudflare && has_blocking_issues) {
+          warnings.push("Your domain is on a Cloudflare zone with proxied (orange-cloud) DNS records. This WILL cause Error 1000 (DNS points to prohibited IP). You must fix the DNS records listed below BEFORE connecting your domain.");
         } else if (isCloudflare) {
           warnings.push("Your domain uses Cloudflare nameservers. When adding DNS records, make sure they are set to DNS-only (grey cloud), NOT Proxied (orange cloud), to avoid Error 1000.");
         }
         if (proxied.is_proxied) {
           warnings.push(`Existing CNAME record is proxied through Cloudflare (target: ${proxied.cname_target ?? "unknown"}). Disable the proxy (orange → grey cloud) before proceeding.`);
         }
+        if (aaaaRecords.length > 0) {
+          warnings.push(`Found ${aaaaRecords.length} AAAA (IPv6) record(s) that must be deleted — they interfere with custom domain routing.`);
+        }
+
         return jsonOk({
           domain: rawDomain,
           is_cloudflare: isCloudflare,
-          has_proxied_records: proxied.is_proxied || resolvesToCloudflare,
+          has_proxied_records: has_blocking_issues,
+          has_conflicting_records,
+          dns_ready,
           existing_a_records: aRecords,
+          existing_aaaa_records: aaaaRecords,
           cname_target: proxied.cname_target,
+          cname_is_proxied: proxied.is_proxied,
+          records_to_remove,
+          records_to_add,
           warnings,
         });
       }
