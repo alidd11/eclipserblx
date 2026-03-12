@@ -52,6 +52,7 @@ export default function AdminIncome() {
       if (elapsed >= SESSION_TIMEOUT_MS) {
         setIsVerified(false);
         setPassword('');
+        try { sessionStorage.removeItem(INCOME_VERIFIED_KEY); } catch {}
         showInfoNotification('Session Expired', 'Session expired due to inactivity. Please re-verify.');
       }
     }, 1000);
