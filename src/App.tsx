@@ -88,6 +88,8 @@ const App = forwardRef<HTMLDivElement>((_, ref) => (
                         <ChatWidget />
                         <ChatSidePanel />
                         <CookieConsentBanner />
+                        <ConnectivityBanner />
+                        <BackgroundRefreshIndicator />
                       </Suspense>
                     </IpBanCheck>
                   </BrowserRouter>
