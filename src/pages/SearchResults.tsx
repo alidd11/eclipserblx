@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { Search, SlidersHorizontal, X, Sparkles, Loader2, Package } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
