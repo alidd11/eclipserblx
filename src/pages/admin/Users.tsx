@@ -580,7 +580,9 @@ export default function AdminUsers() {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Customer List</CardTitle>
+              <CardTitle className="text-lg">
+                {activeView === 'staff' ? 'Staff Members' : activeView === 'all' ? 'All Users' : 'Customer List'}
+              </CardTitle>
               <p className="text-sm text-muted-foreground">
                 Showing {startIndex + 1}-{Math.min(endIndex, totalCustomers)} of {totalCustomers}
               </p>
