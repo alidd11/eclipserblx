@@ -81,6 +81,7 @@ export default function AdminIncomeSources() {
   const [sourceFilter, setSourceFilter] = useState<IncomeSource>('all');
   const [periodFilter, setPeriodFilter] = useState<TimePeriod>('30d');
   const [searchQuery, setSearchQuery] = useState('');
+  const [incomeTab, setIncomeTab] = useState('trend');
 
   const periodStart = useMemo(() => {
     const now = new Date();
@@ -494,8 +495,8 @@ export default function AdminIncomeSources() {
           })}
         </div>
 
-        <Tabs defaultValue="trend" className="space-y-4">
-          <TabsList>
+        <Tabs value={incomeTab} onValueChange={setIncomeTab} className="space-y-4">
+          <TabsList className="hidden sm:inline-flex">
             <TabsTrigger value="trend" className="gap-1.5 text-xs">
               <TrendingUp className="h-3.5 w-3.5" />
               Revenue Trend
@@ -505,6 +506,17 @@ export default function AdminIncomeSources() {
               Transaction Ledger
             </TabsTrigger>
           </TabsList>
+          <div className="sm:hidden">
+            <Select value={incomeTab} onValueChange={setIncomeTab}>
+              <SelectTrigger className="w-auto min-w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="trend">Revenue Trend</SelectItem>
+                <SelectItem value="ledger">Transaction Ledger</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Revenue trend stacked area chart */}
           <TabsContent value="trend">

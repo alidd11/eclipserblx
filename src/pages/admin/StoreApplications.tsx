@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -90,6 +91,7 @@ export default function StoreApplications() {
   const [selectedApplication, setSelectedApplication] = useState<StoreApplication | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [storeAppTab, setStoreAppTab] = useState('pending');
 
   const { data: applications, isLoading } = useQuery({
     queryKey: ['admin-store-applications'],
@@ -402,8 +404,8 @@ export default function StoreApplications() {
           </Card>
         </div>
 
-        <Tabs defaultValue="pending">
-          <TabsList>
+        <Tabs value={storeAppTab} onValueChange={setStoreAppTab}>
+          <TabsList className="hidden sm:inline-flex">
             <TabsTrigger value="pending">
               Pending ({pendingApps.length})
             </TabsTrigger>
@@ -414,6 +416,18 @@ export default function StoreApplications() {
               Rejected ({rejectedApps.length})
             </TabsTrigger>
           </TabsList>
+          <div className="sm:hidden">
+            <Select value={storeAppTab} onValueChange={setStoreAppTab}>
+              <SelectTrigger className="w-auto min-w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending ({pendingApps.length})</SelectItem>
+                <SelectItem value="approved">Approved ({approvedApps.length})</SelectItem>
+                <SelectItem value="rejected">Rejected ({rejectedApps.length})</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <TabsContent value="pending" className="mt-4">
             {isLoading ? (

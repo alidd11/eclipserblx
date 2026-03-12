@@ -3,6 +3,7 @@ import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Download, History, CheckCircle, ChevronRight, RefreshCw } from 'lucide-react';
 import { ExternalProduct } from '@/lib/api/productImport';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,6 +26,7 @@ export default function SellerImport() {
   const [downloadImages, setDownloadImages] = useState(true);
   const [importResults, setImportResults] = useState<ProductImportStatus[]>([]);
   const [categoryOverrides, setCategoryOverrides] = useState<Record<string, string> | undefined>();
+  const [importTab, setImportTab] = useState('import');
 
   const resetImport = () => {
     setStep('setup');
@@ -79,8 +81,8 @@ export default function SellerImport() {
           )}
         </div>
 
-        <Tabs defaultValue="import" className="space-y-4">
-          <TabsList>
+        <Tabs value={importTab} onValueChange={setImportTab} className="space-y-4">
+          <TabsList className="hidden sm:inline-flex">
             <TabsTrigger value="import" className="gap-2">
               <Download className="h-4 w-4" />
               Import
@@ -90,6 +92,17 @@ export default function SellerImport() {
               History
             </TabsTrigger>
           </TabsList>
+          <div className="sm:hidden">
+            <Select value={importTab} onValueChange={setImportTab}>
+              <SelectTrigger className="w-auto min-w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="import">Import</SelectItem>
+                <SelectItem value="history">History</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <TabsContent value="import" className="space-y-6">
             {/* Progress Steps Indicator */}

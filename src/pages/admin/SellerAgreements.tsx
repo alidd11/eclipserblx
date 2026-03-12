@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Store, CheckCircle2, Clock, AlertTriangle, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
@@ -171,7 +172,7 @@ export default function SellerAgreements() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
+          <TabsList className="hidden sm:inline-flex">
             <TabsTrigger value="pending" className="gap-2">
               <Clock className="h-4 w-4" />
               Pending ({pendingCount})
@@ -184,6 +185,18 @@ export default function SellerAgreements() {
               All ({stores?.length || 0})
             </TabsTrigger>
           </TabsList>
+          <div className="sm:hidden">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-auto min-w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending ({pendingCount})</SelectItem>
+                <SelectItem value="signed">Signed ({signedCount})</SelectItem>
+                <SelectItem value="all">All ({stores?.length || 0})</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <TabsContent value={activeTab} className="mt-4">
             <Card>

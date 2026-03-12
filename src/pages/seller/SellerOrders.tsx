@@ -1,15 +1,18 @@
+import { useState } from 'react';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ShoppingCart, DollarSign, TrendingUp } from 'lucide-react';
 import { OrdersTab } from '@/components/seller/orders/OrdersTab';
 import { TransactionsTab } from '@/components/seller/orders/TransactionsTab';
 
 export default function SellerOrders() {
   const { store } = useSellerStatus();
+  const [ordersTab, setOrdersTab] = useState('orders');
 
   const { data: stats } = useQuery({
     queryKey: ['seller-order-stats', store?.id],
@@ -78,11 +81,22 @@ export default function SellerOrders() {
         </div>
 
         {/* Tabbed Content */}
-        <Tabs defaultValue="orders" className="space-y-4">
-          <TabsList>
+        <Tabs value={ordersTab} onValueChange={setOrdersTab} className="space-y-4">
+          <TabsList className="hidden sm:inline-flex">
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
           </TabsList>
+          <div className="sm:hidden">
+            <Select value={ordersTab} onValueChange={setOrdersTab}>
+              <SelectTrigger className="w-auto min-w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="orders">Orders</SelectItem>
+                <SelectItem value="transactions">Transactions</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <TabsContent value="orders">
             {store?.id && <OrdersTab storeId={store.id} />}
           </TabsContent>

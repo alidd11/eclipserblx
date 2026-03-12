@@ -23,6 +23,7 @@ export default function AdminAffiliates() {
   const isInsideHub = useIsInsideHub();
   const [search, setSearch] = useState('');
   const [payoutStatusFilter, setPayoutStatusFilter] = useState<string>('all');
+  const [affiliateTab, setAffiliateTab] = useState('payouts');
   const queryClient = useQueryClient();
   const { settings: affiliateSettings, isLoading: affiliateSettingsLoading } = useAffiliateSettings();
 
@@ -265,8 +266,8 @@ export default function AdminAffiliates() {
         )}
 
         {/* Tabs */}
-        <Tabs defaultValue="payouts" className="space-y-4">
-          <TabsList>
+        <Tabs value={affiliateTab} onValueChange={setAffiliateTab} className="space-y-4">
+          <TabsList className="hidden sm:inline-flex">
             <TabsTrigger value="payouts" className="gap-2">
               <CreditCard className="h-4 w-4" />
               Payout Requests
@@ -281,6 +282,17 @@ export default function AdminAffiliates() {
               Commissions
             </TabsTrigger>
           </TabsList>
+          <div className="sm:hidden">
+            <Select value={affiliateTab} onValueChange={setAffiliateTab}>
+              <SelectTrigger className="w-auto min-w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="payouts">Payouts {stats?.pendingPayoutCount ? `(${stats.pendingPayoutCount})` : ''}</SelectItem>
+                <SelectItem value="commissions">Commissions</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Payout Requests Tab */}
           <TabsContent value="payouts" className="space-y-4">

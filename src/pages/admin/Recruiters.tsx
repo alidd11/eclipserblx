@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Users, DollarSign, CheckCircle, Clock, XCircle, 
   Search, Eye, ChevronRight, TrendingUp, Building2
@@ -197,7 +198,7 @@ export default function Recruiters() {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
+              <TabsList className="hidden sm:inline-flex">
                 <TabsTrigger value="approved" className="gap-2">
                   <CheckCircle className="h-4 w-4" />
                   Approved
@@ -211,6 +212,18 @@ export default function Recruiters() {
                   Rejected
                 </TabsTrigger>
               </TabsList>
+              <div className="sm:hidden">
+                <Select value={activeTab} onValueChange={setActiveTab}>
+                  <SelectTrigger className="w-auto min-w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
               <TabsContent value={activeTab} className="mt-4">
                 {isLoading ? (
