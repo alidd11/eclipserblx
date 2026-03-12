@@ -712,6 +712,21 @@ Deno.serve(async (req) => {
             action_url: '/seller/payouts',
           });
 
+          // Push notification for payout completion
+          try {
+            await supabase.functions.invoke("send-push-notification", {
+              body: {
+                user_ids: [payout.seller_id],
+                payload: {
+                  title: "💰 Payout Completed",
+                  body: `Your payout of £${payout.amount.toFixed(2)} has been sent to your PayPal.`,
+                  tag: `payout-completed-${payoutId}`,
+                  url: "/seller/payouts",
+                },
+              },
+            });
+          } catch (_) { /* best effort */ }
+
           results.processed++;
           results.details.push({ payoutId, status: 'completed', method: 'paypal', batchId });
 

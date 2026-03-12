@@ -74,6 +74,51 @@ Deno.serve(async (req) => {
             message: `A dispute has been auto-escalated because you didn't respond within 48 hours. Amount: £${Number(dispute.amount).toFixed(2)}`,
             action_url: "/seller/refunds",
           });
+
+          // Push notification to seller
+          try {
+            await supabase.functions.invoke("send-push-notification", {
+              body: {
+                user_ids: [store.owner_id],
+                payload: {
+                  title: "⚠️ Dispute Escalated",
+                  body: `A dispute (£${Number(dispute.amount).toFixed(2)}) was auto-escalated — you didn't respond within 48 hours.`,
+                  tag: `dispute-escalated-${dispute.id}`,
+                  url: "/seller/refunds",
+                  requireInteraction: true,
+                },
+              },
+            });
+          } catch (err) {
+            console.error("Failed to send seller push notification:", err);
+          }
+        }
+
+        // Push notification to buyer
+        if (dispute.customer_id) {
+          await supabase.from("notifications").insert({
+            user_id: dispute.customer_id,
+            type: "order_update",
+            title: "Dispute Escalated",
+            message: `Your dispute (£${Number(dispute.amount).toFixed(2)}) has been escalated to our team for review.`,
+            link: "/account/orders",
+          });
+
+          try {
+            await supabase.functions.invoke("send-push-notification", {
+              body: {
+                user_ids: [dispute.customer_id],
+                payload: {
+                  title: "Dispute Update",
+                  body: `Your dispute (£${Number(dispute.amount).toFixed(2)}) has been escalated to our team for review.`,
+                  tag: `dispute-escalated-buyer-${dispute.id}`,
+                  url: "/account/orders",
+                },
+              },
+            });
+          } catch (err) {
+            console.error("Failed to send buyer push notification:", err);
+          }
         }
 
         // Send Discord notification
