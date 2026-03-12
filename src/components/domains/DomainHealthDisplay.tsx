@@ -72,6 +72,22 @@ const ERROR_INFO: Record<string, {
     ],
     icon: 'proxy',
   },
+  cf_zone_proxied: {
+    severity: 'critical',
+    title: 'Error 1000: Cloudflare Proxy Conflict',
+    summary: 'Your domain is on its own Cloudflare zone with proxy enabled (orange cloud). This creates a cross-zone conflict. You must switch to DNS-only (grey cloud) in YOUR Cloudflare dashboard.',
+    steps: [
+      'Log in to YOUR Cloudflare dashboard (the one managing your domain)',
+      'Go to DNS → Records',
+      'Find the A or CNAME record for your root domain (@)',
+      'Change the A record value to 185.158.133.1',
+      'Click the orange cloud icon to switch it to grey (DNS-only)',
+      'Delete any AAAA (IPv6) records for your root domain',
+      'If you have a www record, also set it to DNS-only pointing to 185.158.133.1',
+      'Wait 2–5 minutes for propagation, then re-run the health check',
+    ],
+    icon: 'dns',
+  },
   '1000': {
     severity: 'critical',
     title: 'Error 1000: DNS Conflict',
@@ -196,7 +212,7 @@ function SeverityIcon({ severity }: { severity: 'critical' | 'warning' | 'info' 
   return <Info className="h-5 w-5 text-blue-500 shrink-0" />;
 }
 
-const FIXABLE_ERRORS = ['1000', '1014', 'proxied_cname', '403_direct_a', '403_cloudflare', '1000_non_cf'];
+const FIXABLE_ERRORS = ['1000', '1014', 'proxied_cname', '403_direct_a', '403_cloudflare', '1000_non_cf', 'cf_zone_proxied'];
 
 /** Generate dynamic fix steps from expected_dns_records */
 function getDynamicSteps(errorCode: string, expectedRecords?: ExpectedDnsRecord[]): string[] {
