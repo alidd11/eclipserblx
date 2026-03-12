@@ -75,26 +75,15 @@ const ERROR_INFO: Record<string, {
   '1000': {
     severity: 'critical',
     title: 'Error 1000: DNS Conflict',
-    summary: 'Your domain is on Cloudflare which conflicts with our Cloudflare setup (cross-zone issue).',
-    steps: [
-      'In Cloudflare DNS, remove any A/AAAA records for the root domain that point to 185.158.133.1',
-      'Create a CNAME record for the root domain pointing to stores.eclipserblx.com',
-      'Set that CNAME to DNS-only (grey cloud)',
-      'Wait 2–5 minutes and run the health check again',
-      'If it still fails, temporarily pause Cloudflare proxy features for this host or use a non-Cloudflare DNS provider',
-    ],
+    summary: 'Your domain\'s DNS is conflicting with the platform\'s Cloudflare setup (cross-zone issue).',
+    steps: [], // Dynamically generated from expected_dns_records
     icon: 'dns',
   },
   '1000_non_cf': {
     severity: 'critical',
     title: 'Error 1000: CNAME Conflict',
     summary: 'Your CNAME is causing a DNS conflict. This happens when it points to a Cloudflare-protected domain.',
-    steps: [
-      'Delete your current CNAME record',
-      'Create an A record pointing to 185.158.133.1',
-      'Ensure it\'s set to DNS-only (no proxy)',
-      'Wait for DNS propagation (up to 5 min) and re-check',
-    ],
+    steps: [], // Dynamically generated from expected_dns_records
     icon: 'dns',
   },
   '1014': {
