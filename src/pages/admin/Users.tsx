@@ -426,15 +426,28 @@ export default function AdminUsers() {
   // Roles that don't make someone "staff" - includes subscription roles and customer role
   const nonStaffRoles = ['eclipse_plus_member', 'seller', 'customer'];
 
-  // Filter profiles to only show customers (users without any staff roles)
-  const filteredProfiles = useMemo(() => {
-    return profiles?.filter((profile) => {
+  // All profiles split by type
+  const { customerProfiles, staffProfiles } = useMemo(() => {
+    const customers: any[] = [];
+    const staff: any[] = [];
+    profiles?.forEach(profile => {
       const roles = getUserRoles(profile.user_id);
-      // Show users who have no roles OR only have non-staff roles (like Eclipse+, seller, customer)
       const hasStaffRole = roles.some(r => !nonStaffRoles.includes(r.role));
-      return !hasStaffRole;
-    }) || [];
+      if (hasStaffRole) {
+        staff.push(profile);
+      } else {
+        customers.push(profile);
+      }
+    });
+    return { customerProfiles: customers, staffProfiles: staff };
   }, [profiles, userRoles]);
+
+  // Active list based on view
+  const filteredProfiles = useMemo(() => {
+    if (activeView === 'staff') return staffProfiles;
+    if (activeView === 'all') return profiles || [];
+    return customerProfiles;
+  }, [activeView, customerProfiles, staffProfiles, profiles]);
 
   // Search filtered customers
   const searchFilteredProfiles = useMemo(() => {
