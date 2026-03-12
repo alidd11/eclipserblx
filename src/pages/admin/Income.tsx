@@ -75,8 +75,10 @@ export default function AdminIncome() {
         showErrorNotification('Authentication Failed', 'Incorrect password. Please try again.');
         setPassword('');
       } else {
+        const now = Date.now();
         setIsVerified(true);
-        setLastActivity(Date.now());
+        setLastActivity(now);
+        try { sessionStorage.setItem(INCOME_VERIFIED_KEY, now.toString()); } catch {}
         await supabase.from('audit_logs').insert({
           user_id: user.id, action: 'access', resource: 'income_analytics',
           details: { timestamp: new Date().toISOString() },
