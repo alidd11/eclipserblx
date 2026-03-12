@@ -62,7 +62,7 @@ export default function SearchResults() {
     description: 'Search for premium Roblox assets, scripts, bots and more on Eclipse marketplace.',
     canonicalPath: '/search',
   });
-  }, [debouncedQuery, categorySlug]);
+  
 
   const buildQuery = useCallback((offset: number) => {
     let q = supabase
