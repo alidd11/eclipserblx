@@ -72,10 +72,20 @@ async function serveOg(path, userAgent, hostname) {
   });
 }
 
+const DEAD_PREFIXES = [
+  "/forum/", "/blog/", "/wp-admin/", "/wp-content/",
+  "/wp-includes/", "/wp-login.php", "/xmlrpc.php",
+];
+
 export default {
   async fetch(request) {
     const url = new URL(request.url);
     const userAgent = request.headers.get("User-Agent") || "";
+
+    // --- Return 410 Gone for known dead paths (speeds up Google deindexing) ---
+    if (DEAD_PREFIXES.some((p) => url.pathname.startsWith(p) || url.pathname === p.replace(/\/$/, ""))) {
+      return new Response("410 Gone", { status: 410, headers: { "Content-Type": "text/plain", "X-Robots-Tag": "noindex" } });
+    }
     const hostname = url.hostname;
 
     // --- Store subdomain / custom domain ---
