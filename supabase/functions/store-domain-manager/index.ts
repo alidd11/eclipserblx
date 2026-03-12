@@ -297,7 +297,8 @@ async function performHealthCheck(domain: string) {
     // Merge CNAME results
     const cfCnameAnswers = (cnameRes.cloudflare?.Answer ?? []).filter((a: any) => a.type === 5);
     const gCnameAnswers = (cnameRes.google?.Answer ?? []).filter((a: any) => a.type === 5);
-    const allCnameTargets = [...cfCnameAnswers, ...gCnameAnswers].map((a: any) => (a.data ?? "").replace(/\.$/, ""));
+    const allCnameTargets = [...cfCnameAnswers, ...gCnameAnswers]
+      .map((a: any) => (a.data ?? "").replace(/\.$/, "").toLowerCase());
 
     if (cfCnameAnswers.length > 0) {
       checks.cname_target = cfCnameAnswers[0].data?.replace(/\.$/, "");
@@ -335,6 +336,12 @@ async function performHealthCheck(domain: string) {
     gAAnswers.forEach((a: any) => checks.observed_dns_records.push({
       type: "A", name: domain, content: a.data, source: "google_doh",
     }));
+
+    const normalizedExpectedApexContent = preferredApex.content.toLowerCase();
+    const hasExpectedApexRecord = preferredApex.type === "A"
+      ? allIps.includes(preferredApex.content)
+      : allCnameTargets.includes(normalizedExpectedApexContent);
+    const hasAnyApexDnsAnswer = allIps.length > 0 || allCnameTargets.length > 0;
 
     // Check if resolvers disagree (propagation indicator)
     const cfHasRecords = cfCnameAnswers.length > 0 || cfAAnswers.length > 0;
