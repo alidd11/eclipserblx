@@ -64,6 +64,7 @@ const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
 const CUSTOMERS_PER_PAGE = 10;
 
 export default function AdminUsers() {
+  const [activeView, setActiveView] = useState<'customers' | 'staff' | 'all'>('customers');
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
   const [currentPage, setCurrentPage] = useState(1);
