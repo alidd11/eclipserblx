@@ -1,5 +1,6 @@
 import { memo, useState, useEffect, useCallback, useRef, useMemo, forwardRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { Sparkles, ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Crown, BadgeCheck, Shield, Store } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';

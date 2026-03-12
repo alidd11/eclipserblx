@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { Search, SlidersHorizontal, X, Sparkles, Loader2, Package } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
@@ -15,6 +15,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { useTranslation } from 'react-i18next';
+import { useURLState } from '@/hooks/useURLState';
 
 type SortOption = 'relevance' | 'newest' | 'price-low' | 'price-high' | 'popularity';
 const PAGE_SIZE = 20;
@@ -35,13 +36,11 @@ interface ProductResult {
 
 export default function SearchResults() {
   const { t } = useTranslation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const initialQuery = searchParams.get('q') || '';
-  const initialCategory = searchParams.get('category') || null;
-  const [query, setQuery] = useState(initialQuery);
+  const [urlQuery, setUrlQuery] = useURLState('q', '');
+  const [categorySlug, setCategorySlug] = useURLState('category', '');
+  const [sortBy, setSortBy] = useURLState('sort', 'relevance');
+  const [query, setQuery] = useState(urlQuery);
   const debouncedQuery = useDebounce(query, 300);
-  const [sortBy, setSortBy] = useState<SortOption>('relevance');
-  const [categorySlug, setCategorySlug] = useState<string | null>(initialCategory);
   const [products, setProducts] = useState<ProductResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -52,26 +51,17 @@ export default function SearchResults() {
   const { search: smartSearch, isSearching, results: smartResults } = useSmartSearch();
   const [useAI, setUseAI] = useState(false);
 
+  // Sync debounced query to URL
+  useEffect(() => {
+    setUrlQuery(debouncedQuery);
+  }, [debouncedQuery, setUrlQuery]);
+
   usePageMeta({
-    title: initialQuery ? `Search: ${initialQuery}` : 'Search Products',
+    title: urlQuery ? `Search: ${urlQuery}` : 'Search Products',
     description: 'Search for premium Roblox assets, scripts, bots and more on Eclipse marketplace.',
     canonicalPath: '/search',
   });
-
-  // Sync URL with query & category
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams);
-    let changed = false;
-    if (debouncedQuery !== (params.get('q') || '')) {
-      if (debouncedQuery) params.set('q', debouncedQuery); else params.delete('q');
-      changed = true;
-    }
-    if (categorySlug !== (params.get('category') || null)) {
-      if (categorySlug) params.set('category', categorySlug); else params.delete('category');
-      changed = true;
-    }
-    if (changed) setSearchParams(params, { replace: true });
-  }, [debouncedQuery, categorySlug]);
+  
 
   const buildQuery = useCallback((offset: number) => {
     let q = supabase
@@ -165,9 +155,9 @@ export default function SearchResults() {
   }, [query, smartSearch, addSearch]);
 
   const handleCategorySelect = useCallback((slug: string | null) => {
-    setCategorySlug(slug);
+    setCategorySlug(slug || '');
     setUseAI(false);
-  }, []);
+  }, [setCategorySlug]);
 
   const displayProducts = useAI && smartResults.length > 0
     ? smartResults.map(r => ({ ...r, is_featured: false, categories: r.categories ? { ...r.categories, slug: '' } : null, stores: null, average_rating: undefined, review_count: undefined }))
@@ -231,7 +221,7 @@ export default function SearchResults() {
                 'Enter a search query or select a category'
               )}
             </p>
-            <Select value={sortBy} onValueChange={(v) => { setSortBy(v as SortOption); setUseAI(false); }}>
+            <Select value={sortBy || 'relevance'} onValueChange={(v) => { setSortBy(v); setUseAI(false); }}>
               <SelectTrigger className="w-[160px] h-9 text-xs">
                 <SlidersHorizontal className="h-3 w-3 mr-1.5" />
                 <SelectValue />

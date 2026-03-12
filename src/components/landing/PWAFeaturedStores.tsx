@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { ShieldCheck, Award, ChevronRight, Users, Package, Megaphone } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
