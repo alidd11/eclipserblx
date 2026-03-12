@@ -44,6 +44,8 @@ function HealthBadge({ healthCheck }: { healthCheck: any }) {
   }
   const label = errorCode === '1000' ? 'Error 1000' :
     errorCode === '1014' ? 'Error 1014' :
+    errorCode === 'hostname_provisioning' ? 'Provisioning' :
+    errorCode === 'dns_propagating' ? 'DNS Propagating' :
     errorCode === '403_cloudflare' ? '403 CF Block' :
     errorCode === '403' ? '403 Forbidden' :
     errorCode === '522' ? 'Timeout' :
