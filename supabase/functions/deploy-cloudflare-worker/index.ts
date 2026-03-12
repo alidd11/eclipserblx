@@ -110,6 +110,11 @@ async function fetchOrigin(request, tag) {
   return new Response(r.body, { status: r.status, headers: h });
 }
 
+const DEAD_PREFIXES = [
+  "/forum/", "/blog/", "/wp-admin/", "/wp-content/",
+  "/wp-includes/", "/wp-login.php", "/xmlrpc.php"
+];
+
 export default {
   async fetch(request) {
     try {
@@ -118,7 +123,10 @@ export default {
       var hostname = url.hostname;
       var path = url.pathname;
 
-      // /share/ prefix — ALWAYS proxy (guaranteed OG tags for any visitor)
+      // Return 410 Gone for known dead paths (speeds up Google deindexing)
+      if (DEAD_PREFIXES.some(function(p) { return path.startsWith(p) || path === p.replace(/\\/$/, ""); })) {
+        return new Response("410 Gone", { status: 410, headers: { "Content-Type": "text/plain", "X-Robots-Tag": "noindex" } });
+      }
       if (path.startsWith("/share/")) {
         var realPath = path.slice(6);
         var ogRes = await serveOg(realPath, null);
