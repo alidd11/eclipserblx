@@ -242,105 +242,173 @@ export default function AdminCustomDomains() {
                 <p>No custom domains found</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Domain</TableHead>
-                      <TableHead>Store</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>SSL</TableHead>
-                      <TableHead>Health</TableHead>
-                      <TableHead>CF Zone</TableHead>
-                      <TableHead>Last Check</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filtered.map(domain => {
-                      const store = domain.stores as any;
-                      const hc = domain.last_health_check as any;
-                      return (
-                        <TableRow key={domain.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-1.5">
-                              <Globe className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                              <a
-                                href={`https://${domain.domain}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm font-medium hover:underline flex items-center gap-1"
-                              >
-                                {domain.domain}
-                                <ExternalLink className="h-3 w-3 opacity-50" />
-                              </a>
-                            </div>
-                            {domain.is_primary && (
-                              <Badge variant="outline" className="mt-0.5 text-[10px] px-1 py-0">Primary</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-sm">{store?.name ?? 'Unknown'}</span>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="secondary" className="text-[10px]">
-                              {domain.domain_type}
-                            </Badge>
-                          </TableCell>
-                          <TableCell><StatusBadge status={domain.status} /></TableCell>
-                          <TableCell><SslBadge status={domain.ssl_status} /></TableCell>
-                          <TableCell>
-                            <DomainHealthDisplay healthCheck={hc} domain={domain.domain} isCloudflare={domain.is_cloudflare_zone} compact />
-                          </TableCell>
-                          <TableCell>
-                            {domain.is_cloudflare_zone ? (
-                              <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-[10px]">
-                                <Cloud className="h-3 w-3 mr-1" />CF
+              <>
+                {/* Desktop table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Domain</TableHead>
+                        <TableHead>Store</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>SSL</TableHead>
+                        <TableHead>Health</TableHead>
+                        <TableHead>CF Zone</TableHead>
+                        <TableHead>Last Check</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filtered.map(domain => {
+                        const store = domain.stores as any;
+                        const hc = domain.last_health_check as any;
+                        return (
+                          <TableRow key={domain.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-1.5">
+                                <Globe className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                                <a
+                                  href={`https://${domain.domain}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-sm font-medium hover:underline flex items-center gap-1"
+                                >
+                                  {domain.domain}
+                                  <ExternalLink className="h-3 w-3 opacity-50" />
+                                </a>
+                              </div>
+                              {domain.is_primary && (
+                                <Badge variant="outline" className="mt-0.5 text-[10px] px-1 py-0">Primary</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-sm">{store?.name ?? 'Unknown'}</span>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="secondary" className="text-[10px]">
+                                {domain.domain_type}
                               </Badge>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">—</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {domain.last_health_check_at ? (
-                              <span className="text-xs text-muted-foreground">
-                                {format(new Date(domain.last_health_check_at), 'dd MMM HH:mm')}
-                              </span>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">Never</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                disabled={runningHealthCheck === domain.id}
-                                onClick={() => healthCheckMutation.mutate(domain.id)}
-                                title="Health Check"
-                              >
-                                <RefreshCw className={cn("h-3.5 w-3.5", runningHealthCheck === domain.id && "animate-spin")} />
-                              </Button>
-                              {domain.domain_type === 'custom' && (hc?.error_code || domain.ssl_status === 'pending') && (
+                            </TableCell>
+                            <TableCell><StatusBadge status={domain.status} /></TableCell>
+                            <TableCell><SslBadge status={domain.ssl_status} /></TableCell>
+                            <TableCell>
+                              <DomainHealthDisplay healthCheck={hc} domain={domain.domain} isCloudflare={domain.is_cloudflare_zone} compact />
+                            </TableCell>
+                            <TableCell>
+                              {domain.is_cloudflare_zone ? (
+                                <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-[10px]">
+                                  <Cloud className="h-3 w-3 mr-1" />CF
+                                </Badge>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {domain.last_health_check_at ? (
+                                <span className="text-xs text-muted-foreground">
+                                  {format(new Date(domain.last_health_check_at), 'dd MMM HH:mm')}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">Never</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-1">
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  disabled={fixingHostname === domain.id}
-                                  onClick={() => fixHostnameMutation.mutate(domain.id)}
-                                  title="Fix Hostname (recreate custom hostname + SSL)"
+                                  disabled={runningHealthCheck === domain.id}
+                                  onClick={() => healthCheckMutation.mutate(domain.id)}
+                                  title="Health Check"
                                 >
-                                  <Wrench className={cn("h-3.5 w-3.5 text-amber-500", fixingHostname === domain.id && "animate-spin")} />
+                                  <RefreshCw className={cn("h-3.5 w-3.5", runningHealthCheck === domain.id && "animate-spin")} />
                                 </Button>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
+                                {domain.domain_type === 'custom' && (hc?.error_code || domain.ssl_status === 'pending') && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    disabled={fixingHostname === domain.id}
+                                    onClick={() => fixHostnameMutation.mutate(domain.id)}
+                                    title="Fix Hostname"
+                                  >
+                                    <Wrench className={cn("h-3.5 w-3.5 text-amber-500", fixingHostname === domain.id && "animate-spin")} />
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile card layout */}
+                <div className="md:hidden divide-y divide-border">
+                  {filtered.map(domain => {
+                    const store = domain.stores as any;
+                    const hc = domain.last_health_check as any;
+                    return (
+                      <div key={domain.id} className="p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <a
+                              href={`https://${domain.domain}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm font-medium hover:underline flex items-center gap-1"
+                            >
+                              <Globe className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                              <span className="truncate">{domain.domain}</span>
+                              <ExternalLink className="h-3 w-3 opacity-50 flex-shrink-0" />
+                            </a>
+                            <p className="text-xs text-muted-foreground mt-0.5">{store?.name ?? 'Unknown'}</p>
+                          </div>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              disabled={runningHealthCheck === domain.id}
+                              onClick={() => healthCheckMutation.mutate(domain.id)}
+                            >
+                              <RefreshCw className={cn("h-3.5 w-3.5", runningHealthCheck === domain.id && "animate-spin")} />
+                            </Button>
+                            {domain.domain_type === 'custom' && (hc?.error_code || domain.ssl_status === 'pending') && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                disabled={fixingHostname === domain.id}
+                                onClick={() => fixHostnameMutation.mutate(domain.id)}
+                              >
+                                <Wrench className={cn("h-3.5 w-3.5 text-amber-500", fixingHostname === domain.id && "animate-spin")} />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          <Badge variant="secondary" className="text-[10px]">{domain.domain_type}</Badge>
+                          <StatusBadge status={domain.status} />
+                          <SslBadge status={domain.ssl_status} />
+                          <HealthBadge healthCheck={hc} />
+                          {domain.is_cloudflare_zone && (
+                            <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-[10px]">
+                              <Cloud className="h-3 w-3 mr-1" />CF
+                            </Badge>
+                          )}
+                        </div>
+                        {domain.last_health_check_at && (
+                          <p className="text-[10px] text-muted-foreground">
+                            Last check: {format(new Date(domain.last_health_check_at), 'dd MMM HH:mm')}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>

@@ -23,6 +23,7 @@ export default function AdminAffiliates() {
   const isInsideHub = useIsInsideHub();
   const [search, setSearch] = useState('');
   const [payoutStatusFilter, setPayoutStatusFilter] = useState<string>('all');
+  const [affiliateTab, setAffiliateTab] = useState('payouts');
   const queryClient = useQueryClient();
   const { settings: affiliateSettings, isLoading: affiliateSettingsLoading } = useAffiliateSettings();
 

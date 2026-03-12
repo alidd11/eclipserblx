@@ -52,6 +52,7 @@ export default function ManualPayouts() {
   const [selectedRequest, setSelectedRequest] = useState<PayoutRequest | null>(null);
   const [actionType, setActionType] = useState<"approve" | "reject" | null>(null);
   const [notes, setNotes] = useState("");
+  const [manualTab, setManualTab] = useState("pending");
 
   const { data: requests, isLoading } = useQuery({
     queryKey: ["manual-payout-requests"],

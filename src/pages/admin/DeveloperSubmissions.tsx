@@ -240,13 +240,26 @@
            </Dialog>
          </div>
  
-         <Tabs value={activeTab} onValueChange={setActiveTab}>
-           <TabsList>
-             <TabsTrigger value="all">All ({counts.all})</TabsTrigger>
-             <TabsTrigger value="pending">Pending ({counts.pending})</TabsTrigger>
-             <TabsTrigger value="approved">Approved ({counts.approved})</TabsTrigger>
-             <TabsTrigger value="rejected">Rejected ({counts.rejected})</TabsTrigger>
-           </TabsList>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="hidden sm:inline-flex">
+              <TabsTrigger value="all">All ({counts.all})</TabsTrigger>
+              <TabsTrigger value="pending">Pending ({counts.pending})</TabsTrigger>
+              <TabsTrigger value="approved">Approved ({counts.approved})</TabsTrigger>
+              <TabsTrigger value="rejected">Rejected ({counts.rejected})</TabsTrigger>
+            </TabsList>
+            <div className="sm:hidden">
+              <Select value={activeTab} onValueChange={setActiveTab}>
+                <SelectTrigger className="w-auto min-w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All ({counts.all})</SelectItem>
+                  <SelectItem value="pending">Pending ({counts.pending})</SelectItem>
+                  <SelectItem value="approved">Approved ({counts.approved})</SelectItem>
+                  <SelectItem value="rejected">Rejected ({counts.rejected})</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
  
            <TabsContent value={activeTab} className="mt-6">
              {isLoading ? (

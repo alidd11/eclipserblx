@@ -342,12 +342,24 @@ export default function DeveloperPayments() {
            </div>
          )}
  
-         <Tabs value={activeTab} onValueChange={setActiveTab}>
-           <TabsList>
-             <TabsTrigger value="due">Due</TabsTrigger>
-             <TabsTrigger value="completed">Completed</TabsTrigger>
-             <TabsTrigger value="all">All</TabsTrigger>
-           </TabsList>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="hidden sm:inline-flex">
+              <TabsTrigger value="due">Due</TabsTrigger>
+              <TabsTrigger value="completed">Completed</TabsTrigger>
+              <TabsTrigger value="all">All</TabsTrigger>
+            </TabsList>
+            <div className="sm:hidden">
+              <Select value={activeTab} onValueChange={setActiveTab}>
+                <SelectTrigger className="w-auto min-w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="due">Due</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
  
            <TabsContent value={activeTab} className="mt-6">
              {isLoading ? (

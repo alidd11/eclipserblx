@@ -81,6 +81,7 @@ export default function AdminIncomeSources() {
   const [sourceFilter, setSourceFilter] = useState<IncomeSource>('all');
   const [periodFilter, setPeriodFilter] = useState<TimePeriod>('30d');
   const [searchQuery, setSearchQuery] = useState('');
+  const [incomeTab, setIncomeTab] = useState('trend');
 
   const periodStart = useMemo(() => {
     const now = new Date();

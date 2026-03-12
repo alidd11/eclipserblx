@@ -90,6 +90,7 @@ export default function StoreApplications() {
   const [selectedApplication, setSelectedApplication] = useState<StoreApplication | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [storeAppTab, setStoreAppTab] = useState('pending');
 
   const { data: applications, isLoading } = useQuery({
     queryKey: ['admin-store-applications'],

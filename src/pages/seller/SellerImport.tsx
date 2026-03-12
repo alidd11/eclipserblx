@@ -26,6 +26,7 @@ export default function SellerImport() {
   const [downloadImages, setDownloadImages] = useState(true);
   const [importResults, setImportResults] = useState<ProductImportStatus[]>([]);
   const [categoryOverrides, setCategoryOverrides] = useState<Record<string, string> | undefined>();
+  const [importTab, setImportTab] = useState('import');
 
   const resetImport = () => {
     setStep('setup');

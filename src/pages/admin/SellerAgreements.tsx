@@ -172,7 +172,7 @@ export default function SellerAgreements() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
+          <TabsList className="hidden sm:inline-flex">
             <TabsTrigger value="pending" className="gap-2">
               <Clock className="h-4 w-4" />
               Pending ({pendingCount})
@@ -185,6 +185,18 @@ export default function SellerAgreements() {
               All ({stores?.length || 0})
             </TabsTrigger>
           </TabsList>
+          <div className="sm:hidden">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-auto min-w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending ({pendingCount})</SelectItem>
+                <SelectItem value="signed">Signed ({signedCount})</SelectItem>
+                <SelectItem value="all">All ({stores?.length || 0})</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <TabsContent value={activeTab} className="mt-4">
             <Card>
