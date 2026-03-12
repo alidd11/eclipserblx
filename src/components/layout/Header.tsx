@@ -440,4 +440,4 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
       />
     </header>
   );
-});
+}));
