@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 const TAB_ITEMS: { icon: typeof Home; label: string; href: string; showBadge?: boolean }[] = [
   { icon: Home, label: 'Home', href: '/' },
-  { icon: Search, label: 'Explore', href: '/products' },
+  { icon: Grid3X3, label: 'Shop', href: '/products' },
   { icon: ShoppingCart, label: 'Cart', href: '/cart', showBadge: true },
   { icon: User, label: 'Account', href: '/account' },
 ];
