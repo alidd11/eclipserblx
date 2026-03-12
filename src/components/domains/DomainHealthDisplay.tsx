@@ -347,14 +347,21 @@ export function DomainHealthDisplay({ healthCheck, domain, isCloudflare, compact
             ))}
           </ol>
 
-          {/* Quick copy helpers */}
-          {domain && (healthCheck.error_code === '1000' || healthCheck.error_code === '1000_non_cf' || healthCheck.error_code === '403_direct_a') && (
+          {/* Quick copy helpers — dynamic from expected records */}
+          {domain && healthCheck.expected_dns_records && healthCheck.expected_dns_records.length > 0 && (healthCheck.error_code === '1000' || healthCheck.error_code === '1000_non_cf' || healthCheck.error_code === '403_direct_a') && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {healthCheck.expected_dns_records.map((rec: { type: string; content: string; name: string }, i: number) => (
+                <Button key={i} variant="outline" size="sm" className="h-7 text-xs" onClick={() => copyText(rec.content)}>
+                  <Copy className="h-3 w-3 mr-1" />{rec.type}: {rec.content}
+                </Button>
+              ))}
+            </div>
+          )}
+          {/* Fallback copy helpers if no expected records */}
+          {domain && (!healthCheck.expected_dns_records || healthCheck.expected_dns_records.length === 0) && (healthCheck.error_code === '1000' || healthCheck.error_code === '1000_non_cf' || healthCheck.error_code === '403_direct_a') && (
             <div className="mt-3 flex flex-wrap gap-2">
               <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => copyText('stores.eclipserblx.com')}>
                 <Copy className="h-3 w-3 mr-1" />CNAME target
-              </Button>
-              <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => copyText('185.158.133.1')}>
-                <Copy className="h-3 w-3 mr-1" />A record IP
               </Button>
             </div>
           )}
