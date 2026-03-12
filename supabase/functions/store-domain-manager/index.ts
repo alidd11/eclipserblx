@@ -738,8 +738,23 @@ async function autoFixDns(userId: string, domainId: string) {
       return rec.type === "CNAME" && rec.content === preferredRecord.content && rec.proxied === false;
     });
 
-    // 6. Delete conflicting records
+    // 6. Delete conflicting records (including AAAA)
     for (const rec of existingRecords) {
+      // Always delete AAAA records — they can cause cross-zone issues
+      if (rec.type === "AAAA") {
+        const { data: delData } = await cfFetch<any>(
+          sellerToken,
+          `${CF_API}/zones/${sellerZoneId}/dns_records/${rec.id}`,
+          { method: "DELETE" }
+        );
+        if (delData?.success) {
+          fixes.push(`Deleted AAAA record: ${rec.name} → ${rec.content}`);
+        } else {
+          errors.push(`Failed to delete AAAA record ${rec.name}: ${JSON.stringify(delData?.errors)}`);
+        }
+        continue;
+      }
+
       const shouldDelete = preferredRecord.type === "A"
         ? (rec.type === "CNAME" || (rec.type === "A" && (rec.content !== preferredRecord.content || rec.proxied === true)))
         : (rec.type === "A" || (rec.type === "CNAME" && (rec.content !== preferredRecord.content || rec.proxied === true)));
