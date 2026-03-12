@@ -486,18 +486,55 @@ export default function AdminUsers() {
       <div className="space-y-6 min-h-0">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-display font-bold">Customers</h1>
-            <p className="text-muted-foreground">Manage customer accounts</p>
+            <h1 className="text-3xl font-display font-bold">User Management</h1>
+            <p className="text-muted-foreground">Manage customers, staff, and roles</p>
           </div>
         </div>
 
+        {/* View Toggle - Mobile: Select, Desktop: Tabs */}
+        <div className="sm:hidden">
+          <Select value={activeView} onValueChange={v => { setActiveView(v as any); setCurrentPage(1); }}>
+            <SelectTrigger className="bg-card">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="customers">Customers ({stats.total})</SelectItem>
+              <SelectItem value="staff">Staff ({stats.staff})</SelectItem>
+              <SelectItem value="all">All Users ({(profiles || []).length})</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="hidden sm:flex gap-1 border-b border-border">
+          {[
+            { value: 'customers', label: 'Customers', count: stats.total, icon: Users },
+            { value: 'staff', label: 'Staff', count: stats.staff, icon: IdCard },
+            { value: 'all', label: 'All Users', count: (profiles || []).length, icon: Users },
+          ].map(tab => (
+            <button
+              key={tab.value}
+              onClick={() => { setActiveView(tab.value as any); setCurrentPage(1); }}
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors touch-manipulation ${
+                activeView === tab.value
+                  ? 'border-primary text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <tab.icon className="h-4 w-4" />
+              {tab.label}
+              <Badge variant="secondary" className="text-xs h-5 px-1.5 min-w-[20px] justify-center">
+                {tab.count}
+              </Badge>
+            </button>
+          ))}
+        </div>
+
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <Card>
             <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
               <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
                 <Users className="h-3 w-3 md:h-4 md:w-4" />
-                Total Customers
+                Customers
               </CardDescription>
             </CardHeader>
             <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
@@ -507,8 +544,19 @@ export default function AdminUsers() {
           <Card>
             <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
               <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
+                <IdCard className="h-3 w-3 md:h-4 md:w-4" />
+                Staff
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              <p className="text-lg md:text-2xl font-bold">{stats.staff}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
+              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
                 <Sparkles className="h-3 w-3 md:h-4 md:w-4 text-amber-500" />
-                Eclipse+ Members
+                Eclipse+
               </CardDescription>
             </CardHeader>
             <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
