@@ -1,108 +1,36 @@
 
 
-# Professional Native Website Enhancements
+## Issues Identified
 
-After auditing the codebase, the site already has strong foundations (View Transitions, haptics, optimistic UI, structured data, prefetching, scroll restoration, pull-to-refresh). Here are the remaining gaps to close for a truly professional, native-feeling website.
+**Issue 1: Sidebar positioned at top of screen on desktop**
+The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
 
----
+**Issue 2: Excessive black empty space in the content area**
+The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
 
-## 1. Scroll-direction-aware header (auto-hide on scroll down)
+## Plan
 
-Native apps and modern websites (Medium, Twitter, YouTube mobile) hide the header when scrolling down and reveal it on scroll up. This reclaims screen real estate on mobile.
+### 1. Widen the content area on the Categories page
+- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
+- Reduce vertical padding between the header and grid
+- Tighten the gap between the page title/description and the cards
 
-- Create a `useScrollDirection` hook that tracks scroll delta
-- Apply a CSS transform to the header: `translateY(-100%)` on scroll-down, `translateY(0)` on scroll-up
-- Use `will-change: transform` and CSS transitions for 60fps performance
-- Only activate below the `md` breakpoint (mobile/tablet)
+### 2. Improve the PageHeader component
+- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
+- This applies globally to all pages using PageHeader
 
-**Files**: new `src/hooks/useScrollDirection.ts`, edit `src/components/layout/Header.tsx`, edit `src/components/layout/LayoutShell.tsx`
+### 3. Make category cards fill space better
+- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
+- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
+- Reduce grid gap slightly so cards feel more connected
 
----
+### 4. Sidebar desktop alignment fix
+- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
+- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
+- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
 
-## 2. Global offline/online connectivity banner
-
-The app detects offline in `QueryErrorState` but has no global notification. Professional sites show a persistent toast or banner when connectivity drops and a success toast when it returns.
-
-- Create a `useConnectivityBanner` hook that listens to `online`/`offline` events
-- Show a fixed bottom banner (not toast) when offline: "You're offline -- some features may be unavailable"
-- Show a brief success toast when connection restores
-- Add to `App.tsx` at the top level
-
-**Files**: new `src/hooks/useConnectivityBanner.tsx`, edit `src/App.tsx`
-
----
-
-## 3. Respect `prefers-reduced-motion` globally
-
-Currently only View Transitions respect this. All CSS animations (`animate-page-in`, `shimmer`, `route-enter`, nav progress bar) should be disabled when the user prefers reduced motion.
-
-- Add a single `@media (prefers-reduced-motion: reduce)` block in `index.css` that sets `animation-duration: 0s !important` and `transition-duration: 0s !important` on `*`
-- This is a one-line CSS change with massive accessibility impact
-
-**Files**: edit `src/index.css`
-
----
-
-## 4. Smooth image loading with fade-in
-
-Images currently pop in abruptly when loaded. Professional sites fade images in from a background placeholder.
-
-- Add a global CSS rule: `img { opacity: 0; transition: opacity 0.3s; } img[complete], img.loaded { opacity: 1; }`
-- Use the `onLoad` event or a tiny `useImageLoaded` utility to add the `.loaded` class
-- Apply a `bg-muted` placeholder on all image containers (most already have this)
-
-**Files**: edit `src/index.css` (add image fade rules), optionally a tiny `src/hooks/useImageLoaded.ts`
-
----
-
-## 5. Stale data background refresh indicator
-
-When react-query silently refetches in the background, there's no visual cue. Native apps show subtle spinners or shimmer overlays.
-
-- Use `useIsFetching()` from `@tanstack/react-query` to detect background fetches
-- Show a tiny pulsing dot or thin bar near the navigation progress area
-- Very subtle -- just enough to signal "data is being updated"
-
-**Files**: new `src/components/BackgroundRefreshIndicator.tsx`, edit `src/App.tsx`
-
----
-
-## 6. Network-aware image quality
-
-Adapt image quality based on connection speed using `navigator.connection.effectiveType`. On slow connections (`2g`, `slow-2g`), load lower-resolution images via the existing `optimizeImageUrl` utility.
-
-- Create `src/hooks/useNetworkQuality.ts` that reads `navigator.connection`
-- Expose a `quality` value (`low` | `medium` | `high`)
-- Thread this into `optimizeImageUrl` to reduce image dimensions on slow connections
-- Progressive enhancement -- falls back to high quality when API unavailable
-
-**Files**: new `src/hooks/useNetworkQuality.ts`, edit `src/utils/optimizeImageUrl.ts`
-
----
-
-## 7. Viewport-based link prefetching
-
-Currently `PrefetchLink` only prefetches on hover/focus. On mobile there's no hover. Prefetch links when they scroll into the viewport using `IntersectionObserver`.
-
-- Enhance `PrefetchLink` to also observe the element's intersection with the viewport
-- When the link enters the viewport (with a `rootMargin` of `200px`), trigger prefetch
-- This makes mobile navigation feel instant -- the page is already cached before the user taps
-
-**Files**: edit `src/components/PrefetchLink.tsx`
-
----
-
-## Summary
-
-| Enhancement | Impact | Effort |
-|---|---|---|
-| Auto-hide header on scroll | High (mobile UX) | Medium |
-| Offline/online banner | Medium (resilience) | Low |
-| Reduced motion global | High (accessibility) | Trivial |
-| Image fade-in | Medium (polish) | Low |
-| Background refresh indicator | Low (subtle polish) | Low |
-| Network-aware images | Medium (perf on slow networks) | Low |
-| Viewport-based prefetch | High (mobile perf) | Low |
-
-All changes are progressive enhancements -- they improve the experience without breaking anything on unsupported browsers.
+### Files to modify
+- `src/pages/Categories.tsx` — widen container, tighten spacing
+- `src/components/ui/PageHeader.tsx` — reduce bottom margin
+- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
 

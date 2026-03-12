@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo, useState, forwardRef } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { ShoppingCart, User, Menu, X, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Sparkles, ChevronDown, LayoutGrid } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -43,9 +43,11 @@ interface HeaderProps {
   hideBrandName?: boolean;
   onMenuClick?: () => void;
   onSidebarToggle?: () => void;
+  /** CSS class for scroll-direction transform */
+  className?: string;
 }
 
-export const Header = memo(function Header({ showDesktopNav = true, hideBrandName = false, onMenuClick, onSidebarToggle }: HeaderProps) {
+export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header({ showDesktopNav = true, hideBrandName = false, onMenuClick, onSidebarToggle, className }: HeaderProps, ref) {
   const { user, signOut } = useAuth();
   const { itemCount } = useCart();
   const { discordUrl } = useDiscordUrl();
@@ -93,7 +95,7 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background border-b border-border pt-[env(safe-area-inset-top)]">
+    <header ref={ref} className={cn("sticky top-0 z-50 w-full bg-background border-b border-border pt-[env(safe-area-inset-top)] transition-transform duration-300 will-change-transform", className)}>
       <nav className="px-4 pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))]" aria-label="Main navigation">
         {/* Mobile header row */}
         <div className="flex md:hidden h-14 items-center gap-1.5">
@@ -438,4 +440,4 @@ export const Header = memo(function Header({ showDesktopNav = true, hideBrandNam
       />
     </header>
   );
-});
+}));

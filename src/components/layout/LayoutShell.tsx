@@ -6,6 +6,7 @@ const Footer = lazy(() => import('@/components/layout/Footer').then(m => ({ defa
 // Lazy-load breadcrumb — non-critical for initial paint
 const UniversalBreadcrumb = lazy(() => import('@/components/layout/UniversalBreadcrumb').then(m => ({ default: m.UniversalBreadcrumb })));
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
+import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
 import { useEdgeSwipe } from '@/hooks/useEdgeSwipe';
 
@@ -63,6 +64,7 @@ function LayoutShellInner({
 }: LayoutShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
+  const scrollDirection = useScrollDirection();
 
   useEdgeSwipe({
     onSwipe: () => setMobileOpen(true),
@@ -105,6 +107,7 @@ function LayoutShellInner({
             <Header
               showDesktopNav={false}
               onMenuClick={() => setMobileOpen(true)}
+              className={scrollDirection === 'down' ? 'md:translate-y-0 -translate-y-full' : ''}
               {...headerProps}
             />
           )}
