@@ -297,7 +297,8 @@ async function performHealthCheck(domain: string) {
     // Merge CNAME results
     const cfCnameAnswers = (cnameRes.cloudflare?.Answer ?? []).filter((a: any) => a.type === 5);
     const gCnameAnswers = (cnameRes.google?.Answer ?? []).filter((a: any) => a.type === 5);
-    const allCnameTargets = [...cfCnameAnswers, ...gCnameAnswers].map((a: any) => (a.data ?? "").replace(/\.$/, ""));
+    const allCnameTargets = [...cfCnameAnswers, ...gCnameAnswers]
+      .map((a: any) => (a.data ?? "").replace(/\.$/, "").toLowerCase());
 
     if (cfCnameAnswers.length > 0) {
       checks.cname_target = cfCnameAnswers[0].data?.replace(/\.$/, "");
@@ -336,6 +337,12 @@ async function performHealthCheck(domain: string) {
       type: "A", name: domain, content: a.data, source: "google_doh",
     }));
 
+    const normalizedExpectedApexContent = preferredApex.content.toLowerCase();
+    const hasExpectedApexRecord = preferredApex.type === "A"
+      ? allIps.includes(preferredApex.content)
+      : allCnameTargets.includes(normalizedExpectedApexContent);
+    const hasAnyApexDnsAnswer = allIps.length > 0 || allCnameTargets.length > 0;
+
     // Check if resolvers disagree (propagation indicator)
     const cfHasRecords = cfCnameAnswers.length > 0 || cfAAnswers.length > 0;
     const gHasRecords = gCnameAnswers.length > 0 || gAAnswers.length > 0;
@@ -372,9 +379,18 @@ async function performHealthCheck(domain: string) {
           checks.error_code = "dns_propagating";
           checks.diagnosis = "DNS resolvers are returning different results — your recent DNS changes are still propagating. Wait 5–15 minutes and check again.";
         } else if (hostnameState.exists && hostnameState.status === "active" && hostnameState.ssl_status === "active") {
-          // Hostname is fully active but still seeing 1000 — likely cache/propagation
-          checks.error_code = "dns_propagating";
-          checks.diagnosis = "Custom hostname and SSL are active, but cached DNS may still be serving old records. Wait 5–15 minutes for DNS cache to expire.";
+          // Hostname can be active while DNS records are still wrong; only mark as propagation
+          // when DNS currently matches the expected apex record.
+          if (hasExpectedApexRecord) {
+            checks.error_code = "dns_propagating";
+            checks.diagnosis = "Custom hostname and SSL are active, but cached DNS may still be serving old records. Wait 5–15 minutes for DNS cache to expire.";
+          } else if (hasAnyApexDnsAnswer) {
+            checks.error_code = "1000";
+            checks.diagnosis = "Error 1000 — custom hostname is active, but apex DNS does not match the expected record yet. Ensure the apex record is DNS-only and points to the expected target.";
+          } else {
+            checks.error_code = "dns_propagating";
+            checks.diagnosis = "Custom hostname and SSL are active, but DNS answers are incomplete. Wait 5–15 minutes for propagation to settle.";
+          }
         } else if (checks.is_cloudflare_zone) {
           if (checks.resolves_to_lovable_ip && !checks.cname_target) {
             checks.error_code = "1000";
