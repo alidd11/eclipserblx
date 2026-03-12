@@ -324,8 +324,8 @@ async function performHealthCheck(domain: string) {
     } else if (checks.error_code === "1000_non_cf") {
       checks.recommended_fix = "USE_A_RECORD";
     } else if (checks.error_code === "1000" && checks.is_cloudflare_zone) {
-      if (!checks.cname_target && checks.resolves_to_cloudflare) {
-        checks.recommended_fix = "USE_A_RECORD";
+      if (!checks.cname_target && (checks.resolves_to_lovable_ip || checks.resolves_to_cloudflare)) {
+        checks.recommended_fix = "USE_CNAME";
       } else {
         checks.recommended_fix = "CLOUDFLARE_CROSS_ZONE";
       }
