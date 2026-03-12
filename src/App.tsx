@@ -86,6 +86,7 @@ const App = forwardRef<HTMLDivElement>((_, ref) => (
                       </PWAWrapper>
                       {/* Chat components rendered OUTSIDE PWAWrapper to prevent transform-related positioning issues */}
                       <Suspense fallback={null}>
+                        <MobileTabBar />
                         <ChatWidget />
                         <ChatSidePanel />
                         <CookieConsentBanner />

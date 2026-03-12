@@ -32,9 +32,12 @@ export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_pro
   const status = getOpeningStatus();
 
   const cookieBannerVisible = showBanner && !showSettings;
+  // On mobile (<768px), offset above the tab bar (56px + safe area)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const tabBarOffset = isMobile ? '5rem' : '0px';
   const bottomOffset = cookieBannerVisible
-    ? 'calc(4rem + env(safe-area-inset-bottom, 0px))'
-    : 'max(1.5rem, env(safe-area-inset-bottom, 0px) + 1rem)';
+    ? `calc(4rem + ${tabBarOffset} + env(safe-area-inset-bottom, 0px))`
+    : `calc(${tabBarOffset} + max(1.5rem, env(safe-area-inset-bottom, 0px) + 1rem))`;
 
   const { isCustomStoreDomain } = useStoreDomain();
 

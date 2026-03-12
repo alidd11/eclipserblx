@@ -36,7 +36,7 @@ export const FloatingActionButtons = forwardRef<HTMLDivElement>(function Floatin
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5 pointer-events-none"
       )}
       style={{
-        bottom: 'calc(env(safe-area-inset-bottom, 0px) + 5.75rem)',
+        bottom: 'calc(env(safe-area-inset-bottom, 0px) + 9.5rem)',
         right: 'max(1.5rem, env(safe-area-inset-right, 0px) + 1rem)',
       }}
     >
