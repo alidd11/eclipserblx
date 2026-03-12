@@ -78,6 +78,7 @@ const navGroups: NavGroup[] = [
       { title: 'Disputes', icon: RotateCcw, href: '/seller/refunds' },
       { title: 'Support Tickets', icon: HelpCircle, href: '/seller/support' },
       { title: 'Notifications', icon: Bell, href: '/seller/notifications' },
+      { title: 'Customer Insights', icon: Heart, href: '/seller/customer-insights' },
     ],
   },
   {
