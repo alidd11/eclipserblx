@@ -18,6 +18,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { safeStorage } from '@/lib/safeStorage';
 import { hapticTap } from '@/lib/haptics';
 import { useSellerUnreadCount } from '@/hooks/useSellerUnreadCount';
+import { StoreSwitcher } from './StoreSwitcher';
 
 interface NavItem {
   title: string;
