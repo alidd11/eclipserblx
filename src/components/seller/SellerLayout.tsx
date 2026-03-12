@@ -63,7 +63,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   }, [isChatPage]);
 
   // Wait for ALL async sources before making any access decisions
-  const loading = authLoading || sellerLoading || flagLoading || roleLoading;
+  const loading = authLoading || sellerLoading || flagLoading || roleLoading || onboardingLoading;
   const canAccessSellerDashboard = hasSellerRole || isApprovedSeller;
   const canAccessMarketplace = hasAccess || isApprovedSeller;
 
