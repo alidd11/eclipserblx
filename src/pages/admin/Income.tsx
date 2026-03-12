@@ -17,10 +17,23 @@ import { showSuccessNotification, showInfoNotification, showErrorNotification } 
 import { useAuth } from '@/hooks/useAuth';
 
 const SESSION_TIMEOUT_MS = 10 * 60 * 1000;
+const INCOME_VERIFIED_KEY = 'income_verified_at';
+
+function getPersistedVerification(): boolean {
+  try {
+    const stored = sessionStorage.getItem(INCOME_VERIFIED_KEY);
+    if (stored) {
+      const elapsed = Date.now() - parseInt(stored, 10);
+      if (!isNaN(elapsed) && elapsed < SESSION_TIMEOUT_MS) return true;
+      sessionStorage.removeItem(INCOME_VERIFIED_KEY);
+    }
+  } catch {}
+  return false;
+}
 
 export default function AdminIncome() {
   const { user } = useAuth();
-  const [isVerified, setIsVerified] = useState(false);
+  const [isVerified, setIsVerified] = useState(() => getPersistedVerification());
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [verifying, setVerifying] = useState(false);
