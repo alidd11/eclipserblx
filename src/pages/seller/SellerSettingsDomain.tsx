@@ -664,8 +664,8 @@ export default function SellerSettingsDomain() {
             <AlertTriangle className="h-4 w-4 text-amber-500" />
             <AlertTitle className="text-amber-600 dark:text-amber-400 text-sm">Important: DNS-only mode required</AlertTitle>
             <AlertDescription className="text-xs text-muted-foreground">
-              When adding a CNAME record, you <strong className="text-foreground">MUST</strong> set it to <strong className="text-foreground">DNS-only (grey cloud)</strong>, NOT Proxied (orange cloud). 
-              This is the #1 cause of domain connection failures. If you use Cloudflare, consider using an <strong className="text-foreground">A record</strong> pointing to <code className="bg-muted px-1 rounded">185.158.133.1</code> instead.
+              When adding DNS records, you <strong className="text-foreground">MUST</strong> set them to <strong className="text-foreground">DNS-only (grey cloud)</strong>, NOT Proxied (orange cloud). 
+              This is the #1 cause of domain connection failures. Your DNS records point to our edge router, which then routes traffic to your store.
             </AlertDescription>
           </Alert>
 

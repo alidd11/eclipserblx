@@ -114,12 +114,7 @@ const ERROR_INFO: Record<string, {
     severity: 'warning',
     title: '403: Wrong DNS Record Type',
     summary: 'Your A record points directly to the origin, bypassing the proxy. The server can\'t route your domain.',
-    steps: [
-      'Delete the current A record for your domain',
-      'Add a CNAME record pointing to stores.eclipserblx.com',
-      'Set it to DNS-only (grey cloud)',
-      'Re-run the health check after DNS propagates',
-    ],
+    steps: [], // Dynamically generated from expected_dns_records
     icon: 'dns',
   },
   '403': {
