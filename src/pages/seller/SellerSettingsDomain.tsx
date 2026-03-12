@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,6 +12,16 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Collapsible,
   CollapsibleContent,
@@ -390,6 +400,8 @@ export default function SellerSettingsDomain() {
   
   const queryClient = useQueryClient();
   const [customDomainInput, setCustomDomainInput] = useState('');
+  const [cfWarning, setCfWarning] = useState<{ warnings: string[]; domain: string; is_cloudflare: boolean; has_proxied_records: boolean } | null>(null);
+  const [preChecking, setPreChecking] = useState(false);
 
   const { data: store, isLoading: storeLoading } = useQuery({
     queryKey: ['seller-store-for-domain', user?.id],
@@ -469,6 +481,7 @@ export default function SellerSettingsDomain() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
       setCustomDomainInput('');
+      setCfWarning(null);
       if (data.is_cloudflare_zone) {
         toast.error('⚠️ Cloudflare domain detected', { description: 'Your domain uses Cloudflare DNS. Follow the Cloudflare-specific checklist carefully to avoid errors.' });
       } else {
@@ -477,6 +490,30 @@ export default function SellerSettingsDomain() {
     },
     onError: (e: any) => toast.error('Error', { description: e.message }),
   });
+
+  const handleAddDomain = useCallback(async () => {
+    const domain = customDomainInput.trim().toLowerCase();
+    if (!domain) return;
+    setPreChecking(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('store-domain-manager', {
+        body: { action: 'pre-check-domain', domain },
+      });
+      if (error) throw error;
+      if (data?.warnings?.length > 0) {
+        setCfWarning({ warnings: data.warnings, domain: data.domain, is_cloudflare: data.is_cloudflare, has_proxied_records: data.has_proxied_records });
+        return; // Show dialog instead of proceeding
+      }
+      // No warnings — proceed directly
+      requestCustom.mutate(domain);
+    } catch (e: any) {
+      // Pre-check failed — proceed anyway (don't block the user)
+      console.warn('Pre-check failed, proceeding:', e);
+      requestCustom.mutate(domain);
+    } finally {
+      setPreChecking(false);
+    }
+  }, [customDomainInput, requestCustom]);
 
   const verifyDomain = useMutation({
     mutationFn: async (domainId: string) => {
@@ -678,11 +715,11 @@ export default function SellerSettingsDomain() {
               className="flex-1"
             />
             <Button
-              onClick={() => requestCustom.mutate(customDomainInput)}
-              disabled={!customDomainInput.trim() || requestCustom.isPending}
+              onClick={handleAddDomain}
+              disabled={!customDomainInput.trim() || requestCustom.isPending || preChecking}
             >
-              {requestCustom.isPending ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Link className="w-4 h-4 mr-2" />}
-              Add Domain
+              {(requestCustom.isPending || preChecking) ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Link className="w-4 h-4 mr-2" />}
+              {preChecking ? 'Checking…' : 'Add Domain'}
             </Button>
           </div>
 
@@ -881,6 +918,55 @@ export default function SellerSettingsDomain() {
 
       {/* Cloudflare Integration */}
       {store && <CloudflareCredentialsCard storeId={store.id} />}
+
+      {/* Cloudflare Pre-Check Warning Dialog */}
+      <AlertDialog open={!!cfWarning} onOpenChange={(open) => { if (!open) setCfWarning(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className={cn("w-5 h-5", cfWarning?.has_proxied_records ? "text-destructive" : "text-amber-500")} />
+              {cfWarning?.has_proxied_records ? 'Cloudflare Conflict Detected' : 'Cloudflare Zone Detected'}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                {cfWarning?.has_proxied_records && (
+                  <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3">
+                    <p className="text-sm font-medium text-destructive">
+                      ⚠️ Error 1000 is almost guaranteed with your current DNS setup.
+                    </p>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  {cfWarning?.warnings.map((w, i) => (
+                    <p key={i} className="text-sm text-muted-foreground">{w}</p>
+                  ))}
+                </div>
+                <div className="rounded-md bg-muted p-3 space-y-1.5">
+                  <p className="text-sm font-medium text-foreground">Before proceeding, you should:</p>
+                  <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Set ALL DNS records for <code className="bg-background px-1 rounded">{cfWarning?.domain}</code> to <strong className="text-foreground">DNS-only (grey cloud)</strong></li>
+                    <li>Remove any Cloudflare Page Rules or Workers targeting this domain</li>
+                    <li>If issues persist, pause Cloudflare on the domain or use a non-Cloudflare DNS provider</li>
+                  </ul>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (cfWarning) {
+                  requestCustom.mutate(cfWarning.domain);
+                }
+              }}
+              className={cfWarning?.has_proxied_records ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+            >
+              I understand, proceed anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
     </SellerLayout>
   );

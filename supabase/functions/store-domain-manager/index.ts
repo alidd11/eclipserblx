@@ -1442,6 +1442,40 @@ Deno.serve(async (req) => {
     if (!user) return unauthorized();
 
     switch (action) {
+      case "pre-check-domain": {
+        if (!body.domain) return jsonError("domain required", 400);
+        const rawDomain = body.domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
+        const [isCloudflare, proxied, aRes] = await Promise.all([
+          detectCloudflareZone(rawDomain),
+          detectProxiedCname(rawDomain),
+          fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(rawDomain)}&type=A`, {
+            headers: { Accept: "application/dns-json" },
+          }).then(r => r.json()).catch(() => ({ Answer: [] })),
+        ]);
+        const aRecords = (aRes?.Answer ?? []).filter((a: any) => a.type === 1).map((a: any) => a.data);
+        const resolvesToCloudflare = aRecords.some((ip: string) => {
+          const p = ip.split(".").map(Number);
+          return (p[0] === 104 && p[1] >= 16 && p[1] <= 31) || (p[0] === 172 && p[1] >= 64 && p[1] <= 71);
+        });
+        const warnings: string[] = [];
+        if (isCloudflare && (proxied.is_proxied || resolvesToCloudflare)) {
+          warnings.push("Your domain is on a Cloudflare zone with proxied (orange-cloud) DNS records. This WILL cause Error 1000 (DNS points to prohibited IP). You must set ALL DNS records for this domain to DNS-only (grey cloud) before connecting.");
+        } else if (isCloudflare) {
+          warnings.push("Your domain uses Cloudflare nameservers. When adding DNS records, make sure they are set to DNS-only (grey cloud), NOT Proxied (orange cloud), to avoid Error 1000.");
+        }
+        if (proxied.is_proxied) {
+          warnings.push(`Existing CNAME record is proxied through Cloudflare (target: ${proxied.cname_target ?? "unknown"}). Disable the proxy (orange → grey cloud) before proceeding.`);
+        }
+        return jsonOk({
+          domain: rawDomain,
+          is_cloudflare: isCloudflare,
+          has_proxied_records: proxied.is_proxied || resolvesToCloudflare,
+          existing_a_records: aRecords,
+          cname_target: proxied.cname_target,
+          warnings,
+        });
+      }
+
       case "claim-subdomain":
         if (!body.store_id || !body.slug) return jsonError("store_id and slug required", 400);
         return await claimSubdomain(user.id, body.store_id, body.slug);
@@ -1471,7 +1505,7 @@ Deno.serve(async (req) => {
         return await autoFixDns(user.id, body.domain_id);
 
       default:
-        return jsonError("Unknown action. Supported: claim-subdomain, request-custom-domain, verify-custom-domain, check-status, health-check, remove-domain, auto-fix-dns, resolve-hostname", 400);
+        return jsonError("Unknown action. Supported: pre-check-domain, claim-subdomain, request-custom-domain, verify-custom-domain, check-status, health-check, remove-domain, auto-fix-dns, resolve-hostname", 400);
     }
   } catch (e) {
     return internalError(e);
