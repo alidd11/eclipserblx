@@ -82,6 +82,7 @@ export default function AdminUsers() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { ip: currentAdminIp } = useCurrentIp();
+  const isMobile = useIsMobile();
 
   // Cooldown timer for self-ban confirmation
   useEffect(() => {
