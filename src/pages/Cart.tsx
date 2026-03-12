@@ -11,6 +11,8 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { useTranslation } from 'react-i18next';
+import { CartUpsells } from '@/components/marketplace/CartUpsells';
+import { LoyaltyBadge } from '@/components/marketplace/LoyaltyBadge';
 
 export default function Cart() {
   usePageTracking({ pagePath: '/cart' });
