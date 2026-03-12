@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ShoppingCart, DollarSign, TrendingUp } from 'lucide-react';
 import { OrdersTab } from '@/components/seller/orders/OrdersTab';
 import { TransactionsTab } from '@/components/seller/orders/TransactionsTab';
