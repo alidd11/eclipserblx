@@ -84,6 +84,11 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   if (!canAccessMarketplace) return <Navigate to="/" replace />;
   if (!canAccessSellerDashboard) return <Navigate to="/account" replace />;
 
+  // Redirect to setup if onboarding is incomplete (only from main dashboard)
+  if (isOnboardingNeeded && location.pathname === '/seller') {
+    return <Navigate to="/seller/setup" replace />;
+  }
+
   return (
     <LayoutShell
       desktopSidebar={
