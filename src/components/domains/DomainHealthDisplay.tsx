@@ -160,6 +160,28 @@ const ERROR_INFO: Record<string, {
     ],
     icon: 'proxy',
   },
+  hostname_provisioning: {
+    severity: 'info',
+    title: 'Hostname Still Provisioning',
+    summary: 'Your custom hostname/SSL is still initializing. Temporary 403 or Error 1000 is expected during this stage.',
+    steps: [
+      'Wait 5–15 minutes for Cloudflare custom hostname + SSL provisioning to complete',
+      'Do not run Auto-Fix repeatedly during this wait period',
+      'Run Health Check again once provisioning has had time to complete',
+    ],
+    icon: 'timeout',
+  },
+  dns_propagating: {
+    severity: 'info',
+    title: 'DNS Is Still Propagating',
+    summary: 'Some DNS resolvers still have old records or NXDOMAIN cache after recent DNS changes.',
+    steps: [
+      'Wait 5–15 minutes for DNS propagation',
+      'Avoid changing records again until propagation settles',
+      'Re-run the health check after waiting',
+    ],
+    icon: 'dns',
+  },
 };
 
 function copyText(text: string) {
