@@ -917,3 +917,51 @@ video.background-video::-webkit-media-controls-start-playback-button {
 *:focus:not(:focus-visible) {
   outline: none;
 }
+
+/* ── Navigation progress bar (YouTube/GitHub style) ── */
+@keyframes nav-progress-grow {
+  0%   { transform: scaleX(0); }
+  50%  { transform: scaleX(0.7); }
+  100% { transform: scaleX(0.9); }
+}
+
+@keyframes nav-progress-complete {
+  from { transform: scaleX(0.9); opacity: 1; }
+  to   { transform: scaleX(1);   opacity: 0; }
+}
+
+.nav-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 9999;
+  background: hsl(var(--primary));
+  transform-origin: left;
+  pointer-events: none;
+}
+
+.nav-progress-bar[data-state="loading"] {
+  animation: nav-progress-grow 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.nav-progress-bar[data-state="complete"] {
+  animation: nav-progress-complete 0.3s ease-out forwards;
+}
+
+/* ── Route transition (exit/enter) ── */
+@keyframes route-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.route-transition-enter {
+  animation: route-enter 0.2s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+}
