@@ -33,6 +33,7 @@ export const FloatingActionButtons = forwardRef<HTMLDivElement>(function Floatin
       ref={ref}
       className={cn(
         "fixed z-50 flex flex-col gap-2 xs:gap-3 transition-all duration-300",
+        "hidden md:flex", // Hide on mobile — tab bar handles navigation
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5 pointer-events-none"
       )}
       style={{

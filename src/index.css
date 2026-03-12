@@ -1037,3 +1037,15 @@ img.no-fade,
 img[data-no-fade] {
   opacity: 1 !important;
 }
+
+/* ── Mobile tab bar offset ── */
+@media (max-width: 767px) {
+  :root {
+    --tab-bar-height: 3.5rem;
+  }
+}
+@media (min-width: 768px) {
+  :root {
+    --tab-bar-height: 0px;
+  }
+}

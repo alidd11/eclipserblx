@@ -25,7 +25,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
           isMobileDrawer
         />
       )}
-      mainStyle={{ paddingBottom: 'var(--chat-safe-bottom, env(safe-area-inset-bottom))' }}
+      mainStyle={{ paddingBottom: 'calc(var(--chat-safe-bottom, env(safe-area-inset-bottom)) + var(--tab-bar-height, 0px))' }}
     >
       <PageTransition>{children}</PageTransition>
     </LayoutShell>
