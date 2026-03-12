@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useSellerOnboarding } from '@/hooks/useSellerOnboarding';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LayoutShell } from '@/components/layout/LayoutShell';
@@ -21,6 +22,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   const { isSeller: isApprovedSeller, loading: sellerLoading } = useSellerStatus();
   const { hasAccess, loading: flagLoading } = useMarketplaceAccess();
   const { isSeller: hasSellerRole, loading: roleLoading } = useAdminAuth();
+  const { isOnboardingNeeded, isLoading: onboardingLoading } = useSellerOnboarding();
   const location = useLocation();
 
   // Detect chat/messaging pages for iOS keyboard handling
@@ -61,7 +63,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   }, [isChatPage]);
 
   // Wait for ALL async sources before making any access decisions
-  const loading = authLoading || sellerLoading || flagLoading || roleLoading;
+  const loading = authLoading || sellerLoading || flagLoading || roleLoading || onboardingLoading;
   const canAccessSellerDashboard = hasSellerRole || isApprovedSeller;
   const canAccessMarketplace = hasAccess || isApprovedSeller;
 
@@ -81,6 +83,11 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   if (!user) return <Navigate to="/auth" replace />;
   if (!canAccessMarketplace) return <Navigate to="/" replace />;
   if (!canAccessSellerDashboard) return <Navigate to="/account" replace />;
+
+  // Redirect to setup if onboarding is incomplete (only from main dashboard)
+  if (isOnboardingNeeded && location.pathname === '/seller') {
+    return <Navigate to="/seller/setup" replace />;
+  }
 
   return (
     <LayoutShell

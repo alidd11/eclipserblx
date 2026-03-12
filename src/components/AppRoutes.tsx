@@ -145,6 +145,7 @@ const Recruiter = lazy(() => import("@/pages/Recruiter"));
 
 // Seller pages
 const SellerDashboard = lazy(() => import("@/pages/seller/SellerDashboard"));
+const SellerSetup = lazy(() => import("@/pages/seller/SellerSetup"));
 const SellerProducts = lazy(() => import("@/pages/seller/SellerProducts"));
 const SellerProductEditor = lazy(() => import("@/pages/seller/SellerProductEditor"));
 const SellerOrders = lazy(() => import("@/pages/seller/SellerOrders"));
@@ -335,6 +336,7 @@ export function AppRoutes() {
         <Route path="/store-messages" element={<StoreMessages />} />
         {/* Seller routes */}
         <Route path="/seller" element={<SellerDashboard />} />
+        <Route path="/seller/setup" element={<SellerSetup />} />
         <Route path="/seller/analytics" element={<SellerAnalytics />} />
         <Route path="/seller/products" element={<SellerProducts />} />
         <Route path="/seller/bots" element={<SellerBots />} />
