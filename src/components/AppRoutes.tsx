@@ -74,6 +74,7 @@ const AdminCategories = lazy(() => import("@/pages/admin/Categories"));
 const AdminPromotions = lazy(() => import("@/pages/admin/Promotions"));
 const AdminOrders = lazy(() => import("@/pages/admin/Orders"));
 const AdminUsers = lazy(() => import("@/pages/admin/Users"));
+const AdminModerationQueue = lazy(() => import("@/pages/admin/ModerationQueue"));
 const AdminSettings = lazy(() => import("@/pages/admin/Settings"));
 const AdminDiscordSettings = lazy(() => import("@/pages/admin/DiscordSettings"));
 const AdminRobloxSettings = lazy(() => import("@/pages/admin/RobloxSettings"));
