@@ -64,6 +64,7 @@ function LayoutShellInner({
 }: LayoutShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
+  const scrollDirection = useScrollDirection();
 
   useEdgeSwipe({
     onSwipe: () => setMobileOpen(true),
