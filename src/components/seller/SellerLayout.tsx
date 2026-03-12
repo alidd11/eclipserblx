@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useSellerOnboarding } from '@/hooks/useSellerOnboarding';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LayoutShell } from '@/components/layout/LayoutShell';
