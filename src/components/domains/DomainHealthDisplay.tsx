@@ -72,6 +72,22 @@ const ERROR_INFO: Record<string, {
     ],
     icon: 'proxy',
   },
+  cf_zone_proxied: {
+    severity: 'critical',
+    title: 'Error 1000: Cloudflare Proxy Conflict',
+    summary: 'Your domain is on its own Cloudflare zone with proxy enabled (orange cloud). This creates a cross-zone conflict. You must switch to DNS-only (grey cloud) in YOUR Cloudflare dashboard.',
+    steps: [
+      'Log in to YOUR Cloudflare dashboard (the one managing your domain)',
+      'Go to DNS → Records',
+      'Find the A or CNAME record for your root domain (@)',
+      'Change the A record value to 185.158.133.1',
+      'Click the orange cloud icon to switch it to grey (DNS-only)',
+      'Delete any AAAA (IPv6) records for your root domain',
+      'If you have a www record, also set it to DNS-only pointing to 185.158.133.1',
+      'Wait 2–5 minutes for propagation, then re-run the health check',
+    ],
+    icon: 'dns',
+  },
   '1000': {
     severity: 'critical',
     title: 'Error 1000: DNS Conflict',

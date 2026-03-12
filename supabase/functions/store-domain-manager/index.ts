@@ -392,7 +392,12 @@ async function performHealthCheck(domain: string) {
             checks.diagnosis = "Custom hostname and SSL are active, but DNS answers are incomplete. Wait 5–15 minutes for propagation to settle.";
           }
         } else if (checks.is_cloudflare_zone) {
-          if (checks.resolves_to_lovable_ip && !checks.cname_target) {
+          if (checks.resolves_to_cloudflare && !checks.resolves_to_lovable_ip && !checks.cname_target) {
+            // Domain is on its OWN Cloudflare zone with proxy ON → classic cross-zone conflict
+            checks.error_code = "cf_zone_proxied";
+            checks.diagnosis = `Error 1000 — your domain "${domain}" is on its own Cloudflare zone and its DNS records are set to Proxied (orange cloud). This creates a cross-zone conflict with our Custom Hostname. You MUST switch your A/CNAME records to DNS-only (grey cloud) in your own Cloudflare dashboard, or change the A record to point to 185.158.133.1 with proxy OFF.`;
+            checks.recommended_fix = "In YOUR Cloudflare dashboard for this domain: set A record to 185.158.133.1 with proxy OFF (grey cloud), and delete any AAAA records.";
+          } else if (checks.resolves_to_lovable_ip && !checks.cname_target) {
             checks.error_code = "1000";
             checks.diagnosis = "Error 1000 — your root domain is using a direct A record while the zone is on Cloudflare. Use a DNS-only CNAME instead.";
           } else if (!checks.cname_target && checks.resolves_to_cloudflare) {
