@@ -95,7 +95,7 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background border-b border-border pt-[env(safe-area-inset-top)]">
+    <header ref={ref} className={cn("sticky top-0 z-50 w-full bg-background border-b border-border pt-[env(safe-area-inset-top)] transition-transform duration-300 will-change-transform", className)}>
       <nav className="px-4 pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))]" aria-label="Main navigation">
         {/* Mobile header row */}
         <div className="flex md:hidden h-14 items-center gap-1.5">
