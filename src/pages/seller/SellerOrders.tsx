@@ -79,11 +79,22 @@ export default function SellerOrders() {
         </div>
 
         {/* Tabbed Content */}
-        <Tabs defaultValue="orders" className="space-y-4">
-          <TabsList>
+        <Tabs value={ordersTab} onValueChange={setOrdersTab} className="space-y-4">
+          <TabsList className="hidden sm:inline-flex">
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
           </TabsList>
+          <div className="sm:hidden">
+            <Select value={ordersTab} onValueChange={setOrdersTab}>
+              <SelectTrigger className="w-auto min-w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="orders">Orders</SelectItem>
+                <SelectItem value="transactions">Transactions</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <TabsContent value="orders">
             {store?.id && <OrdersTab storeId={store.id} />}
           </TabsContent>
