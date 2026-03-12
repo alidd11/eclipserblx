@@ -67,6 +67,7 @@ const App = forwardRef<HTMLDivElement>((_, ref) => (
                   <Sonner />
                   <BrowserRouter>
                     <GlobalBackground />
+                    <NavigationProgress />
                     <ScrollToTop />
                     <IpBanCheck>
                       <PWAWrapper>
