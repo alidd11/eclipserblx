@@ -62,6 +62,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Discount Codes', icon: Tag, href: '/seller/discounts' },
       { title: 'Flash Sales', icon: Zap, href: '/seller/flash-sales' },
+      { title: 'Campaigns', icon: Megaphone, href: '/seller/campaigns' },
       { title: 'Bundle Deals', icon: PackagePlus, href: '/seller/bundles' },
       { title: 'Announcements', icon: Megaphone, href: '/seller/announcements' },
       { title: 'Promote', icon: Sparkles, href: '/seller/promote' },
