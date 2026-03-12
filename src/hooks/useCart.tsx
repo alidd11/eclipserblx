@@ -1,4 +1,6 @@
-import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useRef, useCallback } from 'react';
+import { toast } from 'sonner';
+import { hapticTap } from '@/lib/haptics';
 import { safeStorage } from '@/lib/safeStorage';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -100,22 +102,47 @@ export function CartProvider({ children }: { children: ReactNode }) {
     };
   }, [items]);
 
-  const addItem = (item: CartItem) => {
+  const addItem = useCallback((item: CartItem) => {
     setItems((prev) => {
       if (prev.some((i) => i.id === item.id)) {
         return prev;
       }
+      // Optimistic: update immediately, show feedback
+      hapticTap();
+      toast.success('Added to cart', {
+        description: item.name,
+        duration: 2000,
+        action: {
+          label: 'Undo',
+          onClick: () => removeItem(item.id),
+        },
+      });
       return [...prev, item];
     });
-  };
+  }, []);
 
-  const removeItem = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
-  };
+  const removeItem = useCallback((id: string) => {
+    setItems((prev) => {
+      const item = prev.find((i) => i.id === id);
+      const next = prev.filter((i) => i.id !== id);
+      if (item) {
+        hapticTap();
+        toast('Removed from cart', {
+          description: item.name,
+          duration: 2000,
+          action: {
+            label: 'Undo',
+            onClick: () => addItem(item),
+          },
+        });
+      }
+      return next;
+    });
+  }, []);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setItems([]);
-  };
+  }, []);
 
   const isInCart = (id: string) => {
     return items.some((item) => item.id === id);

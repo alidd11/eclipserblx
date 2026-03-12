@@ -965,3 +965,18 @@ video.background-video::-webkit-media-controls-start-playback-button {
 .route-transition-enter {
   animation: route-enter 0.2s cubic-bezier(0.25, 0.1, 0.25, 1) both;
 }
+
+/* ── View Transitions API (progressive enhancement) ── */
+::view-transition-old(root) {
+  animation: 150ms ease-out both fade-out;
+}
+::view-transition-new(root) {
+  animation: 200ms ease-in 50ms both fade-in;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0s !important;
+  }
+}

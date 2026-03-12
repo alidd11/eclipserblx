@@ -25,24 +25,28 @@ export function ScrollToTop() {
     };
   }, [key]);
 
-  // Restore or reset scroll on route change
+  // Restore or reset scroll on route change, wrapped in View Transition when supported
   useEffect(() => {
     prevKeyRef.current = key;
 
-    if (navigationType === 'POP') {
-      // Back/forward: restore saved position
-      const saved = scrollPositions.get(key);
-      if (saved !== undefined) {
-        // Use rAF to let the DOM render first
-        requestAnimationFrame(() => {
-          window.scrollTo(0, saved);
-        });
-        return;
+    const applyScroll = () => {
+      if (navigationType === 'POP') {
+        const saved = scrollPositions.get(key);
+        if (saved !== undefined) {
+          requestAnimationFrame(() => window.scrollTo(0, saved));
+          return;
+        }
       }
-    }
+      window.scrollTo(0, 0);
+    };
 
-    // New navigation: scroll to top
-    window.scrollTo(0, 0);
+    // Wrap in View Transition API if available (progressive enhancement)
+    const doc = document as any;
+    if (typeof doc.startViewTransition === 'function' && navigationType === 'PUSH') {
+      doc.startViewTransition(applyScroll);
+    } else {
+      applyScroll();
+    }
   }, [pathname, key, navigationType]);
 
   return null;

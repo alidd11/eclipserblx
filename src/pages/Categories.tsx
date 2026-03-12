@@ -1,14 +1,16 @@
 import { Link, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowRight } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { motion } from 'framer-motion';
 import { categoryIconMap, PackageIcon } from '@/components/icons/CategoryIcons';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { useCallback } from 'react';
 
 const CUSTOM_BANNER_CATEGORIES = new Set(['bots']);
 
@@ -282,11 +284,17 @@ export default function Categories() {
   const sourceFilter = searchParams.get('source');
   const isMarketplace = sourceFilter === 'marketplace';
   const sourceParam = isMarketplace ? '&source=marketplace' : '';
+  const queryClient = useQueryClient();
 
   const { data: categories, isLoading } = useCategoriesWithProducts(sourceFilter);
 
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['categories-with-products'] });
+  }, [queryClient]);
+
   return (
     <MainLayout>
+      <PullToRefresh onRefresh={handleRefresh}>
       <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <PageHeader
           title="Browse Categories"
@@ -325,6 +333,7 @@ export default function Categories() {
           );
         })()}
       </div>
+      </PullToRefresh>
     </MainLayout>
   );
 }

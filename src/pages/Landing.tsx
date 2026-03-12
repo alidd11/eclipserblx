@@ -1,5 +1,6 @@
-import { forwardRef, lazy, Suspense } from 'react';
+import { forwardRef, lazy, Suspense, useCallback } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { LandingHero } from '@/components/landing/LandingHero';
 import { MarketplaceSection } from '@/components/home/MarketplaceSection';
 
@@ -16,8 +17,13 @@ import { LazySection } from '@/components/ui/LazySection';
 const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
   usePageMeta({ canonicalPath: '/' });
 
+  const handleRefresh = useCallback(async () => {
+    window.location.reload();
+  }, []);
+
   return (
     <MainLayout>
+      <PullToRefresh onRefresh={handleRefresh}>
       <OrganizationSchema />
       <WebsiteSearchSchema />
       <SiteNavigationSchema />
@@ -57,6 +63,7 @@ const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
           <MarketplaceSection />
         </SectionErrorBoundary>
       </LazySection>
+      </PullToRefresh>
     </MainLayout>
   );
 });
