@@ -1049,8 +1049,22 @@ async function adminFixHostname(domainId: string) {
             return rec.type === "CNAME" && rec.content === preferredRecord.content && rec.proxied === false;
           });
 
-          // Delete conflicting records
+          // Delete conflicting records (including AAAA)
           for (const rec of existingRecords) {
+            if (rec.type === "AAAA") {
+              const { data: delData } = await cfFetch<any>(
+                sellerToken,
+                `${CF_API}/zones/${sellerZoneId}/dns_records/${rec.id}`,
+                { method: "DELETE" }
+              );
+              if (delData?.success) {
+                fixes.push(`Deleted AAAA record: ${rec.name} → ${rec.content}`);
+              } else {
+                errors.push(`Failed to delete AAAA record ${rec.name}: ${JSON.stringify(delData?.errors)}`);
+              }
+              continue;
+            }
+
             const shouldDelete = preferredRecord.type === "A"
               ? (rec.type === "CNAME" || (rec.type === "A" && (rec.content !== preferredRecord.content || rec.proxied === true)))
               : (rec.type === "A" || (rec.type === "CNAME" && (rec.content !== preferredRecord.content || rec.proxied === true)));
