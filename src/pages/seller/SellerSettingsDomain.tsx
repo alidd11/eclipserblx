@@ -400,6 +400,8 @@ export default function SellerSettingsDomain() {
   
   const queryClient = useQueryClient();
   const [customDomainInput, setCustomDomainInput] = useState('');
+  const [cfWarning, setCfWarning] = useState<{ warnings: string[]; domain: string; is_cloudflare: boolean; has_proxied_records: boolean } | null>(null);
+  const [preChecking, setPreChecking] = useState(false);
 
   const { data: store, isLoading: storeLoading } = useQuery({
     queryKey: ['seller-store-for-domain', user?.id],
