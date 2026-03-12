@@ -11,6 +11,7 @@ import { TransactionsTab } from '@/components/seller/orders/TransactionsTab';
 
 export default function SellerOrders() {
   const { store } = useSellerStatus();
+  const [ordersTab, setOrdersTab] = useState('orders');
 
   const { data: stats } = useQuery({
     queryKey: ['seller-order-stats', store?.id],
