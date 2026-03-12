@@ -356,7 +356,7 @@ function SellerDisputeDetail({ request, response, setResponse, respondMutation, 
           <div className="flex gap-2">
             <Button 
               className="flex-1 bg-green-600 hover:bg-green-700"
-              onClick={() => respondMutation.mutate({ id: request.id, status: 'approved' })}
+              onClick={() => respondMutation.mutate({ id: request.id, status: 'approved', customerId: request.customer_id })}
               disabled={respondMutation.isPending}
             >
               <Check className="h-4 w-4 mr-2" />Approve Refund
