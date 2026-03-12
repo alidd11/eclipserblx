@@ -156,9 +156,9 @@ export default function SearchResults() {
   }, [query, smartSearch, addSearch]);
 
   const handleCategorySelect = useCallback((slug: string | null) => {
-    setCategorySlug(slug);
+    setCategorySlug(slug || '');
     setUseAI(false);
-  }, []);
+  }, [setCategorySlug]);
 
   const displayProducts = useAI && smartResults.length > 0
     ? smartResults.map(r => ({ ...r, is_featured: false, categories: r.categories ? { ...r.categories, slug: '' } : null, stores: null, average_rating: undefined, review_count: undefined }))
