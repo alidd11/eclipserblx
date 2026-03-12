@@ -80,8 +80,8 @@ export default function SellerImport() {
           )}
         </div>
 
-        <Tabs defaultValue="import" className="space-y-4">
-          <TabsList>
+        <Tabs value={importTab} onValueChange={setImportTab} className="space-y-4">
+          <TabsList className="hidden sm:inline-flex">
             <TabsTrigger value="import" className="gap-2">
               <Download className="h-4 w-4" />
               Import
@@ -91,6 +91,17 @@ export default function SellerImport() {
               History
             </TabsTrigger>
           </TabsList>
+          <div className="sm:hidden">
+            <Select value={importTab} onValueChange={setImportTab}>
+              <SelectTrigger className="w-auto min-w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="import">Import</SelectItem>
+                <SelectItem value="history">History</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <TabsContent value="import" className="space-y-6">
             {/* Progress Steps Indicator */}
