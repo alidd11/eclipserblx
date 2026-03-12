@@ -1092,6 +1092,8 @@ async function adminFixHostname(domainId: string) {
   const preHostnameHealth = await performHealthCheck(domain);
   details.pre_hostname_fix_health = preHostnameHealth;
 
+  let shouldCreateNewHostname = !domainRecord.cloudflare_hostname_id;
+
   if (domainRecord.cloudflare_hostname_id) {
     const { data: chData } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames/${domainRecord.cloudflare_hostname_id}`);
     if (chData?.success) {
@@ -1105,37 +1107,35 @@ async function adminFixHostname(domainId: string) {
 
       const hostnameStatus = chData.result.status;
       const sslStatus = chData.result.ssl?.status;
-      const shouldRecreate =
-        hostnameStatus !== "active" ||
-        sslStatus !== "active" ||
-        preHostnameHealth.error_code === "1000";
+      const isProvisioning = isProvisioningHostnameState(hostnameStatus, sslStatus);
+      const isFullyActive = hostnameStatus === "active" && sslStatus === "active";
 
-      if (!shouldRecreate) {
+      if (isFullyActive) {
         await admin.from("store_domains").update({ ssl_status: "active" }).eq("id", domainId);
         fixes.push("SSL and hostname are already active — updated database");
+        shouldCreateNewHostname = false;
+      } else if (isProvisioning) {
+        fixes.push(
+          `Custom hostname is still provisioning (status=${hostnameStatus}, ssl=${sslStatus}); skipping recreation to avoid resetting issuance`
+        );
+        shouldCreateNewHostname = false;
       } else {
         fixes.push(
           `Recreating custom hostname (status=${hostnameStatus}, ssl=${sslStatus}, pre_check_error=${preHostnameHealth.error_code ?? "none"})`
         );
         await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames/${domainRecord.cloudflare_hostname_id}`, { method: "DELETE" });
         fixes.push("Deleted old custom hostname");
+        shouldCreateNewHostname = true;
       }
     } else {
       details.existing_hostname_error = chData?.errors;
       fixes.push("Old custom hostname not found or errored — will create new one");
+      shouldCreateNewHostname = true;
     }
   }
 
   // Create new custom hostname if needed
-  const existingHostname = details.existing_hostname as any;
-  const needsNew =
-    !domainRecord.cloudflare_hostname_id ||
-    !existingHostname ||
-    existingHostname.ssl_status !== "active" ||
-    existingHostname.status !== "active" ||
-    preHostnameHealth.error_code === "1000";
-
-  if (needsNew) {
+  if (shouldCreateNewHostname) {
     const { data: newCh } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames`, {
       method: "POST",
       body: JSON.stringify({
