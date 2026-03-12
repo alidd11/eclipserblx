@@ -618,9 +618,9 @@ async function autoFixDns(userId: string, domainId: string) {
       return jsonError("Invalid Cloudflare credentials. Check your API Token has Zone:DNS:Edit permission and the Zone ID is correct.", 403);
     }
 
-    // 4. Determine preferred record type (apex domains should use A to avoid flattening conflicts)
+    // 4. Determine preferred record type (Cloudflare apex domains should use DNS-only CNAME)
     const sellerZoneName = (verifyData?.result?.name ?? "").toLowerCase();
-    const preferredRecord = getPreferredDnsRecord(domain, sellerZoneName);
+    const preferredRecord = getPreferredDnsRecord(domain, sellerZoneName, true);
 
     // 5. List existing DNS records for this domain
     const { data: dnsListData } = await cfFetch<any[]>(
