@@ -391,6 +391,7 @@ async function performHealthCheck(domain: string) {
             checks.error_code = "dns_propagating";
             checks.diagnosis = "Custom hostname and SSL are active, but DNS answers are incomplete. Wait 5–15 minutes for propagation to settle.";
           }
+        } else if (checks.is_cloudflare_zone) {
           if (checks.resolves_to_lovable_ip && !checks.cname_target) {
             checks.error_code = "1000";
             checks.diagnosis = "Error 1000 — your root domain is using a direct A record while the zone is on Cloudflare. Use a DNS-only CNAME instead.";
