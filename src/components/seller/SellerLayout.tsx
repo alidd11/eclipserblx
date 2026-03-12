@@ -22,6 +22,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   const { isSeller: isApprovedSeller, loading: sellerLoading } = useSellerStatus();
   const { hasAccess, loading: flagLoading } = useMarketplaceAccess();
   const { isSeller: hasSellerRole, loading: roleLoading } = useAdminAuth();
+  const { isOnboardingNeeded, isLoading: onboardingLoading } = useSellerOnboarding();
   const location = useLocation();
 
   // Detect chat/messaging pages for iOS keyboard handling
