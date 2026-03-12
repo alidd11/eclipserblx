@@ -13,12 +13,29 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 
+interface ExpectedDnsRecord {
+  type: string;
+  name: string;
+  content: string;
+  proxied: boolean;
+}
+
+interface ObservedDnsRecord {
+  type: string;
+  name: string;
+  content: string;
+  proxied?: boolean;
+  source: string;
+}
+
 interface HealthData {
   error_code?: string | null;
   http_reachable?: boolean;
   diagnosis?: string;
   recommended_fix?: string;
   is_cloudflare_zone?: boolean;
+  expected_dns_records?: ExpectedDnsRecord[];
+  observed_dns_records?: ObservedDnsRecord[];
   [key: string]: any;
 }
 
