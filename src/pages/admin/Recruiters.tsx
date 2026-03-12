@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Users, DollarSign, CheckCircle, Clock, XCircle, 
-  Search, Eye, ChevronRight, TrendingUp, Building2
+  Search, Eye, TrendingUp, Building2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
@@ -233,9 +233,8 @@ export default function Recruiters() {
                     {filteredApplications.map((app) => (
                       <div
                         key={app.id}
-                        onClick={() => navigate(`/admin/recruiters/${app.user_id}`)}
                         className={cn(
-                          "flex items-center justify-between p-4 rounded-lg border bg-card cursor-pointer",
+                          "flex items-center justify-between p-4 rounded-lg border bg-card",
                           "transition-all duration-150 hover:bg-muted/50 hover:border-primary/30"
                         )}
                       >
@@ -253,7 +252,6 @@ export default function Recruiters() {
                         </div>
                         <div className="flex items-center gap-3">
                           {getStatusBadge(app.status)}
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
                         </div>
                       </div>
                     ))}
