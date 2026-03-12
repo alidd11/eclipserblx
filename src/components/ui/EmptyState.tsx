@@ -2,7 +2,6 @@ import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
 
 interface EmptyStateProps {
   icon: LucideIcon;
@@ -20,24 +19,14 @@ interface EmptyStateProps {
  */
 export function EmptyState({ icon: Icon, title, description, actionLabel, actionTo, onAction, children }: EmptyStateProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-      className="flex flex-col items-center justify-center py-16 px-4 text-center"
-    >
+    <div className="flex flex-col items-center justify-center py-16 px-4 text-center animate-in fade-in slide-in-from-bottom-3 duration-400">
       {/* Illustrated icon with layered background */}
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-        className="relative mb-6"
-      >
+      <div className="relative mb-6 animate-in zoom-in-90 fade-in duration-500 delay-100">
         <div className="absolute inset-0 rounded-full bg-primary/5 scale-150" />
         <div className="relative w-20 h-20 rounded-full bg-muted flex items-center justify-center">
           <Icon className="h-9 w-9 text-muted-foreground/60" />
         </div>
-      </motion.div>
+      </div>
 
       <h2 className="text-lg font-bold text-foreground mb-2">{title}</h2>
       <p className="text-sm text-muted-foreground max-w-xs leading-relaxed mb-6">{description}</p>
@@ -53,6 +42,6 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, action
       )}
 
       {children}
-    </motion.div>
+    </div>
   );
 }

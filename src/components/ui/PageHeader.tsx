@@ -1,30 +1,23 @@
-import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface PageHeaderProps {
   title: string;
   description?: string;
-  /** Optional badge/label above the title */
   badge?: React.ReactNode;
-  /** Right-side actions (buttons, filters) */
   actions?: React.ReactNode;
-  /** Center-align for hero-style headers */
   centered?: boolean;
   className?: string;
 }
 
 /**
  * Unified page header with consistent typography and animation.
- * Use on all public-facing pages for a cohesive, professional feel.
+ * Uses CSS animation instead of framer-motion to stay off the critical path.
  */
 export function PageHeader({ title, description, badge, actions, centered = false, className }: PageHeaderProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+    <div
       className={cn(
-        'mb-4 sm:mb-6',
+        'mb-4 sm:mb-6 animate-in fade-in slide-in-from-top-2 duration-300',
         centered ? 'text-center' : 'flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3',
         className,
       )}
@@ -44,6 +37,6 @@ export function PageHeader({ title, description, badge, actions, centered = fals
         )}
       </div>
       {actions && <div className="shrink-0">{actions}</div>}
-    </motion.div>
+    </div>
   );
 }

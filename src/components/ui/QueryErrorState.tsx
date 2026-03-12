@@ -1,13 +1,9 @@
 import { AlertTriangle, RefreshCw, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
 
 interface QueryErrorStateProps {
-  /** Called when the user clicks "Try again" */
   onRetry?: () => void;
-  /** Custom message, defaults to generic */
   message?: string;
-  /** Compact inline variant */
   compact?: boolean;
 }
 
@@ -39,20 +35,10 @@ export function QueryErrorState({ onRetry, message, compact = false }: QueryErro
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35 }}
-      className="flex flex-col items-center justify-center py-12 px-4 text-center"
-    >
-      <motion.div
-        initial={{ scale: 0.8 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 0.4, delay: 0.05 }}
-        className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4"
-      >
+    <div className="flex flex-col items-center justify-center py-12 px-4 text-center animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4 animate-in zoom-in-90 duration-400 delay-75">
         <Icon className="h-7 w-7 text-destructive" />
-      </motion.div>
+      </div>
 
       <h3 className="text-base font-semibold text-foreground mb-1">{title}</h3>
       <p className="text-sm text-muted-foreground max-w-xs mb-5">{description}</p>
@@ -63,6 +49,6 @@ export function QueryErrorState({ onRetry, message, compact = false }: QueryErro
           Try again
         </Button>
       )}
-    </motion.div>
+    </div>
   );
 }
