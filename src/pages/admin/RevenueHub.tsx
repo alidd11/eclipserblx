@@ -100,8 +100,10 @@ export default function RevenueHub() {
         showErrorNotification('Authentication Failed', 'Incorrect password. Please try again.');
         setPassword('');
       } else {
+        const now = Date.now();
         setIsVerified(true);
-        setLastActivity(Date.now());
+        setLastActivity(now);
+        try { sessionStorage.setItem(REVENUE_VERIFIED_KEY, now.toString()); } catch {}
         await supabase.from('audit_logs').insert({
           user_id: user.id, action: 'access', resource: 'revenue_hub',
           details: { timestamp: new Date().toISOString() },
