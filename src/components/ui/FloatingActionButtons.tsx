@@ -49,6 +49,7 @@ export const FloatingActionButtons = forwardRef<HTMLDivElement>(function Floatin
         <Button
           size="icon"
           onClick={scrollToTop}
+          aria-label="Scroll to top"
           className="h-10 w-10 xs:h-12 xs:w-12 rounded-full shadow-lg bg-secondary hover:bg-secondary/90 text-secondary-foreground border-0 touch-target"
         >
           <ArrowUp className="h-4 w-4 xs:h-5 xs:w-5" />
