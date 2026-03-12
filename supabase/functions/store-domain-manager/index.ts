@@ -130,12 +130,20 @@ async function detectProxiedCname(domain: string): Promise<{ is_proxied: boolean
   }
 }
 
-function getPreferredDnsRecord(domain: string, zoneName?: string | null) {
+function getPreferredDnsRecord(
+  domain: string,
+  zoneName?: string | null,
+  isCloudflareManagedZone = false,
+) {
   const normalizedDomain = domain.toLowerCase();
   const normalizedZone = (zoneName ?? "").toLowerCase();
   const isApexDomain = normalizedZone ? normalizedDomain === normalizedZone : false;
 
-  if (isApexDomain) {
+  // Cloudflare-managed apex domains should use DNS-only CNAME.
+  // Using a direct A record to our anycast IP can trigger Cloudflare Error 1000 (prohibited IP).
+  const shouldUseCnameForApex = isApexDomain && isCloudflareManagedZone;
+
+  if (isApexDomain && !shouldUseCnameForApex) {
     return {
       type: "A" as const,
       name: domain,
@@ -150,7 +158,7 @@ function getPreferredDnsRecord(domain: string, zoneName?: string | null) {
     name: domain,
     content: "stores.eclipserblx.com",
     proxied: false,
-    is_apex: false,
+    is_apex: isApexDomain,
   };
 }
 
