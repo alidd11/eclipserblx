@@ -137,7 +137,7 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
             <CurrencySelector compact />
             <LanguageSwitcher compact />
             <NotificationBell />
-            <Link to="/cart" aria-label={t('nav.shoppingCart')}>
+            <Link to="/cart" aria-label={t('nav.shoppingCart')} className="hidden md:inline-flex">
               <Button variant="ghost" size="icon" className="relative h-9 w-9 min-h-[44px] min-w-[44px] text-muted-foreground hover:text-foreground" aria-label={t('nav.shoppingCart')}>
                 <ShoppingCart className="h-4 w-4" />
                 {itemCount > 0 && (
