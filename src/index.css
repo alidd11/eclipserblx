@@ -906,7 +906,34 @@ video.background-video::-webkit-media-controls-start-playback-button {
   }
 }
 
-/* Global focus-visible ring for keyboard navigation */
+/* ── Overscroll control — prevent bounce leak into browser chrome ── */
+html, body {
+  overscroll-behavior-y: none;
+}
+
+/* ── Native tap feedback — physical press feel on interactive elements ── */
+button,
+a,
+[role="button"],
+.touch-target,
+.hover-scale {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  button:active:not(:disabled),
+  [role="button"]:active:not(:disabled),
+  .touch-target:active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease;
+  }
+
+  /* Card press effect */
+  .hover-scale:active {
+    transform: scale(0.98) !important;
+    transition: transform 0.1s ease;
+  }
+}
 *:focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
