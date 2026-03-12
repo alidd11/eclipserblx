@@ -212,7 +212,7 @@ function SeverityIcon({ severity }: { severity: 'critical' | 'warning' | 'info' 
   return <Info className="h-5 w-5 text-blue-500 shrink-0" />;
 }
 
-const FIXABLE_ERRORS = ['1000', '1014', 'proxied_cname', '403_direct_a', '403_cloudflare', '1000_non_cf'];
+const FIXABLE_ERRORS = ['1000', '1014', 'proxied_cname', '403_direct_a', '403_cloudflare', '1000_non_cf', 'cf_zone_proxied'];
 
 /** Generate dynamic fix steps from expected_dns_records */
 function getDynamicSteps(errorCode: string, expectedRecords?: ExpectedDnsRecord[]): string[] {
