@@ -37,13 +37,11 @@ interface ProductResult {
 
 export default function SearchResults() {
   const { t } = useTranslation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const initialQuery = searchParams.get('q') || '';
-  const initialCategory = searchParams.get('category') || null;
-  const [query, setQuery] = useState(initialQuery);
+  const [urlQuery, setUrlQuery] = useURLState('q', '');
+  const [categorySlug, setCategorySlug] = useURLState('category', '');
+  const [sortBy, setSortBy] = useURLState('sort', 'relevance');
+  const [query, setQuery] = useState(urlQuery);
   const debouncedQuery = useDebounce(query, 300);
-  const [sortBy, setSortBy] = useState<SortOption>('relevance');
-  const [categorySlug, setCategorySlug] = useState<string | null>(initialCategory);
   const [products, setProducts] = useState<ProductResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -54,25 +52,16 @@ export default function SearchResults() {
   const { search: smartSearch, isSearching, results: smartResults } = useSmartSearch();
   const [useAI, setUseAI] = useState(false);
 
+  // Sync debounced query to URL
+  useEffect(() => {
+    setUrlQuery(debouncedQuery);
+  }, [debouncedQuery, setUrlQuery]);
+
   usePageMeta({
-    title: initialQuery ? `Search: ${initialQuery}` : 'Search Products',
+    title: urlQuery ? `Search: ${urlQuery}` : 'Search Products',
     description: 'Search for premium Roblox assets, scripts, bots and more on Eclipse marketplace.',
     canonicalPath: '/search',
   });
-
-  // Sync URL with query & category
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams);
-    let changed = false;
-    if (debouncedQuery !== (params.get('q') || '')) {
-      if (debouncedQuery) params.set('q', debouncedQuery); else params.delete('q');
-      changed = true;
-    }
-    if (categorySlug !== (params.get('category') || null)) {
-      if (categorySlug) params.set('category', categorySlug); else params.delete('category');
-      changed = true;
-    }
-    if (changed) setSearchParams(params, { replace: true });
   }, [debouncedQuery, categorySlug]);
 
   const buildQuery = useCallback((offset: number) => {
