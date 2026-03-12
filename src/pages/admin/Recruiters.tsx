@@ -9,13 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Users, DollarSign, CheckCircle, Clock, XCircle, 
-  Search, Eye, ChevronRight, TrendingUp, Building2
+  Search, Eye, TrendingUp, Building2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 
 import { cn } from '@/lib/utils';
-import { useNavigate } from 'react-router-dom';
 
 interface RecruiterApplication {
   id: string;
