@@ -970,51 +970,126 @@ export default function SellerSettingsDomain() {
       {/* Cloudflare Integration */}
       {store && <CloudflareCredentialsCard storeId={store.id} />}
 
-      {/* Cloudflare Pre-Check Warning Dialog */}
-      <AlertDialog open={!!cfWarning} onOpenChange={(open) => { if (!open) setCfWarning(null); }}>
-        <AlertDialogContent>
+      {/* Domain Setup Wizard Dialog */}
+      <AlertDialog open={!!preCheckResult} onOpenChange={(open) => { if (!open) { setPreCheckResult(null); setWizardStep('check'); } }}>
+        <AlertDialogContent className="max-w-lg">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className={cn("w-5 h-5", cfWarning?.has_proxied_records ? "text-destructive" : "text-amber-500")} />
-              {cfWarning?.has_proxied_records ? 'Cloudflare Conflict Detected' : 'Cloudflare Zone Detected'}
+              {wizardStep === 'fix' ? (
+                <>
+                  <XCircle className="w-5 h-5 text-destructive" />
+                  DNS Issues Found — Fix Before Connecting
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-5 h-5 text-emerald-500" />
+                  DNS Ready — Connect Domain
+                </>
+              )}
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div className="space-y-3">
-                {cfWarning?.has_proxied_records && (
-                  <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3">
-                    <p className="text-sm font-medium text-destructive">
-                      ⚠️ Error 1000 is almost guaranteed with your current DNS setup.
-                    </p>
+              <div className="space-y-4">
+                {/* Warnings */}
+                {preCheckResult?.warnings && preCheckResult.warnings.length > 0 && (
+                  <div className="space-y-2">
+                    {preCheckResult.warnings.map((w, i) => (
+                      <div key={i} className="rounded-md bg-destructive/10 border border-destructive/20 p-3">
+                        <p className="text-xs text-destructive">{w}</p>
+                      </div>
+                    ))}
                   </div>
                 )}
-                <div className="space-y-2">
-                  {cfWarning?.warnings.map((w, i) => (
-                    <p key={i} className="text-sm text-muted-foreground">{w}</p>
-                  ))}
-                </div>
-                <div className="rounded-md bg-muted p-3 space-y-1.5">
-                  <p className="text-sm font-medium text-foreground">Before proceeding, you should:</p>
-                  <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Set ALL DNS records for <code className="bg-background px-1 rounded">{cfWarning?.domain}</code> to <strong className="text-foreground">DNS-only (grey cloud)</strong></li>
-                    <li>Remove any Cloudflare Page Rules or Workers targeting this domain</li>
-                    <li>If issues persist, pause Cloudflare on the domain or use a non-Cloudflare DNS provider</li>
-                  </ul>
-                </div>
+
+                {/* Records to Remove */}
+                {preCheckResult?.records_to_remove && preCheckResult.records_to_remove.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-destructive flex items-center gap-1.5">
+                      <Trash2 className="w-4 h-4" />
+                      Records to Delete / Fix
+                    </p>
+                    <div className="space-y-1.5">
+                      {preCheckResult.records_to_remove.map((r, i) => (
+                        <div key={i} className="flex items-start gap-2 rounded-md bg-destructive/5 border border-destructive/10 p-2.5">
+                          <XCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium text-foreground">
+                              {r.type} record: <code className="bg-muted px-1 rounded">{r.name}</code> → <code className="bg-muted px-1 rounded break-all">{r.content}</code>
+                            </p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">{r.reason}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Records to Add */}
+                {preCheckResult?.records_to_add && preCheckResult.records_to_add.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                      <CheckCircle className="w-4 h-4" />
+                      Records to Add
+                    </p>
+                    <div className="space-y-1.5">
+                      {preCheckResult.records_to_add.map((r, i) => (
+                        <div key={i} className="flex items-start gap-2 rounded-md bg-emerald-500/5 border border-emerald-500/10 p-2.5">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-xs font-medium text-foreground">
+                                {r.type} record: <code className="bg-muted px-1 rounded">{r.name}</code> → <code className="bg-muted px-1 rounded">{r.content}</code>
+                              </p>
+                              <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => copyToClipboard(r.content)}>
+                                <Copy className="w-3 h-3" />
+                              </Button>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              {r.note} — <strong className="text-foreground">DNS-only (grey cloud)</strong>
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Cloudflare-specific note */}
+                {preCheckResult?.is_cloudflare && wizardStep === 'fix' && (
+                  <Alert className="border-amber-500/30 bg-amber-500/5">
+                    <AlertTriangle className="h-4 w-4 text-amber-500" />
+                    <AlertTitle className="text-xs text-amber-600 dark:text-amber-400">Why does this happen?</AlertTitle>
+                    <AlertDescription className="text-[11px] text-muted-foreground">
+                      Both your domain and our platform use Cloudflare. When DNS records are "Proxied" (orange cloud), 
+                      Cloudflare tries to route traffic through <strong className="text-foreground">two separate Cloudflare zones</strong>, causing Error 1000.
+                      Setting records to <strong className="text-foreground">DNS-only (grey cloud)</strong> bypasses this conflict entirely.
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (cfWarning) {
-                  requestCustom.mutate(cfWarning.domain);
-                }
-              }}
-              className={cfWarning?.has_proxied_records ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
-            >
-              I understand, proceed anyway
-            </AlertDialogAction>
+            {wizardStep === 'fix' ? (
+              <Button
+                onClick={handleRecheckDns}
+                disabled={recheckLoading}
+              >
+                {recheckLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+                I've fixed it — Re-check DNS
+              </Button>
+            ) : (
+              <AlertDialogAction
+                onClick={() => {
+                  if (preCheckResult) {
+                    requestCustom.mutate(preCheckResult.domain);
+                  }
+                }}
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Connect Domain
+              </AlertDialogAction>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
