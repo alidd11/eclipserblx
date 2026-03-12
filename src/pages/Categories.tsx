@@ -1,14 +1,16 @@
 import { Link, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowRight } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { motion } from 'framer-motion';
 import { categoryIconMap, PackageIcon } from '@/components/icons/CategoryIcons';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { useCallback } from 'react';
 
 const CUSTOM_BANNER_CATEGORIES = new Set(['bots']);
 

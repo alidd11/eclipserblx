@@ -58,6 +58,7 @@ const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
           <MarketplaceSection />
         </SectionErrorBoundary>
       </LazySection>
+      </PullToRefresh>
     </MainLayout>
   );
 });
