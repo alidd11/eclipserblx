@@ -145,6 +145,7 @@ const Recruiter = lazy(() => import("@/pages/Recruiter"));
 
 // Seller pages
 const SellerDashboard = lazy(() => import("@/pages/seller/SellerDashboard"));
+const SellerSetup = lazy(() => import("@/pages/seller/SellerSetup"));
 const SellerProducts = lazy(() => import("@/pages/seller/SellerProducts"));
 const SellerProductEditor = lazy(() => import("@/pages/seller/SellerProductEditor"));
 const SellerOrders = lazy(() => import("@/pages/seller/SellerOrders"));
