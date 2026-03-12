@@ -193,6 +193,12 @@ const SellerSettingsDomain = lazy(() => import("@/pages/seller/SellerSettingsDom
 const SellerStorePages = lazy(() => import("@/pages/seller/SellerStorePages"));
 const SellerStoreBuilder = lazy(() => import("@/pages/seller/SellerStoreBuilder"));
 const SellerFinanceHub = lazy(() => import("@/pages/seller/SellerFinanceHub"));
+const SellerCustomerInsights = lazy(() => import("@/pages/seller/SellerCustomerInsights"));
+const SellerCampaigns = lazy(() => import("@/pages/seller/SellerCampaigns"));
+const SellerGoals = lazy(() => import("@/pages/seller/SellerGoals"));
+
+// Product comparison page
+const Compare = lazy(() => import("@/pages/Compare"));
 
 // Store custom page
 const StoreCustomPage = lazy(() => import("@/pages/StoreCustomPage"));
