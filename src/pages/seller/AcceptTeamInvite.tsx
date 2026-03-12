@@ -4,10 +4,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, Loader2, Users, LogIn } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, Users, LogIn, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
-type InviteStatus = 'loading' | 'valid' | 'expired' | 'already_member' | 'accepted' | 'error' | 'needs_auth';
+type InviteStatus = 'loading' | 'valid' | 'expired' | 'already_member' | 'accepted' | 'error' | 'needs_auth' | 'wrong_email' | 'not_found';
 
 interface InviteInfo {
   storeName: string;
@@ -26,6 +26,7 @@ export default function AcceptTeamInvite() {
   const [status, setStatus] = useState<InviteStatus>('loading');
   const [inviteInfo, setInviteInfo] = useState<InviteInfo | null>(null);
   const [accepting, setAccepting] = useState(false);
+  const [expectedEmail, setExpectedEmail] = useState<string | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -45,58 +46,45 @@ export default function AcceptTeamInvite() {
     setStatus('loading');
 
     try {
-      // Look up invite by token
-      const { data: invite, error } = await supabase
-        .from('store_team_invites')
-        .select('id, store_id, email, role, expires_at, invited_by')
-        .eq('token', token)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc('validate_team_invite', {
+        p_token: token,
+        p_user_id: user.id,
+      });
 
-      if (error || !invite) {
-        setStatus('expired');
-        return;
-      }
-
-      // Check if expired
-      if (new Date(invite.expires_at) < new Date()) {
-        setStatus('expired');
-        return;
-      }
-
-      // Check if user email matches
-      if (user.email?.toLowerCase() !== invite.email.toLowerCase()) {
+      if (error) {
         setStatus('error');
         return;
       }
 
-      // Check if already a member
-      const { data: existing } = await supabase
-        .from('store_team_members')
-        .select('id')
-        .eq('store_id', invite.store_id)
-        .eq('user_id', user.id)
-        .maybeSingle();
+      const result = data as { status: string; invite_id?: string; store_id?: string; store_name?: string; role?: string; invited_by?: string; expected_email?: string };
 
-      if (existing) {
-        setStatus('already_member');
-        return;
+      switch (result.status) {
+        case 'valid':
+          setInviteInfo({
+            storeName: result.store_name || 'Unknown Store',
+            role: result.role || 'viewer',
+            inviteId: result.invite_id || '',
+            storeId: result.store_id || '',
+            invitedBy: result.invited_by || '',
+          });
+          setStatus('valid');
+          break;
+        case 'expired':
+          setStatus('expired');
+          break;
+        case 'wrong_email':
+          setExpectedEmail(result.expected_email || null);
+          setStatus('wrong_email');
+          break;
+        case 'already_member':
+          setStatus('already_member');
+          break;
+        case 'not_found':
+          setStatus('not_found');
+          break;
+        default:
+          setStatus('error');
       }
-
-      // Get store name for display
-      const { data: store } = await supabase
-        .from('stores')
-        .select('name')
-        .eq('id', invite.store_id)
-        .single();
-
-      setInviteInfo({
-        storeName: store?.name || 'Unknown Store',
-        role: invite.role,
-        inviteId: invite.id,
-        storeId: invite.store_id,
-        invitedBy: invite.invited_by,
-      });
-      setStatus('valid');
     } catch {
       setStatus('error');
     }
@@ -107,7 +95,6 @@ export default function AcceptTeamInvite() {
     setAccepting(true);
 
     try {
-      // Insert team member
       const { error: insertError } = await supabase
         .from('store_team_members')
         .insert({
@@ -142,6 +129,10 @@ export default function AcceptTeamInvite() {
     viewer: 'Viewer',
   };
 
+  // Properly encode the redirect so the token query param is preserved
+  const redirectPath = `/seller/team/accept?token=${token}`;
+  const signInUrl = `/auth?redirect=${encodeURIComponent(redirectPath)}`;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="max-w-md w-full">
@@ -155,6 +146,8 @@ export default function AcceptTeamInvite() {
             {status === 'accepted' && 'Invitation accepted!'}
             {status === 'expired' && 'This invitation has expired'}
             {status === 'already_member' && "You're already a member of this team"}
+            {status === 'wrong_email' && 'Email mismatch'}
+            {status === 'not_found' && 'Invitation not found'}
             {status === 'error' && 'Invalid invitation'}
           </CardDescription>
         </CardHeader>
@@ -171,7 +164,7 @@ export default function AcceptTeamInvite() {
                 Please sign in with the email address that received this invitation.
               </p>
               <Button asChild>
-                <Link to={`/auth?redirect=/seller/team/accept?token=${token}`}>
+                <Link to={signInUrl}>
                   <LogIn className="h-4 w-4 mr-2" />
                   Sign In
                 </Link>
@@ -210,19 +203,53 @@ export default function AcceptTeamInvite() {
               <p className="text-sm text-muted-foreground">
                 You now have access to <strong>{inviteInfo?.storeName}</strong>.
               </p>
-              <Button onClick={() => navigate('/')}>
+              <Button onClick={() => navigate('/seller')}>
                 Go to Dashboard
               </Button>
             </div>
           )}
 
-          {(status === 'expired' || status === 'error') && (
+          {status === 'wrong_email' && (
+            <div className="text-center space-y-4">
+              <AlertTriangle className="h-12 w-12 mx-auto text-warning" />
+              <p className="text-sm text-muted-foreground">
+                This invitation was sent to a different email address{expectedEmail ? ` (${expectedEmail})` : ''}. Please sign in with the correct account.
+              </p>
+              <Button variant="outline" onClick={() => navigate('/auth')}>
+                Switch Account
+              </Button>
+            </div>
+          )}
+
+          {status === 'not_found' && (
             <div className="text-center space-y-4">
               <XCircle className="h-12 w-12 mx-auto text-destructive" />
               <p className="text-sm text-muted-foreground">
-                {status === 'expired'
-                  ? 'This invitation has expired or has already been used. Please ask the store owner to send a new one.'
-                  : 'This invitation link is invalid or was not sent to your email address.'}
+                This invitation link is invalid or has already been used. Please ask the store owner to send a new one.
+              </p>
+              <Button variant="outline" onClick={() => navigate('/')}>
+                Go Home
+              </Button>
+            </div>
+          )}
+
+          {status === 'expired' && (
+            <div className="text-center space-y-4">
+              <XCircle className="h-12 w-12 mx-auto text-destructive" />
+              <p className="text-sm text-muted-foreground">
+                This invitation has expired. Please ask the store owner to send a new one.
+              </p>
+              <Button variant="outline" onClick={() => navigate('/')}>
+                Go Home
+              </Button>
+            </div>
+          )}
+
+          {status === 'error' && (
+            <div className="text-center space-y-4">
+              <XCircle className="h-12 w-12 mx-auto text-destructive" />
+              <p className="text-sm text-muted-foreground">
+                Something went wrong. The invitation link may be invalid.
               </p>
               <Button variant="outline" onClick={() => navigate('/')}>
                 Go Home
@@ -236,7 +263,7 @@ export default function AcceptTeamInvite() {
               <p className="text-sm text-muted-foreground">
                 You're already a member of this store team.
               </p>
-              <Button variant="outline" onClick={() => navigate('/')}>
+              <Button variant="outline" onClick={() => navigate('/seller')}>
                 Go to Dashboard
               </Button>
             </div>

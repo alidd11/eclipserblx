@@ -18,6 +18,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { safeStorage } from '@/lib/safeStorage';
 import { hapticTap } from '@/lib/haptics';
 import { useSellerUnreadCount } from '@/hooks/useSellerUnreadCount';
+import { StoreSwitcher } from './StoreSwitcher';
 
 interface NavItem {
   title: string;
@@ -426,6 +427,13 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
           </div>
         )}
       </div>
+
+      {/* Store Switcher (multi-store access) */}
+      {!isCollapsed && (
+        <div className="border-b border-border/50 px-1.5 py-1">
+          <StoreSwitcher />
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 p-1.5 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">

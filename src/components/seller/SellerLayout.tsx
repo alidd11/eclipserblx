@@ -12,6 +12,7 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LayoutShell } from '@/components/layout/LayoutShell';
 import { useIOSChatKeyboard } from '@/hooks/useIOSChatKeyboard';
+import { ActiveStoreProvider } from '@/contexts/ActiveStoreContext';
 
 interface SellerLayoutProps {
   children: ReactNode;
@@ -90,30 +91,32 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   }
 
   return (
-    <LayoutShell
-      desktopSidebar={
-        <SellerSidebar collapsed={false} onToggle={() => {}} className="hidden md:flex" />
-      }
-      mobileSidebar={(onClose) => (
-        <SellerSidebar
-          collapsed={false}
-          onToggle={onClose}
-          onNavigate={onClose}
-          isMobileDrawer
-        />
-      )}
-      headerProps={{ hideBrandName: true }}
-      wrapperClassName={cn(
-        'flex w-full bg-background overflow-x-hidden relative',
-        isChatPage ? 'flex-col overflow-hidden bg-card' : 'min-h-[100dvh]'
-      )}
-      mainClassName={cn(
-        'flex-1 overflow-x-hidden',
-        isChatPage ? 'overflow-y-hidden' : 'overflow-y-auto pb-[env(safe-area-inset-bottom)]'
-      )}
-      contentClassName="p-4 md:p-6 lg:p-8"
-    >
-      <PageTransition>{children}</PageTransition>
-    </LayoutShell>
+    <ActiveStoreProvider>
+      <LayoutShell
+        desktopSidebar={
+          <SellerSidebar collapsed={false} onToggle={() => {}} className="hidden md:flex" />
+        }
+        mobileSidebar={(onClose) => (
+          <SellerSidebar
+            collapsed={false}
+            onToggle={onClose}
+            onNavigate={onClose}
+            isMobileDrawer
+          />
+        )}
+        headerProps={{ hideBrandName: true }}
+        wrapperClassName={cn(
+          'flex w-full bg-background overflow-x-hidden relative',
+          isChatPage ? 'flex-col overflow-hidden bg-card' : 'min-h-[100dvh]'
+        )}
+        mainClassName={cn(
+          'flex-1 overflow-x-hidden',
+          isChatPage ? 'overflow-y-hidden' : 'overflow-y-auto pb-[env(safe-area-inset-bottom)]'
+        )}
+        contentClassName="p-4 md:p-6 lg:p-8"
+      >
+        <PageTransition>{children}</PageTransition>
+      </LayoutShell>
+    </ActiveStoreProvider>
   );
 }
