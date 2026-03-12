@@ -61,6 +61,7 @@ export const FloatingActionButtons = forwardRef<HTMLDivElement>(function Floatin
         <Button
           size="icon"
           onClick={() => navigate('/cart')}
+          aria-label={`Shopping cart${cartItemCount > 0 ? `, ${cartItemCount} items` : ''}`}
           className="h-12 w-12 xs:h-14 xs:w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground border-0 touch-target"
         >
           <ShoppingCart className="h-5 w-5 xs:h-6 xs:w-6" />
