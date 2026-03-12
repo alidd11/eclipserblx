@@ -1,4 +1,6 @@
-import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useRef, useCallback } from 'react';
+import { toast } from 'sonner';
+import { hapticTap } from '@/lib/haptics';
 import { safeStorage } from '@/lib/safeStorage';
 import { supabase } from '@/integrations/supabase/client';
 
