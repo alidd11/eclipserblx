@@ -139,6 +139,7 @@ export default function Cart() {
           </Card>
 
           {/* Order Summary */}
+          <div className="space-y-6">
           <Card className="bg-card border-border h-fit">
             <CardHeader>
               <CardTitle>{t('cart.orderSummary')}</CardTitle>
