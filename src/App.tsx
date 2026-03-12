@@ -11,6 +11,7 @@ import { CookieConsentProvider } from "@/hooks/useCookieConsent";
 import { CurrencyProvider } from "@/hooks/useCurrency";
 const InstallPrompt = lazy(() => import("@/components/pwa/InstallPrompt").then(m => ({ default: m.InstallPrompt })));
 import { PWAWrapper } from "@/components/pwa/PWAWrapper";
+const MobileTabBar = lazy(() => import("@/components/layout/MobileTabBar").then(m => ({ default: m.MobileTabBar })));
 import { IpBanCheck } from "@/components/IpBanCheck";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdminPWAHandler } from "@/components/pwa/AdminPWAHandler";
