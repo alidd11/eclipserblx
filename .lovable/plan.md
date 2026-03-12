@@ -1,40 +1,36 @@
 
-Goal: remove the confusion and stop false “Error 1000” loops.
 
-What I found from your screenshots + runtime state:
-- Your question is valid, but in this setup the custom domain should point to a platform target (e.g. `stores.eclipserblx.com`), not to itself.
-- Current diagnostics are likely over-triggering Error 1000 in some cases.
-- For `bournysproductions.uk`, latest health data shows CF conflict while DNS snapshots are inconsistent across resolvers (classic propagation/cache ambiguity), and admin fix reports “hostname/SSL active” without clearly proving DNS changed.
+## Issues Identified
 
-Technical details
-```text
-bournysproductions.uk
-   -> DNS record at your DNS provider
-   -> stores.eclipserblx.com (or A record where applicable)
-   -> platform edge routing
-   -> your store
-```
-A domain should never CNAME to itself (that creates loops).
+**Issue 1: Sidebar positioned at top of screen on desktop**
+The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
 
-Implementation plan:
-1. Unify DNS truth source in backend
-- In `store-domain-manager`, return `expected_dns_records` (type/name/value/proxied) from the same logic used by auto-fix.
-- Include `observed_dns_records` in health response so UI shows exact mismatch.
+**Issue 2: Excessive black empty space in the content area**
+The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
 
-2. Fix false-positive Error 1000 classification
-- Add multi-resolver checks (Cloudflare DoH + Google DoH).
-- If resolvers disagree, classify as `dns_propagating` (not hard `1000`).
-- If custom hostname + SSL are active and DNS appears compliant, downgrade to a “likely propagation/cache” status instead of “change DNS again”.
+## Plan
 
-3. Improve auto-fix/admin-fix reliability
-- Expand conflict cleanup to include AAAA and other conflicting apex records (not just A/CNAME).
-- Return explicit “changed vs no-op” results per record so the toast is trustworthy.
+### 1. Widen the content area on the Categories page
+- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
+- Reduce vertical padding between the header and grid
+- Tighten the gap between the page title/description and the cards
 
-4. Make UI instructions dynamic (not hardcoded)
-- In seller/admin domain UIs, render DNS instructions from backend `expected_dns_records` instead of hardcoded `stores.eclipserblx.com` text.
-- Add one-line explanation: “This points your domain to our edge router, then to your store.”
+### 2. Improve the PageHeader component
+- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
+- This applies globally to all pages using PageHeader
 
-5. Validation steps after implementation
-- Re-run health check for `bournysproductions.uk` and confirm it reports either healthy or propagation (not repeated static 1000).
-- Verify admin fix output lists concrete DNS changes (or explicit no-op with reason).
-- Verify instructions displayed in UI exactly match backend expected record strategy.
+### 3. Make category cards fill space better
+- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
+- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
+- Reduce grid gap slightly so cards feel more connected
+
+### 4. Sidebar desktop alignment fix
+- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
+- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
+- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
+
+### Files to modify
+- `src/pages/Categories.tsx` — widen container, tighten spacing
+- `src/components/ui/PageHeader.tsx` — reduce bottom margin
+- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
+

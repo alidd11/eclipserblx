@@ -229,6 +229,19 @@ async function getCustomHostnameState(domain: string) {
   }
 }
 
+// ── Helper: DoH query with both Google and Cloudflare resolvers ──
+async function multiResolverQuery(domain: string, type: string) {
+  const [cfResp, gResp] = await Promise.all([
+    fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=${type}`, {
+      headers: { Accept: "application/dns-json" },
+    }).then(r => r.json()).catch(() => ({ Answer: [] })),
+    fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=${type}`, {
+      headers: { Accept: "application/json" },
+    }).then(r => r.json()).catch(() => ({ Answer: [] })),
+  ]);
+  return { cloudflare: cfResp, google: gResp };
+}
+
 // ── Helper: Health check a domain ──
 async function performHealthCheck(domain: string) {
   const checks: Record<string, any> = {
@@ -248,53 +261,85 @@ async function performHealthCheck(domain: string) {
     custom_hostname_status: null,
     custom_hostname_ssl_status: null,
     custom_hostname_provisioning: false,
+    expected_dns_records: [] as Array<{ type: string; name: string; content: string; proxied: boolean }>,
+    observed_dns_records: [] as Array<{ type: string; name: string; content: string; proxied?: boolean; source: string }>,
   };
 
   try {
-    // 1. Check CNAME resolution
-    const cnameResp = await fetch(
-      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=CNAME`,
-      { headers: { Accept: "application/dns-json" } }
-    );
-    const cnameData = await cnameResp.json();
-    const cnameRecords = (cnameData?.Answer ?? []).filter((a: any) => a.type === 5);
-    if (cnameRecords.length > 0) {
-      checks.cname_target = cnameRecords[0].data?.replace(/\.$/, "");
+    // 0. Detect Cloudflare zone + hostname state in parallel
+    const [isCloudflareZone, hostnameState, proxiedCheck] = await Promise.all([
+      detectCloudflareZone(domain),
+      getCustomHostnameState(domain),
+      detectProxiedCname(domain),
+    ]);
+
+    checks.is_cloudflare_zone = isCloudflareZone;
+    checks.custom_hostname_status = hostnameState.status;
+    checks.custom_hostname_ssl_status = hostnameState.ssl_status;
+    checks.custom_hostname_provisioning = hostnameState.is_provisioning;
+    checks.cname_is_proxied = proxiedCheck.is_proxied;
+    if (proxiedCheck.cname_target) checks.cname_target = proxiedCheck.cname_target;
+
+    // 1. Compute expected DNS records (same logic as auto-fix)
+    const preferredApex = getPreferredDnsRecord(domain, domain, isCloudflareZone);
+    const preferredWww = getPreferredWwwRecord(domain, preferredApex.type);
+    checks.expected_dns_records = [
+      { type: preferredApex.type, name: preferredApex.name, content: preferredApex.content, proxied: false },
+      { type: preferredWww.type, name: preferredWww.name, content: preferredWww.content, proxied: false },
+    ];
+
+    // 2. Multi-resolver DNS checks
+    const [cnameRes, aRes] = await Promise.all([
+      multiResolverQuery(domain, "CNAME"),
+      multiResolverQuery(domain, "A"),
+    ]);
+
+    // Merge CNAME results
+    const cfCnameAnswers = (cnameRes.cloudflare?.Answer ?? []).filter((a: any) => a.type === 5);
+    const gCnameAnswers = (cnameRes.google?.Answer ?? []).filter((a: any) => a.type === 5);
+    const allCnameTargets = [...cfCnameAnswers, ...gCnameAnswers].map((a: any) => (a.data ?? "").replace(/\.$/, ""));
+
+    if (cfCnameAnswers.length > 0) {
+      checks.cname_target = cfCnameAnswers[0].data?.replace(/\.$/, "");
       checks.dns_ok = true;
+      cfCnameAnswers.forEach((a: any) => checks.observed_dns_records.push({
+        type: "CNAME", name: domain, content: (a.data ?? "").replace(/\.$/, ""), source: "cloudflare_doh",
+      }));
+    }
+    if (gCnameAnswers.length > 0) {
+      if (!checks.cname_target) checks.cname_target = gCnameAnswers[0].data?.replace(/\.$/, "");
+      checks.dns_ok = true;
+      gCnameAnswers.forEach((a: any) => checks.observed_dns_records.push({
+        type: "CNAME", name: domain, content: (a.data ?? "").replace(/\.$/, ""), source: "google_doh",
+      }));
     }
 
-    // 2. Check A record resolution
-    const aResp = await fetch(
-      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`,
-      { headers: { Accept: "application/dns-json" } }
-    );
-    const aData = await aResp.json();
-    const aRecords = (aData?.Answer ?? []).filter((a: any) => a.type === 1);
-    if (aRecords.length > 0) {
+    // Merge A results
+    const cfAAnswers = (aRes.cloudflare?.Answer ?? []).filter((a: any) => a.type === 1);
+    const gAAnswers = (aRes.google?.Answer ?? []).filter((a: any) => a.type === 1);
+
+    const allIps = [...new Set([...cfAAnswers, ...gAAnswers].map((a: any) => a.data))];
+    if (allIps.length > 0) {
       checks.dns_ok = true;
-      const ips = aRecords.map((a: any) => a.data);
-      checks.resolved_ips = ips;
-      checks.resolves_to_lovable_ip = ips.includes("185.158.133.1");
-      checks.resolves_to_cloudflare = ips.some((ip: string) => {
+      checks.resolved_ips = allIps;
+      checks.resolves_to_lovable_ip = allIps.includes("185.158.133.1");
+      checks.resolves_to_cloudflare = allIps.some((ip: string) => {
         const parts = ip.split(".").map(Number);
         return (parts[0] === 104 && parts[1] >= 16 && parts[1] <= 31) ||
                (parts[0] === 172 && parts[1] >= 64 && parts[1] <= 71);
       });
     }
+    cfAAnswers.forEach((a: any) => checks.observed_dns_records.push({
+      type: "A", name: domain, content: a.data, source: "cloudflare_doh",
+    }));
+    gAAnswers.forEach((a: any) => checks.observed_dns_records.push({
+      type: "A", name: domain, content: a.data, source: "google_doh",
+    }));
 
-    // 3. Check NS to detect Cloudflare zone
-    checks.is_cloudflare_zone = await detectCloudflareZone(domain);
-
-    // 3.5. Check custom hostname provisioning status in our Cloudflare zone
-    const hostnameState = await getCustomHostnameState(domain);
-    checks.custom_hostname_status = hostnameState.status;
-    checks.custom_hostname_ssl_status = hostnameState.ssl_status;
-    checks.custom_hostname_provisioning = hostnameState.is_provisioning;
-
-    // 3.6. Detect proxied CNAME
-    const proxiedCheck = await detectProxiedCname(domain);
-    checks.cname_is_proxied = proxiedCheck.is_proxied;
-    if (proxiedCheck.cname_target) checks.cname_target = proxiedCheck.cname_target;
+    // Check if resolvers disagree (propagation indicator)
+    const cfHasRecords = cfCnameAnswers.length > 0 || cfAAnswers.length > 0;
+    const gHasRecords = gCnameAnswers.length > 0 || gAAnswers.length > 0;
+    const resolversDisagree = cfHasRecords !== gHasRecords;
 
     // 4. Try HTTP fetch to check for errors
     try {
@@ -319,16 +364,24 @@ async function performHealthCheck(domain: string) {
         bodyLower.includes("conflict within cloudflare");
 
       if (hasError1000) {
-        if (checks.is_cloudflare_zone) {
-          if (hostnameState.exists && hostnameState.is_provisioning) {
-            checks.error_code = "hostname_provisioning";
-            checks.diagnosis = `Custom hostname is still provisioning (status: ${hostnameState.status ?? "pending"}, ssl: ${hostnameState.ssl_status ?? "pending"}). Temporary Error 1000 can occur until activation finishes.`;
-          } else if (checks.resolves_to_lovable_ip && !checks.cname_target) {
+        // If hostname is provisioning OR resolvers disagree, classify as transient
+        if (hostnameState.exists && hostnameState.is_provisioning) {
+          checks.error_code = "hostname_provisioning";
+          checks.diagnosis = `Custom hostname is still provisioning (status: ${hostnameState.status ?? "pending"}, ssl: ${hostnameState.ssl_status ?? "pending"}). Temporary Error 1000 can occur until activation finishes.`;
+        } else if (resolversDisagree) {
+          checks.error_code = "dns_propagating";
+          checks.diagnosis = "DNS resolvers are returning different results — your recent DNS changes are still propagating. Wait 5–15 minutes and check again.";
+        } else if (hostnameState.exists && hostnameState.status === "active" && hostnameState.ssl_status === "active") {
+          // Hostname is fully active but still seeing 1000 — likely cache/propagation
+          checks.error_code = "dns_propagating";
+          checks.diagnosis = "Custom hostname and SSL are active, but cached DNS may still be serving old records. Wait 5–15 minutes for DNS cache to expire.";
+        } else if (checks.is_cloudflare_zone) {
+          if (checks.resolves_to_lovable_ip && !checks.cname_target) {
             checks.error_code = "1000";
-            checks.diagnosis = "Error 1000 — your root domain is using a direct A record to 185.158.133.1 while the zone is on Cloudflare. Use a DNS-only CNAME to stores.eclipserblx.com instead.";
+            checks.diagnosis = "Error 1000 — your root domain is using a direct A record while the zone is on Cloudflare. Use a DNS-only CNAME instead.";
           } else if (!checks.cname_target && checks.resolves_to_cloudflare) {
             checks.error_code = "1000";
-            checks.diagnosis = "Error 1000 — Cloudflare flattening/proxy conflict detected on the root domain. Use a DNS-only CNAME to stores.eclipserblx.com and remove conflicting A/AAAA records.";
+            checks.diagnosis = "Error 1000 — Cloudflare flattening/proxy conflict on the root domain. Use a DNS-only CNAME and remove conflicting A/AAAA records.";
           } else {
             checks.error_code = "1000";
             checks.diagnosis = "Error 1000 — cross-zone Cloudflare conflict detected.";
@@ -350,30 +403,31 @@ async function performHealthCheck(domain: string) {
         checks.error_code = "redirect_loop";
         checks.diagnosis = "Redirect loop detected — check for conflicting redirect rules.";
       } else if (httpResp.status === 403 && checks.is_cloudflare_zone && checks.resolves_to_cloudflare) {
-        if (!checks.cname_target) {
-          if (hostnameState.exists && hostnameState.is_provisioning) {
-            checks.error_code = "hostname_provisioning";
-            checks.diagnosis = `Custom hostname is still provisioning (status: ${hostnameState.status ?? "pending"}, ssl: ${hostnameState.ssl_status ?? "pending"}). Temporary 403/1000 responses are expected during this stage.`;
-          } else {
-            checks.error_code = "1000";
-            checks.diagnosis = "403 with Cloudflare edge IPs and no visible apex CNAME can indicate flattening/cross-zone conflict. Keep apex on a DNS-only CNAME to stores.eclipserblx.com and remove conflicting A/AAAA records.";
-          }
+        if (hostnameState.exists && hostnameState.is_provisioning) {
+          checks.error_code = "hostname_provisioning";
+          checks.diagnosis = `Custom hostname is still provisioning (status: ${hostnameState.status ?? "pending"}, ssl: ${hostnameState.ssl_status ?? "pending"}). Temporary 403 responses are expected during this stage.`;
+        } else if (resolversDisagree) {
+          checks.error_code = "dns_propagating";
+          checks.diagnosis = "DNS resolvers disagree — changes are still propagating. Wait 5–15 minutes.";
+        } else if (!checks.cname_target) {
+          checks.error_code = "1000";
+          checks.diagnosis = "403 with Cloudflare edge IPs and no visible CNAME — likely a flattening/cross-zone conflict.";
         } else if (checks.cname_is_proxied) {
           checks.error_code = "403_cloudflare";
-          checks.diagnosis = "403 Forbidden — your CNAME is Proxied (orange cloud) which triggers Cloudflare cross-zone blocking. Switch to DNS-only (grey cloud).";
+          checks.diagnosis = "403 Forbidden — your CNAME is Proxied (orange cloud). Switch to DNS-only (grey cloud).";
         } else {
           checks.error_code = "403_cloudflare";
-          checks.diagnosis = "403 Forbidden — your DNS-only CNAME resolves through Cloudflare but the custom hostname may still be provisioning. Wait 5-10 minutes and re-check.";
+          checks.diagnosis = "403 Forbidden — DNS-only CNAME resolves through Cloudflare but custom hostname may still be provisioning.";
         }
       } else if (httpResp.status === 403 && checks.is_cloudflare_zone && checks.resolves_to_lovable_ip) {
         checks.error_code = "403_direct_a";
-        checks.diagnosis = "403 Forbidden — your A record points directly to the origin server, bypassing expected routing. Use a DNS-only CNAME to stores.eclipserblx.com.";
+        checks.diagnosis = "403 Forbidden — your A record points directly to the origin, bypassing expected routing. Use a DNS-only CNAME instead.";
       } else if (httpResp.status === 403 && !checks.is_cloudflare_zone && checks.resolves_to_lovable_ip) {
         checks.error_code = "403_direct_a";
-        checks.diagnosis = "403 Forbidden — your A record points to the origin but the domain is not registered as a custom hostname. Use a CNAME record pointing to stores.eclipserblx.com instead.";
+        checks.diagnosis = "403 Forbidden — your A record points to the origin but the domain isn't registered as a custom hostname. Use a CNAME record instead.";
       } else if (httpResp.status === 403) {
         checks.error_code = "403";
-        checks.diagnosis = "403 Forbidden — access is being blocked. Check WAF rules or Cloudflare settings on the domain.";
+        checks.diagnosis = "403 Forbidden — access is being blocked. Check WAF rules or Cloudflare settings.";
       } else if (httpResp.status >= 200 && httpResp.status < 400) {
         checks.error_code = null;
         checks.diagnosis = "Domain appears to be working correctly.";
@@ -684,8 +738,23 @@ async function autoFixDns(userId: string, domainId: string) {
       return rec.type === "CNAME" && rec.content === preferredRecord.content && rec.proxied === false;
     });
 
-    // 6. Delete conflicting records
+    // 6. Delete conflicting records (including AAAA)
     for (const rec of existingRecords) {
+      // Always delete AAAA records — they can cause cross-zone issues
+      if (rec.type === "AAAA") {
+        const { data: delData } = await cfFetch<any>(
+          sellerToken,
+          `${CF_API}/zones/${sellerZoneId}/dns_records/${rec.id}`,
+          { method: "DELETE" }
+        );
+        if (delData?.success) {
+          fixes.push(`Deleted AAAA record: ${rec.name} → ${rec.content}`);
+        } else {
+          errors.push(`Failed to delete AAAA record ${rec.name}: ${JSON.stringify(delData?.errors)}`);
+        }
+        continue;
+      }
+
       const shouldDelete = preferredRecord.type === "A"
         ? (rec.type === "CNAME" || (rec.type === "A" && (rec.content !== preferredRecord.content || rec.proxied === true)))
         : (rec.type === "A" || (rec.type === "CNAME" && (rec.content !== preferredRecord.content || rec.proxied === true)));
@@ -980,8 +1049,22 @@ async function adminFixHostname(domainId: string) {
             return rec.type === "CNAME" && rec.content === preferredRecord.content && rec.proxied === false;
           });
 
-          // Delete conflicting records
+          // Delete conflicting records (including AAAA)
           for (const rec of existingRecords) {
+            if (rec.type === "AAAA") {
+              const { data: delData } = await cfFetch<any>(
+                sellerToken,
+                `${CF_API}/zones/${sellerZoneId}/dns_records/${rec.id}`,
+                { method: "DELETE" }
+              );
+              if (delData?.success) {
+                fixes.push(`Deleted AAAA record: ${rec.name} → ${rec.content}`);
+              } else {
+                errors.push(`Failed to delete AAAA record ${rec.name}: ${JSON.stringify(delData?.errors)}`);
+              }
+              continue;
+            }
+
             const shouldDelete = preferredRecord.type === "A"
               ? (rec.type === "CNAME" || (rec.type === "A" && (rec.content !== preferredRecord.content || rec.proxied === true)))
               : (rec.type === "A" || (rec.type === "CNAME" && (rec.content !== preferredRecord.content || rec.proxied === true)));

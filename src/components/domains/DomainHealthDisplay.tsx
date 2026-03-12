@@ -13,12 +13,29 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 
+interface ExpectedDnsRecord {
+  type: string;
+  name: string;
+  content: string;
+  proxied: boolean;
+}
+
+interface ObservedDnsRecord {
+  type: string;
+  name: string;
+  content: string;
+  proxied?: boolean;
+  source: string;
+}
+
 interface HealthData {
   error_code?: string | null;
   http_reachable?: boolean;
   diagnosis?: string;
   recommended_fix?: string;
   is_cloudflare_zone?: boolean;
+  expected_dns_records?: ExpectedDnsRecord[];
+  observed_dns_records?: ObservedDnsRecord[];
   [key: string]: any;
 }
 
@@ -58,26 +75,15 @@ const ERROR_INFO: Record<string, {
   '1000': {
     severity: 'critical',
     title: 'Error 1000: DNS Conflict',
-    summary: 'Your domain is on Cloudflare which conflicts with our Cloudflare setup (cross-zone issue).',
-    steps: [
-      'In Cloudflare DNS, remove any A/AAAA records for the root domain that point to 185.158.133.1',
-      'Create a CNAME record for the root domain pointing to stores.eclipserblx.com',
-      'Set that CNAME to DNS-only (grey cloud)',
-      'Wait 2–5 minutes and run the health check again',
-      'If it still fails, temporarily pause Cloudflare proxy features for this host or use a non-Cloudflare DNS provider',
-    ],
+    summary: 'Your domain\'s DNS is conflicting with the platform\'s Cloudflare setup (cross-zone issue).',
+    steps: [], // Dynamically generated from expected_dns_records
     icon: 'dns',
   },
   '1000_non_cf': {
     severity: 'critical',
     title: 'Error 1000: CNAME Conflict',
     summary: 'Your CNAME is causing a DNS conflict. This happens when it points to a Cloudflare-protected domain.',
-    steps: [
-      'Delete your current CNAME record',
-      'Create an A record pointing to 185.158.133.1',
-      'Ensure it\'s set to DNS-only (no proxy)',
-      'Wait for DNS propagation (up to 5 min) and re-check',
-    ],
+    steps: [], // Dynamically generated from expected_dns_records
     icon: 'dns',
   },
   '1014': {
@@ -108,12 +114,7 @@ const ERROR_INFO: Record<string, {
     severity: 'warning',
     title: '403: Wrong DNS Record Type',
     summary: 'Your A record points directly to the origin, bypassing the proxy. The server can\'t route your domain.',
-    steps: [
-      'Delete the current A record for your domain',
-      'Add a CNAME record pointing to stores.eclipserblx.com',
-      'Set it to DNS-only (grey cloud)',
-      'Re-run the health check after DNS propagates',
-    ],
+    steps: [], // Dynamically generated from expected_dns_records
     icon: 'dns',
   },
   '403': {
@@ -197,6 +198,38 @@ function SeverityIcon({ severity }: { severity: 'critical' | 'warning' | 'info' 
 
 const FIXABLE_ERRORS = ['1000', '1014', 'proxied_cname', '403_direct_a', '403_cloudflare', '1000_non_cf'];
 
+/** Generate dynamic fix steps from expected_dns_records */
+function getDynamicSteps(errorCode: string, expectedRecords?: ExpectedDnsRecord[]): string[] {
+  if (!expectedRecords || expectedRecords.length === 0) {
+    // Fallback generic steps
+    if (errorCode === '1000' || errorCode === '1000_non_cf') {
+      return [
+        'Check your DNS records at your provider',
+        'Ensure records match the expected configuration shown above',
+        'Set all records to DNS-only (grey cloud) if using Cloudflare',
+        'Wait 2–5 minutes and run the health check again',
+      ];
+    }
+    return [];
+  }
+
+  const steps: string[] = [];
+  steps.push('Remove any existing A, AAAA, or conflicting CNAME records for your domain');
+  
+  for (const rec of expectedRecords) {
+    if (rec.type === 'CNAME') {
+      steps.push(`Create a CNAME record: ${rec.name} → ${rec.content} (DNS-only, grey cloud)`);
+    } else if (rec.type === 'A') {
+      steps.push(`Create an A record: ${rec.name} → ${rec.content} (DNS-only)`);
+    }
+  }
+  
+  steps.push('Set all records to DNS-only (grey cloud) — NOT Proxied (orange cloud)');
+  steps.push('Wait 2–5 minutes and run the health check again');
+  
+  return steps;
+}
+
 /** Full health display card — used on seller settings page */
 export function DomainHealthDisplay({ healthCheck, domain, isCloudflare, compact, onAutoFix, isAutoFixing, hasCloudflareCredentials }: DomainHealthDisplayProps) {
   const [expanded, setExpanded] = useState(false);
@@ -204,8 +237,16 @@ export function DomainHealthDisplay({ healthCheck, domain, isCloudflare, compact
   if (!healthCheck) return null;
 
   const isOk = !healthCheck.error_code && healthCheck.http_reachable;
-  const errorInfo = healthCheck.error_code ? ERROR_INFO[healthCheck.error_code] : null;
+  const rawErrorInfo = healthCheck.error_code ? ERROR_INFO[healthCheck.error_code] : null;
   const cfDetected = isCloudflare || healthCheck.is_cloudflare_zone;
+
+  // Build errorInfo with dynamic steps if needed
+  const errorInfo = rawErrorInfo ? {
+    ...rawErrorInfo,
+    steps: rawErrorInfo.steps.length > 0 
+      ? rawErrorInfo.steps 
+      : getDynamicSteps(healthCheck.error_code!, healthCheck.expected_dns_records),
+  } : null;
 
   // ── Healthy state ──
   if (isOk) {
@@ -306,14 +347,21 @@ export function DomainHealthDisplay({ healthCheck, domain, isCloudflare, compact
             ))}
           </ol>
 
-          {/* Quick copy helpers */}
-          {domain && (healthCheck.error_code === '1000' || healthCheck.error_code === '1000_non_cf' || healthCheck.error_code === '403_direct_a') && (
+          {/* Quick copy helpers — dynamic from expected records */}
+          {domain && healthCheck.expected_dns_records && healthCheck.expected_dns_records.length > 0 && (healthCheck.error_code === '1000' || healthCheck.error_code === '1000_non_cf' || healthCheck.error_code === '403_direct_a') && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {healthCheck.expected_dns_records.map((rec: { type: string; content: string; name: string }, i: number) => (
+                <Button key={i} variant="outline" size="sm" className="h-7 text-xs" onClick={() => copyText(rec.content)}>
+                  <Copy className="h-3 w-3 mr-1" />{rec.type}: {rec.content}
+                </Button>
+              ))}
+            </div>
+          )}
+          {/* Fallback copy helpers if no expected records */}
+          {domain && (!healthCheck.expected_dns_records || healthCheck.expected_dns_records.length === 0) && (healthCheck.error_code === '1000' || healthCheck.error_code === '1000_non_cf' || healthCheck.error_code === '403_direct_a') && (
             <div className="mt-3 flex flex-wrap gap-2">
               <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => copyText('stores.eclipserblx.com')}>
                 <Copy className="h-3 w-3 mr-1" />CNAME target
-              </Button>
-              <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => copyText('185.158.133.1')}>
-                <Copy className="h-3 w-3 mr-1" />A record IP
               </Button>
             </div>
           )}
