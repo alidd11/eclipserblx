@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { Search, SlidersHorizontal, X, Sparkles, Loader2, Package } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
@@ -15,6 +16,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { useTranslation } from 'react-i18next';
+import { useURLState } from '@/hooks/useURLState';
 
 type SortOption = 'relevance' | 'newest' | 'price-low' | 'price-high' | 'popularity';
 const PAGE_SIZE = 20;

@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { useQuery } from '@tanstack/react-query';
 import { Store, ShieldCheck, Award, ChevronRight, Megaphone, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
