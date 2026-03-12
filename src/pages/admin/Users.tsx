@@ -474,11 +474,12 @@ export default function AdminUsers() {
 
   // Stats
   const stats = useMemo(() => ({
-    total: filteredProfiles.length,
-    eclipsePlus: filteredProfiles.filter(p => 
+    total: customerProfiles.length,
+    staff: staffProfiles.length,
+    eclipsePlus: customerProfiles.filter(p =>
       getUserRoles(p.user_id).some(r => r.role === 'eclipse_plus_member')
     ).length,
-  }), [filteredProfiles, userRoles]);
+  }), [customerProfiles, staffProfiles, userRoles]);
 
   return (
     <AdminLayout requiredPermissions={['view_users']}>
