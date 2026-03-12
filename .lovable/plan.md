@@ -1,76 +1,36 @@
 
 
-# Making Eclipse a Production-Ready Website
+## Issues Identified
 
-Based on your selections, here is a prioritized roadmap across the five areas. I will tackle them in order of impact.
+**Issue 1: Sidebar positioned at top of screen on desktop**
+The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
 
----
+**Issue 2: Excessive black empty space in the content area**
+The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
 
-## Phase 1: Performance & Core Web Vitals (Immediate)
+## Plan
 
-Profile the live site to identify the actual bottlenecks (LCP element, INP offenders, CLS shifts), then fix:
+### 1. Widen the content area on the Categories page
+- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
+- Reduce vertical padding between the header and grid
+- Tighten the gap between the page title/description and the cards
 
-- **LCP**: Audit hero image loading strategy; ensure critical-path CSS is truly minimal; verify font `preload` is effective and not competing with hero image bandwidth.
-- **INP**: Identify heavy event handlers (search, filters, modals) and defer non-critical work with `requestIdleCallback` or `startTransition`.
-- **CLS**: Add explicit `width`/`height` to all dynamic content containers (product cards, store logos, ad banners) to prevent layout shifts during load.
-- **Bundle audit**: Check if `framer-motion` is leaking into the critical path despite lazy-loading config; verify tree-shaking of `lucide-react` icons.
+### 2. Improve the PageHeader component
+- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
+- This applies globally to all pages using PageHeader
 
-I will use the browser performance profiler on the live homepage to get concrete numbers before making changes.
+### 3. Make category cards fill space better
+- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
+- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
+- Reduce grid gap slightly so cards feel more connected
 
----
+### 4. Sidebar desktop alignment fix
+- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
+- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
+- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
 
-## Phase 2: Notifications — Email + Push (High Impact)
-
-### Transactional Emails
-Set up branded transactional emails for key events:
-- Order confirmation (buyer receives)
-- New order alert (seller receives)
-- Dispute filed notification
-- Payout processed confirmation
-
-This uses the existing email domain infrastructure with `scaffold_transactional_email`.
-
-### Push Notifications
-The push infrastructure (`custom-sw.js`, Capacitor push plugin) already exists. Complete the pipeline:
-- Wire up server-side push triggers for: new orders, new messages, dispute updates, support ticket replies
-- Add a notification preferences page (already exists at `/notification-preferences`) to control which events trigger push vs email
-
----
-
-## Phase 3: Seller Onboarding Flow (Medium Impact)
-
-Create a guided setup wizard at `/seller/onboarding` that walks new sellers through:
-1. Store name, description, logo upload
-2. Payment setup (Stripe Connect)
-3. First product upload with validation guidance
-4. Domain setup (optional)
-
-Track progress in a `store_onboarding_progress` table. Show a progress bar in the seller dashboard until all steps are complete.
-
----
-
-## Phase 4: Mobile App Polish (Ongoing)
-
-- Fix iOS PWA-specific issues: keyboard avoidance on chat inputs, pull-to-refresh conflicts with scroll containers, safe-area inset gaps on newer iPhones
-- Improve touch targets to meet 48px minimum on all interactive elements
-- Add haptic feedback patterns for key actions (add to cart, purchase complete)
-- Audit the installed PWA experience: splash screen timing, app switching behavior, deep link handling
-
----
-
-## Phase 5: Admin Tools & Moderation (Foundation)
-
-- **Content moderation queue**: Unified view for pending products, reported reviews, flagged users with bulk actions
-- **User management**: Search users, view purchase history, manage bans, impersonate (read-only) for support
-- **Dispute resolution**: Structured workflow with evidence timeline, one-click refund/reject, seller notification
-
-Much of the admin infrastructure already exists. This phase is about consolidating scattered tools into a cohesive dashboard.
-
----
-
-## Recommended Starting Point
-
-I suggest starting with **Phase 1 (Performance)** since it directly impacts SEO ranking and user retention. I will profile the homepage, identify the top 3 bottlenecks, and fix them. After that we move to notifications.
-
-Shall I begin with the performance profiling?
+### Files to modify
+- `src/pages/Categories.tsx` — widen container, tighten spacing
+- `src/components/ui/PageHeader.tsx` — reduce bottom margin
+- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
 
