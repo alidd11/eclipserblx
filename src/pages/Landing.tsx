@@ -59,10 +59,28 @@ const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
         </ScrollReveal>
       </SectionErrorBoundary>
 
+      {/* Abandoned Cart Recovery */}
+      <Suspense fallback={null}>
+        <div className="px-4 sm:px-6 lg:px-8 mt-3">
+          <AbandonedCartBanner />
+        </div>
+      </Suspense>
+
       {/* Marketplace — lazy-loaded since it's below the fold and data-heavy */}
       <LazySection minHeight="600px" rootMargin="300px">
         <SectionErrorBoundary section="marketplace">
           <MarketplaceSection />
+        </SectionErrorBoundary>
+      </LazySection>
+
+      {/* Personalized Recommendations */}
+      <LazySection minHeight="200px" rootMargin="200px">
+        <SectionErrorBoundary section="for-you" compact>
+          <Suspense fallback={null}>
+            <div className="px-4 sm:px-6 lg:px-8 py-6">
+              <ForYouSection />
+            </div>
+          </Suspense>
         </SectionErrorBoundary>
       </LazySection>
       </PullToRefresh>
