@@ -251,7 +251,6 @@ export default function Recruiters() {
                         </div>
                         <div className="flex items-center gap-3">
                           {getStatusBadge(app.status)}
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
                         </div>
                       </div>
                     ))}
