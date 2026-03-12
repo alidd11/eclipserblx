@@ -387,8 +387,9 @@ export default function SellerProducts() {
 
     setIsUploadingImage(true);
     try {
+      let uploadedCount = 0;
       for (const file of Array.from(files)) {
-        if (form.images.length >= 8) break;
+        if (form.images.length + uploadedCount >= 8) break;
 
         // Quality check
         const quality = await validateImageQuality(file);
@@ -429,9 +430,14 @@ export default function SellerProducts() {
           ...prev,
           images: [...prev.images, finalUrl],
         }));
+        uploadedCount++;
       }
 
-      toast.success('Images uploaded successfully');
+      if (uploadedCount > 0) {
+        toast.success(`${uploadedCount} image(s) uploaded successfully`);
+      } else {
+        toast.warning('No images were uploaded — check the errors above');
+      }
     } catch (error: any) {
       toast.error('Failed to upload images: ' + error.message);
     } finally {
