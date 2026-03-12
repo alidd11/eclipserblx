@@ -393,6 +393,9 @@ export function AppRoutes() {
         <Route path="/seller/import" element={<SellerImport />} />
         <Route path="/seller/promote" element={<SellerPromotions />} />
         <Route path="/seller/store-pages" element={<SellerStorePages />} />
+        <Route path="/seller/customer-insights" element={<SellerCustomerInsights />} />
+        <Route path="/seller/campaigns" element={<SellerCampaigns />} />
+        <Route path="/seller/goals" element={<SellerGoals />} />
         {/* Public store page */}
         <Route path="/store/:storeSlug" element={<StorePage />} />
         <Route path="/store/:storeSlug/reviews" element={<StoreReviewsPage />} />
