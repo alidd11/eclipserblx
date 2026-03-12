@@ -8,6 +8,8 @@ import { MarketplaceSection } from '@/components/home/MarketplaceSection';
 const PromotionCarousel = lazy(() => import('@/components/home/PromotionCarousel').then(m => ({ default: m.PromotionCarousel })));
 const PWADiscordBanner = lazy(() => import('@/components/landing/PWADiscordBanner').then(m => ({ default: m.PWADiscordBanner })));
 const ActiveOffersCard = lazy(() => import('@/components/home/ActiveOffersCard').then(m => ({ default: m.ActiveOffersCard })));
+const ForYouSection = lazy(() => import('@/components/home/ForYouSection').then(m => ({ default: m.ForYouSection })));
+const AbandonedCartBanner = lazy(() => import('@/components/marketplace/AbandonedCartBanner').then(m => ({ default: m.AbandonedCartBanner })));
 import { OrganizationSchema, WebsiteSearchSchema, SiteNavigationSchema } from '@/components/seo/StructuredData';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
@@ -57,10 +59,28 @@ const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
         </ScrollReveal>
       </SectionErrorBoundary>
 
+      {/* Abandoned Cart Recovery */}
+      <Suspense fallback={null}>
+        <div className="px-4 sm:px-6 lg:px-8 mt-3">
+          <AbandonedCartBanner />
+        </div>
+      </Suspense>
+
       {/* Marketplace — lazy-loaded since it's below the fold and data-heavy */}
       <LazySection minHeight="600px" rootMargin="300px">
         <SectionErrorBoundary section="marketplace">
           <MarketplaceSection />
+        </SectionErrorBoundary>
+      </LazySection>
+
+      {/* Personalized Recommendations */}
+      <LazySection minHeight="200px" rootMargin="200px">
+        <SectionErrorBoundary section="for-you" compact>
+          <Suspense fallback={null}>
+            <div className="px-4 sm:px-6 lg:px-8 py-6">
+              <ForYouSection />
+            </div>
+          </Suspense>
         </SectionErrorBoundary>
       </LazySection>
       </PullToRefresh>

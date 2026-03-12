@@ -37,6 +37,7 @@ const topLevelItems: NavItem[] = [
   { title: 'Dashboard', icon: LayoutDashboard, href: '/seller' },
   { title: 'Orders', icon: ShoppingCart, href: '/seller/orders' },
   { title: 'Analytics', icon: BarChart3, href: '/seller/analytics' },
+  { title: 'Goals', icon: TrendingUp, href: '/seller/goals' },
 ];
 
 const navGroups: NavGroup[] = [
@@ -61,6 +62,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Discount Codes', icon: Tag, href: '/seller/discounts' },
       { title: 'Flash Sales', icon: Zap, href: '/seller/flash-sales' },
+      { title: 'Campaigns', icon: Megaphone, href: '/seller/campaigns' },
       { title: 'Bundle Deals', icon: PackagePlus, href: '/seller/bundles' },
       { title: 'Announcements', icon: Megaphone, href: '/seller/announcements' },
       { title: 'Promote', icon: Sparkles, href: '/seller/promote' },
@@ -76,6 +78,7 @@ const navGroups: NavGroup[] = [
       { title: 'Disputes', icon: RotateCcw, href: '/seller/refunds' },
       { title: 'Support Tickets', icon: HelpCircle, href: '/seller/support' },
       { title: 'Notifications', icon: Bell, href: '/seller/notifications' },
+      { title: 'Customer Insights', icon: Heart, href: '/seller/customer-insights' },
     ],
   },
   {

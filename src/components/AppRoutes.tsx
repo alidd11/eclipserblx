@@ -193,6 +193,12 @@ const SellerSettingsDomain = lazy(() => import("@/pages/seller/SellerSettingsDom
 const SellerStorePages = lazy(() => import("@/pages/seller/SellerStorePages"));
 const SellerStoreBuilder = lazy(() => import("@/pages/seller/SellerStoreBuilder"));
 const SellerFinanceHub = lazy(() => import("@/pages/seller/SellerFinanceHub"));
+const SellerCustomerInsights = lazy(() => import("@/pages/seller/SellerCustomerInsights"));
+const SellerCampaigns = lazy(() => import("@/pages/seller/SellerCampaigns"));
+const SellerGoals = lazy(() => import("@/pages/seller/SellerGoals"));
+
+// Product comparison page
+const Compare = lazy(() => import("@/pages/Compare"));
 
 // Store custom page
 const StoreCustomPage = lazy(() => import("@/pages/StoreCustomPage"));
@@ -334,6 +340,7 @@ export function AppRoutes() {
         {/* Legacy compatibility redirect */}
         <Route path="/live-chat" element={<Navigate to="/support/chat" replace />} />
         <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/compare" element={<Compare />} />
         <Route path="/store-messages" element={<StoreMessages />} />
         {/* Seller routes */}
         <Route path="/seller" element={<SellerDashboard />} />
@@ -386,6 +393,9 @@ export function AppRoutes() {
         <Route path="/seller/import" element={<SellerImport />} />
         <Route path="/seller/promote" element={<SellerPromotions />} />
         <Route path="/seller/store-pages" element={<SellerStorePages />} />
+        <Route path="/seller/customer-insights" element={<SellerCustomerInsights />} />
+        <Route path="/seller/campaigns" element={<SellerCampaigns />} />
+        <Route path="/seller/goals" element={<SellerGoals />} />
         {/* Public store page */}
         <Route path="/store/:storeSlug" element={<StorePage />} />
         <Route path="/store/:storeSlug/reviews" element={<StoreReviewsPage />} />
