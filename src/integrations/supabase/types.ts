@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      abandoned_carts: {
+        Row: {
+          created_at: string
+          id: string
+          items: Json
+          recovered: boolean
+          recovered_at: string | null
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          items?: Json
+          recovered?: boolean
+          recovered_at?: string | null
+          total?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          items?: Json
+          recovered?: boolean
+          recovered_at?: string | null
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ad_ping_purchase_log: {
         Row: {
           created_at: string | null
@@ -4223,6 +4256,63 @@ export type Database = {
         }
         Relationships: []
       }
+      loyalty_points: {
+        Row: {
+          created_at: string
+          lifetime_points: number
+          points: number
+          tier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          lifetime_points?: number
+          points?: number
+          tier?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          lifetime_points?: number
+          points?: number
+          tier?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      loyalty_transactions: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          points: number
+          reference_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          points: number
+          reference_id?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          points?: number
+          reference_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       marketplace_interest: {
         Row: {
           created_at: string
@@ -6395,6 +6485,66 @@ export type Database = {
           },
         ]
       }
+      seller_campaigns: {
+        Row: {
+          apply_to_all: boolean
+          category_ids: string[] | null
+          created_at: string
+          discount_percent: number
+          ends_at: string
+          id: string
+          is_active: boolean
+          name: string
+          product_ids: string[] | null
+          starts_at: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          apply_to_all?: boolean
+          category_ids?: string[] | null
+          created_at?: string
+          discount_percent: number
+          ends_at: string
+          id?: string
+          is_active?: boolean
+          name: string
+          product_ids?: string[] | null
+          starts_at: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          apply_to_all?: boolean
+          category_ids?: string[] | null
+          created_at?: string
+          discount_percent?: number
+          ends_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          product_ids?: string[] | null
+          starts_at?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_campaigns_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_campaigns_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seller_discount_codes: {
         Row: {
           code: string
@@ -6606,6 +6756,66 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      seller_goals: {
+        Row: {
+          created_at: string
+          current_amount: number
+          ends_at: string
+          goal_type: string
+          id: string
+          is_active: boolean
+          period: string
+          starts_at: string
+          store_id: string
+          target_amount: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_amount?: number
+          ends_at?: string
+          goal_type?: string
+          id?: string
+          is_active?: boolean
+          period?: string
+          starts_at?: string
+          store_id: string
+          target_amount: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_amount?: number
+          ends_at?: string
+          goal_type?: string
+          id?: string
+          is_active?: boolean
+          period?: string
+          starts_at?: string
+          store_id?: string
+          target_amount?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_goals_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_goals_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       seller_notifications: {
         Row: {
@@ -9627,6 +9837,16 @@ export type Database = {
           new_xp: number
           old_level: number
         }[]
+      }
+      add_loyalty_points: {
+        Args: {
+          p_description?: string
+          p_points: number
+          p_reference_id?: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: undefined
       }
       auth_user_exists: { Args: { _user_id: string }; Returns: boolean }
       calculate_level_from_xp: { Args: { xp: number }; Returns: number }
