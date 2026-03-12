@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle, ShieldAlert, Filter, Sparkles, Eye, ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle, ShieldAlert, Filter, Sparkles, Eye, ChevronLeft, ChevronRight, Users, IdCard } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentIp } from '@/hooks/useCurrentIp';
 import { AdminLayout } from '@/components/admin/AdminLayout';
