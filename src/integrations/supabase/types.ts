@@ -10151,6 +10151,10 @@ export type Database = {
         Args: { _order_id: string; _user_id: string }
         Returns: boolean
       }
+      validate_team_invite: {
+        Args: { p_token: string; p_user_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       bot_license_status: "pending" | "active" | "expired" | "revoked"
