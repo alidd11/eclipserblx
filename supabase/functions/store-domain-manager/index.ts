@@ -379,10 +379,18 @@ async function performHealthCheck(domain: string) {
           checks.error_code = "dns_propagating";
           checks.diagnosis = "DNS resolvers are returning different results — your recent DNS changes are still propagating. Wait 5–15 minutes and check again.";
         } else if (hostnameState.exists && hostnameState.status === "active" && hostnameState.ssl_status === "active") {
-          // Hostname is fully active but still seeing 1000 — likely cache/propagation
-          checks.error_code = "dns_propagating";
-          checks.diagnosis = "Custom hostname and SSL are active, but cached DNS may still be serving old records. Wait 5–15 minutes for DNS cache to expire.";
-        } else if (checks.is_cloudflare_zone) {
+          // Hostname can be active while DNS records are still wrong; only mark as propagation
+          // when DNS currently matches the expected apex record.
+          if (hasExpectedApexRecord) {
+            checks.error_code = "dns_propagating";
+            checks.diagnosis = "Custom hostname and SSL are active, but cached DNS may still be serving old records. Wait 5–15 minutes for DNS cache to expire.";
+          } else if (hasAnyApexDnsAnswer) {
+            checks.error_code = "1000";
+            checks.diagnosis = "Error 1000 — custom hostname is active, but apex DNS does not match the expected record yet. Ensure the apex record is DNS-only and points to the expected target.";
+          } else {
+            checks.error_code = "dns_propagating";
+            checks.diagnosis = "Custom hostname and SSL are active, but DNS answers are incomplete. Wait 5–15 minutes for propagation to settle.";
+          }
           if (checks.resolves_to_lovable_ip && !checks.cname_target) {
             checks.error_code = "1000";
             checks.diagnosis = "Error 1000 — your root domain is using a direct A record while the zone is on Cloudflare. Use a DNS-only CNAME instead.";
