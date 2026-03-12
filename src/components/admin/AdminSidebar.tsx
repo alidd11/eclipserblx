@@ -40,6 +40,7 @@ interface NavGroup {
 // Top-level items (no group)
 const topLevelItems: NavItem[] = [
   { title: 'Dashboard', icon: LayoutDashboard, href: '/admin', permissions: [] },
+  { title: 'Moderation Queue', icon: ClipboardList, href: '/admin/moderation-queue', permissions: ['view_seller_stores'] },
 ];
 
 const navGroups: NavGroup[] = [
@@ -132,7 +133,7 @@ const navGroups: NavGroup[] = [
     title: 'Customers',
     icon: Users,
     items: [
-      { title: 'Customers', icon: Users, href: '/admin/users', permissions: ['view_users'] },
+      { title: 'User Management', icon: Users, href: '/admin/users', permissions: ['view_users'] },
       { title: 'Gift Credits', icon: Gift, href: '/admin/gift-credits', permissions: ['manage_users'], roles: ['admin'] },
       { title: 'IP Bans', icon: Ban, href: '/admin/ip-bans', permissions: ['view_ip_bans'] },
       { title: 'Subscribers', icon: Mail, href: '/admin/subscribers', permissions: ['view_subscribers'] },

@@ -74,6 +74,7 @@ const AdminCategories = lazy(() => import("@/pages/admin/Categories"));
 const AdminPromotions = lazy(() => import("@/pages/admin/Promotions"));
 const AdminOrders = lazy(() => import("@/pages/admin/Orders"));
 const AdminUsers = lazy(() => import("@/pages/admin/Users"));
+const AdminModerationQueue = lazy(() => import("@/pages/admin/ModerationQueue"));
 const AdminSettings = lazy(() => import("@/pages/admin/Settings"));
 const AdminDiscordSettings = lazy(() => import("@/pages/admin/DiscordSettings"));
 const AdminRobloxSettings = lazy(() => import("@/pages/admin/RobloxSettings"));
@@ -413,6 +414,7 @@ export function AppRoutes() {
         <Route path="/admin/refunds" element={<Navigate to="/admin/disputes-refunds?tab=refunds" replace />} />
         <Route path="/admin/disputes" element={<Navigate to="/admin/disputes-refunds?tab=disputes" replace />} />
         <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/moderation-queue" element={<AdminModerationQueue />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
         <Route path="/admin/discord-settings" element={<AdminDiscordSettings />} />
         <Route path="/admin/roblox-settings" element={<AdminRobloxSettings />} />
