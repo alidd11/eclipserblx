@@ -918,6 +918,55 @@ export default function SellerSettingsDomain() {
 
       {/* Cloudflare Integration */}
       {store && <CloudflareCredentialsCard storeId={store.id} />}
+
+      {/* Cloudflare Pre-Check Warning Dialog */}
+      <AlertDialog open={!!cfWarning} onOpenChange={(open) => { if (!open) setCfWarning(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className={cn("w-5 h-5", cfWarning?.has_proxied_records ? "text-destructive" : "text-amber-500")} />
+              {cfWarning?.has_proxied_records ? 'Cloudflare Conflict Detected' : 'Cloudflare Zone Detected'}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                {cfWarning?.has_proxied_records && (
+                  <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3">
+                    <p className="text-sm font-medium text-destructive">
+                      ⚠️ Error 1000 is almost guaranteed with your current DNS setup.
+                    </p>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  {cfWarning?.warnings.map((w, i) => (
+                    <p key={i} className="text-sm text-muted-foreground">{w}</p>
+                  ))}
+                </div>
+                <div className="rounded-md bg-muted p-3 space-y-1.5">
+                  <p className="text-sm font-medium text-foreground">Before proceeding, you should:</p>
+                  <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Set ALL DNS records for <code className="bg-background px-1 rounded">{cfWarning?.domain}</code> to <strong className="text-foreground">DNS-only (grey cloud)</strong></li>
+                    <li>Remove any Cloudflare Page Rules or Workers targeting this domain</li>
+                    <li>If issues persist, pause Cloudflare on the domain or use a non-Cloudflare DNS provider</li>
+                  </ul>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (cfWarning) {
+                  requestCustom.mutate(cfWarning.domain);
+                }
+              }}
+              className={cfWarning?.has_proxied_records ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+            >
+              I understand, proceed anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
     </SellerLayout>
   );
