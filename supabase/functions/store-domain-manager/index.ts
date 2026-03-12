@@ -180,6 +180,55 @@ function getPreferredWwwRecord(domain: string, apexRecordType: "A" | "CNAME") {
   };
 }
 
+const PROVISIONING_HOSTNAME_STATUSES = new Set(["pending", "initializing"]);
+const PROVISIONING_SSL_STATUSES = new Set([
+  "initializing",
+  "pending_validation",
+  "pending_issuance",
+  "pending_deployment",
+]);
+
+function isProvisioningHostnameState(hostnameStatus?: string | null, sslStatus?: string | null) {
+  const normalizedHostname = (hostnameStatus ?? "").toLowerCase();
+  const normalizedSsl = (sslStatus ?? "").toLowerCase();
+  return PROVISIONING_HOSTNAME_STATUSES.has(normalizedHostname) || PROVISIONING_SSL_STATUSES.has(normalizedSsl);
+}
+
+async function getCustomHostnameState(domain: string) {
+  const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN");
+  const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID");
+
+  if (!cfToken || !cfZoneId) {
+    return { exists: false, id: null, status: null, ssl_status: null, is_provisioning: false };
+  }
+
+  try {
+    const { data } = await cfFetch<any[]>(
+      cfToken,
+      `${CF_API}/zones/${cfZoneId}/custom_hostnames?hostname=${encodeURIComponent(domain)}`
+    );
+
+    const list = data?.result ?? [];
+    const hostname = list.find((item: any) => (item?.hostname ?? "").toLowerCase() === domain.toLowerCase()) ?? list[0] ?? null;
+    if (!hostname) {
+      return { exists: false, id: null, status: null, ssl_status: null, is_provisioning: false };
+    }
+
+    const status = hostname?.status ?? null;
+    const sslStatus = hostname?.ssl?.status ?? null;
+
+    return {
+      exists: true,
+      id: hostname?.id ?? null,
+      status,
+      ssl_status: sslStatus,
+      is_provisioning: isProvisioningHostnameState(status, sslStatus),
+    };
+  } catch {
+    return { exists: false, id: null, status: null, ssl_status: null, is_provisioning: false };
+  }
+}
+
 // ── Helper: Health check a domain ──
 async function performHealthCheck(domain: string) {
   const checks: Record<string, any> = {
