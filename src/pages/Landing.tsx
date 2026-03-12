@@ -8,6 +8,8 @@ import { MarketplaceSection } from '@/components/home/MarketplaceSection';
 const PromotionCarousel = lazy(() => import('@/components/home/PromotionCarousel').then(m => ({ default: m.PromotionCarousel })));
 const PWADiscordBanner = lazy(() => import('@/components/landing/PWADiscordBanner').then(m => ({ default: m.PWADiscordBanner })));
 const ActiveOffersCard = lazy(() => import('@/components/home/ActiveOffersCard').then(m => ({ default: m.ActiveOffersCard })));
+const ForYouSection = lazy(() => import('@/components/home/ForYouSection').then(m => ({ default: m.ForYouSection })));
+const AbandonedCartBanner = lazy(() => import('@/components/marketplace/AbandonedCartBanner').then(m => ({ default: m.AbandonedCartBanner })));
 import { OrganizationSchema, WebsiteSearchSchema, SiteNavigationSchema } from '@/components/seo/StructuredData';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
