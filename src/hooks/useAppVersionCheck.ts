@@ -8,8 +8,10 @@ const LAST_UPDATE_KEY = 'app_last_force_update';
 const PENDING_VERSION_PARAM = '__v';
 const UPDATE_TIME_PARAM = '__t';
 const RELOAD_ATTEMPT_PARAM = '__ra';
-const GRACE_PERIOD = 60000; // 60 seconds grace period after update
-const MAX_RELOAD_ATTEMPTS = 2; // Prevent infinite reload loops on iOS
+const CIRCUIT_BREAKER_KEY = 'app_update_circuit';
+const GRACE_PERIOD = 120000; // 120 seconds grace period after update
+const MAX_RELOAD_ATTEMPTS = 1; // Very conservative — 1 attempt max
+const CIRCUIT_BREAKER_WINDOW = 300000; // 5 minutes cooldown between force-update attempts
 
 interface AppVersion {
   id: string;
@@ -25,27 +27,73 @@ interface UseAppVersionCheckOptions {
 declare global {
   interface Window {
     __appInstalledVersion?: string;
+    __lastUpdateTimestamp?: number;
   }
+}
+
+/**
+ * Circuit breaker: prevents repeated forced reloads within a short window.
+ * Uses multiple storage layers + runtime fallback for iOS resilience.
+ */
+function isCircuitBreakerOpen(): boolean {
+  try {
+    const now = Date.now();
+
+    // Runtime fallback (survives storage failures, cleared on full page unload)
+    if (window.__lastUpdateTimestamp && now - window.__lastUpdateTimestamp < CIRCUIT_BREAKER_WINDOW) {
+      console.log('[AppVersionCheck] Circuit breaker OPEN (runtime)');
+      return true;
+    }
+
+    // Check all storage layers
+    for (const store of [safeSessionStorage, safeStorage]) {
+      const ts = store.getItem(CIRCUIT_BREAKER_KEY);
+      if (ts) {
+        const elapsed = now - parseInt(ts, 10);
+        if (!isNaN(elapsed) && elapsed < CIRCUIT_BREAKER_WINDOW) {
+          console.log('[AppVersionCheck] Circuit breaker OPEN (storage)');
+          return true;
+        }
+      }
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+function tripCircuitBreaker(): void {
+  const now = Date.now().toString();
+  window.__lastUpdateTimestamp = Date.now();
+  safeSessionStorage.setItem(CIRCUIT_BREAKER_KEY, now);
+  safeStorage.setItem(CIRCUIT_BREAKER_KEY, now);
 }
 
 function wasRecentlyUpdated(): boolean {
   try {
+    const now = Date.now();
+
+    // Runtime fallback
+    if (window.__lastUpdateTimestamp && now - window.__lastUpdateTimestamp < GRACE_PERIOD) {
+      return true;
+    }
+
     const url = new URL(window.location.href);
     const urlTime = url.searchParams.get(UPDATE_TIME_PARAM);
     if (urlTime) {
-      const elapsed = Date.now() - parseInt(urlTime, 10);
+      const elapsed = now - parseInt(urlTime, 10);
       if (!isNaN(elapsed) && elapsed < GRACE_PERIOD) return true;
     }
-    const sessionTime = safeSessionStorage.getItem(LAST_UPDATE_KEY);
-    if (sessionTime) {
-      const elapsed = Date.now() - parseInt(sessionTime, 10);
-      if (!isNaN(elapsed) && elapsed < GRACE_PERIOD) return true;
+
+    for (const store of [safeSessionStorage, safeStorage]) {
+      const t = store.getItem(LAST_UPDATE_KEY);
+      if (t) {
+        const elapsed = now - parseInt(t, 10);
+        if (!isNaN(elapsed) && elapsed < GRACE_PERIOD) return true;
+      }
     }
-    const localTime = safeStorage.getItem(LAST_UPDATE_KEY);
-    if (localTime) {
-      const elapsed = Date.now() - parseInt(localTime, 10);
-      if (!isNaN(elapsed) && elapsed < GRACE_PERIOD) return true;
-    }
+
     return false;
   } catch {
     return false;
@@ -76,6 +124,7 @@ async function setLocalVersion(version: string): Promise<void> {
 function setUpdateTimestamp(timestamp: string): void {
   safeStorage.setItem(LAST_UPDATE_KEY, timestamp);
   safeSessionStorage.setItem(LAST_UPDATE_KEY, timestamp);
+  window.__lastUpdateTimestamp = parseInt(timestamp, 10);
 }
 
 export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
@@ -90,13 +139,21 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
       const url = new URL(window.location.href);
       const pendingVersion = url.searchParams.get(PENDING_VERSION_PARAM);
       const updateTime = url.searchParams.get(UPDATE_TIME_PARAM);
+
+      // Persist runtime fallback BEFORE cleaning URL params
+      if (updateTime) {
+        window.__lastUpdateTimestamp = parseInt(updateTime, 10);
+      }
+
       if (pendingVersion) {
-        if (typeof window !== 'undefined') window.__appInstalledVersion = pendingVersion;
+        window.__appInstalledVersion = pendingVersion;
         safeStorage.setItem(LOCAL_VERSION_KEY, pendingVersion);
         safeSessionStorage.setItem(LOCAL_VERSION_KEY, pendingVersion);
         setInIndexedDB(LOCAL_VERSION_KEY, pendingVersion).catch(() => {});
+        console.log('[AppVersionCheck] Bootstrapped version from URL:', pendingVersion);
       }
       if (updateTime) setUpdateTimestamp(updateTime);
+
       if (pendingVersion || updateTime) {
         url.searchParams.delete(PENDING_VERSION_PARAM);
         url.searchParams.delete(UPDATE_TIME_PARAM);
@@ -108,23 +165,36 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
 
   const forceAppUpdate = useCallback(async (nextVersion: string) => {
     if (isUpdatingRef.current) return;
-    
-    // Check reload attempt counter to prevent infinite loops on iOS
+
+    // Circuit breaker — prevent loops even if storage was cleared
+    if (isCircuitBreakerOpen()) {
+      console.warn('[AppVersionCheck] Circuit breaker prevents reload, just storing version');
+      await setLocalVersion(nextVersion);
+      return;
+    }
+
+    // Check reload attempt counter from URL
     try {
       const url = new URL(window.location.href);
       const currentAttempts = parseInt(url.searchParams.get(RELOAD_ATTEMPT_PARAM) || '0', 10);
       if (currentAttempts >= MAX_RELOAD_ATTEMPTS) {
-        console.warn('[AppVersionCheck] Max reload attempts reached, aborting update loop');
+        console.warn('[AppVersionCheck] Max reload attempts reached, storing version without reload');
+        await setLocalVersion(nextVersion);
+        tripCircuitBreaker();
         return;
       }
     } catch {}
-    
+
     isUpdatingRef.current = true;
+    tripCircuitBreaker(); // Trip BEFORE reload to protect against rapid re-entry
+
     if (showNotifications) showInfoNotification('Update Available', 'Applying update...');
+
     try {
       await setLocalVersion(nextVersion);
       const updateTime = Date.now().toString();
       setUpdateTimestamp(updateTime);
+
       try {
         const url = new URL(window.location.href);
         const currentAttempts = parseInt(url.searchParams.get(RELOAD_ATTEMPT_PARAM) || '0', 10);
@@ -133,6 +203,7 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
         url.searchParams.set(RELOAD_ATTEMPT_PARAM, (currentAttempts + 1).toString());
         window.history.replaceState({}, '', url.toString());
       } catch {}
+
       if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' });
       }
@@ -158,7 +229,10 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
   }, [showNotifications]);
 
   const checkForUpdate = useCallback(async () => {
-    if (wasRecentlyUpdated()) return;
+    if (wasRecentlyUpdated() || isCircuitBreakerOpen()) {
+      console.log('[AppVersionCheck] Skipping check (recently updated or circuit breaker)');
+      return;
+    }
     try {
       const { data, error } = await supabase
         .from('app_version')
@@ -169,8 +243,10 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
       const serverVersion = data as AppVersion;
       const localVersion = await getLocalVersion();
       if (serverVersion.force_update && serverVersion.version !== localVersion) {
+        console.log('[AppVersionCheck] Force update:', localVersion, '->', serverVersion.version);
         await forceAppUpdate(serverVersion.version);
       } else if (serverVersion.version !== localVersion) {
+        console.log('[AppVersionCheck] Silent version update:', localVersion, '->', serverVersion.version);
         await setLocalVersion(serverVersion.version);
       }
     } catch {}
@@ -179,10 +255,10 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
   useEffect(() => {
     bootstrapVersionFromUrl();
 
-    // Check once on load (deferred)
+    // Deferred initial check
     const initialCheckTimeout = setTimeout(checkForUpdate, 2000);
 
-    // Re-check only when app becomes visible (no polling)
+    // Re-check on visibility change only
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') checkForUpdate();
     };
