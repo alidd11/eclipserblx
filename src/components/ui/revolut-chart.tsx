@@ -126,6 +126,7 @@ export function RevolutAreaChart({
   const seriesKeys = useMemo(() => series.map(s => s.dataKey), [series]);
   const intTicks = useIntegerTicks(data, seriesKeys);
   const yDomain: [number, number] = [0, intTicks[intTicks.length - 1] || 1];
+  const animationActive = useChartAnimationEnabled();
 
   return (
     <div className={className} style={{ height }}>
