@@ -131,7 +131,7 @@ const GROUP_MENTIONS = [
 function StaffMessagesContent() {
   const { user } = useAuth();
   const { isAdmin } = useAdminAuth();
-  const { getBestRole, getRoleBadgeStyle } = useChatRoles();
+  const { getBestRole, getRoleBadgeStyle, rolePriority } = useChatRoles();
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
   const [replyToMessage, setReplyToMessage] = useState<ChatMessage | null>(null);
@@ -202,7 +202,7 @@ function StaffMessagesContent() {
 
   // Fetch user roles - pick highest priority staff role per user
   const { data: userRoles = {} } = useQuery({
-    queryKey: ['staff-roles', messages.map(m => m.user_id)],
+    queryKey: ['staff-roles', messages.map(m => m.user_id), rolePriority],
     queryFn: async () => {
       if (!messages.length) return {};
       const userIds = [...new Set(messages.map(m => m.user_id))];

@@ -133,7 +133,7 @@ function AdminChatContent() {
   const { user } = useAuth();
   const { isAdmin, loading } = useAdminAuth();
   const { hasPermission } = useUserPermissions();
-  const { getBestRole, getRoleBadgeStyle } = useChatRoles();
+  const { getBestRole, getRoleBadgeStyle, rolePriority } = useChatRoles();
   
   // Check if user can access admin chat (has admin role OR view_admin_chat permission)
   const canAccessAdminChat = isAdmin || hasPermission('view_admin_chat');
@@ -209,7 +209,7 @@ function AdminChatContent() {
 
   // Fetch user roles - pick highest priority staff role per user
   const { data: userRoles = {} } = useQuery({
-    queryKey: ['admin-chat-roles', messages.map(m => m.user_id)],
+    queryKey: ['admin-chat-roles', messages.map(m => m.user_id), rolePriority],
     queryFn: async () => {
       if (!messages.length) return {};
       const userIds = [...new Set(messages.map(m => m.user_id))];
