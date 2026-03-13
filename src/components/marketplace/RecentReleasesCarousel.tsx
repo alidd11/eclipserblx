@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ShieldCheck, Award, Tag } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';

@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PromotedBadge } from '@/components/marketplace/PromotedBadge';
 import { cn } from '@/lib/utils';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 interface FeaturedProduct {
   id: string;

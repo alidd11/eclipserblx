@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCategoryTranslations } from '@/hooks/useCategoryTranslations';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 const iconMap: Record<string, typeof Car> = {
   'Car': Car,
