@@ -1314,6 +1314,7 @@ Deno.serve(async (req) => {
           if (!detectedPlatform) {
             if (url.includes('clearlydev.com')) detectedPlatform = 'clearlydev';
             else if (url.includes('builtbybit.com')) detectedPlatform = 'builtbybit';
+            else if (url.includes('payhip.com')) detectedPlatform = 'payhip';
           }
 
           // Check for duplicate
