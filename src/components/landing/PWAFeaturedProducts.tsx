@@ -25,19 +25,22 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
     >
       {/* Image */}
       <div className="aspect-[4/3] relative overflow-hidden bg-muted">
-        {product.images?.[0] ? (
-          <img
-            src={product.images[0]}
-            alt={product.name}
-            loading="lazy"
-            decoding="async"
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
-            No image
-          </div>
-        )}
+        {(() => {
+          const imgUrl = getFirstImageUrl(product.images);
+          return imgUrl ? (
+            <img
+              src={imgUrl}
+              alt={product.name}
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
+              No image
+            </div>
+          );
+        })()}
         
         {/* Store badge overlay */}
         <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2">
