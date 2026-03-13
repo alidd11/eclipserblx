@@ -94,7 +94,7 @@ interface RevolutAreaChartProps {
   height?: number;
   yFormatter?: (v: number) => string;
   tooltipFormatter?: (value: number, name: string) => [string, string];
-  tooltipContent?: ReactNode;
+  tooltipContent?: ReactNode | ((props: any) => ReactNode);
   showYAxis?: boolean;
   className?: string;
 }
@@ -164,7 +164,7 @@ interface RevolutLineChartProps {
   height?: number;
   yFormatter?: (v: number) => string;
   tooltipFormatter?: (value: number, name: string) => [string, string];
-  tooltipContent?: ReactNode;
+  tooltipContent?: ReactNode | ((props: any) => ReactNode);
   showYAxis?: boolean;
   className?: string;
 }
