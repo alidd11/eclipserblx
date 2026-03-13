@@ -46,18 +46,7 @@ interface AdminMember {
   email: string;
 }
 
-// Role badge styling - same as StaffMessages
-const DEFAULT_ROLE_BADGES: Record<string, { label: string; className: string }> = {
-  admin: { label: 'Admin', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
-  lead_administrator: { label: 'Lead Admin', className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-  lead_manager: { label: 'Lead Manager', className: 'bg-green-500/20 text-green-400 border-green-500/30' },
-  support_agent: { label: 'Support', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-  analyst: { label: 'Analyst', className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
-  recruiter: { label: 'Recruiter', className: 'bg-pink-500/20 text-pink-400 border-pink-500/30' },
-  seller: { label: 'Seller', className: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-};
-
-const ROLE_PRIORITY: string[] = ['admin', 'lead_administrator', 'lead_manager', 'support_agent', 'analyst', 'recruiter', 'seller'];
+// Role badges and priority are now dynamic via useChatRoles hook
 
 interface TypingUser {
   user_id: string;
