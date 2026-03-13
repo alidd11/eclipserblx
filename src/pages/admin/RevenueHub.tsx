@@ -1,43 +1,28 @@
-import { useState, useEffect, useCallback, lazy, Suspense, useRef, memo } from 'react';
+import { useState, useCallback, useRef, memo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { TrendingUp, Lock, Shield, Eye, EyeOff, Clock } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
-import { OverviewTab } from '@/components/admin/income/OverviewTab';
-import { EarningsTab } from '@/components/admin/income/EarningsTab';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { AdminHubProvider } from '@/components/admin/AdminHubContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { showInfoNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useAuth } from '@/hooks/useAuth';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useEffect } from 'react';
+import { RevenueDashboard } from '@/components/admin/income/RevenueDashboard';
 
-// Static verification client — no dynamic import, no session persistence
+// Static verification client
 const verifyClient = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
   { auth: { persistSession: false, autoRefreshToken: false } }
 );
 
-const AdminIncomeSources = lazy(() => import('@/pages/admin/IncomeSources').then(m => ({ default: m.default })));
-
-const MemoOverviewTab = memo(OverviewTab);
-const MemoEarningsTab = memo(EarningsTab);
-
 const SESSION_TIMEOUT_MS = 10 * 60 * 1000;
 const REVENUE_VERIFIED_KEY = 'revenue_verified_at';
-
-// Clean 3-tab layout
-const tabs = [
-  { value: 'overview', label: 'Overview' },
-  { value: 'earnings', label: 'Earnings' },
-  { value: 'sources', label: 'Sources' },
-] as const;
 
 function getPersistedVerification(): boolean {
   try {
@@ -53,16 +38,12 @@ function getPersistedVerification(): boolean {
 
 export default function RevenueHub() {
   const { user } = useAuth();
-  const [searchParams, setSearchParams] = useSearchParams();
   const [isVerified, setIsVerified] = useState(() => getPersistedVerification());
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const lastActivityRef = useRef<number>(Date.now());
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const activeTab = searchParams.get('tab') || 'overview';
-  const setActiveTab = (tab: string) => setSearchParams({ tab }, { replace: true });
 
   const expireSession = useCallback(() => {
     setIsVerified(false);
@@ -80,11 +61,9 @@ export default function RevenueHub() {
 
   useEffect(() => {
     if (!isVerified) return;
-
     resetActivityTimer();
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
     events.forEach(e => window.addEventListener(e, resetActivityTimer));
-
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       events.forEach(e => window.removeEventListener(e, resetActivityTimer));
@@ -137,7 +116,7 @@ export default function RevenueHub() {
                 Secure Area
               </CardTitle>
               <CardDescription>
-                Please re-enter your password to access revenue analytics. This is a security measure to protect sensitive financial data.
+                Re-enter your password to access revenue analytics.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -178,68 +157,9 @@ export default function RevenueHub() {
 
   return (
     <AdminLayout requiredPermissions={['view_income']}>
-      <div className="space-y-6 w-full">
-        {/* Page Header */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <CardTitle className="text-2xl font-display flex items-center gap-2">
-                  <TrendingUp className="h-6 w-6 text-primary" />
-                  Revenue
-                </CardTitle>
-                <p className="text-muted-foreground text-sm mt-1">Financial overview, earnings & income sources</p>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-1.5 rounded-full w-fit">
-                <Clock className="h-4 w-4" />
-                <span>10m inactivity timeout</span>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
-
-        {/* Clean 3-tab layout */}
-        <AdminHubProvider>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            {/* Desktop tabs */}
-            <TabsList className="hidden sm:grid w-full max-w-md grid-cols-3">
-              {tabs.map(t => (
-                <TabsTrigger key={t.value} value={t.value} className="text-sm">
-                  {t.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
-            {/* Mobile select */}
-            <div className="sm:hidden">
-              <Select value={activeTab} onValueChange={setActiveTab}>
-                <SelectTrigger className="w-auto min-w-[160px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {tabs.map(t => (
-                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <TabsContent value="overview">
-              <MemoOverviewTab />
-            </TabsContent>
-
-            <TabsContent value="earnings">
-              <MemoEarningsTab />
-            </TabsContent>
-
-            <TabsContent value="sources">
-              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                <AdminIncomeSources />
-              </Suspense>
-            </TabsContent>
-          </Tabs>
-        </AdminHubProvider>
-      </div>
+      <AdminHubProvider>
+        <RevenueDashboard />
+      </AdminHubProvider>
     </AdminLayout>
   );
 }
