@@ -1028,21 +1028,58 @@ Deno.serve(async (req) => {
 
     let store: { id: string; name: string; slug: string } | null = null;
 
-    if (isAdmin && targetStoreId) {
-      const { data: targetStore } = await supabaseAdmin
-        .from('stores')
-        .select('id, name, slug')
-        .eq('id', targetStoreId)
-        .eq('status', 'approved')
-        .single();
-      store = targetStore;
+    if (targetStoreId) {
+      // Admin can access any store; non-admins must own it or be a team member
+      if (isAdmin) {
+        const { data: targetStore } = await supabaseAdmin
+          .from('stores')
+          .select('id, name, slug')
+          .eq('id', targetStoreId)
+          .eq('status', 'approved')
+          .single();
+        store = targetStore;
+      } else {
+        // Check ownership first
+        const { data: ownedStore } = await supabaseAdmin
+          .from('stores')
+          .select('id, name, slug')
+          .eq('id', targetStoreId)
+          .eq('owner_id', user.id)
+          .eq('status', 'approved')
+          .maybeSingle();
+
+        if (ownedStore) {
+          store = ownedStore;
+        } else {
+          // Check team membership
+          const { data: teamMember } = await supabaseAdmin
+            .from('store_team_members')
+            .select('store_id')
+            .eq('store_id', targetStoreId)
+            .eq('user_id', user.id)
+            .not('accepted_at', 'is', null)
+            .maybeSingle();
+
+          if (teamMember) {
+            const { data: teamStore } = await supabaseAdmin
+              .from('stores')
+              .select('id, name, slug')
+              .eq('id', targetStoreId)
+              .eq('status', 'approved')
+              .single();
+            store = teamStore;
+          }
+        }
+      }
     } else {
+      // No targetStoreId — fallback to first owned store
       const { data: ownStore } = await supabaseAdmin
         .from('stores')
         .select('id, name, slug')
         .eq('owner_id', user.id)
         .eq('status', 'approved')
-        .single();
+        .limit(1)
+        .maybeSingle();
       store = ownStore;
     }
 

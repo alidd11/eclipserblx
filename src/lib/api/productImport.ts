@@ -95,9 +95,9 @@ export const productImportApi = {
   /**
    * List all products from an external store
    */
-  async listProducts(storeUrl: string): Promise<ImportListResponse> {
+  async listProducts(storeUrl: string, targetStoreId?: string): Promise<ImportListResponse> {
     const { data, error } = await supabase.functions.invoke('import-external-products', {
-      body: { action: 'list', storeUrl },
+      body: { action: 'list', storeUrl, ...(targetStoreId && { targetStoreId }) },
     });
 
     if (error) {
@@ -111,9 +111,9 @@ export const productImportApi = {
   /**
    * Get full details for a single product
    */
-  async getProductDetails(productUrl: string, downloadImages = false, categoryOverride?: string): Promise<ImportDetailsResponse> {
+  async getProductDetails(productUrl: string, downloadImages = false, categoryOverride?: string, targetStoreId?: string): Promise<ImportDetailsResponse> {
     const { data, error } = await supabase.functions.invoke('import-external-products', {
-      body: { action: 'details', productUrl, downloadImages, categoryOverride },
+      body: { action: 'details', productUrl, downloadImages, categoryOverride, ...(targetStoreId && { targetStoreId }) },
     });
 
     if (error) {
@@ -127,9 +127,9 @@ export const productImportApi = {
   /**
    * Bulk import multiple products at once
    */
-  async bulkImport(productUrls: string[], downloadImages = false): Promise<BulkImportResponse> {
+  async bulkImport(productUrls: string[], downloadImages = false, targetStoreId?: string): Promise<BulkImportResponse> {
     const { data, error } = await supabase.functions.invoke('import-external-products', {
-      body: { action: 'bulk-details', productUrls, downloadImages },
+      body: { action: 'bulk-details', productUrls, downloadImages, ...(targetStoreId && { targetStoreId }) },
     });
 
     if (error) {
@@ -143,9 +143,9 @@ export const productImportApi = {
   /**
    * Get import history for the current store
    */
-  async getHistory(): Promise<ImportHistoryResponse> {
+  async getHistory(targetStoreId?: string): Promise<ImportHistoryResponse> {
     const { data, error } = await supabase.functions.invoke('import-external-products', {
-      body: { action: 'history' },
+      body: { action: 'history', ...(targetStoreId && { targetStoreId }) },
     });
 
     if (error) {
