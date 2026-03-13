@@ -162,6 +162,10 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 loading="lazy"
                 decoding="async"
                 onError={() => setImgError(true)}
+                onLoad={(e) => {
+                  const img = e.currentTarget;
+                  if (img.naturalWidth === 0) setImgError(true);
+                }}
                 className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
               />
             )
