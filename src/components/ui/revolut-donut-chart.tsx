@@ -84,6 +84,8 @@ export function RevolutDonutChart({
             outerRadius={outerRadius}
             paddingAngle={paddingAngle}
             strokeWidth={0}
+            isAnimationActive={animationActive}
+            animationDuration={animationActive ? 800 : 0}
             label={showLabels ? ({ name, value }) => `${name}: ${value}` : false}
           >
             {data.map((_, index) => (
