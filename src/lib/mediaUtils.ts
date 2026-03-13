@@ -1,75 +1,94 @@
 /**
- * Checks if a URL is a video file (mp4, webm, etc.)
+ * Normalizes a potential media URL value.
+ */
+export function normalizeMediaUrl(url: string | null | undefined): string | null {
+  if (typeof url !== 'string') return null;
+  const normalized = url.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
+/**
+ * Filters media arrays to only valid, non-empty URLs.
+ */
+export function getValidMediaUrls(media: string[] | null | undefined): string[] {
+  if (!media || media.length === 0) return [];
+  return media
+    .map(normalizeMediaUrl)
+    .filter((item): item is string => Boolean(item));
+}
+
+/**
+ * Checks if a URL is a video file (mp4, webm, mov, avi, mkv).
  */
 export function isVideoUrl(url: string | null | undefined): boolean {
-  if (!url) return false;
-  return /\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(url);
+  const normalized = normalizeMediaUrl(url);
+  if (!normalized) return false;
+  return /\.(mp4|webm|mov|avi|mkv)(?:$|[?#])/i.test(normalized);
 }
 
 /**
- * Checks if a URL is a GIF
+ * Checks if a URL is a GIF.
  */
 export function isGifUrl(url: string | null | undefined): boolean {
-  if (!url) return false;
-  return /\.gif(\?|$)/i.test(url);
+  const normalized = normalizeMediaUrl(url);
+  if (!normalized) return false;
+  return /\.gif(?:$|[?#])/i.test(normalized);
 }
 
 /**
- * Checks if a URL is a static image (not video, not GIF)
+ * Checks if a URL is a static image (not video).
  */
 export function isStaticImageUrl(url: string | null | undefined): boolean {
-  if (!url) return false;
-  return !isVideoUrl(url);
+  const normalized = normalizeMediaUrl(url);
+  if (!normalized) return false;
+  return !isVideoUrl(normalized);
 }
 
 /**
  * Gets the first static image URL from a media array (skips videos).
- * Use this in components that only support <img> tags and can't play videos.
- * GIFs are treated as images since <img> handles them fine.
  */
 export function getFirstImageUrl(media: string[] | null | undefined): string | null {
-  if (!media || media.length === 0) return null;
-  
-  // Find first non-video item (images and GIFs both work in <img> tags)
-  const firstImage = media.find(item => !isVideoUrl(item));
-  if (firstImage) return firstImage;
-  
-  // If all items are videos, return null (caller should handle with a video player or fallback)
-  return null;
+  const validMedia = getValidMediaUrls(media);
+  const firstImage = validMedia.find((item) => !isVideoUrl(item));
+  return firstImage ?? null;
 }
 
 /**
- * Sorts media array to prioritize videos first, then images
- * Returns a new array with videos at the beginning
+ * Sorts media array to prioritize videos first, then images.
  */
 export function sortMediaVideosFirst(media: string[] | null | undefined): string[] {
-  if (!media || media.length === 0) return [];
-  
-  const videos: string[] = [];
-  const images: string[] = [];
-  
-  for (const item of media) {
-    if (isVideoUrl(item)) {
-      videos.push(item);
-    } else {
-      images.push(item);
-    }
-  }
-  
+  const validMedia = getValidMediaUrls(media);
+  const videos = validMedia.filter(isVideoUrl);
+  const images = validMedia.filter((item) => !isVideoUrl(item));
   return [...videos, ...images];
 }
 
 /**
- * Gets the first media item prioritizing video, or first image if no video.
- * Use this in components that CAN display both videos and images (e.g. ProductCard).
+ * Gets the first media item prioritizing video, or first valid media if no video.
  */
 export function getFirstMediaPrioritizeVideo(media: string[] | null | undefined): string | null {
-  if (!media || media.length === 0) return null;
-  
-  // Find first video
-  const firstVideo = media.find(isVideoUrl);
-  if (firstVideo) return firstVideo;
-  
-  // Otherwise return first image/gif
-  return media[0];
+  const validMedia = getValidMediaUrls(media);
+  if (validMedia.length === 0) return null;
+
+  const firstVideo = validMedia.find(isVideoUrl);
+  return firstVideo ?? validMedia[0];
+}
+
+/**
+ * Returns media candidates for product cards with image-first priority and video fallback.
+ */
+export function getCardMediaChain(
+  media: string[] | null | undefined,
+  fallbackMedia?: string | null,
+): string[] {
+  const combined = [
+    ...getValidMediaUrls(media),
+    ...getValidMediaUrls(fallbackMedia ? [fallbackMedia] : null),
+  ];
+
+  const unique = Array.from(new Set(combined));
+  const images = unique.filter((item) => !isVideoUrl(item));
+  const videos = unique.filter(isVideoUrl);
+
+  return [...images, ...videos];
 }

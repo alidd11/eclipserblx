@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef, forwardRef, useState, useEffect } from 'react';
+import { memo, useCallback, useRef, forwardRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Check, Sparkles, BadgeCheck, Shield, Store, Star } from 'lucide-react';
@@ -8,7 +8,7 @@ import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useCurrency } from '@/hooks/useCurrency';
 import { cn } from '@/lib/utils';
-import { getFirstImageUrl, getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
+import { getCardMediaChain, isVideoUrl } from '@/lib/mediaUtils';
 import { WishlistButton } from '@/components/wishlist/WishlistButton';
 import quantisOverlay from '@/assets/quantis-product-overlay.png';
 import { QUANTIS_STORE_ID } from '@/lib/constants';
@@ -85,25 +85,20 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
   const inCart = isInCart(id);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const primaryMedia = getFirstMediaPrioritizeVideo(images) || image || null;
-  const fallbackMedia = getFirstImageUrl(images) || (image && !isVideoUrl(image) ? image : null);
-  const [currentMedia, setCurrentMedia] = useState<string | null>(primaryMedia);
+  const mediaChain = useMemo(() => getCardMediaChain(images, image), [images, image]);
+  const [mediaIndex, setMediaIndex] = useState(0);
 
   useEffect(() => {
-    setCurrentMedia(primaryMedia);
-  }, [primaryMedia, id]);
+    setMediaIndex(0);
+  }, [id, mediaChain]);
 
+  const currentMedia = mediaChain[mediaIndex] ?? null;
   const isVideo = isVideoUrl(currentMedia);
   const showMedia = Boolean(currentMedia);
 
   const handleMediaError = useCallback(() => {
-    setCurrentMedia((prev) => {
-      if (prev === primaryMedia && fallbackMedia && fallbackMedia !== primaryMedia) {
-        return fallbackMedia;
-      }
-      return null;
-    });
-  }, [fallbackMedia, primaryMedia]);
+    setMediaIndex((prev) => (prev + 1 < mediaChain.length ? prev + 1 : mediaChain.length));
+  }, [mediaChain.length]);
   
   // Check if product is new (within last 7 days for stores, 3 days elsewhere)
   const isNew = showNewBadge !== undefined 
