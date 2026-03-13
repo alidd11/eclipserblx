@@ -292,7 +292,8 @@ export function RevolutBarChart({
               fill={s.color}
               radius={s.radius || [6, 6, 0, 0]}
               maxBarSize={40}
-              animationDuration={800}
+              isAnimationActive={animationActive}
+              animationDuration={animationActive ? 800 : 0}
               animationEasing="ease-out"
             />
           ))}
