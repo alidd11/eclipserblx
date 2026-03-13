@@ -101,6 +101,7 @@ const App = forwardRef<HTMLDivElement>((_, ref) => (
                 </StoreDomainProvider>
               </ChatPanelProvider>
             </CartProvider>
+            </ActiveStoreProvider>
           </AuthProvider>
         </CurrencyProvider>
       </CookieConsentProvider>
