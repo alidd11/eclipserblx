@@ -34,6 +34,7 @@ export function ImportProgressStep({
   concurrency = 2,
   onComplete,
 }: ImportProgressStepProps) {
+  const { activeStoreId } = useActiveStore();
   const [statuses, setStatuses] = useState<ProductImportStatus[]>(() =>
     urls.map(url => ({
       url,
