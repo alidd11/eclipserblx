@@ -206,6 +206,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
           isChatPage ? 'flex-col overflow-hidden bg-card h-[100dvh]' : 'min-h-[100dvh]'
         )}
         innerClassName={isChatPage ? 'flex-1 flex flex-col min-w-0 min-h-0' : undefined}
+        mainStyle={isChatPage ? { paddingBottom: 0 } : undefined}
         mainClassName={cn(
           'flex-1 overflow-x-hidden max-w-full min-w-0',
           isChatPage ? 'overflow-y-hidden flex flex-col' : 'md:overflow-y-auto pb-[env(safe-area-inset-bottom)]'
