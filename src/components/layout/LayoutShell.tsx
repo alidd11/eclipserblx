@@ -45,6 +45,8 @@ interface LayoutShellProps {
   wrapperClassName?: string;
   /** CSS class applied to <main> */
   mainClassName?: string;
+  /** CSS class applied to the inner column container (default: md-only height) */
+  innerClassName?: string;
 }
 
 function LayoutShellInner({
@@ -61,6 +63,7 @@ function LayoutShellInner({
   contentClassName,
   wrapperClassName,
   mainClassName,
+  innerClassName,
 }: LayoutShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
@@ -100,7 +103,7 @@ function LayoutShellInner({
         </Sheet>
 
         {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 h-[100dvh]">
+      <div className={innerClassName ?? "flex-1 flex flex-col min-w-0 md:h-[100dvh]"}>
           {customHeader ? (
             customHeader(() => setMobileOpen(true))
           ) : (
