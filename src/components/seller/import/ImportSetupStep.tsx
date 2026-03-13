@@ -132,7 +132,7 @@ export function ImportSetupStep({ onProductsFound }: ImportSetupStepProps) {
               >
                 <span className="text-sm font-medium">{p.name}</span>
                 <Badge variant="outline" className="text-[10px] px-1.5">
-                  {p.id === 'clearlydev' ? 'Full' : 'Beta'}
+                  {p.id === 'clearlydev' ? 'Full' : p.id === 'payhip' ? 'New' : 'Beta'}
                 </Badge>
               </button>
             ))}
