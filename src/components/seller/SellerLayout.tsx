@@ -113,7 +113,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
           'flex-1 overflow-x-hidden',
           isChatPage ? 'overflow-y-hidden' : 'overflow-y-auto'
         )}
-        contentClassName="p-4 md:p-6 lg:p-8"
+        contentClassName="p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
       >
         <PageTransition>{children}</PageTransition>
       </LayoutShell>
