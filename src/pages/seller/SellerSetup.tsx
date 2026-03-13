@@ -62,7 +62,7 @@ export default function SellerSetup() {
 
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-background safe-area-page">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -77,7 +77,7 @@ export default function SellerSetup() {
   const currentStep = steps[currentStepIndex];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background safe-area-page">
       {/* Header */}
       <div className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
