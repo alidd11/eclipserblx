@@ -119,7 +119,7 @@ function LayoutShellInner({
           )}
           <main
             id="main-content"
-            className={mainClassName ?? "flex-1 md:overflow-y-auto overflow-x-hidden max-w-full min-w-0"}
+            className={mainClassName ?? "flex-1 md:overflow-y-auto overflow-x-clip max-w-full min-w-0"}
             style={mainStyle ?? { paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
             {contentClassName ? (
