@@ -148,13 +148,13 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
               </Button>
             </Link>
             {user ? (
-              <Link to="/account">
+              <Link to="/account" className="hidden md:inline-flex">
                 <Button variant="ghost" size="icon" className="h-9 w-9 min-h-[44px] min-w-[44px] text-muted-foreground hover:text-foreground" aria-label={t('nav.myAccount')}>
                   <User className="h-4 w-4" />
                 </Button>
               </Link>
             ) : (
-              <Link to="/auth" aria-label={t('common.signIn')}>
+              <Link to="/auth" aria-label={t('common.signIn')} className="hidden md:inline-flex">
                 <Button variant="ghost" size="icon" className="h-9 w-9 min-h-[44px] min-w-[44px] text-muted-foreground hover:text-foreground" aria-label={t('common.signIn')}>
                   <User className="h-4 w-4" />
                 </Button>
