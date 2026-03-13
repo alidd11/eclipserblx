@@ -170,37 +170,33 @@ export function StripeBalanceTab() {
               ]}
               height={300}
               yFormatter={(v) => `£${v}`}
-              tooltipContent={
-                <ChartTooltip
-                  content={({ active, payload }) => {
-                    if (!active || !payload?.length) return null;
-                    const data = payload[0].payload;
-                    return (
-                      <div className="bg-popover border rounded-lg p-3 shadow-lg">
-                        <p className="font-medium mb-2">{data.displayDate}</p>
-                        <div className="space-y-1 text-sm">
-                          <div className="flex justify-between gap-4">
-                            <span className="text-muted-foreground">Gross:</span>
-                            <span>£{(Number(data.gross) || 0).toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between gap-4">
-                            <span className="text-muted-foreground">Fees:</span>
-                            <span className="text-destructive">-£{(Number(data.fees) || 0).toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between gap-4 border-t pt-1">
-                            <span className="font-medium">Net:</span>
-                            <span className="text-green-600 font-medium">£{(Number(data.net) || 0).toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between gap-4 text-xs text-muted-foreground">
-                            <span>Transactions:</span>
-                            <span>{data.count ?? 0}</span>
-                          </div>
-                        </div>
+              tooltipContent={({ active, payload }: any) => {
+                if (!active || !payload?.length) return null;
+                const data = payload[0].payload;
+                return (
+                  <div className="bg-popover border rounded-lg p-3 shadow-lg">
+                    <p className="font-medium mb-2">{data.displayDate}</p>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">Gross:</span>
+                        <span>£{(Number(data.gross) || 0).toFixed(2)}</span>
                       </div>
-                    );
-                  }}
-                />
-              }
+                      <div className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">Fees:</span>
+                        <span className="text-destructive">-£{(Number(data.fees) || 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between gap-4 border-t pt-1">
+                        <span className="font-medium">Net:</span>
+                        <span className="text-green-600 font-medium">£{(Number(data.net) || 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between gap-4 text-xs text-muted-foreground">
+                        <span>Transactions:</span>
+                        <span>{data.count ?? 0}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }}
             />
           )}
         </CardContent>
