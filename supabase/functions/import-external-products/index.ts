@@ -1106,6 +1106,10 @@ Deno.serve(async (req) => {
         sellerName = result.sellerName;
       } else if (detectedPlatform === 'builtbybit') {
         products = parseBuiltByBitStore(scrapeResult.markdown!, storeUrl);
+      } else if (detectedPlatform === 'payhip') {
+        const result = parsePayhipStore(scrapeResult.markdown!, storeUrl, scrapeResult.links);
+        products = result.products;
+        sellerName = result.sellerName;
       }
 
       // Check for already imported products
