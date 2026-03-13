@@ -1147,13 +1147,14 @@ function AdminChatContent() {
                       </div>
                       {(() => {
                         const role = userRoles[suggestion.user_id];
-                        const roleBadge = role ? DEFAULT_ROLE_BADGES[role] : null;
-                        return roleBadge ? (
+                        const badgeInfo = role ? getRoleBadgeStyle(role) : null;
+                        return badgeInfo ? (
                           <Badge
                             variant="outline"
-                            className={cn('ml-auto text-[10px] py-0', roleBadge.className)}
+                            className="ml-auto text-[10px] py-0 border"
+                            style={badgeInfo.style}
                           >
-                            {roleBadge.label}
+                            {badgeInfo.label}
                           </Badge>
                         ) : null;
                       })()}
