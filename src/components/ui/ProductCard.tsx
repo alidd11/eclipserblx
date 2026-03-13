@@ -148,7 +148,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
       )}>
         {/* Image/Video */}
         <div className="relative aspect-[4/3] bg-black/20 overflow-hidden flex-shrink-0">
-          {displayMedia ? (
+          {showImage ? (
             isVideo ? (
               <BackgroundVideo
                 ref={videoRef}
@@ -161,6 +161,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 alt={name}
                 loading="lazy"
                 decoding="async"
+                onError={() => setImgError(true)}
                 className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
               />
             )
