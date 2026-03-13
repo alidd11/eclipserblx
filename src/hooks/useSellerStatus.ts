@@ -234,7 +234,7 @@ export function useSellerStatus() {
         credentials: credentialsData || undefined,
         paymentDetails: paymentData || undefined,
       } as Store;
-      console.log('[useSellerStatus] returning store:', result.name, result.id, 'for activeStoreId:', activeStoreId);
+      
       return result;
     },
     enabled: !!user?.id,
