@@ -27,7 +27,7 @@ export const BackgroundVideo = forwardRef<HTMLVideoElement, BackgroundVideoProps
     useImperativeHandle(ref, () => videoRef.current as HTMLVideoElement);
 
     return (
-      <div className={cn("relative", containerClassName)}>
+      <div className={cn("relative w-full h-full", containerClassName)}>
         <video
           ref={videoRef}
           src={src}

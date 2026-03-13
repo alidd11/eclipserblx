@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSubscription } from '@/hooks/useSubscription';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 interface PopularProduct {
   id: string;
@@ -45,13 +46,16 @@ function PopularProductCard({ product, rank }: { product: PopularProduct; rank: 
 
         {/* Product image */}
         <div className="flex-shrink-0 w-16 h-12 rounded-md overflow-hidden bg-muted">
-          {product.images?.[0] ? (
-            <img src={optimizeImageUrl(product.images[0], 64, 48)} alt={product.name} width={64} height={48} loading="lazy" decoding="async" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Package className="h-4 w-4 text-muted-foreground/30" />
-            </div>
-          )}
+          {(() => {
+            const imgUrl = getFirstImageUrl(product.images);
+            return imgUrl ? (
+              <img src={optimizeImageUrl(imgUrl, 64, 48)} alt={product.name} width={64} height={48} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Package className="h-4 w-4 text-muted-foreground/30" />
+              </div>
+            );
+          })()}
         </div>
 
         {/* Product details */}
