@@ -42,6 +42,7 @@ function validateStoreUrl(url: string): { valid: boolean; error?: string } {
 }
 
 export function ImportSetupStep({ onProductsFound }: ImportSetupStepProps) {
+  const { activeStoreId } = useActiveStore();
   const [storeUrl, setStoreUrl] = useState('');
   const [ownershipConfirmed, setOwnershipConfirmed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
