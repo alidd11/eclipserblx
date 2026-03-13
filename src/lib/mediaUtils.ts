@@ -3,8 +3,15 @@
  */
 export function normalizeMediaUrl(url: string | null | undefined): string | null {
   if (typeof url !== 'string') return null;
-  const normalized = url.trim();
-  return normalized.length > 0 ? normalized : null;
+  let normalized = url.trim();
+  if (normalized.length === 0) return null;
+  // Canonicalize encoded path separators for consistent dedup
+  try {
+    normalized = decodeURIComponent(normalized);
+  } catch {
+    // keep as-is if decoding fails
+  }
+  return normalized;
 }
 
 /**
