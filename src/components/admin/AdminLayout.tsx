@@ -77,7 +77,11 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
   }, [isChatPage]);
 
   // iOS PWA keyboard handling for chat pages
-  useIOSChatKeyboard(isChatPage);
+  // Keep bottom inset stable on admin/staff chat screens to avoid focus/blur jump.
+  useIOSChatKeyboard(isChatPage, {
+    closedSafeBottom: '4px',
+    openSafeBottom: '4px',
+  });
 
   // Enable notifications & presence across all admin pages
   useSupportTicketNotifications();
