@@ -547,7 +547,7 @@ export default function SellerSettingsTeam() {
             <AlertDialogDescription>
               Are you sure you want to remove{' '}
               <span className="font-medium">
-                {memberToRemove?.profile?.display_name || memberToRemove?.profile?.email}
+                {memberToRemove?.profile?.display_name || 'this member'}
               </span>{' '}
               from your team? They will lose access to your store immediately.
             </AlertDialogDescription>
