@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { safeStorage } from '@/lib/safeStorage';
+import { useActiveStore } from '@/contexts/ActiveStoreContext';
 
 // Safe store columns that can be selected (excludes credentials and payment details)
 const SAFE_STORE_COLUMNS = `
@@ -148,8 +148,8 @@ export interface SellerBalance {
 export function useSellerStatus() {
   const { user } = useAuth();
 
-  // Read the active store ID from localStorage (shared with ActiveStoreContext)
-  const activeStoreId = safeStorage.getItem('active-store-id');
+  // Read the active store ID reactively from context (synced with StoreSwitcher)
+  const { activeStoreId } = useActiveStore();
 
   // Check if user has an approved store
   const { data: store, isLoading: storeLoading } = useQuery({
@@ -258,23 +258,23 @@ export function useSellerStatus() {
     staleTime: 5 * 60 * 1000, // 5 minutes - application status changes infrequently
   });
 
-  // Get seller balance if they have an approved store
+  // Get seller balance for the active store
   const { data: balance, isLoading: balanceLoading } = useQuery({
-    queryKey: ['seller-balance', user?.id],
+    queryKey: ['seller-balance', store?.id],
     queryFn: async () => {
-      if (!user?.id) return null;
+      if (!store?.id) return null;
       
       const { data, error } = await supabase
         .from('seller_balances')
         .select('available_balance, pending_balance, total_earned, total_paid')
-        .eq('user_id', user.id)
+        .eq('store_id', store.id)
         .maybeSingle();
 
       if (error) throw error;
       return data as SellerBalance | null;
     },
-    enabled: !!user?.id && store?.status === 'approved',
-    staleTime: 2 * 60 * 1000, // 2 minutes - balance can change with sales
+    enabled: !!store?.id && store?.status === 'approved',
+    staleTime: 2 * 60 * 1000,
   });
 
   const isSeller = store?.status === 'approved';
