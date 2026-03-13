@@ -1070,7 +1070,7 @@ Deno.serve(async (req) => {
 
       if (!isAllowedScrapeUrl(storeUrl)) {
         return new Response(
-          JSON.stringify({ success: false, error: "Unsupported platform. Use ClearlyDev or BuiltByBit URLs." }),
+          JSON.stringify({ success: false, error: "Unsupported platform. Use ClearlyDev, BuiltByBit, or Payhip URLs." }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -1079,9 +1079,10 @@ Deno.serve(async (req) => {
       if (!detectedPlatform) {
         if (storeUrl.includes('clearlydev.com')) detectedPlatform = 'clearlydev';
         else if (storeUrl.includes('builtbybit.com')) detectedPlatform = 'builtbybit';
+        else if (storeUrl.includes('payhip.com')) detectedPlatform = 'payhip';
         else {
           return new Response(
-            JSON.stringify({ success: false, error: "Unsupported platform. Use ClearlyDev or BuiltByBit URLs." }),
+            JSON.stringify({ success: false, error: "Unsupported platform. Use ClearlyDev, BuiltByBit, or Payhip URLs." }),
             { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
