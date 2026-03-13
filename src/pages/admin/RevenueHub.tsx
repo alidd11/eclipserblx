@@ -70,36 +70,38 @@ export default function RevenueHub() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [verifying, setVerifying] = useState(false);
-  const [lastActivity, setLastActivity] = useState<number>(Date.now());
-  const [timeRemaining, setTimeRemaining] = useState<number>(SESSION_TIMEOUT_MS);
+  const lastActivityRef = useRef<number>(Date.now());
+  const timeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
 
   const activeTab = searchParams.get('tab') || 'overview';
   const setActiveTab = (tab: string) => setSearchParams({ tab }, { replace: true });
 
+  const expireSession = useCallback(() => {
+    setIsVerified(false);
+    setPassword('');
+    try { sessionStorage.removeItem(REVENUE_VERIFIED_KEY); } catch {}
+    showInfoNotification('Session Expired', 'Session expired due to inactivity. Please re-verify.');
+  }, []);
+
   const resetActivityTimer = useCallback(() => {
-    if (isVerified) setLastActivity(Date.now());
-  }, [isVerified]);
+    if (!isVerified) return;
+    lastActivityRef.current = Date.now();
+    if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    timeoutRef.current = window.setTimeout(expireSession, SESSION_TIMEOUT_MS);
+  }, [isVerified, expireSession]);
 
   useEffect(() => {
     if (!isVerified) return;
-    const checkTimeout = setInterval(() => {
-      const elapsed = Date.now() - lastActivity;
-      setTimeRemaining(Math.max(0, SESSION_TIMEOUT_MS - elapsed));
-      if (elapsed >= SESSION_TIMEOUT_MS) {
-        setIsVerified(false);
-        setPassword('');
-        try { sessionStorage.removeItem(REVENUE_VERIFIED_KEY); } catch {}
-        showInfoNotification('Session Expired', 'Session expired due to inactivity. Please re-verify.');
-      }
-    }, 1000);
 
+    resetActivityTimer();
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
     events.forEach(e => window.addEventListener(e, resetActivityTimer));
+
     return () => {
-      clearInterval(checkTimeout);
+      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
       events.forEach(e => window.removeEventListener(e, resetActivityTimer));
     };
-  }, [isVerified, lastActivity, resetActivityTimer]);
+  }, [isVerified, resetActivityTimer]);
 
   const verifyingRef = useRef(false);
 
