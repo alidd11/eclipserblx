@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense, useRef } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense, useRef, memo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { TrendingUp, Lock, Shield, Eye, EyeOff, Clock, Wallet, DollarSign, Coins, Gamepad2, Store } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
@@ -29,6 +29,13 @@ const verifyClient = createClient(
 );
 
 const AdminIncomeSources = lazy(() => import('@/pages/admin/IncomeSources').then(m => ({ default: m.default })));
+
+const MemoFinancialOverview = memo(FinancialOverview);
+const MemoStripeBalanceTab = memo(StripeBalanceTab);
+const MemoGrossRevenueTab = memo(GrossRevenueTab);
+const MemoCreditsAnalyticsTab = memo(CreditsAnalyticsTab);
+const MemoRobuxEarningsTab = memo(RobuxEarningsTab);
+const MemoSellerEarningsTab = memo(SellerEarningsTab);
 
 const SESSION_TIMEOUT_MS = 10 * 60 * 1000;
 const REVENUE_VERIFIED_KEY = 'revenue_verified_at';
@@ -63,36 +70,38 @@ export default function RevenueHub() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [verifying, setVerifying] = useState(false);
-  const [lastActivity, setLastActivity] = useState<number>(Date.now());
-  const [timeRemaining, setTimeRemaining] = useState<number>(SESSION_TIMEOUT_MS);
+  const lastActivityRef = useRef<number>(Date.now());
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const activeTab = searchParams.get('tab') || 'overview';
   const setActiveTab = (tab: string) => setSearchParams({ tab }, { replace: true });
 
+  const expireSession = useCallback(() => {
+    setIsVerified(false);
+    setPassword('');
+    try { sessionStorage.removeItem(REVENUE_VERIFIED_KEY); } catch {}
+    showInfoNotification('Session Expired', 'Session expired due to inactivity. Please re-verify.');
+  }, []);
+
   const resetActivityTimer = useCallback(() => {
-    if (isVerified) setLastActivity(Date.now());
-  }, [isVerified]);
+    if (!isVerified) return;
+    lastActivityRef.current = Date.now();
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(expireSession, SESSION_TIMEOUT_MS);
+  }, [isVerified, expireSession]);
 
   useEffect(() => {
     if (!isVerified) return;
-    const checkTimeout = setInterval(() => {
-      const elapsed = Date.now() - lastActivity;
-      setTimeRemaining(Math.max(0, SESSION_TIMEOUT_MS - elapsed));
-      if (elapsed >= SESSION_TIMEOUT_MS) {
-        setIsVerified(false);
-        setPassword('');
-        try { sessionStorage.removeItem(REVENUE_VERIFIED_KEY); } catch {}
-        showInfoNotification('Session Expired', 'Session expired due to inactivity. Please re-verify.');
-      }
-    }, 1000);
 
+    resetActivityTimer();
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
     events.forEach(e => window.addEventListener(e, resetActivityTimer));
+
     return () => {
-      clearInterval(checkTimeout);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       events.forEach(e => window.removeEventListener(e, resetActivityTimer));
     };
-  }, [isVerified, lastActivity, resetActivityTimer]);
+  }, [isVerified, resetActivityTimer]);
 
   const verifyingRef = useRef(false);
 
@@ -110,8 +119,8 @@ export default function RevenueHub() {
         // Sign out ONLY the ephemeral client — scope: 'local' prevents revoking the main session
         verifyClient.auth.signOut({ scope: 'local' }).catch(() => {});
         const now = Date.now();
+        lastActivityRef.current = now;
         setIsVerified(true);
-        setLastActivity(now);
         setPassword('');
         try { sessionStorage.setItem(REVENUE_VERIFIED_KEY, now.toString()); } catch {}
         await supabase.from('audit_logs').insert({
@@ -125,12 +134,6 @@ export default function RevenueHub() {
       setVerifying(false);
       verifyingRef.current = false;
     }
-  };
-
-  const formatTime = (ms: number) => {
-    const m = Math.floor(ms / 60000);
-    const s = Math.floor((ms % 60000) / 1000);
-    return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
   if (!isVerified) {
@@ -202,7 +205,7 @@ export default function RevenueHub() {
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-1.5 rounded-full w-fit">
                 <Clock className="h-4 w-4" />
-                <span>Session: {formatTime(timeRemaining)}</span>
+                <span>10m inactivity timeout</span>
               </div>
             </div>
           </CardHeader>
@@ -236,14 +239,14 @@ export default function RevenueHub() {
             </div>
 
             <TabsContent value="overview">
-              <FinancialOverview />
+              <MemoFinancialOverview />
             </TabsContent>
 
-            <TabsContent value="stripe"><StripeBalanceTab /></TabsContent>
-            <TabsContent value="gross"><GrossRevenueTab /></TabsContent>
-            <TabsContent value="credits"><CreditsAnalyticsTab /></TabsContent>
-            <TabsContent value="robux"><RobuxEarningsTab /></TabsContent>
-            <TabsContent value="sellers"><SellerEarningsTab /></TabsContent>
+            <TabsContent value="stripe"><MemoStripeBalanceTab /></TabsContent>
+            <TabsContent value="gross"><MemoGrossRevenueTab /></TabsContent>
+            <TabsContent value="credits"><MemoCreditsAnalyticsTab /></TabsContent>
+            <TabsContent value="robux"><MemoRobuxEarningsTab /></TabsContent>
+            <TabsContent value="sellers"><MemoSellerEarningsTab /></TabsContent>
 
             <TabsContent value="sources">
               <Suspense fallback={<Skeleton className="h-96 w-full" />}>

@@ -30,6 +30,20 @@ const TOOLTIP_STYLE = {
   itemStyle: { color: 'hsl(var(--foreground))' },
 };
 
+function useChartAnimationEnabled() {
+  return useMemo(() => {
+    if (typeof window === 'undefined') return false;
+
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    const isIOSWebKit = /(iPhone|iPad|iPod)/i.test(userAgent)
+      && /WebKit/i.test(userAgent)
+      && !/(CriOS|FxiOS|EdgiOS)/i.test(userAgent);
+
+    return !prefersReducedMotion && !isIOSWebKit;
+  }, []);
+}
+
 /* ── Integer ticks helper ── */
 
 function useIntegerTicks(data: any[], seriesKeys: string[], maxTicks = 5): number[] {
@@ -112,6 +126,7 @@ export function RevolutAreaChart({
   const seriesKeys = useMemo(() => series.map(s => s.dataKey), [series]);
   const intTicks = useIntegerTicks(data, seriesKeys);
   const yDomain: [number, number] = [0, intTicks[intTicks.length - 1] || 1];
+  const animationActive = useChartAnimationEnabled();
 
   return (
     <div className={className} style={{ height }}>
@@ -138,7 +153,8 @@ export function RevolutAreaChart({
               fill={`url(#${s.gradientId || `revGrad-${i}`})`}
               activeDot={{ r: 4, fill: s.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
               dot={false}
-              animationDuration={800}
+              isAnimationActive={animationActive}
+              animationDuration={animationActive ? 800 : 0}
               animationEasing="ease-out"
             />
           ))}
@@ -177,6 +193,7 @@ export function RevolutLineChart({
   const seriesKeys = useMemo(() => series.map(s => s.dataKey), [series]);
   const intTicks = useIntegerTicks(data, seriesKeys);
   const yDomain: [number, number] = [0, intTicks[intTicks.length - 1] || 1];
+  const animationActive = useChartAnimationEnabled();
 
   return (
     <div className={className} style={{ height }}>
@@ -202,7 +219,8 @@ export function RevolutLineChart({
               strokeDasharray={s.strokeDasharray}
               dot={false}
               activeDot={{ r: 4, fill: s.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
-              animationDuration={800}
+              isAnimationActive={animationActive}
+              animationDuration={animationActive ? 800 : 0}
               animationEasing="ease-out"
             />
           ))}
@@ -243,6 +261,7 @@ export function RevolutBarChart({
   const seriesKeys = useMemo(() => series.map(s => s.dataKey), [series]);
   const intTicks = useIntegerTicks(data, seriesKeys);
   const yDomain: [number, number] = [0, intTicks[intTicks.length - 1] || 1];
+  const animationActive = useChartAnimationEnabled();
 
   return (
     <div className={className} style={{ height }}>
@@ -273,7 +292,8 @@ export function RevolutBarChart({
               fill={s.color}
               radius={s.radius || [6, 6, 0, 0]}
               maxBarSize={40}
-              animationDuration={800}
+              isAnimationActive={animationActive}
+              animationDuration={animationActive ? 800 : 0}
               animationEasing="ease-out"
             />
           ))}

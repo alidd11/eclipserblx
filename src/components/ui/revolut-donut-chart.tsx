@@ -4,6 +4,7 @@
  */
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { useMemo } from 'react';
 
 const TOOLTIP_STYLE = {
   contentStyle: {
@@ -48,6 +49,18 @@ export function RevolutDonutChart({
   className,
   paddingAngle = 3,
 }: RevolutDonutChartProps) {
+  const animationActive = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    const isIOSWebKit = /(iPhone|iPad|iPod)/i.test(userAgent)
+      && /WebKit/i.test(userAgent)
+      && !/(CriOS|FxiOS|EdgiOS)/i.test(userAgent);
+
+    return !prefersReducedMotion && !isIOSWebKit;
+  }, []);
+
   if (!data || data.length === 0) {
     return (
       <div className={className} style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -71,6 +84,8 @@ export function RevolutDonutChart({
             outerRadius={outerRadius}
             paddingAngle={paddingAngle}
             strokeWidth={0}
+            isAnimationActive={animationActive}
+            animationDuration={animationActive ? 800 : 0}
             label={showLabels ? ({ name, value }) => `${name}: ${value}` : false}
           >
             {data.map((_, index) => (
