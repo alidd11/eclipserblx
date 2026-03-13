@@ -66,7 +66,7 @@ export function IpBanCheck({ children }: { children: React.ReactNode }) {
   // Show banned screen if IP is banned
   if (banInfo?.banned) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4 safe-area-page">
         <div className="max-w-md w-full text-center space-y-6">
           <div className="mx-auto w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center">
             <Ban className="w-10 h-10 text-destructive" />

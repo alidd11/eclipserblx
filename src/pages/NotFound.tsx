@@ -47,7 +47,7 @@ const NotFound = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 safe-area-page">
       <PageTransition className="max-w-md w-full">
         {/* Rule */}
         <div className="w-12 h-0.5 bg-primary mb-8" />
