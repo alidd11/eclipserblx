@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { TrendingUp, FileDown, Lock, Shield, Eye, EyeOff, Clock, Wallet, Coins, Gamepad2, Store } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
 import { FinancialOverview } from '@/components/admin/income/FinancialOverview';
 import { StripeBalanceTab } from '@/components/admin/income/StripeBalanceTab';
 import { GrossRevenueTab } from '@/components/admin/income/GrossRevenueTab';
@@ -13,8 +14,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { showSuccessNotification, showInfoNotification, showErrorNotification } from '@/lib/nativeNotification';
+import { showInfoNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useAuth } from '@/hooks/useAuth';
+
+// Static verification client — no dynamic import
+const incomeVerifyClient = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+  { auth: { persistSession: false, autoRefreshToken: false } }
+);
 
 const SESSION_TIMEOUT_MS = 10 * 60 * 1000;
 const INCOME_VERIFIED_KEY = 'income_verified_at';
