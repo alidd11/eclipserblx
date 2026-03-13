@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense, useRef } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense, useRef, memo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { TrendingUp, Lock, Shield, Eye, EyeOff, Clock, Wallet, DollarSign, Coins, Gamepad2, Store } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
@@ -29,6 +29,13 @@ const verifyClient = createClient(
 );
 
 const AdminIncomeSources = lazy(() => import('@/pages/admin/IncomeSources').then(m => ({ default: m.default })));
+
+const MemoFinancialOverview = memo(FinancialOverview);
+const MemoStripeBalanceTab = memo(StripeBalanceTab);
+const MemoGrossRevenueTab = memo(GrossRevenueTab);
+const MemoCreditsAnalyticsTab = memo(CreditsAnalyticsTab);
+const MemoRobuxEarningsTab = memo(RobuxEarningsTab);
+const MemoSellerEarningsTab = memo(SellerEarningsTab);
 
 const SESSION_TIMEOUT_MS = 10 * 60 * 1000;
 const REVENUE_VERIFIED_KEY = 'revenue_verified_at';
