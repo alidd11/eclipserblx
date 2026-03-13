@@ -82,7 +82,7 @@ function watermarkLuaFile(content: string, userId: string, orderId: string, prod
   return lines.join('\n');
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
