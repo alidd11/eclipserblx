@@ -147,24 +147,70 @@ export interface SellerBalance {
 export function useSellerStatus() {
   const { user } = useAuth();
 
+  // Read the active store ID from localStorage (shared with ActiveStoreContext)
+  const activeStoreId = safeStorage.getItem('active-store-id');
+
   // Check if user has an approved store
   const { data: store, isLoading: storeLoading } = useQuery({
-    queryKey: ['seller-store', user?.id],
+    queryKey: ['seller-store', user?.id, activeStoreId],
     queryFn: async () => {
       if (!user?.id) return null;
-      
-      // Fetch store data - user may have multiple stores, get the first approved one
-      const { data: storeData, error: storeError } = await supabase
-        .from('stores')
-        .select(SAFE_STORE_COLUMNS)
-        .eq('owner_id', user.id)
-        .eq('status', 'approved')
-        .order('created_at', { ascending: true })
-        .limit(1)
-        .maybeSingle();
 
-      if (storeError) throw storeError;
-      if (!storeData) return null;
+      let storeData: any = null;
+
+      // If an active store is selected, try to fetch it (owned OR team member)
+      if (activeStoreId) {
+        // First check if user owns this store
+        const { data: ownedStore } = await supabase
+          .from('stores')
+          .select(SAFE_STORE_COLUMNS)
+          .eq('id', activeStoreId)
+          .eq('owner_id', user.id)
+          .eq('status', 'approved')
+          .maybeSingle();
+
+        if (ownedStore) {
+          storeData = ownedStore;
+        } else {
+          // Check if user is a team member of this store
+          const { data: teamMember } = await supabase
+            .from('store_team_members')
+            .select('store_id')
+            .eq('store_id', activeStoreId)
+            .eq('user_id', user.id)
+            .not('accepted_at', 'is', null)
+            .maybeSingle();
+
+          if (teamMember) {
+            const { data: teamStore } = await supabase
+              .from('stores')
+              .select(SAFE_STORE_COLUMNS)
+              .eq('id', activeStoreId)
+              .eq('status', 'approved')
+              .maybeSingle();
+
+            if (teamStore) {
+              storeData = teamStore;
+            }
+          }
+        }
+      }
+
+      // Fallback: get the first owned store
+      if (!storeData) {
+        const { data: fallback, error: storeError } = await supabase
+          .from('stores')
+          .select(SAFE_STORE_COLUMNS)
+          .eq('owner_id', user.id)
+          .eq('status', 'approved')
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (storeError) throw storeError;
+        if (!fallback) return null;
+        storeData = fallback;
+      }
 
       // Fetch credentials and payment details in parallel
       const [{ data: credentialsData }, { data: paymentData }] = await Promise.all([
@@ -187,7 +233,7 @@ export function useSellerStatus() {
       } as Store;
     },
     enabled: !!user?.id,
-    staleTime: 5 * 60 * 1000, // 5 minutes - store data rarely changes mid-session
+    staleTime: 5 * 60 * 1000,
   });
 
   // Check if user has a pending application
