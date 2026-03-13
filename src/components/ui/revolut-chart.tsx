@@ -30,6 +30,20 @@ const TOOLTIP_STYLE = {
   itemStyle: { color: 'hsl(var(--foreground))' },
 };
 
+function useChartAnimationEnabled() {
+  return useMemo(() => {
+    if (typeof window === 'undefined') return false;
+
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    const isIOSWebKit = /(iPhone|iPad|iPod)/i.test(userAgent)
+      && /WebKit/i.test(userAgent)
+      && !/(CriOS|FxiOS|EdgiOS)/i.test(userAgent);
+
+    return !prefersReducedMotion && !isIOSWebKit;
+  }, []);
+}
+
 /* ── Integer ticks helper ── */
 
 function useIntegerTicks(data: any[], seriesKeys: string[], maxTicks = 5): number[] {
