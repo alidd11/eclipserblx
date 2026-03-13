@@ -6,7 +6,6 @@ const Footer = lazy(() => import('@/components/layout/Footer').then(m => ({ defa
 // Lazy-load breadcrumb — non-critical for initial paint
 const UniversalBreadcrumb = lazy(() => import('@/components/layout/UniversalBreadcrumb').then(m => ({ default: m.UniversalBreadcrumb })));
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
-import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
 import { useEdgeSwipe } from '@/hooks/useEdgeSwipe';
 

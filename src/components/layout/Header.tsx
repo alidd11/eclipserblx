@@ -43,11 +43,12 @@ interface HeaderProps {
   hideBrandName?: boolean;
   onMenuClick?: () => void;
   onSidebarToggle?: () => void;
-  /** CSS class for scroll-direction transform */
+  /** Pin header to viewport on mobile (Safari/PWA safe) */
+  mobileFixed?: boolean;
   className?: string;
 }
 
-export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header({ showDesktopNav = true, hideBrandName = false, onMenuClick, onSidebarToggle, className }: HeaderProps, ref) {
+export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header({ showDesktopNav = true, hideBrandName = false, onMenuClick, onSidebarToggle, mobileFixed = false, className }: HeaderProps, ref) {
   const { user, signOut } = useAuth();
   const { itemCount } = useCart();
   const { discordUrl } = useDiscordUrl();
