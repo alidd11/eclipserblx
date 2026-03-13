@@ -11,10 +11,10 @@ export function BackgroundRefreshIndicator() {
 
   return (
     <div
-      className="fixed top-1 right-2 z-[9998] pointer-events-none"
+      className="fixed top-[3px] right-[3px] z-[9998] pointer-events-none opacity-40"
       aria-hidden="true"
     >
-      <div className="h-2 w-2 rounded-full bg-primary/60 animate-pulse" />
+      <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
     </div>
   );
 }
