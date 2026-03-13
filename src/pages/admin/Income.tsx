@@ -73,19 +73,24 @@ export default function AdminIncome() {
     };
   }, [isVerified, lastActivity, resetActivityTimer]);
 
+  const verifyingRef = useRef(false);
+
   const handleVerifyPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?.email || !password) return;
+    if (!user?.email || !password || verifyingRef.current) return;
+    verifyingRef.current = true;
     setVerifying(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email: user.email, password });
+      const { error } = await incomeVerifyClient.auth.signInWithPassword({ email: user.email, password });
       if (error) {
         showErrorNotification('Authentication Failed', 'Incorrect password. Please try again.');
         setPassword('');
       } else {
+        incomeVerifyClient.auth.signOut().catch(() => {});
         const now = Date.now();
         setIsVerified(true);
         setLastActivity(now);
+        setPassword('');
         try { sessionStorage.setItem(INCOME_VERIFIED_KEY, now.toString()); } catch {}
         await supabase.from('audit_logs').insert({
           user_id: user.id, action: 'access', resource: 'income_analytics',
@@ -96,6 +101,7 @@ export default function AdminIncome() {
       showErrorNotification('Verification Failed', 'Verification failed. Please try again.');
     } finally {
       setVerifying(false);
+      verifyingRef.current = false;
     }
   };
 
