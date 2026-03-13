@@ -85,7 +85,7 @@ function LayoutShellInner({
         Skip to main content
       </a>
 
-      <div className={wrapperClassName ?? "min-h-[100dvh] flex w-full overflow-x-hidden relative max-w-full min-w-0"}>
+      <div className={wrapperClassName ?? "min-h-[100dvh] flex w-full overflow-x-clip relative max-w-full min-w-0"}>
         {/* Desktop Sidebar */}
         <div className="hidden md:flex">{desktopSidebar}</div>
 
