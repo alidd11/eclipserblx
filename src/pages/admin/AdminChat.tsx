@@ -973,10 +973,10 @@ function AdminChatContent() {
                         </span>
                         {(() => {
                           const role = userRoles[message.user_id];
-                          const roleBadge = role ? DEFAULT_ROLE_BADGES[role] : null;
-                          return roleBadge ? (
-                            <Badge variant="outline" className={cn('text-[10px] sm:text-xs py-0', roleBadge.className)}>
-                              {roleBadge.label}
+                          const badgeInfo = role ? getRoleBadgeStyle(role) : null;
+                          return badgeInfo ? (
+                            <Badge variant="outline" className="text-[10px] sm:text-xs py-0 border" style={badgeInfo.style}>
+                              {badgeInfo.label}
                             </Badge>
                           ) : null;
                         })()}
