@@ -152,19 +152,22 @@ export function RecentReleasesCarousel() {
               <div className="overflow-hidden rounded-lg border border-border bg-card hover:border-primary/30 transition-colors">
                 {/* Large image area like ClearlyDev */}
                 <div className="aspect-[4/3] relative overflow-hidden bg-muted">
-                  {product.images?.[0] ? (
-                    <img
-                      src={optimizeImageUrl(product.images[0], 300, 225)}
-                      alt={product.name}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-                      No image
-                    </div>
-                  )}
+                  {(() => {
+                    const imgUrl = getFirstImageUrl(product.images);
+                    return imgUrl ? (
+                      <img
+                        src={optimizeImageUrl(imgUrl, 300, 225)}
+                        alt={product.name}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                        No image
+                      </div>
+                    );
+                  })()}
                 </div>
                 {/* Store strip */}
                 <div className="h-7 flex items-center gap-1.5 px-2.5 bg-muted/60">

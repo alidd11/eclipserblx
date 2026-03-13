@@ -101,7 +101,7 @@ export function CategoriesGrid() {
           .limit(1);
 
         if (fallbackProducts?.[0]?.images && Array.isArray(fallbackProducts[0].images)) {
-          fallbackImage = fallbackProducts[0].images[0] as string;
+          fallbackImage = getFirstImageUrl(fallbackProducts[0].images as string[]);
         }
       }
 
