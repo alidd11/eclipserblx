@@ -45,6 +45,8 @@ interface LayoutShellProps {
   wrapperClassName?: string;
   /** CSS class applied to <main> */
   mainClassName?: string;
+  /** CSS class applied to the inner column container (default: md-only height) */
+  innerClassName?: string;
 }
 
 function LayoutShellInner({
