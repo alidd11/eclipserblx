@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { checkRateLimit, getClientIp as sharedGetClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
@@ -83,7 +82,7 @@ function watermarkLuaFile(content: string, userId: string, orderId: string, prod
   return lines.join('\n');
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -263,10 +262,8 @@ serve(async (req) => {
     }
 
     // Atomically increment download count
-    await supabaseAdmin.rpc('increment_download_count', { p_product_id: productId })
-      .then(({ error: incErr }) => {
-        if (incErr) console.error("Error incrementing download count:", incErr);
-      });
+    const incResult = await supabaseAdmin.rpc('increment_download_count', { p_product_id: productId });
+    if (incResult.error) console.error("Error incrementing download count:", incResult.error);
 
     // === WATERMARKING for .lua files ===
     if (isLuaFile) {
@@ -286,13 +283,13 @@ serve(async (req) => {
           const watermarkedContent = watermarkLuaFile(
             originalContent, 
             user.id, 
-            (userOrder as any).order_id || userOrder.id, 
+            ((userOrder as Record<string, unknown>).order_id as string) || userOrder.id, 
             productId
           );
           
           const watermarkId = generateWatermarkHash(
             user.id, 
-            (userOrder as any).order_id || userOrder.id, 
+            ((userOrder as Record<string, unknown>).order_id as string) || userOrder.id, 
             productId
           );
           
@@ -341,24 +338,25 @@ serve(async (req) => {
                   temp_file_path: tempPath, // Store path for cleanup
                 });
                 
-                const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-                const downloadUrl = `${supabaseUrl}/functions/v1/download-asset?token=${downloadToken}`;
-                
-                return new Response(
-                  JSON.stringify({
-                    downloadUrl,
-                    productName: product.name,
-                    fileName,
-                    fileSize: watermarkedContent.length,
-                    expiresAt: expiresAt.toISOString(),
-                    oneTimeUse: true,
-                  }),
-                  { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-                );
+                if (!tokenError) {
+                  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+                  const downloadUrl = `${supabaseUrl}/functions/v1/download-asset?token=${downloadToken}`;
+                  
+                  return new Response(
+                    JSON.stringify({
+                      downloadUrl,
+                      productName: product.name,
+                      fileName,
+                      fileSize: watermarkedContent.length,
+                      expiresAt: expiresAt.toISOString(),
+                      oneTimeUse: true,
+                    }),
+                    { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                  );
+                }
               }
             }
-          }
-        } catch (e) {
+          } catch (e) {
           console.error("Watermarking failed, falling back to normal download:", e);
         }
       }
@@ -430,7 +428,7 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
-  } catch (error: unknown) {
+  } catch (error) {
     console.error("Download error:", error);
     const message = error instanceof Error ? error.message : "Internal server error";
     return new Response(
