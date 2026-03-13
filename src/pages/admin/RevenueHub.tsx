@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { TrendingUp, Lock, Shield, Eye, EyeOff, Clock, Wallet, DollarSign } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
 import { FinancialOverview } from '@/components/admin/income/FinancialOverview';
 import { StripeBalanceTab } from '@/components/admin/income/StripeBalanceTab';
 import { GrossRevenueTab } from '@/components/admin/income/GrossRevenueTab';
@@ -16,10 +17,16 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { showSuccessNotification, showInfoNotification, showErrorNotification } from '@/lib/nativeNotification';
+import { showInfoNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useAuth } from '@/hooks/useAuth';
-import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+
+// Static verification client — no dynamic import, no session persistence
+const verifyClient = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+  { auth: { persistSession: false, autoRefreshToken: false } }
+);
 
 const AdminIncomeSources = lazy(() => import('@/pages/admin/IncomeSources').then(m => ({ default: m.default })));
 
