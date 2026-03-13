@@ -6,7 +6,6 @@ const Footer = lazy(() => import('@/components/layout/Footer').then(m => ({ defa
 // Lazy-load breadcrumb — non-critical for initial paint
 const UniversalBreadcrumb = lazy(() => import('@/components/layout/UniversalBreadcrumb').then(m => ({ default: m.UniversalBreadcrumb })));
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
-import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
 import { useEdgeSwipe } from '@/hooks/useEdgeSwipe';
 
@@ -26,6 +25,7 @@ interface LayoutShellProps {
   headerProps?: {
     showDesktopNav?: boolean;
     hideBrandName?: boolean;
+    mobileFixed?: boolean;
   };
   /** Completely replace the default Header with a custom element */
   customHeader?: (onMenuClick: () => void) => ReactNode;
@@ -67,7 +67,6 @@ function LayoutShellInner({
 }: LayoutShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
-  const scrollDirection = useScrollDirection();
 
   useEdgeSwipe({
     onSwipe: () => setMobileOpen(true),

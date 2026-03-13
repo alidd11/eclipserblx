@@ -43,11 +43,12 @@ interface HeaderProps {
   hideBrandName?: boolean;
   onMenuClick?: () => void;
   onSidebarToggle?: () => void;
-  /** CSS class for scroll-direction transform */
+  /** Pin header to viewport on mobile (Safari/PWA safe) */
+  mobileFixed?: boolean;
   className?: string;
 }
 
-export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header({ showDesktopNav = true, hideBrandName = false, onMenuClick, onSidebarToggle, className }: HeaderProps, ref) {
+export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header({ showDesktopNav = true, hideBrandName = false, onMenuClick, onSidebarToggle, mobileFixed = false, className }: HeaderProps, ref) {
   const { user, signOut } = useAuth();
   const { itemCount } = useCart();
   const { discordUrl } = useDiscordUrl();
@@ -95,8 +96,19 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
   };
 
   return (
-    <header ref={ref} className={cn("sticky top-0 z-50 w-full bg-background border-b border-border pt-[env(safe-area-inset-top)] transition-transform duration-300 will-change-transform", className)}>
-      <nav className="px-4 pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))]" aria-label="Main navigation">
+    <>
+      {mobileFixed && <div aria-hidden="true" className="md:hidden h-[calc(env(safe-area-inset-top)+3.5rem)]" />}
+      <header
+        ref={ref}
+        className={cn(
+          "z-50 w-full bg-background border-b border-border pt-[env(safe-area-inset-top)]",
+          mobileFixed
+            ? "fixed top-0 left-0 right-0 md:sticky md:left-auto md:right-auto"
+            : "sticky top-0",
+          className
+        )}
+      >
+        <nav className="px-4 pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))]" aria-label="Main navigation">
         {/* Mobile header row */}
         <div className="flex md:hidden h-14 items-center gap-1.5">
           {/* Left section: Menu + Logo (fixed width) */}
@@ -431,13 +443,14 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
         </div>
       </nav>
 
-      {/* Sign Out Confirmation Dialog */}
-      <SignOutConfirmDialog
-        open={showSignOutDialog}
-        onOpenChange={setShowSignOutDialog}
-        onConfirm={handleSignOut}
-        isLoading={isSigningOut}
-      />
-    </header>
+        {/* Sign Out Confirmation Dialog */}
+        <SignOutConfirmDialog
+          open={showSignOutDialog}
+          onOpenChange={setShowSignOutDialog}
+          onConfirm={handleSignOut}
+          isLoading={isSigningOut}
+        />
+      </header>
+    </>
   );
 }));
