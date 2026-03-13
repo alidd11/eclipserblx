@@ -95,7 +95,7 @@ export function ImportProgressStep({
           );
 
           try {
-            const result = await productImportApi.getProductDetails(url, downloadImages, categoryOverrides?.[url]);
+            const result = await productImportApi.getProductDetails(url, downloadImages, categoryOverrides?.[url], activeStoreId ?? undefined);
             const duration = Date.now() - itemStart;
 
             if (cancelledRef.current) {
