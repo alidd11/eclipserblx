@@ -262,10 +262,8 @@ Deno.serve(async (req) => {
     }
 
     // Atomically increment download count
-    await supabaseAdmin.rpc('increment_download_count', { p_product_id: productId })
-      .then(({ error: incErr }) => {
-        if (incErr) console.error("Error incrementing download count:", incErr);
-      });
+    const incResult = await supabaseAdmin.rpc('increment_download_count', { p_product_id: productId });
+    if (incResult.error) console.error("Error incrementing download count:", incResult.error);
 
     // === WATERMARKING for .lua files ===
     if (isLuaFile) {
