@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef, forwardRef, useState } from 'react';
+import { memo, useCallback, useRef, forwardRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Check, Sparkles, BadgeCheck, Shield, Store, Star } from 'lucide-react';
@@ -8,7 +8,7 @@ import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useCurrency } from '@/hooks/useCurrency';
 import { cn } from '@/lib/utils';
-import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
+import { getFirstImageUrl, getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 import { WishlistButton } from '@/components/wishlist/WishlistButton';
 import quantisOverlay from '@/assets/quantis-product-overlay.png';
 import { QUANTIS_STORE_ID } from '@/lib/constants';
@@ -79,17 +79,31 @@ interface ProductCardProps {
 
 export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted, isResellable, showBestSellerBadge, showNewBadge, averageRating, storeEclipseEnabled, isPayWhatYouWant, minPrice }, ref) {
   const { addItem, isInCart } = useCart();
-  const { isSubscribed, isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
+  const { isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const inCart = isInCart(id);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [imgError, setImgError] = useState(false);
-  
-  // Get the first media prioritizing video
-  const displayMedia = getFirstMediaPrioritizeVideo(images) || image;
-  const isVideo = isVideoUrl(displayMedia);
-  const showImage = displayMedia && !imgError;
+
+  const primaryMedia = getFirstMediaPrioritizeVideo(images) || image || null;
+  const fallbackMedia = getFirstImageUrl(images) || (image && !isVideoUrl(image) ? image : null);
+  const [currentMedia, setCurrentMedia] = useState<string | null>(primaryMedia);
+
+  useEffect(() => {
+    setCurrentMedia(primaryMedia);
+  }, [primaryMedia, id]);
+
+  const isVideo = isVideoUrl(currentMedia);
+  const showMedia = Boolean(currentMedia);
+
+  const handleMediaError = useCallback(() => {
+    setCurrentMedia((prev) => {
+      if (prev === primaryMedia && fallbackMedia && fallbackMedia !== primaryMedia) {
+        return fallbackMedia;
+      }
+      return null;
+    });
+  }, [fallbackMedia, primaryMedia]);
   
   // Check if product is new (within last 7 days for stores, 3 days elsewhere)
   const isNew = showNewBadge !== undefined 
@@ -109,7 +123,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
         id,
         name,
         price,
-        image: displayMedia || undefined,
+        image: currentMedia || undefined,
         slug,
         category_slug: categorySlug,
         category_id: categoryId,
@@ -118,7 +132,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
         store_name: storeName,
       });
     }
-  }, [inCart, addItem, id, name, price, displayMedia, slug, categorySlug, categoryId, isResellable, storeEclipseEnabled, storeName]);
+  }, [inCart, addItem, id, name, price, currentMedia, slug, categorySlug, categoryId, isResellable, storeEclipseEnabled, storeName]);
 
   const handleMouseEnter = useCallback(() => {
     if (videoRef.current && isVideo) {
@@ -148,23 +162,24 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
       )}>
         {/* Image/Video */}
         <div className="relative aspect-[4/3] bg-black/20 overflow-hidden flex-shrink-0">
-          {showImage ? (
+          {showMedia ? (
             isVideo ? (
               <BackgroundVideo
                 ref={videoRef}
-                src={displayMedia}
+                src={currentMedia!}
+                onError={handleMediaError}
                 className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
               />
             ) : (
               <img
-                src={displayMedia}
+                src={currentMedia!}
                 alt={name}
                 loading="lazy"
                 decoding="async"
-                onError={() => setImgError(true)}
+                onError={handleMediaError}
                 onLoad={(e) => {
                   const img = e.currentTarget;
-                  if (img.naturalWidth === 0) setImgError(true);
+                  if (img.naturalWidth === 0) handleMediaError();
                 }}
                 className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
               />

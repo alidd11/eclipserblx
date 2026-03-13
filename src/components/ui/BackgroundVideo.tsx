@@ -1,7 +1,7 @@
-import { forwardRef, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useImperativeHandle, useRef, type VideoHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
-interface BackgroundVideoProps {
+interface BackgroundVideoProps extends Omit<VideoHTMLAttributes<HTMLVideoElement>, 'src' | 'className'> {
   src: string;
   className?: string;
   containerClassName?: string;
@@ -20,7 +20,7 @@ interface BackgroundVideoProps {
  * - CSS class 'background-video' hides webkit media controls via global CSS
  */
 export const BackgroundVideo = forwardRef<HTMLVideoElement, BackgroundVideoProps>(
-  function BackgroundVideo({ src, className, containerClassName }, ref) {
+  function BackgroundVideo({ src, className, containerClassName, ...videoProps }, ref) {
     const videoRef = useRef<HTMLVideoElement>(null);
     
     // Forward the ref so parent components can control play/pause
@@ -38,6 +38,7 @@ export const BackgroundVideo = forwardRef<HTMLVideoElement, BackgroundVideoProps
           disablePictureInPicture
           // @ts-ignore - disableRemotePlayback is valid but not in React types
           disableRemotePlayback
+          {...videoProps}
           className={cn(
             "background-video pointer-events-none",
             className

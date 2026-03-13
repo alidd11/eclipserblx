@@ -147,6 +147,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
                 {currentProduct && (
                   <div className="animate-fade-in">
                     <ProductCard
+                      key={currentProduct.id}
                       id={currentProduct.id}
                       name={currentProduct.name}
                       slug={String((currentProduct as any).product_number)}
