@@ -283,7 +283,7 @@ Deno.serve(async (req) => {
           const watermarkedContent = watermarkLuaFile(
             originalContent, 
             user.id, 
-            (userOrder as any).order_id || userOrder.id, 
+            ((userOrder as Record<string, unknown>).order_id as string) || userOrder.id, 
             productId
           );
           
