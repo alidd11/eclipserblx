@@ -501,6 +501,17 @@ export default function ProductDetail() {
                     alt={product.name}
                     className="w-full h-full object-contain pointer-events-none transition-transform duration-300 group-hover:scale-[1.02]"
                     draggable={false}
+                    onError={() => {
+                      if (selectedImage + 1 < images.length) {
+                        setSelectedImage(selectedImage + 1);
+                      }
+                    }}
+                    onLoad={(e) => {
+                      const img = e.currentTarget;
+                      if (img.naturalWidth === 0 && selectedImage + 1 < images.length) {
+                        setSelectedImage(selectedImage + 1);
+                      }
+                    }}
                   />
                 )
               ) : (
