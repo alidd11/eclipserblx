@@ -141,7 +141,7 @@ export function ImportSetupStep({ onProductsFound }: ImportSetupStepProps) {
           <div className="space-y-1.5">
             <div className="flex gap-2">
               <Input
-                placeholder="https://clearlydev.com/store/your-store"
+                placeholder="https://clearlydev.com/store/your-store or https://payhip.com/YourStore"
                 value={storeUrl}
                 onChange={(e) => { setStoreUrl(e.target.value); setError(null); }}
                 onKeyDown={(e) => e.key === 'Enter' && ownershipConfirmed && handleSearch()}
