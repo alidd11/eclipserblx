@@ -131,6 +131,7 @@ const GROUP_MENTIONS = [
 function StaffMessagesContent() {
   const { user } = useAuth();
   const { isAdmin } = useAdminAuth();
+  const { getBestRole, getRoleBadgeStyle } = useChatRoles();
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
   const [replyToMessage, setReplyToMessage] = useState<ChatMessage | null>(null);
