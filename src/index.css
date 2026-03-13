@@ -1017,25 +1017,14 @@ a,
   }
 }
 
-/* ── Smooth image fade-in on load ── */
-img:not([data-no-fade]) {
+/* ── Opt-in image fade-in (only for images that explicitly request it) ── */
+img[data-fade-in="true"] {
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-img:not([data-no-fade]).loaded,
-img:not([data-no-fade])[data-loaded="true"] {
+img[data-fade-in="true"].loaded,
+img[data-fade-in="true"][data-loaded="true"] {
   opacity: 1;
-}
-/* Fallback: if JS doesn't add .loaded, show images after decode */
-img:not([data-no-fade])[complete] {
-  opacity: 1;
-}
-/* Ensure inline/icon images are always visible (SVG, tiny, already-rendered) */
-img[src^="data:"],
-img[width="1"],
-img.no-fade,
-img[data-no-fade] {
-  opacity: 1 !important;
 }
 
 /* ── Mobile tab bar offset ── */
