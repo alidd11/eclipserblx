@@ -86,7 +86,7 @@ export default function AdminIncome() {
         showErrorNotification('Authentication Failed', 'Incorrect password. Please try again.');
         setPassword('');
       } else {
-        incomeVerifyClient.auth.signOut().catch(() => {});
+        incomeVerifyClient.auth.signOut({ scope: 'local' }).catch(() => {});
         const now = Date.now();
         setIsVerified(true);
         setLastActivity(now);

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, lazy, Suspense, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { TrendingUp, Lock, Shield, Eye, EyeOff, Clock, Wallet, DollarSign } from 'lucide-react';
+import { TrendingUp, Lock, Shield, Eye, EyeOff, Clock, Wallet, DollarSign, Coins, Gamepad2, Store } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { FinancialOverview } from '@/components/admin/income/FinancialOverview';
 import { StripeBalanceTab } from '@/components/admin/income/StripeBalanceTab';
@@ -33,11 +33,15 @@ const AdminIncomeSources = lazy(() => import('@/pages/admin/IncomeSources').then
 const SESSION_TIMEOUT_MS = 10 * 60 * 1000;
 const REVENUE_VERIFIED_KEY = 'revenue_verified_at';
 
-// Tab config for mobile select
+// Flat tab config — single level, no nesting
 const tabs = [
   { value: 'overview', label: 'Overview', icon: TrendingUp },
+  { value: 'stripe', label: 'Stripe', icon: Wallet },
+  { value: 'gross', label: 'Gross', icon: DollarSign },
+  { value: 'credits', label: 'Credits', icon: Coins },
+  { value: 'robux', label: 'Robux', icon: Gamepad2 },
+  { value: 'sellers', label: 'Sellers', icon: Store },
   { value: 'sources', label: 'Sources', icon: DollarSign },
-  { value: 'sellers', label: 'Seller Earnings', icon: Wallet },
 ] as const;
 
 function getPersistedVerification(): boolean {
@@ -103,8 +107,8 @@ export default function RevenueHub() {
         showErrorNotification('Authentication Failed', 'Incorrect password. Please try again.');
         setPassword('');
       } else {
-        // Sign out the ephemeral client immediately
-        verifyClient.auth.signOut().catch(() => {});
+        // Sign out ONLY the ephemeral client — scope: 'local' prevents revoking the main session
+        verifyClient.auth.signOut({ scope: 'local' }).catch(() => {});
         const now = Date.now();
         setIsVerified(true);
         setLastActivity(now);
@@ -184,102 +188,70 @@ export default function RevenueHub() {
 
   return (
     <AdminLayout requiredPermissions={['view_income']}>
-      <div className="space-y-8 w-full">
+      <div className="space-y-6 w-full">
         {/* Page Header */}
         <Card className="bg-card border-border">
           <CardHeader className="pb-4">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <CardTitle className="text-2xl sm:text-3xl font-display flex items-center gap-2">
-                  <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                <CardTitle className="text-2xl font-display flex items-center gap-2">
+                  <TrendingUp className="h-6 w-6 text-primary" />
                   Revenue
                 </CardTitle>
-                <p className="text-muted-foreground text-sm mt-1">Comprehensive financial overview, income sources, and seller earnings</p>
+                <p className="text-muted-foreground text-sm mt-1">Financial overview, income sources & seller earnings</p>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
-                  <Clock className="h-4 w-4" />
-                  <span>Session: {formatTime(timeRemaining)}</span>
-                </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-1.5 rounded-full w-fit">
+                <Clock className="h-4 w-4" />
+                <span>Session: {formatTime(timeRemaining)}</span>
               </div>
             </div>
           </CardHeader>
         </Card>
 
-        {/* Financial Overview (always visible) */}
-        <FinancialOverview />
+        {/* Single flat tab level */}
+        <AdminHubProvider>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            {/* Desktop tabs */}
+            <TabsList className="hidden sm:grid w-full max-w-3xl grid-cols-7">
+              {tabs.map(t => (
+                <TabsTrigger key={t.value} value={t.value} className="gap-1.5 text-xs">
+                  <t.icon className="h-4 w-4" />
+                  {t.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-        {/* Tabs — mobile select, desktop tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Desktop tabs */}
-          <TabsList className="hidden sm:grid w-full max-w-xl grid-cols-3">
-            {tabs.map(t => (
-              <TabsTrigger key={t.value} value={t.value} className="gap-2">
-                <t.icon className="h-4 w-4" />
-                {t.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+            {/* Mobile select */}
+            <div className="sm:hidden">
+              <Select value={activeTab} onValueChange={setActiveTab}>
+                <SelectTrigger className="w-auto min-w-[160px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {tabs.map(t => (
+                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* Mobile select */}
-          <div className="sm:hidden">
-            <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-auto min-w-[140px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {tabs.map(t => (
-                  <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+            <TabsContent value="overview">
+              <FinancialOverview />
+            </TabsContent>
 
-          <TabsContent value="overview" className="space-y-6">
-            {/* Income page tabs content (Stripe, Gross, Credits, Robux, Sellers) */}
-            <Tabs defaultValue="stripe" className="space-y-6">
-              <TabsList className="grid w-full max-w-3xl grid-cols-5">
-                <TabsTrigger value="stripe" className="gap-2">
-                  <Wallet className="h-4 w-4" />
-                  <span className="hidden sm:inline">Stripe</span>
-                </TabsTrigger>
-                <TabsTrigger value="gross" className="gap-2">
-                  <TrendingUp className="h-4 w-4" />
-                  <span className="hidden sm:inline">Gross</span>
-                </TabsTrigger>
-                <TabsTrigger value="credits" className="gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  <span className="hidden sm:inline">Credits</span>
-                </TabsTrigger>
-                <TabsTrigger value="robux" className="gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  <span className="hidden sm:inline">Robux</span>
-                </TabsTrigger>
-                <TabsTrigger value="sellerEarnings" className="gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  <span className="hidden sm:inline">Sellers</span>
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="stripe"><StripeBalanceTab /></TabsContent>
-              <TabsContent value="gross"><GrossRevenueTab /></TabsContent>
-              <TabsContent value="credits"><CreditsAnalyticsTab /></TabsContent>
-              <TabsContent value="robux"><RobuxEarningsTab /></TabsContent>
-              <TabsContent value="sellerEarnings"><SellerEarningsTab /></TabsContent>
-            </Tabs>
-          </TabsContent>
+            <TabsContent value="stripe"><StripeBalanceTab /></TabsContent>
+            <TabsContent value="gross"><GrossRevenueTab /></TabsContent>
+            <TabsContent value="credits"><CreditsAnalyticsTab /></TabsContent>
+            <TabsContent value="robux"><RobuxEarningsTab /></TabsContent>
+            <TabsContent value="sellers"><SellerEarningsTab /></TabsContent>
 
-          <AdminHubProvider>
             <TabsContent value="sources">
               <Suspense fallback={<Skeleton className="h-96 w-full" />}>
                 <AdminIncomeSources />
               </Suspense>
             </TabsContent>
-          </AdminHubProvider>
-
-          <TabsContent value="sellers">
-            <SellerEarningsTab />
-          </TabsContent>
-        </Tabs>
+          </Tabs>
+        </AdminHubProvider>
       </div>
     </AdminLayout>
   );
