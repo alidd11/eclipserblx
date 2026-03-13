@@ -148,8 +148,8 @@ export interface SellerBalance {
 export function useSellerStatus() {
   const { user } = useAuth();
 
-  // Read the active store ID from localStorage (shared with ActiveStoreContext)
-  const activeStoreId = safeStorage.getItem('active-store-id');
+  // Read the active store ID reactively from context (synced with StoreSwitcher)
+  const { activeStoreId } = useActiveStore();
 
   // Check if user has an approved store
   const { data: store, isLoading: storeLoading } = useQuery({

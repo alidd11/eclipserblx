@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ActiveStoreProvider } from "@/contexts/ActiveStoreContext";
 import { CartProvider } from "@/hooks/useCart";
 import { ChatPanelProvider } from "@/hooks/useChatPanel";
 import { StoreDomainProvider } from "@/hooks/useStoreDomain";
