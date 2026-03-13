@@ -12,6 +12,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useChatRoles } from '@/hooks/useChatRoles';
 // useIOSKeyboardFix removed — keyboard CSS vars handled by AdminLayout's useIOSChatKeyboard
 import { markChatAsRead } from '@/hooks/useChatNotifications';
 import { cn } from '@/lib/utils';
@@ -70,16 +71,7 @@ const getFileName = (url: string): string => {
   }
 };
 
-// Default role badges for fallback
-const DEFAULT_ROLE_BADGES: Record<string, { label: string; className: string }> = {
-  admin: { label: 'Admin', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
-  lead_administrator: { label: 'Lead Admin', className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-  lead_manager: { label: 'Lead Manager', className: 'bg-green-500/20 text-green-400 border-green-500/30' },
-  support_agent: { label: 'Support', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-  analyst: { label: 'Analyst', className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
-  recruiter: { label: 'Recruiter', className: 'bg-pink-500/20 text-pink-400 border-pink-500/30' },
-  seller: { label: 'Seller', className: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-};
+// Role badges are now dynamic via useChatRoles hook
 
 // Parse @mentions from message text
 const parseMentions = (text: string): string[] => {
@@ -139,6 +131,7 @@ const GROUP_MENTIONS = [
 function StaffMessagesContent() {
   const { user } = useAuth();
   const { isAdmin } = useAdminAuth();
+  const { getBestRole, getRoleBadgeStyle } = useChatRoles();
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
   const [replyToMessage, setReplyToMessage] = useState<ChatMessage | null>(null);
@@ -208,8 +201,6 @@ function StaffMessagesContent() {
   });
 
   // Fetch user roles - pick highest priority staff role per user
-  const ROLE_PRIORITY: string[] = ['admin', 'lead_administrator', 'lead_manager', 'support_agent', 'analyst', 'recruiter', 'seller'];
-
   const { data: userRoles = {} } = useQuery({
     queryKey: ['staff-roles', messages.map(m => m.user_id)],
     queryFn: async () => {
@@ -227,7 +218,7 @@ function StaffMessagesContent() {
       const roleMap: Record<string, string> = {};
       for (const userId of userIds) {
         const roles = data.filter(r => r.user_id === userId).map(r => r.role);
-        const bestRole = ROLE_PRIORITY.find(r => roles.includes(r));
+        const bestRole = getBestRole(roles);
         if (bestRole) roleMap[userId] = bestRole;
       }
       return roleMap;
@@ -850,7 +841,7 @@ function StaffMessagesContent() {
             messages.map((message, index) => {
               const isOwn = message.user_id === user?.id;
               const role = userRoles[message.user_id];
-              const roleBadge = role ? DEFAULT_ROLE_BADGES[role] : null;
+              const badgeInfo = role ? getRoleBadgeStyle(role) : null;
               
               const prevMessage = index > 0 ? messages[index - 1] : null;
               const isGrouped = prevMessage && 
@@ -881,9 +872,9 @@ function StaffMessagesContent() {
                         <span className="text-xs sm:text-sm font-medium text-foreground">
                           {getDisplayName(message.user_id)}
                         </span>
-                        {roleBadge && (
-                          <Badge variant="outline" className={cn('text-[10px] sm:text-xs py-0', roleBadge.className)}>
-                            {roleBadge.label}
+                        {badgeInfo && (
+                          <Badge variant="outline" className="text-[10px] sm:text-xs py-0 border" style={badgeInfo.style}>
+                            {badgeInfo.label}
                           </Badge>
                         )}
                         <span className="text-[10px] sm:text-xs text-muted-foreground">
