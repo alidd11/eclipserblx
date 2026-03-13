@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef, forwardRef } from 'react';
+import { memo, useCallback, useRef, forwardRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Check, Sparkles, BadgeCheck, Shield, Store, Star } from 'lucide-react';
