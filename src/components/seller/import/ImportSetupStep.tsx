@@ -119,7 +119,7 @@ export function ImportSetupStep({ onProductsFound }: ImportSetupStepProps) {
             <Globe className="h-4 w-4" />
             Enter your store URL
           </CardTitle>
-          <CardDescription>We support ClearlyDev and BuiltByBit stores</CardDescription>
+          <CardDescription>We support ClearlyDev, BuiltByBit, and Payhip stores</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
