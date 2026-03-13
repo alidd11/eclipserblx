@@ -202,7 +202,7 @@ function StaffMessagesContent() {
 
   // Fetch user roles - pick highest priority staff role per user
   const { data: userRoles = {} } = useQuery({
-    queryKey: ['staff-roles', messages.map(m => m.user_id)],
+    queryKey: ['staff-roles', messages.map(m => m.user_id), rolePriority],
     queryFn: async () => {
       if (!messages.length) return {};
       const userIds = [...new Set(messages.map(m => m.user_id))];
