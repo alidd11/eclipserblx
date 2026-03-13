@@ -1092,7 +1092,7 @@ function AdminChatContent() {
       {/* Input bar - iMessage style */}
       <div
         data-gesture-exempt="true"
-        className="px-3 py-2 sm:px-4 sm:py-3 flex-shrink-0 bg-card pb-[var(--chat-safe-bottom,0px)] relative"
+        className="px-3 py-2 sm:px-4 sm:py-3 flex-shrink-0 bg-card pb-[var(--chat-safe-bottom,env(safe-area-inset-bottom))] relative"
       >
         {/* Mention suggestions */}
         {showMentionSuggestions && (
