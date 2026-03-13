@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { safeStorage } from '@/lib/safeStorage';
 
 // Safe store columns that can be selected (excludes credentials and payment details)
 const SAFE_STORE_COLUMNS = `
