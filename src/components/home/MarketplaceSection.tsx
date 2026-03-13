@@ -5,6 +5,7 @@ import { Store, ChevronRight, ShieldCheck, Award, Users, Search, Package, FlaskC
 import { usePrefetchProduct } from '@/hooks/usePrefetchProduct';
 import { useTranslation } from 'react-i18next';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
