@@ -1,55 +1,36 @@
 
 
-## Revenue Hub — Root Cause + Layout Fix
+## Issues Identified
 
-### The Data Bug: `signOut()` Kills the Main Session
+**Issue 1: Sidebar positioned at top of screen on desktop**
+The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
 
-**Root cause**: After password verification succeeds, both `RevenueHub.tsx` (line 107) and `Income.tsx` (line 89) call:
-```
-verifyClient.auth.signOut()
-```
+**Issue 2: Excessive black empty space in the content area**
+The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
 
-Supabase's `signOut()` defaults to `scope: 'global'`, which **revokes ALL sessions for that user** — including the main app session. Once the revenue dashboard renders and tries to fetch data (FinancialOverview, StripeBalanceTab, etc.), the main client's token is now invalid. Every edge function call returns 401, every DB query fails with auth errors.
+## Plan
 
-**Fix**: Change both files to use `scope: 'local'` so only the ephemeral verification client's session is revoked:
-```typescript
-verifyClient.auth.signOut({ scope: 'local' }).catch(() => {});
-```
+### 1. Widen the content area on the Categories page
+- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
+- Reduce vertical padding between the header and grid
+- Tighten the gap between the page title/description and the cards
 
-This is a one-line fix in two files.
+### 2. Improve the PageHeader component
+- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
+- This applies globally to all pages using PageHeader
 
-### The Layout Issues
+### 3. Make category cards fill space better
+- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
+- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
+- Reduce grid gap slightly so cards feel more connected
 
-From the screenshots, the mobile layout has several problems:
+### 4. Sidebar desktop alignment fix
+- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
+- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
+- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
 
-1. **Nested tabs are confusing** — The page has an outer tab bar (Overview / Sources / Sellers) and an inner tab bar (Stripe / Gross / Credits / Robux / Sellers) with 5 icon-only tabs crammed together. The "Sellers" tab appears in both levels.
-
-2. **FinancialOverview always renders above tabs** — When it errors, it shows a large red error card that pushes everything down. The 6-column KPI grid doesn't work on mobile (2 columns with 6 cards = 3 rows of dense cards before any actual content).
-
-3. **Redundant content** — SellerEarningsTab is rendered both inside the "overview" nested tabs AND as the standalone "sellers" outer tab.
-
-**Layout redesign plan**:
-
-- **Flatten the tab structure** — Remove the outer Overview/Sources/Sellers tabs. Use a single tab bar with: Stripe, Gross, Credits, Robux, Sellers, Sources. On mobile, use the Select dropdown pattern (already established in the project).
-
-- **Move FinancialOverview into the Stripe tab** or make it a collapsible summary section rather than always-visible.
-
-- **Remove duplicate SellerEarningsTab** from the nested tabs since it has its own top-level tab.
-
-- **Mobile tab bar**: Use Select dropdown on `sm:hidden` (already the pattern), show grid tabs on desktop.
-
-### Files to Change
-
-| File | Change |
-|------|--------|
-| `src/pages/admin/RevenueHub.tsx` | Fix `signOut` scope; flatten tab structure; use Select on mobile |
-| `src/pages/admin/Income.tsx` | Fix `signOut` scope |
-
-### Implementation Steps
-
-1. Fix `signOut({ scope: 'local' })` in both RevenueHub and Income
-2. Flatten RevenueHub to a single tab level: Stripe / Gross / Credits / Robux / Sellers / Sources
-3. Move FinancialOverview inside the Stripe tab (or make it the default "Overview" first tab)
-4. Apply mobile Select dropdown pattern for the tab navigation
-5. Remove redundant SellerEarningsTab from nested sub-tabs
+### Files to modify
+- `src/pages/Categories.tsx` — widen container, tighten spacing
+- `src/components/ui/PageHeader.tsx` — reduce bottom margin
+- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
 
