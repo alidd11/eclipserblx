@@ -57,10 +57,9 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
 
       {/* Content — no transform wrapper */}
       <div
-        className="bg-transparent overscroll-contain"
+        className="bg-transparent"
         style={{
           paddingTop: isOffline ? 'calc(env(safe-area-inset-top) + 2.5rem)' : undefined,
-          minHeight: '100dvh',
         }}
       >
         {children}
