@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { TrendingUp, FileDown, Lock, Shield, Eye, EyeOff, Clock, Wallet, Coins, Gamepad2, Store } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
 import { FinancialOverview } from '@/components/admin/income/FinancialOverview';
 import { StripeBalanceTab } from '@/components/admin/income/StripeBalanceTab';
 import { GrossRevenueTab } from '@/components/admin/income/GrossRevenueTab';
@@ -13,8 +14,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { showSuccessNotification, showInfoNotification, showErrorNotification } from '@/lib/nativeNotification';
+import { showInfoNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { useAuth } from '@/hooks/useAuth';
+
+// Static verification client — no dynamic import
+const incomeVerifyClient = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+  { auth: { persistSession: false, autoRefreshToken: false } }
+);
 
 const SESSION_TIMEOUT_MS = 10 * 60 * 1000;
 const INCOME_VERIFIED_KEY = 'income_verified_at';
@@ -65,19 +73,24 @@ export default function AdminIncome() {
     };
   }, [isVerified, lastActivity, resetActivityTimer]);
 
+  const verifyingRef = useRef(false);
+
   const handleVerifyPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?.email || !password) return;
+    if (!user?.email || !password || verifyingRef.current) return;
+    verifyingRef.current = true;
     setVerifying(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email: user.email, password });
+      const { error } = await incomeVerifyClient.auth.signInWithPassword({ email: user.email, password });
       if (error) {
         showErrorNotification('Authentication Failed', 'Incorrect password. Please try again.');
         setPassword('');
       } else {
+        incomeVerifyClient.auth.signOut().catch(() => {});
         const now = Date.now();
         setIsVerified(true);
         setLastActivity(now);
+        setPassword('');
         try { sessionStorage.setItem(INCOME_VERIFIED_KEY, now.toString()); } catch {}
         await supabase.from('audit_logs').insert({
           user_id: user.id, action: 'access', resource: 'income_analytics',
@@ -88,6 +101,7 @@ export default function AdminIncome() {
       showErrorNotification('Verification Failed', 'Verification failed. Please try again.');
     } finally {
       setVerifying(false);
+      verifyingRef.current = false;
     }
   };
 
