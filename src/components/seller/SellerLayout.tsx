@@ -111,7 +111,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
         )}
         mainClassName={cn(
           'flex-1 overflow-x-hidden',
-          isChatPage ? 'overflow-y-hidden' : 'overflow-y-auto pb-[env(safe-area-inset-bottom)]'
+          isChatPage ? 'overflow-y-hidden' : 'overflow-y-auto'
         )}
         contentClassName="p-4 md:p-6 lg:p-8"
       >
