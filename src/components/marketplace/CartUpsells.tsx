@@ -83,18 +83,21 @@ export function CartUpsells() {
           <div key={product.id} className="rounded-lg border border-border bg-card overflow-hidden group">
             <Link to={`/products/${product.product_number}`}>
               <div className="aspect-[4/3] bg-muted overflow-hidden">
-                {product.images?.[0] ? (
-                  <img
-                    src={product.images[0]}
-                    alt={product.name}
-                    loading="lazy"
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-lg font-bold text-muted-foreground/30">{product.name?.charAt(0)}</span>
-                  </div>
-                )}
+                {(() => {
+                  const imgUrl = getFirstImageUrl(product.images);
+                  return imgUrl ? (
+                    <img
+                      src={imgUrl}
+                      alt={product.name}
+                      loading="lazy"
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-lg font-bold text-muted-foreground/30">{product.name?.charAt(0)}</span>
+                    </div>
+                  );
+                })()}
               </div>
             </Link>
             <div className="p-2 space-y-1">
