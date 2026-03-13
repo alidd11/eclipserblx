@@ -10,7 +10,6 @@ import { AdminStatCard } from '@/components/admin/AdminStatCard';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
-import { ChartTooltip } from '@/components/ui/chart';
 
 interface StripeBalanceData {
   balance: { available: number; pending: number; currency: string };
