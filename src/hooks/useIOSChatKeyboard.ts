@@ -17,7 +17,7 @@ export function useIOSChatKeyboard(active: boolean) {
       return;
     }
 
-    html.style.setProperty('--chat-safe-bottom', 'calc(env(safe-area-inset-bottom) + 4px)');
+    html.style.setProperty('--chat-safe-bottom', 'env(safe-area-inset-bottom)');
     html.style.setProperty('--chat-vvh', '100dvh');
     html.dataset.chatKeyboard = 'closed';
 
