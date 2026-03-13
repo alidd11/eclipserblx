@@ -841,7 +841,7 @@ function StaffMessagesContent() {
             messages.map((message, index) => {
               const isOwn = message.user_id === user?.id;
               const role = userRoles[message.user_id];
-              const roleBadge = role ? DEFAULT_ROLE_BADGES[role] : null;
+              const badgeInfo = role ? getRoleBadgeStyle(role) : null;
               
               const prevMessage = index > 0 ? messages[index - 1] : null;
               const isGrouped = prevMessage && 
@@ -872,9 +872,9 @@ function StaffMessagesContent() {
                         <span className="text-xs sm:text-sm font-medium text-foreground">
                           {getDisplayName(message.user_id)}
                         </span>
-                        {roleBadge && (
-                          <Badge variant="outline" className={cn('text-[10px] sm:text-xs py-0', roleBadge.className)}>
-                            {roleBadge.label}
+                        {badgeInfo && (
+                          <Badge variant="outline" className="text-[10px] sm:text-xs py-0 border" style={badgeInfo.style}>
+                            {badgeInfo.label}
                           </Badge>
                         )}
                         <span className="text-[10px] sm:text-xs text-muted-foreground">
