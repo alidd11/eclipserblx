@@ -1,13 +1,9 @@
 import { useState, useEffect, useCallback, lazy, Suspense, useRef, memo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { TrendingUp, Lock, Shield, Eye, EyeOff, Clock, Wallet, DollarSign, Coins, Gamepad2, Store } from 'lucide-react';
+import { TrendingUp, Lock, Shield, Eye, EyeOff, Clock } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
-import { FinancialOverview } from '@/components/admin/income/FinancialOverview';
-import { StripeBalanceTab } from '@/components/admin/income/StripeBalanceTab';
-import { GrossRevenueTab } from '@/components/admin/income/GrossRevenueTab';
-import { RobuxEarningsTab } from '@/components/admin/income/RobuxEarningsTab';
-import { CreditsAnalyticsTab } from '@/components/admin/income/CreditsAnalyticsTab';
-import { SellerEarningsTab } from '@/components/admin/income/SellerEarningsTab';
+import { OverviewTab } from '@/components/admin/income/OverviewTab';
+import { EarningsTab } from '@/components/admin/income/EarningsTab';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { AdminHubProvider } from '@/components/admin/AdminHubContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -30,25 +26,17 @@ const verifyClient = createClient(
 
 const AdminIncomeSources = lazy(() => import('@/pages/admin/IncomeSources').then(m => ({ default: m.default })));
 
-const MemoFinancialOverview = memo(FinancialOverview);
-const MemoStripeBalanceTab = memo(StripeBalanceTab);
-const MemoGrossRevenueTab = memo(GrossRevenueTab);
-const MemoCreditsAnalyticsTab = memo(CreditsAnalyticsTab);
-const MemoRobuxEarningsTab = memo(RobuxEarningsTab);
-const MemoSellerEarningsTab = memo(SellerEarningsTab);
+const MemoOverviewTab = memo(OverviewTab);
+const MemoEarningsTab = memo(EarningsTab);
 
 const SESSION_TIMEOUT_MS = 10 * 60 * 1000;
 const REVENUE_VERIFIED_KEY = 'revenue_verified_at';
 
-// Flat tab config — single level, no nesting
+// Clean 3-tab layout
 const tabs = [
-  { value: 'overview', label: 'Overview', icon: TrendingUp },
-  { value: 'stripe', label: 'Stripe', icon: Wallet },
-  { value: 'gross', label: 'Gross', icon: DollarSign },
-  { value: 'credits', label: 'Credits', icon: Coins },
-  { value: 'robux', label: 'Robux', icon: Gamepad2 },
-  { value: 'sellers', label: 'Sellers', icon: Store },
-  { value: 'sources', label: 'Sources', icon: DollarSign },
+  { value: 'overview', label: 'Overview' },
+  { value: 'earnings', label: 'Earnings' },
+  { value: 'sources', label: 'Sources' },
 ] as const;
 
 function getPersistedVerification(): boolean {
@@ -116,7 +104,6 @@ export default function RevenueHub() {
         showErrorNotification('Authentication Failed', 'Incorrect password. Please try again.');
         setPassword('');
       } else {
-        // Sign out ONLY the ephemeral client — scope: 'local' prevents revoking the main session
         verifyClient.auth.signOut({ scope: 'local' }).catch(() => {});
         const now = Date.now();
         lastActivityRef.current = now;
@@ -201,7 +188,7 @@ export default function RevenueHub() {
                   <TrendingUp className="h-6 w-6 text-primary" />
                   Revenue
                 </CardTitle>
-                <p className="text-muted-foreground text-sm mt-1">Financial overview, income sources & seller earnings</p>
+                <p className="text-muted-foreground text-sm mt-1">Financial overview, earnings & income sources</p>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-1.5 rounded-full w-fit">
                 <Clock className="h-4 w-4" />
@@ -211,14 +198,13 @@ export default function RevenueHub() {
           </CardHeader>
         </Card>
 
-        {/* Single flat tab level */}
+        {/* Clean 3-tab layout */}
         <AdminHubProvider>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             {/* Desktop tabs */}
-            <TabsList className="hidden sm:grid w-full max-w-3xl grid-cols-7">
+            <TabsList className="hidden sm:grid w-full max-w-md grid-cols-3">
               {tabs.map(t => (
-                <TabsTrigger key={t.value} value={t.value} className="gap-1.5 text-xs">
-                  <t.icon className="h-4 w-4" />
+                <TabsTrigger key={t.value} value={t.value} className="text-sm">
                   {t.label}
                 </TabsTrigger>
               ))}
@@ -239,14 +225,12 @@ export default function RevenueHub() {
             </div>
 
             <TabsContent value="overview">
-              <MemoFinancialOverview />
+              <MemoOverviewTab />
             </TabsContent>
 
-            <TabsContent value="stripe"><MemoStripeBalanceTab /></TabsContent>
-            <TabsContent value="gross"><MemoGrossRevenueTab /></TabsContent>
-            <TabsContent value="credits"><MemoCreditsAnalyticsTab /></TabsContent>
-            <TabsContent value="robux"><MemoRobuxEarningsTab /></TabsContent>
-            <TabsContent value="sellers"><MemoSellerEarningsTab /></TabsContent>
+            <TabsContent value="earnings">
+              <MemoEarningsTab />
+            </TabsContent>
 
             <TabsContent value="sources">
               <Suspense fallback={<Skeleton className="h-96 w-full" />}>
