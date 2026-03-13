@@ -63,6 +63,7 @@ function LayoutShellInner({
   contentClassName,
   wrapperClassName,
   mainClassName,
+  innerClassName,
 }: LayoutShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
