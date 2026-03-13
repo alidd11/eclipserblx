@@ -427,7 +427,7 @@ export default function SellerSettingsTeam() {
                       </Avatar>
                       <div>
                         <p className="font-medium">
-                          {member.profile?.display_name || member.profile?.email || 'Unknown User'}
+                          {member.profile?.display_name || 'Unknown User'}
                         </p>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Clock className="h-3 w-3" />
