@@ -129,7 +129,7 @@ export function ImportProgressStep({
                 // Wait 2 seconds before retry
                 await new Promise(r => setTimeout(r, 2000));
 
-                const retryResult = await productImportApi.getProductDetails(url, downloadImages, categoryOverrides?.[url]);
+                const retryResult = await productImportApi.getProductDetails(url, downloadImages, categoryOverrides?.[url], activeStoreId ?? undefined);
                 const retryDuration = Date.now() - itemStart;
 
                 const updated: ProductImportStatus = {
