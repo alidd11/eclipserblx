@@ -262,11 +262,11 @@ serve(async (req) => {
       console.error("Error logging download:", logError);
     }
 
-    // Increment download count
-    await supabaseAdmin
-      .from('products')
-      .update({ download_count: (product.download_count || 0) + 1 })
-      .eq('id', productId);
+    // Atomically increment download count
+    await supabaseAdmin.rpc('increment_download_count', { p_product_id: productId })
+      .then(({ error: incErr }) => {
+        if (incErr) console.error("Error incrementing download count:", incErr);
+      });
 
     // === WATERMARKING for .lua files ===
     if (isLuaFile) {
