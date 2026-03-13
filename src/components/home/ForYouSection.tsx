@@ -67,19 +67,22 @@ export function ForYouSection() {
             className="group block rounded-lg border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
           >
             <div className="aspect-square bg-muted overflow-hidden">
-              {product.images?.[0] ? (
-                <img
-                  src={product.images[0]}
-                  alt={product.name}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-xl font-bold text-muted-foreground/30">{product.name?.charAt(0)}</span>
-                </div>
-              )}
+              {(() => {
+                const imgUrl = getFirstImageUrl(product.images);
+                return imgUrl ? (
+                  <img
+                    src={imgUrl}
+                    alt={product.name}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-xl font-bold text-muted-foreground/30">{product.name?.charAt(0)}</span>
+                  </div>
+                );
+              })()}
             </div>
             <div className="p-2">
               <p className="text-xs font-medium text-foreground truncate">{product.name}</p>
