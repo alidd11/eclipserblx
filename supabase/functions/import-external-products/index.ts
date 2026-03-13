@@ -1160,6 +1160,7 @@ Deno.serve(async (req) => {
       if (!detectedPlatform) {
         if (productUrl.includes('clearlydev.com')) detectedPlatform = 'clearlydev';
         else if (productUrl.includes('builtbybit.com')) detectedPlatform = 'builtbybit';
+        else if (productUrl.includes('payhip.com')) detectedPlatform = 'payhip';
       }
 
       console.log(`Fetching product details from ${detectedPlatform}: ${productUrl}`);
