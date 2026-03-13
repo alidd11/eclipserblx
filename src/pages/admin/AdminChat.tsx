@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useChatRoles } from '@/hooks/useChatRoles';
 import { useDropZone } from '@/hooks/useDropZone';
 // useIOSKeyboardFix removed — keyboard CSS vars handled by AdminLayout's useIOSChatKeyboard
 import { markChatAsRead } from '@/hooks/useChatNotifications';
