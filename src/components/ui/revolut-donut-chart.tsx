@@ -4,6 +4,7 @@
  */
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { useMemo } from 'react';
 
 const TOOLTIP_STYLE = {
   contentStyle: {
