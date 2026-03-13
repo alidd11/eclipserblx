@@ -258,23 +258,23 @@ export function useSellerStatus() {
     staleTime: 5 * 60 * 1000, // 5 minutes - application status changes infrequently
   });
 
-  // Get seller balance if they have an approved store
+  // Get seller balance for the active store
   const { data: balance, isLoading: balanceLoading } = useQuery({
-    queryKey: ['seller-balance', user?.id],
+    queryKey: ['seller-balance', store?.id],
     queryFn: async () => {
-      if (!user?.id) return null;
+      if (!store?.id) return null;
       
       const { data, error } = await supabase
         .from('seller_balances')
         .select('available_balance, pending_balance, total_earned, total_paid')
-        .eq('user_id', user.id)
+        .eq('store_id', store.id)
         .maybeSingle();
 
       if (error) throw error;
       return data as SellerBalance | null;
     },
-    enabled: !!user?.id && store?.status === 'approved',
-    staleTime: 2 * 60 * 1000, // 2 minutes - balance can change with sales
+    enabled: !!store?.id && store?.status === 'approved',
+    staleTime: 2 * 60 * 1000,
   });
 
   const isSeller = store?.status === 'approved';
