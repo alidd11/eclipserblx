@@ -209,7 +209,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
         mainStyle={isChatPage ? { paddingBottom: 0 } : undefined}
         mainClassName={cn(
           'flex-1 overflow-x-hidden max-w-full min-w-0',
-          isChatPage ? 'overflow-y-hidden flex flex-col' : 'md:overflow-y-auto pb-[env(safe-area-inset-bottom)]'
+          isChatPage ? 'overflow-y-hidden flex flex-col' : 'md:overflow-y-auto'
         )}
         contentClassName={cn(
           isChatPage
