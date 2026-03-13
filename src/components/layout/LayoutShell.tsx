@@ -25,6 +25,7 @@ interface LayoutShellProps {
   headerProps?: {
     showDesktopNav?: boolean;
     hideBrandName?: boolean;
+    mobileFixed?: boolean;
   };
   /** Completely replace the default Header with a custom element */
   customHeader?: (onMenuClick: () => void) => ReactNode;
