@@ -356,8 +356,7 @@ Deno.serve(async (req) => {
                 }
               }
             }
-          }
-        } catch (e) {
+          } catch (e) {
           console.error("Watermarking failed, falling back to normal download:", e);
         }
       }
