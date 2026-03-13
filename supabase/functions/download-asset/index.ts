@@ -338,19 +338,8 @@ serve(async (req) => {
                   order_item_id: orderItemId || userOrder.id,
                   signed_url: signedUrlData.signedUrl,
                   expires_at: expiresAt.toISOString(),
+                  temp_file_path: tempPath, // Store path for cleanup
                 });
-              
-              if (!tokenError) {
-                // Schedule cleanup of temp file (fire and forget)
-                setTimeout(async () => {
-                  try {
-                    await supabaseAdmin.storage
-                      .from('product-assets')
-                      .remove([tempPath]);
-                  } catch (e) {
-                    console.log("Temp watermark file cleanup failed (non-critical):", e);
-                  }
-                }, 6 * 60 * 1000); // 6 minutes (after token expires)
                 
                 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
                 const downloadUrl = `${supabaseUrl}/functions/v1/download-asset?token=${downloadToken}`;
