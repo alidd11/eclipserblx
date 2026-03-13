@@ -1178,6 +1178,8 @@ Deno.serve(async (req) => {
         product = parseClearlyDevProduct(scrapeResult.markdown!, productUrl, scrapeResult.html);
       } else if (detectedPlatform === 'builtbybit') {
         product = parseBuiltByBitProduct(scrapeResult.markdown!, productUrl, scrapeResult.html);
+      } else if (detectedPlatform === 'payhip') {
+        product = parsePayhipProduct(scrapeResult.markdown!, productUrl, scrapeResult.html);
       }
 
       if (!product) {
