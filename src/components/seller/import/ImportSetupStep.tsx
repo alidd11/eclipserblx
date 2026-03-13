@@ -18,6 +18,7 @@ interface ImportSetupStepProps {
 const URL_PATTERNS = [
   { pattern: /clearlydev\.com\/store\/.+/i, platform: 'clearlydev' },
   { pattern: /builtbybit\.com\/members\/.+/i, platform: 'builtbybit' },
+  { pattern: /payhip\.com\/[A-Za-z0-9]/i, platform: 'payhip' },
 ];
 
 function validateStoreUrl(url: string): { valid: boolean; error?: string } {

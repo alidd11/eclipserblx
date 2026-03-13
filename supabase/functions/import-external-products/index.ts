@@ -67,7 +67,7 @@ function suggestCategory(name: string, description: string): string | undefined 
 }
 
 // Allowed URL patterns for scraping (prevent SSRF)
-const ALLOWED_SCRAPE_DOMAINS = ['clearlydev.com', 'builtbybit.com'];
+const ALLOWED_SCRAPE_DOMAINS = ['clearlydev.com', 'builtbybit.com', 'payhip.com'];
 
 function isAllowedScrapeUrl(url: string): boolean {
   try {
