@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef, forwardRef } from 'react';
+import { memo, useCallback, useRef, forwardRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Check, Sparkles, BadgeCheck, Shield, Store, Star } from 'lucide-react';
@@ -84,10 +84,12 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
   const navigate = useNavigate();
   const inCart = isInCart(id);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [imgError, setImgError] = useState(false);
   
   // Get the first media prioritizing video
   const displayMedia = getFirstMediaPrioritizeVideo(images) || image;
   const isVideo = isVideoUrl(displayMedia);
+  const showImage = displayMedia && !imgError;
   
   // Check if product is new (within last 7 days for stores, 3 days elsewhere)
   const isNew = showNewBadge !== undefined 
@@ -146,7 +148,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
       )}>
         {/* Image/Video */}
         <div className="relative aspect-[4/3] bg-black/20 overflow-hidden flex-shrink-0">
-          {displayMedia ? (
+          {showImage ? (
             isVideo ? (
               <BackgroundVideo
                 ref={videoRef}
@@ -159,6 +161,11 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 alt={name}
                 loading="lazy"
                 decoding="async"
+                onError={() => setImgError(true)}
+                onLoad={(e) => {
+                  const img = e.currentTarget;
+                  if (img.naturalWidth === 0) setImgError(true);
+                }}
                 className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
               />
             )
