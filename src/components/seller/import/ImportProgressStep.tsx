@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Download, CheckCircle, XCircle, Clock, Square } from 'lucide-react';
 import { productImportApi, ExternalProduct } from '@/lib/api/productImport';
+import { useActiveStore } from '@/contexts/ActiveStoreContext';
 
 export interface ProductImportStatus {
   url: string;
