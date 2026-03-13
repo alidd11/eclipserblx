@@ -7,6 +7,7 @@ import {
   Loader2, CheckCircle, XCircle, AlertTriangle, History, ExternalLink, RefreshCw
 } from 'lucide-react';
 import { productImportApi, ImportHistoryItem } from '@/lib/api/productImport';
+import { useActiveStore } from '@/contexts/ActiveStoreContext';
 
 export function ImportHistoryTab() {
   const [history, setHistory] = useState<ImportHistoryItem[]>([]);
