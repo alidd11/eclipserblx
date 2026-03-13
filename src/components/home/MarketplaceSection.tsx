@@ -413,7 +413,7 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
                               {(() => {
                                 const imgUrl = getFirstImageUrl(spotlight.images);
                                 return imgUrl ? (
-                                  <img src={optimizeImageUrl(imgUrl, 540, 300)} alt={spotlight.name} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
+                                  <img src={optimizeImageUrl(imgUrl, 540, 300)} alt={spotlight.name} loading="lazy" decoding="async" className="w-full h-full object-contain group-hover:scale-[1.02] transition-transform duration-500" />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center bg-muted">
                                     <Package className="h-8 w-8 text-muted-foreground/30" />

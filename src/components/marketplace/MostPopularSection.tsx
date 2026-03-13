@@ -49,7 +49,7 @@ function PopularProductCard({ product, rank }: { product: PopularProduct; rank: 
           {(() => {
             const imgUrl = getFirstImageUrl(product.images);
             return imgUrl ? (
-              <img src={optimizeImageUrl(imgUrl, 64, 48)} alt={product.name} width={64} height={48} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+              <img src={optimizeImageUrl(imgUrl, 64, 48)} alt={product.name} width={64} height={48} loading="lazy" decoding="async" className="w-full h-full object-contain" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <Package className="h-4 w-4 text-muted-foreground/30" />
