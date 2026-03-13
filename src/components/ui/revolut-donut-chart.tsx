@@ -57,6 +57,18 @@ export function RevolutDonutChart({
     );
   }
 
+  const animationActive = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    const isIOSWebKit = /(iPhone|iPad|iPod)/i.test(userAgent)
+      && /WebKit/i.test(userAgent)
+      && !/(CriOS|FxiOS|EdgiOS)/i.test(userAgent);
+
+    return !prefersReducedMotion && !isIOSWebKit;
+  }, []);
+
   return (
     <div className={className} style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
