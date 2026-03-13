@@ -588,7 +588,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       className={cn(
         "bg-sidebar text-sidebar-foreground flex flex-col transition-all duration-200 shrink-0 overflow-x-hidden",
         isMobileDrawer 
-          ? "h-full w-full border-0 max-h-[100dvh]" 
+          ? "h-full w-full border-0" 
           : "h-[100dvh] sticky top-0 border-r border-border",
         !isMobileDrawer && (isCollapsed ? "w-12" : "w-52"),
         className
@@ -596,7 +596,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       data-gesture-exempt="true"
     >
       {/* Header */}
-      <div className="px-3 py-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] border-b border-border">
+      <div className="px-3 py-2 border-b border-border">
         {!isCollapsed && (
           <h1 className="font-display font-bold text-sm text-foreground truncate tracking-wide">
             ECLIPSE
