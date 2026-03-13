@@ -422,7 +422,7 @@ export default function SellerSettingsTeam() {
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={member.profile?.avatar_url || undefined} />
                         <AvatarFallback>
-                          {(member.profile?.display_name || member.profile?.email || 'U')[0].toUpperCase()}
+                          {(member.profile?.display_name || 'U')[0].toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
