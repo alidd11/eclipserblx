@@ -219,7 +219,8 @@ export function RevolutLineChart({
               strokeDasharray={s.strokeDasharray}
               dot={false}
               activeDot={{ r: 4, fill: s.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
-              animationDuration={800}
+              isAnimationActive={animationActive}
+              animationDuration={animationActive ? 800 : 0}
               animationEasing="ease-out"
             />
           ))}
