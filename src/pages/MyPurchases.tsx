@@ -380,15 +380,32 @@ export default function MyPurchases() {
         });
         if (error || data?.error) { failCount++; continue; }
         if (data?.downloadUrl) {
-          window.open(data.downloadUrl, '_blank');
-          successCount++;
-          await new Promise(resolve => setTimeout(resolve, 500));
+          // Use fetch + blob instead of window.open to avoid pop-up blockers
+          try {
+            const response = await fetch(data.downloadUrl);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = data.fileName || data.productName || 'download';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            successCount++;
+          } catch {
+            // Fallback to window.open if fetch fails (e.g. CORS)
+            window.open(data.downloadUrl, '_blank');
+            successCount++;
+          }
+          // Small delay between downloads to prevent overwhelming the browser
+          await new Promise(resolve => setTimeout(resolve, 800));
         }
       } catch { failCount++; }
     }
 
     setIsBatchDownloading(false);
-    if (successCount > 0) showSuccessNotification('Downloads Started', `${successCount} file(s) downloading`);
+    if (successCount > 0) showSuccessNotification('Downloads Started', `${successCount} file(s) downloaded`);
     if (failCount > 0) toast.error(`${failCount} file(s) failed`);
   };
 
