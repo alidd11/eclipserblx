@@ -89,6 +89,11 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
   const displayMedia = getFirstMediaPrioritizeVideo(images) || image;
   const isVideo = isVideoUrl(displayMedia);
   
+  // Debug: log image data
+  if (!displayMedia && (images || image)) {
+    console.warn('[ProductCard] No displayMedia despite having data:', { id, name, images, image, displayMedia });
+  }
+  
   // Check if product is new (within last 7 days for stores, 3 days elsewhere)
   const isNew = showNewBadge !== undefined 
     ? showNewBadge 
