@@ -124,7 +124,7 @@ export default function SellerSettingsTeam() {
         (data || []).map(async (member) => {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('display_name, avatar_url, email')
+            .select('display_name, avatar_url')
             .eq('user_id', member.user_id)
             .single();
           
