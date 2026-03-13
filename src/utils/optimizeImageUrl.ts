@@ -1,4 +1,4 @@
-import { getNetworkQuality } from '@/hooks/useNetworkQuality';
+// Image optimization utility — currently bypassed (render endpoint unavailable)
 
 /**
  * Appends Supabase image transform query params to storage URLs.
