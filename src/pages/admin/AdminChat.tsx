@@ -224,7 +224,7 @@ function AdminChatContent() {
       const roleMap: Record<string, string> = {};
       for (const userId of userIds) {
         const roles = data.filter(r => r.user_id === userId).map(r => r.role);
-        const bestRole = ROLE_PRIORITY.find(r => roles.includes(r));
+        const bestRole = getBestRole(roles);
         if (bestRole) roleMap[userId] = bestRole;
       }
       return roleMap;
