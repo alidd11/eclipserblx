@@ -34,6 +34,7 @@ const BLOCKED_DOMAINS = [
   'scriptblox.com',
   'v3rmillion.net',
   'robloxscripts.com',
+  'payhip.com',
 ];
 const blockedDomainPattern = new RegExp(
   BLOCKED_DOMAINS.map(d => d.replace(/\./g, '\\.')).join('|'),
@@ -43,7 +44,7 @@ const blockedDomainPattern = new RegExp(
 /** Strip plain-text URLs pointing to blocked domains from a description string */
 function stripBlockedUrls(text: string): string {
   if (!text) return '';
-  return text.replace(/https?:\/\/[^\s<>"']*(?:clearlydev\.com|builtbybit\.com|scriptblox\.com|v3rmillion\.net|robloxscripts\.com)[^\s<>"']*/gi, '').trim();
+  return text.replace(/https?:\/\/[^\s<>"']*(?:clearlydev\.com|builtbybit\.com|scriptblox\.com|v3rmillion\.net|robloxscripts\.com|payhip\.com)[^\s<>"']*/gi, '').trim();
 }
 
 // Category keyword mapping for auto-matching
@@ -67,7 +68,7 @@ function suggestCategory(name: string, description: string): string | undefined 
 }
 
 // Allowed URL patterns for scraping (prevent SSRF)
-const ALLOWED_SCRAPE_DOMAINS = ['clearlydev.com', 'builtbybit.com'];
+const ALLOWED_SCRAPE_DOMAINS = ['clearlydev.com', 'builtbybit.com', 'payhip.com'];
 
 function isAllowedScrapeUrl(url: string): boolean {
   try {
@@ -547,6 +548,171 @@ function parseBuiltByBitProduct(markdown: string, url: string, html?: string): E
   };
 }
 
+// ─── Payhip parsers ───────────────────────────────────────────────────────────
+
+function parsePayhipStore(markdown: string, storeUrl: string, links?: string[]): { products: ExternalProduct[]; sellerName?: string } {
+  const products: ExternalProduct[] = [];
+  const seenUrls = new Set<string>();
+
+  // Extract seller name from URL path
+  let sellerName: string | undefined;
+  const storeSlugMatch = storeUrl.match(/payhip\.com\/([A-Za-z0-9_-]+)/);
+  if (storeSlugMatch && !['b', 'collection', 'explore', 'themes', 'api-reference'].includes(storeSlugMatch[1].toLowerCase())) {
+    sellerName = storeSlugMatch[1];
+  }
+
+  // Products are linked as ### [Product Name](https://payhip.com/b/XXXXX)
+  const productLinkRegex = /\[([^\]]+)\]\((https:\/\/payhip\.com\/b\/[A-Za-z0-9]+)\)/g;
+
+  let match;
+  while ((match = productLinkRegex.exec(markdown)) !== null) {
+    const name = match[1].trim();
+    const url = match[2];
+
+    if (seenUrls.has(url) || name.length < 3) continue;
+    seenUrls.add(url);
+
+    const categorySlug = suggestCategory(name, '');
+
+    products.push({
+      name,
+      description: '',
+      price: 0,
+      images: [],
+      sourceUrl: url,
+      platform: 'payhip',
+      suggestedCategoryId: categorySlug,
+    });
+  }
+
+  // Also try extracting from links array
+  if (links && links.length > 0) {
+    for (const link of links) {
+      if (!link.match(/payhip\.com\/b\/[A-Za-z0-9]+$/)) continue;
+      if (seenUrls.has(link)) continue;
+      seenUrls.add(link);
+
+      // We don't have a name from just the link, use the product code
+      const codeMatch = link.match(/\/b\/([A-Za-z0-9]+)$/);
+      const code = codeMatch ? codeMatch[1] : 'Unknown';
+
+      products.push({
+        name: `Product ${code}`,
+        description: '',
+        price: 0,
+        images: [],
+        sourceUrl: link,
+        platform: 'payhip',
+        suggestedCategoryId: undefined,
+      });
+    }
+  }
+
+  return { products, sellerName };
+}
+
+function parsePayhipProduct(markdown: string, url: string, html?: string): ExternalProduct | null {
+  let name = '';
+
+  // Try og:title from HTML
+  if (html) {
+    const ogTitle = html.match(/<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i);
+    if (ogTitle?.[1]) {
+      name = ogTitle[1].replace(/\s*[-|].*Payhip.*$/i, '').trim();
+    }
+  }
+
+  // Try markdown heading
+  if (!name) {
+    const headingMatch = markdown.match(/^#\s+(.+)/m);
+    if (headingMatch) {
+      const candidate = headingMatch[1].replace(/\\?\|/g, '').trim();
+      if (candidate.length >= 3) name = candidate;
+    }
+  }
+
+  if (!name) return null;
+
+  // Images
+  const images: string[] = [];
+  const seenImageUrls = new Set<string>();
+
+  if (html) {
+    // OG image
+    const ogImg = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i);
+    if (ogImg?.[1] && !SKIP_TINY_DATA_URI.test(ogImg[1])) {
+      images.push(ogImg[1]);
+      seenImageUrls.add(ogImg[1]);
+    }
+
+    // Product images — Payhip uses cdn-cgi/image proxy or S3 URLs
+    const allImgs = [...html.matchAll(/<img[^>]*?\bsrc="([^"]+)"[^>]*?(?:alt="([^"]*)")?[^>]*?>/gi)];
+    for (const m of allImgs) {
+      const src = m[1];
+      const alt = m[2] || '';
+      if (src.includes('loading.gif') || src.includes('favicon') || src.includes('payhip.com/images/')) continue;
+      if (seenImageUrls.has(src)) continue;
+      // Only keep product-relevant images (S3 or CDN)
+      if (src.includes('s3.amazonaws.com') || src.includes('cdn-cgi/image')) {
+        seenImageUrls.add(src);
+        images.push(src);
+      }
+    }
+  }
+
+  // Fallback: images from markdown
+  if (images.length === 0) {
+    const imgRegex = /!\[[^\]]*\]\((https?:\/\/[^\)]+)\)/g;
+    let m;
+    while ((m = imgRegex.exec(markdown)) !== null) {
+      const src = m[1];
+      if (src.includes('loading.gif') || src.includes('payhip.com/images/')) continue;
+      if (seenImageUrls.has(src)) continue;
+      if (src.includes('s3.amazonaws.com') || src.includes('cdn-cgi/image')) {
+        seenImageUrls.add(src);
+        images.push(src);
+      }
+    }
+  }
+
+  const price = extractPrice(markdown);
+
+  // Description — everything after the heading and price info
+  let description = '';
+  // Remove heading, price lines, and cart/button text, then take what's left
+  const lines = markdown.split('\n');
+  let startCapture = false;
+  const descLines: string[] = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!startCapture) {
+      // Start capturing after the price/buy section
+      if (trimmed.startsWith('Buy Now') || trimmed.startsWith('Add to Cart') || trimmed.startsWith('Proceed to Checkout')) {
+        startCapture = true;
+        continue;
+      }
+      continue;
+    }
+    // Stop at footer-like sections
+    if (trimmed.startsWith('Powered by') || trimmed.startsWith('Terms') || trimmed.startsWith('Get updates') || trimmed.startsWith('## Share')) break;
+    if (trimmed.startsWith('Added to wishlist') || trimmed.startsWith('Add to wishlist')) continue;
+    descLines.push(line);
+  }
+  description = descLines.join('\n').trim().slice(0, 5000);
+
+  const categorySlug = suggestCategory(name, description);
+
+  return {
+    name,
+    description,
+    price,
+    images: images.slice(0, 8),
+    sourceUrl: url,
+    platform: 'payhip',
+    suggestedCategoryId: categorySlug,
+  };
+}
+
 // ─── Error categorisation ──────────────────────────────────────────────────────
 
 /** Returns true for errors that are worth retrying (network, timeout, 429, 5xx) */
@@ -905,7 +1071,7 @@ Deno.serve(async (req) => {
 
       if (!isAllowedScrapeUrl(storeUrl)) {
         return new Response(
-          JSON.stringify({ success: false, error: "Unsupported platform. Use ClearlyDev or BuiltByBit URLs." }),
+          JSON.stringify({ success: false, error: "Unsupported platform. Use ClearlyDev, BuiltByBit, or Payhip URLs." }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -914,9 +1080,10 @@ Deno.serve(async (req) => {
       if (!detectedPlatform) {
         if (storeUrl.includes('clearlydev.com')) detectedPlatform = 'clearlydev';
         else if (storeUrl.includes('builtbybit.com')) detectedPlatform = 'builtbybit';
+        else if (storeUrl.includes('payhip.com')) detectedPlatform = 'payhip';
         else {
           return new Response(
-            JSON.stringify({ success: false, error: "Unsupported platform. Use ClearlyDev or BuiltByBit URLs." }),
+            JSON.stringify({ success: false, error: "Unsupported platform. Use ClearlyDev, BuiltByBit, or Payhip URLs." }),
             { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
@@ -940,6 +1107,10 @@ Deno.serve(async (req) => {
         sellerName = result.sellerName;
       } else if (detectedPlatform === 'builtbybit') {
         products = parseBuiltByBitStore(scrapeResult.markdown!, storeUrl);
+      } else if (detectedPlatform === 'payhip') {
+        const result = parsePayhipStore(scrapeResult.markdown!, storeUrl, scrapeResult.links);
+        products = result.products;
+        sellerName = result.sellerName;
       }
 
       // Check for already imported products
@@ -990,6 +1161,7 @@ Deno.serve(async (req) => {
       if (!detectedPlatform) {
         if (productUrl.includes('clearlydev.com')) detectedPlatform = 'clearlydev';
         else if (productUrl.includes('builtbybit.com')) detectedPlatform = 'builtbybit';
+        else if (productUrl.includes('payhip.com')) detectedPlatform = 'payhip';
       }
 
       console.log(`Fetching product details from ${detectedPlatform}: ${productUrl}`);
@@ -1007,6 +1179,8 @@ Deno.serve(async (req) => {
         product = parseClearlyDevProduct(scrapeResult.markdown!, productUrl, scrapeResult.html);
       } else if (detectedPlatform === 'builtbybit') {
         product = parseBuiltByBitProduct(scrapeResult.markdown!, productUrl, scrapeResult.html);
+      } else if (detectedPlatform === 'payhip') {
+        product = parsePayhipProduct(scrapeResult.markdown!, productUrl, scrapeResult.html);
       }
 
       if (!product) {
@@ -1141,6 +1315,7 @@ Deno.serve(async (req) => {
           if (!detectedPlatform) {
             if (url.includes('clearlydev.com')) detectedPlatform = 'clearlydev';
             else if (url.includes('builtbybit.com')) detectedPlatform = 'builtbybit';
+            else if (url.includes('payhip.com')) detectedPlatform = 'payhip';
           }
 
           // Check for duplicate
@@ -1178,6 +1353,8 @@ Deno.serve(async (req) => {
             product = parseClearlyDevProduct(scrapeResult.markdown!, url, scrapeResult.html);
           } else if (detectedPlatform === 'builtbybit') {
             product = parseBuiltByBitProduct(scrapeResult.markdown!, url, scrapeResult.html);
+          } else if (detectedPlatform === 'payhip') {
+            product = parsePayhipProduct(scrapeResult.markdown!, url, scrapeResult.html);
           }
 
           if (!product) {

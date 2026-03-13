@@ -163,6 +163,7 @@ export const productImportApi = {
     return [
       { id: 'clearlydev', name: 'ClearlyDev', baseUrl: 'https://clearlydev.com/store/' },
       { id: 'builtbybit', name: 'BuiltByBit', baseUrl: 'https://builtbybit.com/members/' },
+      { id: 'payhip', name: 'Payhip', baseUrl: 'https://payhip.com/' },
     ];
   },
 };

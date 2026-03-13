@@ -18,6 +18,7 @@ interface ImportSetupStepProps {
 const URL_PATTERNS = [
   { pattern: /clearlydev\.com\/store\/.+/i, platform: 'clearlydev' },
   { pattern: /builtbybit\.com\/members\/.+/i, platform: 'builtbybit' },
+  { pattern: /payhip\.com\/[A-Za-z0-9]/i, platform: 'payhip' },
 ];
 
 function validateStoreUrl(url: string): { valid: boolean; error?: string } {
@@ -30,7 +31,7 @@ function validateStoreUrl(url: string): { valid: boolean; error?: string } {
     if (!matchesPlatform) {
       return {
         valid: false,
-        error: 'URL doesn\'t match a supported platform. Use a ClearlyDev or BuiltByBit store URL.',
+        error: 'URL doesn\'t match a supported platform. Use a ClearlyDev, BuiltByBit, or Payhip store URL.',
       };
     }
     return { valid: true };
@@ -118,7 +119,7 @@ export function ImportSetupStep({ onProductsFound }: ImportSetupStepProps) {
             <Globe className="h-4 w-4" />
             Enter your store URL
           </CardTitle>
-          <CardDescription>We support ClearlyDev and BuiltByBit stores</CardDescription>
+          <CardDescription>We support ClearlyDev, BuiltByBit, and Payhip stores</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
@@ -131,7 +132,7 @@ export function ImportSetupStep({ onProductsFound }: ImportSetupStepProps) {
               >
                 <span className="text-sm font-medium">{p.name}</span>
                 <Badge variant="outline" className="text-[10px] px-1.5">
-                  {p.id === 'clearlydev' ? 'Full' : 'Beta'}
+                  {p.id === 'clearlydev' ? 'Full' : p.id === 'payhip' ? 'New' : 'Beta'}
                 </Badge>
               </button>
             ))}
@@ -140,7 +141,7 @@ export function ImportSetupStep({ onProductsFound }: ImportSetupStepProps) {
           <div className="space-y-1.5">
             <div className="flex gap-2">
               <Input
-                placeholder="https://clearlydev.com/store/your-store"
+                placeholder="https://clearlydev.com/store/your-store or https://payhip.com/YourStore"
                 value={storeUrl}
                 onChange={(e) => { setStoreUrl(e.target.value); setError(null); }}
                 onKeyDown={(e) => e.key === 'Enter' && ownershipConfirmed && handleSearch()}
