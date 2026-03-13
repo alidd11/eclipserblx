@@ -45,22 +45,22 @@ export function StoreSwitcher() {
   const handleSelect = (store: AccessibleStore) => {
     if (isActive(store)) return; // Already selected
     hapticTap();
-    setActiveStoreId(store.id);
 
-    // Invalidate all seller-related queries to refetch with new store
-    queryClient.invalidateQueries({ queryKey: ['seller-store'] });
-    queryClient.invalidateQueries({ queryKey: ['seller-balance'] });
-    queryClient.invalidateQueries({ queryKey: ['seller-products'] });
-    queryClient.invalidateQueries({ queryKey: ['seller-orders'] });
-    queryClient.invalidateQueries({ queryKey: ['seller-analytics'] });
-    queryClient.invalidateQueries({ queryKey: ['seller-refunds'] });
-    queryClient.invalidateQueries({ queryKey: ['seller-announcements'] });
-    queryClient.invalidateQueries({ queryKey: ['seller-goals'] });
-    queryClient.invalidateQueries({ queryKey: ['seller-campaigns'] });
-    queryClient.invalidateQueries({ queryKey: ['store-tabs'] });
-    queryClient.invalidateQueries({ queryKey: ['store-pages'] });
-    queryClient.invalidateQueries({ queryKey: ['store-team'] });
-    queryClient.invalidateQueries({ queryKey: ['store-notifications'] });
+    // Remove all seller-related query caches to force fresh fetches with the new store
+    const sellerQueryPrefixes = [
+      'seller-store', 'seller-balance', 'seller-products', 'seller-orders',
+      'seller-analytics', 'seller-refunds', 'seller-announcements', 'seller-goals',
+      'seller-campaigns', 'seller-recent-orders-table', 'seller-product-stats',
+      'seller-tos-signed', 'seller-agreement', 'seller-document-notifications',
+      'seller-transaction-history', 'seller-tax-summary', 'seller-tax-payouts',
+      'seller-refund-requests', 'seller-product',
+      'store-tabs', 'store-pages', 'store-team', 'store-notifications',
+    ];
+    for (const prefix of sellerQueryPrefixes) {
+      queryClient.removeQueries({ queryKey: [prefix] });
+    }
+
+    setActiveStoreId(store.id);
 
     toast.success(`Switched to ${store.name}`, {
       description: `You're now managing as ${roleLabels[store.role] || store.role}`,

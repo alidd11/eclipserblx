@@ -151,7 +151,7 @@ export function useSellerStatus() {
   // Read the active store ID reactively from context (synced with StoreSwitcher)
   const { activeStoreId } = useActiveStore();
 
-  console.log('[useSellerStatus] activeStoreId from context:', activeStoreId);
+  
 
   // Check if user has an approved store
   const { data: store, isLoading: storeLoading } = useQuery({
@@ -234,7 +234,7 @@ export function useSellerStatus() {
         credentials: credentialsData || undefined,
         paymentDetails: paymentData || undefined,
       } as Store;
-      console.log('[useSellerStatus] returning store:', result.name, result.id, 'for activeStoreId:', activeStoreId);
+      
       return result;
     },
     enabled: !!user?.id,
