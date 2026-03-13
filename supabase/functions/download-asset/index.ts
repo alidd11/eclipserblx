@@ -503,11 +503,13 @@ async function handleTokenRedemption(token: string, req: Request): Promise<Respo
     );
   }
 
-  const { error: updateError } = await supabaseAdmin
+  // Atomically claim the token — use .select() to check if any row was actually updated
+  const { data: updatedRows, error: updateError } = await supabaseAdmin
     .from('download_tokens')
     .update({ used_at: new Date().toISOString() })
     .eq('id', tokenData.id)
-    .is('used_at', null);
+    .is('used_at', null)
+    .select('id');
 
   if (updateError) {
     console.error("Failed to mark token as used:", updateError);
@@ -525,8 +527,38 @@ async function handleTokenRedemption(token: string, req: Request): Promise<Respo
     );
   }
 
+  // If no rows were updated, another request already claimed this token
+  if (!updatedRows || updatedRows.length === 0) {
+    console.log("Token race condition — already claimed:", token.slice(0, 8));
+    return new Response(
+      `<!DOCTYPE html>
+      <html>
+        <head><title>Download Error</title></head>
+        <body style="font-family: system-ui; text-align: center; padding: 50px;">
+          <h1>⚠️ Link Already Used</h1>
+          <p>This download link has already been used.</p>
+          <p>Download links are one-time use only for security.</p>
+          <p>Please request a new download link from your account.</p>
+        </body>
+      </html>`,
+      { status: 410, headers: { ...corsHeaders, "Content-Type": "text/html" } }
+    );
+  }
+
   const clientIp = getClientIp(req);
   console.log(`Token redeemed: ${token.slice(0, 8)}... for product ${tokenData.product_id}, ip=${clientIp}`);
+
+  // Clean up watermarked temp file if one exists
+  if (tokenData.temp_file_path) {
+    try {
+      await supabaseAdmin.storage
+        .from('product-assets')
+        .remove([tokenData.temp_file_path]);
+      console.log(`Cleaned up temp watermark file: ${tokenData.temp_file_path}`);
+    } catch (e) {
+      console.log("Temp watermark file cleanup failed (non-critical):", e);
+    }
+  }
 
   return new Response(null, {
     status: 302,
