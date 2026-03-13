@@ -153,7 +153,8 @@ export function RevolutAreaChart({
               fill={`url(#${s.gradientId || `revGrad-${i}`})`}
               activeDot={{ r: 4, fill: s.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
               dot={false}
-              animationDuration={800}
+              isAnimationActive={animationActive}
+              animationDuration={animationActive ? 800 : 0}
               animationEasing="ease-out"
             />
           ))}
