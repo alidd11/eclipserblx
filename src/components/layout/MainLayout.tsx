@@ -25,6 +25,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
           isMobileDrawer
         />
       )}
+      headerProps={{ mobileFixed: true }}
       mainStyle={{ paddingBottom: 'calc(var(--chat-safe-bottom, env(safe-area-inset-bottom)) + var(--tab-bar-height, 0px))' }}
     >
       <PageTransition>{children}</PageTransition>

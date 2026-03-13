@@ -443,13 +443,14 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
         </div>
       </nav>
 
-      {/* Sign Out Confirmation Dialog */}
-      <SignOutConfirmDialog
-        open={showSignOutDialog}
-        onOpenChange={setShowSignOutDialog}
-        onConfirm={handleSignOut}
-        isLoading={isSigningOut}
-      />
-    </header>
+        {/* Sign Out Confirmation Dialog */}
+        <SignOutConfirmDialog
+          open={showSignOutDialog}
+          onOpenChange={setShowSignOutDialog}
+          onConfirm={handleSignOut}
+          isLoading={isSigningOut}
+        />
+      </header>
+    </>
   );
 }));
