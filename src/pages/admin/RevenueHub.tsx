@@ -71,7 +71,7 @@ export default function RevenueHub() {
   const [showPassword, setShowPassword] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const lastActivityRef = useRef<number>(Date.now());
-  const timeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const activeTab = searchParams.get('tab') || 'overview';
   const setActiveTab = (tab: string) => setSearchParams({ tab }, { replace: true });
@@ -86,8 +86,8 @@ export default function RevenueHub() {
   const resetActivityTimer = useCallback(() => {
     if (!isVerified) return;
     lastActivityRef.current = Date.now();
-    if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
-    timeoutRef.current = window.setTimeout(expireSession, SESSION_TIMEOUT_MS);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(expireSession, SESSION_TIMEOUT_MS);
   }, [isVerified, expireSession]);
 
   useEffect(() => {
@@ -98,7 +98,7 @@ export default function RevenueHub() {
     events.forEach(e => window.addEventListener(e, resetActivityTimer));
 
     return () => {
-      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       events.forEach(e => window.removeEventListener(e, resetActivityTimer));
     };
   }, [isVerified, resetActivityTimer]);
@@ -119,8 +119,8 @@ export default function RevenueHub() {
         // Sign out ONLY the ephemeral client — scope: 'local' prevents revoking the main session
         verifyClient.auth.signOut({ scope: 'local' }).catch(() => {});
         const now = Date.now();
+        lastActivityRef.current = now;
         setIsVerified(true);
-        setLastActivity(now);
         setPassword('');
         try { sessionStorage.setItem(REVENUE_VERIFIED_KEY, now.toString()); } catch {}
         await supabase.from('audit_logs').insert({
@@ -134,12 +134,6 @@ export default function RevenueHub() {
       setVerifying(false);
       verifyingRef.current = false;
     }
-  };
-
-  const formatTime = (ms: number) => {
-    const m = Math.floor(ms / 60000);
-    const s = Math.floor((ms % 60000) / 1000);
-    return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
   if (!isVerified) {
