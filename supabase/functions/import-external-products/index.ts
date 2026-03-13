@@ -34,6 +34,7 @@ const BLOCKED_DOMAINS = [
   'scriptblox.com',
   'v3rmillion.net',
   'robloxscripts.com',
+  'payhip.com',
 ];
 const blockedDomainPattern = new RegExp(
   BLOCKED_DOMAINS.map(d => d.replace(/\./g, '\\.')).join('|'),
@@ -43,7 +44,7 @@ const blockedDomainPattern = new RegExp(
 /** Strip plain-text URLs pointing to blocked domains from a description string */
 function stripBlockedUrls(text: string): string {
   if (!text) return '';
-  return text.replace(/https?:\/\/[^\s<>"']*(?:clearlydev\.com|builtbybit\.com|scriptblox\.com|v3rmillion\.net|robloxscripts\.com)[^\s<>"']*/gi, '').trim();
+  return text.replace(/https?:\/\/[^\s<>"']*(?:clearlydev\.com|builtbybit\.com|scriptblox\.com|v3rmillion\.net|robloxscripts\.com|payhip\.com)[^\s<>"']*/gi, '').trim();
 }
 
 // Category keyword mapping for auto-matching
