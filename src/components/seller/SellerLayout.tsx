@@ -12,7 +12,6 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LayoutShell } from '@/components/layout/LayoutShell';
 import { useIOSChatKeyboard } from '@/hooks/useIOSChatKeyboard';
-import { ActiveStoreProvider } from '@/contexts/ActiveStoreContext';
 
 interface SellerLayoutProps {
   children: ReactNode;
