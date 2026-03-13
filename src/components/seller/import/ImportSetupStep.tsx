@@ -31,7 +31,7 @@ function validateStoreUrl(url: string): { valid: boolean; error?: string } {
     if (!matchesPlatform) {
       return {
         valid: false,
-        error: 'URL doesn\'t match a supported platform. Use a ClearlyDev or BuiltByBit store URL.',
+        error: 'URL doesn\'t match a supported platform. Use a ClearlyDev, BuiltByBit, or Payhip store URL.',
       };
     }
     return { valid: true };
