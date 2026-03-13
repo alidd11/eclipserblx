@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCategoryTranslations } from '@/hooks/useCategoryTranslations';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 const iconMap: Record<string, typeof Car> = {
   'Car': Car,
@@ -76,9 +77,10 @@ export function CategoriesGrid() {
 
       for (const p of products || []) {
         countPerCat[p.category_id] = (countPerCat[p.category_id] || 0) + 1;
-        if (!bestPerCat[p.category_id] && Array.isArray(p.images) && p.images[0]) {
+        const categoryImage = Array.isArray(p.images) ? getFirstImageUrl(p.images as string[]) : null;
+        if (!bestPerCat[p.category_id] && categoryImage) {
           bestPerCat[p.category_id] = {
-            image: p.images[0] as string,
+            image: categoryImage,
             count: p.download_count ?? 0,
           };
         }
@@ -99,7 +101,7 @@ export function CategoriesGrid() {
           .limit(1);
 
         if (fallbackProducts?.[0]?.images && Array.isArray(fallbackProducts[0].images)) {
-          fallbackImage = fallbackProducts[0].images[0] as string;
+          fallbackImage = getFirstImageUrl(fallbackProducts[0].images as string[]);
         }
       }
 

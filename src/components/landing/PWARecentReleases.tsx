@@ -7,6 +7,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFeaturedProducts, ScoredProduct } from '@/hooks/useFeaturedProducts';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 const SpotlightCard = memo(function SpotlightCard({ product }: { product: ScoredProduct }) {
   const { formatPrice } = useCurrency();
@@ -21,13 +22,16 @@ const SpotlightCard = memo(function SpotlightCard({ product }: { product: Scored
     <Link to={`/products/${(product as any).product_number}`} className="group block">
       <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
         <div className="aspect-[16/9] relative overflow-hidden bg-muted">
-          {product.images?.[0] ? (
-            <img src={product.images[0]} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-muted">
-              <Package className="h-8 w-8 text-muted-foreground/30" />
-            </div>
-          )}
+          {(() => {
+            const imgUrl = getFirstImageUrl(product.images);
+            return imgUrl ? (
+              <img src={imgUrl} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-contain group-hover:scale-[1.02] transition-transform duration-500" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-muted">
+                <Package className="h-8 w-8 text-muted-foreground/30" />
+              </div>
+            );
+          })()}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
           <div className="absolute bottom-0 inset-x-0 p-3 sm:p-4">
             <h4 className="text-white font-bold text-sm sm:text-base line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h4>
@@ -74,13 +78,16 @@ const GridCard = memo(function GridCard({ product }: { product: ScoredProduct })
     <Link to={`/products/${(product as any).product_number}`} className="group block h-full">
       <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200">
         <div className="aspect-[4/3] relative overflow-hidden bg-muted">
-          {product.images?.[0] ? (
-            <img src={product.images[0]} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-muted">
-              <span className="text-muted-foreground text-sm">No image</span>
-            </div>
-          )}
+          {(() => {
+            const imgUrl = getFirstImageUrl(product.images);
+            return imgUrl ? (
+              <img src={imgUrl} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-contain group-hover:scale-[1.03] transition-transform duration-300" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-muted">
+                <span className="text-muted-foreground text-sm">No image</span>
+              </div>
+            );
+          })()}
         </div>
         {/* Store strip */}
         <div className="h-6 flex items-center gap-1 px-2 bg-muted/60">

@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { useCurrency } from '@/hooks/useCurrency';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 interface NewProduct {
   id: string;
@@ -83,21 +84,24 @@ export function NewArrivalsCard() {
               className="group flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors"
             >
               <div className="relative flex-shrink-0">
-                {product.images && product.images[0] ? (
-                  <img 
-                    src={optimizeImageUrl(product.images[0], 48, 48)} 
-                    alt={product.name}
-                    width={48}
-                    height={48}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-12 w-12 rounded-lg object-cover bg-muted"
-                  />
-                ) : (
-                  <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
-                    <Sparkles className="h-5 w-5 text-muted-foreground/50" />
-                  </div>
-                )}
+                {(() => {
+                  const imgUrl = getFirstImageUrl(product.images);
+                  return imgUrl ? (
+                    <img 
+                      src={optimizeImageUrl(imgUrl, 48, 48)} 
+                      alt={product.name}
+                      width={48}
+                      height={48}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-12 w-12 rounded-lg object-contain bg-muted"
+                    />
+                  ) : (
+                    <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
+                      <Sparkles className="h-5 w-5 text-muted-foreground/50" />
+                    </div>
+                  );
+                })()}
                 <Badge 
                   className="absolute -top-1 -right-1 text-[8px] px-1 py-0 bg-emerald-500 hover:bg-emerald-500"
                 >

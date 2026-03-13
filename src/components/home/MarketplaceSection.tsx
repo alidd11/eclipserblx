@@ -162,7 +162,7 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
           {(() => {
             const imgUrl = getFirstImageUrl(product.images);
             return imgUrl ? (
-              <img src={optimizeImageUrl(imgUrl, 400, 300)} alt={product.name} width={400} height={300} loading="lazy" decoding="async" fetchPriority="low" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
+              <img src={optimizeImageUrl(imgUrl, 400, 300)} alt={product.name} width={400} height={300} loading="lazy" decoding="async" fetchPriority="low" className="w-full h-full object-contain group-hover:scale-[1.03] transition-transform duration-300" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-muted">
                 <span className="text-muted-foreground text-sm">No image</span>
@@ -410,13 +410,16 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
                         <Link key={spotlight.id} to={`/products/${(spotlight as any).product_number}`} className="group block">
                           <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
                             <div className="aspect-[16/9] relative overflow-hidden bg-muted">
-                              {spotlight.images?.[0] ? (
-                                <img src={optimizeImageUrl(spotlight.images[0], 540, 300)} alt={spotlight.name} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-muted">
-                                  <Package className="h-8 w-8 text-muted-foreground/30" />
-                                </div>
-                              )}
+                              {(() => {
+                                const imgUrl = getFirstImageUrl(spotlight.images);
+                                return imgUrl ? (
+                                  <img src={optimizeImageUrl(imgUrl, 540, 300)} alt={spotlight.name} loading="lazy" decoding="async" className="w-full h-full object-contain group-hover:scale-[1.02] transition-transform duration-500" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center bg-muted">
+                                    <Package className="h-8 w-8 text-muted-foreground/30" />
+                                  </div>
+                                );
+                              })()}
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                               <div className="absolute bottom-0 inset-x-0 p-2.5 sm:p-4">
                                 <h4 className="text-white font-bold text-xs sm:text-base line-clamp-1 group-hover:text-primary transition-colors">{spotlight.name}</h4>

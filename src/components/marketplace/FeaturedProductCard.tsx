@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PromotedBadge } from '@/components/marketplace/PromotedBadge';
 import { cn } from '@/lib/utils';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 interface FeaturedProduct {
   id: string;
@@ -120,21 +121,24 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
         <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
           {/* Product image */}
           <div className="aspect-[2.5/1] sm:aspect-[3/1] relative overflow-hidden bg-black/20">
-            {displayProduct.images?.[0] ? (
-              <img
-                src={optimizeImageUrl(displayProduct.images[0], 540, 180)}
-                alt={displayProduct.name}
-                width={540}
-                height={180}
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-muted">
-                <Package className="h-10 w-10 text-muted-foreground/30" />
-              </div>
-            )}
+            {(() => {
+              const imgUrl = getFirstImageUrl(displayProduct.images);
+              return imgUrl ? (
+                <img
+                  src={optimizeImageUrl(imgUrl, 540, 180)}
+                  alt={displayProduct.name}
+                  width={540}
+                  height={180}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-contain group-hover:scale-[1.02] transition-transform duration-500"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-muted">
+                  <Package className="h-10 w-10 text-muted-foreground/30" />
+                </div>
+              );
+            })()}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
             {/* Promoted badge */}

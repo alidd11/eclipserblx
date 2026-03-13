@@ -33,7 +33,7 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
               alt={product.name}
               loading="lazy"
               decoding="async"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
