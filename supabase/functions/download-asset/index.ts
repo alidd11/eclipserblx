@@ -338,20 +338,22 @@ Deno.serve(async (req) => {
                   temp_file_path: tempPath, // Store path for cleanup
                 });
                 
-                const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-                const downloadUrl = `${supabaseUrl}/functions/v1/download-asset?token=${downloadToken}`;
-                
-                return new Response(
-                  JSON.stringify({
-                    downloadUrl,
-                    productName: product.name,
-                    fileName,
-                    fileSize: watermarkedContent.length,
-                    expiresAt: expiresAt.toISOString(),
-                    oneTimeUse: true,
-                  }),
-                  { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-                );
+                if (!tokenError) {
+                  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+                  const downloadUrl = `${supabaseUrl}/functions/v1/download-asset?token=${downloadToken}`;
+                  
+                  return new Response(
+                    JSON.stringify({
+                      downloadUrl,
+                      productName: product.name,
+                      fileName,
+                      fileSize: watermarkedContent.length,
+                      expiresAt: expiresAt.toISOString(),
+                      oneTimeUse: true,
+                    }),
+                    { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                  );
+                }
               }
             }
           }
