@@ -133,7 +133,7 @@ function AdminChatContent() {
   const { user } = useAuth();
   const { isAdmin, loading } = useAdminAuth();
   const { hasPermission } = useUserPermissions();
-  const { getBestRole, getRoleBadgeStyle } = useChatRoles();
+  const { getBestRole, getRoleBadgeStyle, rolePriority } = useChatRoles();
   
   // Check if user can access admin chat (has admin role OR view_admin_chat permission)
   const canAccessAdminChat = isAdmin || hasPermission('view_admin_chat');
