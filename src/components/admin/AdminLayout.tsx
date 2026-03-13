@@ -208,11 +208,11 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
         innerClassName={isChatPage ? 'flex-1 flex flex-col min-w-0 min-h-0' : undefined}
         mainClassName={cn(
           'flex-1 overflow-x-hidden max-w-full min-w-0',
-          isChatPage ? 'overflow-y-hidden' : 'md:overflow-y-auto pb-[env(safe-area-inset-bottom)]'
+          isChatPage ? 'overflow-y-hidden flex flex-col' : 'md:overflow-y-auto pb-[env(safe-area-inset-bottom)]'
         )}
         contentClassName={cn(
           isChatPage
-            ? 'flex-1 flex flex-col min-h-0 p-0 pt-[env(safe-area-inset-top)]'
+            ? 'flex-1 flex flex-col min-h-0 p-0'
             : 'p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
         )}
         extra={<AdminInstallPrompt />}
