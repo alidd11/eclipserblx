@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, ShieldCheck, Award, Crown } from 'lucide-react';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFeaturedProducts, ScoredProduct } from '@/hooks/useFeaturedProducts';
 import { useCurrency } from '@/hooks/useCurrency';
