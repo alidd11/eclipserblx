@@ -53,7 +53,6 @@ interface TeamMember {
   profile?: {
     display_name: string | null;
     avatar_url: string | null;
-    email: string | null;
   };
 }
 
@@ -124,7 +123,7 @@ export default function SellerSettingsTeam() {
         (data || []).map(async (member) => {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('display_name, avatar_url, email')
+            .select('display_name, avatar_url')
             .eq('user_id', member.user_id)
             .single();
           
@@ -423,12 +422,12 @@ export default function SellerSettingsTeam() {
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={member.profile?.avatar_url || undefined} />
                         <AvatarFallback>
-                          {(member.profile?.display_name || member.profile?.email || 'U')[0].toUpperCase()}
+                          {(member.profile?.display_name || 'U')[0].toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <p className="font-medium">
-                          {member.profile?.display_name || member.profile?.email || 'Unknown User'}
+                          {member.profile?.display_name || 'Unknown User'}
                         </p>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Clock className="h-3 w-3" />
@@ -548,7 +547,7 @@ export default function SellerSettingsTeam() {
             <AlertDialogDescription>
               Are you sure you want to remove{' '}
               <span className="font-medium">
-                {memberToRemove?.profile?.display_name || memberToRemove?.profile?.email}
+                {memberToRemove?.profile?.display_name || 'this member'}
               </span>{' '}
               from your team? They will lose access to your store immediately.
             </AlertDialogDescription>
