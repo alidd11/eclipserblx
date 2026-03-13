@@ -61,7 +61,7 @@ export function ImportSetupStep({ onProductsFound }: ImportSetupStepProps) {
     setError(null);
 
     try {
-      const result = await productImportApi.listProducts(storeUrl);
+      const result = await productImportApi.listProducts(storeUrl, activeStoreId ?? undefined);
 
       if (!result.success) {
         setError(result.error || 'Failed to fetch products');
