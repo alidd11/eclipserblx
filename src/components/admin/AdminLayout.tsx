@@ -144,7 +144,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
     const hasRequiredPermission = hasAnyPermission(requiredPermissions);
     if (!hasRequiredPermission) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="min-h-screen flex items-center justify-center bg-background safe-area-page">
           <div className="text-center space-y-4">
             <h1 className="text-2xl font-display font-bold">Access Denied</h1>
             <p className="text-muted-foreground">You don't have the required permissions for this page.</p>
