@@ -2516,6 +2516,7 @@ export type Database = {
           order_item_id: string | null
           product_id: string
           signed_url: string
+          temp_file_path: string | null
           token: string
           used_at: string | null
           user_id: string
@@ -2527,6 +2528,7 @@ export type Database = {
           order_item_id?: string | null
           product_id: string
           signed_url: string
+          temp_file_path?: string | null
           token: string
           used_at?: string | null
           user_id: string
@@ -2538,6 +2540,7 @@ export type Database = {
           order_item_id?: string | null
           product_id?: string
           signed_url?: string
+          temp_file_path?: string | null
           token?: string
           used_at?: string | null
           user_id?: string
@@ -9997,6 +10000,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: boolean
+      }
+      increment_download_count: {
+        Args: { p_product_id: string }
+        Returns: undefined
       }
       increment_promotion_impression: {
         Args: { p_date: string; p_promotion_id: string }
