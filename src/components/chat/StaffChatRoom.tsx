@@ -1,0 +1,535 @@
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Send, AtSign, Plus, X, Image, FileText, Loader2, Upload } from 'lucide-react';
+import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
+import { ChatMessageActions } from '@/components/admin/ChatMessageActions';
+import { QuotedMessage } from '@/components/admin/QuotedMessage';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { EclipseLogo } from '@/components/ui/EclipseLogo';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useDropZone } from '@/hooks/useDropZone';
+import { markChatAsRead } from '@/hooks/useChatNotifications';
+import { cn } from '@/lib/utils';
+import { formatDistanceToNow } from 'date-fns';
+import { toast } from 'sonner';
+
+import type { ChatRoomConfig, ChatMember, ChatMessage } from './chatHelpers';
+import { getMentionHandle, renderMessageWithMentions } from './chatHelpers';
+import { useChatMessages } from './useChatMessages';
+import { useChatPresence } from './useChatPresence';
+import { useChatMentions } from './useChatMentions';
+import { useChatScroll } from './useChatScroll';
+
+interface StaffChatRoomProps {
+  config: ChatRoomConfig;
+  /** Function to fetch mentionable members */
+  fetchMembers: () => Promise<ChatMember[]>;
+  /** Query key for members */
+  membersQueryKey: string[];
+  /** Whether this chat is enabled/accessible */
+  enabled?: boolean;
+}
+
+export function StaffChatRoom({
+  config,
+  fetchMembers,
+  membersQueryKey,
+  enabled = true,
+}: StaffChatRoomProps) {
+  const { user } = useAuth();
+  const { isAdmin } = useAdminAuth();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [replyToMessage, setReplyToMessage] = useState<ChatMessage | null>(null);
+  const [openActionsId, setOpenActionsId] = useState<string | null>(null);
+
+  const isPWA = typeof window !== 'undefined' && (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as any).standalone === true
+  );
+
+  // ── Mark as read ───────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (user) markChatAsRead(config.readChannel, user.id);
+  }, [user, config.readChannel]);
+
+  // ── Core data hook ─────────────────────────────────────────────────────────
+  const {
+    messages,
+    isLoading,
+    profiles,
+    userRoles,
+    currentUserProfile,
+    reactions,
+    sendMessageMutation,
+    deleteMessageMutation,
+    addReactionMutation,
+    removeReactionMutation,
+    uploadFile,
+    sendMentionNotifications,
+    isUploading,
+    setIsUploading,
+    getRoleBadgeStyle,
+  } = useChatMessages(config, enabled);
+
+  // ── Fetch mentionable members ──────────────────────────────────────────────
+  const {
+    data: allMembers = [],
+    isLoading: isMembersLoading,
+    error: membersError,
+    refetch: refetchMembers,
+  } = useQuery({
+    queryKey: membersQueryKey,
+    queryFn: fetchMembers,
+    enabled,
+  });
+
+  // ── Mentions ───────────────────────────────────────────────────────────────
+  const {
+    message: newMessage,
+    setMessage: setNewMessage,
+    showSuggestions,
+    setShowSuggestions,
+    selectedIndex: mentionIndex,
+    allSuggestions,
+    handleInputChange: handleMentionInputChange,
+    handleKeyDown: handleMentionKeyDown,
+    insertMention,
+  } = useChatMentions(allMembers, config.groupMentions, user?.id, inputRef);
+
+  // ── Presence / typing ──────────────────────────────────────────────────────
+  const { typingUsers, handleTyping } = useChatPresence(
+    `${config.channelPrefix}-presence`,
+    currentUserProfile,
+    enabled,
+  );
+
+  // ── Scroll ─────────────────────────────────────────────────────────────────
+  const { scrollToBottom, handleInputFocus } = useChatScroll(scrollRef, inputRef);
+
+  // ── Drag & drop ────────────────────────────────────────────────────────────
+  const processFile = useCallback((file: File) => {
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File too large', { description: 'Maximum file size is 10MB' });
+      return;
+    }
+    setSelectedFile(file);
+  }, []);
+
+  const { isDragOver, dragProps } = useDropZone({
+    onDrop: (files) => files[0] && processFile(files[0]),
+    accept: ['image/*', '.pdf', '.doc', '.docx', '.txt', '.zip'],
+    maxSize: 10 * 1024 * 1024,
+    maxFiles: 1,
+    disabled: isUploading,
+  });
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  const getDisplayName = (userId: string) => {
+    const profile = profiles[userId];
+    return profile?.display_name || profile?.email?.split('@')[0] || config.fallbackDisplayName;
+  };
+
+  const getInitials = (userId: string) => getDisplayName(userId).slice(0, 2).toUpperCase();
+
+  const canDeleteMessage = (messageUserId: string) =>
+    config.canDeleteAll || isAdmin || messageUserId === user?.id;
+
+  const messagesMap = useMemo(
+    () => Object.fromEntries(messages.map(m => [m.id, m])),
+    [messages],
+  );
+
+  // ── File select ────────────────────────────────────────────────────────────
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+    e.target.value = '';
+  };
+
+  // ── Send ───────────────────────────────────────────────────────────────────
+  const handleSend = async () => {
+    if (!newMessage.trim() && !selectedFile) return;
+
+    const messageToSend = newMessage;
+    const fileToSend = selectedFile;
+    const replyTo = replyToMessage;
+
+    setNewMessage('');
+    setSelectedFile(null);
+    setReplyToMessage(null);
+    setShowSuggestions(false);
+
+    setIsUploading(true);
+    try {
+      let attachmentUrl: string | null = null;
+      if (fileToSend) {
+        attachmentUrl = await uploadFile(fileToSend);
+        if (!attachmentUrl && !messageToSend.trim()) {
+          setIsUploading(false);
+          return;
+        }
+      }
+
+      await sendMessageMutation.mutateAsync({
+        message: messageToSend,
+        attachmentUrl,
+        replyToId: replyTo?.id || null,
+      });
+
+      if (messageToSend.trim()) {
+        await sendMentionNotifications(messageToSend.trim(), user!.id, allMembers);
+      }
+    } catch {
+      setNewMessage(messageToSend);
+      setSelectedFile(fileToSend);
+      setReplyToMessage(replyTo);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleReply = (messageId: string) => {
+    const message = messages.find(m => m.id === messageId);
+    if (message) {
+      setReplyToMessage(message);
+      inputRef.current?.focus();
+    }
+  };
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+  return (
+    <div
+      data-gesture-exempt="true"
+      className={cn(
+        'flex-1 flex flex-col min-h-0 bg-card transition-colors',
+        isDragOver && 'ring-2 ring-primary ring-inset',
+      )}
+      style={{ overscrollBehavior: 'none' }}
+      {...dragProps}
+    >
+      {/* Header */}
+      <div className="flex-shrink-0 border-b border-border bg-card">
+        <div className="flex items-center justify-center gap-2 py-3 px-4">
+          <EclipseLogo size="sm" />
+          <span className="text-sm font-semibold text-foreground">{config.headerTitle}</span>
+        </div>
+      </div>
+
+      {/* Drag overlay */}
+      {isDragOver && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/90 pointer-events-none">
+          <div className="flex flex-col items-center gap-2 text-primary">
+            <Upload className="h-12 w-12 animate-bounce" />
+            <span className="text-lg font-medium">Drop file here</span>
+          </div>
+        </div>
+      )}
+
+      {/* Messages area */}
+      <div
+        data-gesture-exempt="true"
+        ref={scrollRef}
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 sm:px-4"
+        style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
+      >
+        <div className="py-4 flex flex-col">
+          {isLoading ? (
+            <div className="text-center text-muted-foreground py-8">Loading messages...</div>
+          ) : messages.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">
+              No messages yet. Start the conversation!
+            </div>
+          ) : (
+            messages.map((message, index) => {
+              const isOwn = message.user_id === user?.id;
+              const role = userRoles[message.user_id];
+              const badgeInfo = role ? getRoleBadgeStyle(role) : null;
+
+              const prevMessage = index > 0 ? messages[index - 1] : null;
+              const isGrouped =
+                prevMessage &&
+                prevMessage.user_id === message.user_id &&
+                new Date(message.created_at).getTime() - new Date(prevMessage.created_at).getTime() <= 30000;
+
+              return (
+                <div
+                  key={message.id}
+                  className={cn(
+                    'flex gap-2 sm:gap-3 group min-w-0 max-w-full',
+                    isOwn && 'flex-row-reverse',
+                    isGrouped ? 'mt-0.5' : index > 0 ? 'mt-4' : '',
+                  )}
+                >
+                  {isGrouped ? (
+                    <div className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0" />
+                  ) : (
+                    <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
+                      <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                        {getInitials(message.user_id)}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div className={cn('flex flex-col max-w-[75%] sm:max-w-[70%] min-w-0', isOwn ? 'items-end' : 'items-start')}>
+                    {!isGrouped && (
+                      <div className="flex items-center gap-2 mb-1 flex-wrap min-w-0 max-w-full">
+                        <span className="text-xs sm:text-sm font-medium text-foreground">
+                          {getDisplayName(message.user_id)}
+                        </span>
+                        {badgeInfo && (
+                          <Badge variant="outline" className="text-[10px] sm:text-xs py-0 border" style={badgeInfo.style}>
+                            {badgeInfo.label}
+                          </Badge>
+                        )}
+                        <span className="text-[10px] sm:text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Attachment */}
+                    {message.attachment_url && (
+                      <div className="mb-2 max-w-full min-w-0" onClick={(e) => e.stopPropagation()}>
+                        <AttachmentDisplay
+                          url={message.attachment_url}
+                          bucket={config.storageBucket}
+                          maxImageWidth="100%"
+                          maxImageHeight="256px"
+                        />
+                      </div>
+                    )}
+
+                    {/* Quoted reply */}
+                    {message.reply_to_id && messagesMap[message.reply_to_id] && (
+                      <QuotedMessage
+                        message={messagesMap[message.reply_to_id].message}
+                        senderName={getDisplayName(messagesMap[message.reply_to_id].user_id)}
+                        isCompact
+                        className="mb-1 max-w-full"
+                      />
+                    )}
+
+                    {/* Message bubble */}
+                    {message.message && message.message !== '📎 Attachment' && (
+                      <div
+                        onClick={isPWA ? () => setOpenActionsId(message.id) : undefined}
+                        className={cn(
+                          'rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words max-w-full',
+                          isOwn
+                            ? 'bg-primary text-primary-foreground rounded-br-md'
+                            : 'bg-muted text-foreground rounded-bl-md',
+                          isPWA && 'cursor-pointer active:opacity-80 transition-opacity',
+                        )}
+                      >
+                        {renderMessageWithMentions(message.message, { isOwn })}
+                      </div>
+                    )}
+
+                    <ChatMessageActions
+                      messageId={message.id}
+                      isOwn={isOwn}
+                      canDelete={canDeleteMessage(message.user_id)}
+                      reactions={reactions.filter(r => r.message_id === message.id)}
+                      currentUserId={user?.id || ''}
+                      onAddReaction={(msgId, emoji) => addReactionMutation.mutate({ messageId: msgId, emoji })}
+                      onRemoveReaction={(reactionId) => removeReactionMutation.mutate(reactionId)}
+                      onDelete={(msgId) => deleteMessageMutation.mutate(msgId)}
+                      onReply={handleReply}
+                      isPWA={isPWA}
+                      isOpen={openActionsId === message.id}
+                      onOpenChange={(open) => setOpenActionsId(open ? message.id : null)}
+                    />
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* Typing indicator */}
+      {typingUsers.length > 0 && (
+        <div className="px-3 sm:px-4 py-1 text-xs text-muted-foreground flex-shrink-0">
+          {typingUsers.map(u => u.name).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+        </div>
+      )}
+
+      {/* Selected file preview */}
+      {selectedFile && (
+        <div className="px-3 sm:px-4 py-2 border-t border-border/50 flex-shrink-0 bg-muted/30">
+          <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg min-w-0 overflow-hidden">
+            {selectedFile.type.startsWith('image/') ? (
+              <Image className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            ) : (
+              <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            )}
+            <span className="text-sm truncate flex-1 min-w-0">{selectedFile.name}</span>
+            <span className="text-xs text-muted-foreground">
+              {(selectedFile.size / 1024).toFixed(1)} KB
+            </span>
+            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setSelectedFile(null)}>
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Reply preview */}
+      {replyToMessage && (
+        <div className="px-3 sm:px-4 py-2 border-t border-border/50 flex-shrink-0 bg-muted/30">
+          <QuotedMessage
+            message={replyToMessage.message}
+            senderName={getDisplayName(replyToMessage.user_id)}
+            onClear={() => setReplyToMessage(null)}
+          />
+        </div>
+      )}
+
+      {/* Input bar */}
+      <div
+        data-gesture-exempt="true"
+        className="px-3 py-2 sm:px-4 sm:py-3 flex-shrink-0 bg-card pb-[var(--chat-safe-bottom,env(safe-area-inset-bottom))] relative"
+      >
+        {/* Mention suggestions */}
+        {showSuggestions && (
+          <div className="absolute bottom-full left-3 right-3 mb-2 bg-popover text-popover-foreground border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto z-[100]">
+            {isMembersLoading ? (
+              <div className="px-3 py-2 text-sm text-muted-foreground">Loading team…</div>
+            ) : membersError ? (
+              <button
+                type="button"
+                className="w-full px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent transition-colors"
+                onClick={() => refetchMembers()}
+              >
+                Couldn't load team members. Tap to retry.
+              </button>
+            ) : allSuggestions.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-muted-foreground">No matches.</div>
+            ) : (
+              allSuggestions.map((suggestion, index) => (
+                <button
+                  key={suggestion.type === 'group' ? suggestion.id : suggestion.user_id}
+                  className={cn(
+                    'w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-accent transition-colors',
+                    index === mentionIndex && 'bg-accent',
+                  )}
+                  onClick={() => {
+                    const name = suggestion.type === 'group'
+                      ? suggestion.name!
+                      : getMentionHandle(suggestion as ChatMember);
+                    insertMention(name);
+                  }}
+                >
+                  {suggestion.type === 'group' ? (
+                    <>
+                      <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
+                        <AtSign className="h-3 w-3 text-primary" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-sm">@{suggestion.name}</div>
+                        <div className="text-xs text-muted-foreground">{suggestion.description}</div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                          {((suggestion as ChatMember).display_name || ((suggestion as ChatMember).email || '').split('@')[0])[0]?.toUpperCase() || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <div className="font-medium text-sm">@{getMentionHandle(suggestion as ChatMember)}</div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {(suggestion as ChatMember).display_name || ((suggestion as ChatMember).email || '').split('@')[0]}
+                        </div>
+                      </div>
+                      {(() => {
+                        const role = userRoles[(suggestion as ChatMember).user_id!];
+                        const badgeInfo = role ? getRoleBadgeStyle(role) : null;
+                        return badgeInfo ? (
+                          <Badge variant="outline" className="ml-auto text-[10px] py-0 border" style={badgeInfo.style}>
+                            {badgeInfo.label}
+                          </Badge>
+                        ) : null;
+                      })()}
+                    </>
+                  )}
+                </button>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Hidden file input */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileSelect}
+          className="hidden"
+          accept="image/*,.pdf,.doc,.docx,.txt,.zip"
+        />
+
+        {/* Input bar */}
+        <div data-gesture-exempt="true" className="flex gap-2 items-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="flex-shrink-0 rounded-full h-10 w-10 border border-border/50 bg-muted/30"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+          >
+            <Plus className="h-5 w-5" />
+          </Button>
+
+          <div
+            className="flex-1 min-w-0 relative"
+            style={{ touchAction: 'manipulation' }}
+            data-gesture-exempt="true"
+          >
+            <Input
+              ref={inputRef}
+              value={newMessage}
+              onChange={(e) => handleMentionInputChange(e, handleTyping)}
+              onKeyDown={(e) => handleMentionKeyDown(e, handleSend)}
+              onPointerDown={(e) => {
+                const input = e.currentTarget;
+                if (document.activeElement === input) return;
+                try { input.focus({ preventScroll: true }); } catch { input.focus(); }
+              }}
+              onTouchStart={(e) => {
+                const input = e.currentTarget;
+                if (document.activeElement === input) return;
+                try { input.focus({ preventScroll: true }); } catch { input.focus(); }
+              }}
+              onFocus={handleInputFocus}
+              placeholder="Message..."
+              className="w-full rounded-full bg-muted/50 border-0 focus-visible:ring-1 pr-10 text-base"
+              disabled={isUploading}
+              style={{ fontSize: '16px' }}
+            />
+          </div>
+
+          <Button
+            onClick={handleSend}
+            disabled={(!newMessage.trim() && !selectedFile) || isUploading || sendMessageMutation.isPending}
+            size="icon"
+            className="flex-shrink-0 rounded-full h-10 w-10"
+          >
+            {isUploading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
