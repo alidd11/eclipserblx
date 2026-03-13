@@ -14,6 +14,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { ShieldCheck, Award, Crown, Tag } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 function isNewProduct(createdAt: string) {
   const DAY_MS = 86400000;

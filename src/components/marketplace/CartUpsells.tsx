@@ -5,6 +5,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { Link } from 'react-router-dom';
 import { Plus, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 /**
  * Shows products frequently bought with items currently in the cart.

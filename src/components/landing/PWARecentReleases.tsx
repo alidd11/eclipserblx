@@ -7,6 +7,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFeaturedProducts, ScoredProduct } from '@/hooks/useFeaturedProducts';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 const SpotlightCard = memo(function SpotlightCard({ product }: { product: ScoredProduct }) {
   const { formatPrice } = useCurrency();

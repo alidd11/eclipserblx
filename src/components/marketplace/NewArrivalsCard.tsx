@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { useCurrency } from '@/hooks/useCurrency';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 interface NewProduct {
   id: string;

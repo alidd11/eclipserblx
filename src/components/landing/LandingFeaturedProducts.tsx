@@ -12,6 +12,7 @@ import ukFlag from '@/assets/regions/uk-flag.jpg';
 import usFlag from '@/assets/regions/us-flag.jpg';
 import euFlag from '@/assets/regions/eu-flag.jpg';
 import beFlag from '@/assets/regions/be-flag.png';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 const getRegionFlag = (productName?: string): { src: string; name: string } | null => {
   const nameLower = productName?.toLowerCase() || '';
