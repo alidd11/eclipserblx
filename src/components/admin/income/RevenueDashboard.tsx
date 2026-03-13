@@ -370,6 +370,40 @@ export function RevenueDashboard() {
         </CardContent>
       </Card>
 
+      {/* ── Stripe Balance Summary ── */}
+      <Card>
+        <CardContent className="pt-5 pb-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Wallet className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-semibold">Stripe Balance</span>
+            <Badge variant="default" className="bg-emerald-600 ml-auto text-[10px]">Live</Badge>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <KPICard label="Available" value={`£${metrics.stripeAvailable.toFixed(2)}`} subtitle="Ready to pay out" isLoading={stripeLoading} />
+            <KPICard label="Pending" value={`£${metrics.stripePending.toFixed(2)}`} subtitle="In transit" isLoading={stripeLoading} />
+            <KPICard label="30d Fees" value={`£${metrics.stripeFees.toFixed(2)}`} subtitle={`${stripeBalance?.summary?.avgFeePercent ?? '0'}% avg rate`} isLoading={stripeLoading} />
+            <KPICard label="30d Refunds" value={`£${(stripeBalance?.summary?.last30Days?.refunds ?? 0).toFixed(2)}`} subtitle={`${stripeBalance?.summary?.last30Days?.refundCount ?? 0} refunds`} isLoading={stripeLoading} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── Earnings Breakdown ── */}
+      <Card>
+        <CardContent className="pt-5 pb-5 space-y-5">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-semibold">Earnings Breakdown</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <KPICard label="All-Time Gross" value={`£${metrics.allTimeGross.toFixed(2)}`} isLoading={isLoading} />
+            <KPICard label="Ad Revenue" value={`£${metrics.totalAdRevenue.toFixed(2)}`} isLoading={isLoading} />
+            <KPICard label="Credits" value={`£${metrics.totalCredits.toFixed(2)}`} isLoading={isLoading} />
+            <KPICard label="Robux (est.)" value={`£${metrics.totalRobuxGBP.toFixed(2)}`} isLoading={isLoading} />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* ── Hero Chart ── */}
       <Card>
         <CardHeader className="pb-2">
@@ -489,40 +523,6 @@ export function RevenueDashboard() {
           </CardContent>
         </Card>
       </div>
-
-      {/* ── Stripe Balance Summary ── */}
-      <Card>
-        <CardContent className="pt-5 pb-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Wallet className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-semibold">Stripe Balance</span>
-            <Badge variant="default" className="bg-emerald-600 ml-auto text-[10px]">Live</Badge>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <KPICard label="Available" value={`£${metrics.stripeAvailable.toFixed(2)}`} subtitle="Ready to pay out" isLoading={stripeLoading} />
-            <KPICard label="Pending" value={`£${metrics.stripePending.toFixed(2)}`} subtitle="In transit" isLoading={stripeLoading} />
-            <KPICard label="30d Fees" value={`£${metrics.stripeFees.toFixed(2)}`} subtitle={`${stripeBalance?.summary?.avgFeePercent ?? '0'}% avg rate`} isLoading={stripeLoading} />
-            <KPICard label="30d Refunds" value={`£${(stripeBalance?.summary?.last30Days?.refunds ?? 0).toFixed(2)}`} subtitle={`${stripeBalance?.summary?.last30Days?.refundCount ?? 0} refunds`} isLoading={stripeLoading} />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* ── Earnings Breakdown ── */}
-      <Card>
-        <CardContent className="pt-5 pb-5 space-y-5">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-semibold">Earnings Breakdown</span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <KPICard label="All-Time Gross" value={`£${metrics.allTimeGross.toFixed(2)}`} isLoading={isLoading} />
-            <KPICard label="Ad Revenue" value={`£${metrics.totalAdRevenue.toFixed(2)}`} isLoading={isLoading} />
-            <KPICard label="Credits" value={`£${metrics.totalCredits.toFixed(2)}`} isLoading={isLoading} />
-            <KPICard label="Robux (est.)" value={`£${metrics.totalRobuxGBP.toFixed(2)}`} isLoading={isLoading} />
-          </div>
-        </CardContent>
-      </Card>
 
       {/* ── Income Sources ── */}
       <Card>
