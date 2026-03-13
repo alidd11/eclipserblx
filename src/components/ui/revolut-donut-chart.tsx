@@ -49,14 +49,6 @@ export function RevolutDonutChart({
   className,
   paddingAngle = 3,
 }: RevolutDonutChartProps) {
-  if (!data || data.length === 0) {
-    return (
-      <div className={className} style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p className="text-muted-foreground text-sm">No data</p>
-      </div>
-    );
-  }
-
   const animationActive = useMemo(() => {
     if (typeof window === 'undefined') return false;
 
@@ -68,6 +60,14 @@ export function RevolutDonutChart({
 
     return !prefersReducedMotion && !isIOSWebKit;
   }, []);
+
+  if (!data || data.length === 0) {
+    return (
+      <div className={className} style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p className="text-muted-foreground text-sm">No data</p>
+      </div>
+    );
+  }
 
   return (
     <div className={className} style={{ height }}>
