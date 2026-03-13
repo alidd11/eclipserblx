@@ -50,7 +50,7 @@ const CANNED_RESPONSES = [
     responses: [
       { label: 'How to download', text: 'To download your purchased items:\n\n1. Log into your account\n2. Go to Account → Downloads\n3. Click the download button next to your product\n\nIf you\'re having trouble finding it, let me know the product name and I\'ll help locate it.' },
       { label: 'Download not working', text: 'I\'m sorry you\'re experiencing download issues. Let\'s troubleshoot:\n\n• Try a different browser (Chrome/Firefox work best)\n• Disable any ad blockers temporarily\n• Check if your internet connection is stable\n\nIf the issue persists, please let me know the exact error message you\'re seeing.' },
-      { label: 'Download limit reached', text: 'I understand you\'ve reached the download limit. Don\'t worry – I can help! For security reasons, we limit downloads to 3 per product. I\'ve reset your download count, so you should now be able to download it again. Please try once more and let me know if it works!' },
+      { label: 'Download limit reached', text: 'I understand you\'ve reached the download limit. Don\'t worry – I can help! For security reasons, we limit downloads to 5 per product per day (and 15 per hour globally). I\'ve reset your download count, so you should now be able to download it again. Please try once more and let me know if it works!' },
       { label: 'File corrupted', text: 'I\'m sorry to hear the file appears corrupted. This can sometimes happen due to incomplete downloads. Here\'s what I recommend:\n\n1. Delete the corrupted file\n2. Clear your browser cache\n3. Try downloading again using a wired connection if possible\n\nIf the issue continues, I\'ll arrange an alternative delivery method for you.' },
     ],
   },

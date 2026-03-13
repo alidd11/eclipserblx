@@ -68,12 +68,12 @@ export const buyerCategories: HelpCategory[] = [
         answer: 'Go to Account → Downloads to access all your purchased files. Each product can be downloaded directly from there.',
       },
       {
-        question: 'Is there a download cooldown?',
-        answer: 'Yes — there\'s a 48-hour cooldown between downloads of the same product to ensure fair usage and prevent abuse.',
+        question: 'Is there a download limit?',
+        answer: 'Yes — you can download each product up to 5 times per day, with a global limit of 15 downloads per hour across all products. This helps ensure fair usage and prevent abuse.',
       },
       {
         question: 'What if my download fails?',
-        answer: 'If your download fails, wait for the cooldown period to end and try again. If the issue persists, open a support ticket and our team will help.',
+        answer: 'If your download fails, try again — you have up to 5 attempts per product per day. If the issue persists, open a support ticket and our team will help.',
       },
       {
         question: 'Can I download on multiple devices?',
@@ -81,7 +81,7 @@ export const buyerCategories: HelpCategory[] = [
       },
       {
         question: 'How long do I have access to my purchases?',
-        answer: 'Once purchased, you have lifetime access to download your products (subject to the 48-hour cooldown between downloads).',
+        answer: 'Once purchased, you have lifetime access to download your products (subject to daily download limits).',
       },
     ],
   },
