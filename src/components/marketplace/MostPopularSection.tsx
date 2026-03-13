@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSubscription } from '@/hooks/useSubscription';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 interface PopularProduct {
   id: string;
