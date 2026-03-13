@@ -142,11 +142,14 @@ function PWAProductCard({ product }: { product: ScoredProduct }) {
       className="block rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors active:scale-[0.98]"
     >
       <div className="aspect-[4/3] relative overflow-hidden bg-muted">
-        {product.images?.[0] ? (
-          <img src={product.images[0]} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">No image</div>
-        )}
+        {(() => {
+          const imgUrl = getFirstImageUrl(product.images);
+          return imgUrl ? (
+            <img src={imgUrl} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-contain" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">No image</div>
+          );
+        })()}
         {/* Badges */}
         <div className="absolute top-1.5 left-1.5 flex items-center gap-1">
           {isNew && (

@@ -113,7 +113,7 @@ export function CartUpsells() {
                       id: product.id,
                       name: product.name,
                       price: product.price,
-                      image: product.images?.[0],
+                      image: getFirstImageUrl(product.images) || product.images?.[0],
                       slug: String(product.product_number),
                       category_id: product.category_id,
                       is_resellable: product.is_resellable,

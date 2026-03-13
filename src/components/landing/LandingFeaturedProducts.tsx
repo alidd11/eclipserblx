@@ -42,19 +42,22 @@ const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct; fe
         <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200">
           {/* Image */}
           <div className={`relative overflow-hidden bg-muted ${featured ? 'aspect-[16/10]' : 'aspect-[4/3]'}`}>
-            {product.images?.[0] ? (
-              <img
-                src={optimizeImageUrl(product.images[0], 400, 300)}
-                alt={product.name}
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-muted">
-                <span className="text-muted-foreground text-sm">No image</span>
-              </div>
-            )}
+            {(() => {
+              const imgUrl = getFirstImageUrl(product.images);
+              return imgUrl ? (
+                <img
+                  src={optimizeImageUrl(imgUrl, 400, 300)}
+                  alt={product.name}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-contain group-hover:scale-[1.03] transition-transform duration-300"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-muted">
+                  <span className="text-muted-foreground text-sm">No image</span>
+                </div>
+              );
+            })()}
             
             {/* Store overlay */}
             <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2.5">
