@@ -239,14 +239,14 @@ export default function RevenueHub() {
             </div>
 
             <TabsContent value="overview">
-              <FinancialOverview />
+              <MemoFinancialOverview />
             </TabsContent>
 
-            <TabsContent value="stripe"><StripeBalanceTab /></TabsContent>
-            <TabsContent value="gross"><GrossRevenueTab /></TabsContent>
-            <TabsContent value="credits"><CreditsAnalyticsTab /></TabsContent>
-            <TabsContent value="robux"><RobuxEarningsTab /></TabsContent>
-            <TabsContent value="sellers"><SellerEarningsTab /></TabsContent>
+            <TabsContent value="stripe"><MemoStripeBalanceTab /></TabsContent>
+            <TabsContent value="gross"><MemoGrossRevenueTab /></TabsContent>
+            <TabsContent value="credits"><MemoCreditsAnalyticsTab /></TabsContent>
+            <TabsContent value="robux"><MemoRobuxEarningsTab /></TabsContent>
+            <TabsContent value="sellers"><MemoSellerEarningsTab /></TabsContent>
 
             <TabsContent value="sources">
               <Suspense fallback={<Skeleton className="h-96 w-full" />}>
