@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCurrency } from '@/hooks/useCurrency';
 import { Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 /**
  * Personalized "For You" section on the homepage.
