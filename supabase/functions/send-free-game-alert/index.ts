@@ -38,6 +38,17 @@ const FREE_GAMES: Record<string, FreeGameInfo> = {
     freeUntil: 'March 20, 2026',
     developer: 'BlackMill Games',
   },
+  'deponia': {
+    name: 'Deponia',
+    storeUrl: 'https://store.steampowered.com/app/214340/Deponia/',
+    description: 'In Deponia, the world has degenerated into a vast garbage dump, in which the crotchety Rufus ekes out his sorry existence. He dreams of a better life in the floating city of Elysium — but has no idea how explosive his plans to get there will turn out to be in this beautifully hand-drawn point-and-click comedy adventure.',
+    genre: 'Adventure, Point & Click, Comedy, Puzzle',
+    rating: 'Very Positive (86% recent)',
+    imageUrl: 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/214340/ss_5f5dd80ad681eb78c05e1e8a75be9a99facb1deb.1920x1080.jpg?t=1772651228',
+    storeName: 'Steam',
+    freeUntil: 'March 16, 2026',
+    developer: 'Daedalic Entertainment',
+  },
 };
 
 function buildGameEmbed(game: FreeGameInfo): DiscordEmbed {
