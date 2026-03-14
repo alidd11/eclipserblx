@@ -207,7 +207,9 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
         showFABs={false}
         wrapperClassName={cn(
           'flex w-full bg-background overflow-x-hidden relative max-w-full min-w-0',
-          isChatPage ? 'flex-col md:flex-row overflow-hidden bg-card h-[100dvh]' : 'min-h-[100dvh]'
+          isChatPage
+            ? 'flex-col md:flex-row overflow-hidden bg-card h-[100dvh]'
+            : 'min-h-[100dvh] pb-safe'
         )}
         innerClassName={isChatPage ? 'flex-1 flex flex-col min-w-0 min-h-0' : undefined}
         mainStyle={isChatPage ? { paddingBottom: 0 } : undefined}
