@@ -110,6 +110,46 @@ const POPULAR_GAMES = [
   },
 ];
 
+// Free Game Alert presets — separate category
+const FREE_GAME_FEEDS = [
+  {
+    name: 'Free Game Findings (Reddit)',
+    emoji: '🆓',
+    feed_url: 'https://www.reddit.com/r/FreeGameFindings/.rss',
+    feed_type: 'rss',
+    description: 'Community-curated free games from Epic, Steam, GOG & more',
+    icon_url: 'https://styles.redditmedia.com/t5_32ud3/styles/communityIcon_nxfc5a9a38i51.png',
+    embed_color: 0xFF4500,
+  },
+  {
+    name: 'Game Deals (Reddit)',
+    emoji: '💰',
+    feed_url: 'https://www.reddit.com/r/GameDeals/.rss',
+    feed_type: 'rss',
+    description: 'Best gaming deals, bundles, and free game giveaways',
+    icon_url: 'https://styles.redditmedia.com/t5_2qhta/styles/communityIcon_riz3j7oqsu961.png',
+    embed_color: 0x00C853,
+  },
+  {
+    name: 'Indie Game Bundles',
+    emoji: '🎁',
+    feed_url: 'https://www.indiegamebundles.com/feed/',
+    feed_type: 'rss',
+    description: 'Free indie games, bundles, and giveaway alerts',
+    icon_url: 'https://www.indiegamebundles.com/wp-content/uploads/2020/01/cropped-logo-192x192.png',
+    embed_color: 0x9C27B0,
+  },
+  {
+    name: 'Epic Games Free (gg.deals)',
+    emoji: '🏪',
+    feed_url: 'https://gg.deals/news/feed/',
+    feed_type: 'rss',
+    description: 'Game deals news including Epic free games and Steam sales',
+    icon_url: 'https://gg.deals/apple-touch-icon.png',
+    embed_color: 0x2196F3,
+  },
+];
+
 export default function GameNewsFeeds() {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
