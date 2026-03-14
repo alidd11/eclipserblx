@@ -263,7 +263,7 @@ export default function GameNewsFeeds() {
         feed_url: preset.feed_url,
         feed_type: preset.feed_type,
         discord_channel_id: DEFAULT_CHANNEL_ID,
-        ping_role_id: globalPingRoleId,
+        ping_role_id: '',
         check_interval_minutes: 10,
       });
     }
