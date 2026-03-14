@@ -16,7 +16,7 @@ export function ProductHealthDonut() {
   const { store } = useSellerStatus();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['seller-product-health-donut', store?.id],
+    queryKey: ['seller-product-stats', store?.id],
     queryFn: async () => {
       if (!store?.id) return null;
       const { data: products } = await supabase
