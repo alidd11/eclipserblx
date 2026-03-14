@@ -262,9 +262,13 @@ async function buildEmbed(
       text: feed.name,
       icon_url: feedIcon,
     },
-    timestamp: entry.published
-      ? new Date(entry.published).toISOString()
-      : new Date().toISOString(),
+  // Safe timestamp parsing - avoid Invalid Date crashes
+  const parsedDate = entry.published ? new Date(entry.published) : null;
+  const validTimestamp = parsedDate && !isNaN(parsedDate.getTime())
+    ? parsedDate.toISOString()
+    : new Date().toISOString();
+    
+    timestamp: validTimestamp,
   };
 
   // Large banner image (always try to include one)
