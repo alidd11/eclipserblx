@@ -456,6 +456,112 @@ export default function GameNewsFeeds() {
           </CardContent>
         </Card>
 
+        {/* Free Game Alerts Grid */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">🆓 Free Game Alerts</CardTitle>
+            <CardDescription>
+              Auto-post free game giveaways, deals, and limited-time offers to Discord.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3">
+              {FREE_GAME_FEEDS.map((preset) => {
+                const isAdded = addedFeedUrls.has(preset.feed_url) || !!getFeedForPreset(preset);
+                const existingFeed = getFeedForPreset(preset);
+                const isEnabled = existingFeed?.enabled ?? false;
+
+                return (
+                  <div
+                    key={preset.feed_url}
+                    className={`flex flex-col gap-2 p-3 rounded-lg border transition-colors ${
+                      isAdded && isEnabled
+                        ? 'bg-primary/5 border-primary/20'
+                        : 'bg-muted/30 border-border/50'
+                    }`}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <span className="text-xl shrink-0 mt-0.5">{preset.emoji}</span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-sm">{preset.name}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2">{preset.description}</p>
+                        {isAdded && existingFeed && existingFeed.last_checked_at && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Checked {formatDistanceToNow(new Date(existingFeed.last_checked_at), { addSuffix: true })}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    {isAdded && existingFeed && (
+                      <div className="flex items-center gap-1.5">
+                        <Input
+                          placeholder="Ping Role ID"
+                          value={feedPingInputs[existingFeed.id] ?? existingFeed.ping_role_id ?? ''}
+                          onChange={(e) => setFeedPingInputs(prev => ({ ...prev, [existingFeed.id]: e.target.value }))}
+                          className="h-7 text-xs flex-1"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs px-2 shrink-0"
+                          disabled={
+                            updateFeedPingRoleMutation.isPending ||
+                            (feedPingInputs[existingFeed.id] ?? existingFeed.ping_role_id ?? '') === (existingFeed.ping_role_id ?? '')
+                          }
+                          onClick={() => updateFeedPingRoleMutation.mutate({ id: existingFeed.id, roleId: feedPingInputs[existingFeed.id] ?? '' })}
+                        >
+                          Save
+                        </Button>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between gap-2">
+                      {isAdded && existingFeed && existingFeed.ping_role_id && (
+                        <p className="text-[10px] text-muted-foreground truncate">
+                          Pings: <code className="bg-muted px-1 rounded">&lt;@&amp;{existingFeed.ping_role_id}&gt;</code>
+                        </p>
+                      )}
+                      <div className="flex items-center gap-2 ml-auto">
+                        {isAdded && existingFeed && (
+                          <Switch
+                            checked={isEnabled}
+                            onCheckedChange={(enabled) =>
+                              toggleMutation.mutate({ id: existingFeed.id, enabled })
+                            }
+                          />
+                        )}
+                        {!isAdded && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8"
+                            onClick={() => handlePresetToggle(preset, false)}
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Enable
+                          </Button>
+                        )}
+                        {isAdded && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => {
+                              if (confirm(`Remove ${preset.name} feed?`)) {
+                                handlePresetToggle(preset, true);
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+
         {/* Channel Setup Dialog for Presets */}
         <Dialog open={channelDialogOpen} onOpenChange={setChannelDialogOpen}>
           <DialogContent>
