@@ -41,6 +41,8 @@ interface GameNewsFeed {
   created_at: string;
 }
 
+const DEFAULT_CHANNEL_ID = '1482392729563693292';
+
 // Popular game presets with known RSS/news feed URLs
 const POPULAR_GAMES = [
   {
@@ -221,17 +223,20 @@ export default function GameNewsFeeds() {
 
   const handlePresetToggle = (preset: typeof POPULAR_GAMES[0], currentlyAdded: boolean) => {
     if (currentlyAdded) {
-      // Turn off — delete the feed
       const feed = getFeedForPreset(preset);
       if (feed) {
         deleteMutation.mutate(feed.id);
       }
     } else {
-      // Turn on — ask for channel ID first
-      setSelectedPreset(preset);
-      setChannelId('');
-      setPingRoleId('');
-      setChannelDialogOpen(true);
+      // Directly add with hardcoded channel ID
+      addMutation.mutate({
+        name: preset.name,
+        feed_url: preset.feed_url,
+        feed_type: preset.feed_type,
+        discord_channel_id: DEFAULT_CHANNEL_ID,
+        ping_role_id: '',
+        check_interval_minutes: 10,
+      });
     }
   };
 
