@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -124,6 +124,8 @@ export default function GameNewsFeeds() {
   const [selectedPreset, setSelectedPreset] = useState<typeof POPULAR_GAMES[0] | null>(null);
   const [channelId, setChannelId] = useState('');
   const [pingRoleId, setPingRoleId] = useState('');
+  const [globalPingRoleId, setGlobalPingRoleId] = useState('');
+  const [globalPingRoleInput, setGlobalPingRoleInput] = useState('');
   const [newFeed, setNewFeed] = useState({
     name: '',
     feed_url: '',
@@ -144,6 +146,15 @@ export default function GameNewsFeeds() {
       return data as GameNewsFeed[];
     },
   });
+
+  // Initialize global ping role from existing feeds
+  useEffect(() => {
+    if (feeds && feeds.length > 0 && !globalPingRoleId) {
+      const firstPingRole = feeds.find(f => f.ping_role_id)?.ping_role_id || '';
+      setGlobalPingRoleId(firstPingRole);
+      setGlobalPingRoleInput(firstPingRole);
+    }
+  }, [feeds]);
 
   // Check which presets are already added (by feed_url match)
   const addedFeedUrls = new Set((feeds || []).map(f => f.feed_url));
@@ -224,6 +235,22 @@ export default function GameNewsFeeds() {
     onError: (err: Error) => toast.error(err.message),
   });
 
+  const updateGlobalPingRoleMutation = useMutation({
+    mutationFn: async (roleId: string) => {
+      const { error } = await supabase
+        .from('game_news_feeds')
+        .update({ ping_role_id: roleId || null, updated_at: new Date().toISOString() })
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // update all rows
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['game-news-feeds'] });
+      setGlobalPingRoleId(globalPingRoleInput);
+      toast.success(globalPingRoleInput ? 'Ping role saved for all feeds' : 'Ping role removed from all feeds');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
   const handlePresetToggle = (preset: typeof POPULAR_GAMES[0], currentlyAdded: boolean) => {
     if (currentlyAdded) {
       const feed = getFeedForPreset(preset);
@@ -236,7 +263,7 @@ export default function GameNewsFeeds() {
         feed_url: preset.feed_url,
         feed_type: preset.feed_type,
         discord_channel_id: DEFAULT_CHANNEL_ID,
-        ping_role_id: '',
+        ping_role_id: globalPingRoleId,
         check_interval_minutes: 10,
       });
     }
@@ -279,6 +306,46 @@ export default function GameNewsFeeds() {
             </Button>
           </div>
         </div>
+
+        {/* Global Settings */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Settings
+            </CardTitle>
+            <CardDescription>
+              Configure the ping role for all game news updates.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex-1">
+                <Label className="text-xs text-muted-foreground mb-1.5 block">Ping Role ID (optional)</Label>
+                <Input
+                  placeholder="Role ID to mention on new articles"
+                  value={globalPingRoleInput}
+                  onChange={(e) => setGlobalPingRoleInput(e.target.value)}
+                  className="h-9"
+                />
+              </div>
+              <Button
+                size="sm"
+                className="self-end h-9"
+                onClick={() => updateGlobalPingRoleMutation.mutate(globalPingRoleInput)}
+                disabled={updateGlobalPingRoleMutation.isPending || globalPingRoleInput === globalPingRoleId}
+              >
+                {updateGlobalPingRoleMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+                Save
+              </Button>
+            </div>
+            {globalPingRoleId && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Currently pinging: <code className="bg-muted px-1 rounded text-[11px]">&lt;@&amp;{globalPingRoleId}&gt;</code>
+              </p>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Popular Games Grid */}
         <Card>
