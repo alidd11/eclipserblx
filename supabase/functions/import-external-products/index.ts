@@ -550,9 +550,12 @@ function parseBuiltByBitProduct(markdown: string, url: string, html?: string): E
 
 // ─── Payhip parsers ───────────────────────────────────────────────────────────
 
+// Common CTA / button labels that should not be treated as product names
+const PAYHIP_CTA_PATTERNS = /^(purchase\s*now|buy\s*now|add\s*to\s*cart|get\s*it\s*now|visit\s*product\s*page|view\s*product|checkout|proceed|download|learn\s*more|see\s*more|read\s*more|sign\s*up|subscribe|free\s*download|get\s*access|view\s*details?)$/i;
+
 function parsePayhipStore(markdown: string, storeUrl: string, links?: string[]): { products: ExternalProduct[]; sellerName?: string } {
-  const products: ExternalProduct[] = [];
-  const seenUrls = new Set<string>();
+  // Map from URL → best candidate name
+  const urlCandidates = new Map<string, { name: string; isCta: boolean }>();
 
   // Extract seller name from URL path
   let sellerName: string | undefined;
@@ -566,16 +569,46 @@ function parsePayhipStore(markdown: string, storeUrl: string, links?: string[]):
 
   let match;
   while ((match = productLinkRegex.exec(markdown)) !== null) {
-    const name = match[1].trim();
+    const rawName = match[1].trim();
     const url = match[2];
+    if (rawName.length < 2) continue;
 
-    if (seenUrls.has(url) || name.length < 3) continue;
-    seenUrls.add(url);
+    const isCta = PAYHIP_CTA_PATTERNS.test(rawName);
+    const existing = urlCandidates.get(url);
 
-    const categorySlug = suggestCategory(name, '');
+    // Keep non-CTA names over CTA names; among same type keep the longer one
+    if (!existing || (!isCta && existing.isCta) || (!isCta && !existing.isCta && rawName.length > existing.name.length)) {
+      urlCandidates.set(url, { name: rawName, isCta });
+    }
+  }
 
+  // Also try extracting from links array (fallback for URLs not yet seen)
+  if (links && links.length > 0) {
+    for (const link of links) {
+      if (!link.match(/payhip\.com\/b\/[A-Za-z0-9]+$/)) continue;
+      if (urlCandidates.has(link)) continue;
+
+      const codeMatch = link.match(/\/b\/([A-Za-z0-9]+)$/);
+      const code = codeMatch ? codeMatch[1] : 'Unknown';
+      urlCandidates.set(link, { name: `Product ${code}`, isCta: true });
+    }
+  }
+
+  // Build product list — for URLs that only have CTA labels, still include them
+  // but use the product code as a fallback name
+  const products: ExternalProduct[] = [];
+  for (const [url, { name, isCta }] of urlCandidates) {
+    let finalName = name;
+    if (isCta) {
+      // Use the product code from the URL instead of the CTA text
+      const codeMatch = url.match(/\/b\/([A-Za-z0-9]+)$/);
+      finalName = codeMatch ? `Product ${codeMatch[1]}` : name;
+    }
+    if (finalName.length < 3) continue;
+
+    const categorySlug = suggestCategory(finalName, '');
     products.push({
-      name,
+      name: finalName,
       description: '',
       price: 0,
       images: [],
@@ -583,29 +616,6 @@ function parsePayhipStore(markdown: string, storeUrl: string, links?: string[]):
       platform: 'payhip',
       suggestedCategoryId: categorySlug,
     });
-  }
-
-  // Also try extracting from links array
-  if (links && links.length > 0) {
-    for (const link of links) {
-      if (!link.match(/payhip\.com\/b\/[A-Za-z0-9]+$/)) continue;
-      if (seenUrls.has(link)) continue;
-      seenUrls.add(link);
-
-      // We don't have a name from just the link, use the product code
-      const codeMatch = link.match(/\/b\/([A-Za-z0-9]+)$/);
-      const code = codeMatch ? codeMatch[1] : 'Unknown';
-
-      products.push({
-        name: `Product ${code}`,
-        description: '',
-        price: 0,
-        images: [],
-        sourceUrl: link,
-        platform: 'payhip',
-        suggestedCategoryId: undefined,
-      });
-    }
   }
 
   return { products, sellerName };
