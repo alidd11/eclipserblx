@@ -2829,9 +2829,11 @@ export type Database = {
           check_interval_minutes: number
           created_at: string
           discord_channel_id: string
+          embed_color: number | null
           enabled: boolean
           feed_type: string
           feed_url: string
+          icon_url: string | null
           id: string
           last_checked_at: string | null
           name: string
@@ -2842,9 +2844,11 @@ export type Database = {
           check_interval_minutes?: number
           created_at?: string
           discord_channel_id: string
+          embed_color?: number | null
           enabled?: boolean
           feed_type?: string
           feed_url: string
+          icon_url?: string | null
           id?: string
           last_checked_at?: string | null
           name: string
@@ -2855,9 +2859,11 @@ export type Database = {
           check_interval_minutes?: number
           created_at?: string
           discord_channel_id?: string
+          embed_color?: number | null
           enabled?: boolean
           feed_type?: string
           feed_url?: string
+          icon_url?: string | null
           id?: string
           last_checked_at?: string | null
           name?: string
