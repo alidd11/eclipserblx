@@ -1,36 +1,67 @@
 
 
-## Issues Identified
+## Game News Feed to Discord
 
-**Issue 1: Sidebar positioned at top of screen on desktop**
-The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
+### Approach: RSS Polling via Edge Function + pg_cron
 
-**Issue 2: Excessive black empty space in the content area**
-The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
+The simplest and most reliable approach is polling RSS feeds from game news sources and posting new articles to a Discord channel using your existing Eclipse Portal Bot infrastructure.
 
-## Plan
+### How it works
 
-### 1. Widen the content area on the Categories page
-- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
-- Reduce vertical padding between the header and grid
-- Tighten the gap between the page title/description and the cards
+1. **New database table** `game_news_feeds` stores RSS feed URLs and the target Discord channel ID
+2. **New database table** `game_news_posted` tracks which articles have already been posted (deduplication by URL)
+3. **New edge function** `poll-game-news` fetches configured RSS feeds, parses them, checks for new entries, and posts embeds to Discord via the existing `sendBotMessage` utility
+4. **pg_cron job** runs the edge function every 5-10 minutes
+5. **Admin UI** to configure feeds (RSS URL, channel ID, optional role ping)
 
-### 2. Improve the PageHeader component
-- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
-- This applies globally to all pages using PageHeader
+### RSS Sources for GTA / Gaming
 
-### 3. Make category cards fill space better
-- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
-- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
-- Reduce grid gap slightly so cards feel more connected
+Common RSS feeds that can be configured:
+- Rockstar Newswire: `https://www.rockstargames.com/newswire/get-posts.json`
+- GTA news aggregators with RSS
+- Any gaming site with an RSS/Atom feed
 
-### 4. Sidebar desktop alignment fix
-- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
-- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
-- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
+### Database
 
-### Files to modify
-- `src/pages/Categories.tsx` — widen container, tighten spacing
-- `src/components/ui/PageHeader.tsx` — reduce bottom margin
-- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
+```text
+game_news_feeds
+├── id (uuid)
+├── name (text) — e.g. "GTA News"
+├── feed_url (text) — RSS/JSON feed URL
+├── discord_channel_id (text) — target channel
+├── ping_role_id (text, nullable) — optional role to ping
+├── enabled (boolean, default true)
+├── check_interval_minutes (int, default 10)
+└── created_at / updated_at
+
+game_news_posted
+├── id (uuid)
+├── feed_id (uuid → game_news_feeds)
+├── article_url (text, unique)
+├── article_title (text)
+├── posted_at (timestamptz)
+```
+
+### Edge Function: `poll-game-news`
+
+- Reads all enabled feeds from `game_news_feeds`
+- Fetches each RSS/JSON feed, parses entries
+- Checks `game_news_posted` to skip already-sent articles
+- For new articles: posts a Discord embed (title, description, link, thumbnail) via `sendBotMessage`
+- Records the article in `game_news_posted`
+
+### Admin Configuration
+
+Add a section in the existing Discord settings or a new admin page where you can:
+- Add/remove RSS feeds
+- Set the target Discord channel per feed
+- Optionally set a role to ping
+- Enable/disable individual feeds
+
+### Technical Details
+
+- Reuses the existing `sendBotMessage` from `_shared/discord-bot.ts` and `DISCORD_CUSTOMER_BOT_TOKEN`
+- pg_cron already enabled in the project — just add a new scheduled job
+- RSS parsing done in Deno using built-in XML parsing or a lightweight library
+- The embed will include: article title, snippet, link, thumbnail image, and source footer
 
