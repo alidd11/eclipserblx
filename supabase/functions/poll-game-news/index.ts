@@ -248,6 +248,12 @@ async function buildEmbed(
     ? `${cleanDesc}${cleanDesc.length >= 195 ? '…' : ''}\n\n**[Read full article →](${entry.url})**`
     : `**[Read full article →](${entry.url})**`;
 
+  // Safe timestamp parsing - avoid Invalid Date crashes
+  const parsedDate = entry.published ? new Date(entry.published) : null;
+  const validTimestamp = parsedDate && !isNaN(parsedDate.getTime())
+    ? parsedDate.toISOString()
+    : new Date().toISOString();
+
   const embed: DiscordEmbed = {
     title: entry.title.substring(0, 256),
     url: entry.url,
@@ -262,12 +268,6 @@ async function buildEmbed(
       text: feed.name,
       icon_url: feedIcon,
     },
-  // Safe timestamp parsing - avoid Invalid Date crashes
-  const parsedDate = entry.published ? new Date(entry.published) : null;
-  const validTimestamp = parsedDate && !isNaN(parsedDate.getTime())
-    ? parsedDate.toISOString()
-    : new Date().toISOString();
-    
     timestamp: validTimestamp,
   };
 
