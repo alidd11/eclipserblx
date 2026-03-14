@@ -373,7 +373,7 @@ Deno.serve(async (req) => {
         ];
         const newEntries = recentEntries
           .filter(e => !existingUrls.has(e.url))
-          .filter(e => !SKIP_PATTERNS.some(p => p.test(e.title)));
+          .filter(e => !SKIP_PATTERNS.some(p => p.test(e.title) || p.test(e.description || '')));
 
         // Post new entries (oldest first so newest appears last in Discord)
         for (const entry of newEntries.reverse()) {
