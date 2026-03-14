@@ -1255,71 +1255,78 @@ Deno.serve(async (req) => {
         }
       }
 
-      // For Payhip, redirect to the /collection/all page which has clean structured product listings
-      let scrapeTarget = storeUrl;
-      if (detectedPlatform === 'payhip' && !storeUrl.includes('/collection/')) {
-        // Strip trailing slash and append /collection/all
-        scrapeTarget = storeUrl.replace(/\/+$/, '') + '/collection/all';
-        console.log(`Redirecting Payhip scrape to collection page: ${scrapeTarget}`);
-      }
-
-      console.log(`Listing products from ${detectedPlatform}: ${scrapeTarget}`);
+      console.log(`Listing products from ${detectedPlatform}: ${storeUrl}`);
 
       let products: ExternalProduct[] = [];
       let sellerName: string | undefined;
 
       if (detectedPlatform === 'payhip') {
-        // Payhip collection pages are paginated — scrape all pages
-        const baseCollectionUrl = scrapeTarget.split('?')[0]; // remove any existing query params
-        const MAX_PAGES = 20; // safety cap
+        // Use Firecrawl map endpoint to discover ALL product URLs in one call (1 credit)
+        const mapUrl = storeUrl.replace(/\/+$/, '');
+        console.log(`Using map endpoint to discover all Payhip product URLs: ${mapUrl}`);
+
+        const mapResponse = await fetch('https://api.firecrawl.dev/v1/map', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${firecrawlApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            url: mapUrl,
+            limit: 5000,
+            includeSubdomains: false,
+          }),
+        });
+
+        const mapData = await mapResponse.json();
+
+        if (!mapResponse.ok) {
+          console.error('Firecrawl map error:', mapData);
+          return new Response(
+            JSON.stringify({ success: false, error: mapData.error || `Map request failed (HTTP ${mapResponse.status})` }),
+            { status: mapResponse.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        // Extract all unique /b/ product URLs from the map results
+        const allLinks: string[] = mapData.links || mapData.data?.links || [];
         const seenProductUrls = new Set<string>();
+        const productUrls: string[] = [];
 
-        for (let page = 1; page <= MAX_PAGES; page++) {
-          const pageUrl = page === 1 ? baseCollectionUrl : `${baseCollectionUrl}?page=${page}`;
-          console.log(`Scraping Payhip page ${page}: ${pageUrl}`);
-
-          const pageResult = await scrapeUrl(pageUrl, firecrawlApiKey, 1); // fewer retries for pagination
-          if (!pageResult.success) {
-            if (page === 1) {
-              // First page failed — return error
-              return new Response(
-                JSON.stringify({ success: false, error: pageResult.error || "Failed to scrape store" }),
-                { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-              );
-            }
-            // Subsequent page failed — stop paginating, use what we have
-            console.log(`Page ${page} failed, stopping pagination: ${pageResult.error}`);
-            break;
-          }
-
-          const pageProducts = parsePayhipStore(pageResult.markdown!, storeUrl, pageResult.links);
-          if (!sellerName && pageProducts.sellerName) {
-            sellerName = pageProducts.sellerName;
-          }
-
-          // Count new (non-duplicate) products on this page
-          let newCount = 0;
-          for (const p of pageProducts.products) {
-            if (!seenProductUrls.has(p.sourceUrl)) {
-              seenProductUrls.add(p.sourceUrl);
-              products.push(p);
-              newCount++;
-            }
-          }
-
-          console.log(`Page ${page}: found ${pageProducts.products.length} products (${newCount} new, ${products.length} total)`);
-
-          // If this page yielded no new products, we've reached the end
-          if (newCount === 0) {
-            console.log(`No new products on page ${page}, stopping pagination`);
-            break;
+        for (const link of allLinks) {
+          // Match Payhip product URLs: /b/XXXXX
+          if (/payhip\.com\/b\/[A-Za-z0-9]+$/i.test(link) && !seenProductUrls.has(link)) {
+            seenProductUrls.add(link);
+            productUrls.push(link);
           }
         }
 
-        console.log(`Payhip pagination complete: ${products.length} total products across all pages`);
+        console.log(`Map found ${allLinks.length} total URLs, ${productUrls.length} product URLs`);
+
+        // Extract seller name from the store URL
+        const storeSlugMatch = storeUrl.match(/payhip\.com\/([A-Za-z0-9_-]+)/);
+        if (storeSlugMatch && !['b', 'collection', 'explore', 'themes', 'api-reference'].includes(storeSlugMatch[1].toLowerCase())) {
+          sellerName = storeSlugMatch[1];
+        }
+
+        // Build products from discovered URLs (names derived from URL codes — details fetched on import)
+        for (const url of productUrls) {
+          const codeMatch = url.match(/\/b\/([A-Za-z0-9]+)$/);
+          const code = codeMatch ? codeMatch[1] : 'Unknown';
+          products.push({
+            name: `Product ${code}`,
+            description: '',
+            price: 0,
+            images: [],
+            sourceUrl: url,
+            platform: 'payhip',
+          });
+        }
+
+        console.log(`Payhip map complete: ${products.length} products discovered (1 credit used)`);
       } else {
         // Non-Payhip: single page scrape
-        const scrapeResult = await scrapeUrl(scrapeTarget, firecrawlApiKey);
+        const scrapeResult = await scrapeUrl(storeUrl, firecrawlApiKey);
         if (!scrapeResult.success) {
           return new Response(
             JSON.stringify({ success: false, error: scrapeResult.error || "Failed to scrape store" }),
