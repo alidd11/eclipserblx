@@ -44,6 +44,7 @@ export function ProductHealthDonut() {
       return { chartData, total: products.length, approved, pending, nonCompliant };
     },
     enabled: !!store?.id,
+    staleTime: 5 * 60 * 1000,
   });
 
   return (

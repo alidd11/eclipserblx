@@ -67,6 +67,7 @@ export function CustomerDemographics() {
       return result;
     },
     enabled: !!store?.id,
+    staleTime: 10 * 60 * 1000,
   });
 
   

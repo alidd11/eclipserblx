@@ -24,6 +24,7 @@ export function PayoutTimeline() {
       return data || [];
     },
     enabled: !!store?.id,
+    staleTime: 5 * 60 * 1000,
   });
 
   const { formatPrice: formatCurrency } = useCurrency();

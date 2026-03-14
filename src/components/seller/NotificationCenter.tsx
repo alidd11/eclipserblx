@@ -34,6 +34,7 @@ export function NotificationCenter() {
       return data || [];
     },
     enabled: !!user?.id,
+    staleTime: 60 * 1000,
   });
 
   const unreadCount = notifications?.filter(n => !n.read_at).length || 0;

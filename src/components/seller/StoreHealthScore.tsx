@@ -82,6 +82,7 @@ export function StoreHealthScore() {
       };
     },
     enabled: !!store?.id,
+    staleTime: 5 * 60 * 1000,
   });
 
   const getScoreStatus = (score: number): 'good' | 'warning' | 'critical' => {

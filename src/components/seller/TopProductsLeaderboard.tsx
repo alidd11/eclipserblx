@@ -59,6 +59,7 @@ export function TopProductsLeaderboard() {
       return enriched.slice(0, 5);
     },
     enabled: !!store?.id,
+    staleTime: 3 * 60 * 1000,
   });
 
   const { formatPrice: formatCurrency } = useCurrency();
