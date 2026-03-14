@@ -344,7 +344,7 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="flex items-center justify-between">
             <span>
-              You need {quotaBreakdown.paidCount} credits but only have £{quotaBreakdown.creditBalance.toFixed(2)}.
+              You need £{quotaBreakdown.paidCost.toFixed(2)} in credits but only have £{quotaBreakdown.creditBalance.toFixed(2)}.
             </span>
             <Link to="/wallet" className="text-xs font-medium underline underline-offset-2 ml-2 shrink-0">
               Add Credits
