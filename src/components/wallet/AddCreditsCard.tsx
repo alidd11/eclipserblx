@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-const MIN_AMOUNT = 1;
+const MIN_AMOUNT = 5;
 const MAX_AMOUNT = 500;
 const suggestedAmounts = [5, 10, 25, 50, 100];
 
