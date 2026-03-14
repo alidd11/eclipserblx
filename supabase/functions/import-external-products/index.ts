@@ -564,18 +564,38 @@ function parsePayhipStore(markdown: string, storeUrl: string, links?: string[]):
     sellerName = storeSlugMatch[1];
   }
 
-  // Strategy 1: Parse structured product listings from markdown
-  // Payhip store pages show products as:
-  //   ![](image_url)
-  //   #### Product Name
-  //   £XX.XX
-  // These appear in sections like "BEST DEALS", "LATEST PRODUCTS"
-  const structuredProducts = new Map<string, { name: string; price: number; images: string[] }>();
+  // Collect all /b/ product URLs from the links array (these are in page order)
+  const productUrls: string[] = [];
+  if (links) {
+    for (const link of links) {
+      if (/payhip\.com\/b\/[A-Za-z0-9]+$/.test(link) && !productUrls.includes(link)) {
+        productUrls.push(link);
+      }
+    }
+  }
+
+  // Also find /b/ URLs from markdown
+  const mdLinkRegex = /\(?(https:\/\/payhip\.com\/b\/[A-Za-z0-9]+)\)?/g;
+  let mdMatch;
+  while ((mdMatch = mdLinkRegex.exec(markdown)) !== null) {
+    const url = mdMatch[1];
+    if (!productUrls.includes(url)) {
+      productUrls.push(url);
+    }
+  }
+
+  console.log(`Found ${productUrls.length} product URLs from links/markdown`);
+
+  // Parse structured product listings from markdown
+  // Collection pages show: ![](image)\n\n#### Name\n\n£XX.XX
+  // Store pages show: #### Name\n\n£XX.XX (under section headings)
   const mdLines = markdown.split('\n');
+  const structuredProducts: Array<{ name: string; price: number; images: string[] }> = [];
 
   for (let i = 0; i < mdLines.length; i++) {
     const line = mdLines[i].trim();
-    // Look for #### headings (product names in listing)
+
+    // Look for #### headings (product names)
     const h4Match = line.match(/^#{1,4}\s+(.+)/);
     if (!h4Match) continue;
 
@@ -583,166 +603,106 @@ function parsePayhipStore(markdown: string, storeUrl: string, links?: string[]):
     if (candidateName.length < 3) continue;
     if (PAYHIP_CTA_PATTERNS.test(candidateName)) continue;
     if (PAYHIP_BANNER_PATTERNS.test(candidateName)) continue;
+    // Skip section headings that use # or ## (collection/store section names)
+    if (line.match(/^#{1,2}\s/) && !line.match(/^#{3,4}\s/)) continue;
 
     // Look for price in the next few lines
     let price = 0;
-    let foundPrice = false;
-    for (let j = i + 1; j < Math.min(i + 5, mdLines.length); j++) {
+    for (let j = i + 1; j < Math.min(i + 6, mdLines.length); j++) {
       const priceLine = mdLines[j].trim();
-      // Match £XX.XX or $XX.XX
-      const priceMatch = priceLine.match(/^[£$](\d+(?:\.\d{1,2})?)$/);
+      // Match £XX.XX or $XX.XX (on its own line or with surrounding text)
+      const priceMatch = priceLine.match(/[£$](\d+(?:\.\d{1,2})?)/);
       if (priceMatch) {
-        const rawPrice = parseFloat(priceMatch[1]);
-        // If we already found a price, this could be the sale/original price
-        // Payhip shows: sale price first, then original price, then "On Sale"
-        if (!foundPrice) {
-          price = rawPrice;
-          foundPrice = true;
-        }
-        // If the second price is higher, the first was the sale price (keep it)
-        continue;
+        price = parseFloat(priceMatch[1]);
+        break;
       }
-      // Stop looking if we hit another heading or image
-      if (priceLine.startsWith('#') || priceLine.startsWith('![')) break;
+      // Stop if we hit another heading or image (next product)
+      if (priceLine.startsWith('#') || (priceLine.startsWith('![') && priceLine.includes('s3.amazonaws.com'))) break;
     }
 
-    // Only include if we found a price (confirms it's a product, not a banner)
-    if (!foundPrice) continue;
-
-    // Look for images above this heading (within 3 lines back)
+    // Look for images above this heading (within 5 lines back)
     const images: string[] = [];
-    for (let j = i - 1; j >= Math.max(0, i - 4); j--) {
+    for (let j = i - 1; j >= Math.max(0, i - 5); j--) {
       const imgLine = mdLines[j].trim();
-      // Match markdown images, possibly multiple on one line
       const imgMatches = [...imgLine.matchAll(/!\[[^\]]*\]\((https?:\/\/[^)]+)\)/g)];
       if (imgMatches.length > 0) {
         for (const m of imgMatches) {
           const src = m[1];
-          if (src.includes('s3.amazonaws.com') || src.includes('cdn-cgi/image') || src.includes('ytimg.com')) {
+          if (src.includes('s3.amazonaws.com') || src.includes('cdn-cgi/image')) {
             images.push(src);
           }
         }
-        break; // Only look at the closest image line
+        break;
       }
+      // Stop if we hit content (non-empty, non-image)
       if (imgLine.length > 0 && !imgLine.startsWith('![')) break;
     }
 
-    // Use name as key for dedup
-    const key = candidateName.toLowerCase();
-    if (!structuredProducts.has(key)) {
-      structuredProducts.set(key, { name: candidateName, price, images: images.slice(0, 4) });
+    // Skip duplicates by name
+    const isDupe = structuredProducts.some(p => p.name.toLowerCase() === candidateName.toLowerCase());
+    if (!isDupe) {
+      structuredProducts.push({ name: candidateName, price, images: images.slice(0, 4) });
     }
   }
 
-  // Strategy 2: Extract product URLs from markdown links
-  const productLinkRegex = /\[([^\]]+)\]\((https:\/\/payhip\.com\/b\/[A-Za-z0-9]+)\)/g;
-  const urlToName = new Map<string, string>();
-  let match;
-  while ((match = productLinkRegex.exec(markdown)) !== null) {
-    const rawName = match[1].trim();
-    const url = match[2];
-    if (rawName.length < 2) continue;
-    if (PAYHIP_CTA_PATTERNS.test(rawName)) continue;
-    // Keep non-CTA names
-    if (!urlToName.has(url) || (!PAYHIP_CTA_PATTERNS.test(rawName) && rawName.length > (urlToName.get(url)?.length || 0))) {
-      urlToName.set(url, rawName);
-    }
-  }
+  console.log(`Parsed ${structuredProducts.length} structured products from markdown`);
 
-  // Also check the links array for product URLs not found in markdown
-  if (links && links.length > 0) {
-    for (const link of links) {
-      if (!link.match(/payhip\.com\/b\/[A-Za-z0-9]+$/)) continue;
-      if (!urlToName.has(link)) {
-        urlToName.set(link, ''); // placeholder, will try to match with structured products
-      }
-    }
-  }
-
-  // Strategy 3: Try to match structured products with their URLs
-  // Look for product names near [Visit product page](url) or [PURCHASE NOW](url) links
-  const ctaLinkRegex = /\[(?:purchase\s*now|buy\s*now|visit\s*product\s*page|add\s*to\s*cart|view\s*product)\]\((https:\/\/payhip\.com\/b\/[A-Za-z0-9]+)\)/gi;
-  let ctaMatch;
-  while ((ctaMatch = ctaLinkRegex.exec(markdown)) !== null) {
-    const url = ctaMatch[1];
-    const ctaPos = ctaMatch.index;
-    
-    // Look backwards in the markdown for the product name (usually in a heading nearby)
-    const before = markdown.substring(Math.max(0, ctaPos - 2000), ctaPos);
-    const beforeLines = before.split('\n').reverse();
-    
-    for (const bl of beforeLines) {
-      const trimmed = bl.trim();
-      // Find the nearest heading that could be a product name
-      const hMatch = trimmed.match(/^#{1,4}\s+(.+)/);
-      if (hMatch) {
-        const name = hMatch[1].replace(/\\\[/g, '[').replace(/\\\]/g, ']').replace(/\*+/g, '').trim();
-        if (name.length >= 3 && !PAYHIP_CTA_PATTERNS.test(name) && !PAYHIP_BANNER_PATTERNS.test(name)) {
-          if (!urlToName.has(url) || urlToName.get(url) === '') {
-            urlToName.set(url, name);
-          }
-          break;
-        }
-      }
-      // Also check for plain text product names (bold or just text after images)
-      if (trimmed.length > 3 && trimmed.length < 100 && !trimmed.startsWith('![') && !trimmed.startsWith('[') && !trimmed.startsWith('£') && !trimmed.startsWith('$') && !trimmed.includes('youtube') && !/^\d/.test(trimmed) && !PAYHIP_CTA_PATTERNS.test(trimmed)) {
-        // Could be a product name like "IVAS System" appearing as plain text
-        const plainName = trimmed.replace(/\*+/g, '').trim();
-        if (plainName.length >= 3 && !PAYHIP_BANNER_PATTERNS.test(plainName)) {
-          if (!urlToName.has(url) || urlToName.get(url) === '') {
-            urlToName.set(url, plainName);
-          }
-          break;
-        }
-      }
-    }
-  }
-
-  // Build final product list, combining structured data with URLs
+  // Build final product list by matching structured products with URLs
   const products: ExternalProduct[] = [];
-  const addedNames = new Set<string>();
 
-  // First: add products that have URLs
-  for (const [url, name] of urlToName) {
-    let finalName = name;
-    let price = 0;
-    let images: string[] = [];
-
-    // Try to match with structured product data by name
-    if (finalName) {
-      const key = finalName.toLowerCase();
-      const structured = structuredProducts.get(key);
-      if (structured) {
-        price = structured.price;
-        images = structured.images;
-        addedNames.add(key);
-      }
+  if (productUrls.length > 0 && structuredProducts.length > 0) {
+    // Match by order: structured products appear in the same order as /b/ URLs
+    // This works well for collection pages where products and links are in page order
+    const matchCount = Math.min(productUrls.length, structuredProducts.length);
+    for (let i = 0; i < matchCount; i++) {
+      const sp = structuredProducts[i];
+      const url = productUrls[i];
+      products.push({
+        name: sp.name,
+        description: '',
+        price: sp.price,
+        images: sp.images,
+        sourceUrl: url,
+        platform: 'payhip',
+        suggestedCategoryId: suggestCategory(sp.name, ''),
+      });
     }
 
-    // If no name from link text, use product code
-    if (!finalName || finalName.length < 3) {
+    // Any remaining URLs without structured data get code-based names
+    for (let i = matchCount; i < productUrls.length; i++) {
+      const url = productUrls[i];
       const codeMatch = url.match(/\/b\/([A-Za-z0-9]+)$/);
-      finalName = codeMatch ? `Product ${codeMatch[1]}` : 'Unknown Product';
+      const fallbackName = codeMatch ? `Product ${codeMatch[1]}` : 'Unknown Product';
+      products.push({
+        name: fallbackName,
+        description: '',
+        price: 0,
+        images: [],
+        sourceUrl: url,
+        platform: 'payhip',
+      });
     }
 
-    if (finalName.length < 3) continue;
-
-    const categorySlug = suggestCategory(finalName, '');
-    products.push({
-      name: finalName,
-      description: '',
-      price,
-      images,
-      sourceUrl: url,
-      platform: 'payhip',
-      suggestedCategoryId: categorySlug,
-    });
-    addedNames.add(finalName.toLowerCase());
+    // Any remaining structured products without URLs (can't import without URL)
+    // are skipped
+  } else if (productUrls.length > 0) {
+    // Only URLs, no structured data
+    for (const url of productUrls) {
+      const codeMatch = url.match(/\/b\/([A-Za-z0-9]+)$/);
+      const fallbackName = codeMatch ? `Product ${codeMatch[1]}` : 'Unknown Product';
+      products.push({
+        name: fallbackName,
+        description: '',
+        price: 0,
+        images: [],
+        sourceUrl: url,
+        platform: 'payhip',
+      });
+    }
+  } else if (structuredProducts.length > 0) {
+    // Only structured data, no URLs — can't import
+    console.log(`Warning: Found ${structuredProducts.length} products but no /b/ URLs to import`);
   }
-
-  // Second: add structured products that didn't get matched to a URL
-  // (These are visible on the store page but the URL isn't directly linked)
-  // We skip these since we can't import without a product URL
 
   return { products, sellerName };
 }
@@ -1295,9 +1255,17 @@ Deno.serve(async (req) => {
         }
       }
 
-      console.log(`Listing products from ${detectedPlatform}: ${storeUrl}`);
+      // For Payhip, redirect to the /collection/all page which has clean structured product listings
+      let scrapeTarget = storeUrl;
+      if (detectedPlatform === 'payhip' && !storeUrl.includes('/collection/')) {
+        // Strip trailing slash and append /collection/all
+        scrapeTarget = storeUrl.replace(/\/+$/, '') + '/collection/all';
+        console.log(`Redirecting Payhip scrape to collection page: ${scrapeTarget}`);
+      }
 
-      const scrapeResult = await scrapeUrl(storeUrl, firecrawlApiKey);
+      console.log(`Listing products from ${detectedPlatform}: ${scrapeTarget}`);
+
+      const scrapeResult = await scrapeUrl(scrapeTarget, firecrawlApiKey);
       if (!scrapeResult.success) {
         return new Response(
           JSON.stringify({ success: false, error: scrapeResult.error || "Failed to scrape store" }),
