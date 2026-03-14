@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export function TopProductsLeaderboard() {
   const { store } = useSellerStatus();
