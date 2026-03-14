@@ -1315,58 +1315,95 @@ Deno.serve(async (req) => {
       let sellerName: string | undefined;
 
       if (detectedPlatform === 'payhip') {
-        // Payhip uses a non-standard page parameter (often offset-based, e.g. page=16/page=32)
-        // so we infer the step from pagination links on page 1.
+        // Payhip uses offset-based pagination (e.g. page=16, page=32).
+        // We scrape page 1 first to detect the step, then scrape remaining pages
+        // in parallel batches for speed.
         const baseCollectionUrl = scrapeTarget.split('?')[0];
         const MAX_PAGES = 120;
+        const BATCH_SIZE = 5; // Scrape 5 pages in parallel
         const seenProductUrls = new Set<string>();
         let pageStep = 1;
+        let stopPagination = false;
 
-        for (let pageIndex = 0; pageIndex < MAX_PAGES; pageIndex++) {
-          const pageParam = pageIndex * pageStep;
-          const pageUrl = pageParam === 0 ? baseCollectionUrl : `${baseCollectionUrl}?page=${pageParam}`;
-          console.log(`Scraping Payhip page ${pageIndex + 1} (param=${pageParam || 1}, step=${pageStep}): ${pageUrl}`);
+        // ── Page 1: detect pagination step ──
+        const firstResult = await scrapeUrl(baseCollectionUrl, firecrawlApiKey, 1);
+        if (!firstResult.success) {
+          return new Response(
+            JSON.stringify({ success: false, error: firstResult.error || "Failed to scrape store" }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
 
-          const pageResult = await scrapeUrl(pageUrl, firecrawlApiKey, 1);
-          if (!pageResult.success) {
-            if (pageIndex === 0) {
-              return new Response(
-                JSON.stringify({ success: false, error: pageResult.error || "Failed to scrape store" }),
-                { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-              );
+        const detectedStep = detectPayhipPaginationStep(firstResult.links, firstResult.html);
+        if (detectedStep > 1) {
+          pageStep = detectedStep;
+          console.log(`Detected Payhip pagination step: ${pageStep}`);
+        }
+
+        const firstProducts = parsePayhipStore(firstResult.markdown!, storeUrl, firstResult.links);
+        if (firstProducts.sellerName) sellerName = firstProducts.sellerName;
+
+        for (const p of firstProducts.products) {
+          const norm = normalizePayhipProductUrl(p.sourceUrl) || p.sourceUrl;
+          if (!seenProductUrls.has(norm)) {
+            seenProductUrls.add(norm);
+            products.push({ ...p, sourceUrl: norm });
+          }
+        }
+        console.log(`Page 1: found ${firstProducts.products.length} products (${products.length} total)`);
+
+        if (firstProducts.products.length > 0) {
+          // ── Remaining pages: scrape in parallel batches ──
+          for (let batchStart = 1; batchStart < MAX_PAGES && !stopPagination; batchStart += BATCH_SIZE) {
+            const batchEnd = Math.min(batchStart + BATCH_SIZE, MAX_PAGES);
+            const batchUrls: { pageIndex: number; url: string }[] = [];
+
+            for (let pi = batchStart; pi < batchEnd; pi++) {
+              const pageParam = pi * pageStep;
+              batchUrls.push({
+                pageIndex: pi,
+                url: `${baseCollectionUrl}?page=${pageParam}`,
+              });
             }
-            console.log(`Page ${pageIndex + 1} failed, stopping pagination: ${pageResult.error}`);
-            break;
-          }
 
-          if (pageIndex === 0) {
-            const detectedStep = detectPayhipPaginationStep(pageResult.links, pageResult.html);
-            if (detectedStep > 1) {
-              pageStep = detectedStep;
-              console.log(`Detected Payhip pagination step: ${pageStep}`);
+            console.log(`Scraping batch of ${batchUrls.length} pages (${batchUrls[0].pageIndex + 1}-${batchUrls[batchUrls.length - 1].pageIndex + 1})...`);
+
+            const batchResults = await Promise.all(
+              batchUrls.map(async ({ pageIndex, url }) => {
+                const result = await scrapeUrl(url, firecrawlApiKey, 1);
+                return { pageIndex, url, result };
+              })
+            );
+
+            // Process results in order
+            for (const { pageIndex, result } of batchResults) {
+              if (!result.success) {
+                console.log(`Page ${pageIndex + 1} failed, stopping: ${result.error}`);
+                stopPagination = true;
+                break;
+              }
+
+              const pageProducts = parsePayhipStore(result.markdown!, storeUrl, result.links);
+              if (!sellerName && pageProducts.sellerName) sellerName = pageProducts.sellerName;
+
+              let newCount = 0;
+              for (const p of pageProducts.products) {
+                const norm = normalizePayhipProductUrl(p.sourceUrl) || p.sourceUrl;
+                if (!seenProductUrls.has(norm)) {
+                  seenProductUrls.add(norm);
+                  products.push({ ...p, sourceUrl: norm });
+                  newCount++;
+                }
+              }
+
+              console.log(`Page ${pageIndex + 1}: ${newCount} new products (${products.length} total)`);
+
+              if (newCount === 0) {
+                console.log(`No new products on page ${pageIndex + 1}, stopping`);
+                stopPagination = true;
+                break;
+              }
             }
-          }
-
-          const pageProducts = parsePayhipStore(pageResult.markdown!, storeUrl, pageResult.links);
-          if (!sellerName && pageProducts.sellerName) {
-            sellerName = pageProducts.sellerName;
-          }
-
-          let newCount = 0;
-          for (const p of pageProducts.products) {
-            const normalizedSourceUrl = normalizePayhipProductUrl(p.sourceUrl) || p.sourceUrl;
-            if (!seenProductUrls.has(normalizedSourceUrl)) {
-              seenProductUrls.add(normalizedSourceUrl);
-              products.push({ ...p, sourceUrl: normalizedSourceUrl });
-              newCount++;
-            }
-          }
-
-          console.log(`Page ${pageIndex + 1}: found ${pageProducts.products.length} products (${newCount} new, ${products.length} total)`);
-
-          if (newCount === 0) {
-            console.log(`No new products on page ${pageIndex + 1}, stopping pagination`);
-            break;
           }
         }
 
