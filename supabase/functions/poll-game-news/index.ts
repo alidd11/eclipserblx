@@ -403,7 +403,7 @@ Deno.serve(async (req) => {
           }
 
           // Delay between posts to avoid Discord rate limits
-          await new Promise(r => setTimeout(r, 2000));
+          await new Promise(r => setTimeout(r, delayMs));
         }
 
         // Update last_checked_at
