@@ -1,0 +1,1 @@
+ALTER TABLE public.game_news_feeds ADD COLUMN IF NOT EXISTS free_only boolean NOT NULL DEFAULT false;

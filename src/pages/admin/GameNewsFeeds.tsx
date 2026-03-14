@@ -208,6 +208,7 @@ export default function GameNewsFeeds() {
       check_interval_minutes: number;
       icon_url?: string | null;
       embed_color?: number | null;
+      free_only?: boolean;
     }) => {
       const { error } = await supabase.from('game_news_feeds').insert({
         name: feed.name,
@@ -218,6 +219,7 @@ export default function GameNewsFeeds() {
         check_interval_minutes: feed.check_interval_minutes,
         icon_url: feed.icon_url || null,
         embed_color: feed.embed_color || null,
+        free_only: feed.free_only ?? false,
       } as any);
       if (error) throw error;
     },
@@ -291,6 +293,9 @@ export default function GameNewsFeeds() {
     onError: (err: Error) => toast.error(err.message),
   });
 
+  const isFreeGamePreset = (preset: typeof POPULAR_GAMES[0]) =>
+    FREE_GAME_FEEDS.some(f => f.feed_url === preset.feed_url);
+
   const handlePresetToggle = (preset: typeof POPULAR_GAMES[0], currentlyAdded: boolean) => {
     if (currentlyAdded) {
       const feed = getFeedForPreset(preset);
@@ -305,6 +310,7 @@ export default function GameNewsFeeds() {
         discord_channel_id: DEFAULT_CHANNEL_ID,
         ping_role_id: '',
         check_interval_minutes: 10,
+        free_only: isFreeGamePreset(preset),
       });
     }
   };
@@ -320,6 +326,7 @@ export default function GameNewsFeeds() {
       check_interval_minutes: 10,
       icon_url: (selectedPreset as any).icon_url || null,
       embed_color: (selectedPreset as any).embed_color || null,
+      free_only: isFreeGamePreset(selectedPreset),
     });
   };
 

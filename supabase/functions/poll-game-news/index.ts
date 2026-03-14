@@ -440,13 +440,33 @@ Deno.serve(async (req) => {
           /security\s*(advisory|update|patch|vuln)/i,
         ];
 
+        // Free-only filter patterns — used when feed.free_only is true
+        const FREE_ONLY_PATTERNS = [
+          /\bfree\b/i, /\bgiveaway\b/i, /\b100%\s*off\b/i, /\bclaim\b/i,
+          /\bfree\s*to\s*keep\b/i, /\bfree\s*game/i, /\bno\s*cost\b/i,
+          /\bfree\s*on\b/i, /\bfree\s*weekend\b/i, /\bgrab\s*(it\s*)?free\b/i,
+          /\bcurrently\s*free\b/i, /\bfree\s*to\s*claim\b/i, /\blimited\s*time\s*free\b/i,
+          /\bfree\s*copy\b/i, /\bfree\s*key\b/i,
+        ];
+
         const newEntries = recentEntries
           .filter(e => !existingUrls.has(e.url))
           .filter(e => !SKIP_PATTERNS.some(p => p.test(e.title) || p.test(e.description || '')))
           .filter(e => isLikelyEnglish(e.title, e.description))
           .filter(e => {
-            // Check if the article matches at least one gaming/dev keyword
             const text = `${e.title} ${e.description || ''}`;
+
+            // If feed is free_only, require free-game keywords
+            if (feed.free_only) {
+              const isFreeContent = FREE_ONLY_PATTERNS.some(p => p.test(text));
+              if (!isFreeContent) {
+                console.log(`[poll-game-news] Skipping non-free article from ${feed.name}: "${e.title}"`);
+                return false;
+              }
+              return true;
+            }
+
+            // Standard gaming keyword check for regular feeds
             const hasGamingKeyword = GAMING_KEYWORDS.some(p => p.test(text));
             if (!hasGamingKeyword) {
               console.log(`[poll-game-news] Skipping non-gaming article: "${e.title}"`);
