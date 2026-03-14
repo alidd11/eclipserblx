@@ -147,7 +147,7 @@ export function StoreHealthScore() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Store Health</CardTitle>
+          <CardTitle className="text-base font-medium">Store Health</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-32 flex items-center justify-center">
