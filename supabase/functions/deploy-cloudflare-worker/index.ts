@@ -60,10 +60,12 @@ function isTestingTool(ua) {
 async function serveOg(path, hostname) {
   var ogUrl = OG_PROXY + "?path=" + encodeURIComponent(path);
   if (hostname) ogUrl += "&hostname=" + encodeURIComponent(hostname);
-  var res = await fetch(ogUrl);
+  var res = await fetch(ogUrl, {
+    headers: { "apikey": ANON_KEY, "Authorization": "Bearer " + ANON_KEY }
+  });
   if (!res.ok) return null;
   var html = await res.text();
-  if (!html || html.length < 100) return null;
+  if (!html || html.length < 100 || !html.includes("og:title")) return null;
   return new Response(html, {
     status: 200,
     headers: {
