@@ -308,7 +308,7 @@ export default function GameNewsFeeds() {
         name: preset.name,
         feed_url: preset.feed_url,
         feed_type: preset.feed_type,
-        discord_channel_id: DEFAULT_CHANNEL_ID,
+        discord_channel_id: isFreeGamePreset(preset) ? FREE_GAMES_CHANNEL_ID : DEFAULT_CHANNEL_ID,
         ping_role_id: '',
         check_interval_minutes: 10,
         free_only: isFreeGamePreset(preset),
