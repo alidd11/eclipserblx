@@ -291,6 +291,9 @@ export default function GameNewsFeeds() {
     onError: (err: Error) => toast.error(err.message),
   });
 
+  const isFreeGamePreset = (preset: typeof POPULAR_GAMES[0]) =>
+    FREE_GAME_FEEDS.some(f => f.feed_url === preset.feed_url);
+
   const handlePresetToggle = (preset: typeof POPULAR_GAMES[0], currentlyAdded: boolean) => {
     if (currentlyAdded) {
       const feed = getFeedForPreset(preset);
@@ -305,6 +308,7 @@ export default function GameNewsFeeds() {
         discord_channel_id: DEFAULT_CHANNEL_ID,
         ping_role_id: '',
         check_interval_minutes: 10,
+        free_only: isFreeGamePreset(preset),
       });
     }
   };
