@@ -36,6 +36,7 @@ interface ImportSelectStepProps {
 }
 
 export function ImportSelectStep({ products, platform, onBack, onImport }: ImportSelectStepProps) {
+  const { activeStoreId } = useActiveStore();
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(() => {
     const available = products.filter(p => !p.alreadyImported);
     return new Set(available.map(p => p.sourceUrl));
@@ -46,6 +47,17 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
   const [categoryOverrides, setCategoryOverrides] = useState<Record<string, string>>({});
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  // Fetch import quota
+  const { data: quotaData } = useQuery({
+    queryKey: ['import-quota', activeStoreId],
+    queryFn: async () => {
+      const result = await productImportApi.getQuota(activeStoreId ?? undefined);
+      if (!result.success) return null;
+      return result.quota!;
+    },
+    staleTime: 30_000,
+  });
 
   const { data: categories } = useQuery({
     queryKey: ['categories-for-import'],
