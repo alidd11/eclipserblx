@@ -117,8 +117,7 @@ export default function GameNewsFeeds() {
   const [selectedPreset, setSelectedPreset] = useState<typeof POPULAR_GAMES[0] | null>(null);
   const [channelId, setChannelId] = useState('');
   const [pingRoleId, setPingRoleId] = useState('');
-  const [globalPingRoleId, setGlobalPingRoleId] = useState('');
-  const [globalPingRoleInput, setGlobalPingRoleInput] = useState('');
+  const [feedPingInputs, setFeedPingInputs] = useState<Record<string, string>>({});
   const [newFeed, setNewFeed] = useState({
     name: '',
     feed_url: '',
@@ -140,12 +139,17 @@ export default function GameNewsFeeds() {
     },
   });
 
-  // Initialize global ping role from existing feeds
+  // Initialize per-feed ping role inputs from DB
   useEffect(() => {
-    if (feeds && feeds.length > 0 && !globalPingRoleId) {
-      const firstPingRole = feeds.find(f => f.ping_role_id)?.ping_role_id || '';
-      setGlobalPingRoleId(firstPingRole);
-      setGlobalPingRoleInput(firstPingRole);
+    if (feeds) {
+      const inputs: Record<string, string> = {};
+      feeds.forEach(f => { inputs[f.id] = f.ping_role_id || ''; });
+      setFeedPingInputs(prev => {
+        // Only set if not already user-modified
+        const merged = { ...inputs };
+        Object.keys(prev).forEach(k => { if (prev[k] !== undefined) merged[k] = prev[k]; });
+        return merged;
+      });
     }
   }, [feeds]);
 
