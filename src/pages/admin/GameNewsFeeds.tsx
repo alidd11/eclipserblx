@@ -124,6 +124,8 @@ export default function GameNewsFeeds() {
   const [selectedPreset, setSelectedPreset] = useState<typeof POPULAR_GAMES[0] | null>(null);
   const [channelId, setChannelId] = useState('');
   const [pingRoleId, setPingRoleId] = useState('');
+  const [globalPingRoleId, setGlobalPingRoleId] = useState('');
+  const [globalPingRoleInput, setGlobalPingRoleInput] = useState('');
   const [newFeed, setNewFeed] = useState({
     name: '',
     feed_url: '',
