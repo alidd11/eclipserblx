@@ -184,14 +184,20 @@ export default function SellerDashboard() {
           </Suspense>
         </div>
 
-        {/* ── Product Comparison ── */}
-        <Suspense fallback={<DashboardCardSkeleton />}>
-          <ProductPerformanceComparison />
-        </Suspense>
-
-        <Suspense fallback={<DashboardCardSkeleton />}>
-          <StorePreviewCard />
-        </Suspense>
+        {/* ── Product Comparison (collapsible) ── */}
+        <Collapsible>
+          <Card>
+            <CollapsibleTrigger className="flex items-center justify-between w-full p-4">
+              <span className="text-base font-medium">Product Comparison</span>
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <Suspense fallback={<DashboardCardSkeleton />}>
+                <ProductPerformanceComparison />
+              </Suspense>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
 
         {/* ── Pending Review Banner ── */}
         <PendingReviewBanner count={productStats?.pending || 0} />

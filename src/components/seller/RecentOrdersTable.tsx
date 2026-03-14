@@ -39,10 +39,15 @@ export function RecentOrdersTable() {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium flex items-center gap-2">
-          <ShoppingCart className="h-4 w-4" />
-          Recent Orders
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base font-medium flex items-center gap-2">
+            <ShoppingCart className="h-4 w-4" />
+            Recent Orders
+          </CardTitle>
+          <Link to="/seller/orders" className="text-xs text-primary hover:underline">
+            View All
+          </Link>
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         {isLoading ? (

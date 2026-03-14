@@ -1,9 +1,9 @@
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { PercentChange } from '@/components/shared/dashboard';
-import { DollarSign, TrendingUp, ShoppingCart, Package } from 'lucide-react';
+import { DollarSign, TrendingUp, ShoppingCart, Package, Wallet } from 'lucide-react';
 
 export function RevenueSummaryStats() {
   const { store } = useSellerStatus();
@@ -17,7 +17,6 @@ export function RevenueSummaryStats() {
       const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
       const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
 
-      // Single query: fetch all sales from last month onwards (covers today, this month, last month)
       const [salesRes, balanceRes] = await Promise.all([
         supabase
           .from('seller_transactions')
@@ -30,7 +29,7 @@ export function RevenueSummaryStats() {
           .limit(1000),
         supabase
           .from('seller_balances')
-          .select('total_earned')
+          .select('total_earned, available_balance')
           .eq('store_id', store.id)
           .maybeSingle(),
       ]);
@@ -56,8 +55,9 @@ export function RevenueSummaryStats() {
       }
 
       const totalRevenue = balanceRes.data?.total_earned || 0;
+      const availableBalance = balanceRes.data?.available_balance || 0;
 
-      return { todayRevenue, thisMonthRevenue, lastMonthRevenue, thisMonthOrders, totalRevenue };
+      return { todayRevenue, thisMonthRevenue, lastMonthRevenue, thisMonthOrders, totalRevenue, availableBalance };
     },
     enabled: !!store?.id,
   });
@@ -68,22 +68,25 @@ export function RevenueSummaryStats() {
     { label: "Today's Revenue", value: fmt(stats?.todayRevenue || 0), icon: DollarSign },
     { label: 'This Month', value: fmt(stats?.thisMonthRevenue || 0), icon: TrendingUp, showChange: true },
     { label: 'Monthly Orders', value: stats?.thisMonthOrders || 0, icon: ShoppingCart },
+    { label: 'Available Balance', value: fmt(stats?.availableBalance || 0), icon: Wallet, highlight: true },
     { label: 'All-Time Revenue', value: fmt(stats?.totalRevenue || 0), icon: Package },
   ];
 
   if (isLoading) {
-    return null; // Parent shows skeleton
+    return null;
   }
 
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
+    <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-5 md:overflow-visible md:snap-none">
       {items.map((item) => (
-        <Card key={item.label} className="p-4 min-w-[160px] flex-shrink-0 md:min-w-0">
+        <Card key={item.label} className="p-4 min-w-[150px] flex-shrink-0 snap-start md:min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <item.icon className="h-4 w-4 text-muted-foreground" />
             <p className="text-xs text-muted-foreground">{item.label}</p>
           </div>
-          <p className="text-xl font-bold">{item.value}</p>
+          <p className={`text-xl font-bold ${'highlight' in item && item.highlight ? 'text-green-500' : ''}`}>
+            {item.value}
+          </p>
           {item.showChange && stats && (
             <PercentChange
               current={stats.thisMonthRevenue}
