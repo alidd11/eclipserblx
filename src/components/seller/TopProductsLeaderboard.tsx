@@ -61,8 +61,7 @@ export function TopProductsLeaderboard() {
     enabled: !!store?.id,
   });
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(amount);
+  const { formatPrice: formatCurrency } = useCurrency();
 
   return (
     <Card>

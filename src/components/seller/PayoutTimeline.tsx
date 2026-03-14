@@ -26,8 +26,7 @@ export function PayoutTimeline() {
     enabled: !!store?.id,
   });
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(amount);
+  const { formatPrice: formatCurrency } = useCurrency();
 
   const statusConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
     completed: { icon: CheckCircle, color: 'text-green-500', label: 'Completed' },
