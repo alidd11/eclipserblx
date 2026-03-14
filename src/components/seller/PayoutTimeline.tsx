@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { DollarSign, CheckCircle, Clock, ArrowRight, Wallet } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export function PayoutTimeline() {
   const { store } = useSellerStatus();
