@@ -162,6 +162,8 @@ export default function GameNewsFeeds() {
       discord_channel_id: string;
       ping_role_id: string;
       check_interval_minutes: number;
+      icon_url?: string | null;
+      embed_color?: number | null;
     }) => {
       const { error } = await supabase.from('game_news_feeds').insert({
         name: feed.name,
@@ -170,7 +172,9 @@ export default function GameNewsFeeds() {
         discord_channel_id: feed.discord_channel_id,
         ping_role_id: feed.ping_role_id || null,
         check_interval_minutes: feed.check_interval_minutes,
-      });
+        icon_url: feed.icon_url || null,
+        embed_color: feed.embed_color || null,
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {
