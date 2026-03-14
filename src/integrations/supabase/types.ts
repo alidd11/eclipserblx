@@ -2833,6 +2833,7 @@ export type Database = {
           enabled: boolean
           feed_type: string
           feed_url: string
+          free_only: boolean
           icon_url: string | null
           id: string
           last_checked_at: string | null
@@ -2848,6 +2849,7 @@ export type Database = {
           enabled?: boolean
           feed_type?: string
           feed_url: string
+          free_only?: boolean
           icon_url?: string | null
           id?: string
           last_checked_at?: string | null
@@ -2863,6 +2865,7 @@ export type Database = {
           enabled?: boolean
           feed_type?: string
           feed_url?: string
+          free_only?: boolean
           icon_url?: string | null
           id?: string
           last_checked_at?: string | null
