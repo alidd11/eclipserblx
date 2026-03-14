@@ -147,6 +147,15 @@ export default function GameNewsFeeds() {
     },
   });
 
+  // Initialize global ping role from existing feeds
+  useEffect(() => {
+    if (feeds && feeds.length > 0 && !globalPingRoleId) {
+      const firstPingRole = feeds.find(f => f.ping_role_id)?.ping_role_id || '';
+      setGlobalPingRoleId(firstPingRole);
+      setGlobalPingRoleInput(firstPingRole);
+    }
+  }, [feeds]);
+
   // Check which presets are already added (by feed_url match)
   const addedFeedUrls = new Set((feeds || []).map(f => f.feed_url));
   const getFeedForPreset = (preset: typeof POPULAR_GAMES[0]) =>
