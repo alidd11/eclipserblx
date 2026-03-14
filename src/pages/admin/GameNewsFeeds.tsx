@@ -235,6 +235,22 @@ export default function GameNewsFeeds() {
     onError: (err: Error) => toast.error(err.message),
   });
 
+  const updateGlobalPingRoleMutation = useMutation({
+    mutationFn: async (roleId: string) => {
+      const { error } = await supabase
+        .from('game_news_feeds')
+        .update({ ping_role_id: roleId || null, updated_at: new Date().toISOString() })
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // update all rows
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['game-news-feeds'] });
+      setGlobalPingRoleId(globalPingRoleInput);
+      toast.success(globalPingRoleInput ? 'Ping role saved for all feeds' : 'Ping role removed from all feeds');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
   const handlePresetToggle = (preset: typeof POPULAR_GAMES[0], currentlyAdded: boolean) => {
     if (currentlyAdded) {
       const feed = getFeedForPreset(preset);
