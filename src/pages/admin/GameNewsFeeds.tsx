@@ -51,6 +51,8 @@ const POPULAR_GAMES = [
     feed_url: 'https://blog.counter-strike.net/index.php/feed/',
     feed_type: 'rss',
     description: 'Counter-Strike 2 blog and updates',
+    icon_url: 'https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/global/logo_cs_sm.png',
+    embed_color: 0xFFCC00,
   },
   {
     name: 'GTA / Rockstar Games',
@@ -58,6 +60,8 @@ const POPULAR_GAMES = [
     feed_url: 'https://rockstarintel.com/feed/',
     feed_type: 'rss',
     description: 'GTA, RDR2 and Rockstar news via RockstarINTEL',
+    icon_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Rockstar_Games_Logo.svg/1200px-Rockstar_Games_Logo.svg.png',
+    embed_color: 0xFFFF00,
   },
   {
     name: 'Fortnite',
@@ -65,6 +69,8 @@ const POPULAR_GAMES = [
     feed_url: 'https://fortnite-api.com/v2/news?language=en',
     feed_type: 'json',
     description: 'Fortnite official in-game news and updates',
+    icon_url: 'https://fortnite-api.com/assets/branding/icon.png',
+    embed_color: 0x2B7FFF,
   },
   {
     name: 'Roblox (Dev Updates)',
@@ -72,6 +78,8 @@ const POPULAR_GAMES = [
     feed_url: 'https://devforum.roblox.com/c/updates/announcements.rss',
     feed_type: 'rss',
     description: 'Roblox DevForum — Studio betas, API updates, engine changelogs',
+    icon_url: 'https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/optimized/4X/3/4/e/34e3a04d95f8ed0e8f94a95f0e62c5be8a5c4c2c_2_180x180.png',
+    embed_color: 0x00BB00,
   },
   {
     name: 'EA Games (All)',
@@ -79,6 +87,8 @@ const POPULAR_GAMES = [
     feed_url: 'https://news.ea.com/rss/pressrelease.aspx',
     feed_type: 'rss',
     description: 'EA press releases — Apex, FIFA, Battlefield and more',
+    icon_url: 'https://media.contentapi.ea.com/content/dam/ea/ea-global-assets/ea-com-logos/ea_logo_2020_white.png',
+    embed_color: 0x0000FF,
   },
   {
     name: 'GitHub Blog',
@@ -86,6 +96,8 @@ const POPULAR_GAMES = [
     feed_url: 'https://github.blog/feed/',
     feed_type: 'rss',
     description: 'Developer tools, Copilot, and GitHub platform updates',
+    icon_url: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
+    embed_color: 0x1A1E2A,
   },
   {
     name: 'Unity Blog',
@@ -93,6 +105,8 @@ const POPULAR_GAMES = [
     feed_url: 'https://blog.unity.com/feed',
     feed_type: 'rss',
     description: 'Unity engine updates, tutorials and game dev news',
+    icon_url: 'https://unity.com/favicon.ico',
+    embed_color: 0x222222,
   },
 ];
 
