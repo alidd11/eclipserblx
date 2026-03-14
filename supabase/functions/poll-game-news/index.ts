@@ -243,8 +243,9 @@ async function buildEmbed(
   }
 
   // Build description with a "Read more" link
-  const descText = entry.description
-    ? `${entry.description}…\n\n**[Read full article →](${entry.url})**`
+  const cleanDesc = entry.description?.replace(/\s+/g, ' ').trim();
+  const descText = cleanDesc && cleanDesc.length > 10
+    ? `${cleanDesc}${cleanDesc.length >= 195 ? '…' : ''}\n\n**[Read full article →](${entry.url})**`
     : `**[Read full article →](${entry.url})**`;
 
   const embed: DiscordEmbed = {
