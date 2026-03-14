@@ -8,6 +8,7 @@ import { ShoppingCart } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export function RecentOrdersTable() {
   const { store } = useSellerStatus();
