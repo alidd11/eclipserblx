@@ -55,6 +55,19 @@ export interface ImportHistoryItem {
   metadata: Record<string, unknown>;
 }
 
+export interface ImportQuota {
+  importsUsed: number;
+  freeLimit: number;
+  remainingFree: number;
+  creditBalance: number;
+}
+
+export interface ImportQuotaResponse {
+  success: boolean;
+  quota?: ImportQuota;
+  error?: string;
+}
+
 export interface ImportHistoryResponse {
   success: boolean;
   imports?: ImportHistoryItem[];
