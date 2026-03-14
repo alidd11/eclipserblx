@@ -1,0 +1,1 @@
+DELETE FROM game_news_posted;
