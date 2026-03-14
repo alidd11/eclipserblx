@@ -25,7 +25,7 @@ function parseRSSXml(xml: string): FeedEntry[] {
   while ((match = itemRegex.exec(xml)) !== null) {
     const block = match[1];
     const title = extractTag(block, 'title');
-    const link = extractTag(block, 'link') || extractTag(block, 'guid');
+    const link = extractTag(block, 'link') || extractNamespacedLink(block) || extractTag(block, 'guid');
     const desc = extractTag(block, 'description') || extractTag(block, 'content:encoded');
     const pubDate = extractTag(block, 'pubDate') || extractTag(block, 'dc:date');
     const thumb = extractMediaThumbnail(block) || extractEnclosure(block);
@@ -64,18 +64,34 @@ function parseRSSXml(xml: string): FeedEntry[] {
 }
 
 /**
- * Parse JSON feeds (e.g., Rockstar Newswire)
+ * Parse JSON feeds (e.g., Rockstar Newswire, Fortnite API)
  */
-function parseJsonFeed(data: unknown): FeedEntry[] {
+function parseJsonFeed(data: unknown, feedUrl: string): FeedEntry[] {
   const entries: FeedEntry[] = [];
+  const root = data as Record<string, unknown>;
 
-  // Handle array of posts
+  // Handle Fortnite API format: { data: { br: { motds: [...] } } }
+  if (root?.data && (root.data as Record<string, unknown>)?.br) {
+    const br = (root.data as Record<string, unknown>).br as Record<string, unknown>;
+    const motds = (br.motds ?? []) as Array<Record<string, unknown>>;
+    for (const motd of motds.slice(0, 5)) {
+      const title = (motd.title ?? '') as string;
+      const id = (motd.id ?? '') as string;
+      if (!title || !id) continue;
+      entries.push({
+        title,
+        url: `https://www.fortnite.com/news?id=${id}`,
+        description: ((motd.body ?? '') as string).substring(0, 200) || undefined,
+        thumbnail: (motd.tileImage ?? motd.image ?? '') as string || undefined,
+      });
+    }
+    return entries;
+  }
+
+  // Handle array of posts (generic JSON feeds)
   const posts = Array.isArray(data)
     ? data
-    : (data as Record<string, unknown>)?.items ??
-      (data as Record<string, unknown>)?.posts ??
-      (data as Record<string, unknown>)?.data ??
-      [];
+    : root?.items ?? root?.posts ?? root?.data ?? [];
 
   if (!Array.isArray(posts)) return entries;
 
@@ -105,6 +121,14 @@ function extractTag(block: string, tag: string): string | null {
 
 function extractAtomLink(block: string): string | null {
   const m = block.match(/<link[^>]*href=["']([^"']+)["'][^>]*\/?>/i);
+  return m ? m[1] : null;
+}
+
+/**
+ * Extract links with namespace prefixes (e.g. <a10:link href="..."/>)
+ */
+function extractNamespacedLink(block: string): string | null {
+  const m = block.match(/<[a-z0-9]+:link[^>]*href=["']([^"']+)["'][^>]*\/?>/i);
   return m ? m[1] : null;
 }
 
@@ -175,7 +199,7 @@ Deno.serve(async (req) => {
 
         if (contentType.includes('json') || feed.feed_type === 'json') {
           try {
-            entries = parseJsonFeed(JSON.parse(body));
+            entries = parseJsonFeed(JSON.parse(body), feed.feed_url);
           } catch {
             console.error(`[poll-game-news] Failed to parse JSON for ${feed.name}`);
             continue;
