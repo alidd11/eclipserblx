@@ -187,6 +187,14 @@ export default function GameNewsFeeds() {
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, enabled }: { id: string; enabled: boolean }) => {
+      if (enabled) {
+        // Disable all other feeds first (only one allowed at a time)
+        const { error: disableErr } = await supabase
+          .from('game_news_feeds')
+          .update({ enabled: false, updated_at: new Date().toISOString() })
+          .neq('id', id);
+        if (disableErr) throw disableErr;
+      }
       const { error } = await supabase
         .from('game_news_feeds')
         .update({ enabled, updated_at: new Date().toISOString() })
