@@ -758,23 +758,27 @@ function parsePayhipProduct(markdown: string, url: string, html?: string): Exter
     }
   }
 
-  // Try markdown heading
+  // Try markdown heading — but skip CTA/banner patterns
   if (!name) {
-    const headingMatch = markdown.match(/^#\s+(.+)/m);
-    if (headingMatch) {
-      const candidate = headingMatch[1].replace(/\\?\|/g, '').trim();
-      if (candidate.length >= 3) name = candidate;
+    const headings = [...markdown.matchAll(/^#{1,4}\s+(.+)/gm)];
+    for (const h of headings) {
+      const candidate = h[1].replace(/\\?\|/g, '').replace(/\*+/g, '').trim();
+      if (candidate.length < 3) continue;
+      if (PAYHIP_CTA_PATTERNS.test(candidate)) continue;
+      if (PAYHIP_BANNER_PATTERNS.test(candidate)) continue;
+      name = candidate;
+      break;
     }
   }
 
   if (!name) return null;
 
-  // Images
+  // Images — improved extraction
   const images: string[] = [];
   const seenImageUrls = new Set<string>();
 
   if (html) {
-    // OG image
+    // OG image first
     const ogImg = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i);
     if (ogImg?.[1] && !SKIP_TINY_DATA_URI.test(ogImg[1])) {
       images.push(ogImg[1]);
@@ -782,13 +786,13 @@ function parsePayhipProduct(markdown: string, url: string, html?: string): Exter
     }
 
     // Product images — Payhip uses cdn-cgi/image proxy or S3 URLs
-    const allImgs = [...html.matchAll(/<img[^>]*?\bsrc="([^"]+)"[^>]*?(?:alt="([^"]*)")?[^>]*?>/gi)];
+    const allImgs = [...html.matchAll(/<img[^>]*?\bsrc="([^"]+)"[^>]*?>/gi)];
     for (const m of allImgs) {
       const src = m[1];
-      const alt = m[2] || '';
       if (src.includes('loading.gif') || src.includes('favicon') || src.includes('payhip.com/images/')) continue;
+      if (SKIP_TINY_DATA_URI.test(src)) continue;
       if (seenImageUrls.has(src)) continue;
-      // Only keep product-relevant images (S3 or CDN)
+      // Only keep product-relevant images (S3, CDN, or ytimg for video thumbnails)
       if (src.includes('s3.amazonaws.com') || src.includes('cdn-cgi/image')) {
         seenImageUrls.add(src);
         images.push(src);
@@ -796,26 +800,53 @@ function parsePayhipProduct(markdown: string, url: string, html?: string): Exter
     }
   }
 
-  // Fallback: images from markdown
-  if (images.length === 0) {
-    const imgRegex = /!\[[^\]]*\]\((https?:\/\/[^\)]+)\)/g;
-    let m;
-    while ((m = imgRegex.exec(markdown)) !== null) {
-      const src = m[1];
-      if (src.includes('loading.gif') || src.includes('payhip.com/images/')) continue;
-      if (seenImageUrls.has(src)) continue;
-      if (src.includes('s3.amazonaws.com') || src.includes('cdn-cgi/image')) {
-        seenImageUrls.add(src);
-        images.push(src);
+  // Also extract from markdown (catches images not in HTML img tags)
+  const imgRegex = /!\[[^\]]*\]\((https?:\/\/[^\)]+)\)/g;
+  let imgMatch;
+  while ((imgMatch = imgRegex.exec(markdown)) !== null) {
+    const src = imgMatch[1];
+    if (src.includes('loading.gif') || src.includes('payhip.com/images/')) continue;
+    if (seenImageUrls.has(src)) continue;
+    if (src.includes('s3.amazonaws.com') || src.includes('cdn-cgi/image')) {
+      seenImageUrls.add(src);
+      images.push(src);
+    }
+  }
+
+  // Price — try HTML meta first, then extract from markdown
+  let price = 0;
+  if (html) {
+    // Payhip sometimes includes price in meta tags
+    const ogPrice = html.match(/<meta[^>]*property="og:price:amount"[^>]*content="([^"]+)"/i)
+      || html.match(/<meta[^>]*property="product:price:amount"[^>]*content="([^"]+)"/i);
+    if (ogPrice?.[1]) {
+      price = parseFloat(ogPrice[1]) || 0;
+    }
+    // Also try data attributes or specific price elements
+    if (price === 0) {
+      const priceEl = html.match(/class="[^"]*product-price[^"]*"[^>]*>[\s\S]*?[£$](\d+(?:\.\d{1,2})?)/i)
+        || html.match(/class="[^"]*sale-price[^"]*"[^>]*>[\s\S]*?[£$](\d+(?:\.\d{1,2})?)/i);
+      if (priceEl?.[1]) {
+        price = parseFloat(priceEl[1]) || 0;
+      }
+    }
+  }
+  
+  if (price === 0) {
+    // Try extracting from the first price line in markdown (closest to the product name)
+    // Payhip product pages show: "£XX.XX" or "On Sale £XX.XX (XX% off) £XX.XX"
+    const priceLines = markdown.match(/[£$](\d+(?:\.\d{1,2})?)/g);
+    if (priceLines && priceLines.length > 0) {
+      // If there's a sale, the actual price is typically the lower one
+      const prices = priceLines.map(p => parseFloat(p.replace(/[£$]/, ''))).filter(p => p > 0);
+      if (prices.length > 0) {
+        price = Math.min(...prices); // Use the lowest (sale) price
       }
     }
   }
 
-  const price = extractPrice(markdown);
-
-  // Description — everything after the heading and price info
+  // Description — everything after the heading and price/cart section
   let description = '';
-  // Remove heading, price lines, and cart/button text, then take what's left
   const lines = markdown.split('\n');
   let startCapture = false;
   const descLines: string[] = [];
@@ -823,15 +854,17 @@ function parsePayhipProduct(markdown: string, url: string, html?: string): Exter
     const trimmed = line.trim();
     if (!startCapture) {
       // Start capturing after the price/buy section
-      if (trimmed.startsWith('Buy Now') || trimmed.startsWith('Add to Cart') || trimmed.startsWith('Proceed to Checkout')) {
+      if (/^(Buy Now|Add to Cart|Proceed to Checkout|Added to cart|Adding \.\.\.)/i.test(trimmed)) {
         startCapture = true;
         continue;
       }
       continue;
     }
     // Stop at footer-like sections
-    if (trimmed.startsWith('Powered by') || trimmed.startsWith('Terms') || trimmed.startsWith('Get updates') || trimmed.startsWith('## Share')) break;
-    if (trimmed.startsWith('Added to wishlist') || trimmed.startsWith('Add to wishlist')) continue;
+    if (/^(Powered by|Terms|Get updates|## Share|Save|Share|Tweet|Visit product page|You will get)/i.test(trimmed)) break;
+    if (/^(Added to wishlist|Add to wishlist)/i.test(trimmed)) continue;
+    // Skip YouTube embed noise
+    if (/^(Watch later|Copy link|Watch on|Tap to unmute|If playback|You're signed out|More videos|Up Next|Autoplay|Info|Shopping|Search)/i.test(trimmed)) continue;
     descLines.push(line);
   }
   description = descLines.join('\n').trim().slice(0, 5000);
