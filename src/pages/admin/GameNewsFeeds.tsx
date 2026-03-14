@@ -117,8 +117,7 @@ export default function GameNewsFeeds() {
   const [selectedPreset, setSelectedPreset] = useState<typeof POPULAR_GAMES[0] | null>(null);
   const [channelId, setChannelId] = useState('');
   const [pingRoleId, setPingRoleId] = useState('');
-  const [globalPingRoleId, setGlobalPingRoleId] = useState('');
-  const [globalPingRoleInput, setGlobalPingRoleInput] = useState('');
+  const [feedPingInputs, setFeedPingInputs] = useState<Record<string, string>>({});
   const [newFeed, setNewFeed] = useState({
     name: '',
     feed_url: '',
@@ -140,12 +139,17 @@ export default function GameNewsFeeds() {
     },
   });
 
-  // Initialize global ping role from existing feeds
+  // Initialize per-feed ping role inputs from DB
   useEffect(() => {
-    if (feeds && feeds.length > 0 && !globalPingRoleId) {
-      const firstPingRole = feeds.find(f => f.ping_role_id)?.ping_role_id || '';
-      setGlobalPingRoleId(firstPingRole);
-      setGlobalPingRoleInput(firstPingRole);
+    if (feeds) {
+      const inputs: Record<string, string> = {};
+      feeds.forEach(f => { inputs[f.id] = f.ping_role_id || ''; });
+      setFeedPingInputs(prev => {
+        // Only set if not already user-modified
+        const merged = { ...inputs };
+        Object.keys(prev).forEach(k => { if (prev[k] !== undefined) merged[k] = prev[k]; });
+        return merged;
+      });
     }
   }, [feeds]);
 
@@ -232,18 +236,17 @@ export default function GameNewsFeeds() {
     onError: (err: Error) => toast.error(err.message),
   });
 
-  const updateGlobalPingRoleMutation = useMutation({
-    mutationFn: async (roleId: string) => {
+  const updateFeedPingRoleMutation = useMutation({
+    mutationFn: async ({ id, roleId }: { id: string; roleId: string }) => {
       const { error } = await supabase
         .from('game_news_feeds')
         .update({ ping_role_id: roleId || null, updated_at: new Date().toISOString() })
-        .neq('id', '00000000-0000-0000-0000-000000000000'); // update all rows
+        .eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['game-news-feeds'] });
-      setGlobalPingRoleId(globalPingRoleInput);
-      toast.success(globalPingRoleInput ? 'Ping role saved for all feeds' : 'Ping role removed from all feeds');
+      toast.success('Ping role updated');
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -260,7 +263,7 @@ export default function GameNewsFeeds() {
         feed_url: preset.feed_url,
         feed_type: preset.feed_type,
         discord_channel_id: DEFAULT_CHANNEL_ID,
-        ping_role_id: globalPingRoleId,
+        ping_role_id: '',
         check_interval_minutes: 10,
       });
     }
@@ -306,46 +309,6 @@ export default function GameNewsFeeds() {
           </div>
         </div>
 
-        {/* Global Settings */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Settings
-            </CardTitle>
-            <CardDescription>
-              Configure the ping role for all game news updates.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <div className="flex-1">
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Ping Role ID (optional)</Label>
-                <Input
-                  placeholder="Role ID to mention on new articles"
-                  value={globalPingRoleInput}
-                  onChange={(e) => setGlobalPingRoleInput(e.target.value)}
-                  className="h-9"
-                />
-              </div>
-              <Button
-                size="sm"
-                className="self-end h-9"
-                onClick={() => updateGlobalPingRoleMutation.mutate(globalPingRoleInput)}
-                disabled={updateGlobalPingRoleMutation.isPending || globalPingRoleInput === globalPingRoleId}
-              >
-                {updateGlobalPingRoleMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
-                Save
-              </Button>
-            </div>
-            {globalPingRoleId && (
-              <p className="text-xs text-muted-foreground mt-2">
-                Currently pinging: <code className="bg-muted px-1 rounded text-[11px]">&lt;@&amp;{globalPingRoleId}&gt;</code>
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Popular Games Grid */}
         <Card>
           <CardHeader className="pb-3">
@@ -382,40 +345,69 @@ export default function GameNewsFeeds() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center justify-end gap-2">
-                      {isAdded && existingFeed && (
-                        <Switch
-                          checked={isEnabled}
-                          onCheckedChange={(enabled) =>
-                            toggleMutation.mutate({ id: existingFeed.id, enabled })
-                          }
+                    {isAdded && existingFeed && (
+                      <div className="flex items-center gap-1.5">
+                        <Input
+                          placeholder="Ping Role ID"
+                          value={feedPingInputs[existingFeed.id] ?? existingFeed.ping_role_id ?? ''}
+                          onChange={(e) => setFeedPingInputs(prev => ({ ...prev, [existingFeed.id]: e.target.value }))}
+                          className="h-7 text-xs flex-1"
                         />
-                      )}
-                      {!isAdded && (
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-8"
-                          onClick={() => handlePresetToggle(preset, false)}
+                          className="h-7 text-xs px-2 shrink-0"
+                          disabled={
+                            updateFeedPingRoleMutation.isPending ||
+                            (feedPingInputs[existingFeed.id] ?? existingFeed.ping_role_id ?? '') === (existingFeed.ping_role_id ?? '')
+                          }
+                          onClick={() => updateFeedPingRoleMutation.mutate({ id: existingFeed.id, roleId: feedPingInputs[existingFeed.id] ?? '' })}
                         >
-                          <Plus className="h-4 w-4 mr-1" />
-                          Enable
+                          Save
                         </Button>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between gap-2">
+                      {isAdded && existingFeed && existingFeed.ping_role_id && (
+                        <p className="text-[10px] text-muted-foreground truncate">
+                          Pings: <code className="bg-muted px-1 rounded">&lt;@&amp;{existingFeed.ping_role_id}&gt;</code>
+                        </p>
                       )}
-                      {isAdded && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                          onClick={() => {
-                            if (confirm(`Remove ${preset.name} feed?`)) {
-                              handlePresetToggle(preset, true);
+                      <div className="flex items-center gap-2 ml-auto">
+                        {isAdded && existingFeed && (
+                          <Switch
+                            checked={isEnabled}
+                            onCheckedChange={(enabled) =>
+                              toggleMutation.mutate({ id: existingFeed.id, enabled })
                             }
-                          }}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
+                          />
+                        )}
+                        {!isAdded && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8"
+                            onClick={() => handlePresetToggle(preset, false)}
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Enable
+                          </Button>
+                        )}
+                        {isAdded && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => {
+                              if (confirm(`Remove ${preset.name} feed?`)) {
+                                handlePresetToggle(preset, true);
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
