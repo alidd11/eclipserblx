@@ -1456,6 +1456,42 @@ Deno.serve(async (req) => {
       );
     }
 
+    // ─── Action: Get import quota ────────────────────────────────────────────
+    if (action === 'quota') {
+      const { data: quotaData, error: quotaError } = await supabaseAdmin
+        .rpc('get_import_quota', { p_store_id: store.id });
+
+      if (quotaError) {
+        console.error('Quota fetch error:', quotaError.message);
+        return new Response(
+          JSON.stringify({ success: false, error: 'Failed to fetch import quota' }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const q = quotaData?.[0] || { imports_used: 0, free_limit: 25, remaining_free: 25 };
+
+      // Also fetch credit balance
+      const { data: balData } = await supabaseAdmin
+        .from('credit_balances')
+        .select('balance')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          quota: {
+            importsUsed: q.imports_used,
+            freeLimit: q.free_limit,
+            remainingFree: q.remaining_free,
+            creditBalance: Number(balData?.balance ?? 0),
+          },
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // ─── Action: Fetch full product details ────────────────────────────────────
     if (action === 'details') {
       if (!productUrl || typeof productUrl !== 'string') {
