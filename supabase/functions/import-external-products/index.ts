@@ -1327,7 +1327,7 @@ Deno.serve(async (req) => {
         let stopPagination = false;
 
         // ── Page 1: detect pagination step ──
-        const firstResult = await scrapeUrl(baseCollectionUrl, firecrawlApiKey, 1);
+        const firstResult = await scrapeUrl(baseCollectionUrl, firecrawlApiKey, 1, 2000);
         if (!firstResult.success) {
           return new Response(
             JSON.stringify({ success: false, error: firstResult.error || "Failed to scrape store" }),
