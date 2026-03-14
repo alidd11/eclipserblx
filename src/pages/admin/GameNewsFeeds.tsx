@@ -561,6 +561,7 @@ export default function GameNewsFeeds() {
               })}
             </div>
           </CardContent>
+        </Card>
 
         {/* Channel Setup Dialog for Presets */}
         <Dialog open={channelDialogOpen} onOpenChange={setChannelDialogOpen}>
