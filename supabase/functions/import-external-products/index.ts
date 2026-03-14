@@ -924,7 +924,7 @@ function friendlyErrorMessage(raw: string): string {
 
 // ─── Scraping with retry ───────────────────────────────────────────────────────
 
-const SCRAPE_TIMEOUT_MS = 30_000; // 30 seconds per scrape attempt
+const SCRAPE_TIMEOUT_MS = 25_000; // 25 seconds per scrape attempt
 
 async function scrapeUrl(
   url: string,
