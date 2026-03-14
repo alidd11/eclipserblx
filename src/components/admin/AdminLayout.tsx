@@ -74,7 +74,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
       html.style.backgroundColor = prev.html.backgroundColor || themeBgColor;
       html.style.overflow = prev.html.overflow;
       html.style.overflowX = prev.html.overflowX;
-      body.style.backgroundColor = prev.body.backgroundColor || themeBg;
+      body.style.backgroundColor = prev.body.backgroundColor || themeBgColor;
       body.style.overflow = prev.body.overflow;
       body.style.overflowX = prev.body.overflowX;
     };
