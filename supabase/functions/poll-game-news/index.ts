@@ -310,10 +310,14 @@ Deno.serve(async (req) => {
 
   // Parse optional config from request body
   let delayMs = 2000;
+  let maxPerFeed = 5;
   try {
     const body = await req.json();
     if (body?.delay_ms && typeof body.delay_ms === 'number') {
       delayMs = Math.min(body.delay_ms, 90000); // cap at 90s
+    }
+    if (body?.max_per_feed && typeof body.max_per_feed === 'number') {
+      maxPerFeed = Math.min(body.max_per_feed, 20);
     }
   } catch { /* no body or invalid JSON, use defaults */ }
 
