@@ -187,14 +187,6 @@ export default function GameNewsFeeds() {
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, enabled }: { id: string; enabled: boolean }) => {
-      if (enabled) {
-        // Disable all other feeds first (only one allowed at a time)
-        const { error: disableErr } = await supabase
-          .from('game_news_feeds')
-          .update({ enabled: false, updated_at: new Date().toISOString() })
-          .neq('id', id);
-        if (disableErr) throw disableErr;
-      }
       const { error } = await supabase
         .from('game_news_feeds')
         .update({ enabled, updated_at: new Date().toISOString() })
@@ -239,27 +231,13 @@ export default function GameNewsFeeds() {
         deleteMutation.mutate(feed.id);
       }
     } else {
-      // Check if another feed is already enabled
-      const enabledFeed = (feeds || []).find(f => f.enabled);
-      if (enabledFeed) {
-        toast.error('Only one game news feed can be active at a time. Disable the current one first, or it will be auto-disabled.');
-      }
-      // Directly add with hardcoded channel ID (added as enabled, disable others)
-      const disableOthers = async () => {
-        await supabase
-          .from('game_news_feeds')
-          .update({ enabled: false, updated_at: new Date().toISOString() })
-          .eq('enabled', true);
-      };
-      disableOthers().then(() => {
-        addMutation.mutate({
-          name: preset.name,
-          feed_url: preset.feed_url,
-          feed_type: preset.feed_type,
-          discord_channel_id: DEFAULT_CHANNEL_ID,
-          ping_role_id: '',
-          check_interval_minutes: 10,
-        });
+      addMutation.mutate({
+        name: preset.name,
+        feed_url: preset.feed_url,
+        feed_type: preset.feed_type,
+        discord_channel_id: DEFAULT_CHANNEL_ID,
+        ping_role_id: '',
+        check_interval_minutes: 10,
       });
     }
   };
@@ -307,7 +285,7 @@ export default function GameNewsFeeds() {
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Popular Games</CardTitle>
             <CardDescription>
-              Toggle a game to start receiving its news in your Discord. Only one feed can be active at a time.
+              Toggle games on/off to auto-post updates to your Discord channel.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -320,25 +298,25 @@ export default function GameNewsFeeds() {
                 return (
                   <div
                     key={preset.feed_url}
-                    className={`flex items-center justify-between gap-2 p-3 rounded-lg border transition-colors ${
+                    className={`flex flex-col gap-2 p-3 rounded-lg border transition-colors ${
                       isAdded && isEnabled
                         ? 'bg-primary/5 border-primary/20'
                         : 'bg-muted/30 border-border/50'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <span className="text-xl shrink-0">{preset.emoji}</span>
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm truncate">{preset.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{preset.description}</p>
+                    <div className="flex items-start gap-2.5">
+                      <span className="text-xl shrink-0 mt-0.5">{preset.emoji}</span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-sm">{preset.name}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2">{preset.description}</p>
                         {isAdded && existingFeed && existingFeed.last_checked_at && (
-                          <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                          <p className="text-xs text-muted-foreground mt-0.5">
                             Checked {formatDistanceToNow(new Date(existingFeed.last_checked_at), { addSuffix: true })}
                           </p>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-center justify-end gap-2">
                       {isAdded && existingFeed && (
                         <Switch
                           checked={isEnabled}
@@ -350,11 +328,12 @@ export default function GameNewsFeeds() {
                       {!isAdded && (
                         <Button
                           variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
+                          size="sm"
+                          className="h-8"
                           onClick={() => handlePresetToggle(preset, false)}
                         >
-                          <Plus className="h-4 w-4" />
+                          <Plus className="h-4 w-4 mr-1" />
+                          Enable
                         </Button>
                       )}
                       {isAdded && (
