@@ -128,8 +128,9 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
     const freeAvailable = quotaData.remainingFree;
     const freeUsed = Math.min(count, freeAvailable);
     const paidCount = Math.max(0, count - freeAvailable);
-    const canAfford = paidCount <= quotaData.creditBalance;
-    return { freeUsed, paidCount, canAfford, creditBalance: quotaData.creditBalance };
+    const paidCost = paidCount * 0.10;
+    const canAfford = paidCost <= quotaData.creditBalance;
+    return { freeUsed, paidCount, paidCost, canAfford, creditBalance: quotaData.creditBalance };
   }, [quotaData, selectedProducts.size]);
 
   const handleImportClick = () => {
