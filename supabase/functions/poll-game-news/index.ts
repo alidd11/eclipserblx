@@ -199,7 +199,7 @@ Deno.serve(async (req) => {
 
         if (contentType.includes('json') || feed.feed_type === 'json') {
           try {
-            entries = parseJsonFeed(JSON.parse(body));
+            entries = parseJsonFeed(JSON.parse(body), feed.feed_url);
           } catch {
             console.error(`[poll-game-news] Failed to parse JSON for ${feed.name}`);
             continue;
