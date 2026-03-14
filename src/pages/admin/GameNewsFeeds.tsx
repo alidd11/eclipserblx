@@ -296,28 +296,25 @@ export default function GameNewsFeeds() {
                 return (
                   <div
                     key={preset.feed_url}
-                    className={`flex items-center justify-between gap-3 p-3 rounded-lg border transition-colors ${
+                    className={`flex items-center justify-between gap-2 p-3 rounded-lg border transition-colors ${
                       isAdded && isEnabled
                         ? 'bg-primary/5 border-primary/20'
                         : 'bg-muted/30 border-border/50'
                     }`}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="text-2xl shrink-0">{preset.emoji}</span>
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <span className="text-xl shrink-0">{preset.emoji}</span>
                       <div className="min-w-0">
-                        <p className="font-medium text-sm">{preset.name}</p>
+                        <p className="font-medium text-sm truncate">{preset.name}</p>
                         <p className="text-xs text-muted-foreground truncate">{preset.description}</p>
-                        {isAdded && existingFeed && (
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            Channel: {existingFeed.discord_channel_id}
-                            {existingFeed.last_checked_at && (
-                              <> · Checked {formatDistanceToNow(new Date(existingFeed.last_checked_at), { addSuffix: true })}</>
-                            )}
+                        {isAdded && existingFeed && existingFeed.last_checked_at && (
+                          <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                            Checked {formatDistanceToNow(new Date(existingFeed.last_checked_at), { addSuffix: true })}
                           </p>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       {isAdded && existingFeed && (
                         <Switch
                           checked={isEnabled}
@@ -329,12 +326,11 @@ export default function GameNewsFeeds() {
                       {!isAdded && (
                         <Button
                           variant="outline"
-                          size="sm"
-                          className="h-8"
+                          size="icon"
+                          className="h-8 w-8"
                           onClick={() => handlePresetToggle(preset, false)}
                         >
-                          <Plus className="h-3.5 w-3.5 mr-1" />
-                          Enable
+                          <Plus className="h-4 w-4" />
                         </Button>
                       )}
                       {isAdded && (
