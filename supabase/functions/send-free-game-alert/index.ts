@@ -106,7 +106,6 @@ Deno.serve(async (req) => {
       content: `<@&${FREE_GAMES_PING_ROLE_ID}> 🎉 **Free game alert!**`,
       embeds: [embed],
       allowed_mentions: {
-        parse: ['roles'],
         roles: [FREE_GAMES_PING_ROLE_ID],
       },
     });
