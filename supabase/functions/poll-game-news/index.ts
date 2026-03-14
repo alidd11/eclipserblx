@@ -14,6 +14,56 @@ interface FeedEntry {
 }
 
 /**
+ * Fetch Open Graph image from an article URL
+ */
+async function fetchOgImage(url: string): Promise<string | null> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const resp = await fetch(url, {
+      headers: { 'User-Agent': 'EclipseBot/1.0 (OG Image Fetch)' },
+      signal: controller.signal,
+      redirect: 'follow',
+    });
+    clearTimeout(timeout);
+
+    if (!resp.ok) return null;
+
+    // Only read the first ~50KB to find meta tags quickly
+    const reader = resp.body?.getReader();
+    if (!reader) return null;
+
+    let html = '';
+    const decoder = new TextDecoder();
+    let bytesRead = 0;
+    const maxBytes = 50000;
+
+    while (bytesRead < maxBytes) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      html += decoder.decode(value, { stream: true });
+      bytesRead += value.length;
+      // Stop early if we've passed </head>
+      if (html.includes('</head>')) break;
+    }
+    reader.cancel();
+
+    // Try og:image first, then twitter:image
+    const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+      || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+    if (ogMatch?.[1]) return ogMatch[1];
+
+    const twMatch = html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i)
+      || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i);
+    if (twMatch?.[1]) return twMatch[1];
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Parse RSS/Atom XML into feed entries
  */
 function parseRSSXml(xml: string): FeedEntry[] {
@@ -125,7 +175,7 @@ function extractAtomLink(block: string): string | null {
 }
 
 /**
- * Extract links with namespace prefixes (e.g. <a10:link href="..."/>)
+ * Extract links with namespace prefixes (e.g. <a10:link href="..."/>
  */
 function extractNamespacedLink(block: string): string | null {
   const m = block.match(/<[a-z0-9]+:link[^>]*href=["']([^"']+)["'][^>]*\/?>/i);
@@ -149,6 +199,66 @@ function stripCdata(text: string): string {
 
 function stripHtml(text: string): string {
   return text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Build a visually rich Discord embed with large banner image
+ */
+async function buildEmbed(
+  entry: FeedEntry,
+  feed: { name: string; icon_url?: string; embed_color?: number }
+): Promise<DiscordEmbed> {
+  const feedColor = feed.embed_color || 0x00b4d8;
+  const feedIcon = feed.icon_url || undefined;
+
+  // Resolve image: article thumbnail → OG image scrape → feed icon fallback
+  let imageUrl: string | null = null;
+
+  if (entry.thumbnail && entry.thumbnail.startsWith('http')) {
+    imageUrl = entry.thumbnail;
+  }
+
+  if (!imageUrl) {
+    console.log(`[poll-game-news] No thumbnail for "${entry.title}", fetching OG image from ${entry.url}`);
+    imageUrl = await fetchOgImage(entry.url);
+    if (imageUrl) {
+      console.log(`[poll-game-news] Found OG image: ${imageUrl}`);
+    }
+  }
+
+  // Build description with a "Read more" link
+  const descText = entry.description
+    ? `${entry.description}…\n\n**[Read full article →](${entry.url})**`
+    : `**[Read full article →](${entry.url})**`;
+
+  const embed: DiscordEmbed = {
+    title: entry.title.substring(0, 256),
+    url: entry.url,
+    description: descText,
+    color: feedColor,
+    author: {
+      name: `📰 ${feed.name}`,
+      icon_url: feedIcon,
+      url: entry.url,
+    },
+    footer: {
+      text: feed.name,
+      icon_url: feedIcon,
+    },
+    timestamp: entry.published
+      ? new Date(entry.published).toISOString()
+      : new Date().toISOString(),
+  };
+
+  // Large banner image (always try to include one)
+  if (imageUrl) {
+    embed.image = { url: imageUrl };
+  } else if (feedIcon) {
+    // Last resort: show feed icon as thumbnail on the right
+    embed.thumbnail = { url: feedIcon };
+  }
+
+  return embed;
 }
 
 Deno.serve(async (req) => {
@@ -229,25 +339,11 @@ Deno.serve(async (req) => {
 
         // Post new entries (oldest first so newest appears last in Discord)
         for (const entry of newEntries.reverse()) {
-          const feedColor = feed.embed_color || 0x00b4d8;
-          const feedIcon = feed.icon_url || undefined;
-
-          const embed: DiscordEmbed = {
-            title: entry.title.substring(0, 256),
-            url: entry.url,
-            description: entry.description || undefined,
-            color: feedColor,
-            author: feedIcon ? { name: feed.name, icon_url: feedIcon } : { name: feed.name },
-            footer: { text: `📡 ${feed.name} • Game & Dev News` },
-            timestamp: entry.published ? new Date(entry.published).toISOString() : new Date().toISOString(),
-          };
-
-          // Always include an image: use article thumbnail or fallback to feed icon
-          if (entry.thumbnail && entry.thumbnail.startsWith('http')) {
-            embed.image = { url: entry.thumbnail };
-          } else if (feedIcon) {
-            embed.thumbnail = { url: feedIcon };
-          }
+          const embed = await buildEmbed(entry, {
+            name: feed.name,
+            icon_url: feed.icon_url || undefined,
+            embed_color: feed.embed_color || undefined,
+          });
 
           const content = feed.ping_role_id ? `<@&${feed.ping_role_id}>` : undefined;
 
