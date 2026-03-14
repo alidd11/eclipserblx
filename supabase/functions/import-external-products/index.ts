@@ -1616,6 +1616,7 @@ Deno.serve(async (req) => {
               is_seller_product: true,
               is_active: false,
               category_id: product.suggestedCategoryId || null,
+              external_link: product.sourceUrl || null,
               moderation_status: 'approved',
             })
             .select('id')
