@@ -930,6 +930,7 @@ async function scrapeUrl(
   url: string,
   apiKey: string,
   retries = 2,
+  waitMs = 5000,
 ): Promise<{ success: boolean; markdown?: string; html?: string; links?: string[]; error?: string; retryable?: boolean }> {
   console.log(`Scraping: ${url}`);
 
@@ -948,7 +949,7 @@ async function scrapeUrl(
           url,
           formats: ['markdown', 'html', 'links'],
           onlyMainContent: false,
-          waitFor: 5000,
+          waitFor: waitMs,
         }),
         signal: controller.signal,
       });
