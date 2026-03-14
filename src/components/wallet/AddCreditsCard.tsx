@@ -19,7 +19,7 @@ interface AddCreditsCardProps {
 }
 
 export function AddCreditsCard({ onPurchase, isLoggedIn, onLoginRedirect, isPurchasing = false }: AddCreditsCardProps) {
-  const [customAmount, setCustomAmount] = useState<string>('10');
+  const [customAmount, setCustomAmount] = useState<string>('5');
 
   const handlePurchase = (amount: number) => {
     if (!isLoggedIn) {
