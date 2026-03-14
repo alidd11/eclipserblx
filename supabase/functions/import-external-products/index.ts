@@ -551,12 +551,12 @@ function parseBuiltByBitProduct(markdown: string, url: string, html?: string): E
 // ─── Payhip parsers ───────────────────────────────────────────────────────────
 
 // Common CTA / button labels that should not be treated as product names
-const PAYHIP_CTA_PATTERNS = /^(purchase\s*now|buy\s*now|add\s*to\s*cart|get\s*it\s*now|visit\s*product\s*page|view\s*product|checkout|proceed|download|learn\s*more|see\s*more|read\s*more|sign\s*up|subscribe|free\s*download|get\s*access|view\s*details?)$/i;
+const PAYHIP_CTA_PATTERNS = /^(purchase\s*now|buy\s*now|add\s*to\s*cart|get\s*it\s*now|visit\s*product\s*page|view\s*product|checkout|proceed|download|learn\s*more|see\s*more|read\s*more|sign\s*up|subscribe|free\s*download|get\s*access|view\s*details?|shop\s*now|shop\s*all|shop\s*\w+|view\s*all|buy\s*now|follow|added\s*to\s*cart|adding\s*\.\.\.|save|share|tweet|proceed\s*to\s*checkout|copy\s*link|watch\s*on|accept|cancel\s*confirm|cancel)$/i;
+
+// Skip sections/headings that are store banners, not product names
+const PAYHIP_BANNER_PATTERNS = /^(best\s*deals?|latest\s*products?|terms\s*of\s*service|more\s*videos|share|ww2?\s*products?|5,?\d*\+?\s*orders?|.*exclusive|.*terms|featured|collections?|all\s*products?|about|contact|faq|support)$/i;
 
 function parsePayhipStore(markdown: string, storeUrl: string, links?: string[]): { products: ExternalProduct[]; sellerName?: string } {
-  // Map from URL → best candidate name
-  const urlCandidates = new Map<string, { name: string; isCta: boolean }>();
-
   // Extract seller name from URL path
   let sellerName: string | undefined;
   const storeSlugMatch = storeUrl.match(/payhip\.com\/([A-Za-z0-9_-]+)/);
@@ -564,59 +564,185 @@ function parsePayhipStore(markdown: string, storeUrl: string, links?: string[]):
     sellerName = storeSlugMatch[1];
   }
 
-  // Products are linked as ### [Product Name](https://payhip.com/b/XXXXX)
-  const productLinkRegex = /\[([^\]]+)\]\((https:\/\/payhip\.com\/b\/[A-Za-z0-9]+)\)/g;
+  // Strategy 1: Parse structured product listings from markdown
+  // Payhip store pages show products as:
+  //   ![](image_url)
+  //   #### Product Name
+  //   £XX.XX
+  // These appear in sections like "BEST DEALS", "LATEST PRODUCTS"
+  const structuredProducts = new Map<string, { name: string; price: number; images: string[] }>();
+  const mdLines = markdown.split('\n');
 
+  for (let i = 0; i < mdLines.length; i++) {
+    const line = mdLines[i].trim();
+    // Look for #### headings (product names in listing)
+    const h4Match = line.match(/^#{1,4}\s+(.+)/);
+    if (!h4Match) continue;
+
+    const candidateName = h4Match[1].replace(/\\\[/g, '[').replace(/\\\]/g, ']').replace(/\*+/g, '').trim();
+    if (candidateName.length < 3) continue;
+    if (PAYHIP_CTA_PATTERNS.test(candidateName)) continue;
+    if (PAYHIP_BANNER_PATTERNS.test(candidateName)) continue;
+
+    // Look for price in the next few lines
+    let price = 0;
+    let foundPrice = false;
+    for (let j = i + 1; j < Math.min(i + 5, mdLines.length); j++) {
+      const priceLine = mdLines[j].trim();
+      // Match £XX.XX or $XX.XX
+      const priceMatch = priceLine.match(/^[£$](\d+(?:\.\d{1,2})?)$/);
+      if (priceMatch) {
+        const rawPrice = parseFloat(priceMatch[1]);
+        // If we already found a price, this could be the sale/original price
+        // Payhip shows: sale price first, then original price, then "On Sale"
+        if (!foundPrice) {
+          price = rawPrice;
+          foundPrice = true;
+        }
+        // If the second price is higher, the first was the sale price (keep it)
+        continue;
+      }
+      // Stop looking if we hit another heading or image
+      if (priceLine.startsWith('#') || priceLine.startsWith('![')) break;
+    }
+
+    // Only include if we found a price (confirms it's a product, not a banner)
+    if (!foundPrice) continue;
+
+    // Look for images above this heading (within 3 lines back)
+    const images: string[] = [];
+    for (let j = i - 1; j >= Math.max(0, i - 4); j--) {
+      const imgLine = mdLines[j].trim();
+      // Match markdown images, possibly multiple on one line
+      const imgMatches = [...imgLine.matchAll(/!\[[^\]]*\]\((https?:\/\/[^)]+)\)/g)];
+      if (imgMatches.length > 0) {
+        for (const m of imgMatches) {
+          const src = m[1];
+          if (src.includes('s3.amazonaws.com') || src.includes('cdn-cgi/image') || src.includes('ytimg.com')) {
+            images.push(src);
+          }
+        }
+        break; // Only look at the closest image line
+      }
+      if (imgLine.length > 0 && !imgLine.startsWith('![')) break;
+    }
+
+    // Use name as key for dedup
+    const key = candidateName.toLowerCase();
+    if (!structuredProducts.has(key)) {
+      structuredProducts.set(key, { name: candidateName, price, images: images.slice(0, 4) });
+    }
+  }
+
+  // Strategy 2: Extract product URLs from markdown links
+  const productLinkRegex = /\[([^\]]+)\]\((https:\/\/payhip\.com\/b\/[A-Za-z0-9]+)\)/g;
+  const urlToName = new Map<string, string>();
   let match;
   while ((match = productLinkRegex.exec(markdown)) !== null) {
     const rawName = match[1].trim();
     const url = match[2];
     if (rawName.length < 2) continue;
-
-    const isCta = PAYHIP_CTA_PATTERNS.test(rawName);
-    const existing = urlCandidates.get(url);
-
-    // Keep non-CTA names over CTA names; among same type keep the longer one
-    if (!existing || (!isCta && existing.isCta) || (!isCta && !existing.isCta && rawName.length > existing.name.length)) {
-      urlCandidates.set(url, { name: rawName, isCta });
+    if (PAYHIP_CTA_PATTERNS.test(rawName)) continue;
+    // Keep non-CTA names
+    if (!urlToName.has(url) || (!PAYHIP_CTA_PATTERNS.test(rawName) && rawName.length > (urlToName.get(url)?.length || 0))) {
+      urlToName.set(url, rawName);
     }
   }
 
-  // Also try extracting from links array (fallback for URLs not yet seen)
+  // Also check the links array for product URLs not found in markdown
   if (links && links.length > 0) {
     for (const link of links) {
       if (!link.match(/payhip\.com\/b\/[A-Za-z0-9]+$/)) continue;
-      if (urlCandidates.has(link)) continue;
-
-      const codeMatch = link.match(/\/b\/([A-Za-z0-9]+)$/);
-      const code = codeMatch ? codeMatch[1] : 'Unknown';
-      urlCandidates.set(link, { name: `Product ${code}`, isCta: true });
+      if (!urlToName.has(link)) {
+        urlToName.set(link, ''); // placeholder, will try to match with structured products
+      }
     }
   }
 
-  // Build product list — for URLs that only have CTA labels, still include them
-  // but use the product code as a fallback name
-  const products: ExternalProduct[] = [];
-  for (const [url, { name, isCta }] of urlCandidates) {
-    let finalName = name;
-    if (isCta) {
-      // Use the product code from the URL instead of the CTA text
-      const codeMatch = url.match(/\/b\/([A-Za-z0-9]+)$/);
-      finalName = codeMatch ? `Product ${codeMatch[1]}` : name;
+  // Strategy 3: Try to match structured products with their URLs
+  // Look for product names near [Visit product page](url) or [PURCHASE NOW](url) links
+  const ctaLinkRegex = /\[(?:purchase\s*now|buy\s*now|visit\s*product\s*page|add\s*to\s*cart|view\s*product)\]\((https:\/\/payhip\.com\/b\/[A-Za-z0-9]+)\)/gi;
+  let ctaMatch;
+  while ((ctaMatch = ctaLinkRegex.exec(markdown)) !== null) {
+    const url = ctaMatch[1];
+    const ctaPos = ctaMatch.index;
+    
+    // Look backwards in the markdown for the product name (usually in a heading nearby)
+    const before = markdown.substring(Math.max(0, ctaPos - 2000), ctaPos);
+    const beforeLines = before.split('\n').reverse();
+    
+    for (const bl of beforeLines) {
+      const trimmed = bl.trim();
+      // Find the nearest heading that could be a product name
+      const hMatch = trimmed.match(/^#{1,4}\s+(.+)/);
+      if (hMatch) {
+        const name = hMatch[1].replace(/\\\[/g, '[').replace(/\\\]/g, ']').replace(/\*+/g, '').trim();
+        if (name.length >= 3 && !PAYHIP_CTA_PATTERNS.test(name) && !PAYHIP_BANNER_PATTERNS.test(name)) {
+          if (!urlToName.has(url) || urlToName.get(url) === '') {
+            urlToName.set(url, name);
+          }
+          break;
+        }
+      }
+      // Also check for plain text product names (bold or just text after images)
+      if (trimmed.length > 3 && trimmed.length < 100 && !trimmed.startsWith('![') && !trimmed.startsWith('[') && !trimmed.startsWith('£') && !trimmed.startsWith('$') && !trimmed.includes('youtube') && !/^\d/.test(trimmed) && !PAYHIP_CTA_PATTERNS.test(trimmed)) {
+        // Could be a product name like "IVAS System" appearing as plain text
+        const plainName = trimmed.replace(/\*+/g, '').trim();
+        if (plainName.length >= 3 && !PAYHIP_BANNER_PATTERNS.test(plainName)) {
+          if (!urlToName.has(url) || urlToName.get(url) === '') {
+            urlToName.set(url, plainName);
+          }
+          break;
+        }
+      }
     }
+  }
+
+  // Build final product list, combining structured data with URLs
+  const products: ExternalProduct[] = [];
+  const addedNames = new Set<string>();
+
+  // First: add products that have URLs
+  for (const [url, name] of urlToName) {
+    let finalName = name;
+    let price = 0;
+    let images: string[] = [];
+
+    // Try to match with structured product data by name
+    if (finalName) {
+      const key = finalName.toLowerCase();
+      const structured = structuredProducts.get(key);
+      if (structured) {
+        price = structured.price;
+        images = structured.images;
+        addedNames.add(key);
+      }
+    }
+
+    // If no name from link text, use product code
+    if (!finalName || finalName.length < 3) {
+      const codeMatch = url.match(/\/b\/([A-Za-z0-9]+)$/);
+      finalName = codeMatch ? `Product ${codeMatch[1]}` : 'Unknown Product';
+    }
+
     if (finalName.length < 3) continue;
 
     const categorySlug = suggestCategory(finalName, '');
     products.push({
       name: finalName,
       description: '',
-      price: 0,
-      images: [],
+      price,
+      images,
       sourceUrl: url,
       platform: 'payhip',
       suggestedCategoryId: categorySlug,
     });
+    addedNames.add(finalName.toLowerCase());
   }
+
+  // Second: add structured products that didn't get matched to a URL
+  // (These are visible on the store page but the URL isn't directly linked)
+  // We skip these since we can't import without a product URL
 
   return { products, sellerName };
 }
@@ -632,23 +758,27 @@ function parsePayhipProduct(markdown: string, url: string, html?: string): Exter
     }
   }
 
-  // Try markdown heading
+  // Try markdown heading — but skip CTA/banner patterns
   if (!name) {
-    const headingMatch = markdown.match(/^#\s+(.+)/m);
-    if (headingMatch) {
-      const candidate = headingMatch[1].replace(/\\?\|/g, '').trim();
-      if (candidate.length >= 3) name = candidate;
+    const headings = [...markdown.matchAll(/^#{1,4}\s+(.+)/gm)];
+    for (const h of headings) {
+      const candidate = h[1].replace(/\\?\|/g, '').replace(/\*+/g, '').trim();
+      if (candidate.length < 3) continue;
+      if (PAYHIP_CTA_PATTERNS.test(candidate)) continue;
+      if (PAYHIP_BANNER_PATTERNS.test(candidate)) continue;
+      name = candidate;
+      break;
     }
   }
 
   if (!name) return null;
 
-  // Images
+  // Images — improved extraction
   const images: string[] = [];
   const seenImageUrls = new Set<string>();
 
   if (html) {
-    // OG image
+    // OG image first
     const ogImg = html.match(/<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i);
     if (ogImg?.[1] && !SKIP_TINY_DATA_URI.test(ogImg[1])) {
       images.push(ogImg[1]);
@@ -656,13 +786,13 @@ function parsePayhipProduct(markdown: string, url: string, html?: string): Exter
     }
 
     // Product images — Payhip uses cdn-cgi/image proxy or S3 URLs
-    const allImgs = [...html.matchAll(/<img[^>]*?\bsrc="([^"]+)"[^>]*?(?:alt="([^"]*)")?[^>]*?>/gi)];
+    const allImgs = [...html.matchAll(/<img[^>]*?\bsrc="([^"]+)"[^>]*?>/gi)];
     for (const m of allImgs) {
       const src = m[1];
-      const alt = m[2] || '';
       if (src.includes('loading.gif') || src.includes('favicon') || src.includes('payhip.com/images/')) continue;
+      if (SKIP_TINY_DATA_URI.test(src)) continue;
       if (seenImageUrls.has(src)) continue;
-      // Only keep product-relevant images (S3 or CDN)
+      // Only keep product-relevant images (S3, CDN, or ytimg for video thumbnails)
       if (src.includes('s3.amazonaws.com') || src.includes('cdn-cgi/image')) {
         seenImageUrls.add(src);
         images.push(src);
@@ -670,26 +800,53 @@ function parsePayhipProduct(markdown: string, url: string, html?: string): Exter
     }
   }
 
-  // Fallback: images from markdown
-  if (images.length === 0) {
-    const imgRegex = /!\[[^\]]*\]\((https?:\/\/[^\)]+)\)/g;
-    let m;
-    while ((m = imgRegex.exec(markdown)) !== null) {
-      const src = m[1];
-      if (src.includes('loading.gif') || src.includes('payhip.com/images/')) continue;
-      if (seenImageUrls.has(src)) continue;
-      if (src.includes('s3.amazonaws.com') || src.includes('cdn-cgi/image')) {
-        seenImageUrls.add(src);
-        images.push(src);
+  // Also extract from markdown (catches images not in HTML img tags)
+  const imgRegex = /!\[[^\]]*\]\((https?:\/\/[^\)]+)\)/g;
+  let imgMatch;
+  while ((imgMatch = imgRegex.exec(markdown)) !== null) {
+    const src = imgMatch[1];
+    if (src.includes('loading.gif') || src.includes('payhip.com/images/')) continue;
+    if (seenImageUrls.has(src)) continue;
+    if (src.includes('s3.amazonaws.com') || src.includes('cdn-cgi/image')) {
+      seenImageUrls.add(src);
+      images.push(src);
+    }
+  }
+
+  // Price — try HTML meta first, then extract from markdown
+  let price = 0;
+  if (html) {
+    // Payhip sometimes includes price in meta tags
+    const ogPrice = html.match(/<meta[^>]*property="og:price:amount"[^>]*content="([^"]+)"/i)
+      || html.match(/<meta[^>]*property="product:price:amount"[^>]*content="([^"]+)"/i);
+    if (ogPrice?.[1]) {
+      price = parseFloat(ogPrice[1]) || 0;
+    }
+    // Also try data attributes or specific price elements
+    if (price === 0) {
+      const priceEl = html.match(/class="[^"]*product-price[^"]*"[^>]*>[\s\S]*?[£$](\d+(?:\.\d{1,2})?)/i)
+        || html.match(/class="[^"]*sale-price[^"]*"[^>]*>[\s\S]*?[£$](\d+(?:\.\d{1,2})?)/i);
+      if (priceEl?.[1]) {
+        price = parseFloat(priceEl[1]) || 0;
+      }
+    }
+  }
+  
+  if (price === 0) {
+    // Try extracting from the first price line in markdown (closest to the product name)
+    // Payhip product pages show: "£XX.XX" or "On Sale £XX.XX (XX% off) £XX.XX"
+    const priceLines = markdown.match(/[£$](\d+(?:\.\d{1,2})?)/g);
+    if (priceLines && priceLines.length > 0) {
+      // If there's a sale, the actual price is typically the lower one
+      const prices = priceLines.map(p => parseFloat(p.replace(/[£$]/, ''))).filter(p => p > 0);
+      if (prices.length > 0) {
+        price = Math.min(...prices); // Use the lowest (sale) price
       }
     }
   }
 
-  const price = extractPrice(markdown);
-
-  // Description — everything after the heading and price info
+  // Description — everything after the heading and price/cart section
   let description = '';
-  // Remove heading, price lines, and cart/button text, then take what's left
   const lines = markdown.split('\n');
   let startCapture = false;
   const descLines: string[] = [];
@@ -697,15 +854,17 @@ function parsePayhipProduct(markdown: string, url: string, html?: string): Exter
     const trimmed = line.trim();
     if (!startCapture) {
       // Start capturing after the price/buy section
-      if (trimmed.startsWith('Buy Now') || trimmed.startsWith('Add to Cart') || trimmed.startsWith('Proceed to Checkout')) {
+      if (/^(Buy Now|Add to Cart|Proceed to Checkout|Added to cart|Adding \.\.\.)/i.test(trimmed)) {
         startCapture = true;
         continue;
       }
       continue;
     }
     // Stop at footer-like sections
-    if (trimmed.startsWith('Powered by') || trimmed.startsWith('Terms') || trimmed.startsWith('Get updates') || trimmed.startsWith('## Share')) break;
-    if (trimmed.startsWith('Added to wishlist') || trimmed.startsWith('Add to wishlist')) continue;
+    if (/^(Powered by|Terms|Get updates|## Share|Save|Share|Tweet|Visit product page|You will get)/i.test(trimmed)) break;
+    if (/^(Added to wishlist|Add to wishlist)/i.test(trimmed)) continue;
+    // Skip YouTube embed noise
+    if (/^(Watch later|Copy link|Watch on|Tap to unmute|If playback|You're signed out|More videos|Up Next|Autoplay|Info|Shopping|Search)/i.test(trimmed)) continue;
     descLines.push(line);
   }
   description = descLines.join('\n').trim().slice(0, 5000);
@@ -1294,6 +1453,7 @@ Deno.serve(async (req) => {
           is_seller_product: true,
           is_active: false,
           category_id: product.suggestedCategoryId || null,
+          external_link: product.sourceUrl || null,
           moderation_status: 'approved',
         })
         .select('id')
@@ -1456,6 +1616,7 @@ Deno.serve(async (req) => {
               is_seller_product: true,
               is_active: false,
               category_id: product.suggestedCategoryId || null,
+              external_link: product.sourceUrl || null,
               moderation_status: 'approved',
             })
             .select('id')
