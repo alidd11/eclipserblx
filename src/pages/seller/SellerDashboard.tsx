@@ -18,8 +18,10 @@ import { TosBanner, NonCompliantBanner, PendingReviewBanner } from '@/components
 import { DashboardCardSkeleton, StatRowSkeleton } from '@/components/seller/DashboardSkeletons';
 import { motion } from 'framer-motion';
 import { 
-  Package, ShoppingCart, Plus, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone
+  Package, ShoppingCart, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone
 } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
 
 // Lazy-load below-fold heavy widgets
 const TopProductsLeaderboard = lazy(() => import('@/components/seller/TopProductsLeaderboard').then(m => ({ default: m.TopProductsLeaderboard })));
