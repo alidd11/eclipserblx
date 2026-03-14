@@ -396,8 +396,8 @@ Deno.serve(async (req) => {
         ];
         const newEntries = recentEntries
           .filter(e => !existingUrls.has(e.url))
-          .filter(e => !SKIP_PATTERNS.some(p => p.test(e.title) || p.test(e.description || '')));
-
+          .filter(e => !SKIP_PATTERNS.some(p => p.test(e.title) || p.test(e.description || '')))
+          .filter(e => isLikelyEnglish(e.title));
         // Post new entries (oldest first so newest appears last in Discord)
         for (const entry of newEntries.reverse()) {
           const embed = await buildEmbed(entry, {
