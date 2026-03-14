@@ -43,77 +43,56 @@ interface GameNewsFeed {
 
 const DEFAULT_CHANNEL_ID = '1482392729563693292';
 
-// Popular game presets with known RSS/news feed URLs
+// Popular game presets with verified working RSS/JSON feed URLs
 const POPULAR_GAMES = [
-  {
-    name: 'GTA / Rockstar Games',
-    emoji: '🚗',
-    feed_url: 'https://www.rockstargames.com/newswire/get-posts.json',
-    feed_type: 'json',
-    description: 'Official Rockstar Newswire — GTA, RDR2, and more',
-  },
-  {
-    name: 'Fortnite',
-    emoji: '🔫',
-    feed_url: 'https://www.fortnite.com/news?lang=en-US',
-    feed_type: 'json',
-    description: 'Fortnite official news and updates',
-  },
-  {
-    name: 'Minecraft',
-    emoji: '⛏️',
-    feed_url: 'https://www.minecraft.net/en-us/feeds/community-content/rss',
-    feed_type: 'rss',
-    description: 'Minecraft community content and updates',
-  },
-  {
-    name: 'Roblox',
-    emoji: '🟩',
-    feed_url: 'https://blog.roblox.com/feed/',
-    feed_type: 'rss',
-    description: 'Official Roblox blog updates',
-  },
-  {
-    name: 'Valorant',
-    emoji: '🎯',
-    feed_url: 'https://playvalorant.com/en-us/news/',
-    feed_type: 'rss',
-    description: 'Valorant news, patches and updates',
-  },
-  {
-    name: 'Call of Duty',
-    emoji: '🎖️',
-    feed_url: 'https://www.callofduty.com/blog',
-    feed_type: 'rss',
-    description: 'Call of Duty news and announcements',
-  },
-  {
-    name: 'Apex Legends',
-    emoji: '🏆',
-    feed_url: 'https://www.ea.com/games/apex-legends/news/rss.xml',
-    feed_type: 'rss',
-    description: 'Apex Legends news and patch notes',
-  },
-  {
-    name: 'League of Legends',
-    emoji: '⚔️',
-    feed_url: 'https://www.leagueoflegends.com/en-us/latest-news/feed/',
-    feed_type: 'rss',
-    description: 'League of Legends news and updates',
-  },
-  {
-    name: 'FIFA / EA Sports FC',
-    emoji: '⚽',
-    feed_url: 'https://www.ea.com/games/ea-sports-fc/news/rss.xml',
-    feed_type: 'rss',
-    description: 'EA Sports FC news and updates',
-  },
   {
     name: 'CS2',
     emoji: '💣',
     feed_url: 'https://blog.counter-strike.net/index.php/feed/',
     feed_type: 'rss',
     description: 'Counter-Strike 2 blog and updates',
+  },
+  {
+    name: 'GTA / Rockstar Games',
+    emoji: '🚗',
+    feed_url: 'https://rockstarintel.com/feed/',
+    feed_type: 'rss',
+    description: 'GTA, RDR2 and Rockstar news via RockstarINTEL',
+  },
+  {
+    name: 'Fortnite',
+    emoji: '🔫',
+    feed_url: 'https://fortnite-api.com/v2/news?language=en',
+    feed_type: 'json',
+    description: 'Fortnite official in-game news and updates',
+  },
+  {
+    name: 'Roblox (Dev Updates)',
+    emoji: '🟩',
+    feed_url: 'https://devforum.roblox.com/c/updates/announcements.rss',
+    feed_type: 'rss',
+    description: 'Roblox DevForum — Studio betas, API updates, engine changelogs',
+  },
+  {
+    name: 'EA Games (All)',
+    emoji: '🎮',
+    feed_url: 'https://news.ea.com/rss/pressrelease.aspx',
+    feed_type: 'rss',
+    description: 'EA press releases — Apex, FIFA, Battlefield and more',
+  },
+  {
+    name: 'GitHub Blog',
+    emoji: '🐙',
+    feed_url: 'https://github.blog/feed/',
+    feed_type: 'rss',
+    description: 'Developer tools, Copilot, and GitHub platform updates',
+  },
+  {
+    name: 'Unity Blog',
+    emoji: '🎯',
+    feed_url: 'https://blog.unity.com/feed',
+    feed_type: 'rss',
+    description: 'Unity engine updates, tutorials and game dev news',
   },
 ];
 
