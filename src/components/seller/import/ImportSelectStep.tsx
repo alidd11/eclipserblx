@@ -128,8 +128,9 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
     const freeAvailable = quotaData.remainingFree;
     const freeUsed = Math.min(count, freeAvailable);
     const paidCount = Math.max(0, count - freeAvailable);
-    const canAfford = paidCount <= quotaData.creditBalance;
-    return { freeUsed, paidCount, canAfford, creditBalance: quotaData.creditBalance };
+    const paidCost = paidCount * 0.10;
+    const canAfford = paidCost <= quotaData.creditBalance;
+    return { freeUsed, paidCount, paidCost, canAfford, creditBalance: quotaData.creditBalance };
   }, [quotaData, selectedProducts.size]);
 
   const handleImportClick = () => {
@@ -330,7 +331,7 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
               <span className="text-xs">
                 {quotaBreakdown.freeUsed > 0 && <span className="text-primary">{quotaBreakdown.freeUsed} free</span>}
                 {quotaBreakdown.freeUsed > 0 && ' + '}
-                <span className="font-medium">{quotaBreakdown.paidCount} × £1 credit</span>
+                <span className="font-medium">{quotaBreakdown.paidCount} × 10p (£{quotaBreakdown.paidCost.toFixed(2)})</span>
               </span>
             </div>
           )}
@@ -343,7 +344,7 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="flex items-center justify-between">
             <span>
-              You need {quotaBreakdown.paidCount} credits but only have £{quotaBreakdown.creditBalance.toFixed(2)}.
+              You need £{quotaBreakdown.paidCost.toFixed(2)} in credits but only have £{quotaBreakdown.creditBalance.toFixed(2)}.
             </span>
             <Link to="/wallet" className="text-xs font-medium underline underline-offset-2 ml-2 shrink-0">
               Add Credits
@@ -371,7 +372,7 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
             Import {selectedProducts.size > 0 ? `(${selectedProducts.size})` : ''}
             {quotaBreakdown && quotaBreakdown.paidCount > 0 && quotaBreakdown.canAfford && (
               <Badge variant="secondary" className="text-[10px] px-1.5 py-0 ml-1">
-                {quotaBreakdown.paidCount} credit{quotaBreakdown.paidCount !== 1 ? 's' : ''}
+                £{quotaBreakdown.paidCost.toFixed(2)}
               </Badge>
             )}
             <ArrowRight className="h-4 w-4" />
@@ -387,7 +388,7 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
             <AlertDialogDescription>
               This will import {selectedProducts.size} products{downloadImages ? ' including downloading all images' : ''}.
               {quotaBreakdown && quotaBreakdown.paidCount > 0 && (
-                <> {quotaBreakdown.freeUsed} will be free, and {quotaBreakdown.paidCount} will cost {quotaBreakdown.paidCount} Eclipse Credit{quotaBreakdown.paidCount !== 1 ? 's' : ''}.</>
+                <> {quotaBreakdown.freeUsed} will be free, and {quotaBreakdown.paidCount} will cost £{quotaBreakdown.paidCost.toFixed(2)} in Eclipse Credits (10p each).</>
               )}
               {' '}This may take a few minutes.
             </AlertDialogDescription>

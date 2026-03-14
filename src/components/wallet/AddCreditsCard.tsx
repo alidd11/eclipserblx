@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-const MIN_AMOUNT = 1;
+const MIN_AMOUNT = 5;
 const MAX_AMOUNT = 500;
 const suggestedAmounts = [5, 10, 25, 50, 100];
 
@@ -19,7 +19,7 @@ interface AddCreditsCardProps {
 }
 
 export function AddCreditsCard({ onPurchase, isLoggedIn, onLoginRedirect, isPurchasing = false }: AddCreditsCardProps) {
-  const [customAmount, setCustomAmount] = useState<string>('10');
+  const [customAmount, setCustomAmount] = useState<string>('5');
 
   const handlePurchase = (amount: number) => {
     if (!isLoggedIn) {

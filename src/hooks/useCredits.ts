@@ -97,8 +97,8 @@ export function useCredits() {
       throw new Error('You must be logged in to purchase credits');
     }
 
-    if (amount < 1 || amount > 500) {
-      throw new Error('Amount must be between £1 and £500');
+    if (amount < 5 || amount > 500) {
+      throw new Error('Amount must be between £5 and £500');
     }
 
     // Return signal to open the embedded payment modal
