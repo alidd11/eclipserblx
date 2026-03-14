@@ -14,6 +14,7 @@ function buildWorkerScript(): string {
   // Use a clean, readable script instead of line-by-line concatenation
   return `
 const OG_PROXY = "${OG_PROXY}";
+const ANON_KEY = "${ANON_KEY}";
 const SITE_URL = "${SITE}";
 const ORIGIN_URL = "${ORIGIN}";
 
