@@ -1765,6 +1765,25 @@ Deno.serve(async (req) => {
             ? categoryMap.get(product.suggestedCategoryId) 
             : undefined);
 
+          // ─── Quota check per product ──────────────────────────────────────────
+          const { data: bulkQuotaResult, error: bulkQuotaErr } = await supabaseAdmin
+            .rpc('use_import_quota', { p_store_id: store.id, p_user_id: user.id });
+
+          if (bulkQuotaErr) {
+            console.error('Quota check error in bulk:', bulkQuotaErr.message);
+            results.push({ url, success: false, error: 'Failed to check import quota' });
+            continue;
+          }
+
+          if (bulkQuotaResult === 'insufficient') {
+            results.push({ url, success: false, error: 'Import quota exceeded — add Eclipse Credits to continue' });
+            // Stop processing remaining URLs since they'll all fail too
+            for (const remainingUrl of safeUrls.slice(safeUrls.indexOf(url) + 1)) {
+              results.push({ url: remainingUrl, success: false, error: 'Import quota exceeded — add Eclipse Credits to continue' });
+            }
+            break;
+          }
+
           const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
           const randomSuffix = crypto.randomUUID().slice(0, 8);
           const uniqueSlug = `${productSlugForDb}-${randomSuffix}`;
