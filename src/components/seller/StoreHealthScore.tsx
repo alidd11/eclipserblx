@@ -162,7 +162,7 @@ export function StoreHealthScore() {
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Store Health</CardTitle>
+          <CardTitle className="text-base font-medium">Store Health</CardTitle>
           <Badge className={cn('gap-1', statusColors[overallStatus])}>
             <StatusIcon className="h-3 w-3" />
             {overallScore}%
