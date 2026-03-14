@@ -331,7 +331,7 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
               <span className="text-xs">
                 {quotaBreakdown.freeUsed > 0 && <span className="text-primary">{quotaBreakdown.freeUsed} free</span>}
                 {quotaBreakdown.freeUsed > 0 && ' + '}
-                <span className="font-medium">{quotaBreakdown.paidCount} × £1 credit</span>
+                <span className="font-medium">{quotaBreakdown.paidCount} × 10p (£{quotaBreakdown.paidCost.toFixed(2)})</span>
               </span>
             </div>
           )}
