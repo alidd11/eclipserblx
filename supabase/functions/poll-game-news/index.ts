@@ -268,8 +268,8 @@ Deno.serve(async (req) => {
             console.error(`[poll-game-news] Failed to post: ${result.error}`);
           }
 
-          // Delay between posts (90 seconds for branded re-sends)
-          await new Promise(r => setTimeout(r, 90000));
+          // Delay between posts to avoid Discord rate limits
+          await new Promise(r => setTimeout(r, 2000));
         }
 
         // Update last_checked_at
