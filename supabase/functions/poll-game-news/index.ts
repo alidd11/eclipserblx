@@ -91,7 +91,7 @@ function parseRSSXml(xml: string): FeedEntry[] {
   while ((match = itemRegex.exec(xml)) !== null) {
     const block = match[1];
     const title = extractTag(block, 'title');
-    const link = extractTag(block, 'link') || extractNamespacedLink(block) || extractTag(block, 'guid');
+    const link = extractTag(block, 'link') || extractBareLink(block) || extractNamespacedLink(block) || extractTag(block, 'guid');
     const desc = extractTag(block, 'description') || extractTag(block, 'content:encoded');
     const pubDate = extractTag(block, 'pubDate') || extractTag(block, 'dc:date');
     const thumb = extractMediaThumbnail(block) || extractEnclosure(block);
