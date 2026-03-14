@@ -1315,25 +1315,36 @@ Deno.serve(async (req) => {
       let sellerName: string | undefined;
 
       if (detectedPlatform === 'payhip') {
-        // Payhip collection pages are paginated — scrape all pages
+        // Payhip uses a non-standard page parameter (often offset-based, e.g. page=16/page=32)
+        // so we infer the step from pagination links on page 1.
         const baseCollectionUrl = scrapeTarget.split('?')[0];
-        const MAX_PAGES = 20;
+        const MAX_PAGES = 120;
         const seenProductUrls = new Set<string>();
+        let pageStep = 1;
 
-        for (let page = 1; page <= MAX_PAGES; page++) {
-          const pageUrl = page === 1 ? baseCollectionUrl : `${baseCollectionUrl}?page=${page}`;
-          console.log(`Scraping Payhip page ${page}: ${pageUrl}`);
+        for (let pageIndex = 0; pageIndex < MAX_PAGES; pageIndex++) {
+          const pageParam = pageIndex * pageStep;
+          const pageUrl = pageParam === 0 ? baseCollectionUrl : `${baseCollectionUrl}?page=${pageParam}`;
+          console.log(`Scraping Payhip page ${pageIndex + 1} (param=${pageParam || 1}, step=${pageStep}): ${pageUrl}`);
 
           const pageResult = await scrapeUrl(pageUrl, firecrawlApiKey, 1);
           if (!pageResult.success) {
-            if (page === 1) {
+            if (pageIndex === 0) {
               return new Response(
                 JSON.stringify({ success: false, error: pageResult.error || "Failed to scrape store" }),
                 { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
               );
             }
-            console.log(`Page ${page} failed, stopping pagination: ${pageResult.error}`);
+            console.log(`Page ${pageIndex + 1} failed, stopping pagination: ${pageResult.error}`);
             break;
+          }
+
+          if (pageIndex === 0) {
+            const detectedStep = detectPayhipPaginationStep(pageResult.links, pageResult.html);
+            if (detectedStep > 1) {
+              pageStep = detectedStep;
+              console.log(`Detected Payhip pagination step: ${pageStep}`);
+            }
           }
 
           const pageProducts = parsePayhipStore(pageResult.markdown!, storeUrl, pageResult.links);
@@ -1343,17 +1354,18 @@ Deno.serve(async (req) => {
 
           let newCount = 0;
           for (const p of pageProducts.products) {
-            if (!seenProductUrls.has(p.sourceUrl)) {
-              seenProductUrls.add(p.sourceUrl);
-              products.push(p);
+            const normalizedSourceUrl = normalizePayhipProductUrl(p.sourceUrl) || p.sourceUrl;
+            if (!seenProductUrls.has(normalizedSourceUrl)) {
+              seenProductUrls.add(normalizedSourceUrl);
+              products.push({ ...p, sourceUrl: normalizedSourceUrl });
               newCount++;
             }
           }
 
-          console.log(`Page ${page}: found ${pageProducts.products.length} products (${newCount} new, ${products.length} total)`);
+          console.log(`Page ${pageIndex + 1}: found ${pageProducts.products.length} products (${newCount} new, ${products.length} total)`);
 
           if (newCount === 0) {
-            console.log(`No new products on page ${page}, stopping pagination`);
+            console.log(`No new products on page ${pageIndex + 1}, stopping pagination`);
             break;
           }
         }
