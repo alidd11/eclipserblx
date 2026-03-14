@@ -187,6 +187,14 @@ export default function GameNewsFeeds() {
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, enabled }: { id: string; enabled: boolean }) => {
+      if (enabled) {
+        // Disable all other feeds first (only one allowed at a time)
+        const { error: disableErr } = await supabase
+          .from('game_news_feeds')
+          .update({ enabled: false, updated_at: new Date().toISOString() })
+          .neq('id', id);
+        if (disableErr) throw disableErr;
+      }
       const { error } = await supabase
         .from('game_news_feeds')
         .update({ enabled, updated_at: new Date().toISOString() })
@@ -231,14 +239,27 @@ export default function GameNewsFeeds() {
         deleteMutation.mutate(feed.id);
       }
     } else {
-      // Directly add with hardcoded channel ID
-      addMutation.mutate({
-        name: preset.name,
-        feed_url: preset.feed_url,
-        feed_type: preset.feed_type,
-        discord_channel_id: DEFAULT_CHANNEL_ID,
-        ping_role_id: '',
-        check_interval_minutes: 10,
+      // Check if another feed is already enabled
+      const enabledFeed = (feeds || []).find(f => f.enabled);
+      if (enabledFeed) {
+        toast.error('Only one game news feed can be active at a time. Disable the current one first, or it will be auto-disabled.');
+      }
+      // Directly add with hardcoded channel ID (added as enabled, disable others)
+      const disableOthers = async () => {
+        await supabase
+          .from('game_news_feeds')
+          .update({ enabled: false, updated_at: new Date().toISOString() })
+          .eq('enabled', true);
+      };
+      disableOthers().then(() => {
+        addMutation.mutate({
+          name: preset.name,
+          feed_url: preset.feed_url,
+          feed_type: preset.feed_type,
+          discord_channel_id: DEFAULT_CHANNEL_ID,
+          ping_role_id: '',
+          check_interval_minutes: 10,
+        });
       });
     }
   };
@@ -286,7 +307,7 @@ export default function GameNewsFeeds() {
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Popular Games</CardTitle>
             <CardDescription>
-              Toggle a game to start receiving its news in your Discord. You'll be asked which channel to post to.
+              Toggle a game to start receiving its news in your Discord. Only one feed can be active at a time.
             </CardDescription>
           </CardHeader>
           <CardContent>
