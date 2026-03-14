@@ -170,6 +170,22 @@ export const productImportApi = {
   },
 
   /**
+   * Get current import quota for the store
+   */
+  async getQuota(targetStoreId?: string): Promise<ImportQuotaResponse> {
+    const { data, error } = await supabase.functions.invoke('import-external-products', {
+      body: { action: 'quota', ...(targetStoreId && { targetStoreId }) },
+    });
+
+    if (error) {
+      console.error('Import quota error:', error);
+      return { success: false, error: await getFunctionErrorMessage(error) };
+    }
+
+    return data;
+  },
+
+  /**
    * Get supported platforms
    */
   getSupportedPlatforms() {
