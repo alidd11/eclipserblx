@@ -298,25 +298,25 @@ export default function GameNewsFeeds() {
                 return (
                   <div
                     key={preset.feed_url}
-                    className={`flex items-center justify-between gap-2 p-3 rounded-lg border transition-colors ${
+                    className={`flex flex-col gap-2 p-3 rounded-lg border transition-colors ${
                       isAdded && isEnabled
                         ? 'bg-primary/5 border-primary/20'
                         : 'bg-muted/30 border-border/50'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <span className="text-xl shrink-0">{preset.emoji}</span>
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm truncate">{preset.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{preset.description}</p>
+                    <div className="flex items-start gap-2.5">
+                      <span className="text-xl shrink-0 mt-0.5">{preset.emoji}</span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-sm">{preset.name}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2">{preset.description}</p>
                         {isAdded && existingFeed && existingFeed.last_checked_at && (
-                          <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                          <p className="text-xs text-muted-foreground mt-0.5">
                             Checked {formatDistanceToNow(new Date(existingFeed.last_checked_at), { addSuffix: true })}
                           </p>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-center justify-end gap-2">
                       {isAdded && existingFeed && (
                         <Switch
                           checked={isEnabled}
@@ -328,11 +328,12 @@ export default function GameNewsFeeds() {
                       {!isAdded && (
                         <Button
                           variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
+                          size="sm"
+                          className="h-8"
                           onClick={() => handlePresetToggle(preset, false)}
                         >
-                          <Plus className="h-4 w-4" />
+                          <Plus className="h-4 w-4 mr-1" />
+                          Enable
                         </Button>
                       )}
                       {isAdded && (
