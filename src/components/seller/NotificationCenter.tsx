@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bell, CheckCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
 
 const TYPE_STYLES: Record<string, string> = {
   order: 'text-blue-500 bg-blue-500/10',
@@ -61,8 +62,8 @@ export function NotificationCenter() {
         <ScrollArea className="h-[300px]">
           <div className="p-2">
             {isLoading ? (
-              <div className="flex items-center justify-center h-24">
-                <div className="animate-pulse text-muted-foreground text-sm">Loading...</div>
+              <div className="px-2">
+                <CardLoadingSkeleton rows={4} />
               </div>
             ) : notifications && notifications.length > 0 ? (
               <div className="space-y-1">
@@ -91,10 +92,7 @@ export function NotificationCenter() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-24 text-muted-foreground">
-                <CheckCircle className="h-8 w-8 mb-2 opacity-50" />
-                <p className="text-sm">No activity yet</p>
-              </div>
+              <CardEmptyState icon={CheckCircle} title="No activity yet" />
             )}
           </div>
         </ScrollArea>

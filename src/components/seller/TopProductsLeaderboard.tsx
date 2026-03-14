@@ -6,17 +6,17 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCurrency } from '@/hooks/useCurrency';
+import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
 
 export function TopProductsLeaderboard() {
   const { store } = useSellerStatus();
+  const { formatPrice: formatCurrency } = useCurrency();
 
   const { data: topProducts, isLoading } = useQuery({
     queryKey: ['seller-top-products', store?.id],
     queryFn: async () => {
       if (!store?.id) return [];
 
-      // Use seller_transactions to count sales per product — avoids large .in() arrays
-      // and naturally excludes refunded transactions
       const { data: salesData } = await supabase
         .from('seller_transactions')
         .select('order_item_id, description, net_amount')
@@ -26,7 +26,6 @@ export function TopProductsLeaderboard() {
 
       if (!salesData || salesData.length === 0) return [];
 
-      // Get products for this store (just what we need for display)
       const { data: products } = await supabase
         .from('products')
         .select('id, name, images, price')
@@ -36,7 +35,6 @@ export function TopProductsLeaderboard() {
 
       if (!products || products.length === 0) return [];
 
-      // Count sales per product from order_items
       const { data: orderItems } = await supabase
         .from('order_items')
         .select('product_id')
@@ -49,7 +47,6 @@ export function TopProductsLeaderboard() {
         }
       });
 
-      // Enrich and sort
       const enriched = products.map(p => ({
         ...p,
         sales_count: salesMap.get(p.id) || 0,
@@ -61,8 +58,6 @@ export function TopProductsLeaderboard() {
     enabled: !!store?.id,
     staleTime: 3 * 60 * 1000,
   });
-
-  const { formatPrice: formatCurrency } = useCurrency();
 
   return (
     <Card>
@@ -79,9 +74,7 @@ export function TopProductsLeaderboard() {
       </CardHeader>
       <CardContent className="space-y-2">
         {isLoading ? (
-          <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm animate-pulse">
-            Loading...
-          </div>
+          <CardLoadingSkeleton rows={4} />
         ) : topProducts && topProducts.length > 0 ? (
           topProducts.map((product, index) => {
             const imageUrl = (product.images as string[])?.[0];
@@ -109,9 +102,7 @@ export function TopProductsLeaderboard() {
             );
           })
         ) : (
-          <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">
-            No products yet
-          </div>
+          <CardEmptyState icon={TrendingUp} title="No products yet" subtitle="Products will rank here by sales" />
         )}
       </CardContent>
     </Card>

@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { Globe } from 'lucide-react';
+import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
 
 const COLORS = [
   'hsl(var(--primary))',
@@ -22,7 +23,6 @@ export function CustomerDemographics() {
     queryFn: async () => {
       if (!store?.id) return [];
 
-      // Get orders for this store with country info from page_visits or order metadata
       const { data: transactions } = await supabase
         .from('seller_transactions')
         .select('metadata')
@@ -32,14 +32,12 @@ export function CustomerDemographics() {
         .not('metadata', 'is', null)
         .limit(200);
 
-      // Count countries from transaction metadata
       const countryMap = new Map<string, number>();
       transactions?.forEach((t: any) => {
         const country = t.metadata?.country || t.metadata?.buyer_country || 'Unknown';
         countryMap.set(country, (countryMap.get(country) || 0) + 1);
       });
 
-      // If no country data, show store page visits instead
       if (countryMap.size === 0) {
         const { data: visits } = await supabase
           .from('page_visits')
@@ -56,7 +54,6 @@ export function CustomerDemographics() {
 
       if (countryMap.size === 0) return [];
 
-      // Sort by count, take top 5, group rest as "Other"
       const sorted = Array.from(countryMap.entries()).sort((a, b) => b[1] - a[1]);
       const top5 = sorted.slice(0, 5);
       const otherCount = sorted.slice(5).reduce((sum, [, count]) => sum + count, 0);
@@ -70,8 +67,6 @@ export function CustomerDemographics() {
     staleTime: 10 * 60 * 1000,
   });
 
-  
-
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -82,9 +77,7 @@ export function CustomerDemographics() {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm animate-pulse">
-            Loading...
-          </div>
+          <CardLoadingSkeleton rows={3} />
         ) : countryData && countryData.length > 0 ? (
           <RevolutDonutChart
             data={countryData}
@@ -95,9 +88,7 @@ export function CustomerDemographics() {
             colors={COLORS}
           />
         ) : (
-          <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">
-            No visitor data yet
-          </div>
+          <CardEmptyState icon={Globe} title="No visitor data yet" subtitle="Country data appears as your store gets traffic" />
         )}
       </CardContent>
     </Card>

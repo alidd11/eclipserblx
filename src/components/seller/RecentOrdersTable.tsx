@@ -7,11 +7,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ShoppingCart } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrency } from '@/hooks/useCurrency';
+import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
 
 export function RecentOrdersTable() {
   const { store } = useSellerStatus();
+  const { formatPrice: fmt } = useCurrency();
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ['seller-recent-orders-table', store?.id],
@@ -30,8 +31,6 @@ export function RecentOrdersTable() {
     enabled: !!store?.id,
     staleTime: 2 * 60 * 1000,
   });
-
-  const { formatPrice: fmt } = useCurrency();
 
   const statusVariant = (s: string) => {
     if (s === 'completed') return 'default' as const;
@@ -54,15 +53,8 @@ export function RecentOrdersTable() {
       </CardHeader>
       <CardContent className="p-0">
         {isLoading ? (
-          <div className="p-4 space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-center justify-between">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-5 w-16 rounded-full" />
-                <Skeleton className="h-3 w-20" />
-              </div>
-            ))}
+          <div className="p-4">
+            <CardLoadingSkeleton rows={3} />
           </div>
         ) : orders && orders.length > 0 ? (
           <>
@@ -121,11 +113,7 @@ export function RecentOrdersTable() {
             </div>
           </>
         ) : (
-          <div className="h-[160px] flex flex-col items-center justify-center text-muted-foreground">
-            <ShoppingCart className="h-8 w-8 mb-2 opacity-30" />
-            <p className="text-sm">No orders yet</p>
-            <p className="text-xs mt-1">Orders will appear here as they come in</p>
-          </div>
+          <CardEmptyState icon={ShoppingCart} title="No orders yet" subtitle="Orders will appear here as they come in" />
         )}
       </CardContent>
     </Card>
