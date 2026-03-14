@@ -7,12 +7,14 @@ const corsHeaders = {
 
 function buildWorkerScript(): string {
   const OG_PROXY = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/og-proxy";
+  const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsbmJlcmd3amZybWdramhyYmtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NDY1NjIsImV4cCI6MjA4MzIyMjU2Mn0.4jHxaV7Mjlw2RbjDz9W8B07-SR_8Z7IeTTXMu8RUZ20";
   const SITE = "https://eclipserblx.com";
   const ORIGIN = "https://roleplay-hub-shop.lovable.app";
 
   // Use a clean, readable script instead of line-by-line concatenation
   return `
 const OG_PROXY = "${OG_PROXY}";
+const ANON_KEY = "${ANON_KEY}";
 const SITE_URL = "${SITE}";
 const ORIGIN_URL = "${ORIGIN}";
 
@@ -58,10 +60,12 @@ function isTestingTool(ua) {
 async function serveOg(path, hostname) {
   var ogUrl = OG_PROXY + "?path=" + encodeURIComponent(path);
   if (hostname) ogUrl += "&hostname=" + encodeURIComponent(hostname);
-  var res = await fetch(ogUrl);
+  var res = await fetch(ogUrl, {
+    headers: { "apikey": ANON_KEY, "Authorization": "Bearer " + ANON_KEY }
+  });
   if (!res.ok) return null;
   var html = await res.text();
-  if (!html || html.length < 100) return null;
+  if (!html || html.length < 100 || !html.includes("og:title")) return null;
   return new Response(html, {
     status: 200,
     headers: {
