@@ -337,7 +337,7 @@ export default function GameNewsFeeds() {
           <CardContent>
             <div className="grid gap-3">
               {POPULAR_GAMES.map((preset) => {
-                const isAdded = addedFeedUrls.has(preset.feed_url);
+                const isAdded = addedFeedUrls.has(preset.feed_url) || !!getFeedForPreset(preset);
                 const existingFeed = getFeedForPreset(preset);
                 const isEnabled = existingFeed?.enabled ?? false;
 
