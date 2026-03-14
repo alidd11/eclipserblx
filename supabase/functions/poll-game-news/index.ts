@@ -64,18 +64,34 @@ function parseRSSXml(xml: string): FeedEntry[] {
 }
 
 /**
- * Parse JSON feeds (e.g., Rockstar Newswire)
+ * Parse JSON feeds (e.g., Rockstar Newswire, Fortnite API)
  */
-function parseJsonFeed(data: unknown): FeedEntry[] {
+function parseJsonFeed(data: unknown, feedUrl: string): FeedEntry[] {
   const entries: FeedEntry[] = [];
+  const root = data as Record<string, unknown>;
 
-  // Handle array of posts
+  // Handle Fortnite API format: { data: { br: { motds: [...] } } }
+  if (root?.data && (root.data as Record<string, unknown>)?.br) {
+    const br = (root.data as Record<string, unknown>).br as Record<string, unknown>;
+    const motds = (br.motds ?? []) as Array<Record<string, unknown>>;
+    for (const motd of motds.slice(0, 5)) {
+      const title = (motd.title ?? '') as string;
+      const id = (motd.id ?? '') as string;
+      if (!title || !id) continue;
+      entries.push({
+        title,
+        url: `https://www.fortnite.com/news?id=${id}`,
+        description: ((motd.body ?? '') as string).substring(0, 200) || undefined,
+        thumbnail: (motd.tileImage ?? motd.image ?? '') as string || undefined,
+      });
+    }
+    return entries;
+  }
+
+  // Handle array of posts (generic JSON feeds)
   const posts = Array.isArray(data)
     ? data
-    : (data as Record<string, unknown>)?.items ??
-      (data as Record<string, unknown>)?.posts ??
-      (data as Record<string, unknown>)?.data ??
-      [];
+    : root?.items ?? root?.posts ?? root?.data ?? [];
 
   if (!Array.isArray(posts)) return entries;
 
