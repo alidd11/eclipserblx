@@ -108,6 +108,14 @@ function extractAtomLink(block: string): string | null {
   return m ? m[1] : null;
 }
 
+/**
+ * Extract links with namespace prefixes (e.g. <a10:link href="..."/>)
+ */
+function extractNamespacedLink(block: string): string | null {
+  const m = block.match(/<[a-z0-9]+:link[^>]*href=["']([^"']+)["'][^>]*\/?>/i);
+  return m ? m[1] : null;
+}
+
 function extractMediaThumbnail(block: string): string | null {
   const m = block.match(/<media:thumbnail[^>]*url=["']([^"']+)["']/i)
     || block.match(/<media:content[^>]*url=["']([^"']+)["']/i);
