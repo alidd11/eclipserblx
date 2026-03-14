@@ -3,108 +3,87 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function cfApi(url: string, token: string, options: RequestInit = {}) {
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-      ...(options.headers as Record<string, string> || {}),
-    },
-  });
-  const text = await res.text();
-  try { return JSON.parse(text); } catch { return { raw: text.slice(0, 500), status: res.status }; }
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const cfToken = Deno.env.get("CLOUDFLARE_API_TOKEN")!;
   const cfZoneId = Deno.env.get("CLOUDFLARE_ZONE_ID")!;
+  const accountId = "01db536699f78a0bde1b3355a3e6dab0";
   const results: Record<string, any> = {};
 
-  // Step 1: Find the redirect ruleset and remove the Bot OG Redirect rule
-  // Keep only /share/ and www redirects
-  const rulesets = await cfApi(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets`, cfToken);
-  const redirectRuleset = rulesets.result?.find((r: any) => r.phase === "http_request_dynamic_redirect");
-  
-  if (redirectRuleset) {
-    const full = await cfApi(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${redirectRuleset.id}`, cfToken);
-    const existingRules = full.result?.rules || [];
-    
-    // Remove the "Eclipse Bot OG Redirect" rule but keep the others
-    const filteredRules = existingRules.filter((r: any) => r.description !== "Eclipse Bot OG Redirect");
-    
-    results.removedBotRedirect = {
-      before: existingRules.map((r: any) => r.description),
-      after: filteredRules.map((r: any) => r.description),
-    };
+  // Check ALL workers in the account
+  const workers = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts`, {
+    headers: { Authorization: `Bearer ${cfToken}` },
+  });
+  const workersText = await workers.text();
+  try {
+    const data = JSON.parse(workersText);
+    results.allWorkers = data.result?.map((w: any) => ({
+      id: w.id,
+      created: w.created_on,
+      modified: w.modified_on,
+      handlers: w.handlers,
+      routes: w.routes,
+    }));
+  } catch { results.allWorkers = { status: workers.status, raw: workersText.slice(0, 500) }; }
 
-    // Update the ruleset
-    const updateRes = await cfApi(
-      `https://api.cloudflare.com/client/v4/zones/${cfZoneId}/rulesets/${redirectRuleset.id}`,
-      cfToken,
-      {
-        method: "PUT",
-        body: JSON.stringify({
-          rules: filteredRules.map((r: any) => ({
-            action: r.action,
-            action_parameters: r.action_parameters,
-            expression: r.expression,
-            description: r.description,
-            enabled: r.enabled,
-          })),
-        }),
-      }
-    );
-    results.updateResult = { success: updateRes.success, errors: updateRes.errors };
-  }
+  // Check worker custom domains  
+  const domains = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/domains`, {
+    headers: { Authorization: `Bearer ${cfToken}` },
+  });
+  const domainsText = await domains.text();
+  try { results.workerDomains = JSON.parse(domainsText).result; } 
+  catch { results.workerDomains = { status: domains.status }; }
 
-  // Step 2: Wait for propagation
-  await new Promise(r => setTimeout(r, 5000));
+  // Check if there are any Workers for Platforms namespaces
+  const namespaces = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/dispatch/namespaces`, {
+    headers: { Authorization: `Bearer ${cfToken}` },
+  });
+  const nsText = await namespaces.text();
+  try { results.namespaces = JSON.parse(nsText); } 
+  catch { results.namespaces = { status: namespaces.status }; }
 
-  // Step 3: Test bot request
-  const botRes = await fetch("https://eclipserblx.com/products/13", {
+  // Check token permissions
+  const verify = await fetch("https://api.cloudflare.com/client/v4/user/tokens/verify", {
+    headers: { Authorization: `Bearer ${cfToken}` },
+  });
+  const verifyText = await verify.text();
+  try { results.tokenVerify = JSON.parse(verifyText); } 
+  catch { results.tokenVerify = { status: verify.status }; }
+
+  // Try to get zone Workers configuration
+  const zoneWorkers = await fetch(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}/workers/filters`, {
+    headers: { Authorization: `Bearer ${cfToken}` },
+  });
+  const zwText = await zoneWorkers.text();
+  try { results.workerFilters = JSON.parse(zwText); } 
+  catch { results.workerFilters = { status: zoneWorkers.status, raw: zwText.slice(0, 300) }; }
+
+  // Check if the zone has Workers enabled
+  const zoneFeatures = await fetch(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}/available_plans`, {
+    headers: { Authorization: `Bearer ${cfToken}` },
+  });
+  const zfText = await zoneFeatures.text();
+  try { 
+    const plans = JSON.parse(zfText);
+    results.currentPlan = plans.result?.find((p: any) => p.is_subscribed); 
+  } catch { results.currentPlan = { status: zoneFeatures.status }; }
+
+  // Test the Worker directly via workers.dev with the /products/13 path 
+  // to confirm it works  
+  const wdRes = await fetch("https://eclipse-og-proxy.mqddfqd5gs.workers.dev/products/13", {
     headers: { "User-Agent": "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)" },
     redirect: "manual",
   });
-  const botBody = await botRes.text();
-  const botHeaders: Record<string, string> = {};
-  botRes.headers.forEach((v, k) => { botHeaders[k] = v; });
-  results.botTest = {
-    status: botRes.status,
-    xWorker: botHeaders["x-eclipse-worker"] || null,
-    location: botHeaders["location"] || null,
-    hasProductOg: botBody.includes("Volvo") || botBody.includes("og:type"),
-    first300: botBody.slice(0, 300),
-  };
-
-  // Step 4: Test human request
-  const humanRes = await fetch("https://eclipserblx.com/products/13", {
-    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0" },
-    redirect: "manual",
-  });
-  const humanBody = await humanRes.text();
-  const humanHeaders: Record<string, string> = {};
-  humanRes.headers.forEach((v, k) => { humanHeaders[k] = v; });
-  results.humanTest = {
-    status: humanRes.status,
-    xWorker: humanHeaders["x-eclipse-worker"] || null,
-    first200: humanBody.slice(0, 200),
-  };
-
-  // Step 5: Test invalid path (should get 404 from worker)
-  const notFoundRes = await fetch("https://eclipserblx.com/nonexistent-abc-xyz", {
-    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0" },
-    redirect: "manual",
-  });
-  const notFoundBody = await notFoundRes.text();
-  const nfHeaders: Record<string, string> = {};
-  notFoundRes.headers.forEach((v, k) => { nfHeaders[k] = v; });
-  results.notFoundTest = {
-    status: notFoundRes.status,
-    xWorker: nfHeaders["x-eclipse-worker"] || null,
-    first200: notFoundBody.slice(0, 200),
+  const wdBody = await wdRes.text();
+  const wdHeaders: Record<string, string> = {};
+  wdRes.headers.forEach((v, k) => { wdHeaders[k] = v; });
+  results.workersDevTest = {
+    status: wdRes.status,
+    xWorker: wdHeaders["x-eclipse-worker"] || null,
+    hasVolvo: wdBody.includes("Volvo"),
+    contentType: wdHeaders["content-type"],
+    first400: wdBody.slice(0, 400),
   };
 
   return new Response(JSON.stringify(results, null, 2), {
