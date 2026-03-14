@@ -1292,7 +1292,7 @@ Deno.serve(async (req) => {
           images: product.images.length > 0 ? product.images : [],
           store_id: store.id,
           is_seller_product: true,
-          is_active: true,
+          is_active: false,
           category_id: product.suggestedCategoryId || null,
           moderation_status: 'approved',
         })
