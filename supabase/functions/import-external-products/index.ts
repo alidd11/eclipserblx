@@ -556,6 +556,52 @@ const PAYHIP_CTA_PATTERNS = /^(purchase\s*now|buy\s*now|add\s*to\s*cart|get\s*it
 // Skip sections/headings that are store banners, not product names
 const PAYHIP_BANNER_PATTERNS = /^(best\s*deals?|latest\s*products?|terms\s*of\s*service|more\s*videos|share|ww2?\s*products?|5,?\d*\+?\s*orders?|.*exclusive|.*terms|featured|collections?|all\s*products?|about|contact|faq|support)$/i;
 
+function normalizePayhipProductUrl(input: string): string | null {
+  if (!input) return null;
+
+  try {
+    const parsed = new URL(input.startsWith('http') ? input : `https://payhip.com${input.startsWith('/') ? '' : '/'}${input}`);
+    if (!parsed.hostname.endsWith('payhip.com')) return null;
+
+    const productMatch = parsed.pathname.match(/^\/b\/([A-Za-z0-9]+)/i);
+    if (!productMatch) return null;
+
+    return `https://payhip.com/b/${productMatch[1]}`;
+  } catch {
+    return null;
+  }
+}
+
+function detectPayhipPaginationStep(links?: string[], html?: string): number {
+  const values = new Set<number>();
+
+  const collect = (raw: string) => {
+    if (!raw) return;
+
+    const decoded = raw.replace(/&amp;/g, '&');
+    const matches = decoded.matchAll(/[?&]page=(\d+)/gi);
+    for (const match of matches) {
+      const value = Number(match[1]);
+      if (Number.isFinite(value) && value > 0) values.add(value);
+    }
+  };
+
+  for (const link of links || []) collect(link);
+  if (html) collect(html);
+
+  const sorted = [...values].sort((a, b) => a - b);
+  if (sorted.length === 0) return 1;
+  if (sorted.length === 1) return sorted[0] > 1 ? sorted[0] : 1;
+
+  let step = Number.POSITIVE_INFINITY;
+  for (let i = 1; i < sorted.length; i++) {
+    const diff = sorted[i] - sorted[i - 1];
+    if (diff > 0 && diff < step) step = diff;
+  }
+
+  return Number.isFinite(step) && step > 0 ? step : Math.max(1, sorted[0]);
+}
+
 function parsePayhipStore(markdown: string, storeUrl: string, links?: string[]): { products: ExternalProduct[]; sellerName?: string } {
   // Extract seller name from URL path
   let sellerName: string | undefined;
@@ -564,24 +610,25 @@ function parsePayhipStore(markdown: string, storeUrl: string, links?: string[]):
     sellerName = storeSlugMatch[1];
   }
 
-  // Collect all /b/ product URLs from the links array (these are in page order)
+  // Collect all product URLs from links + markdown and normalize them
   const productUrls: string[] = [];
+  const seenProductUrls = new Set<string>();
+
+  const addProductUrl = (raw: string) => {
+    const normalized = normalizePayhipProductUrl(raw);
+    if (!normalized || seenProductUrls.has(normalized)) return;
+    seenProductUrls.add(normalized);
+    productUrls.push(normalized);
+  };
+
   if (links) {
-    for (const link of links) {
-      if (/payhip\.com\/b\/[A-Za-z0-9]+$/.test(link) && !productUrls.includes(link)) {
-        productUrls.push(link);
-      }
-    }
+    for (const link of links) addProductUrl(link);
   }
 
-  // Also find /b/ URLs from markdown
-  const mdLinkRegex = /\(?(https:\/\/payhip\.com\/b\/[A-Za-z0-9]+)\)?/g;
+  const mdLinkRegex = /\((https?:\/\/[^\s)]+)\)|\bhttps?:\/\/[^\s)]+/g;
   let mdMatch;
   while ((mdMatch = mdLinkRegex.exec(markdown)) !== null) {
-    const url = mdMatch[1];
-    if (!productUrls.includes(url)) {
-      productUrls.push(url);
-    }
+    addProductUrl(mdMatch[1] || mdMatch[0]);
   }
 
   console.log(`Found ${productUrls.length} product URLs from links/markdown`);
