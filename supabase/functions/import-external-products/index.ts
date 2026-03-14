@@ -1580,6 +1580,27 @@ Deno.serve(async (req) => {
         : undefined);
       product.suggestedCategoryId = finalCategoryId;
 
+      // ─── Quota check: deduct free import or credit ──────────────────────────
+      const { data: quotaResult, error: quotaErr } = await supabaseAdmin
+        .rpc('use_import_quota', { p_store_id: store.id, p_user_id: user.id });
+
+      if (quotaErr) {
+        console.error('Quota check error:', quotaErr.message);
+        return new Response(
+          JSON.stringify({ success: false, error: 'Failed to check import quota', retryable: true }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (quotaResult === 'insufficient') {
+        return new Response(
+          JSON.stringify({ success: false, error: 'You have used all free imports this month. Please add Eclipse Credits to continue importing.', retryable: false, quotaExceeded: true }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log(`Import quota result: ${quotaResult} (${quotaResult === 'free' ? 'free tier' : 'credit deducted'})`);
+
       // Auto-create product record with robust unique slug
       const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
       const randomSuffix = crypto.randomUUID().slice(0, 8);
