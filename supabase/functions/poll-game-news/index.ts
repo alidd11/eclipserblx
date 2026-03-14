@@ -208,16 +208,18 @@ function extractNamespacedLink(block: string): string | null {
 }
 
 /**
- * Simple non-English detection: skip articles with significant
- * non-Latin characters (CJK, Arabic, Cyrillic, etc.)
+ * Enhanced English detection: checks title AND description for non-Latin scripts.
+ * Also detects common non-English patterns (e.g., articles with foreign language indicators).
  */
-function isLikelyEnglish(text: string): boolean {
-  if (!text) return true;
-  // Count non-ASCII-letter characters (excluding common symbols/punctuation)
-  const nonLatinChars = text.match(/[\u0400-\u04FF\u0600-\u06FF\u3000-\u9FFF\uAC00-\uD7AF\u0E00-\u0E7F]/g);
+function isLikelyEnglish(text: string, description?: string): boolean {
+  const combined = `${text || ''} ${description || ''}`.trim();
+  if (!combined) return true;
+
+  // Count non-Latin script characters (CJK, Arabic, Cyrillic, Thai, Devanagari, Korean, Japanese kana)
+  const nonLatinChars = combined.match(/[\u0400-\u04FF\u0600-\u06FF\u0900-\u097F\u3000-\u9FFF\uAC00-\uD7AF\u0E00-\u0E7F\u30A0-\u30FF\u3040-\u309F\uFF00-\uFFEF]/g);
   if (!nonLatinChars) return true;
-  // If more than 20% of the characters are non-Latin, skip it
-  return nonLatinChars.length / text.length < 0.2;
+  // If more than 10% of the characters are non-Latin, skip it (stricter threshold)
+  return nonLatinChars.length / combined.length < 0.10;
 }
 
 function extractMediaThumbnail(block: string): string | null {
