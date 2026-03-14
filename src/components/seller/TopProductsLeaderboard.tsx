@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export function TopProductsLeaderboard() {
   const { store } = useSellerStatus();
@@ -58,10 +59,10 @@ export function TopProductsLeaderboard() {
       return enriched.slice(0, 5);
     },
     enabled: !!store?.id,
+    staleTime: 3 * 60 * 1000,
   });
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(amount);
+  const { formatPrice: formatCurrency } = useCurrency();
 
   return (
     <Card>

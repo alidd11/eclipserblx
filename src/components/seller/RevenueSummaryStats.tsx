@@ -6,6 +6,7 @@ import { PercentChange } from '@/components/shared/dashboard';
 import { DollarSign, TrendingUp, ShoppingCart, Wallet, BarChart3 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export function RevenueSummaryStats() {
   const { store } = useSellerStatus();
@@ -68,7 +69,7 @@ export function RevenueSummaryStats() {
     staleTime: 2 * 60 * 1000, // 2 min cache
   });
 
-  const fmt = (v: number) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(v);
+  const { formatPrice: fmt } = useCurrency();
 
   const items = [
     { label: "Today's Revenue", value: fmt(stats?.todayRevenue || 0), icon: DollarSign, accent: 'text-primary bg-primary/10' },

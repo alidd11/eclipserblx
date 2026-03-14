@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
@@ -35,6 +34,7 @@ export function NotificationCenter() {
       return data || [];
     },
     enabled: !!user?.id,
+    staleTime: 60 * 1000,
   });
 
   const unreadCount = notifications?.filter(n => !n.read_at).length || 0;

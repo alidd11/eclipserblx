@@ -8,10 +8,10 @@ import { Globe } from 'lucide-react';
 const COLORS = [
   'hsl(var(--primary))',
   'hsl(var(--muted-foreground))',
-  '#22c55e',
-  '#eab308',
-  '#f97316',
-  '#8b5cf6',
+  'hsl(142, 76%, 36%)',
+  'hsl(45, 93%, 47%)',
+  'hsl(24, 95%, 53%)',
+  'hsl(263, 70%, 50%)',
 ];
 
 export function CustomerDemographics() {
@@ -67,6 +67,7 @@ export function CustomerDemographics() {
       return result;
     },
     enabled: !!store?.id,
+    staleTime: 10 * 60 * 1000,
   });
 
   

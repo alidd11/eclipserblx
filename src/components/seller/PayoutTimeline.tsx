@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { DollarSign, CheckCircle, Clock, ArrowRight, Wallet } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export function PayoutTimeline() {
   const { store } = useSellerStatus();
@@ -23,10 +24,10 @@ export function PayoutTimeline() {
       return data || [];
     },
     enabled: !!store?.id,
+    staleTime: 5 * 60 * 1000,
   });
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(amount);
+  const { formatPrice: formatCurrency } = useCurrency();
 
   const statusConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
     completed: { icon: CheckCircle, color: 'text-green-500', label: 'Completed' },

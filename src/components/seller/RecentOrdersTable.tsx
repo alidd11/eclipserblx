@@ -8,6 +8,7 @@ import { ShoppingCart } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export function RecentOrdersTable() {
   const { store } = useSellerStatus();
@@ -30,7 +31,7 @@ export function RecentOrdersTable() {
     staleTime: 2 * 60 * 1000,
   });
 
-  const fmt = (v: number) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(v);
+  const { formatPrice: fmt } = useCurrency();
 
   const statusVariant = (s: string) => {
     if (s === 'completed') return 'default' as const;

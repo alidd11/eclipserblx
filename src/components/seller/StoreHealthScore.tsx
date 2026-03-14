@@ -82,6 +82,7 @@ export function StoreHealthScore() {
       };
     },
     enabled: !!store?.id,
+    staleTime: 5 * 60 * 1000,
   });
 
   const getScoreStatus = (score: number): 'good' | 'warning' | 'critical' => {
@@ -147,7 +148,7 @@ export function StoreHealthScore() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Store Health</CardTitle>
+          <CardTitle className="text-base font-medium">Store Health</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-32 flex items-center justify-center">
@@ -162,7 +163,7 @@ export function StoreHealthScore() {
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Store Health</CardTitle>
+          <CardTitle className="text-base font-medium">Store Health</CardTitle>
           <Badge className={cn('gap-1', statusColors[overallStatus])}>
             <StatusIcon className="h-3 w-3" />
             {overallScore}%
