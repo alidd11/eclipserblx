@@ -15,13 +15,11 @@ import { RevenueSummaryStats } from '@/components/seller/RevenueSummaryStats';
 import { ProductHealthDonut } from '@/components/seller/ProductHealthDonut';
 import { RecentOrdersTable } from '@/components/seller/RecentOrdersTable';
 import { TosBanner, NonCompliantBanner, PendingReviewBanner } from '@/components/seller/banners';
-import { DashboardCardSkeleton, StatRowSkeleton } from '@/components/seller/DashboardSkeletons';
-import { motion } from 'framer-motion';
+import { DashboardCardSkeleton } from '@/components/seller/DashboardSkeletons';
 import { 
-  Package, ShoppingCart, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone
+  Package, ShoppingCart, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone, ChevronDown
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown } from 'lucide-react';
 
 // Lazy-load below-fold heavy widgets
 const TopProductsLeaderboard = lazy(() => import('@/components/seller/TopProductsLeaderboard').then(m => ({ default: m.TopProductsLeaderboard })));
@@ -29,7 +27,6 @@ const NotificationCenter = lazy(() => import('@/components/seller/NotificationCe
 const StoreHealthScore = lazy(() => import('@/components/seller/StoreHealthScore').then(m => ({ default: m.StoreHealthScore })));
 const CustomerDemographics = lazy(() => import('@/components/seller/CustomerDemographics').then(m => ({ default: m.CustomerDemographics })));
 const PayoutTimeline = lazy(() => import('@/components/seller/PayoutTimeline').then(m => ({ default: m.PayoutTimeline })));
-
 const SalesVelocityInsights = lazy(() => import('@/components/seller/SalesVelocityInsights').then(m => ({ default: m.SalesVelocityInsights })));
 const ProductPerformanceComparison = lazy(() => import('@/components/seller/ProductPerformanceComparison').then(m => ({ default: m.ProductPerformanceComparison })));
 
@@ -64,7 +61,6 @@ export default function SellerDashboard() {
     queryFn: async () => {
       if (!store?.id) return { total: 0, pending: 0, approved: 0, nonCompliant: 0 };
 
-      // Fetch products and bot product IDs in parallel
       const { data: products, error } = await supabase
         .from('products')
         .select('id, moderation_status, description, asset_file_url')
@@ -90,6 +86,7 @@ export default function SellerDashboard() {
       return { total: products.length, pending, approved, nonCompliant };
     },
     enabled: !!store?.id,
+    staleTime: 5 * 60 * 1000,
   });
 
   const quickActions = [
@@ -127,12 +124,7 @@ export default function SellerDashboard() {
             <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2">
               {quickActions.map((action) => (
                 <Link key={action.href} to={action.href}>
-                  <motion.div
-                    whileHover={{ y: -2, scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                    className="flex flex-col items-center gap-2 p-3.5 rounded-lg bg-muted/50 hover:bg-accent transition-colors text-center group cursor-pointer"
-                  >
+                  <div className="flex flex-col items-center gap-2 p-3.5 rounded-lg bg-muted/50 hover:bg-accent active:scale-[0.97] transition-all text-center group cursor-pointer">
                     <div className="p-2.5 rounded-xl bg-card border border-border group-hover:border-primary/30 transition-colors">
                       <action.icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
@@ -140,7 +132,7 @@ export default function SellerDashboard() {
                       <span className="text-xs font-medium block">{action.title}</span>
                       <span className="text-[10px] text-muted-foreground hidden sm:block">{action.description}</span>
                     </div>
-                  </motion.div>
+                  </div>
                 </Link>
               ))}
             </div>
@@ -158,7 +150,7 @@ export default function SellerDashboard() {
         {/* ── Recent Orders Table ── */}
         <RecentOrdersTable />
 
-        {/* ── Top Products + Activity Feed ── */}
+        {/* ── Top Products + Velocity + Activity ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <Suspense fallback={<DashboardCardSkeleton />}>
             <TopProductsLeaderboard />
@@ -171,7 +163,7 @@ export default function SellerDashboard() {
           </Suspense>
         </div>
 
-        {/* ── Store Health + Demographics + Payout + Preview ── */}
+        {/* ── Store Health + Demographics + Payout ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           <Suspense fallback={<DashboardCardSkeleton />}>
             <StoreHealthScore />
