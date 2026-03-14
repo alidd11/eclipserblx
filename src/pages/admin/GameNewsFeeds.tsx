@@ -694,7 +694,8 @@ export default function GameNewsFeeds() {
               </div>
             ) : (() => {
               const customFeeds = (feeds || []).filter(
-                f => !POPULAR_GAMES.some(p => p.feed_url === f.feed_url || p.name === f.name)
+                f => !POPULAR_GAMES.some(p => p.feed_url === f.feed_url || p.name === f.name) &&
+                     !FREE_GAME_FEEDS.some(p => p.feed_url === f.feed_url || p.name === f.name)
               );
               if (!customFeeds.length) {
                 return (
