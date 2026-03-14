@@ -229,17 +229,24 @@ Deno.serve(async (req) => {
 
         // Post new entries (oldest first so newest appears last in Discord)
         for (const entry of newEntries.reverse()) {
+          const feedColor = feed.embed_color || 0x00b4d8;
+          const feedIcon = feed.icon_url || undefined;
+
           const embed: DiscordEmbed = {
             title: entry.title.substring(0, 256),
             url: entry.url,
             description: entry.description || undefined,
-            color: 0x00b4d8, // Cyan accent
-            footer: { text: `📡 ${feed.name}` },
+            color: feedColor,
+            author: feedIcon ? { name: feed.name, icon_url: feedIcon } : { name: feed.name },
+            footer: { text: `📡 ${feed.name} • Game & Dev News` },
             timestamp: entry.published ? new Date(entry.published).toISOString() : new Date().toISOString(),
           };
 
+          // Always include an image: use article thumbnail or fallback to feed icon
           if (entry.thumbnail && entry.thumbnail.startsWith('http')) {
             embed.image = { url: entry.thumbnail };
+          } else if (feedIcon) {
+            embed.thumbnail = { url: feedIcon };
           }
 
           const content = feed.ping_role_id ? `<@&${feed.ping_role_id}>` : undefined;
