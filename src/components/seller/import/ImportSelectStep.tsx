@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
@@ -18,11 +19,14 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   Search, Image, Globe, ArrowLeft, ArrowRight, ImageOff,
-  ChevronDown, Tag, EyeOff, Zap,
+  ChevronDown, Tag, EyeOff, Zap, Coins, AlertCircle,
 } from 'lucide-react';
-import { ExternalProduct } from '@/lib/api/productImport';
+import { ExternalProduct, ImportQuota } from '@/lib/api/productImport';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { productImportApi } from '@/lib/api/productImport';
+import { useActiveStore } from '@/contexts/ActiveStoreContext';
+import { Link } from 'react-router-dom';
 
 interface ImportSelectStepProps {
   products: ExternalProduct[];
