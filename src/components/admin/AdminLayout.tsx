@@ -68,8 +68,10 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
     body.style.overflowX = 'hidden';
 
     return () => {
-      const themeBg = 'hsl(var(--background))';
-      html.style.backgroundColor = prev.html.backgroundColor || themeBg;
+      const themeBg = getComputedStyle(document.documentElement)
+        .getPropertyValue('--background').trim();
+      const themeBgColor = themeBg ? `hsl(${themeBg})` : '';
+      html.style.backgroundColor = prev.html.backgroundColor || themeBgColor;
       html.style.overflow = prev.html.overflow;
       html.style.overflowX = prev.html.overflowX;
       body.style.backgroundColor = prev.body.backgroundColor || themeBg;
