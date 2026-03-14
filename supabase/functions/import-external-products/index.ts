@@ -1371,7 +1371,7 @@ Deno.serve(async (req) => {
 
             const batchResults = await Promise.all(
               batchUrls.map(async ({ pageIndex, url }) => {
-                const result = await scrapeUrl(url, firecrawlApiKey, 1);
+                const result = await scrapeUrl(url, firecrawlApiKey, 1, 2000);
                 return { pageIndex, url, result };
               })
             );
