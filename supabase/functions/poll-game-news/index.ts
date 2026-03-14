@@ -243,9 +243,16 @@ async function buildEmbed(
   }
 
   // Build description with a "Read more" link
-  const descText = entry.description
-    ? `${entry.description}…\n\n**[Read full article →](${entry.url})**`
+  const cleanDesc = entry.description?.replace(/\s+/g, ' ').trim();
+  const descText = cleanDesc && cleanDesc.length > 10
+    ? `${cleanDesc}${cleanDesc.length >= 195 ? '…' : ''}\n\n**[Read full article →](${entry.url})**`
     : `**[Read full article →](${entry.url})**`;
+
+  // Safe timestamp parsing - avoid Invalid Date crashes
+  const parsedDate = entry.published ? new Date(entry.published) : null;
+  const validTimestamp = parsedDate && !isNaN(parsedDate.getTime())
+    ? parsedDate.toISOString()
+    : new Date().toISOString();
 
   const embed: DiscordEmbed = {
     title: entry.title.substring(0, 256),
@@ -261,9 +268,7 @@ async function buildEmbed(
       text: feed.name,
       icon_url: feedIcon,
     },
-    timestamp: entry.published
-      ? new Date(entry.published).toISOString()
-      : new Date().toISOString(),
+    timestamp: validTimestamp,
   };
 
   // Large banner image (always try to include one)
@@ -280,6 +285,15 @@ async function buildEmbed(
 Deno.serve(async (req) => {
   const cors = handleCors(req);
   if (cors) return cors;
+
+  // Parse optional config from request body
+  let delayMs = 2000;
+  try {
+    const body = await req.json();
+    if (body?.delay_ms && typeof body.delay_ms === 'number') {
+      delayMs = Math.min(body.delay_ms, 90000); // cap at 90s
+    }
+  } catch { /* no body or invalid JSON, use defaults */ }
 
   try {
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -360,7 +374,7 @@ Deno.serve(async (req) => {
         ];
         const newEntries = recentEntries
           .filter(e => !existingUrls.has(e.url))
-          .filter(e => !SKIP_PATTERNS.some(p => p.test(e.title)));
+          .filter(e => !SKIP_PATTERNS.some(p => p.test(e.title) || p.test(e.description || '')));
 
         // Post new entries (oldest first so newest appears last in Discord)
         for (const entry of newEntries.reverse()) {
@@ -390,7 +404,7 @@ Deno.serve(async (req) => {
           }
 
           // Delay between posts to avoid Discord rate limits
-          await new Promise(r => setTimeout(r, 2000));
+          await new Promise(r => setTimeout(r, delayMs));
         }
 
         // Update last_checked_at
