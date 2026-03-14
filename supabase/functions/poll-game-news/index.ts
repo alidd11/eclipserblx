@@ -91,7 +91,7 @@ function parseRSSXml(xml: string): FeedEntry[] {
   while ((match = itemRegex.exec(xml)) !== null) {
     const block = match[1];
     const title = extractTag(block, 'title');
-    const link = extractTag(block, 'link') || extractNamespacedLink(block) || extractTag(block, 'guid');
+    const link = extractTag(block, 'link') || extractBareLink(block) || extractNamespacedLink(block) || extractTag(block, 'guid');
     const desc = extractTag(block, 'description') || extractTag(block, 'content:encoded');
     const pubDate = extractTag(block, 'pubDate') || extractTag(block, 'dc:date');
     const thumb = extractMediaThumbnail(block) || extractEnclosure(block);
@@ -191,11 +191,33 @@ function extractAtomLink(block: string): string | null {
 }
 
 /**
+ * Extract bare <link> tags without closing tag (e.g. EA RSS: <link>https://...)
+ * Matches a URL immediately following a <link> tag, even if unclosed
+ */
+function extractBareLink(block: string): string | null {
+  const m = block.match(/<link[^>]*>\s*(https?:\/\/[^\s<]+)/i);
+  return m ? m[1].trim() : null;
+}
+
+/**
  * Extract links with namespace prefixes (e.g. <a10:link href="..."/>
  */
 function extractNamespacedLink(block: string): string | null {
   const m = block.match(/<[a-z0-9]+:link[^>]*href=["']([^"']+)["'][^>]*\/?>/i);
   return m ? m[1] : null;
+}
+
+/**
+ * Simple non-English detection: skip articles with significant
+ * non-Latin characters (CJK, Arabic, Cyrillic, etc.)
+ */
+function isLikelyEnglish(text: string): boolean {
+  if (!text) return true;
+  // Count non-ASCII-letter characters (excluding common symbols/punctuation)
+  const nonLatinChars = text.match(/[\u0400-\u04FF\u0600-\u06FF\u3000-\u9FFF\uAC00-\uD7AF\u0E00-\u0E7F]/g);
+  if (!nonLatinChars) return true;
+  // If more than 20% of the characters are non-Latin, skip it
+  return nonLatinChars.length / text.length < 0.2;
 }
 
 function extractMediaThumbnail(block: string): string | null {
@@ -271,12 +293,12 @@ async function buildEmbed(
     timestamp: validTimestamp,
   };
 
-  // Large banner image (always try to include one)
+  // Large banner image — always try to include one
+  // For feeds with no OG tags (like EA), use the feed icon as a large image
   if (imageUrl) {
     embed.image = { url: imageUrl };
   } else if (feedIcon) {
-    // Last resort: show feed icon as thumbnail on the right
-    embed.thumbnail = { url: feedIcon };
+    embed.image = { url: feedIcon };
   }
 
   return embed;
@@ -374,8 +396,8 @@ Deno.serve(async (req) => {
         ];
         const newEntries = recentEntries
           .filter(e => !existingUrls.has(e.url))
-          .filter(e => !SKIP_PATTERNS.some(p => p.test(e.title) || p.test(e.description || '')));
-
+          .filter(e => !SKIP_PATTERNS.some(p => p.test(e.title) || p.test(e.description || '')))
+          .filter(e => isLikelyEnglish(e.title));
         // Post new entries (oldest first so newest appears last in Discord)
         for (const entry of newEntries.reverse()) {
           const embed = await buildEmbed(entry, {
