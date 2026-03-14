@@ -231,27 +231,13 @@ export default function GameNewsFeeds() {
         deleteMutation.mutate(feed.id);
       }
     } else {
-      // Check if another feed is already enabled
-      const enabledFeed = (feeds || []).find(f => f.enabled);
-      if (enabledFeed) {
-        toast.error('Only one game news feed can be active at a time. Disable the current one first, or it will be auto-disabled.');
-      }
-      // Directly add with hardcoded channel ID (added as enabled, disable others)
-      const disableOthers = async () => {
-        await supabase
-          .from('game_news_feeds')
-          .update({ enabled: false, updated_at: new Date().toISOString() })
-          .eq('enabled', true);
-      };
-      disableOthers().then(() => {
-        addMutation.mutate({
-          name: preset.name,
-          feed_url: preset.feed_url,
-          feed_type: preset.feed_type,
-          discord_channel_id: DEFAULT_CHANNEL_ID,
-          ping_role_id: '',
-          check_interval_minutes: 10,
-        });
+      addMutation.mutate({
+        name: preset.name,
+        feed_url: preset.feed_url,
+        feed_type: preset.feed_type,
+        discord_channel_id: DEFAULT_CHANNEL_ID,
+        ping_role_id: '',
+        check_interval_minutes: 10,
       });
     }
   };
