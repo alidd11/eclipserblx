@@ -388,7 +388,7 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
             <AlertDialogDescription>
               This will import {selectedProducts.size} products{downloadImages ? ' including downloading all images' : ''}.
               {quotaBreakdown && quotaBreakdown.paidCount > 0 && (
-                <> {quotaBreakdown.freeUsed} will be free, and {quotaBreakdown.paidCount} will cost {quotaBreakdown.paidCount} Eclipse Credit{quotaBreakdown.paidCount !== 1 ? 's' : ''}.</>
+                <> {quotaBreakdown.freeUsed} will be free, and {quotaBreakdown.paidCount} will cost £{quotaBreakdown.paidCost.toFixed(2)} in Eclipse Credits (10p each).</>
               )}
               {' '}This may take a few minutes.
             </AlertDialogDescription>
