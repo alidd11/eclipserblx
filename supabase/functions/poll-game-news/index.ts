@@ -48,14 +48,30 @@ async function fetchOgImage(url: string): Promise<string | null> {
     }
     reader.cancel();
 
-    // Try og:image first, then twitter:image
-    const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
-      || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
-    if (ogMatch?.[1]) return ogMatch[1];
+    // Try og:image first, then twitter:image (multiple attribute orderings)
+    const ogPatterns = [
+      /<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i,
+      /<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i,
+      /<meta[^>]*property='og:image'[^>]*content='([^']+)'/i,
+    ];
+    for (const pat of ogPatterns) {
+      const m = html.match(pat);
+      if (m?.[1] && m[1].startsWith('http')) return m[1];
+    }
 
-    const twMatch = html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i)
-      || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i);
-    if (twMatch?.[1]) return twMatch[1];
+    const twPatterns = [
+      /<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i,
+      /<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i,
+      /<meta[^>]*name=["']twitter:image:src["'][^>]*content=["']([^"']+)["']/i,
+    ];
+    for (const pat of twPatterns) {
+      const m = html.match(pat);
+      if (m?.[1] && m[1].startsWith('http')) return m[1];
+    }
+
+    // Last resort: look for any large image in first <img> tags
+    const imgMatch = html.match(/<img[^>]*src=["'](https?:\/\/[^"']+)["'][^>]*>/i);
+    if (imgMatch?.[1]) return imgMatch[1];
 
     return null;
   } catch {
