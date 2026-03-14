@@ -345,40 +345,69 @@ export default function GameNewsFeeds() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center justify-end gap-2">
-                      {isAdded && existingFeed && (
-                        <Switch
-                          checked={isEnabled}
-                          onCheckedChange={(enabled) =>
-                            toggleMutation.mutate({ id: existingFeed.id, enabled })
-                          }
+                    {isAdded && existingFeed && (
+                      <div className="flex items-center gap-1.5">
+                        <Input
+                          placeholder="Ping Role ID"
+                          value={feedPingInputs[existingFeed.id] ?? existingFeed.ping_role_id ?? ''}
+                          onChange={(e) => setFeedPingInputs(prev => ({ ...prev, [existingFeed.id]: e.target.value }))}
+                          className="h-7 text-xs flex-1"
                         />
-                      )}
-                      {!isAdded && (
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-8"
-                          onClick={() => handlePresetToggle(preset, false)}
+                          className="h-7 text-xs px-2 shrink-0"
+                          disabled={
+                            updateFeedPingRoleMutation.isPending ||
+                            (feedPingInputs[existingFeed.id] ?? existingFeed.ping_role_id ?? '') === (existingFeed.ping_role_id ?? '')
+                          }
+                          onClick={() => updateFeedPingRoleMutation.mutate({ id: existingFeed.id, roleId: feedPingInputs[existingFeed.id] ?? '' })}
                         >
-                          <Plus className="h-4 w-4 mr-1" />
-                          Enable
+                          Save
                         </Button>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between gap-2">
+                      {isAdded && existingFeed && existingFeed.ping_role_id && (
+                        <p className="text-[10px] text-muted-foreground truncate">
+                          Pings: <code className="bg-muted px-1 rounded">&lt;@&amp;{existingFeed.ping_role_id}&gt;</code>
+                        </p>
                       )}
-                      {isAdded && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                          onClick={() => {
-                            if (confirm(`Remove ${preset.name} feed?`)) {
-                              handlePresetToggle(preset, true);
+                      <div className="flex items-center gap-2 ml-auto">
+                        {isAdded && existingFeed && (
+                          <Switch
+                            checked={isEnabled}
+                            onCheckedChange={(enabled) =>
+                              toggleMutation.mutate({ id: existingFeed.id, enabled })
                             }
-                          }}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
+                          />
+                        )}
+                        {!isAdded && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8"
+                            onClick={() => handlePresetToggle(preset, false)}
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Enable
+                          </Button>
+                        )}
+                        {isAdded && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => {
+                              if (confirm(`Remove ${preset.name} feed?`)) {
+                                handlePresetToggle(preset, true);
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
