@@ -57,9 +57,11 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
       body: { backgroundColor: body.style.backgroundColor, overflow: body.style.overflow, overflowX: body.style.overflowX },
     };
 
-    const chatBg = 'hsl(var(--card))';
-    html.style.backgroundColor = chatBg;
-    body.style.backgroundColor = chatBg;
+    const chatBg = getComputedStyle(document.documentElement)
+      .getPropertyValue('--card').trim();
+    const chatBgColor = chatBg ? `hsl(${chatBg})` : '';
+    html.style.backgroundColor = chatBgColor;
+    body.style.backgroundColor = chatBgColor;
     html.style.overflow = 'hidden';
     html.style.overflowX = 'hidden';
     body.style.overflow = 'hidden';
