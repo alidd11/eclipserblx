@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
 
     const embed = buildGameEmbed(game);
     const result = await sendBotMessage(FREE_GAMES_CHANNEL_ID, {
-      content: `<@&${FREE_GAMES_PING_ROLE_ID}> 🎉 **Free game alert!**`,
+      content: `🎉 **Free Game Alert!**\n<@&${FREE_GAMES_PING_ROLE_ID}>`,
       embeds: [embed],
       allowed_mentions: {
         roles: [FREE_GAMES_PING_ROLE_ID],
