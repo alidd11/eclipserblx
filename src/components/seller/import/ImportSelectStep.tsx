@@ -372,7 +372,7 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
             Import {selectedProducts.size > 0 ? `(${selectedProducts.size})` : ''}
             {quotaBreakdown && quotaBreakdown.paidCount > 0 && quotaBreakdown.canAfford && (
               <Badge variant="secondary" className="text-[10px] px-1.5 py-0 ml-1">
-                {quotaBreakdown.paidCount} credit{quotaBreakdown.paidCount !== 1 ? 's' : ''}
+                £{quotaBreakdown.paidCost.toFixed(2)}
               </Badge>
             )}
             <ArrowRight className="h-4 w-4" />
