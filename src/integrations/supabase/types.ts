@@ -2824,6 +2824,80 @@ export type Database = {
           },
         ]
       }
+      game_news_feeds: {
+        Row: {
+          check_interval_minutes: number
+          created_at: string
+          discord_channel_id: string
+          enabled: boolean
+          feed_type: string
+          feed_url: string
+          id: string
+          last_checked_at: string | null
+          name: string
+          ping_role_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          check_interval_minutes?: number
+          created_at?: string
+          discord_channel_id: string
+          enabled?: boolean
+          feed_type?: string
+          feed_url: string
+          id?: string
+          last_checked_at?: string | null
+          name: string
+          ping_role_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          check_interval_minutes?: number
+          created_at?: string
+          discord_channel_id?: string
+          enabled?: boolean
+          feed_type?: string
+          feed_url?: string
+          id?: string
+          last_checked_at?: string | null
+          name?: string
+          ping_role_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      game_news_posted: {
+        Row: {
+          article_title: string | null
+          article_url: string
+          feed_id: string
+          id: string
+          posted_at: string
+        }
+        Insert: {
+          article_title?: string | null
+          article_url: string
+          feed_id: string
+          id?: string
+          posted_at?: string
+        }
+        Update: {
+          article_title?: string | null
+          article_url?: string
+          feed_id?: string
+          id?: string
+          posted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_news_posted_feed_id_fkey"
+            columns: ["feed_id"]
+            isOneToOne: false
+            referencedRelation: "game_news_feeds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       global_ban_logs: {
         Row: {
           action: string
