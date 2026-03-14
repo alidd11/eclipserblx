@@ -351,7 +351,16 @@ Deno.serve(async (req) => {
           .in('article_url', urls);
 
         const existingUrls = new Set((existing || []).map(e => e.article_url));
-        const newEntries = recentEntries.filter(e => !existingUrls.has(e.url));
+
+        // Filter out financial/earnings reports (boring corporate stuff)
+        const SKIP_PATTERNS = [
+          /fiscal\s*year/i, /quarterly\s*results/i, /Q[1-4]\s*FY/i,
+          /earnings\s*report/i, /financial\s*results/i, /reports?\s*Q[1-4]/i,
+          /investor\s*relations/i, /annual\s*report/i,
+        ];
+        const newEntries = recentEntries
+          .filter(e => !existingUrls.has(e.url))
+          .filter(e => !SKIP_PATTERNS.some(p => p.test(e.title)));
 
         // Post new entries (oldest first so newest appears last in Discord)
         for (const entry of newEntries.reverse()) {
