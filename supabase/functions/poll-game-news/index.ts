@@ -286,7 +286,15 @@ Deno.serve(async (req) => {
   const cors = handleCors(req);
   if (cors) return cors;
 
-  try {
+    // Parse optional config from request body
+    let delayMs = 2000;
+    try {
+      const body = await req.json();
+      if (body?.delay_ms && typeof body.delay_ms === 'number') {
+        delayMs = Math.min(body.delay_ms, 90000); // cap at 90s
+      }
+    } catch { /* no body or invalid JSON, use defaults */ }
+
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Get all enabled feeds
