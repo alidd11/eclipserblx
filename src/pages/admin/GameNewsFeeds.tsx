@@ -135,10 +135,10 @@ export default function GameNewsFeeds() {
     }
   }, [feeds]);
 
-  // Check which presets are already added (by feed_url match)
+  // Check which presets are already added (by feed_url or name match)
   const addedFeedUrls = new Set((feeds || []).map(f => f.feed_url));
   const getFeedForPreset = (preset: typeof POPULAR_GAMES[0]) =>
-    (feeds || []).find(f => f.feed_url === preset.feed_url);
+    (feeds || []).find(f => f.feed_url === preset.feed_url || f.name === preset.name);
 
   const addMutation = useMutation({
     mutationFn: async (feed: {
