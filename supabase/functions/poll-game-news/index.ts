@@ -208,16 +208,18 @@ function extractNamespacedLink(block: string): string | null {
 }
 
 /**
- * Simple non-English detection: skip articles with significant
- * non-Latin characters (CJK, Arabic, Cyrillic, etc.)
+ * Enhanced English detection: checks title AND description for non-Latin scripts.
+ * Also detects common non-English patterns (e.g., articles with foreign language indicators).
  */
-function isLikelyEnglish(text: string): boolean {
-  if (!text) return true;
-  // Count non-ASCII-letter characters (excluding common symbols/punctuation)
-  const nonLatinChars = text.match(/[\u0400-\u04FF\u0600-\u06FF\u3000-\u9FFF\uAC00-\uD7AF\u0E00-\u0E7F]/g);
+function isLikelyEnglish(text: string, description?: string): boolean {
+  const combined = `${text || ''} ${description || ''}`.trim();
+  if (!combined) return true;
+
+  // Count non-Latin script characters (CJK, Arabic, Cyrillic, Thai, Devanagari, Korean, Japanese kana)
+  const nonLatinChars = combined.match(/[\u0400-\u04FF\u0600-\u06FF\u0900-\u097F\u3000-\u9FFF\uAC00-\uD7AF\u0E00-\u0E7F\u30A0-\u30FF\u3040-\u309F\uFF00-\uFFEF]/g);
   if (!nonLatinChars) return true;
-  // If more than 20% of the characters are non-Latin, skip it
-  return nonLatinChars.length / text.length < 0.2;
+  // If more than 10% of the characters are non-Latin, skip it (stricter threshold)
+  return nonLatinChars.length / combined.length < 0.10;
 }
 
 function extractMediaThumbnail(block: string): string | null {
@@ -392,16 +394,60 @@ Deno.serve(async (req) => {
 
         const existingUrls = new Set((existing || []).map(e => e.article_url));
 
-        // Filter out financial/earnings reports (boring corporate stuff)
+        // Filter out non-gaming content: corporate, financial, HR, legal, sustainability
         const SKIP_PATTERNS = [
+          // Financial / corporate
           /fiscal\s*year/i, /quarterly\s*results/i, /Q[1-4]\s*FY/i,
-          /earnings\s*report/i, /financial\s*results/i, /reports?\s*Q[1-4]/i,
-          /investor\s*relations/i, /annual\s*report/i,
+          /earnings\s*(report|call|release)/i, /financial\s*results/i, /reports?\s*Q[1-4]/i,
+          /investor\s*relations/i, /annual\s*report/i, /shareholder/i,
+          /revenue\s*(growth|decline|increase)/i, /stock\s*price/i, /SEC\s*filing/i,
+          /net\s*(income|loss|revenue)/i, /GAAP/i, /operating\s*margin/i,
+          // HR / corporate affairs
+          /board\s*of\s*directors/i, /chief\s*(executive|financial|operating)\s*officer/i,
+          /appoints?\s*(new\s*)?(CEO|CFO|COO|CTO|CMO|VP)/i, /leadership\s*change/i,
+          /corporate\s*governance/i, /diversity\s*(report|initiative)/i,
+          /ESG\s*(report|initiative)/i, /sustainability\s*report/i,
+          /privacy\s*policy\s*update/i, /terms\s*of\s*service\s*update/i,
+          // Press releases that aren't game news
+          /press\s*release/i, /media\s*advisory/i, /for\s*immediate\s*release/i,
+          /earnings\s*per\s*share/i, /market\s*cap/i,
+          // Job postings
+          /now\s*hiring/i, /job\s*opening/i, /career\s*opportunit/i, /we['']re\s*hiring/i,
         ];
+
+        // Keywords that indicate actual gaming/dev content worth posting
+        const GAMING_KEYWORDS = [
+          /update/i, /patch/i, /season\s*\d/i, /chapter\s*\d/i, /DLC/i,
+          /trailer/i, /gameplay/i, /release\s*date/i, /launch/i, /beta/i,
+          /event/i, /tournament/i, /esports?/i, /competitive/i,
+          /new\s*(map|weapon|character|hero|skin|mode|feature)/i,
+          /hotfix/i, /maintenance/i, /downtime/i, /server/i,
+          /bug\s*fix/i, /balance\s*(change|update)/i, /nerf/i, /buff/i,
+          /battle\s*pass/i, /item\s*shop/i, /cosmetic/i,
+          /game\s*(play|mode|update|pass)/i, /expansion/i, /sequel/i,
+          /announce/i, /reveal/i, /tease/i, /leak/i, /rumor/i,
+          /free\s*(to\s*play|weekend|update|content)/i,
+          /co-?op/i, /multiplayer/i, /single\s*player/i, /open\s*world/i,
+          /mod(ding|s)?/i, /workshop/i, /community/i, /developer/i, /devlog/i,
+          /engine/i, /unity/i, /unreal/i, /godot/i, /roblox/i, /studio/i,
+          /API/i, /SDK/i, /plugin/i, /script/i, /release\s*note/i, /changelog/i,
+          /GitHub/i, /open\s*source/i, /repository/i, /Copilot/i, /Actions/i,
+          /security\s*(advisory|update|patch|vuln)/i,
+        ];
+
         const newEntries = recentEntries
           .filter(e => !existingUrls.has(e.url))
           .filter(e => !SKIP_PATTERNS.some(p => p.test(e.title) || p.test(e.description || '')))
-          .filter(e => isLikelyEnglish(e.title));
+          .filter(e => isLikelyEnglish(e.title, e.description))
+          .filter(e => {
+            // Check if the article matches at least one gaming/dev keyword
+            const text = `${e.title} ${e.description || ''}`;
+            const hasGamingKeyword = GAMING_KEYWORDS.some(p => p.test(text));
+            if (!hasGamingKeyword) {
+              console.log(`[poll-game-news] Skipping non-gaming article: "${e.title}"`);
+            }
+            return hasGamingKeyword;
+          });
         // Post new entries (oldest first so newest appears last in Discord)
         for (const entry of newEntries.reverse()) {
           const embed = await buildEmbed(entry, {
