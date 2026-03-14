@@ -191,11 +191,33 @@ function extractAtomLink(block: string): string | null {
 }
 
 /**
+ * Extract bare <link> tags without closing tag (e.g. EA RSS: <link>https://...)
+ * Matches a URL immediately following a <link> tag, even if unclosed
+ */
+function extractBareLink(block: string): string | null {
+  const m = block.match(/<link[^>]*>\s*(https?:\/\/[^\s<]+)/i);
+  return m ? m[1].trim() : null;
+}
+
+/**
  * Extract links with namespace prefixes (e.g. <a10:link href="..."/>
  */
 function extractNamespacedLink(block: string): string | null {
   const m = block.match(/<[a-z0-9]+:link[^>]*href=["']([^"']+)["'][^>]*\/?>/i);
   return m ? m[1] : null;
+}
+
+/**
+ * Simple non-English detection: skip articles with significant
+ * non-Latin characters (CJK, Arabic, Cyrillic, etc.)
+ */
+function isLikelyEnglish(text: string): boolean {
+  if (!text) return true;
+  // Count non-ASCII-letter characters (excluding common symbols/punctuation)
+  const nonLatinChars = text.match(/[\u0400-\u04FF\u0600-\u06FF\u3000-\u9FFF\uAC00-\uD7AF\u0E00-\u0E7F]/g);
+  if (!nonLatinChars) return true;
+  // If more than 20% of the characters are non-Latin, skip it
+  return nonLatinChars.length / text.length < 0.2;
 }
 
 function extractMediaThumbnail(block: string): string | null {
