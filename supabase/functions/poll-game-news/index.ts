@@ -380,7 +380,7 @@ Deno.serve(async (req) => {
         }
 
         // Only process the latest 5 entries to avoid spam on first run
-        const recentEntries = entries.slice(0, 5);
+        const recentEntries = entries.slice(0, maxPerFeed);
 
         // Check which have already been posted
         const urls = recentEntries.map(e => e.url);
