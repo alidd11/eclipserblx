@@ -326,6 +326,7 @@ export default function GameNewsFeeds() {
       check_interval_minutes: 10,
       icon_url: (selectedPreset as any).icon_url || null,
       embed_color: (selectedPreset as any).embed_color || null,
+      free_only: isFreeGamePreset(selectedPreset),
     });
   };
 
