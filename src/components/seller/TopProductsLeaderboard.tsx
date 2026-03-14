@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TrendingUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function TopProductsLeaderboard() {
   const { store } = useSellerStatus();
@@ -65,10 +66,15 @@ export function TopProductsLeaderboard() {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium flex items-center gap-2">
-          <TrendingUp className="h-4 w-4" />
-          Top Products
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base font-medium flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Top Products
+          </CardTitle>
+          <Link to="/seller/products" className="text-xs text-primary hover:underline">
+            View All
+          </Link>
+        </div>
       </CardHeader>
       <CardContent className="space-y-2">
         {isLoading ? (

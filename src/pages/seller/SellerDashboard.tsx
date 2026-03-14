@@ -18,8 +18,10 @@ import { TosBanner, NonCompliantBanner, PendingReviewBanner } from '@/components
 import { DashboardCardSkeleton, StatRowSkeleton } from '@/components/seller/DashboardSkeletons';
 import { motion } from 'framer-motion';
 import { 
-  Package, ShoppingCart, Plus, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone
+  Package, ShoppingCart, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone
 } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
 
 // Lazy-load below-fold heavy widgets
 const TopProductsLeaderboard = lazy(() => import('@/components/seller/TopProductsLeaderboard').then(m => ({ default: m.TopProductsLeaderboard })));
@@ -27,7 +29,7 @@ const NotificationCenter = lazy(() => import('@/components/seller/NotificationCe
 const StoreHealthScore = lazy(() => import('@/components/seller/StoreHealthScore').then(m => ({ default: m.StoreHealthScore })));
 const CustomerDemographics = lazy(() => import('@/components/seller/CustomerDemographics').then(m => ({ default: m.CustomerDemographics })));
 const PayoutTimeline = lazy(() => import('@/components/seller/PayoutTimeline').then(m => ({ default: m.PayoutTimeline })));
-const StorePreviewCard = lazy(() => import('@/components/seller/StorePreviewCard').then(m => ({ default: m.StorePreviewCard })));
+
 const SalesVelocityInsights = lazy(() => import('@/components/seller/SalesVelocityInsights').then(m => ({ default: m.SalesVelocityInsights })));
 const ProductPerformanceComparison = lazy(() => import('@/components/seller/ProductPerformanceComparison').then(m => ({ default: m.ProductPerformanceComparison })));
 
@@ -182,14 +184,20 @@ export default function SellerDashboard() {
           </Suspense>
         </div>
 
-        {/* ── Product Comparison ── */}
-        <Suspense fallback={<DashboardCardSkeleton />}>
-          <ProductPerformanceComparison />
-        </Suspense>
-
-        <Suspense fallback={<DashboardCardSkeleton />}>
-          <StorePreviewCard />
-        </Suspense>
+        {/* ── Product Comparison (collapsible) ── */}
+        <Collapsible>
+          <Card>
+            <CollapsibleTrigger className="flex items-center justify-between w-full p-4">
+              <span className="text-base font-medium">Product Comparison</span>
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <Suspense fallback={<DashboardCardSkeleton />}>
+                <ProductPerformanceComparison />
+              </Suspense>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
 
         {/* ── Pending Review Banner ── */}
         <PendingReviewBanner count={productStats?.pending || 0} />
