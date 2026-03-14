@@ -41,6 +41,8 @@ interface GameNewsFeed {
   created_at: string;
 }
 
+const DEFAULT_CHANNEL_ID = '1482392729563693292';
+
 // Popular game presets with known RSS/news feed URLs
 const POPULAR_GAMES = [
   {
