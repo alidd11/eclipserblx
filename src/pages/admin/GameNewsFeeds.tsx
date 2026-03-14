@@ -43,6 +43,7 @@ interface GameNewsFeed {
 
 const DEFAULT_CHANNEL_ID = '1482392729563693292';
 const FREE_GAMES_CHANNEL_ID = '1482478628062367926';
+const FREE_GAMES_PING_ROLE_ID = '1482480973726744660';
 
 // Popular game presets with verified working RSS/JSON feed URLs
 const POPULAR_GAMES = [
