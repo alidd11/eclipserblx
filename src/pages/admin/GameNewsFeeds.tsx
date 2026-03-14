@@ -110,43 +110,43 @@ const POPULAR_GAMES = [
   },
 ];
 
-// Free Game Alert presets — separate category
+// Free Game Alert presets — from reputable storefronts and publishers
 const FREE_GAME_FEEDS = [
   {
-    name: 'Free Game Findings (Reddit)',
-    emoji: '🆓',
-    feed_url: 'https://www.reddit.com/r/FreeGameFindings/.rss',
-    feed_type: 'rss',
-    description: 'Community-curated free games from Epic, Steam, GOG & more',
-    icon_url: 'https://styles.redditmedia.com/t5_32ud3/styles/communityIcon_nxfc5a9a38i51.png',
-    embed_color: 0xFF4500,
-  },
-  {
-    name: 'Game Deals (Reddit)',
-    emoji: '💰',
-    feed_url: 'https://www.reddit.com/r/GameDeals/.rss',
-    feed_type: 'rss',
-    description: 'Best gaming deals, bundles, and free game giveaways',
-    icon_url: 'https://styles.redditmedia.com/t5_2qhta/styles/communityIcon_riz3j7oqsu961.png',
-    embed_color: 0x00C853,
-  },
-  {
-    name: 'Indie Game Bundles',
-    emoji: '🎁',
-    feed_url: 'https://www.indiegamebundles.com/feed/',
-    feed_type: 'rss',
-    description: 'Free indie games, bundles, and giveaway alerts',
-    icon_url: 'https://www.indiegamebundles.com/wp-content/uploads/2020/01/cropped-logo-192x192.png',
-    embed_color: 0x9C27B0,
-  },
-  {
-    name: 'Epic Games Free (gg.deals)',
+    name: 'Epic Games Store',
     emoji: '🏪',
-    feed_url: 'https://gg.deals/news/feed/',
+    feed_url: 'https://store.epicgames.com/en-US/free-games',
+    feed_type: 'epic_free',
+    description: 'Weekly free games from the Epic Games Store',
+    icon_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Epic_Games_logo.svg/1200px-Epic_Games_logo.svg.png',
+    embed_color: 0x2A2A2A,
+  },
+  {
+    name: 'Steam Free Promotions',
+    emoji: '🎮',
+    feed_url: 'https://store.steampowered.com/feeds/news/app/593110',
     feed_type: 'rss',
-    description: 'Game deals news including Epic free games and Steam sales',
-    icon_url: 'https://gg.deals/apple-touch-icon.png',
-    embed_color: 0x2196F3,
+    description: 'Steam official news including free weekend and free-to-keep promotions',
+    icon_url: 'https://store.steampowered.com/favicon.ico',
+    embed_color: 0x1B2838,
+  },
+  {
+    name: 'GOG Free Games',
+    emoji: '🎁',
+    feed_url: 'https://www.gog.com/en/feed',
+    feed_type: 'rss',
+    description: 'GOG.com giveaways and DRM-free game deals',
+    icon_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/GOG.com_logo.svg/1200px-GOG.com_logo.svg.png',
+    embed_color: 0x86328A,
+  },
+  {
+    name: 'Humble Bundle',
+    emoji: '📦',
+    feed_url: 'https://blog.humblebundle.com/feed/',
+    feed_type: 'rss',
+    description: 'Humble Bundle free games, bundles, and charity giveaways',
+    icon_url: 'https://humblebundle-a.akamaihd.net/static/hashed/47e474980e03bb6c0709e0b1a27f17a02a336e3e.png',
+    embed_color: 0xCC2929,
   },
 ];
 
