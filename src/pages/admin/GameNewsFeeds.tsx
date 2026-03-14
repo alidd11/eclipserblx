@@ -307,7 +307,7 @@ export default function GameNewsFeeds() {
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Popular Games</CardTitle>
             <CardDescription>
-              Toggle a game to start receiving its news in your Discord. You'll be asked which channel to post to.
+              Toggle a game to start receiving its news in your Discord. Only one feed can be active at a time.
             </CardDescription>
           </CardHeader>
           <CardContent>
