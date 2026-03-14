@@ -293,12 +293,12 @@ async function buildEmbed(
     timestamp: validTimestamp,
   };
 
-  // Large banner image (always try to include one)
+  // Large banner image — always try to include one
+  // For feeds with no OG tags (like EA), use the feed icon as a large image
   if (imageUrl) {
     embed.image = { url: imageUrl };
   } else if (feedIcon) {
-    // Last resort: show feed icon as thumbnail on the right
-    embed.thumbnail = { url: feedIcon };
+    embed.image = { url: feedIcon };
   }
 
   return embed;
