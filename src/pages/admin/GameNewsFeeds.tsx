@@ -329,9 +329,9 @@ export default function GameNewsFeeds() {
         {/* Popular Games Grid */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Popular Games</CardTitle>
+            <CardTitle className="text-base">Game & Dev Feeds</CardTitle>
             <CardDescription>
-              Toggle games on/off to auto-post updates to your Discord channel.
+              Toggle feeds on/off to auto-post updates to your Discord channel.
             </CardDescription>
           </CardHeader>
           <CardContent>
