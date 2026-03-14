@@ -307,6 +307,46 @@ export default function GameNewsFeeds() {
           </div>
         </div>
 
+        {/* Global Settings */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Settings
+            </CardTitle>
+            <CardDescription>
+              Configure the ping role for all game news updates.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex-1">
+                <Label className="text-xs text-muted-foreground mb-1.5 block">Ping Role ID (optional)</Label>
+                <Input
+                  placeholder="Role ID to mention on new articles"
+                  value={globalPingRoleInput}
+                  onChange={(e) => setGlobalPingRoleInput(e.target.value)}
+                  className="h-9"
+                />
+              </div>
+              <Button
+                size="sm"
+                className="self-end h-9"
+                onClick={() => updateGlobalPingRoleMutation.mutate(globalPingRoleInput)}
+                disabled={updateGlobalPingRoleMutation.isPending || globalPingRoleInput === globalPingRoleId}
+              >
+                {updateGlobalPingRoleMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+                Save
+              </Button>
+            </div>
+            {globalPingRoleId && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Currently pinging: <code className="bg-muted px-1 rounded text-[11px]">&lt;@&amp;{globalPingRoleId}&gt;</code>
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Popular Games Grid */}
         <Card>
           <CardHeader className="pb-3">
