@@ -1255,9 +1255,17 @@ Deno.serve(async (req) => {
         }
       }
 
-      console.log(`Listing products from ${detectedPlatform}: ${storeUrl}`);
+      // For Payhip, redirect to the /collection/all page which has clean structured product listings
+      let scrapeTarget = storeUrl;
+      if (detectedPlatform === 'payhip' && !storeUrl.includes('/collection/')) {
+        // Strip trailing slash and append /collection/all
+        scrapeTarget = storeUrl.replace(/\/+$/, '') + '/collection/all';
+        console.log(`Redirecting Payhip scrape to collection page: ${scrapeTarget}`);
+      }
 
-      const scrapeResult = await scrapeUrl(storeUrl, firecrawlApiKey);
+      console.log(`Listing products from ${detectedPlatform}: ${scrapeTarget}`);
+
+      const scrapeResult = await scrapeUrl(scrapeTarget, firecrawlApiKey);
       if (!scrapeResult.success) {
         return new Response(
           JSON.stringify({ success: false, error: scrapeResult.error || "Failed to scrape store" }),
