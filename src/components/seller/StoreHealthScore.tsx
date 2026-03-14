@@ -4,16 +4,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { 
-  TrendingUp, 
-  Star, 
-  Clock, 
+import {
+  TrendingUp,
+  Star,
+  Clock,
   MessageCircle,
   CheckCircle,
   AlertTriangle,
   XCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CardLoadingSkeleton } from './DashboardPlaceholders';
 
 interface HealthMetric {
   name: string;
@@ -31,15 +32,12 @@ export function StoreHealthScore() {
     queryFn: async () => {
       if (!store?.id) return null;
 
-      // Get active product count (head-only, no large payload)
       const { count: productCount } = await supabase
         .from('products')
         .select('id', { count: 'exact', head: true })
         .eq('store_id', store.id)
         .eq('is_active', true);
 
-      // Get review stats via aggregate — count + avg rating
-      // Use store_id-scoped product subquery to avoid large .in() arrays
       const { data: reviewStats } = await supabase
         .from('reviews')
         .select('rating, product_id, products!inner(store_id)')
@@ -51,7 +49,6 @@ export function StoreHealthScore() {
         ? reviewStats!.reduce((sum, r) => sum + r.rating, 0) / reviewCount
         : 0;
 
-      // Response time (simplified: check if store has replied to any messages)
       const { count: replyCount } = await supabase
         .from('store_messages')
         .select('id', { count: 'exact', head: true })
@@ -60,7 +57,6 @@ export function StoreHealthScore() {
 
       const responseTimeScore = (replyCount || 0) > 0 ? 85 : 50;
 
-      // Fulfillment rate from seller_transactions (exclude refunded)
       const { data: transactions } = await supabase
         .from('seller_transactions')
         .select('status, refunded_at')
@@ -103,7 +99,7 @@ export function StoreHealthScore() {
       name: 'Customer Rating',
       score: (healthData.avgRating / 5) * 100,
       status: getScoreStatus((healthData.avgRating / 5) * 100),
-      description: healthData.reviewCount > 0 
+      description: healthData.reviewCount > 0
         ? `${healthData.avgRating.toFixed(1)}★ from ${healthData.reviewCount} reviews`
         : 'No reviews yet',
       icon: Star,
@@ -124,7 +120,7 @@ export function StoreHealthScore() {
     },
   ] : [];
 
-  const overallScore = metrics.length 
+  const overallScore = metrics.length
     ? Math.round(metrics.reduce((sum, m) => sum + m.score, 0) / metrics.length)
     : 0;
 
@@ -147,13 +143,11 @@ export function StoreHealthScore() {
   if (isLoading) {
     return (
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-2">
           <CardTitle className="text-base font-medium">Store Health</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-32 flex items-center justify-center">
-            <div className="animate-pulse text-muted-foreground">Loading...</div>
-          </div>
+          <CardLoadingSkeleton rows={4} />
         </CardContent>
       </Card>
     );
@@ -209,8 +203,8 @@ export function StoreHealthScore() {
                 </div>
                 <span className="text-muted-foreground text-xs">{metric.description}</span>
               </div>
-              <Progress 
-                value={metric.score} 
+              <Progress
+                value={metric.score}
                 className={cn(
                   'h-1.5',
                   metric.status === 'good' && '[&>div]:bg-green-500',

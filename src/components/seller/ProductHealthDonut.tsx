@@ -4,11 +4,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { CheckCircle } from 'lucide-react';
+import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
 
 const COLORS = [
   'hsl(142, 76%, 36%)',   // approved - green
   'hsl(45, 93%, 47%)',    // pending - yellow
-  'hsl(0, 84%, 60%)',     // non-compliant - red
+  'hsl(0, 84%, 60%)',     // rejected - red
   'hsl(var(--muted-foreground))', // other
 ];
 
@@ -57,9 +58,7 @@ export function ProductHealthDonut() {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="h-[180px] flex items-center justify-center text-muted-foreground text-sm animate-pulse">
-            Loading...
-          </div>
+          <CardLoadingSkeleton rows={3} />
         ) : data && data.chartData.length > 0 ? (
           <div>
             <RevolutDonutChart
@@ -75,9 +74,7 @@ export function ProductHealthDonut() {
             </p>
           </div>
         ) : (
-          <div className="h-[180px] flex items-center justify-center text-muted-foreground text-sm">
-            No products yet
-          </div>
+          <CardEmptyState icon={CheckCircle} title="No products yet" subtitle="Add products to see health status" />
         )}
       </CardContent>
     </Card>

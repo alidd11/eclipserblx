@@ -3,10 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, Minus, BarChart3 } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/hooks/useCurrency';
-import { subDays } from 'date-fns';
+import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
 
 interface ProductVelocity {
   productName: string;
@@ -27,10 +26,9 @@ export function SalesVelocityInsights() {
       if (!store?.id) return [];
 
       const now = new Date();
-      const last7 = subDays(now, 7).toISOString();
-      const prev7 = subDays(now, 14).toISOString();
+      const last7 = new Date(now.getTime() - 7 * 86400000).toISOString();
+      const prev7 = new Date(now.getTime() - 14 * 86400000).toISOString();
 
-      // Fetch last 14 days of sales
       const { data: transactions } = await supabase
         .from('seller_transactions')
         .select('description, net_amount, created_at')
@@ -42,7 +40,6 @@ export function SalesVelocityInsights() {
 
       if (!transactions?.length) return [];
 
-      // Group by product name (description contains product info)
       const productMap = new Map<string, { current: number; previous: number; revenue: number }>();
 
       transactions.forEach((t: any) => {
@@ -61,7 +58,6 @@ export function SalesVelocityInsights() {
         }
       });
 
-      // Convert to array and calculate trends
       return Array.from(productMap.entries())
         .map(([productName, data]) => {
           const changePercent = data.previous === 0
@@ -81,7 +77,7 @@ export function SalesVelocityInsights() {
         .slice(0, 8);
     },
     enabled: !!store?.id,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 5 * 60 * 1000,
   });
 
   const trendConfig = {
@@ -93,19 +89,19 @@ export function SalesVelocityInsights() {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium flex items-center gap-2">
-          <BarChart3 className="h-4 w-4" />
-          Sales Velocity
-          <span className="text-xs font-normal text-muted-foreground ml-auto">7d vs prior 7d</span>
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base font-medium flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Sales Velocity
+          </CardTitle>
+          <span className="text-xs text-muted-foreground">7d vs prior 7d</span>
+        </div>
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map(i => <Skeleton key={i} className="h-12" />)}
-          </div>
+          <CardLoadingSkeleton rows={4} />
         ) : !velocityData?.length ? (
-          <p className="text-sm text-muted-foreground text-center py-6">No sales data in the last 14 days</p>
+          <CardEmptyState icon={BarChart3} title="No sales data" subtitle="Sales trends appear after your first week" />
         ) : (
           <div className="space-y-2">
             {velocityData.map((product) => {

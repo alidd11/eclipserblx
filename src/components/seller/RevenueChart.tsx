@@ -5,10 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useState } from 'react';
 import { RevolutAreaChart } from '@/components/ui/revolut-chart';
-import { format, subDays } from 'date-fns';
+import { useCurrency } from '@/hooks/useCurrency';
+import { CardLoadingSkeleton } from './DashboardPlaceholders';
+
+/** Format a Date to "MMM dd" (e.g. "Mar 14") using native Intl */
+function formatShortDate(date: Date): string {
+  return date.toLocaleDateString('en-GB', { month: 'short', day: '2-digit' });
+}
 
 export function RevenueChart() {
   const { store } = useSellerStatus();
+  const { formatPrice } = useCurrency();
   const [range, setRange] = useState<'7' | '30'>('7');
   const days = parseInt(range);
 
@@ -17,7 +24,7 @@ export function RevenueChart() {
     queryFn: async () => {
       if (!store?.id) return [];
 
-      const startDate = subDays(new Date(), days).toISOString();
+      const startDate = new Date(Date.now() - days * 86400000).toISOString();
       const { data } = await supabase
         .from('seller_transactions')
         .select('created_at, net_amount')
@@ -29,12 +36,12 @@ export function RevenueChart() {
 
       const dayMap = new Map<string, number>();
       for (let i = 0; i < days; i++) {
-        const day = format(subDays(new Date(), days - 1 - i), 'MMM dd');
+        const day = formatShortDate(new Date(Date.now() - (days - 1 - i) * 86400000));
         dayMap.set(day, 0);
       }
 
       data?.forEach((t) => {
-        const day = format(new Date(t.created_at), 'MMM dd');
+        const day = formatShortDate(new Date(t.created_at));
         dayMap.set(day, (dayMap.get(day) || 0) + (t.net_amount || 0));
       });
 
@@ -44,6 +51,7 @@ export function RevenueChart() {
       }));
     },
     enabled: !!store?.id,
+    staleTime: 3 * 60 * 1000,
   });
 
   return (
@@ -61,8 +69,8 @@ export function RevenueChart() {
       </CardHeader>
       <CardContent className="p-0 pr-4 pb-4">
         {isLoading ? (
-          <div className="h-[180px] flex items-center justify-center text-muted-foreground text-sm animate-pulse">
-            Loading chart...
+          <div className="px-4">
+            <CardLoadingSkeleton rows={3} />
           </div>
         ) : (
           <RevolutAreaChart
@@ -70,8 +78,8 @@ export function RevenueChart() {
             xKey="date"
             series={[{ dataKey: 'revenue', color: 'hsl(var(--primary))', name: 'Revenue' }]}
             height={180}
-            yFormatter={(v) => `£${v}`}
-            tooltipFormatter={(v) => [`£${v.toFixed(2)}`, 'Revenue']}
+            yFormatter={(v) => formatPrice(v)}
+            tooltipFormatter={(v) => [formatPrice(v), 'Revenue']}
           />
         )}
       </CardContent>

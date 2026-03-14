@@ -7,9 +7,11 @@ import { DollarSign, CheckCircle, Clock, ArrowRight, Wallet } from 'lucide-react
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/hooks/useCurrency';
+import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
 
 export function PayoutTimeline() {
   const { store } = useSellerStatus();
+  const { formatPrice: formatCurrency } = useCurrency();
 
   const { data: payouts, isLoading } = useQuery({
     queryKey: ['seller-payout-timeline', store?.id],
@@ -26,8 +28,6 @@ export function PayoutTimeline() {
     enabled: !!store?.id,
     staleTime: 5 * 60 * 1000,
   });
-
-  const { formatPrice: formatCurrency } = useCurrency();
 
   const statusConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
     completed: { icon: CheckCircle, color: 'text-green-500', label: 'Completed' },
@@ -47,14 +47,10 @@ export function PayoutTimeline() {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm animate-pulse">
-            Loading...
-          </div>
+          <CardLoadingSkeleton rows={4} />
         ) : payouts && payouts.length > 0 ? (
           <div className="relative">
-            {/* Timeline line */}
             <div className="absolute left-[15px] top-2 bottom-2 w-px bg-border" />
-
             <div className="space-y-4">
               {payouts.map((payout) => {
                 const config = statusConfig[payout.status] || statusConfig.pending;
@@ -82,9 +78,7 @@ export function PayoutTimeline() {
             </div>
           </div>
         ) : (
-          <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">
-            No payouts yet
-          </div>
+          <CardEmptyState icon={DollarSign} title="No payouts yet" subtitle="Payouts will appear here once processed" />
         )}
       </CardContent>
     </Card>
