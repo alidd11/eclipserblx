@@ -37,6 +37,7 @@ async function loadSentry() {
       "AbortError",
       "Importing a module script failed",
       "Failed to fetch dynamically imported module",
+      "View transition was skipped",
     ],
     beforeSend(event) {
       if (event.exception?.values?.[0]?.stacktrace?.frames?.some(
