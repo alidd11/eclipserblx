@@ -556,6 +556,52 @@ const PAYHIP_CTA_PATTERNS = /^(purchase\s*now|buy\s*now|add\s*to\s*cart|get\s*it
 // Skip sections/headings that are store banners, not product names
 const PAYHIP_BANNER_PATTERNS = /^(best\s*deals?|latest\s*products?|terms\s*of\s*service|more\s*videos|share|ww2?\s*products?|5,?\d*\+?\s*orders?|.*exclusive|.*terms|featured|collections?|all\s*products?|about|contact|faq|support)$/i;
 
+function normalizePayhipProductUrl(input: string): string | null {
+  if (!input) return null;
+
+  try {
+    const parsed = new URL(input.startsWith('http') ? input : `https://payhip.com${input.startsWith('/') ? '' : '/'}${input}`);
+    if (!parsed.hostname.endsWith('payhip.com')) return null;
+
+    const productMatch = parsed.pathname.match(/^\/b\/([A-Za-z0-9]+)/i);
+    if (!productMatch) return null;
+
+    return `https://payhip.com/b/${productMatch[1]}`;
+  } catch {
+    return null;
+  }
+}
+
+function detectPayhipPaginationStep(links?: string[], html?: string): number {
+  const values = new Set<number>();
+
+  const collect = (raw: string) => {
+    if (!raw) return;
+
+    const decoded = raw.replace(/&amp;/g, '&');
+    const matches = decoded.matchAll(/[?&]page=(\d+)/gi);
+    for (const match of matches) {
+      const value = Number(match[1]);
+      if (Number.isFinite(value) && value > 0) values.add(value);
+    }
+  };
+
+  for (const link of links || []) collect(link);
+  if (html) collect(html);
+
+  const sorted = [...values].sort((a, b) => a - b);
+  if (sorted.length === 0) return 1;
+  if (sorted.length === 1) return sorted[0] > 1 ? sorted[0] : 1;
+
+  let step = Number.POSITIVE_INFINITY;
+  for (let i = 1; i < sorted.length; i++) {
+    const diff = sorted[i] - sorted[i - 1];
+    if (diff > 0 && diff < step) step = diff;
+  }
+
+  return Number.isFinite(step) && step > 0 ? step : Math.max(1, sorted[0]);
+}
+
 function parsePayhipStore(markdown: string, storeUrl: string, links?: string[]): { products: ExternalProduct[]; sellerName?: string } {
   // Extract seller name from URL path
   let sellerName: string | undefined;
@@ -564,24 +610,25 @@ function parsePayhipStore(markdown: string, storeUrl: string, links?: string[]):
     sellerName = storeSlugMatch[1];
   }
 
-  // Collect all /b/ product URLs from the links array (these are in page order)
+  // Collect all product URLs from links + markdown and normalize them
   const productUrls: string[] = [];
+  const seenProductUrls = new Set<string>();
+
+  const addProductUrl = (raw: string) => {
+    const normalized = normalizePayhipProductUrl(raw);
+    if (!normalized || seenProductUrls.has(normalized)) return;
+    seenProductUrls.add(normalized);
+    productUrls.push(normalized);
+  };
+
   if (links) {
-    for (const link of links) {
-      if (/payhip\.com\/b\/[A-Za-z0-9]+$/.test(link) && !productUrls.includes(link)) {
-        productUrls.push(link);
-      }
-    }
+    for (const link of links) addProductUrl(link);
   }
 
-  // Also find /b/ URLs from markdown
-  const mdLinkRegex = /\(?(https:\/\/payhip\.com\/b\/[A-Za-z0-9]+)\)?/g;
+  const mdLinkRegex = /\((https?:\/\/[^\s)]+)\)|\bhttps?:\/\/[^\s)]+/g;
   let mdMatch;
   while ((mdMatch = mdLinkRegex.exec(markdown)) !== null) {
-    const url = mdMatch[1];
-    if (!productUrls.includes(url)) {
-      productUrls.push(url);
-    }
+    addProductUrl(mdMatch[1] || mdMatch[0]);
   }
 
   console.log(`Found ${productUrls.length} product URLs from links/markdown`);
@@ -1268,25 +1315,36 @@ Deno.serve(async (req) => {
       let sellerName: string | undefined;
 
       if (detectedPlatform === 'payhip') {
-        // Payhip collection pages are paginated — scrape all pages
+        // Payhip uses a non-standard page parameter (often offset-based, e.g. page=16/page=32)
+        // so we infer the step from pagination links on page 1.
         const baseCollectionUrl = scrapeTarget.split('?')[0];
-        const MAX_PAGES = 20;
+        const MAX_PAGES = 120;
         const seenProductUrls = new Set<string>();
+        let pageStep = 1;
 
-        for (let page = 1; page <= MAX_PAGES; page++) {
-          const pageUrl = page === 1 ? baseCollectionUrl : `${baseCollectionUrl}?page=${page}`;
-          console.log(`Scraping Payhip page ${page}: ${pageUrl}`);
+        for (let pageIndex = 0; pageIndex < MAX_PAGES; pageIndex++) {
+          const pageParam = pageIndex * pageStep;
+          const pageUrl = pageParam === 0 ? baseCollectionUrl : `${baseCollectionUrl}?page=${pageParam}`;
+          console.log(`Scraping Payhip page ${pageIndex + 1} (param=${pageParam || 1}, step=${pageStep}): ${pageUrl}`);
 
           const pageResult = await scrapeUrl(pageUrl, firecrawlApiKey, 1);
           if (!pageResult.success) {
-            if (page === 1) {
+            if (pageIndex === 0) {
               return new Response(
                 JSON.stringify({ success: false, error: pageResult.error || "Failed to scrape store" }),
                 { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
               );
             }
-            console.log(`Page ${page} failed, stopping pagination: ${pageResult.error}`);
+            console.log(`Page ${pageIndex + 1} failed, stopping pagination: ${pageResult.error}`);
             break;
+          }
+
+          if (pageIndex === 0) {
+            const detectedStep = detectPayhipPaginationStep(pageResult.links, pageResult.html);
+            if (detectedStep > 1) {
+              pageStep = detectedStep;
+              console.log(`Detected Payhip pagination step: ${pageStep}`);
+            }
           }
 
           const pageProducts = parsePayhipStore(pageResult.markdown!, storeUrl, pageResult.links);
@@ -1296,17 +1354,18 @@ Deno.serve(async (req) => {
 
           let newCount = 0;
           for (const p of pageProducts.products) {
-            if (!seenProductUrls.has(p.sourceUrl)) {
-              seenProductUrls.add(p.sourceUrl);
-              products.push(p);
+            const normalizedSourceUrl = normalizePayhipProductUrl(p.sourceUrl) || p.sourceUrl;
+            if (!seenProductUrls.has(normalizedSourceUrl)) {
+              seenProductUrls.add(normalizedSourceUrl);
+              products.push({ ...p, sourceUrl: normalizedSourceUrl });
               newCount++;
             }
           }
 
-          console.log(`Page ${page}: found ${pageProducts.products.length} products (${newCount} new, ${products.length} total)`);
+          console.log(`Page ${pageIndex + 1}: found ${pageProducts.products.length} products (${newCount} new, ${products.length} total)`);
 
           if (newCount === 0) {
-            console.log(`No new products on page ${page}, stopping pagination`);
+            console.log(`No new products on page ${pageIndex + 1}, stopping pagination`);
             break;
           }
         }
