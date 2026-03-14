@@ -6,6 +6,7 @@ import { PercentChange } from '@/components/shared/dashboard';
 import { DollarSign, TrendingUp, ShoppingCart, Wallet, BarChart3 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export function RevenueSummaryStats() {
   const { store } = useSellerStatus();
