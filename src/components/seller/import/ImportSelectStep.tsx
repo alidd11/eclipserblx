@@ -121,6 +121,17 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
     return Object.keys(active).length > 0 ? active : undefined;
   };
 
+  // Quota cost breakdown
+  const quotaBreakdown = useMemo(() => {
+    if (!quotaData) return null;
+    const count = selectedProducts.size;
+    const freeAvailable = quotaData.remainingFree;
+    const freeUsed = Math.min(count, freeAvailable);
+    const paidCount = Math.max(0, count - freeAvailable);
+    const canAfford = paidCount <= quotaData.creditBalance;
+    return { freeUsed, paidCount, canAfford, creditBalance: quotaData.creditBalance };
+  }, [quotaData, selectedProducts.size]);
+
   const handleImportClick = () => {
     if (selectedProducts.size > 5) {
       setConfirmOpen(true);
