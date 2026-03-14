@@ -1456,6 +1456,42 @@ Deno.serve(async (req) => {
       );
     }
 
+    // ─── Action: Get import quota ────────────────────────────────────────────
+    if (action === 'quota') {
+      const { data: quotaData, error: quotaError } = await supabaseAdmin
+        .rpc('get_import_quota', { p_store_id: store.id });
+
+      if (quotaError) {
+        console.error('Quota fetch error:', quotaError.message);
+        return new Response(
+          JSON.stringify({ success: false, error: 'Failed to fetch import quota' }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const q = quotaData?.[0] || { imports_used: 0, free_limit: 25, remaining_free: 25 };
+
+      // Also fetch credit balance
+      const { data: balData } = await supabaseAdmin
+        .from('credit_balances')
+        .select('balance')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          quota: {
+            importsUsed: q.imports_used,
+            freeLimit: q.free_limit,
+            remainingFree: q.remaining_free,
+            creditBalance: Number(balData?.balance ?? 0),
+          },
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // ─── Action: Fetch full product details ────────────────────────────────────
     if (action === 'details') {
       if (!productUrl || typeof productUrl !== 'string') {
@@ -1543,6 +1579,27 @@ Deno.serve(async (req) => {
         ? categoryMap.get(product.suggestedCategoryId) 
         : undefined);
       product.suggestedCategoryId = finalCategoryId;
+
+      // ─── Quota check: deduct free import or credit ──────────────────────────
+      const { data: quotaResult, error: quotaErr } = await supabaseAdmin
+        .rpc('use_import_quota', { p_store_id: store.id, p_user_id: user.id });
+
+      if (quotaErr) {
+        console.error('Quota check error:', quotaErr.message);
+        return new Response(
+          JSON.stringify({ success: false, error: 'Failed to check import quota', retryable: true }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (quotaResult === 'insufficient') {
+        return new Response(
+          JSON.stringify({ success: false, error: 'You have used all free imports this month. Please add Eclipse Credits to continue importing.', retryable: false, quotaExceeded: true }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log(`Import quota result: ${quotaResult} (${quotaResult === 'free' ? 'free tier' : 'credit deducted'})`);
 
       // Auto-create product record with robust unique slug
       const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
@@ -1707,6 +1764,25 @@ Deno.serve(async (req) => {
           product.suggestedCategoryId = urlCategoryOverride || (product.suggestedCategoryId 
             ? categoryMap.get(product.suggestedCategoryId) 
             : undefined);
+
+          // ─── Quota check per product ──────────────────────────────────────────
+          const { data: bulkQuotaResult, error: bulkQuotaErr } = await supabaseAdmin
+            .rpc('use_import_quota', { p_store_id: store.id, p_user_id: user.id });
+
+          if (bulkQuotaErr) {
+            console.error('Quota check error in bulk:', bulkQuotaErr.message);
+            results.push({ url, success: false, error: 'Failed to check import quota' });
+            continue;
+          }
+
+          if (bulkQuotaResult === 'insufficient') {
+            results.push({ url, success: false, error: 'Import quota exceeded — add Eclipse Credits to continue' });
+            // Stop processing remaining URLs since they'll all fail too
+            for (const remainingUrl of safeUrls.slice(safeUrls.indexOf(url) + 1)) {
+              results.push({ url: remainingUrl, success: false, error: 'Import quota exceeded — add Eclipse Credits to continue' });
+            }
+            break;
+          }
 
           const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
           const randomSuffix = crypto.randomUUID().slice(0, 8);

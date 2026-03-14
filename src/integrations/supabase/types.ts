@@ -6820,6 +6820,48 @@ export type Database = {
           },
         ]
       }
+      seller_import_quotas: {
+        Row: {
+          created_at: string
+          free_limit: number
+          id: string
+          imports_used: number
+          month: string
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          free_limit?: number
+          id?: string
+          imports_used?: number
+          month: string
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          free_limit?: number
+          id?: string
+          imports_used?: number
+          month?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_import_quotas_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_import_quotas_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seller_notifications: {
         Row: {
           acknowledged_at: string | null
@@ -9968,6 +10010,14 @@ export type Database = {
         }[]
       }
       get_homepage_stats: { Args: never; Returns: Json }
+      get_import_quota: {
+        Args: { p_store_id: string }
+        Returns: {
+          free_limit: number
+          imports_used: number
+          remaining_free: number
+        }[]
+      }
       get_next_download_time: { Args: { _user_id: string }; Returns: string }
       get_store_qualification_progress: {
         Args: { p_store_id: string }
@@ -10145,6 +10195,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      use_import_quota: {
+        Args: { p_store_id: string; p_user_id: string }
+        Returns: string
       }
       user_can_insert_order_item: {
         Args: { _order_id: string; _user_id: string }

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
@@ -18,11 +19,14 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   Search, Image, Globe, ArrowLeft, ArrowRight, ImageOff,
-  ChevronDown, Tag, EyeOff, Zap,
+  ChevronDown, Tag, EyeOff, Zap, Coins, AlertCircle,
 } from 'lucide-react';
-import { ExternalProduct } from '@/lib/api/productImport';
+import { ExternalProduct, ImportQuota } from '@/lib/api/productImport';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { productImportApi } from '@/lib/api/productImport';
+import { useActiveStore } from '@/contexts/ActiveStoreContext';
+import { Link } from 'react-router-dom';
 
 interface ImportSelectStepProps {
   products: ExternalProduct[];
@@ -32,6 +36,7 @@ interface ImportSelectStepProps {
 }
 
 export function ImportSelectStep({ products, platform, onBack, onImport }: ImportSelectStepProps) {
+  const { activeStoreId } = useActiveStore();
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(() => {
     const available = products.filter(p => !p.alreadyImported);
     return new Set(available.map(p => p.sourceUrl));
@@ -42,6 +47,17 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
   const [categoryOverrides, setCategoryOverrides] = useState<Record<string, string>>({});
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  // Fetch import quota
+  const { data: quotaData } = useQuery({
+    queryKey: ['import-quota', activeStoreId],
+    queryFn: async () => {
+      const result = await productImportApi.getQuota(activeStoreId ?? undefined);
+      if (!result.success) return null;
+      return result.quota!;
+    },
+    staleTime: 30_000,
+  });
 
   const { data: categories } = useQuery({
     queryKey: ['categories-for-import'],
@@ -104,6 +120,17 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
     }
     return Object.keys(active).length > 0 ? active : undefined;
   };
+
+  // Quota cost breakdown
+  const quotaBreakdown = useMemo(() => {
+    if (!quotaData) return null;
+    const count = selectedProducts.size;
+    const freeAvailable = quotaData.remainingFree;
+    const freeUsed = Math.min(count, freeAvailable);
+    const paidCount = Math.max(0, count - freeAvailable);
+    const canAfford = paidCount <= quotaData.creditBalance;
+    return { freeUsed, paidCount, canAfford, creditBalance: quotaData.creditBalance };
+  }, [quotaData, selectedProducts.size]);
 
   const handleImportClick = () => {
     if (selectedProducts.size > 5) {
@@ -289,6 +316,42 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
         </div>
       </ScrollArea>
 
+      {/* Quota info banner */}
+      {quotaData && (
+        <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-4 py-2.5 text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Coins className="h-4 w-4" />
+            <span>
+              <strong className="text-foreground">{quotaData.remainingFree}</strong>/{quotaData.freeLimit} free imports remaining this month
+            </span>
+          </div>
+          {quotaBreakdown && quotaBreakdown.paidCount > 0 && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs">
+                {quotaBreakdown.freeUsed > 0 && <span className="text-primary">{quotaBreakdown.freeUsed} free</span>}
+                {quotaBreakdown.freeUsed > 0 && ' + '}
+                <span className="font-medium">{quotaBreakdown.paidCount} × £1 credit</span>
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Insufficient credits warning */}
+      {quotaBreakdown && quotaBreakdown.paidCount > 0 && !quotaBreakdown.canAfford && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>
+              You need {quotaBreakdown.paidCount} credits but only have £{quotaBreakdown.creditBalance.toFixed(2)}.
+            </span>
+            <Link to="/wallet" className="text-xs font-medium underline underline-offset-2 ml-2 shrink-0">
+              Add Credits
+            </Link>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Action bar */}
       <div className="flex items-center justify-between pt-2">
         <Button variant="ghost" onClick={onBack} className="gap-2">
@@ -301,11 +364,16 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
           </span>
           <Button
             onClick={handleImportClick}
-            disabled={selectedProducts.size === 0}
+            disabled={selectedProducts.size === 0 || (quotaBreakdown !== null && quotaBreakdown.paidCount > 0 && !quotaBreakdown.canAfford)}
             className="gap-2"
           >
             <Zap className="h-4 w-4" />
             Import {selectedProducts.size > 0 ? `(${selectedProducts.size})` : ''}
+            {quotaBreakdown && quotaBreakdown.paidCount > 0 && quotaBreakdown.canAfford && (
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 ml-1">
+                {quotaBreakdown.paidCount} credit{quotaBreakdown.paidCount !== 1 ? 's' : ''}
+              </Badge>
+            )}
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
@@ -318,7 +386,10 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
             <AlertDialogTitle>Import {selectedProducts.size} products?</AlertDialogTitle>
             <AlertDialogDescription>
               This will import {selectedProducts.size} products{downloadImages ? ' including downloading all images' : ''}.
-              This may take a few minutes. You can cancel at any time during the import.
+              {quotaBreakdown && quotaBreakdown.paidCount > 0 && (
+                <> {quotaBreakdown.freeUsed} will be free, and {quotaBreakdown.paidCount} will cost {quotaBreakdown.paidCount} Eclipse Credit{quotaBreakdown.paidCount !== 1 ? 's' : ''}.</>
+              )}
+              {' '}This may take a few minutes.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

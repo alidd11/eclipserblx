@@ -55,6 +55,19 @@ export interface ImportHistoryItem {
   metadata: Record<string, unknown>;
 }
 
+export interface ImportQuota {
+  importsUsed: number;
+  freeLimit: number;
+  remainingFree: number;
+  creditBalance: number;
+}
+
+export interface ImportQuotaResponse {
+  success: boolean;
+  quota?: ImportQuota;
+  error?: string;
+}
+
 export interface ImportHistoryResponse {
   success: boolean;
   imports?: ImportHistoryItem[];
@@ -150,6 +163,22 @@ export const productImportApi = {
 
     if (error) {
       console.error('Import history error:', error);
+      return { success: false, error: await getFunctionErrorMessage(error) };
+    }
+
+    return data;
+  },
+
+  /**
+   * Get current import quota for the store
+   */
+  async getQuota(targetStoreId?: string): Promise<ImportQuotaResponse> {
+    const { data, error } = await supabase.functions.invoke('import-external-products', {
+      body: { action: 'quota', ...(targetStoreId && { targetStoreId }) },
+    });
+
+    if (error) {
+      console.error('Import quota error:', error);
       return { success: false, error: await getFunctionErrorMessage(error) };
     }
 
