@@ -208,6 +208,7 @@ export default function GameNewsFeeds() {
       check_interval_minutes: number;
       icon_url?: string | null;
       embed_color?: number | null;
+      free_only?: boolean;
     }) => {
       const { error } = await supabase.from('game_news_feeds').insert({
         name: feed.name,
@@ -218,6 +219,7 @@ export default function GameNewsFeeds() {
         check_interval_minutes: feed.check_interval_minutes,
         icon_url: feed.icon_url || null,
         embed_color: feed.embed_color || null,
+        free_only: feed.free_only ?? false,
       } as any);
       if (error) throw error;
     },
