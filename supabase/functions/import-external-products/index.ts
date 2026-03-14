@@ -1265,26 +1265,75 @@ Deno.serve(async (req) => {
 
       console.log(`Listing products from ${detectedPlatform}: ${scrapeTarget}`);
 
-      const scrapeResult = await scrapeUrl(scrapeTarget, firecrawlApiKey);
-      if (!scrapeResult.success) {
-        return new Response(
-          JSON.stringify({ success: false, error: scrapeResult.error || "Failed to scrape store" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
       let products: ExternalProduct[] = [];
       let sellerName: string | undefined;
-      if (detectedPlatform === 'clearlydev') {
-        const result = parseClearlyDevStore(scrapeResult.markdown!, storeUrl, scrapeResult.links);
-        products = result.products;
-        sellerName = result.sellerName;
-      } else if (detectedPlatform === 'builtbybit') {
-        products = parseBuiltByBitStore(scrapeResult.markdown!, storeUrl);
-      } else if (detectedPlatform === 'payhip') {
-        const result = parsePayhipStore(scrapeResult.markdown!, storeUrl, scrapeResult.links);
-        products = result.products;
-        sellerName = result.sellerName;
+
+      if (detectedPlatform === 'payhip') {
+        // Payhip collection pages are paginated — scrape all pages
+        const baseCollectionUrl = scrapeTarget.split('?')[0]; // remove any existing query params
+        const MAX_PAGES = 20; // safety cap
+        const seenProductUrls = new Set<string>();
+
+        for (let page = 1; page <= MAX_PAGES; page++) {
+          const pageUrl = page === 1 ? baseCollectionUrl : `${baseCollectionUrl}?page=${page}`;
+          console.log(`Scraping Payhip page ${page}: ${pageUrl}`);
+
+          const pageResult = await scrapeUrl(pageUrl, firecrawlApiKey, 1); // fewer retries for pagination
+          if (!pageResult.success) {
+            if (page === 1) {
+              // First page failed — return error
+              return new Response(
+                JSON.stringify({ success: false, error: pageResult.error || "Failed to scrape store" }),
+                { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+            // Subsequent page failed — stop paginating, use what we have
+            console.log(`Page ${page} failed, stopping pagination: ${pageResult.error}`);
+            break;
+          }
+
+          const pageProducts = parsePayhipStore(pageResult.markdown!, storeUrl, pageResult.links);
+          if (!sellerName && pageProducts.sellerName) {
+            sellerName = pageProducts.sellerName;
+          }
+
+          // Count new (non-duplicate) products on this page
+          let newCount = 0;
+          for (const p of pageProducts.products) {
+            if (!seenProductUrls.has(p.sourceUrl)) {
+              seenProductUrls.add(p.sourceUrl);
+              products.push(p);
+              newCount++;
+            }
+          }
+
+          console.log(`Page ${page}: found ${pageProducts.products.length} products (${newCount} new, ${products.length} total)`);
+
+          // If this page yielded no new products, we've reached the end
+          if (newCount === 0) {
+            console.log(`No new products on page ${page}, stopping pagination`);
+            break;
+          }
+        }
+
+        console.log(`Payhip pagination complete: ${products.length} total products across all pages`);
+      } else {
+        // Non-Payhip: single page scrape
+        const scrapeResult = await scrapeUrl(scrapeTarget, firecrawlApiKey);
+        if (!scrapeResult.success) {
+          return new Response(
+            JSON.stringify({ success: false, error: scrapeResult.error || "Failed to scrape store" }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        if (detectedPlatform === 'clearlydev') {
+          const result = parseClearlyDevStore(scrapeResult.markdown!, storeUrl, scrapeResult.links);
+          products = result.products;
+          sellerName = result.sellerName;
+        } else if (detectedPlatform === 'builtbybit') {
+          products = parseBuiltByBitStore(scrapeResult.markdown!, storeUrl);
+        }
       }
 
       // Check for already imported products
