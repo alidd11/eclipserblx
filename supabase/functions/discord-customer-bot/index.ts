@@ -2205,15 +2205,10 @@ function buildProductEmbed(product: any, store: any, branding: any, customMessag
   const productUrl = `https://eclipserblx.com/products/${product.product_number || encodeURIComponent(product.slug)}`;
   const storeUrl = `https://eclipserblx.com/store/${encodeURIComponent(store.slug)}`;
 
-  let desc: string;
-  if (customMessage) {
-    desc = `${customMessage}\n\n**[View Product](${productUrl})**`;
-  } else {
-    let productDesc = product.description || "A premium product from Eclipse.";
-    productDesc = productDesc.replace(/<[^>]*>/g, "").trim();
-    if (productDesc.length > 250) productDesc = productDesc.substring(0, 247) + "...";
-    desc = `${productDesc}\n\n**[View Product](${productUrl})**`;
-  }
+  let productDesc = product.description || "A premium product from Eclipse.";
+  productDesc = productDesc.replace(/<[^>]*>/g, "").trim();
+  if (productDesc.length > 250) productDesc = productDesc.substring(0, 247) + "...";
+  const desc = `${productDesc}\n\n**[View Product](${productUrl})**`;
 
   const embed: any = {
     color: branding.color,
