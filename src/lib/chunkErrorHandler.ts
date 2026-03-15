@@ -2,7 +2,6 @@
 // If cached HTML references JS chunks that no longer exist (hash changed),
 // force a one-time cache-busted reload to fetch fresh assets.
 
-const KEY = 'chunk-reload';
 const COOLDOWN_KEY = 'chunk-reload-ts';
 const COOLDOWN_MS = 120000; // 2-minute cooldown between automated recoveries
 const CACHE_BUST_PARAM = '__chunk';
@@ -13,9 +12,6 @@ function safeGet(k: string): string | null {
 }
 function safeSet(k: string, v: string) {
   try { sessionStorage.setItem(k, v); } catch { /* ignore */ }
-}
-function safeRemove(k: string) {
-  try { sessionStorage.removeItem(k); } catch { /* ignore */ }
 }
 
 function isInCooldown(): boolean {
@@ -36,7 +32,6 @@ const CHUNK_ERROR_PATTERNS = [
   'importing a module script failed',
   'not a valid javascript mime type',
   'application/octet-stream',
-  'mime type',
 ];
 
 function isChunkErrorMessage(msg: string): boolean {
@@ -82,7 +77,6 @@ async function clearRuntimeCaches() {
 
 function performHardRecovery(reason: string) {
   console.log(`[ChunkError] ${reason} — forcing cache-busted hard reload`);
-  safeSet(KEY, '1');
   safeSet(COOLDOWN_KEY, Date.now().toString());
 
   void clearRuntimeCaches().finally(() => {
@@ -91,10 +85,13 @@ function performHardRecovery(reason: string) {
 }
 
 function handleChunkError(reason: string) {
-  const alreadyReloaded = safeGet(KEY) === '1';
+  // Avoid Cloudflare challenge loops for admin navigation and keep recovery user-driven.
+  if (window.location.pathname.startsWith('/admin')) {
+    console.warn(`[ChunkError] ${reason} on admin route — skipping automatic hard reload`);
+    return;
+  }
 
-  // Prevent infinite loops, but still allow one recovery attempt per window.
-  if (alreadyReloaded && isInCooldown()) {
+  if (isInCooldown()) {
     console.warn('[ChunkError] Recovery already attempted recently, skipping');
     return;
   }
@@ -136,12 +133,3 @@ window.addEventListener('pageshow', (e) => {
     handleChunkError('Page restored from bfcache');
   }
 });
-
-// Clear reload marker only after page has stabilised.
-if (document.readyState === 'complete') {
-  setTimeout(() => safeRemove(KEY), 2000);
-} else {
-  window.addEventListener('load', () => {
-    setTimeout(() => safeRemove(KEY), 2000);
-  });
-}
