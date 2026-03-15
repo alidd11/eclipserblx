@@ -2130,44 +2130,23 @@ async function handleStoreShowcase(supabase: any, store: any, branding: any, cus
 }
 
 // Showcase a specific product from the seller's store
-async function handleProductShowcase(supabase: any, store: any, productSearch: string | undefined, branding: any, customMessage?: string | null) {
-  let query = supabase
-    .from("products")
-    .select("id, name, slug, product_number, price, images, description, download_count")
-    .eq("store_id", store.id)
-    .eq("is_active", true)
-    .eq("moderation_status", "approved");
-
-  if (productSearch) {
-    // Try matching by product number first, then name
-    const { data: byNumber } = await supabase
+async function handleProductShowcase(supabase: any, store: any, productNumber: string | null, branding: any, customMessage?: string | null) {
+  if (productNumber) {
+    // Look up by exact product number from URL
+    const { data: product } = await supabase
       .from("products")
       .select("id, name, slug, product_number, price, images, description, download_count")
       .eq("store_id", store.id)
       .eq("is_active", true)
       .eq("moderation_status", "approved")
-      .eq("product_number", productSearch)
+      .eq("product_number", productNumber)
       .maybeSingle();
 
-    if (byNumber) {
-      return buildProductEmbed(byNumber, store, branding, customMessage);
+    if (product) {
+      return buildProductEmbed(product, store, branding, customMessage);
     }
 
-    // Search by name (ilike)
-    const { data: byName } = await supabase
-      .from("products")
-      .select("id, name, slug, product_number, price, images, description, download_count")
-      .eq("store_id", store.id)
-      .eq("is_active", true)
-      .eq("moderation_status", "approved")
-      .ilike("name", `%${productSearch}%`)
-      .limit(1);
-
-    if (byName && byName.length > 0) {
-      return buildProductEmbed(byName[0], store, branding, customMessage);
-    }
-
-    return interactionResponse(`No product found matching "${productSearch}" in your store.`, true);
+    return interactionResponse(`No product found with number #${productNumber} in your store. Make sure the URL points to one of your products.`, true);
   }
 
   // No search term — pick latest product
