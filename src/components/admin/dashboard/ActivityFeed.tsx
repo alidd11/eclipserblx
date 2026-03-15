@@ -112,7 +112,7 @@ export const ActivityFeed = forwardRef<HTMLDivElement>((_, ref) => {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card ref={ref}>
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-medium">Recent Activity</CardTitle>
         </CardHeader>
