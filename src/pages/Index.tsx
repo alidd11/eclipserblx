@@ -1,3 +1,4 @@
+// Force re-deploy trigger
 import { forwardRef } from 'react';
 import { usePWAAdminRedirect } from '@/hooks/usePWAAdminRedirect';
 import Landing from './Landing';
