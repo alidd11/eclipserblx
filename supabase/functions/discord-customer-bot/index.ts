@@ -2132,7 +2132,7 @@ async function handleProductShowcase(supabase: any, store: any, productSearch: s
       .maybeSingle();
 
     if (byNumber) {
-      return buildProductEmbed(byNumber, store, branding);
+      return buildProductEmbed(byNumber, store, branding, customMessage);
     }
 
     // Search by name (ilike)
