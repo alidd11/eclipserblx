@@ -56,7 +56,13 @@ export function useSellerOnboarding() {
         hasAppearance: !!(store.logo_url || store.banner_url),
         hasSocials: !!(store.discord_url || store.twitter_url || store.youtube_url || store.roblox_url),
         hasRobloxLink: !!store.roblox_url,
-        hasStripeConnect: !!(store.paymentDetails?.stripe_account_id || store.paymentDetails?.payouts_enabled),
+        hasPayoutMethod: !!(
+          store.paymentDetails?.payout_method ||
+          store.paymentDetails?.stripe_account_id ||
+          store.paymentDetails?.payouts_enabled ||
+          store.paymentDetails?.paypal_email ||
+          store.paymentDetails?.bank_name
+        ),
       };
     },
     enabled: !!store?.id,
