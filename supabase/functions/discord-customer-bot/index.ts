@@ -1959,18 +1959,51 @@ async function handleShowcaseCommand(
   const showcaseType = options?.find(o => o.name === "type")?.value;
   const urlInput = options?.find(o => o.name === "url")?.value as string | undefined;
 
+  // Allowed base domains
+  const ALLOWED_HOSTS = ["eclipserblx.com", "www.eclipserblx.com", "roleplay-hub-shop.lovable.app"];
+
   // Parse URL to extract product number or store slug
   let parsedProductNumber: string | null = null;
   let parsedStoreSlug: string | null = null;
   if (urlInput) {
-    const productMatch = urlInput.match(/\/products\/(\d+)/);
-    const storeMatch = urlInput.match(/\/store\/([^\/\?\#]+)/);
+    // Normalise: prepend https:// if no protocol so URL constructor works
+    let normalised = urlInput.trim();
+    if (!/^https?:\/\//i.test(normalised)) normalised = "https://" + normalised;
+
+    let hostname: string;
+    let pathname: string;
+    try {
+      const parsed = new URL(normalised);
+      hostname = parsed.hostname.toLowerCase();
+      pathname = parsed.pathname;
+    } catch {
+      return interactionResponse("That doesn't look like a valid URL. Example: `eclipserblx.com/products/123`", true);
+    }
+
+    // Check if hostname is an allowed Eclipse domain or a verified custom store domain
+    let isAllowed = ALLOWED_HOSTS.includes(hostname);
+    if (!isAllowed) {
+      const { data: customDomain } = await supabase
+        .from("store_domains")
+        .select("id")
+        .eq("domain", hostname)
+        .eq("status", "active")
+        .maybeSingle();
+      isAllowed = !!customDomain;
+    }
+
+    if (!isAllowed) {
+      return interactionResponse("Only Eclipse URLs or verified custom store domains are accepted. Example: `eclipserblx.com/products/123`", true);
+    }
+
+    const productMatch = pathname.match(/\/products\/(\d+)/);
+    const storeMatch = pathname.match(/\/store\/([^\/\?\#]+)/);
     if (productMatch) {
       parsedProductNumber = productMatch[1];
     } else if (storeMatch) {
       parsedStoreSlug = decodeURIComponent(storeMatch[1]);
     } else {
-      return interactionResponse("Please provide a valid Eclipse URL (e.g. `eclipserblx.com/products/123` or `eclipserblx.com/store/my-store`)", true);
+      return interactionResponse("Please provide a valid Eclipse product or store URL (e.g. `eclipserblx.com/products/123` or `eclipserblx.com/store/my-store`)", true);
     }
   }
 
