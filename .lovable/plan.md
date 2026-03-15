@@ -1,36 +1,33 @@
 
 
-## Issues Identified
+## Plan: Convert `/showcase` to a Discord Modal Form
 
-**Issue 1: Sidebar positioned at top of screen on desktop**
-The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
+### How it works
+1. User runs `/showcase` → bot responds with a **Modal** (interaction response type 9) containing text input fields
+2. User fills in the form fields in Discord's native popup UI and clicks Submit
+3. Bot receives a `MODAL_SUBMIT` interaction (type 5) and processes the showcase with the submitted data
 
-**Issue 2: Excessive black empty space in the content area**
-The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
+### Modal Fields (up to 5 text inputs allowed by Discord)
+| Field | Style | Required | Max Length | Placeholder |
+|-------|-------|----------|------------|-------------|
+| **URL** | Short (1 line) | Yes | 200 | `eclipserblx.com/products/123` |
+| **Message** | Paragraph | No | 500 | `Tell people about your product/store...` |
 
-## Plan
+The `type` option is removed since the URL auto-detects whether it's a store or product.
 
-### 1. Widen the content area on the Categories page
-- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
-- Reduce vertical padding between the header and grid
-- Tighten the gap between the page title/description and the cards
+### Changes
 
-### 2. Improve the PageHeader component
-- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
-- This applies globally to all pages using PageHeader
+**1. `supabase/functions/register-discord-commands/index.ts`**
+- Remove all options from `/showcase` command (no more `type`, `url`, `message` options) — the command becomes a simple trigger with no arguments
 
-### 3. Make category cards fill space better
-- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
-- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
-- Reduce grid gap slightly so cards feel more connected
+**2. `supabase/functions/discord-customer-bot/index.ts`**
+- **Slash command handler** (`case "showcase"`): Instead of processing immediately, return a Modal response (type 9) with `custom_id: "showcase_modal"` and two text input components
+- **Modal submit handler** (in the existing `MODAL_SUBMIT` block): Add a `case "showcase_modal"` that extracts the `url` and `message` values from `interaction.data.components`, then calls the existing `handleShowcaseCommand` logic
+- Move the seller verification check **before** opening the modal so non-sellers get an immediate error instead of filling out a form for nothing
 
-### 4. Sidebar desktop alignment fix
-- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
-- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
-- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
-
-### Files to modify
-- `src/pages/Categories.tsx` — widen container, tighten spacing
-- `src/components/ui/PageHeader.tsx` — reduce bottom margin
-- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
+### Technical Details
+- Discord Modal response type: `9` (MODAL)
+- Text input component type: `4` (TEXT_INPUT)
+- Style `1` = short (single line), Style `2` = paragraph (multi-line)
+- The bot already handles `MODAL_SUBMIT` interactions at line 221, so we just add a new case there
 
