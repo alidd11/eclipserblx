@@ -2218,6 +2218,7 @@ function buildProductEmbed(product: any, store: any, branding: any, customMessag
     thumbnail: store.logo_url ? { url: store.logo_url } : undefined,
     image: product.images?.[0] ? { url: product.images[0] } : undefined,
     fields: [
+      ...(customMessage ? [{ name: "💬 From the Seller", value: customMessage, inline: false }] : []),
       {
         name: "💰 Price",
         value: product.price === 0 ? "**FREE**" : `**£${Number(product.price).toFixed(2)}**`,
