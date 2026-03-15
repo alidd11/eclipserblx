@@ -2121,18 +2121,13 @@ async function handleStoreShowcase(supabase: any, store: any, branding: any, cus
     : "No ratings yet";
 
   const fields: any[] = [];
-
-  // Seller's custom intro at the top
   if (customMessage) {
-    fields.push({ name: "💬 From the Seller", value: customMessage, inline: false });
+    fields.push({ name: "From the Seller", value: customMessage, inline: false });
   }
-
-  fields.push(
-    { name: "⭐ Rating", value: rating, inline: true },
-    { name: "📦 Products", value: `${store.product_count || 0}`, inline: true },
-    { name: "👥 Followers", value: `${store.follower_count || 0}`, inline: true },
-    { name: "🔗 Links", value: links.join(" • "), inline: false },
-  ];
+  fields.push({ name: "Rating", value: rating, inline: true });
+  fields.push({ name: "Products", value: "" + (store.product_count || 0), inline: true });
+  fields.push({ name: "Followers", value: "" + (store.follower_count || 0), inline: true });
+  fields.push({ name: "Links", value: links.join(" | "), inline: false });
 
   if (productList) {
     fields.push({ name: "🛍️ Featured Products", value: productList, inline: false });
