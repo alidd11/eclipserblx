@@ -85,15 +85,25 @@ function performHardRecovery(reason: string) {
 }
 
 function handleChunkError(reason: string) {
-  // Avoid Cloudflare challenge loops for admin navigation and keep recovery user-driven.
-  if (window.location.pathname.startsWith('/admin')) {
-    console.warn(`[ChunkError] ${reason} on admin route — skipping automatic hard reload`);
-    return;
-  }
-
   if (isInCooldown()) {
     console.warn('[ChunkError] Recovery already attempted recently, skipping');
     return;
+  }
+
+  // On admin routes, use a longer cooldown to avoid Cloudflare challenge loops,
+  // but still allow ONE automatic recovery per session.
+  if (window.location.pathname.startsWith('/admin')) {
+    const ADMIN_KEY = 'chunk-admin-recovered';
+    try {
+      if (sessionStorage.getItem(ADMIN_KEY)) {
+        console.warn(`[ChunkError] ${reason} on admin route — already recovered once, skipping`);
+        return;
+      }
+      sessionStorage.setItem(ADMIN_KEY, '1');
+    } catch {
+      // If sessionStorage fails, skip recovery to be safe
+      return;
+    }
   }
 
   performHardRecovery(reason);
