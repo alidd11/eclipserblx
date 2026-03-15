@@ -97,6 +97,13 @@ const commands = [
         type: 3, // STRING
         required: false,
       },
+      {
+        name: "message",
+        description: "Custom intro or description (max 500 characters)",
+        type: 3, // STRING
+        required: false,
+        max_length: 500,
+      },
     ],
   },
   {
