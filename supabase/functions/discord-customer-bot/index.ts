@@ -2122,12 +2122,12 @@ async function handleStoreShowcase(supabase: any, store: any, branding: any, cus
 
   const fields: any[] = [];
   if (customMessage) {
-    fields.push({ name: "From the Seller", value: customMessage, inline: false });
+    fields.push({ name: "\uD83D\uDCAC From the Seller", value: customMessage, inline: false });
   }
-  fields.push({ name: "Rating", value: rating, inline: true });
-  fields.push({ name: "Products", value: "" + (store.product_count || 0), inline: true });
-  fields.push({ name: "Followers", value: "" + (store.follower_count || 0), inline: true });
-  fields.push({ name: "Links", value: links.join(" | "), inline: false });
+  fields.push({ name: "\u2B50 Rating", value: rating, inline: true });
+  fields.push({ name: "\uD83D\uDCE6 Products", value: "" + (store.product_count || 0), inline: true });
+  fields.push({ name: "\uD83D\uDC65 Followers", value: "" + (store.follower_count || 0), inline: true });
+  fields.push({ name: "\uD83D\uDD17 Links", value: links.join(" \u2022 "), inline: false });
 
   if (productList) {
     fields.push({ name: "🛍️ Featured Products", value: productList, inline: false });
