@@ -17,21 +17,23 @@ interface State {
 }
 
 const CHUNK_ERROR_PATTERNS = [
-  'Load failed',
-  'Failed to fetch dynamically imported module',
-  'Importing a module script failed',
-  'ChunkLoadError',
-  'Loading chunk',
-  'Loading CSS chunk',
+  'load failed',
+  'failed to fetch dynamically imported module',
+  'importing a module script failed',
+  'chunkloaderror',
+  'loading chunk',
+  'loading css chunk',
   'dynamically imported module',
-  'not a valid JavaScript MIME type',
+  'not a valid javascript mime type',
+  'application/octet-stream',
+  'mime type',
 ];
 
 function isChunkError(error: Error | null): boolean {
   if (!error) return false;
-  const msg = error.message || '';
-  const name = error.name || '';
-  return CHUNK_ERROR_PATTERNS.some(p => msg.includes(p) || name.includes(p));
+  const msg = (error.message || '').toLowerCase();
+  const name = (error.name || '').toLowerCase();
+  return CHUNK_ERROR_PATTERNS.some((pattern) => msg.includes(pattern) || name.includes(pattern));
 }
 
 /**
@@ -40,8 +42,8 @@ function isChunkError(error: Error | null): boolean {
  *
  * Improvements for Safari/iOS:
  * - Auto-resets when `resetKey` changes (navigation, resume from background)
- * - Detects chunk/import errors and triggers a hard reload recovery
- * - Retry escalates to hard reload if the same error persists
+ * - Detects chunk/import errors and triggers a cache-busted hard reload recovery
+ * - Retry escalates to hard recovery if the same error persists
  */
 export class RouteErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
@@ -64,10 +66,19 @@ export class RouteErrorBoundary extends Component<Props, State> {
     console.error('[RouteErrorBoundary]', error, errorInfo);
     captureException(error, { componentStack: errorInfo.componentStack });
 
-    // If it's a chunk/import error, attempt a one-time hard reload
     if (isChunkError(error)) {
       this.attemptChunkRecovery();
     }
+  }
+
+  private buildCacheBustedUrl(base: string = window.location.href): string {
+    const url = new URL(base, window.location.origin);
+    url.searchParams.set('__chunk', Date.now().toString());
+    return url.toString();
+  }
+
+  private performHardRecovery(targetUrl: string = window.location.href) {
+    window.location.replace(this.buildCacheBustedUrl(targetUrl));
   }
 
   private attemptChunkRecovery() {
@@ -77,31 +88,34 @@ export class RouteErrorBoundary extends Component<Props, State> {
     try {
       const last = sessionStorage.getItem(RECOVERY_KEY);
       if (last && Date.now() - parseInt(last, 10) < COOLDOWN_MS) {
-        // Already tried recently, don't loop
         console.warn('[RouteErrorBoundary] Chunk recovery in cooldown, showing fallback');
         return;
       }
       sessionStorage.setItem(RECOVERY_KEY, Date.now().toString());
-      console.log('[RouteErrorBoundary] Chunk error detected, hard reloading');
-      window.location.reload();
+      console.log('[RouteErrorBoundary] Chunk error detected, forcing hard recovery');
+      this.performHardRecovery();
     } catch {
-      // sessionStorage not available, skip
+      this.performHardRecovery();
     }
   }
 
   handleRetry = () => {
-    const nextCount = this.state.retryCount + 1;
-    if (nextCount >= 2) {
-      // After 2 soft retries, do a hard reload
-      window.location.reload();
+    if (isChunkError(this.state.error)) {
+      this.performHardRecovery();
       return;
     }
+
+    const nextCount = this.state.retryCount + 1;
+    if (nextCount >= 2) {
+      this.performHardRecovery();
+      return;
+    }
+
     this.setState({ hasError: false, error: null, retryCount: nextCount });
   };
 
   handleGoHome = () => {
-    // Always hard-navigate home to fully reset app state
-    window.location.href = '/';
+    this.performHardRecovery(`${window.location.origin}/`);
   };
 
   render() {
