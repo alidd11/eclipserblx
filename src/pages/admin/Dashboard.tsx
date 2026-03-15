@@ -429,9 +429,11 @@ export default function AdminDashboard() {
                 <h1 className="text-xl sm:text-2xl font-bold">
                   {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
                 </h1>
-                <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
                   <span>🕐 Local: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   <span>🇬🇧 UK: {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })}</span>
+                  <span>🇺🇸 EST: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' })}</span>
+                  <span>🇺🇸 PST: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Los_Angeles' })}</span>
                 </div>
               </div>
             </div>
