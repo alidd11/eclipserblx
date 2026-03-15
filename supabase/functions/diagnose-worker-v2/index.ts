@@ -24,52 +24,73 @@ Deno.serve(async (req) => {
       { headers }
     );
     const contentType = scriptResp.headers.get("content-type") || "";
-    let scriptContent: string;
+    const rawText = await scriptResp.text();
+    const rawLength = rawText.length;
     
+    // Check key markers in raw text (before any parsing)
+    const rawHasExportDefault = rawText.includes("export default");
+    const rawHasFetch = rawText.includes("async fetch");
+    const rawHasShare = rawText.includes("/share/");
+    const rawHasServeOg = rawText.includes("serveOg");
+    const rawHasServe404 = rawText.includes("serve404");
+    const rawHasFetchOrigin = rawText.includes("fetchOrigin");
+
+    // Try to extract just the JS from multipart
+    let extractedLength = 0;
+    let extractedLast500 = "";
     if (contentType.includes("multipart")) {
-      // Worker scripts come back as multipart
-      const text = await scriptResp.text();
-      // Extract the JS content from multipart
-      const parts = text.split(/--[a-zA-Z0-9]+/);
-      const jsPart = parts.find(p => p.includes("application/javascript"));
-      scriptContent = jsPart ? jsPart.split("\r\n\r\n").slice(1).join("\r\n\r\n").trim() : text.slice(0, 2000);
-    } else {
-      scriptContent = await scriptResp.text();
+      // Find the boundary from content-type
+      const boundaryMatch = contentType.match(/boundary=(.+)/);
+      const boundary = boundaryMatch?.[1] || "";
+      
+      // Split by actual boundary (not regex)
+      const parts = rawText.split("--" + boundary);
+      const jsPart = parts.find(p => p.includes("application/javascript") || p.includes("worker.js"));
+      if (jsPart) {
+        const bodyStart = jsPart.indexOf("\r\n\r\n");
+        if (bodyStart >= 0) {
+          const jsContent = jsPart.slice(bodyStart + 4).trim();
+          extractedLength = jsContent.length;
+          extractedLast500 = jsContent.slice(-500);
+        }
+      }
     }
 
-    // Check for potential issues
-    const hasExportDefault = scriptContent.includes("export default");
-    const hasFetchHandler = scriptContent.includes("async fetch");
-    const hasShareHandler = scriptContent.includes("/share/");
-    const hasServeOg = scriptContent.includes("serveOg");
-    const scriptLength = scriptContent.length;
-
-    // Also check if maybe there's a Transform Rule or Origin Rule interfering
-    const transformResp = await fetch(
-      `https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/rulesets/phases/http_request_transform/entrypoint`,
+    // Check worker routes
+    const routesResp = await fetch(
+      `https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes`,
       { headers: { ...headers, "Content-Type": "application/json" } }
     );
-    const transformText = await transformResp.text();
+    const routesData = await routesResp.json();
 
-    const originResp = await fetch(
-      `https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/rulesets/phases/http_request_origin/entrypoint`,
+    // Check redirect rules
+    const redirectResp = await fetch(
+      `https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/rulesets/phases/http_request_dynamic_redirect/entrypoint`,
       { headers: { ...headers, "Content-Type": "application/json" } }
     );
-    const originText = await originResp.text();
+    const redirectData = await redirectResp.json();
 
     return jsonOk({
-      scriptAnalysis: {
+      rawAnalysis: {
         contentType,
-        length: scriptLength,
-        hasExportDefault,
-        hasFetchHandler,
-        hasShareHandler,
-        hasServeOg,
-        first500: scriptContent.slice(0, 500),
-        last200: scriptContent.slice(-200),
+        rawLength,
+        rawHasExportDefault,
+        rawHasFetch,
+        rawHasShare,
+        rawHasServeOg,
+        rawHasServe404,
+        rawHasFetchOrigin,
       },
-      transformRules: transformText.slice(0, 1000),
-      originRules: originText.slice(0, 1000),
+      extracted: {
+        length: extractedLength,
+        last500: extractedLast500,
+      },
+      routes: routesData.result,
+      redirectRules: redirectData.result?.rules?.map((r: any) => ({
+        description: r.description,
+        expression: r.expression,
+        enabled: r.enabled,
+      })),
     });
   } catch (e) {
     return internalError(e);
