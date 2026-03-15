@@ -248,10 +248,32 @@ function PageLoader() {
 /**
  * Main app routes - checks subdomain first and routes accordingly
  */
+/** Hook that bumps a counter when the app resumes from background (Safari/iOS) */
+function useResumeCounter() {
+  const [counter, setCounter] = useState(0);
+
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        setCounter(c => c + 1);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, []);
+
+  return counter;
+}
+
 export function AppRoutes() {
   const hostname = window.location.hostname;
   const isGlobalGuardDomain = hostname.startsWith('guard.') || hostname === 'guard.eclipserblx.com';
   const { isCustomStoreDomain, loading: domainLoading } = useStoreDomain();
+  const location = useLocation();
+  const resumeCounter = useResumeCounter();
+
+  // Combine location key + resume counter so the boundary resets on nav or app resume
+  const boundaryResetKey = `${location.key}-${resumeCounter}`;
 
   // If on Global Guard subdomain, render the Global Guard app
   if (isGlobalGuardDomain) {
@@ -274,7 +296,7 @@ export function AppRoutes() {
 
   // Otherwise render the main app routes
   return (
-    <RouteErrorBoundary>
+    <RouteErrorBoundary resetKey={boundaryResetKey}>
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={<Index />} />
