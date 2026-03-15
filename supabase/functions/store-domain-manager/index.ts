@@ -664,6 +664,10 @@ async function verifyCustomDomain(userId: string, domainId: string) {
       cfHostnameId = data.result?.id;
       sslStatus = data.result?.ssl?.status === "active" ? "active" : "pending";
     }
+
+    // Also create a Worker Route so the OG proxy handles this domain
+    const routeResult = await ensureWorkerRoute(cfToken, cfZoneId, domainRecord.domain);
+    console.log(`[verify-custom-domain] Worker route for ${domainRecord.domain}:`, routeResult);
   }
 
   const isCloudflare = await detectCloudflareZone(domainRecord.domain);
