@@ -76,56 +76,44 @@ async function serveOg(path, hostname) {
   });
 }
 
-async function fetchOrigin(request, tag) {
-  var url = new URL(request.url);
-  var hostname = url.hostname;
-  
-  // Store subdomains use a dummy AAAA record - rewrite to real origin
-  if (isStoreHostname(hostname)) {
-    var originUrl = ORIGIN_URL + url.pathname + url.search;
-    var newReq = new Request(originUrl, {
-      method: request.method,
-      headers: request.headers,
-      body: request.body,
-      redirect: "manual"
-    });
-    newReq.headers.set("X-Forwarded-Host", hostname);
-    var r = await fetch(newReq);
-    
-    // Origin may redirect (e.g. lovable.app → custom domain) — follow internally
-    // but return the final response under the store subdomain
-    var maxRedirects = 5;
-    while (r.status >= 300 && r.status < 400 && r.headers.get("Location") && maxRedirects-- > 0) {
-      var loc = r.headers.get("Location");
-      r = await fetch(loc, { redirect: "manual" });
-    }
-    
-    var h = new Headers(r.headers);
-    h.set("X-Eclipse-Worker", tag);
-    // Strip any Location header so browser stays on the subdomain
-    h.delete("Location");
-    return new Response(r.body, { status: r.status >= 300 && r.status < 400 ? 200 : r.status, headers: h });
-  }
-  
-  // Main domain - rewrite to origin to avoid Custom Domain loop
-  var originUrl = ORIGIN_URL + url.pathname + url.search;
-  var newReq = new Request(originUrl, {
+function buildOriginRequest(request, originUrl, forwardedHost) {
+  var headers = new Headers(request.headers);
+  // Never forward incoming Host header when proxying to ORIGIN_URL
+  headers.delete("host");
+  headers.set("X-Forwarded-Host", forwardedHost);
+  return new Request(originUrl, {
     method: request.method,
-    headers: request.headers,
+    headers: headers,
     body: request.body,
     redirect: "manual"
   });
-  newReq.headers.set("X-Forwarded-Host", hostname);
+}
+
+function toOriginUrl(location) {
+  var u = new URL(location, ORIGIN_URL);
+  return ORIGIN_URL + u.pathname + u.search;
+}
+
+async function fetchOrigin(request, tag) {
+  var url = new URL(request.url);
+  var hostname = url.hostname;
+
+  // Always proxy to explicit origin host (never to incoming host)
+  var originUrl = ORIGIN_URL + url.pathname + url.search;
+  var newReq = buildOriginRequest(request, originUrl, hostname);
   newReq.headers.set("X-Eclipse-Worker", "rewriting");
   var r = await fetch(newReq);
-  
-  // Follow internal redirects (origin may redirect lovable.app → custom domain)
+
+  // Follow internal redirects via ORIGIN_URL to avoid worker self-recursion
   var maxRedirects = 5;
   while (r.status >= 300 && r.status < 400 && r.headers.get("Location") && maxRedirects-- > 0) {
     var loc = r.headers.get("Location");
-    r = await fetch(loc, { redirect: "manual" });
+    var nextOriginUrl = toOriginUrl(loc);
+    var nextReq = buildOriginRequest(request, nextOriginUrl, hostname);
+    nextReq.headers.set("X-Eclipse-Worker", "rewriting");
+    r = await fetch(nextReq);
   }
-  
+
   var h = new Headers(r.headers);
   h.set("X-Eclipse-Worker", tag);
   h.delete("Location");
