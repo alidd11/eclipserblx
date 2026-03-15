@@ -2158,7 +2158,7 @@ async function handleProductShowcase(supabase: any, store: any, productSearch: s
     return interactionResponse("You don't have any approved products to showcase.", true);
   }
 
-  return buildProductEmbed(latest[0], store, branding);
+  return buildProductEmbed(latest[0], store, branding, customMessage);
 }
 
 // Build a rich product embed
