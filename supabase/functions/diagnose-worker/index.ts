@@ -21,12 +21,14 @@ Deno.serve(async (req) => {
     const routesResp = await fetch(`${zoneBase}/workers/routes`, { headers });
     const routesData = await routesResp.json();
 
-    // 3. Get worker script info
+    // 3. Get worker script info (settings, not the script body)
     const scriptResp = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy`,
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy/settings`,
       { headers }
     );
-    const scriptData = await scriptResp.json();
+    const scriptText = await scriptResp.text();
+    let scriptData: any;
+    try { scriptData = JSON.parse(scriptText); } catch { scriptData = { raw: scriptText.slice(0, 500) }; }
 
     // 4. Get worker custom domains
     const domainsResp = await fetch(
