@@ -2026,14 +2026,19 @@ async function handleShowcaseCommand(
 }
 
 // Showcase a seller's store profile
-async function handleStoreShowcase(supabase: any, store: any, branding: any) {
+async function handleStoreShowcase(supabase: any, store: any, branding: any, customMessage?: string | null) {
   const storeUrl = `https://eclipserblx.com/store/${encodeURIComponent(store.slug)}`;
 
-  // Build description
-  let desc = store.description
-    ? store.description.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()
-    : "Check out this store on Eclipse!";
-  if (desc.length > 300) desc = desc.substring(0, 297) + "...";
+  // Use custom message if provided, otherwise fall back to store description
+  let desc: string;
+  if (customMessage) {
+    desc = customMessage;
+  } else {
+    desc = store.description
+      ? store.description.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()
+      : "Check out this store on Eclipse!";
+    if (desc.length > 300) desc = desc.substring(0, 297) + "...";
+  }
 
   // Build badges
   const badges: string[] = [];
