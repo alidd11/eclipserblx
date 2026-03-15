@@ -14,79 +14,113 @@ Deno.serve(async (req) => {
       "Content-Type": "application/json"
     };
 
-    // Get account ID
+    // 1. Create a simple response header transform rule to test if rules execute
+    const phase = "http_response_headers_transform";
+    const testRuleName = "Eclipse Test Header Rule";
+    
+    // Check if entrypoint exists
+    const epResp = await fetch(
+      `https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/rulesets/phases/${phase}/entrypoint`,
+      { headers }
+    );
+    const epData = await epResp.json();
+    
+    let rulesetResult: any;
+    const testRule = {
+      action: "rewrite",
+      action_parameters: {
+        headers: {
+          "X-Eclipse-Test-Rule": {
+            operation: "set",
+            value: "rules-working-" + Date.now()
+          }
+        }
+      },
+      expression: "true", // matches ALL requests
+      description: testRuleName,
+      enabled: true,
+    };
+
+    if (epData.success && epData.result?.id) {
+      // Update existing ruleset
+      const existingRules = epData.result.rules || [];
+      const otherRules = existingRules.filter((r: any) => r.description !== testRuleName);
+      const allRules = [testRule, ...otherRules];
+      
+      const updateResp = await fetch(
+        `https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/rulesets/${epData.result.id}`,
+        { 
+          method: "PUT",
+          headers,
+          body: JSON.stringify({
+            rules: allRules.map((r: any) => ({
+              action: r.action,
+              action_parameters: r.action_parameters,
+              expression: r.expression,
+              description: r.description,
+              enabled: r.enabled,
+            })),
+          }),
+        }
+      );
+      rulesetResult = await updateResp.json();
+    } else {
+      // Create new ruleset
+      const createResp = await fetch(
+        `https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/rulesets`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            name: "Eclipse Response Header Rules",
+            kind: "zone",
+            phase,
+            rules: [testRule],
+          }),
+        }
+      );
+      rulesetResult = await createResp.json();
+    }
+
+    // 2. Wait a moment then test
+    await new Promise(r => setTimeout(r, 2000));
+
+    // 3. Make a test request to see if the header appears
+    let testResult: any = null;
+    try {
+      const testResp = await fetch("https://eclipserblx.com/", {
+        headers: { "User-Agent": "Mozilla/5.0 Test" },
+        redirect: "manual"
+      });
+      const allHeaders = Object.fromEntries([...testResp.headers.entries()]);
+      testResult = {
+        status: testResp.status,
+        hasTestHeader: !!allHeaders["x-eclipse-test-rule"],
+        testHeaderValue: allHeaders["x-eclipse-test-rule"] || null,
+        hasWorkerHeader: !!allHeaders["x-eclipse-worker"],
+        workerHeaderValue: allHeaders["x-eclipse-worker"] || null,
+        cfRay: allHeaders["cf-ray"] || null,
+        server: allHeaders["server"] || null,
+        // Show all x- headers for debugging
+        xHeaders: Object.fromEntries(
+          Object.entries(allHeaders).filter(([k]) => k.startsWith("x-"))
+        ),
+      };
+    } catch (e) {
+      testResult = { error: (e as Error).message };
+    }
+
+    // 4. Check zone plan
     const zoneResp = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}`, { headers });
     const zoneData = await zoneResp.json();
-    const accountId = zoneData.result?.account?.id;
-
-    // 1. Check worker subdomain enabled
-    const subdomainResp = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/subdomain`,
-      { headers }
-    );
-    const subdomainData = await subdomainResp.json();
-
-    // 2. Check worker details/settings
-    const settingsResp = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy/settings`,
-      { headers }
-    );
-    const settingsData = await settingsResp.json();
-
-    // 3. Check worker deployments
-    const deploymentsResp = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy/deployments`,
-      { headers }
-    );
-    const deploymentsData = await deploymentsResp.json();
-
-    // 4. Test the Worker directly by fetching through Cloudflare
-    // Use a bot UA to trigger OG serving
-    let workerTestResult: any = null;
-    try {
-      const testResp = await fetch("https://eclipserblx.com/share/products/73", {
-        headers: { 
-          "User-Agent": "Discordbot/2.0",
-        },
-        redirect: "manual"
-      });
-      workerTestResult = {
-        status: testResp.status,
-        headers: Object.fromEntries([...testResp.headers.entries()].filter(([k]) => 
-          ["content-type", "x-eclipse-worker", "location", "cf-ray", "server", "cache-control"].includes(k.toLowerCase())
-        )),
-        bodyPreview: (await testResp.text()).slice(0, 500),
-      };
-    } catch (e) {
-      workerTestResult = { error: (e as Error).message };
-    }
-
-    // 5. Test with regular UA
-    let humanTestResult: any = null;
-    try {
-      const testResp = await fetch("https://eclipserblx.com/share/products/73", {
-        headers: { 
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        },
-        redirect: "manual"
-      });
-      humanTestResult = {
-        status: testResp.status,
-        headers: Object.fromEntries([...testResp.headers.entries()].filter(([k]) => 
-          ["content-type", "x-eclipse-worker", "location", "cf-ray", "server", "cache-control"].includes(k.toLowerCase())
-        )),
-        bodyPreview: (await testResp.text()).slice(0, 500),
-      };
-    } catch (e) {
-      humanTestResult = { error: (e as Error).message };
-    }
 
     return jsonOk({
-      subdomain: subdomainData,
-      settings: settingsData,
-      deployments: deploymentsData.result?.deployments?.slice(0, 3),
-      workerTestBot: workerTestResult,
-      workerTestHuman: humanTestResult,
+      ruleCreated: rulesetResult?.success,
+      ruleErrors: rulesetResult?.errors,
+      testResult,
+      zonePlan: zoneData.result?.plan?.name,
+      zoneStatus: zoneData.result?.status,
+      zonePaused: zoneData.result?.paused,
     });
   } catch (e) {
     return internalError(e);
