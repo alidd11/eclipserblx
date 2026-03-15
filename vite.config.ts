@@ -87,18 +87,6 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === "development" && componentTagger(),
-    // Defer render-blocking CSS to improve LCP/FCP
-    {
-      name: 'defer-css',
-      enforce: 'post' as const,
-      transformIndexHtml(html: string) {
-        return html.replace(
-          /<link rel="stylesheet" crossorigin href="(\/assets\/[^"]+\.css)">/g,
-          '<link rel="stylesheet" crossorigin href="$1" media="print" onload="this.media=\'all\'">' +
-          '<noscript><link rel="stylesheet" crossorigin href="$1"></noscript>'
-        );
-      },
-    },
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: "script-defer",

@@ -13,7 +13,7 @@ export function HeroBanner() {
           width={375}
           height={420}
           fetchPriority="high"
-          decoding="async"
+          loading="eager"
           className="absolute inset-0 w-full h-full object-cover"
         />
       </picture>

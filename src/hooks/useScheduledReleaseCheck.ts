@@ -1,36 +1,53 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { checkScheduledReleases } from '@/lib/pushNotifications';
 import { useAuth } from '@/hooks/useAuth';
 
-const CHECK_INTERVAL = 5 * 60 * 1000; // Check every 5 minutes (reduced from 1 min)
+const CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 /**
- * Hook that periodically checks for scheduled product releases
- * and sends notifications to store followers when products go live.
- * 
- * Only runs for authenticated users to avoid unnecessary backend calls
- * from anonymous visitors.
+ * Deferred version — waits 5s / requestIdleCallback before starting polling.
+ * Prevents blocking the initial render and main-thread work.
  */
+export function useDeferredScheduledReleaseCheck() {
+  const { user } = useAuth();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const id = typeof requestIdleCallback === 'function'
+      ? requestIdleCallback(() => setReady(true))
+      : (setTimeout(() => setReady(true), 5000) as unknown as number);
+    return () => {
+      if (typeof cancelIdleCallback === 'function') cancelIdleCallback(id);
+      else clearTimeout(id);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!ready || !user) return;
+
+    checkScheduledReleases().catch(() => {});
+
+    const interval = setInterval(() => {
+      checkScheduledReleases().catch(() => {});
+    }, CHECK_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [ready, user]);
+}
+
+/** @deprecated Use useDeferredScheduledReleaseCheck instead */
 export function useScheduledReleaseCheck() {
   const { user } = useAuth();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Don't poll for unauthenticated visitors
     if (!user) return;
-
-    // Initial check on mount
     checkScheduledReleases().catch(() => {});
-
-    // Set up periodic checking
     intervalRef.current = setInterval(() => {
       checkScheduledReleases().catch(() => {});
     }, CHECK_INTERVAL);
-
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [user]);
 }

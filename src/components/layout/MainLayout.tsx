@@ -2,15 +2,15 @@ import { ReactNode } from 'react';
 import { LayoutShell } from './LayoutShell';
 import { PageTransition } from './PageTransition';
 import { CustomerSidebar } from './CustomerSidebar';
-import { useScheduledReleaseCheck } from '@/hooks/useScheduledReleaseCheck';
+import { useDeferredScheduledReleaseCheck } from '@/hooks/useScheduledReleaseCheck';
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
 function MainLayoutContent({ children }: MainLayoutProps) {
-  // Check for scheduled product releases periodically
-  useScheduledReleaseCheck();
+  // Deferred: waits for idle before starting polling
+  useDeferredScheduledReleaseCheck();
 
   return (
     <LayoutShell
