@@ -155,6 +155,7 @@ const navGroups: NavGroup[] = [
       { title: 'Email Templates', icon: Mail, href: '/admin/email-templates', permissions: ['manage_settings'] },
       { title: 'Bot Codes', icon: Code, href: '/admin/bot-codes', permissions: ['view_bot_codes'] },
       { title: 'GDPR Compliance', icon: Scale, href: '/admin/gdpr-compliance', permissions: [], roles: ['admin'] },
+      { title: 'BotGhost Setup', icon: Bot, href: '/admin/botghost-setup', permissions: [], roles: ['admin'] },
       { title: 'Settings', icon: Settings, href: '/admin/settings', permissions: [] },
       { title: 'Help', icon: HelpCircle, href: '/admin/help', permissions: [] },
     ],
