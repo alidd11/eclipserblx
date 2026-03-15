@@ -308,7 +308,7 @@ function getStepButtonText(step: OnboardingStep): string {
     case 'tos': return 'Sign Agreement';
     case 'appearance': return 'Customize Store';
     case 'categories': return 'Choose Categories';
-    case 'payments': return 'Connect Stripe';
+    case 'payments': return 'Set Up Payouts';
     case 'roblox': return 'Add Roblox Link';
     case 'socials': return 'Add Social Links';
     case 'products': return 'Create Product';
