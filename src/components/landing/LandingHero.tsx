@@ -93,15 +93,13 @@ export function LandingHero() {
                 <ArrowRight className="ml-2 h-3.5 w-3.5" />
               </Button>
             </Link>
-            {!isSeller && (
-              <Link
-                to="/seller"
-                className="text-xs font-medium text-foreground/70 hover:text-foreground transition-colors flex items-center gap-1.5"
-              >
-                <Store className="h-3.5 w-3.5" />
-                Start selling
-              </Link>
-            )}
+            <Link
+              to="/seller"
+              className="text-xs font-medium text-foreground/70 hover:text-foreground transition-colors flex items-center gap-1.5"
+            >
+              <Store className="h-3.5 w-3.5" />
+              Start selling
+            </Link>
             <Link
               to="/eclipse-plus"
               className="text-xs font-medium text-amber-500/80 hover:text-amber-400 transition-colors flex items-center gap-1.5"
