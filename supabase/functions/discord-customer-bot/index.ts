@@ -1958,6 +1958,11 @@ async function handleShowcaseCommand(
   const branding = getBranding(serverContext);
   const showcaseType = options?.find(o => o.name === "type")?.value;
   const productSearch = options?.find(o => o.name === "product")?.value;
+  const customMessage = options?.find(o => o.name === "message")?.value
+    ?.replace(/<[^>]*>/g, '')
+    ?.replace(/@(everyone|here)/gi, '@\u200B$1')
+    ?.substring(0, 500)
+    ?.trim() || null;
 
   try {
     // Check if user has a linked Eclipse account
