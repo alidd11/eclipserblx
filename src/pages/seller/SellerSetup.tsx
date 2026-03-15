@@ -295,7 +295,7 @@ function getStepActionText(step: OnboardingStep): string {
     case 'tos': return 'Review and sign the seller agreement to activate your store.';
     case 'appearance': return 'Upload a logo and banner to make your store recognizable.';
     case 'categories': return 'Select which product categories you want to sell in.';
-    case 'payments': return 'Connect Stripe to receive automatic payouts for your sales.';
+    case 'payments': return 'Choose your preferred payout method — Stripe, PayPal, or bank transfer.';
     case 'roblox': return 'Link your Roblox creator store so buyers can find you.';
     case 'socials': return 'Add your Discord, Twitter, or website so customers can connect.';
     case 'products': return 'Create your first product listing and start selling.';
