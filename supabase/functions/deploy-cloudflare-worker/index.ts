@@ -107,11 +107,29 @@ async function fetchOrigin(request, tag) {
     return new Response(r.body, { status: r.status >= 300 && r.status < 400 ? 200 : r.status, headers: h });
   }
   
-  // Main domain - normal passthrough
-  var r = await fetch(request);
+  // Main domain - rewrite to origin to avoid Custom Domain loop
+  var originUrl = ORIGIN_URL + url.pathname + url.search;
+  var newReq = new Request(originUrl, {
+    method: request.method,
+    headers: request.headers,
+    body: request.body,
+    redirect: "manual"
+  });
+  newReq.headers.set("X-Forwarded-Host", hostname);
+  newReq.headers.set("X-Eclipse-Worker", "rewriting");
+  var r = await fetch(newReq);
+  
+  // Follow internal redirects (origin may redirect lovable.app → custom domain)
+  var maxRedirects = 5;
+  while (r.status >= 300 && r.status < 400 && r.headers.get("Location") && maxRedirects-- > 0) {
+    var loc = r.headers.get("Location");
+    r = await fetch(loc, { redirect: "manual" });
+  }
+  
   var h = new Headers(r.headers);
   h.set("X-Eclipse-Worker", tag);
-  return new Response(r.body, { status: r.status, headers: h });
+  h.delete("Location");
+  return new Response(r.body, { status: r.status >= 300 && r.status < 400 ? 200 : r.status, headers: h });
 }
 
 const DEAD_PREFIXES = [
@@ -208,6 +226,11 @@ function serve404() {
 
 export default {
   async fetch(request) {
+    // Loop guard — if we already processed this request, bail immediately
+    if (request.headers.get("X-Eclipse-Worker")) {
+      return new Response("Loop detected", { status: 508, headers: { "X-Eclipse-Worker": "loop-guard" } });
+    }
+
     try {
       var url = new URL(request.url);
       var ua = request.headers.get("User-Agent") || "";
