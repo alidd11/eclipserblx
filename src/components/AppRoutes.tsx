@@ -1,5 +1,5 @@
-import { lazy, Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense, useState, useEffect, useCallback } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useStoreDomain } from "@/hooks/useStoreDomain";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
