@@ -2112,7 +2112,7 @@ async function handleStoreShowcase(supabase: any, store: any, branding: any, cus
 }
 
 // Showcase a specific product from the seller's store
-async function handleProductShowcase(supabase: any, store: any, productSearch: string | undefined, branding: any) {
+async function handleProductShowcase(supabase: any, store: any, productSearch: string | undefined, branding: any, customMessage?: string | null) {
   let query = supabase
     .from("products")
     .select("id, name, slug, product_number, price, images, description, download_count")
