@@ -175,8 +175,65 @@ Deno.serve(async (req) => {
 
 
 
-        case "showcase":
-          return await handleShowcaseCommand(supabase, serverContext, discordUserId, interaction.data?.options);
+        case "showcase": {
+          // Verify seller before showing modal so non-sellers get an immediate error
+          const { data: showcaseProfile } = await supabase
+            .from("profiles")
+            .select("user_id")
+            .eq("discord_id", discordUserId)
+            .maybeSingle();
+
+          if (!showcaseProfile?.user_id) {
+            return interactionResponse("Link your Discord account first with `/link` to showcase your store or products.", true);
+          }
+
+          const { data: showcaseStore } = await supabase
+            .from("stores")
+            .select("id")
+            .eq("owner_id", showcaseProfile.user_id)
+            .eq("is_active", true)
+            .is("deleted_at", null)
+            .maybeSingle();
+
+          if (!showcaseStore) {
+            return interactionResponse("You don't have an active store on Eclipse. Create one at https://eclipserblx.com/seller", true);
+          }
+
+          // Return a Modal form
+          return new Response(JSON.stringify({
+            type: MODAL,
+            data: {
+              custom_id: "showcase_modal",
+              title: "Showcase Your Store or Product",
+              components: [
+                {
+                  type: 1, // Action Row
+                  components: [{
+                    type: 4, // Text Input
+                    custom_id: "showcase_url",
+                    label: "Eclipse URL",
+                    style: 1, // Short
+                    required: true,
+                    max_length: 200,
+                    placeholder: "eclipserblx.com/products/123 or eclipserblx.com/store/my-store",
+                  }],
+                },
+                {
+                  type: 1, // Action Row
+                  components: [{
+                    type: 4, // Text Input
+                    custom_id: "showcase_message",
+                    label: "Message (optional)",
+                    style: 2, // Paragraph
+                    required: false,
+                    max_length: 500,
+                    placeholder: "Tell people about your product or store...",
+                  }],
+                },
+              ],
+            },
+          }), { headers: { "Content-Type": "application/json" } });
+        }
 
         case "help":
           return handleHelpCommand(serverContext);
@@ -237,6 +294,28 @@ Deno.serve(async (req) => {
       } else {
         const defaultIndex = (BigInt(discordUserId) >> BigInt(22)) % BigInt(6);
         discordAvatarUrl = `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
+      }
+
+      // Handle showcase modal submission
+      if (customId === "showcase_modal") {
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        const guildId = interaction.guild_id;
+        const serverContext = await getServerContext(supabase, guildId);
+
+        // Extract values from modal components
+        const urlValue = interaction.data.components
+          ?.find((row: any) => row.components?.[0]?.custom_id === "showcase_url")
+          ?.components?.[0]?.value as string | undefined;
+        const messageValue = interaction.data.components
+          ?.find((row: any) => row.components?.[0]?.custom_id === "showcase_message")
+          ?.components?.[0]?.value as string | undefined;
+
+        // Build options array to pass to existing handler
+        const showcaseOptions: Array<{ name: string; value: string; type: number }> = [];
+        if (urlValue) showcaseOptions.push({ name: "url", value: urlValue, type: 3 });
+        if (messageValue) showcaseOptions.push({ name: "message", value: messageValue, type: 3 });
+
+        return await handleShowcaseCommand(supabase, serverContext, discordUserId, showcaseOptions);
       }
 
     }
