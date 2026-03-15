@@ -20,7 +20,7 @@ export interface OnboardingData {
   hasProducts: boolean;
   hasSocials: boolean;
   hasRobloxLink: boolean;
-  hasStripeConnect: boolean;
+  hasPayoutMethod: boolean;
 }
 
 export function useSellerOnboarding() {
