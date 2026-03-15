@@ -1958,6 +1958,11 @@ async function handleShowcaseCommand(
   const branding = getBranding(serverContext);
   const showcaseType = options?.find(o => o.name === "type")?.value;
   const productSearch = options?.find(o => o.name === "product")?.value;
+  const customMessage = options?.find(o => o.name === "message")?.value
+    ?.replace(/<[^>]*>/g, '')
+    ?.replace(/@(everyone|here)/gi, '@\u200B$1')
+    ?.substring(0, 500)
+    ?.trim() || null;
 
   try {
     // Check if user has a linked Eclipse account
@@ -2004,9 +2009,9 @@ async function handleShowcaseCommand(
       });
 
       if (showcaseType === "product") {
-        return await handleProductShowcase(supabase, store, productSearch, branding);
+        return await handleProductShowcase(supabase, store, productSearch, branding, customMessage);
       } else {
-        return await handleStoreShowcase(supabase, store, branding);
+        return await handleStoreShowcase(supabase, store, branding, customMessage);
       }
     } else if (showcaseType && !profile?.user_id) {
       return interactionResponse("Link your Discord account first with `/link` to showcase your store or products.", true);
@@ -2021,14 +2026,19 @@ async function handleShowcaseCommand(
 }
 
 // Showcase a seller's store profile
-async function handleStoreShowcase(supabase: any, store: any, branding: any) {
+async function handleStoreShowcase(supabase: any, store: any, branding: any, customMessage?: string | null) {
   const storeUrl = `https://eclipserblx.com/store/${encodeURIComponent(store.slug)}`;
 
-  // Build description
-  let desc = store.description
-    ? store.description.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()
-    : "Check out this store on Eclipse!";
-  if (desc.length > 300) desc = desc.substring(0, 297) + "...";
+  // Use custom message if provided, otherwise fall back to store description
+  let desc: string;
+  if (customMessage) {
+    desc = customMessage;
+  } else {
+    desc = store.description
+      ? store.description.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()
+      : "Check out this store on Eclipse!";
+    if (desc.length > 300) desc = desc.substring(0, 297) + "...";
+  }
 
   // Build badges
   const badges: string[] = [];
@@ -2102,7 +2112,7 @@ async function handleStoreShowcase(supabase: any, store: any, branding: any) {
 }
 
 // Showcase a specific product from the seller's store
-async function handleProductShowcase(supabase: any, store: any, productSearch: string | undefined, branding: any) {
+async function handleProductShowcase(supabase: any, store: any, productSearch: string | undefined, branding: any, customMessage?: string | null) {
   let query = supabase
     .from("products")
     .select("id, name, slug, product_number, price, images, description, download_count")
@@ -2122,7 +2132,7 @@ async function handleProductShowcase(supabase: any, store: any, productSearch: s
       .maybeSingle();
 
     if (byNumber) {
-      return buildProductEmbed(byNumber, store, branding);
+      return buildProductEmbed(byNumber, store, branding, customMessage);
     }
 
     // Search by name (ilike)
@@ -2136,7 +2146,7 @@ async function handleProductShowcase(supabase: any, store: any, productSearch: s
       .limit(1);
 
     if (byName && byName.length > 0) {
-      return buildProductEmbed(byName[0], store, branding);
+      return buildProductEmbed(byName[0], store, branding, customMessage);
     }
 
     return interactionResponse(`No product found matching "${productSearch}" in your store.`, true);
@@ -2148,23 +2158,29 @@ async function handleProductShowcase(supabase: any, store: any, productSearch: s
     return interactionResponse("You don't have any approved products to showcase.", true);
   }
 
-  return buildProductEmbed(latest[0], store, branding);
+  return buildProductEmbed(latest[0], store, branding, customMessage);
 }
 
 // Build a rich product embed
-function buildProductEmbed(product: any, store: any, branding: any) {
+function buildProductEmbed(product: any, store: any, branding: any, customMessage?: string | null) {
   const productUrl = `https://eclipserblx.com/products/${product.product_number || encodeURIComponent(product.slug)}`;
   const storeUrl = `https://eclipserblx.com/store/${encodeURIComponent(store.slug)}`;
 
-  let desc = product.description || "A premium product from Eclipse.";
-  desc = desc.replace(/<[^>]*>/g, "").trim();
-  if (desc.length > 250) desc = desc.substring(0, 247) + "...";
+  let desc: string;
+  if (customMessage) {
+    desc = `${customMessage}\n\n**[View Product](${productUrl})**`;
+  } else {
+    let productDesc = product.description || "A premium product from Eclipse.";
+    productDesc = productDesc.replace(/<[^>]*>/g, "").trim();
+    if (productDesc.length > 250) productDesc = productDesc.substring(0, 247) + "...";
+    desc = `${productDesc}\n\n**[View Product](${productUrl})**`;
+  }
 
   const embed: any = {
     color: branding.color,
     title: `🌟 ${product.name}`,
     url: productUrl,
-    description: `${desc}\n\n**[View Product](${productUrl})**`,
+    description: desc,
     thumbnail: store.logo_url ? { url: store.logo_url } : undefined,
     image: product.images?.[0] ? { url: product.images[0] } : undefined,
     fields: [
