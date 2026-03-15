@@ -1,10 +1,11 @@
 // Auto-recover from stale module imports after deployments.
 // If cached HTML references JS chunks that no longer exist (hash changed),
-// force a one-time reload to fetch fresh assets. Cooldown prevents loops on iOS/Safari.
+// force a one-time cache-busted reload to fetch fresh assets.
 
 const KEY = 'chunk-reload';
 const COOLDOWN_KEY = 'chunk-reload-ts';
-const COOLDOWN_MS = 120000; // 2-minute cooldown between chunk-error reloads
+const COOLDOWN_MS = 120000; // 2-minute cooldown between automated recoveries
+const CACHE_BUST_PARAM = '__chunk';
 
 /** Safe sessionStorage wrapper — returns null on any failure (private browsing, quota, etc.) */
 function safeGet(k: string): string | null {
@@ -27,68 +28,116 @@ function isInCooldown(): boolean {
 const CHUNK_ERROR_PATTERNS = [
   'module script',
   'dynamically imported module',
-  'Load failed',                     // Safari-specific
-  'Failed to fetch',                 // Network failure on chunk
-  'Loading chunk',                   // Webpack-style
-  'Loading CSS chunk',
-  'ChunkLoadError',
-  'Importing a module script failed', // Safari
-  'not a valid JavaScript MIME type', // Safari MIME type enforcement
+  'load failed',
+  'failed to fetch',
+  'loading chunk',
+  'loading css chunk',
+  'chunkloaderror',
+  'importing a module script failed',
+  'not a valid javascript mime type',
+  'application/octet-stream',
+  'mime type',
 ];
 
 function isChunkErrorMessage(msg: string): boolean {
-  return CHUNK_ERROR_PATTERNS.some(p => msg.includes(p));
+  const normalized = msg.toLowerCase();
+  return CHUNK_ERROR_PATTERNS.some((pattern) => normalized.includes(pattern));
 }
 
-function handleChunkError() {
-  // If we're in cooldown, don't reload again — prevents Safari crash loops
-  if (isInCooldown()) {
-    console.warn('[ChunkError] In cooldown, skipping reload');
+function isChunkAssetUrl(url: string): boolean {
+  return /\/assets\/.+\.(js|css)(\?|$)/i.test(url);
+}
+
+function getEventTargetUrl(target: EventTarget | null): string {
+  if (!(target instanceof Element)) return '';
+  if (target instanceof HTMLScriptElement) return target.src || '';
+  if (target instanceof HTMLLinkElement) return target.href || '';
+  return '';
+}
+
+function buildCacheBustedUrl(base: string = window.location.href): string {
+  const url = new URL(base, window.location.origin);
+  url.searchParams.set(CACHE_BUST_PARAM, Date.now().toString());
+  return url.toString();
+}
+
+async function clearRuntimeCaches() {
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    try {
+      navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' });
+    } catch {
+      // ignore
+    }
+  }
+
+  if ('caches' in window) {
+    try {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map((name) => caches.delete(name)));
+    } catch {
+      // ignore
+    }
+  }
+}
+
+function performHardRecovery(reason: string) {
+  console.log(`[ChunkError] ${reason} — forcing cache-busted hard reload`);
+  safeSet(KEY, '1');
+  safeSet(COOLDOWN_KEY, Date.now().toString());
+
+  void clearRuntimeCaches().finally(() => {
+    window.location.replace(buildCacheBustedUrl());
+  });
+}
+
+function handleChunkError(reason: string) {
+  const alreadyReloaded = safeGet(KEY) === '1';
+
+  // Prevent infinite loops, but still allow one recovery attempt per window.
+  if (alreadyReloaded && isInCooldown()) {
+    console.warn('[ChunkError] Recovery already attempted recently, skipping');
     return;
   }
 
-  const alreadyReloaded = safeGet(KEY);
-  if (!alreadyReloaded) {
-    console.log('[ChunkError] Stale chunk detected, reloading once');
-    safeSet(KEY, '1');
-    safeSet(COOLDOWN_KEY, Date.now().toString());
-    window.location.reload();
-  } else {
-    // Already tried once, clear flag and give up
-    console.warn('[ChunkError] Already reloaded once, giving up');
-    safeRemove(KEY);
-  }
+  performHardRecovery(reason);
 }
 
-// Catch static module script failures (including Safari's "Load failed")
+// Catch static module script failures (including Safari MIME/module script errors)
 window.addEventListener('error', (e) => {
-  const msg = e.message || '';
-  if (isChunkErrorMessage(msg)) handleChunkError();
+  const message = [
+    e.message || '',
+    e.error instanceof Error ? e.error.message : '',
+  ].join(' ');
+
+  const targetUrl = getEventTargetUrl(e.target);
+  const combined = `${message} ${targetUrl}`;
+
+  if (isChunkErrorMessage(combined) || (!message && targetUrl && isChunkAssetUrl(targetUrl))) {
+    handleChunkError('Static module/chunk load failure');
+  }
 }, true);
 
 // Catch dynamic import() failures
 window.addEventListener('unhandledrejection', (e) => {
-  const msg = e.reason?.message || '';
-  if (isChunkErrorMessage(msg)) {
+  const reason = e.reason;
+  const message = typeof reason === 'string' ? reason : reason?.message || '';
+  const name = typeof reason === 'object' && reason ? (reason as { name?: string }).name || '' : '';
+
+  if (isChunkErrorMessage(`${name} ${message}`)) {
     e.preventDefault();
-    handleChunkError();
+    handleChunkError('Dynamic import rejection');
   }
 });
 
-// Safari BFCache recovery: when the page is restored from bfcache after
-// backgrounding on iOS, modules may be in a broken state. Force a reload.
+// Safari BFCache recovery: when page is restored from bfcache after backgrounding,
+// modules can resume in a stale state.
 window.addEventListener('pageshow', (e) => {
   if (e.persisted) {
-    console.log('[ChunkError] Page restored from bfcache, reloading');
-    // Small delay to let the browser settle before reloading
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
+    handleChunkError('Page restored from bfcache');
   }
 });
 
-// Clear the reload marker only after page has fully stabilised,
-// preventing premature clear → re-trigger loops on Safari.
+// Clear reload marker only after page has stabilised.
 if (document.readyState === 'complete') {
   setTimeout(() => safeRemove(KEY), 2000);
 } else {
