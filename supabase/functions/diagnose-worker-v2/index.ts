@@ -9,88 +9,84 @@ Deno.serve(async (req) => {
     const CF_ZONE_ID = Deno.env.get("CLOUDFLARE_ZONE_ID");
     if (!CF_TOKEN || !CF_ZONE_ID) return jsonOk({ error: "Missing secrets" }, 500);
 
-    const headers: Record<string, string> = { Authorization: `Bearer ${CF_TOKEN}` };
-    
+    const headers: Record<string, string> = { 
+      Authorization: `Bearer ${CF_TOKEN}`,
+      "Content-Type": "application/json"
+    };
+
     // Get account ID
-    const zoneResp = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}`, { 
-      headers: { ...headers, "Content-Type": "application/json" } 
-    });
+    const zoneResp = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}`, { headers });
     const zoneData = await zoneResp.json();
     const accountId = zoneData.result?.account?.id;
 
-    // Download the actual deployed worker script
-    const scriptResp = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy`,
+    // 1. Check worker subdomain enabled
+    const subdomainResp = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/subdomain`,
       { headers }
     );
-    const contentType = scriptResp.headers.get("content-type") || "";
-    const rawText = await scriptResp.text();
-    const rawLength = rawText.length;
-    
-    // Check key markers in raw text (before any parsing)
-    const rawHasExportDefault = rawText.includes("export default");
-    const rawHasFetch = rawText.includes("async fetch");
-    const rawHasShare = rawText.includes("/share/");
-    const rawHasServeOg = rawText.includes("serveOg");
-    const rawHasServe404 = rawText.includes("serve404");
-    const rawHasFetchOrigin = rawText.includes("fetchOrigin");
+    const subdomainData = await subdomainResp.json();
 
-    // Try to extract just the JS from multipart
-    let extractedLength = 0;
-    let extractedLast500 = "";
-    if (contentType.includes("multipart")) {
-      // Find the boundary from content-type
-      const boundaryMatch = contentType.match(/boundary=(.+)/);
-      const boundary = boundaryMatch?.[1] || "";
-      
-      // Split by actual boundary (not regex)
-      const parts = rawText.split("--" + boundary);
-      const jsPart = parts.find(p => p.includes("application/javascript") || p.includes("worker.js"));
-      if (jsPart) {
-        const bodyStart = jsPart.indexOf("\r\n\r\n");
-        if (bodyStart >= 0) {
-          const jsContent = jsPart.slice(bodyStart + 4).trim();
-          extractedLength = jsContent.length;
-          extractedLast500 = jsContent.slice(-500);
-        }
-      }
+    // 2. Check worker details/settings
+    const settingsResp = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy/settings`,
+      { headers }
+    );
+    const settingsData = await settingsResp.json();
+
+    // 3. Check worker deployments
+    const deploymentsResp = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/eclipse-og-proxy/deployments`,
+      { headers }
+    );
+    const deploymentsData = await deploymentsResp.json();
+
+    // 4. Test the Worker directly by fetching through Cloudflare
+    // Use a bot UA to trigger OG serving
+    let workerTestResult: any = null;
+    try {
+      const testResp = await fetch("https://eclipserblx.com/share/products/73", {
+        headers: { 
+          "User-Agent": "Discordbot/2.0",
+        },
+        redirect: "manual"
+      });
+      workerTestResult = {
+        status: testResp.status,
+        headers: Object.fromEntries([...testResp.headers.entries()].filter(([k]) => 
+          ["content-type", "x-eclipse-worker", "location", "cf-ray", "server", "cache-control"].includes(k.toLowerCase())
+        )),
+        bodyPreview: (await testResp.text()).slice(0, 500),
+      };
+    } catch (e) {
+      workerTestResult = { error: (e as Error).message };
     }
 
-    // Check worker routes
-    const routesResp = await fetch(
-      `https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/workers/routes`,
-      { headers: { ...headers, "Content-Type": "application/json" } }
-    );
-    const routesData = await routesResp.json();
-
-    // Check redirect rules
-    const redirectResp = await fetch(
-      `https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/rulesets/phases/http_request_dynamic_redirect/entrypoint`,
-      { headers: { ...headers, "Content-Type": "application/json" } }
-    );
-    const redirectData = await redirectResp.json();
+    // 5. Test with regular UA
+    let humanTestResult: any = null;
+    try {
+      const testResp = await fetch("https://eclipserblx.com/share/products/73", {
+        headers: { 
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        },
+        redirect: "manual"
+      });
+      humanTestResult = {
+        status: testResp.status,
+        headers: Object.fromEntries([...testResp.headers.entries()].filter(([k]) => 
+          ["content-type", "x-eclipse-worker", "location", "cf-ray", "server", "cache-control"].includes(k.toLowerCase())
+        )),
+        bodyPreview: (await testResp.text()).slice(0, 500),
+      };
+    } catch (e) {
+      humanTestResult = { error: (e as Error).message };
+    }
 
     return jsonOk({
-      rawAnalysis: {
-        contentType,
-        rawLength,
-        rawHasExportDefault,
-        rawHasFetch,
-        rawHasShare,
-        rawHasServeOg,
-        rawHasServe404,
-        rawHasFetchOrigin,
-      },
-      extracted: {
-        length: extractedLength,
-        last500: extractedLast500,
-      },
-      routes: routesData.result,
-      redirectRules: redirectData.result?.rules?.map((r: any) => ({
-        description: r.description,
-        expression: r.expression,
-        enabled: r.enabled,
-      })),
+      subdomain: subdomainData,
+      settings: settingsData,
+      deployments: deploymentsData.result?.deployments?.slice(0, 3),
+      workerTestBot: workerTestResult,
+      workerTestHuman: humanTestResult,
     });
   } catch (e) {
     return internalError(e);
