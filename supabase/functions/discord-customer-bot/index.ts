@@ -2175,6 +2175,12 @@ function buildProductEmbed(product: any, store: any, branding: any, customMessag
     if (productDesc.length > 250) productDesc = productDesc.substring(0, 247) + "...";
     desc = `${productDesc}\n\n**[View Product](${productUrl})**`;
   }
+
+  const embed: any = {
+    color: branding.color,
+    title: `🌟 ${product.name}`,
+    url: productUrl,
+    description: desc,
     thumbnail: store.logo_url ? { url: store.logo_url } : undefined,
     image: product.images?.[0] ? { url: product.images[0] } : undefined,
     fields: [
