@@ -1976,7 +1976,7 @@ async function handleShowcaseCommand(
       const parsed = new URL(normalised);
       hostname = parsed.hostname.toLowerCase();
       pathname = parsed.pathname;
-    } catch {
+    } catch (_e) {
       return interactionResponse("That doesn't look like a valid URL. Example: `eclipserblx.com/products/123`", true);
     }
 
@@ -2080,16 +2080,11 @@ async function handleShowcaseCommand(
 async function handleStoreShowcase(supabase: any, store: any, branding: any, customMessage?: string | null) {
   const storeUrl = `https://eclipserblx.com/store/${encodeURIComponent(store.slug)}`;
 
-  // Use custom message if provided, otherwise fall back to store description
-  let desc: string;
-  if (customMessage) {
-    desc = customMessage;
-  } else {
-    desc = store.description
-      ? store.description.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()
-      : "Check out this store on Eclipse!";
-    if (desc.length > 300) desc = desc.substring(0, 297) + "...";
-  }
+  // Store description is always used for the embed description
+  let desc = store.description
+    ? store.description.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()
+    : "Check out this store on Eclipse!";
+  if (desc.length > 300) desc = desc.substring(0, 297) + "...";
 
   // Build badges
   const badges: string[] = [];
@@ -2125,12 +2120,14 @@ async function handleStoreShowcase(supabase: any, store: any, branding: any, cus
     ? `${"⭐".repeat(Math.round(store.average_rating))} ${Number(store.average_rating).toFixed(1)}/5`
     : "No ratings yet";
 
-  const fields: any[] = [
-    { name: "⭐ Rating", value: rating, inline: true },
-    { name: "📦 Products", value: `${store.product_count || 0}`, inline: true },
-    { name: "👥 Followers", value: `${store.follower_count || 0}`, inline: true },
-    { name: "🔗 Links", value: links.join(" • "), inline: false },
-  ];
+  const fields: any[] = [];
+  if (customMessage) {
+    fields.push({ name: "\uD83D\uDCAC From the Seller", value: customMessage, inline: false });
+  }
+  fields.push({ name: "\u2B50 Rating", value: rating, inline: true });
+  fields.push({ name: "\uD83D\uDCE6 Products", value: "" + (store.product_count || 0), inline: true });
+  fields.push({ name: "\uD83D\uDC65 Followers", value: "" + (store.follower_count || 0), inline: true });
+  fields.push({ name: "\uD83D\uDD17 Links", value: links.join(" \u2022 "), inline: false });
 
   if (productList) {
     fields.push({ name: "🛍️ Featured Products", value: productList, inline: false });
@@ -2203,15 +2200,10 @@ function buildProductEmbed(product: any, store: any, branding: any, customMessag
   const productUrl = `https://eclipserblx.com/products/${product.product_number || encodeURIComponent(product.slug)}`;
   const storeUrl = `https://eclipserblx.com/store/${encodeURIComponent(store.slug)}`;
 
-  let desc: string;
-  if (customMessage) {
-    desc = `${customMessage}\n\n**[View Product](${productUrl})**`;
-  } else {
-    let productDesc = product.description || "A premium product from Eclipse.";
-    productDesc = productDesc.replace(/<[^>]*>/g, "").trim();
-    if (productDesc.length > 250) productDesc = productDesc.substring(0, 247) + "...";
-    desc = `${productDesc}\n\n**[View Product](${productUrl})**`;
-  }
+  let productDesc = product.description || "A premium product from Eclipse.";
+  productDesc = productDesc.replace(/<[^>]*>/g, "").trim();
+  if (productDesc.length > 250) productDesc = productDesc.substring(0, 247) + "...";
+  const desc = `${productDesc}\n\n**[View Product](${productUrl})**`;
 
   const embed: any = {
     color: branding.color,
@@ -2220,18 +2212,21 @@ function buildProductEmbed(product: any, store: any, branding: any, customMessag
     description: desc,
     thumbnail: store.logo_url ? { url: store.logo_url } : undefined,
     image: product.images?.[0] ? { url: product.images[0] } : undefined,
-    fields: [
-      {
+    fields: (() => {
+      const f: any[] = [];
+      if (customMessage) f.push({ name: "💬 From the Seller", value: customMessage, inline: false });
+      f.push({
         name: "💰 Price",
         value: product.price === 0 ? "**FREE**" : `**£${Number(product.price).toFixed(2)}**`,
         inline: true,
-      },
-      {
+      });
+      f.push({
         name: "🏪 Store",
         value: `[${store.name}](${storeUrl})`,
         inline: true,
-      },
-    ],
+      });
+      return f;
+    })(),
     footer: { text: `${branding.footer} • Creator Showcase`, icon_url: branding.icon },
     timestamp: new Date().toISOString(),
   };
