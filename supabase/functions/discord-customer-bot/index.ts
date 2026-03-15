@@ -2009,9 +2009,9 @@ async function handleShowcaseCommand(
       });
 
       if (showcaseType === "product") {
-        return await handleProductShowcase(supabase, store, productSearch, branding);
+        return await handleProductShowcase(supabase, store, productSearch, branding, customMessage);
       } else {
-        return await handleStoreShowcase(supabase, store, branding);
+        return await handleStoreShowcase(supabase, store, branding, customMessage);
       }
     } else if (showcaseType && !profile?.user_id) {
       return interactionResponse("Link your Discord account first with `/link` to showcase your store or products.", true);
