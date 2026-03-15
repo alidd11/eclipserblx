@@ -176,7 +176,7 @@ Deno.serve(async (req) => {
 
 
         case "showcase":
-          return await handleShowcaseCommand(supabase, serverContext);
+          return await handleShowcaseCommand(supabase, serverContext, discordUserId, interaction.data?.options);
 
         case "help":
           return handleHelpCommand(serverContext);
