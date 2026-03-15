@@ -167,4 +167,6 @@ export const ActivityFeed = forwardRef<HTMLDivElement>((_, ref) => {
       </CardContent>
     </Card>
   );
-}
+});
+
+ActivityFeed.displayName = 'ActivityFeed';
