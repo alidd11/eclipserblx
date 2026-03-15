@@ -2162,19 +2162,19 @@ async function handleProductShowcase(supabase: any, store: any, productSearch: s
 }
 
 // Build a rich product embed
-function buildProductEmbed(product: any, store: any, branding: any) {
+function buildProductEmbed(product: any, store: any, branding: any, customMessage?: string | null) {
   const productUrl = `https://eclipserblx.com/products/${product.product_number || encodeURIComponent(product.slug)}`;
   const storeUrl = `https://eclipserblx.com/store/${encodeURIComponent(store.slug)}`;
 
-  let desc = product.description || "A premium product from Eclipse.";
-  desc = desc.replace(/<[^>]*>/g, "").trim();
-  if (desc.length > 250) desc = desc.substring(0, 247) + "...";
-
-  const embed: any = {
-    color: branding.color,
-    title: `🌟 ${product.name}`,
-    url: productUrl,
-    description: `${desc}\n\n**[View Product](${productUrl})**`,
+  let desc: string;
+  if (customMessage) {
+    desc = `${customMessage}\n\n**[View Product](${productUrl})**`;
+  } else {
+    let productDesc = product.description || "A premium product from Eclipse.";
+    productDesc = productDesc.replace(/<[^>]*>/g, "").trim();
+    if (productDesc.length > 250) productDesc = productDesc.substring(0, 247) + "...";
+    desc = `${productDesc}\n\n**[View Product](${productUrl})**`;
+  }
     thumbnail: store.logo_url ? { url: store.logo_url } : undefined,
     image: product.images?.[0] ? { url: product.images[0] } : undefined,
     fields: [
