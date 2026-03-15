@@ -1990,8 +1990,8 @@ async function handleShowcaseCommand(
       .eq("discord_id", discordUserId)
       .maybeSingle();
 
-    // If user specified a type, they want to showcase their own stuff
-    if (showcaseType && profile?.user_id) {
+    // If user specified a type or URL, they want to showcase their own stuff
+    if ((effectiveType || urlInput) && profile?.user_id) {
       // Check if user owns a store
       const { data: store } = await supabase
         .from("stores")
@@ -2023,15 +2023,15 @@ async function handleShowcaseCommand(
         action: "discord_showcase",
         resource: store.id,
         user_id: profile.user_id,
-        details: { type: showcaseType, discord_id: discordUserId },
+        details: { type: effectiveType || "store", discord_id: discordUserId, url: urlInput || null },
       });
 
-      if (showcaseType === "product") {
-        return await handleProductShowcase(supabase, store, productSearch, branding, customMessage);
+      if (effectiveType === "product") {
+        return await handleProductShowcase(supabase, store, parsedProductNumber, branding, customMessage);
       } else {
         return await handleStoreShowcase(supabase, store, branding, customMessage);
       }
-    } else if (showcaseType && !profile?.user_id) {
+    } else if ((effectiveType || urlInput) && !profile?.user_id) {
       return interactionResponse("Link your Discord account first with `/link` to showcase your store or products.", true);
     }
 
