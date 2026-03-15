@@ -74,7 +74,7 @@ export function useSellerOnboarding() {
         { id: 'tos', title: 'Terms of Service', description: 'Review and accept the seller agreement', completed: data.tosSigned, href: '/seller/documents/terms', required: true },
         { id: 'appearance', title: 'Store Appearance', description: 'Upload a logo and banner', completed: data.hasAppearance, href: '/seller/settings/appearance', required: true },
         { id: 'categories', title: 'Categories', description: 'Choose your product categories', completed: data.categoriesEnabled, href: '/seller/categories', required: true },
-        { id: 'payments', title: 'Payment Setup', description: 'Connect Stripe to receive payouts', completed: data.hasStripeConnect, href: '/seller/settings/payments', required: true },
+        { id: 'payments', title: 'Payout Method', description: 'Choose how you want to get paid', completed: data.hasPayoutMethod, href: '/seller/settings/payments', required: true },
         { id: 'roblox', title: 'Roblox Link', description: 'Link your Roblox creator store', completed: data.hasRobloxLink, href: '/seller/roblox', required: false },
         { id: 'socials', title: 'Social Links', description: 'Connect your community channels', completed: data.hasSocials, href: '/seller/settings/profile', required: false },
         { id: 'products', title: 'First Product', description: 'Create your first listing', completed: data.hasProducts, href: '/seller/products/new', required: true },
