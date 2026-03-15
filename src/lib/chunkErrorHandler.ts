@@ -23,6 +23,22 @@ function isInCooldown(): boolean {
   return Date.now() - parseInt(ts, 10) < COOLDOWN_MS;
 }
 
+/** Patterns that indicate a chunk/module load failure */
+const CHUNK_ERROR_PATTERNS = [
+  'module script',
+  'dynamically imported module',
+  'Load failed',                     // Safari-specific
+  'Failed to fetch',                 // Network failure on chunk
+  'Loading chunk',                   // Webpack-style
+  'Loading CSS chunk',
+  'ChunkLoadError',
+  'Importing a module script failed', // Safari
+];
+
+function isChunkErrorMessage(msg: string): boolean {
+  return CHUNK_ERROR_PATTERNS.some(p => msg.includes(p));
+}
+
 function handleChunkError() {
   // If we're in cooldown, don't reload again — prevents Safari crash loops
   if (isInCooldown()) {
@@ -43,17 +59,30 @@ function handleChunkError() {
   }
 }
 
-// Catch static module script failures
+// Catch static module script failures (including Safari's "Load failed")
 window.addEventListener('error', (e) => {
-  if (e.message?.includes('module script')) handleChunkError();
+  const msg = e.message || '';
+  if (isChunkErrorMessage(msg)) handleChunkError();
 }, true);
 
 // Catch dynamic import() failures
 window.addEventListener('unhandledrejection', (e) => {
   const msg = e.reason?.message || '';
-  if (msg.includes('dynamically imported module') || msg.includes('module script')) {
+  if (isChunkErrorMessage(msg)) {
     e.preventDefault();
     handleChunkError();
+  }
+});
+
+// Safari BFCache recovery: when the page is restored from bfcache after
+// backgrounding on iOS, modules may be in a broken state. Force a reload.
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) {
+    console.log('[ChunkError] Page restored from bfcache, reloading');
+    // Small delay to let the browser settle before reloading
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   }
 });
 
