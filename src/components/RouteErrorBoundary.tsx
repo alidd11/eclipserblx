@@ -26,7 +26,6 @@ const CHUNK_ERROR_PATTERNS = [
   'dynamically imported module',
   'not a valid javascript mime type',
   'application/octet-stream',
-  'mime type',
 ];
 
 function isChunkError(error: Error | null): boolean {
@@ -66,7 +65,8 @@ export class RouteErrorBoundary extends Component<Props, State> {
     console.error('[RouteErrorBoundary]', error, errorInfo);
     captureException(error, { componentStack: errorInfo.componentStack });
 
-    if (isChunkError(error)) {
+    // Avoid forcing Cloudflare full-page verification loops inside admin.
+    if (isChunkError(error) && !window.location.pathname.startsWith('/admin')) {
       this.attemptChunkRecovery();
     }
   }
@@ -100,12 +100,19 @@ export class RouteErrorBoundary extends Component<Props, State> {
   }
 
   handleRetry = () => {
+    const nextCount = this.state.retryCount + 1;
+
     if (isChunkError(this.state.error)) {
-      this.performHardRecovery();
+      // First retry is a local remount (no full-page reload). Second escalates.
+      if (nextCount >= 2) {
+        this.attemptChunkRecovery();
+        return;
+      }
+
+      this.setState({ hasError: false, error: null, retryCount: nextCount });
       return;
     }
 
-    const nextCount = this.state.retryCount + 1;
     if (nextCount >= 2) {
       this.performHardRecovery();
       return;
