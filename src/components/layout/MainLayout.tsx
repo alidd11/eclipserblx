@@ -2,31 +2,15 @@ import { ReactNode } from 'react';
 import { LayoutShell } from './LayoutShell';
 import { PageTransition } from './PageTransition';
 import { CustomerSidebar } from './CustomerSidebar';
-import { useEffect, useRef } from 'react';
+import { useDeferredScheduledReleaseCheck } from '@/hooks/useScheduledReleaseCheck';
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
 function MainLayoutContent({ children }: MainLayoutProps) {
-  // Defer scheduled release check to avoid blocking initial render
-  const imported = useRef(false);
-  useEffect(() => {
-    if (imported.current) return;
-    imported.current = true;
-    const id = typeof requestIdleCallback === 'function'
-      ? requestIdleCallback(() => {
-          import('@/hooks/useScheduledReleaseCheck');
-        })
-      : setTimeout(() => {
-          import('@/hooks/useScheduledReleaseCheck');
-        }, 5000);
-    return () => {
-      if (typeof cancelIdleCallback === 'function' && typeof id === 'number') {
-        cancelIdleCallback(id);
-      }
-    };
-  }, []);
+  // Deferred: waits for idle before starting polling
+  useDeferredScheduledReleaseCheck();
 
   return (
     <LayoutShell
