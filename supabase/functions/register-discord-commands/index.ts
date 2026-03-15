@@ -92,8 +92,8 @@ const commands = [
         ],
       },
       {
-        name: "product",
-        description: "Product name or number (for product showcase)",
+        name: "url",
+        description: "Product or store URL from Eclipse (e.g. eclipserblx.com/products/123)",
         type: 3, // STRING
         required: false,
       },

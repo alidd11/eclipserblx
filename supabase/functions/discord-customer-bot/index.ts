@@ -1957,7 +1957,25 @@ async function handleShowcaseCommand(
 ) {
   const branding = getBranding(serverContext);
   const showcaseType = options?.find(o => o.name === "type")?.value;
-  const productSearch = options?.find(o => o.name === "product")?.value;
+  const urlInput = options?.find(o => o.name === "url")?.value as string | undefined;
+
+  // Parse URL to extract product number or store slug
+  let parsedProductNumber: string | null = null;
+  let parsedStoreSlug: string | null = null;
+  if (urlInput) {
+    const productMatch = urlInput.match(/\/products\/(\d+)/);
+    const storeMatch = urlInput.match(/\/store\/([^\/\?\#]+)/);
+    if (productMatch) {
+      parsedProductNumber = productMatch[1];
+    } else if (storeMatch) {
+      parsedStoreSlug = decodeURIComponent(storeMatch[1]);
+    } else {
+      return interactionResponse("Please provide a valid Eclipse URL (e.g. `eclipserblx.com/products/123` or `eclipserblx.com/store/my-store`)", true);
+    }
+  }
+
+  // Auto-detect showcase type from URL
+  const effectiveType = parsedProductNumber ? "product" : parsedStoreSlug ? "store" : showcaseType;
   const customMessage = options?.find(o => o.name === "message")?.value
     ?.replace(/<[^>]*>/g, '')
     ?.replace(/@(everyone|here)/gi, '@\u200B$1')
@@ -1972,8 +1990,8 @@ async function handleShowcaseCommand(
       .eq("discord_id", discordUserId)
       .maybeSingle();
 
-    // If user specified a type, they want to showcase their own stuff
-    if (showcaseType && profile?.user_id) {
+    // If user specified a type or URL, they want to showcase their own stuff
+    if ((effectiveType || urlInput) && profile?.user_id) {
       // Check if user owns a store
       const { data: store } = await supabase
         .from("stores")
@@ -2005,15 +2023,15 @@ async function handleShowcaseCommand(
         action: "discord_showcase",
         resource: store.id,
         user_id: profile.user_id,
-        details: { type: showcaseType, discord_id: discordUserId },
+        details: { type: effectiveType || "store", discord_id: discordUserId, url: urlInput || null },
       });
 
-      if (showcaseType === "product") {
-        return await handleProductShowcase(supabase, store, productSearch, branding, customMessage);
+      if (effectiveType === "product") {
+        return await handleProductShowcase(supabase, store, parsedProductNumber, branding, customMessage);
       } else {
         return await handleStoreShowcase(supabase, store, branding, customMessage);
       }
-    } else if (showcaseType && !profile?.user_id) {
+    } else if ((effectiveType || urlInput) && !profile?.user_id) {
       return interactionResponse("Link your Discord account first with `/link` to showcase your store or products.", true);
     }
 
@@ -2112,48 +2130,34 @@ async function handleStoreShowcase(supabase: any, store: any, branding: any, cus
 }
 
 // Showcase a specific product from the seller's store
-async function handleProductShowcase(supabase: any, store: any, productSearch: string | undefined, branding: any, customMessage?: string | null) {
-  let query = supabase
+async function handleProductShowcase(supabase: any, store: any, productNumber: string | null, branding: any, customMessage?: string | null) {
+  if (productNumber) {
+    // Look up by exact product number from URL
+    const { data: product } = await supabase
+      .from("products")
+      .select("id, name, slug, product_number, price, images, description, download_count")
+      .eq("store_id", store.id)
+      .eq("is_active", true)
+      .eq("moderation_status", "approved")
+      .eq("product_number", productNumber)
+      .maybeSingle();
+
+    if (product) {
+      return buildProductEmbed(product, store, branding, customMessage);
+    }
+
+    return interactionResponse(`No product found with number #${productNumber} in your store. Make sure the URL points to one of your products.`, true);
+  }
+
+  // No URL provided — pick latest product
+  const { data: latest } = await supabase
     .from("products")
     .select("id, name, slug, product_number, price, images, description, download_count")
     .eq("store_id", store.id)
     .eq("is_active", true)
-    .eq("moderation_status", "approved");
-
-  if (productSearch) {
-    // Try matching by product number first, then name
-    const { data: byNumber } = await supabase
-      .from("products")
-      .select("id, name, slug, product_number, price, images, description, download_count")
-      .eq("store_id", store.id)
-      .eq("is_active", true)
-      .eq("moderation_status", "approved")
-      .eq("product_number", productSearch)
-      .maybeSingle();
-
-    if (byNumber) {
-      return buildProductEmbed(byNumber, store, branding, customMessage);
-    }
-
-    // Search by name (ilike)
-    const { data: byName } = await supabase
-      .from("products")
-      .select("id, name, slug, product_number, price, images, description, download_count")
-      .eq("store_id", store.id)
-      .eq("is_active", true)
-      .eq("moderation_status", "approved")
-      .ilike("name", `%${productSearch}%`)
-      .limit(1);
-
-    if (byName && byName.length > 0) {
-      return buildProductEmbed(byName[0], store, branding, customMessage);
-    }
-
-    return interactionResponse(`No product found matching "${productSearch}" in your store.`, true);
-  }
-
-  // No search term — pick latest product
-  const { data: latest } = await query.order("created_at", { ascending: false }).limit(1);
+    .eq("moderation_status", "approved")
+    .order("created_at", { ascending: false })
+    .limit(1);
   if (!latest || latest.length === 0) {
     return interactionResponse("You don't have any approved products to showcase.", true);
   }
