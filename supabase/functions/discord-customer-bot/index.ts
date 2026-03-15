@@ -2146,7 +2146,7 @@ async function handleProductShowcase(supabase: any, store: any, productSearch: s
       .limit(1);
 
     if (byName && byName.length > 0) {
-      return buildProductEmbed(byName[0], store, branding);
+      return buildProductEmbed(byName[0], store, branding, customMessage);
     }
 
     return interactionResponse(`No product found matching "${productSearch}" in your store.`, true);
