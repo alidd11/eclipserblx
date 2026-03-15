@@ -1033,6 +1033,8 @@ async function removeDomain(userId: string, domainId: string) {
       await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/custom_hostnames/${domainRecord.cloudflare_hostname_id}`, {
         method: "DELETE",
       });
+      // Also remove the Worker Route
+      await removeWorkerRoute(cfToken, cfZoneId, domainRecord.domain);
     }
   }
 
