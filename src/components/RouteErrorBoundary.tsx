@@ -65,8 +65,7 @@ export class RouteErrorBoundary extends Component<Props, State> {
     console.error('[RouteErrorBoundary]', error, errorInfo);
     captureException(error, { componentStack: errorInfo.componentStack });
 
-    // Avoid forcing Cloudflare full-page verification loops inside admin.
-    if (isChunkError(error) && !window.location.pathname.startsWith('/admin')) {
+    if (isChunkError(error)) {
       this.attemptChunkRecovery();
     }
   }
