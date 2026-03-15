@@ -33,6 +33,7 @@ const CHUNK_ERROR_PATTERNS = [
   'Loading CSS chunk',
   'ChunkLoadError',
   'Importing a module script failed', // Safari
+  'not a valid JavaScript MIME type', // Safari MIME type enforcement
 ];
 
 function isChunkErrorMessage(msg: string): boolean {
