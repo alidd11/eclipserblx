@@ -19,7 +19,7 @@ interface FeedItem {
   color: string;
 }
 
-export function ActivityFeed() {
+export const ActivityFeed = forwardRef<HTMLDivElement>((_, ref) => {
   const { data: feedItems, isLoading } = useQuery({
     queryKey: ['admin-activity-feed'],
     queryFn: async () => {
