@@ -2149,8 +2149,15 @@ async function handleProductShowcase(supabase: any, store: any, productNumber: s
     return interactionResponse(`No product found with number #${productNumber} in your store. Make sure the URL points to one of your products.`, true);
   }
 
-  // No search term — pick latest product
-  const { data: latest } = await query.order("created_at", { ascending: false }).limit(1);
+  // No URL provided — pick latest product
+  const { data: latest } = await supabase
+    .from("products")
+    .select("id, name, slug, product_number, price, images, description, download_count")
+    .eq("store_id", store.id)
+    .eq("is_active", true)
+    .eq("moderation_status", "approved")
+    .order("created_at", { ascending: false })
+    .limit(1);
   if (!latest || latest.length === 0) {
     return interactionResponse("You don't have any approved products to showcase.", true);
   }
