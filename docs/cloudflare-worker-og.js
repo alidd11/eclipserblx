@@ -172,6 +172,11 @@ function serve404() {
 
 export default {
   async fetch(request) {
+    // Loop guard — if we already processed this request, bail immediately
+    if (request.headers.get("X-Eclipse-Worker")) {
+      return new Response("Loop detected", { status: 508, headers: { "X-Eclipse-Worker": "loop-guard" } });
+    }
+
     const url = new URL(request.url);
     const userAgent = request.headers.get("User-Agent") || "";
 
