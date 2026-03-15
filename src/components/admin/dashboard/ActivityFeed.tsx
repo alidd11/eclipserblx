@@ -135,7 +135,7 @@ export const ActivityFeed = forwardRef<HTMLDivElement>((_, ref) => {
   }
 
   return (
-    <Card>
+    <Card ref={ref}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-medium">
           <Activity className="h-4 w-4" />
