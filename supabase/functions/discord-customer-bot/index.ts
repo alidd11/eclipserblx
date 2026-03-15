@@ -1957,7 +1957,25 @@ async function handleShowcaseCommand(
 ) {
   const branding = getBranding(serverContext);
   const showcaseType = options?.find(o => o.name === "type")?.value;
-  const productSearch = options?.find(o => o.name === "product")?.value;
+  const urlInput = options?.find(o => o.name === "url")?.value as string | undefined;
+
+  // Parse URL to extract product number or store slug
+  let parsedProductNumber: string | null = null;
+  let parsedStoreSlug: string | null = null;
+  if (urlInput) {
+    const productMatch = urlInput.match(/\/products\/(\d+)/);
+    const storeMatch = urlInput.match(/\/store\/([^\/\?\#]+)/);
+    if (productMatch) {
+      parsedProductNumber = productMatch[1];
+    } else if (storeMatch) {
+      parsedStoreSlug = decodeURIComponent(storeMatch[1]);
+    } else {
+      return interactionResponse("Please provide a valid Eclipse URL (e.g. `eclipserblx.com/products/123` or `eclipserblx.com/store/my-store`)", true);
+    }
+  }
+
+  // Auto-detect showcase type from URL
+  const effectiveType = parsedProductNumber ? "product" : parsedStoreSlug ? "store" : showcaseType;
   const customMessage = options?.find(o => o.name === "message")?.value
     ?.replace(/<[^>]*>/g, '')
     ?.replace(/@(everyone|here)/gi, '@\u200B$1')
