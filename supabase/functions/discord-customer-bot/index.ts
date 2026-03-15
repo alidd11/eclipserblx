@@ -2120,7 +2120,14 @@ async function handleStoreShowcase(supabase: any, store: any, branding: any, cus
     ? `${"⭐".repeat(Math.round(store.average_rating))} ${Number(store.average_rating).toFixed(1)}/5`
     : "No ratings yet";
 
-  const fields: any[] = [
+  const fields: any[] = [];
+
+  // Seller's custom intro at the top
+  if (customMessage) {
+    fields.push({ name: "💬 From the Seller", value: customMessage, inline: false });
+  }
+
+  fields.push(
     { name: "⭐ Rating", value: rating, inline: true },
     { name: "📦 Products", value: `${store.product_count || 0}`, inline: true },
     { name: "👥 Followers", value: `${store.follower_count || 0}`, inline: true },
