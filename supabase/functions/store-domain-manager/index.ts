@@ -2,6 +2,41 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.12";
 import { handleCors, jsonOk, jsonError, unauthorized, internalError } from "../_shared/edge-response.ts";
 
 const CF_API = "https://api.cloudflare.com/client/v4";
+const WORKER_NAME = "eclipse-og-proxy";
+
+// ── Helper: Create a Worker Route for a custom domain ──
+async function ensureWorkerRoute(cfToken: string, cfZoneId: string, domain: string): Promise<{ created: boolean; routeId?: string; error?: string }> {
+  const pattern = `${domain}/*`;
+
+  // Check if route already exists
+  const { data: listData } = await cfFetch<any[]>(cfToken, `${CF_API}/zones/${cfZoneId}/workers/routes`);
+  const existing = (listData?.result ?? []).find((r: any) => r.pattern === pattern && r.script === WORKER_NAME);
+  if (existing) return { created: false, routeId: existing.id };
+
+  // Create route
+  const { data: createData } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/workers/routes`, {
+    method: "POST",
+    body: JSON.stringify({ pattern, script: WORKER_NAME }),
+  });
+
+  if (createData?.success) {
+    return { created: true, routeId: createData.result?.id };
+  }
+  return { created: false, error: JSON.stringify(createData?.errors) };
+}
+
+// ── Helper: Remove Worker Route for a custom domain ──
+async function removeWorkerRoute(cfToken: string, cfZoneId: string, domain: string): Promise<boolean> {
+  const pattern = `${domain}/*`;
+  const { data: listData } = await cfFetch<any[]>(cfToken, `${CF_API}/zones/${cfZoneId}/workers/routes`);
+  const existing = (listData?.result ?? []).find((r: any) => r.pattern === pattern && r.script === WORKER_NAME);
+  if (!existing) return true;
+
+  const { data: delData } = await cfFetch<any>(cfToken, `${CF_API}/zones/${cfZoneId}/workers/routes/${existing.id}`, {
+    method: "DELETE",
+  });
+  return delData?.success ?? false;
+}
 
 async function cfFetch<T>(token: string, url: string, init?: RequestInit) {
   const resp = await fetch(url, {
