@@ -135,6 +135,7 @@ const AdminRecruiterApplications = lazy(() => import("@/pages/admin/RecruiterApp
 const AdminRecruiterPayouts = lazy(() => import("@/pages/admin/RecruiterPayouts"));
 const AdminRecruiterCommissions = lazy(() => import("@/pages/admin/RecruiterCommissions"));
 const AdminGDPRCompliance = lazy(() => import("@/pages/admin/GDPRCompliance"));
+const AdminBotGhostSetup = lazy(() => import("@/pages/admin/BotGhostSetup"));
 const AdminRevenueHub = lazy(() => import("@/pages/admin/RevenueHub"));
 const AdminPayoutsHub = lazy(() => import("@/pages/admin/PayoutsHub"));
 const AdminDisputesRefundsHub = lazy(() => import("@/pages/admin/DisputesRefundsHub"));
@@ -484,6 +485,7 @@ export function AppRoutes() {
         <Route path="/admin/recruiter-payouts" element={<AdminRecruiterPayouts />} />
         <Route path="/admin/recruiter-commissions" element={<AdminRecruiterCommissions />} />
         <Route path="/admin/gdpr-compliance" element={<AdminGDPRCompliance />} />
+        <Route path="/admin/botghost-setup" element={<AdminBotGhostSetup />} />
         <Route path="/admin/platform-ledger" element={<AdminPlatformLedger />} />
         <Route path="/admin/custom-domains" element={<AdminCustomDomains />} />
         {/* Global Guard routes (path-based instead of subdomain) */}

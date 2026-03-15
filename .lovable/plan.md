@@ -1,51 +1,36 @@
 
 
-## Plan: BotGhost Setup Guide Admin Page
+## Issues Identified
 
-### What
-Create a dedicated admin page at `/admin/botghost-setup` accessible only to the primary admin (alicanimir1@gmail.com). The page will contain comprehensive, step-by-step instructions for setting up each BotGhost custom command with copy-paste configs, screenshots descriptions, and clear walkthrough steps based on BotGhost's actual Custom Command → HTTP Request workflow.
+**Issue 1: Sidebar positioned at top of screen on desktop**
+The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
 
-### Why
-The existing `BotGhostCommandReference` component only shows raw JSON/headers but lacks the actual BotGhost UI walkthrough. This new page will be a self-contained guide you can follow without needing to reference external docs.
+**Issue 2: Excessive black empty space in the content area**
+The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
 
-### Files to create/modify
+## Plan
 
-1. **`src/pages/admin/BotGhostSetup.tsx`** (new) — Full setup guide page with:
-   - Primary admin email gate (same pattern as GDPR Compliance page)
-   - Step-by-step walkthrough sections:
-     - **Prerequisites**: What you need before starting (BotGhost account, bot token, API key from Eclipse)
-     - **Step 1**: Go to BotGhost Dashboard → Custom Commands → Create New
-     - **Step 2**: Set command name and description
-     - **Step 3**: Add an "API Request" action — configure Request Builder:
-       - URL (with copy button)
-       - Method: POST
-       - Headers: Content-Type + x-api-key
-       - Body: JSON with variables
-       - Enable "Replace variables in body" and "Replace variables in HTTP Headers"
-     - **Step 4**: Set response — use the variable name to build the reply embed
-     - **Step 5**: Add Link Buttons where needed
-   - Individual command cards for each of the 5 commands (/link, /verify, /profile, /purchases, /retrieve) with:
-     - Exact JSON body (copy button)
-     - Response variable name (copy button)
-     - Which command options to add (e.g. 'code' for /verify, 'product' for /retrieve)
-     - Embed configuration tips (thumbnail URL variable, button URL variable)
-     - Whether to send as DM or channel reply
-   - Troubleshooting section (common issues: missing headers, variable replacement not enabled, wrong API key)
-   - API key reference (where to find/set the BOTGHOST_API_KEY)
+### 1. Widen the content area on the Categories page
+- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
+- Reduce vertical padding between the header and grid
+- Tighten the gap between the page title/description and the cards
 
-2. **`src/components/AppRoutes.tsx`** — Add route and lazy import for the new page
+### 2. Improve the PageHeader component
+- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
+- This applies globally to all pages using PageHeader
 
-3. **`src/components/admin/AdminSidebar.tsx`** — Optionally add a sidebar link (only visible to primary admin), or keep it unlisted and accessed via direct URL
+### 3. Make category cards fill space better
+- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
+- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
+- Reduce grid gap slightly so cards feel more connected
 
-### Access control
-- Uses the same `user?.email === 'alicanimir1@gmail.com'` pattern used in GDPRCompliance
-- Wrapped in `AdminLayout` for consistent look
-- Redirects non-admin users to `/admin`
+### 4. Sidebar desktop alignment fix
+- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
+- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
+- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
 
-### Technical details
-- Reuses the existing `CopyButton` pattern from `BotGhostCommandReference`
-- Uses numbered stepper UI with cards for each step
-- All endpoint URLs, headers, and JSON bodies are copy-pasteable
-- Response variable naming follows BotGhost's `{requestName.response.field}` convention
-- Includes the BotGhost Request Builder field mapping (URL field, Method dropdown, Headers tab, Body tab, Options checkboxes)
+### Files to modify
+- `src/pages/Categories.tsx` — widen container, tighten spacing
+- `src/components/ui/PageHeader.tsx` — reduce bottom margin
+- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
 
