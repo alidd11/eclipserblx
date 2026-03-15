@@ -80,31 +80,6 @@ const commands = [
     description: "Showcase your store or a product to the community",
     contexts: [0], // Guild only
     integration_types: [0],
-    options: [
-      {
-        name: "type",
-        description: "What to showcase",
-        type: 3, // STRING
-        required: false,
-        choices: [
-          { name: "My Store", value: "store" },
-          { name: "A Product", value: "product" },
-        ],
-      },
-      {
-        name: "url",
-        description: "Product or store URL from Eclipse (e.g. eclipserblx.com/products/123)",
-        type: 3, // STRING
-        required: false,
-      },
-      {
-        name: "message",
-        description: "Custom intro or description (max 500 characters)",
-        type: 3, // STRING
-        required: false,
-        max_length: 500,
-      },
-    ],
   },
   {
     name: "help",

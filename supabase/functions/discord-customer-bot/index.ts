@@ -296,6 +296,28 @@ Deno.serve(async (req) => {
         discordAvatarUrl = `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
       }
 
+      // Handle showcase modal submission
+      if (customId === "showcase_modal") {
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        const guildId = interaction.guild_id;
+        const serverContext = await getServerContext(supabase, guildId);
+
+        // Extract values from modal components
+        const urlValue = interaction.data.components
+          ?.find((row: any) => row.components?.[0]?.custom_id === "showcase_url")
+          ?.components?.[0]?.value as string | undefined;
+        const messageValue = interaction.data.components
+          ?.find((row: any) => row.components?.[0]?.custom_id === "showcase_message")
+          ?.components?.[0]?.value as string | undefined;
+
+        // Build options array to pass to existing handler
+        const showcaseOptions: Array<{ name: string; value: string; type: number }> = [];
+        if (urlValue) showcaseOptions.push({ name: "url", value: urlValue, type: 3 });
+        if (messageValue) showcaseOptions.push({ name: "message", value: messageValue, type: 3 });
+
+        return await handleShowcaseCommand(supabase, serverContext, discordUserId, showcaseOptions);
+      }
+
     }
 
     return new Response(JSON.stringify({ type: PONG }), {
