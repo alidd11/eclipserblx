@@ -397,33 +397,18 @@ async function ensureRedirectRule(token: string, zoneId: string) {
     'http.user_agent contains "Pinterestbot"',
   ].join(" or ");
 
-  // Dynamic paths (/products/*, /store/*) — redirect bots to og-proxy
+  // IMPORTANT: Bot redirect rules are REMOVED because they execute BEFORE the Worker
+  // in Cloudflare's request pipeline, causing 302s instead of the Worker serving 200 with OG tags.
+  // The Worker itself handles bot detection and serves OG content directly.
   const botRedirectName = "Eclipse Bot OG Redirect";
-  const botRule = {
-    action: "redirect",
-    action_parameters: {
-      from_value: {
-        status_code: 302,
-        target_url: {
-          expression: `concat("${OG_PROXY}?path=", http.request.uri.path)`,
-        },
-        preserve_query_string: false,
-      },
-    },
-    expression: `(starts_with(http.request.uri.path, "/products/") or starts_with(http.request.uri.path, "/store/")) and (${botExpr})`,
-    description: botRedirectName,
-    enabled: true,
-  };
-
-  // NOTE: /share/* must be handled directly by the Worker (200 HTML with OG tags).
-  // A redirect rule here can bypass Worker execution priority and break social previews.
   const shareName = "Eclipse /share/ OG proxy redirect";
 
-  const desiredRules = [botRule];
+  // No managed redirect rules needed — Worker handles everything
+  const desiredRules: any[] = [];
 
   if (ep.success && ep.result?.id) {
     const existingRules = ep.result.rules || [];
-    // Remove our managed rules, including legacy /share redirect, keep others
+    // Remove our old managed rules that conflict with Worker, keep others
     const otherRules = existingRules.filter(
       (r: any) => r.description !== botRedirectName && r.description !== shareName
     );
