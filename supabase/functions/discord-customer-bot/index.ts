@@ -176,7 +176,7 @@ Deno.serve(async (req) => {
 
 
         case "showcase":
-          return await handleShowcaseCommand(supabase, serverContext);
+          return await handleShowcaseCommand(supabase, serverContext, discordUserId, interaction.data?.options);
 
         case "help":
           return handleHelpCommand(serverContext);
@@ -1948,90 +1948,310 @@ async function handleStoreCommand(
 }
 
 
-// /showcase command - Display a random featured product
-async function handleShowcaseCommand(supabase: any, serverContext: ServerContext) {
+// /showcase command - Creator-driven showcase for sellers, or random featured product for non-sellers
+async function handleShowcaseCommand(
+  supabase: any,
+  serverContext: ServerContext,
+  discordUserId: string,
+  options?: Array<{ name: string; value: string; type: number }>
+) {
   const branding = getBranding(serverContext);
+  const showcaseType = options?.find(o => o.name === "type")?.value;
+  const productSearch = options?.find(o => o.name === "product")?.value;
 
   try {
-    // Fetch a random featured product with store info
-    const { data: products, error } = await supabase
-      .from("products")
-      .select(`
-        id, name, slug, product_number, price, images, description,
-        stores!inner (name, slug, logo_url, is_verified, is_trusted)
-      `)
-      .eq("is_active", true)
-      .eq("is_featured", true)
-      .eq("moderation_status", "approved")
-      .eq("stores.is_active", true)
-      .limit(10);
+    // Check if user has a linked Eclipse account
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("user_id, display_name")
+      .eq("discord_id", discordUserId)
+      .maybeSingle();
 
-    if (error || !products || products.length === 0) {
-      return interactionResponse("No featured products available at the moment.", true);
+    // If user specified a type, they want to showcase their own stuff
+    if (showcaseType && profile?.user_id) {
+      // Check if user owns a store
+      const { data: store } = await supabase
+        .from("stores")
+        .select("id, name, slug, description, logo_url, banner_url, average_rating, total_sales, product_count, follower_count, discord_url, website_url, twitter_url, youtube_url, tiktok_url, roblox_url, is_verified, is_trusted")
+        .eq("owner_id", profile.user_id)
+        .eq("is_active", true)
+        .is("deleted_at", null)
+        .maybeSingle();
+
+      if (!store) {
+        return interactionResponse("You don't have an active store on Eclipse. Create one at https://eclipserblx.com/seller", true);
+      }
+
+      // Cooldown check — 1 showcase per 24 hours per store
+      const { data: recentShowcase } = await supabase
+        .from("audit_logs")
+        .select("id")
+        .eq("action", "discord_showcase")
+        .eq("resource", store.id)
+        .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .limit(1);
+
+      if (recentShowcase && recentShowcase.length > 0) {
+        return interactionResponse("You can only showcase once every 24 hours. Try again later!", true);
+      }
+
+      // Log the showcase for cooldown tracking
+      await supabase.from("audit_logs").insert({
+        action: "discord_showcase",
+        resource: store.id,
+        user_id: profile.user_id,
+        details: { type: showcaseType, discord_id: discordUserId },
+      });
+
+      if (showcaseType === "product") {
+        return await handleProductShowcase(supabase, store, productSearch, branding);
+      } else {
+        return await handleStoreShowcase(supabase, store, branding);
+      }
+    } else if (showcaseType && !profile?.user_id) {
+      return interactionResponse("Link your Discord account first with `/link` to showcase your store or products.", true);
     }
 
-    // Pick a random product from the featured list
-    const product = products[Math.floor(Math.random() * products.length)];
-    const store = product.stores;
-    const productUrl = `https://eclipserblx.com/products/${(product as any).product_number || product.slug}`;
-    const storeUrl = `https://eclipserblx.com/stores/${store.slug}`;
-    
-    // Build verification badges
-    const badges: string[] = [];
-    if (store.is_trusted) badges.push("⭐ Trusted");
-    if (store.is_verified) badges.push("✅ Verified");
-    const badgeText = badges.length > 0 ? badges.join(" • ") : "";
-
-    // Strip HTML tags and truncate description
-    const maxDescLength = 200;
-    let description = product.description || "A premium product from the Eclipse marketplace.";
-    // Remove HTML tags
-    description = description.replace(/<[^>]*>/g, '').trim();
-    if (description.length > maxDescLength) {
-      description = description.substring(0, maxDescLength).trim() + "...";
-    }
-
-    const embed = {
-      color: branding.color,
-      title: `🌟 ${product.name}`,
-      url: productUrl,
-      description: `${description}\n\n**[View Product](${productUrl})**`,
-      thumbnail: store.logo_url ? { url: store.logo_url } : undefined,
-      image: product.images?.[0] ? { url: product.images[0] } : undefined,
-      fields: [
-        {
-          name: "💰 Price",
-          value: product.price === 0 ? "**FREE**" : `**£${product.price.toFixed(2)}**`,
-          inline: true,
-        },
-        {
-          name: "🏪 Store",
-          value: `[${store.name}](${storeUrl})${badgeText ? `\n${badgeText}` : ""}`,
-          inline: true,
-        },
-      ],
-      footer: {
-        text: `${branding.footer} • Featured Product`,
-        icon_url: branding.icon,
-      },
-      timestamp: new Date().toISOString(),
-    };
-
-    // Return public embed (not ephemeral)
-    return new Response(
-      JSON.stringify({
-        type: CHANNEL_MESSAGE,
-        data: {
-          embeds: [embed],
-          flags: 0, // Public message
-        },
-      }),
-      { headers: { "Content-Type": "application/json" } }
-    );
+    // Default: show a random featured product (original behavior)
+    return await handleRandomShowcase(supabase, branding);
   } catch (err) {
     console.error("[discord-customer-bot] Showcase error:", err);
-    return interactionResponse("Failed to fetch featured products. Try again later.", true);
+    return interactionResponse("Failed to fetch showcase. Try again later.", true);
   }
+}
+
+// Showcase a seller's store profile
+async function handleStoreShowcase(supabase: any, store: any, branding: any) {
+  const storeUrl = `https://eclipserblx.com/store/${encodeURIComponent(store.slug)}`;
+
+  // Build description
+  let desc = store.description
+    ? store.description.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()
+    : "Check out this store on Eclipse!";
+  if (desc.length > 300) desc = desc.substring(0, 297) + "...";
+
+  // Build badges
+  const badges: string[] = [];
+  if (store.is_trusted) badges.push("⭐ Trusted");
+  if (store.is_verified) badges.push("✅ Verified");
+
+  // Build links
+  const links: string[] = [`🌐 [Visit Store](${storeUrl})`];
+  if (store.discord_url) links.push(`💬 [Discord](${store.discord_url})`);
+  if (store.website_url) links.push(`🔗 [Website](${store.website_url})`);
+  if (store.roblox_url) links.push(`🎮 [Roblox](${store.roblox_url})`);
+  if (store.twitter_url) links.push(`🐦 [Twitter](${store.twitter_url})`);
+
+  // Fetch top products
+  const { data: products } = await supabase
+    .from("products")
+    .select("name, slug, product_number, price")
+    .eq("store_id", store.id)
+    .eq("is_active", true)
+    .eq("moderation_status", "approved")
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  const productList = products?.length
+    ? products.map((p: any) => {
+        const url = `https://eclipserblx.com/products/${p.product_number || encodeURIComponent(p.slug)}`;
+        return `• [${p.name}](${url}) — ${p.price === 0 ? "FREE" : `£${Number(p.price).toFixed(2)}`}`;
+      }).join("\n")
+    : null;
+
+  // Rating
+  const rating = store.average_rating
+    ? `${"⭐".repeat(Math.round(store.average_rating))} ${Number(store.average_rating).toFixed(1)}/5`
+    : "No ratings yet";
+
+  const fields: any[] = [
+    { name: "⭐ Rating", value: rating, inline: true },
+    { name: "📦 Products", value: `${store.product_count || 0}`, inline: true },
+    { name: "👥 Followers", value: `${store.follower_count || 0}`, inline: true },
+    { name: "🔗 Links", value: links.join(" • "), inline: false },
+  ];
+
+  if (productList) {
+    fields.push({ name: "🛍️ Featured Products", value: productList, inline: false });
+  }
+
+  if (badges.length > 0) {
+    fields.push({ name: "🏆 Badges", value: badges.join(" • "), inline: false });
+  }
+
+  const embeds: any[] = [{
+    color: branding.color,
+    title: `🏪 ${store.name}`,
+    url: storeUrl,
+    description: desc,
+    thumbnail: store.logo_url ? { url: store.logo_url } : undefined,
+    fields,
+    footer: { text: `${branding.footer} • Creator Showcase`, icon_url: branding.icon },
+    timestamp: new Date().toISOString(),
+  }];
+
+  // Add banner as image embed
+  if (store.banner_url) {
+    embeds.push({ color: branding.color, image: { url: store.banner_url } });
+  }
+
+  return new Response(
+    JSON.stringify({ type: CHANNEL_MESSAGE, data: { embeds, flags: 0 } }),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}
+
+// Showcase a specific product from the seller's store
+async function handleProductShowcase(supabase: any, store: any, productSearch: string | undefined, branding: any) {
+  let query = supabase
+    .from("products")
+    .select("id, name, slug, product_number, price, images, description, download_count")
+    .eq("store_id", store.id)
+    .eq("is_active", true)
+    .eq("moderation_status", "approved");
+
+  if (productSearch) {
+    // Try matching by product number first, then name
+    const { data: byNumber } = await supabase
+      .from("products")
+      .select("id, name, slug, product_number, price, images, description, download_count")
+      .eq("store_id", store.id)
+      .eq("is_active", true)
+      .eq("moderation_status", "approved")
+      .eq("product_number", productSearch)
+      .maybeSingle();
+
+    if (byNumber) {
+      return buildProductEmbed(byNumber, store, branding);
+    }
+
+    // Search by name (ilike)
+    const { data: byName } = await supabase
+      .from("products")
+      .select("id, name, slug, product_number, price, images, description, download_count")
+      .eq("store_id", store.id)
+      .eq("is_active", true)
+      .eq("moderation_status", "approved")
+      .ilike("name", `%${productSearch}%`)
+      .limit(1);
+
+    if (byName && byName.length > 0) {
+      return buildProductEmbed(byName[0], store, branding);
+    }
+
+    return interactionResponse(`No product found matching "${productSearch}" in your store.`, true);
+  }
+
+  // No search term — pick latest product
+  const { data: latest } = await query.order("created_at", { ascending: false }).limit(1);
+  if (!latest || latest.length === 0) {
+    return interactionResponse("You don't have any approved products to showcase.", true);
+  }
+
+  return buildProductEmbed(latest[0], store, branding);
+}
+
+// Build a rich product embed
+function buildProductEmbed(product: any, store: any, branding: any) {
+  const productUrl = `https://eclipserblx.com/products/${product.product_number || encodeURIComponent(product.slug)}`;
+  const storeUrl = `https://eclipserblx.com/store/${encodeURIComponent(store.slug)}`;
+
+  let desc = product.description || "A premium product from Eclipse.";
+  desc = desc.replace(/<[^>]*>/g, "").trim();
+  if (desc.length > 250) desc = desc.substring(0, 247) + "...";
+
+  const embed: any = {
+    color: branding.color,
+    title: `🌟 ${product.name}`,
+    url: productUrl,
+    description: `${desc}\n\n**[View Product](${productUrl})**`,
+    thumbnail: store.logo_url ? { url: store.logo_url } : undefined,
+    image: product.images?.[0] ? { url: product.images[0] } : undefined,
+    fields: [
+      {
+        name: "💰 Price",
+        value: product.price === 0 ? "**FREE**" : `**£${Number(product.price).toFixed(2)}**`,
+        inline: true,
+      },
+      {
+        name: "🏪 Store",
+        value: `[${store.name}](${storeUrl})`,
+        inline: true,
+      },
+    ],
+    footer: { text: `${branding.footer} • Creator Showcase`, icon_url: branding.icon },
+    timestamp: new Date().toISOString(),
+  };
+
+  if (product.download_count > 0) {
+    embed.fields.push({ name: "📥 Downloads", value: `${product.download_count}`, inline: true });
+  }
+
+  // Add additional product images
+  const embeds: any[] = [embed];
+  if (product.images?.length > 1) {
+    for (let i = 1; i < Math.min(product.images.length, 4); i++) {
+      embeds.push({ color: branding.color, image: { url: product.images[i] } });
+    }
+  }
+
+  return new Response(
+    JSON.stringify({ type: CHANNEL_MESSAGE, data: { embeds, flags: 0 } }),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}
+
+// Original behavior: random featured product
+async function handleRandomShowcase(supabase: any, branding: any) {
+  const { data: products, error } = await supabase
+    .from("products")
+    .select(`
+      id, name, slug, product_number, price, images, description,
+      stores!inner (name, slug, logo_url, is_verified, is_trusted)
+    `)
+    .eq("is_active", true)
+    .eq("is_featured", true)
+    .eq("moderation_status", "approved")
+    .eq("stores.is_active", true)
+    .limit(10);
+
+  if (error || !products || products.length === 0) {
+    return interactionResponse("No featured products available at the moment. Sellers can use `/showcase type:My Store` or `/showcase type:A Product` to promote their store!", true);
+  }
+
+  const product = products[Math.floor(Math.random() * products.length)];
+  const store = product.stores;
+  const productUrl = `https://eclipserblx.com/products/${(product as any).product_number || product.slug}`;
+  const storeUrl = `https://eclipserblx.com/stores/${store.slug}`;
+
+  const badges: string[] = [];
+  if (store.is_trusted) badges.push("⭐ Trusted");
+  if (store.is_verified) badges.push("✅ Verified");
+  const badgeText = badges.length > 0 ? badges.join(" • ") : "";
+
+  let description = product.description || "A premium product from the Eclipse marketplace.";
+  description = description.replace(/<[^>]*>/g, '').trim();
+  if (description.length > 200) description = description.substring(0, 200).trim() + "...";
+
+  const embed = {
+    color: branding.color,
+    title: `🌟 ${product.name}`,
+    url: productUrl,
+    description: `${description}\n\n**[View Product](${productUrl})**`,
+    thumbnail: store.logo_url ? { url: store.logo_url } : undefined,
+    image: product.images?.[0] ? { url: product.images[0] } : undefined,
+    fields: [
+      { name: "💰 Price", value: product.price === 0 ? "**FREE**" : `**£${product.price.toFixed(2)}**`, inline: true },
+      { name: "🏪 Store", value: `[${store.name}](${storeUrl})${badgeText ? `\n${badgeText}` : ""}`, inline: true },
+    ],
+    footer: { text: `${branding.footer} • Featured Product`, icon_url: branding.icon },
+    timestamp: new Date().toISOString(),
+  };
+
+  return new Response(
+    JSON.stringify({ type: CHANNEL_MESSAGE, data: { embeds: [embed], flags: 0 } }),
+    { headers: { "Content-Type": "application/json" } }
+  );
 }
 
 // /walletbalance command - DM user their credit balance
