@@ -1976,7 +1976,7 @@ async function handleShowcaseCommand(
       const parsed = new URL(normalised);
       hostname = parsed.hostname.toLowerCase();
       pathname = parsed.pathname;
-    } catch {
+    } catch (_e) {
       return interactionResponse("That doesn't look like a valid URL. Example: `eclipserblx.com/products/123`", true);
     }
 
