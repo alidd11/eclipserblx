@@ -77,9 +77,27 @@ const commands = [
   },
   {
     name: "showcase",
-    description: "View a featured product from the marketplace",
+    description: "Showcase your store or a product to the community",
     contexts: [0], // Guild only
     integration_types: [0],
+    options: [
+      {
+        name: "type",
+        description: "What to showcase",
+        type: 3, // STRING
+        required: false,
+        choices: [
+          { name: "My Store", value: "store" },
+          { name: "A Product", value: "product" },
+        ],
+      },
+      {
+        name: "product",
+        description: "Product name or number (for product showcase)",
+        type: 3, // STRING
+        required: false,
+      },
+    ],
   },
   {
     name: "help",
