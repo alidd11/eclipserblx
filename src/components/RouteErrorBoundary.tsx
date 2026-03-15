@@ -24,6 +24,7 @@ const CHUNK_ERROR_PATTERNS = [
   'Loading chunk',
   'Loading CSS chunk',
   'dynamically imported module',
+  'not a valid JavaScript MIME type',
 ];
 
 function isChunkError(error: Error | null): boolean {
