@@ -4,7 +4,7 @@ import { ArrowRight, Store, Sparkles, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HeroBanner } from './HeroBanner';
 import { useTranslation } from 'react-i18next';
-import { useSellerStatus } from '@/hooks/useSellerStatus';
+
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useIsMobile } from '@/hooks/use-mobile';
