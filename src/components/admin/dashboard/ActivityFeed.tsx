@@ -1,4 +1,3 @@
-import { forwardRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +18,7 @@ interface FeedItem {
   color: string;
 }
 
-export const ActivityFeed = forwardRef<HTMLDivElement>((_, ref) => {
+export function ActivityFeed() {
   const { data: feedItems, isLoading } = useQuery({
     queryKey: ['admin-activity-feed'],
     queryFn: async () => {
@@ -112,7 +111,7 @@ export const ActivityFeed = forwardRef<HTMLDivElement>((_, ref) => {
 
   if (isLoading) {
     return (
-      <Card ref={ref}>
+      <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-medium">Recent Activity</CardTitle>
         </CardHeader>
@@ -135,7 +134,7 @@ export const ActivityFeed = forwardRef<HTMLDivElement>((_, ref) => {
   }
 
   return (
-    <Card ref={ref}>
+    <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-medium">
           <Activity className="h-4 w-4" />
@@ -167,6 +166,4 @@ export const ActivityFeed = forwardRef<HTMLDivElement>((_, ref) => {
       </CardContent>
     </Card>
   );
-});
-
-ActivityFeed.displayName = 'ActivityFeed';
+}

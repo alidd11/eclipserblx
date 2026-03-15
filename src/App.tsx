@@ -1,4 +1,4 @@
-import { Suspense, lazy, forwardRef } from "react";
+import { Suspense, lazy } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -57,59 +57,57 @@ function PageLoader() {
   );
 }
 
-const App = forwardRef<HTMLDivElement>((_, ref) => (
-  <div ref={ref}>
-  <ConnectionErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <CookieConsentProvider>
-        <CurrencyProvider>
-          <AuthProvider>
-            <ActiveStoreProvider>
-            <CartProvider>
-              <ChatPanelProvider>
-                <StoreDomainProvider>
-                <TooltipProvider>
-                  <Sonner />
-                  <BrowserRouter>
-                    <GlobalBackground />
-                    <NavigationProgress />
-                    <ScrollToTop />
-                    <IpBanCheck>
-                      <PWAWrapper>
-                        <AdminManifestHandler />
-                        <AdminPWAHandler />
-                        <PWARouteRestorer />
-                        <Suspense fallback={<PageLoader />}>
-                          <EmailGuard>
-                            <AppRoutes />
-                          </EmailGuard>
-                        </Suspense>
-                        <Suspense fallback={null}><InstallPrompt /></Suspense>
-                      </PWAWrapper>
-                      {/* Chat components rendered OUTSIDE PWAWrapper to prevent transform-related positioning issues */}
-                      <Suspense fallback={null}>
-                        <MobileTabBar />
-                        <ChatWidget />
-                        <ChatSidePanel />
-                        <CookieConsentBanner />
-                        <ConnectivityBanner />
-                        <BackgroundRefreshIndicator />
-                      </Suspense>
-                    </IpBanCheck>
-                  </BrowserRouter>
-                </TooltipProvider>
-                </StoreDomainProvider>
-              </ChatPanelProvider>
-            </CartProvider>
-            </ActiveStoreProvider>
-          </AuthProvider>
-        </CurrencyProvider>
-      </CookieConsentProvider>
-    </QueryClientProvider>
-  </ConnectionErrorBoundary>
-  </div>
-));
-
-App.displayName = 'App';
+function App() {
+  return (
+    <ConnectionErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <CookieConsentProvider>
+          <CurrencyProvider>
+            <AuthProvider>
+              <ActiveStoreProvider>
+                <CartProvider>
+                  <ChatPanelProvider>
+                    <StoreDomainProvider>
+                      <TooltipProvider>
+                        <Sonner />
+                        <BrowserRouter>
+                          <GlobalBackground />
+                          <NavigationProgress />
+                          <ScrollToTop />
+                          <IpBanCheck>
+                            <PWAWrapper>
+                              <AdminManifestHandler />
+                              <AdminPWAHandler />
+                              <PWARouteRestorer />
+                              <Suspense fallback={<PageLoader />}>
+                                <EmailGuard>
+                                  <AppRoutes />
+                                </EmailGuard>
+                              </Suspense>
+                              <Suspense fallback={null}><InstallPrompt /></Suspense>
+                            </PWAWrapper>
+                            {/* Chat components rendered OUTSIDE PWAWrapper to prevent transform-related positioning issues */}
+                            <Suspense fallback={null}>
+                              <MobileTabBar />
+                              <ChatWidget />
+                              <ChatSidePanel />
+                              <CookieConsentBanner />
+                              <ConnectivityBanner />
+                              <BackgroundRefreshIndicator />
+                            </Suspense>
+                          </IpBanCheck>
+                        </BrowserRouter>
+                      </TooltipProvider>
+                    </StoreDomainProvider>
+                  </ChatPanelProvider>
+                </CartProvider>
+              </ActiveStoreProvider>
+            </AuthProvider>
+          </CurrencyProvider>
+        </CookieConsentProvider>
+      </QueryClientProvider>
+    </ConnectionErrorBoundary>
+  );
+}
 
 export default App;
