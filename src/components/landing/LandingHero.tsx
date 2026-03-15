@@ -29,7 +29,7 @@ function StaticWord({ word }: { word: string }) {
 export function LandingHero() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { isSeller } = useSellerStatus();
+  
   const reducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
 
