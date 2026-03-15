@@ -404,29 +404,15 @@ async function ensureRedirectRule(token: string, zoneId: string) {
     enabled: true,
   };
 
-  // /share/ prefix — always redirect (for explicit share links)
+  // NOTE: /share/* must be handled directly by the Worker (200 HTML with OG tags).
+  // A redirect rule here can bypass Worker execution priority and break social previews.
   const shareName = "Eclipse /share/ OG proxy redirect";
-  const shareRule = {
-    action: "redirect",
-    action_parameters: {
-      from_value: {
-        status_code: 302,
-        target_url: {
-          expression: `concat("${OG_PROXY}?path=", substring(http.request.uri.path, 6))`,
-        },
-        preserve_query_string: false,
-      },
-    },
-    expression: `starts_with(http.request.uri.path, "/share/")`,
-    description: shareName,
-    enabled: true,
-  };
 
-  const desiredRules = [botRule, shareRule];
+  const desiredRules = [botRule];
 
   if (ep.success && ep.result?.id) {
     const existingRules = ep.result.rules || [];
-    // Remove our managed rules, keep others
+    // Remove our managed rules, including legacy /share redirect, keep others
     const otherRules = existingRules.filter(
       (r: any) => r.description !== botRedirectName && r.description !== shareName
     );
