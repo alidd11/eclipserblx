@@ -1,36 +1,56 @@
 
+Goal: stop the persistent “Something Went Wrong” loop on Admin PWA (Safari/WebKit), especially when `?__chunk=` is present.
 
-## Issues Identified
+1) Findings from investigation
+- The error screen in your screenshot matches `ConnectionErrorBoundary` (“Something Went Wrong” variant).
+- `PWARouteRestorer` only strips volatile params (`__chunk`, `__v`, `__t`, `__ra`) when path is `/`.  
+  Admin PWA launches on `/admin`, so `__chunk` can remain stuck.
+- Chunk recovery detection is currently broad (`failed to fetch`, `networkerror`), which can misclassify normal transient fetch failures as chunk failures and trigger unnecessary hard reloads.
+- Admin startup path still includes `forwardRef` in critical launch components (`src/pages/admin/Login.tsx`, `src/components/admin/AdminInstallPrompt.tsx`), and there are additional route-entry `forwardRef`s that can be brittle in Safari/WebKit.
+- Backend version row still has `force_update = true` on `app_version` (v1.0.83), which can amplify reload churn on devices with weak local persistence.
 
-**Issue 1: Sidebar positioned at top of screen on desktop**
-The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
+2) Implementation plan (what I will change)
+A. Fix URL sanitation for Admin PWA launch
+- Update `PWARouteRestorer` to always sanitize the current URL in standalone mode (not only `/`), removing `__chunk`, `__v`, `__t`, `__ra` on first boot.
+- Keep route restoration behavior, but run restoration logic after sanitation.
+- Ensure stored last route is rewritten sanitized if dirty.
 
-**Issue 2: Excessive black empty space in the content area**
-The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
+B. Tighten chunk-recovery triggers (reduce false positives)
+- In `src/lib/chunkErrorHandler.ts`:
+  - Remove generic patterns like plain `failed to fetch` / `networkerror`.
+  - Only trigger on explicit chunk/module patterns (dynamic import/module script/chunk mime/chunkloaderror).
+  - Require either chunk-specific message OR chunk asset URL evidence.
+- In `src/components/ConnectionErrorBoundary.tsx`:
+  - Align chunk detection with stricter chunk-only patterns.
+  - Keep fallback UI, but avoid hard reload recovery on generic network fetch errors.
 
-## Plan
+C. Safari/WebKit compatibility hardening for critical entry components
+- Convert these from `forwardRef` to plain function components (no behavior change):
+  - `src/pages/admin/Login.tsx`
+  - `src/components/admin/AdminInstallPrompt.tsx`
+  - `src/pages/Index.tsx`
+  - `src/pages/Landing.tsx`
+  - `src/components/auth/EmailGuard.tsx`
+  - `src/components/pwa/InstallPrompt.tsx` (same treatment for consistency)
+- Preserve exports and props so routing and lazy imports remain unchanged.
 
-### 1. Widen the content area on the Categories page
-- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
-- Reduce vertical padding between the header and grid
-- Tighten the gap between the page title/description and the cards
+D. Reduce forced-update churn
+- Adjust `useAppVersionCheck` bootstrap path so first-run/missing-local-version doesn’t repeatedly force hard reload loops.
+- After code deploy, set `app_version.force_update` back to `false` to stop repeated forced reload pressure while we stabilize Safari behavior.
 
-### 2. Improve the PageHeader component
-- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
-- This applies globally to all pages using PageHeader
+3) Validation plan
+- Reproduce critical flows:
+  - Launch Admin path with `?__chunk=...` and confirm it gets sanitized on first render.
+  - Refresh Admin route repeatedly and confirm no automatic `__chunk` loop.
+  - Confirm normal offline/network failures show connection messaging without chunk hard-reload escalation.
+- PWA checks:
+  - Open Admin PWA from home screen, cold launch and relaunch.
+  - Verify login screen/dashboard no longer falls into immediate global boundary.
+- Runtime checks:
+  - Inspect console for reduced chunk recovery triggers and absence of repeated force-update reload messages.
 
-### 3. Make category cards fill space better
-- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
-- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
-- Reduce grid gap slightly so cards feel more connected
-
-### 4. Sidebar desktop alignment fix
-- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
-- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
-- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
-
-### Files to modify
-- `src/pages/Categories.tsx` — widen container, tighten spacing
-- `src/components/ui/PageHeader.tsx` — reduce bottom margin
-- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
-
+4) Expected outcome
+- Admin PWA no longer gets stuck on cache-busted URLs.
+- Fewer false chunk recoveries from normal fetch/network noise.
+- Improved Safari stability on Admin startup/render path.
+- No persistent forced-update reload churn after rollout.
