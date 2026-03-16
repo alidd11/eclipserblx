@@ -71,6 +71,12 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
     const RECOVERY_KEY = 'ceb-chunk-recovery';
     const COOLDOWN_MS = 120_000;
 
+    const currentUrl = new URL(window.location.href);
+    if (currentUrl.searchParams.has('__chunk')) {
+      console.warn('[ConnectionErrorBoundary] Already on cache-busted URL, showing fallback');
+      return;
+    }
+
     try {
       const last = sessionStorage.getItem(RECOVERY_KEY);
       if (last && Date.now() - parseInt(last, 10) < COOLDOWN_MS) {
@@ -83,9 +89,8 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
     }
 
     console.log('[ConnectionErrorBoundary] Chunk error detected, forcing cache-busted reload');
-    const url = new URL(window.location.href);
-    url.searchParams.set('__chunk', Date.now().toString());
-    window.location.replace(url.toString());
+    currentUrl.searchParams.set('__chunk', Date.now().toString());
+    window.location.replace(currentUrl.toString());
   }
 
   handleRetry = () => {
