@@ -1,0 +1,1 @@
+UPDATE app_version SET version = '1.0.83', force_update = true, updated_at = now(), updated_by = 'admin' WHERE id = 'current';
