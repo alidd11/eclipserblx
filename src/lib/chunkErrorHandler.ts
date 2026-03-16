@@ -117,9 +117,11 @@ window.addEventListener('error', (e) => {
   ].join(' ');
 
   const targetUrl = getEventTargetUrl(e.target);
-  const combined = `${message} ${targetUrl}`;
 
-  if (isChunkErrorMessage(combined) || (!message && targetUrl && isChunkAssetUrl(targetUrl))) {
+  // Only trigger on errors with a clear chunk-related message.
+  // Don't trigger on silent asset failures (no message) — these are often
+  // false positives from analytics scripts, ad blockers, or extension resources.
+  if (message.trim() && isChunkErrorMessage(`${message} ${targetUrl}`)) {
     handleChunkError('Static module/chunk load failure');
   }
 }, true);
