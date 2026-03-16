@@ -56,6 +56,15 @@ function buildCacheBustedUrl(base: string = window.location.href): string {
   return url.toString();
 }
 
+function isAlreadyCacheBusted(): boolean {
+  try {
+    const url = new URL(window.location.href, window.location.origin);
+    return url.searchParams.has(CACHE_BUST_PARAM);
+  } catch {
+    return false;
+  }
+}
+
 async function clearRuntimeCaches() {
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
     try {
