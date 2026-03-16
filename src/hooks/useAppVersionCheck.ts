@@ -100,7 +100,7 @@ function wasRecentlyUpdated(): boolean {
   }
 }
 
-async function getLocalVersion(): Promise<string> {
+async function getLocalVersion(): Promise<string | null> {
   const fromLocal = safeStorage.getItem(LOCAL_VERSION_KEY);
   if (fromLocal) return fromLocal;
   const fromSession = safeSessionStorage.getItem(LOCAL_VERSION_KEY);
@@ -111,7 +111,8 @@ async function getLocalVersion(): Promise<string> {
     const fromIDB = await getFromIndexedDB(LOCAL_VERSION_KEY);
     if (fromIDB) return fromIDB;
   } catch {}
-  return '1.0.0';
+  // Return null instead of '1.0.0' so callers can distinguish "never stored" from "stored"
+  return null;
 }
 
 async function setLocalVersion(version: string): Promise<void> {
