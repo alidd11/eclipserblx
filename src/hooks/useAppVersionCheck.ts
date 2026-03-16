@@ -243,6 +243,14 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
       if (error || !data) return;
       const serverVersion = data as AppVersion;
       const localVersion = await getLocalVersion();
+
+      // First run: no local version stored yet — just store it silently, never force reload
+      if (localVersion === null) {
+        console.log('[AppVersionCheck] First run, storing version:', serverVersion.version);
+        await setLocalVersion(serverVersion.version);
+        return;
+      }
+
       if (serverVersion.force_update && serverVersion.version !== localVersion) {
         console.log('[AppVersionCheck] Force update:', localVersion, '->', serverVersion.version);
         await forceAppUpdate(serverVersion.version);
