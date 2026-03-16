@@ -13,6 +13,27 @@ interface State {
   isNetworkError: boolean;
 }
 
+const CHUNK_ERROR_PATTERNS = [
+  'load failed',
+  'failed to fetch dynamically imported module',
+  'importing a module script failed',
+  'chunkloaderror',
+  'loading chunk',
+  'loading css chunk',
+  'dynamically imported module',
+  'not a valid javascript mime type',
+  'application/octet-stream',
+  'failed to fetch',
+  'networkerror',
+];
+
+function isChunkOrLoadError(error: Error | null): boolean {
+  if (!error) return false;
+  const msg = (error.message || '').toLowerCase();
+  const name = (error.name || '').toLowerCase();
+  return CHUNK_ERROR_PATTERNS.some((p) => msg.includes(p) || name.includes(p));
+}
+
 export class ConnectionErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -20,7 +41,6 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
-    // Check if it's a network-related error
     const isNetworkError = 
       error.message.includes('fetch') ||
       error.message.includes('network') ||
@@ -40,6 +60,32 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('[ConnectionErrorBoundary] Caught error:', error, errorInfo);
     captureException(error, { componentStack: errorInfo.componentStack });
+
+    // Auto-recover from chunk/module load errors (common on Safari after deployments)
+    if (isChunkOrLoadError(error)) {
+      this.attemptChunkRecovery();
+    }
+  }
+
+  private attemptChunkRecovery() {
+    const RECOVERY_KEY = 'ceb-chunk-recovery';
+    const COOLDOWN_MS = 120_000;
+
+    try {
+      const last = sessionStorage.getItem(RECOVERY_KEY);
+      if (last && Date.now() - parseInt(last, 10) < COOLDOWN_MS) {
+        console.warn('[ConnectionErrorBoundary] Chunk recovery in cooldown, showing fallback');
+        return;
+      }
+      sessionStorage.setItem(RECOVERY_KEY, Date.now().toString());
+    } catch {
+      // If sessionStorage fails, still try recovery
+    }
+
+    console.log('[ConnectionErrorBoundary] Chunk error detected, forcing cache-busted reload');
+    const url = new URL(window.location.href);
+    url.searchParams.set('__chunk', Date.now().toString());
+    window.location.replace(url.toString());
   }
 
   handleRetry = () => {
