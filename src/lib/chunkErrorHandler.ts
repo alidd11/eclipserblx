@@ -20,23 +20,38 @@ function isInCooldown(): boolean {
   return Date.now() - parseInt(ts, 10) < COOLDOWN_MS;
 }
 
-/** Patterns that indicate a chunk/module load failure */
+/**
+ * STRICT patterns — only match genuine chunk/module load failures.
+ * Excludes generic 'failed to fetch' / 'networkerror' which can fire from
+ * normal API calls, analytics, ad blockers, or extension resources.
+ */
 const CHUNK_ERROR_PATTERNS = [
-  'module script',
   'dynamically imported module',
-  'load failed',
-  'failed to fetch',
+  'importing a module script failed',
   'loading chunk',
   'loading css chunk',
   'chunkloaderror',
-  'importing a module script failed',
   'not a valid javascript mime type',
   'application/octet-stream',
+];
+
+/**
+ * Safari-specific patterns that indicate a module script load failure
+ * (only valid when combined with a chunk asset URL).
+ */
+const SAFARI_MODULE_PATTERNS = [
+  'load failed',
+  'module script',
 ];
 
 function isChunkErrorMessage(msg: string): boolean {
   const normalized = msg.toLowerCase();
   return CHUNK_ERROR_PATTERNS.some((pattern) => normalized.includes(pattern));
+}
+
+function isSafariModuleError(msg: string): boolean {
+  const normalized = msg.toLowerCase();
+  return SAFARI_MODULE_PATTERNS.some((pattern) => normalized.includes(pattern));
 }
 
 function isChunkAssetUrl(url: string): boolean {
@@ -104,8 +119,7 @@ function handleChunkError(reason: string) {
     return;
   }
 
-  // On admin routes, use a longer cooldown to avoid challenge loops,
-  // but still allow ONE automatic recovery per session.
+  // On admin routes, allow ONE automatic recovery per session.
   if (window.location.pathname.startsWith('/admin')) {
     const ADMIN_KEY = 'chunk-admin-recovered';
     try {
@@ -115,7 +129,6 @@ function handleChunkError(reason: string) {
       }
       sessionStorage.setItem(ADMIN_KEY, '1');
     } catch {
-      // If sessionStorage fails, skip recovery to be safe
       return;
     }
   }
@@ -132,11 +145,20 @@ window.addEventListener('error', (e) => {
 
   const targetUrl = getEventTargetUrl(e.target);
 
-  // Only trigger on errors with a clear chunk-related message.
-  // Don't trigger on silent asset failures (no message) — these are often
-  // false positives from analytics scripts, ad blockers, or extension resources.
-  if (message.trim() && isChunkErrorMessage(`${message} ${targetUrl}`)) {
+  // Skip empty messages (extensions, ad blockers, analytics)
+  if (!message.trim()) return;
+
+  // Direct match on strict chunk patterns
+  if (isChunkErrorMessage(`${message} ${targetUrl}`)) {
     handleChunkError('Static module/chunk load failure');
+    return;
+  }
+
+  // Safari module errors ('load failed', 'module script') — only if the
+  // failing resource is actually a chunk asset (not an API call or image)
+  if (targetUrl && isChunkAssetUrl(targetUrl) && isSafariModuleError(message)) {
+    handleChunkError('Safari module script load failure for chunk asset');
+    return;
   }
 }, true);
 
@@ -154,11 +176,9 @@ window.addEventListener('unhandledrejection', (e) => {
 
 // Safari BFCache recovery: when page is restored from bfcache after backgrounding,
 // modules can resume in a stale state. Only reload if a dynamic import actually
-// fails after restore — don't blindly reload on every bfcache hit.
+// fails after restore.
 window.addEventListener('pageshow', (e) => {
   if (e.persisted) {
-    // Test if modules are still functional by attempting a trivial dynamic import.
-    // Only trigger recovery if the import actually fails.
     import('./chunkErrorHandler' /* self-reference, always exists */).catch(() => {
       handleChunkError('Page restored from bfcache with stale modules');
     });

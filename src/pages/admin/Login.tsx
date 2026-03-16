@@ -1,4 +1,4 @@
-import { useState, useEffect, forwardRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -18,7 +18,7 @@ const loginSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
+export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -49,7 +49,6 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
   // Check biometric support on mount and mark as admin PWA
   useEffect(() => {
     checkSupport();
-    // Mark this PWA as admin-installed so it redirects here on launch
     markAdminPWA();
   }, [checkSupport]);
 
@@ -77,7 +76,6 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
 
     const result = await authenticateWithBiometric(storedUserId);
     if (result.success) {
-      // Refresh the session - user should still be logged in
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         navigate('/admin');
@@ -135,8 +133,6 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
           toast.error('Login Failed', { description: error.message });
         }
       } else {
-        // Wait for roles to be fetched then redirect
-        // Force a small delay to allow role query to refetch
         setTimeout(() => {
           navigate('/admin');
         }, 500);
@@ -149,8 +145,7 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
   // Show biometric enrollment prompt
   if (showEnrollPrompt) {
     return (
-      <div ref={ref} className="min-h-screen flex flex-col bg-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-        {/* Clean background */}
+      <div className="min-h-screen flex flex-col bg-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
         <div className="flex-1 flex items-center justify-center p-4 relative">
           <div className="w-full max-w-md space-y-8">
             <div className="text-center">
@@ -197,12 +192,9 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
   const canUseBiometric = isSupported && storedUserId && isEnrolled;
 
   return (
-    <div ref={ref} className="min-h-screen flex flex-col bg-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-      {/* Clean background */}
-
+    <div className="min-h-screen flex flex-col bg-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       <div className="flex-1 flex items-center justify-center p-4 relative">
         <div className="w-full max-w-md space-y-8">
-          {/* Header */}
           <div className="text-center">
             <div className="inline-flex h-16 w-16 rounded-2xl bg-primary/10 border border-primary/20 items-center justify-center mb-4">
               <Shield className="h-8 w-8 text-primary" />
@@ -213,7 +205,6 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
             </p>
           </div>
 
-          {/* Biometric Login Button */}
           {canUseBiometric && (
             <div className="gaming-card p-4">
               <Button
@@ -240,7 +231,6 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
             </div>
           )}
 
-          {/* Login Form */}
           <form onSubmit={handleSubmit} className="gaming-card p-6 space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -296,7 +286,6 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
             </Button>
           </form>
 
-          {/* Biometric hint */}
           {isSupported && !canUseBiometric && (
             <p className="text-center text-xs text-muted-foreground">
               <Fingerprint className="inline h-3 w-3 mr-1" />
@@ -311,6 +300,4 @@ const AdminLogin = forwardRef<HTMLDivElement>(function AdminLogin(_, ref) {
       </div>
     </div>
   );
-});
-
-export default AdminLogin;
+}

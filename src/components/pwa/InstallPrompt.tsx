@@ -1,4 +1,4 @@
-import { useState, useEffect, forwardRef } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Download, Smartphone, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,49 +10,36 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-// Detect iOS
 function isIOS(): boolean {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 }
 
-// Detect standalone PWA mode
 function isStandalone(): boolean {
   return window.matchMedia('(display-mode: standalone)').matches || 
          (navigator as any).standalone === true;
 }
 
-export const InstallPrompt = forwardRef<HTMLDivElement>(function InstallPrompt(_, ref) {
+export function InstallPrompt() {
   const location = useLocation();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isiOSDevice, setIsiOSDevice] = useState(false);
 
-  // Don't show on admin routes (admin has its own install prompt)
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   useEffect(() => {
-    // Don't show on admin routes
     if (isAdminRoute) return;
-
-    // Check if already installed
-    if (isStandalone()) {
-      setIsInstalled(true);
-      return;
-    }
+    if (isStandalone()) { setIsInstalled(true); return; }
 
     setIsiOSDevice(isIOS());
 
-    // Check if dismissed recently (within 7 days)
     const dismissedAt = safeStorage.getItem('pwa-prompt-dismissed');
     if (dismissedAt) {
       const daysSinceDismissed = (Date.now() - parseInt(dismissedAt)) / (1000 * 60 * 60 * 24);
-      if (daysSinceDismissed < 7) {
-        return;
-      }
+      if (daysSinceDismissed < 7) return;
     }
 
-    // For iOS, show the prompt after a delay since there's no beforeinstallprompt event
     if (isIOS()) {
       setTimeout(() => setShowPrompt(true), 2000);
       return;
@@ -61,7 +48,6 @@ export const InstallPrompt = forwardRef<HTMLDivElement>(function InstallPrompt(_
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      // Show prompt after a short delay for better UX
       setTimeout(() => setShowPrompt(true), 2000);
     };
 
@@ -82,13 +68,9 @@ export const InstallPrompt = forwardRef<HTMLDivElement>(function InstallPrompt(_
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
-
     await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-
-    if (outcome === 'accepted') {
-      setShowPrompt(false);
-    }
+    if (outcome === 'accepted') setShowPrompt(false);
     setDeferredPrompt(null);
   };
 
@@ -102,7 +84,6 @@ export const InstallPrompt = forwardRef<HTMLDivElement>(function InstallPrompt(_
   return (
     <AnimatePresence>
       <motion.div
-        ref={ref}
         initial={{ opacity: 0, y: 100 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 100 }}
@@ -136,30 +117,17 @@ export const InstallPrompt = forwardRef<HTMLDivElement>(function InstallPrompt(_
                     <Share className="h-4 w-4" />
                     Tap <strong>Share</strong> then <strong>"Add to Home Screen"</strong>
                   </p>
-                  <Button
-                    onClick={handleDismiss}
-                    size="sm"
-                    variant="outline"
-                  >
+                  <Button onClick={handleDismiss} size="sm" variant="outline">
                     Got it
                   </Button>
                 </div>
               ) : (
                 <div className="flex gap-2 mt-3">
-                  <Button
-                    onClick={handleInstall}
-                    size="sm"
-                    className="gradient-button border-0"
-                    disabled={!deferredPrompt}
-                  >
+                  <Button onClick={handleInstall} size="sm" className="gradient-button border-0" disabled={!deferredPrompt}>
                     <Download className="h-4 w-4 mr-2" />
                     Install App
                   </Button>
-                  <Button
-                    onClick={handleDismiss}
-                    size="sm"
-                    variant="ghost"
-                  >
+                  <Button onClick={handleDismiss} size="sm" variant="ghost">
                     Not now
                   </Button>
                 </div>
@@ -170,4 +138,4 @@ export const InstallPrompt = forwardRef<HTMLDivElement>(function InstallPrompt(_
       </motion.div>
     </AnimatePresence>
   );
-});
+}

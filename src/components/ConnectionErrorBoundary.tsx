@@ -13,8 +13,11 @@ interface State {
   isNetworkError: boolean;
 }
 
+/**
+ * STRICT chunk/module patterns — excludes generic 'failed to fetch' / 'networkerror'
+ * which fire from normal API calls, ad blockers, analytics, etc.
+ */
 const CHUNK_ERROR_PATTERNS = [
-  'load failed',
   'failed to fetch dynamically imported module',
   'importing a module script failed',
   'chunkloaderror',
@@ -23,8 +26,6 @@ const CHUNK_ERROR_PATTERNS = [
   'dynamically imported module',
   'not a valid javascript mime type',
   'application/octet-stream',
-  'failed to fetch',
-  'networkerror',
 ];
 
 function isChunkOrLoadError(error: Error | null): boolean {
@@ -61,7 +62,7 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
     console.error('[ConnectionErrorBoundary] Caught error:', error, errorInfo);
     captureException(error, { componentStack: errorInfo.componentStack });
 
-    // Auto-recover from chunk/module load errors (common on Safari after deployments)
+    // Only auto-recover for genuine chunk/module errors, NOT generic network failures
     if (isChunkOrLoadError(error)) {
       this.attemptChunkRecovery();
     }
@@ -105,7 +106,6 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-screen bg-gradient-to-br from-background to-background/80 flex items-center justify-center p-6 pt-safe pb-safe">
           <div className="text-center max-w-md w-full">
-            {/* Icon */}
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
               {isNetworkError ? (
                 <WifiOff className="w-10 h-10 text-primary-foreground" />
@@ -113,21 +113,15 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
                 <AlertTriangle className="w-10 h-10 text-primary-foreground" />
               )}
             </div>
-            
-            {/* Title */}
             <h1 className="text-2xl font-bold mb-3 text-foreground">
               {isNetworkError ? 'Connection Issue' : 'Something Went Wrong'}
             </h1>
-            
-            {/* Description */}
             <p className="text-muted-foreground mb-6 leading-relaxed">
               {isNetworkError 
                 ? "We're having trouble connecting to Eclipse. This might be a temporary network issue."
                 : "An unexpected error occurred. Please try refreshing the page."
               }
             </p>
-            
-            {/* Tips for network errors */}
             {isNetworkError && (
               <div className="bg-card/50 border border-border rounded-xl p-4 mb-6 text-left">
                 <p className="text-sm font-medium text-primary mb-2 uppercase tracking-wide">
@@ -149,8 +143,6 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
                 </ul>
               </div>
             )}
-            
-            {/* Retry button */}
             <Button
               onClick={this.handleRetry}
               size="lg"
