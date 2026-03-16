@@ -9,11 +9,9 @@ const VOLATILE_QUERY_PARAMS = ['__chunk', '__v', '__t', '__ra'];
 function sanitizeRoute(path: string): string {
   try {
     const url = new URL(path, window.location.origin);
-
     VOLATILE_QUERY_PARAMS.forEach((param) => {
       url.searchParams.delete(param);
     });
-
     const next = `${url.pathname}${url.search}${url.hash}`;
     return next || '/';
   } catch {
@@ -21,24 +19,26 @@ function sanitizeRoute(path: string): string {
   }
 }
 
-function hasVolatileParams(path: string): boolean {
+function currentUrlHasVolatileParams(): boolean {
   try {
-    const url = new URL(path, window.location.origin);
+    const url = new URL(window.location.href);
     return VOLATILE_QUERY_PARAMS.some((param) => url.searchParams.has(param));
   } catch {
     return false;
   }
 }
 
-export function usePWALastRoute() {
-  const location = useLocation();
-  const hasRestored = useRef(false);
-
-  // Check if running as standalone PWA
-  const isStandalone = typeof window !== 'undefined' && (
+function isStandaloneMode(): boolean {
+  return typeof window !== 'undefined' && (
     window.matchMedia('(display-mode: standalone)').matches ||
     (window.navigator as any).standalone === true
   );
+}
+
+export function usePWALastRoute() {
+  const location = useLocation();
+  const hasRestored = useRef(false);
+  const isStandalone = isStandaloneMode();
 
   // Save current route when it changes (only in PWA mode)
   useEffect(() => {
@@ -53,7 +53,6 @@ export function usePWALastRoute() {
     safeStorage.setItem(LAST_ROUTE_KEY, path);
   }, [location.pathname, location.search, location.hash, isStandalone]);
 
-  // Get the saved route for restoration
   const getLastRoute = (): string | null => {
     if (!isStandalone) return null;
     if (hasRestored.current) return null;
@@ -66,7 +65,11 @@ export function usePWALastRoute() {
   return { getLastRoute, isStandalone };
 }
 
-// Component to handle route restoration on PWA launch
+/**
+ * Component to handle route restoration on PWA launch.
+ * IMPORTANT: Also sanitizes volatile query params on ANY route on first boot,
+ * not just '/'. This prevents the admin PWA from getting stuck on ?__chunk= URLs.
+ */
 export function PWARouteRestorer() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -76,34 +79,46 @@ export function PWARouteRestorer() {
     if (hasAttemptedRestore.current) return;
     hasAttemptedRestore.current = true;
 
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true;
+    const isStandalone = isStandaloneMode();
+    if (!isStandalone) {
+      // Even in non-standalone mode, strip volatile params from the URL
+      // to prevent users landing on ?__chunk= bookmarked URLs
+      if (currentUrlHasVolatileParams()) {
+        const clean = sanitizeRoute(`${location.pathname}${location.search}${location.hash}`);
+        if (clean !== `${location.pathname}${location.search}${location.hash}`) {
+          navigate(clean, { replace: true });
+        }
+      }
+      return;
+    }
 
-    if (!isStandalone) return;
-
-    // Only restore if we're on the home page (initial launch)
-    if (location.pathname !== '/') return;
-
-    const currentPath = `${location.pathname}${location.search}${location.hash}`;
-    if (hasVolatileParams(currentPath)) {
-      const cleanedCurrent = sanitizeRoute(currentPath);
-      if (cleanedCurrent !== currentPath) {
-        navigate(cleanedCurrent, { replace: true });
+    // Step 1: Always sanitize volatile params from current URL first
+    if (currentUrlHasVolatileParams()) {
+      const clean = sanitizeRoute(`${location.pathname}${location.search}${location.hash}`);
+      if (clean !== `${location.pathname}${location.search}${location.hash}`) {
+        navigate(clean, { replace: true });
+        // Don't attempt route restoration after sanitization — let the next
+        // render cycle handle it if needed
         return;
       }
     }
 
+    // Step 2: Sanitize stored route if dirty
     const storedRoute = safeStorage.getItem(LAST_ROUTE_KEY);
-    if (!storedRoute) return;
-
-    const lastRoute = sanitizeRoute(storedRoute);
-    if (lastRoute !== storedRoute) {
-      safeStorage.setItem(LAST_ROUTE_KEY, lastRoute);
+    if (storedRoute) {
+      const cleanStored = sanitizeRoute(storedRoute);
+      if (cleanStored !== storedRoute) {
+        safeStorage.setItem(LAST_ROUTE_KEY, cleanStored);
+      }
     }
 
+    // Step 3: Only restore if we're on the home page (initial launch)
+    if (location.pathname !== '/') return;
+
+    if (!storedRoute) return;
+    const lastRoute = sanitizeRoute(storedRoute);
+
     if (lastRoute !== '/' && !EXCLUDED_ROUTES.some((route) => lastRoute.startsWith(route))) {
-      // Use React Router navigation instead of reload
       navigate(lastRoute, { replace: true });
     }
   }, [location.pathname, location.search, location.hash, navigate]);

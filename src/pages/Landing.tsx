@@ -1,10 +1,9 @@
-import { forwardRef, lazy, Suspense, useCallback } from 'react';
+import { lazy, Suspense, useCallback } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { LandingHero } from '@/components/landing/LandingHero';
 import { MarketplaceSection } from '@/components/home/MarketplaceSection';
 
-// Lazy-load below-fold components to reduce initial JS bundle
 const PromotionCarousel = lazy(() => import('@/components/home/PromotionCarousel').then(m => ({ default: m.PromotionCarousel })));
 const PWADiscordBanner = lazy(() => import('@/components/landing/PWADiscordBanner').then(m => ({ default: m.PWADiscordBanner })));
 const ActiveOffersCard = lazy(() => import('@/components/home/ActiveOffersCard').then(m => ({ default: m.ActiveOffersCard })));
@@ -16,7 +15,7 @@ import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { LazySection } from '@/components/ui/LazySection';
 
-const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
+export default function Landing() {
   usePageMeta({ canonicalPath: '/' });
 
   const handleRefresh = useCallback(async () => {
@@ -34,7 +33,6 @@ const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
         <LandingHero />
       </SectionErrorBoundary>
 
-      {/* Promotions + Discord — side by side on desktop for density */}
       <SectionErrorBoundary section="promotions" compact>
         <ScrollReveal direction="up" distance={20} duration={0.4}>
           <div className="px-4 sm:px-6 lg:px-8 -mt-10 relative z-20 space-y-3">
@@ -59,21 +57,18 @@ const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
         </ScrollReveal>
       </SectionErrorBoundary>
 
-      {/* Abandoned Cart Recovery */}
       <Suspense fallback={null}>
         <div className="px-4 sm:px-6 lg:px-8 mt-3">
           <AbandonedCartBanner />
         </div>
       </Suspense>
 
-      {/* Marketplace — lazy-loaded since it's below the fold and data-heavy */}
       <LazySection minHeight="600px" rootMargin="300px">
         <SectionErrorBoundary section="marketplace">
           <MarketplaceSection />
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* Personalized Recommendations */}
       <LazySection minHeight="200px" rootMargin="200px">
         <SectionErrorBoundary section="for-you" compact>
           <Suspense fallback={null}>
@@ -86,6 +81,4 @@ const Landing = forwardRef<HTMLDivElement>(function Landing(_props, _ref) {
       </PullToRefresh>
     </MainLayout>
   );
-});
-
-export default Landing;
+}
