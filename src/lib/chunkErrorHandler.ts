@@ -117,9 +117,11 @@ window.addEventListener('error', (e) => {
   ].join(' ');
 
   const targetUrl = getEventTargetUrl(e.target);
-  const combined = `${message} ${targetUrl}`;
 
-  if (isChunkErrorMessage(combined) || (!message && targetUrl && isChunkAssetUrl(targetUrl))) {
+  // Only trigger on errors with a clear chunk-related message.
+  // Don't trigger on silent asset failures (no message) — these are often
+  // false positives from analytics scripts, ad blockers, or extension resources.
+  if (message.trim() && isChunkErrorMessage(`${message} ${targetUrl}`)) {
     handleChunkError('Static module/chunk load failure');
   }
 }, true);
@@ -137,9 +139,14 @@ window.addEventListener('unhandledrejection', (e) => {
 });
 
 // Safari BFCache recovery: when page is restored from bfcache after backgrounding,
-// modules can resume in a stale state.
+// modules can resume in a stale state. Only reload if a dynamic import actually
+// fails after restore — don't blindly reload on every bfcache hit.
 window.addEventListener('pageshow', (e) => {
   if (e.persisted) {
-    handleChunkError('Page restored from bfcache');
+    // Test if modules are still functional by attempting a trivial dynamic import.
+    // Only trigger recovery if the import actually fails.
+    import('./chunkErrorHandler' /* self-reference, always exists */).catch(() => {
+      handleChunkError('Page restored from bfcache with stale modules');
+    });
   }
 });
