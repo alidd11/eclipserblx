@@ -69,13 +69,36 @@ Deno.serve(async (req) => {
       { headers }
     );
     const wafData = await wafResp.json();
-    results.waf_custom_rules = wafData.result?.rules?.map((r: any) => ({
+    const wafRules = wafData.result?.rules || [];
+    results.waf_custom_rules = wafRules.map((r: any) => ({
       id: r.id,
       description: r.description,
       action: r.action,
       expression: r.expression,
       enabled: r.enabled,
-    })) || [];
+    }));
+
+    // 5b. Disable the "Challenge admin/staff paths" rule if it exists
+    const rulesetId = wafData.result?.id;
+    const adminChallengeRule = wafRules.find(
+      (r: any) => r.action === "managed_challenge" && r.expression?.includes("/admin")
+    );
+    if (rulesetId && adminChallengeRule) {
+      const updatedRules = wafRules.map((r: any) =>
+        r.id === adminChallengeRule.id ? { ...r, enabled: false } : r
+      );
+      const disableResp = await fetch(
+        `${zoneBase}/rulesets/${rulesetId}`,
+        {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({ rules: updatedRules }),
+        }
+      );
+      results.admin_challenge_disabled = await disableResp.json();
+    } else {
+      results.admin_challenge_disabled = "Rule not found or already disabled";
+    }
 
     // 6. Read current settings to confirm
     const settingsToCheck = ["security_level", "challenge_ttl", "browser_check"];
