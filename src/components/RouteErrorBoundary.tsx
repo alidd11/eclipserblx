@@ -84,6 +84,12 @@ export class RouteErrorBoundary extends Component<Props, State> {
     const RECOVERY_KEY = 'reb-chunk-recovery';
     const COOLDOWN_MS = 120_000; // 2 min cooldown
 
+    const currentUrl = new URL(window.location.href);
+    if (currentUrl.searchParams.has('__chunk')) {
+      console.warn('[RouteErrorBoundary] Already on cache-busted URL, showing fallback');
+      return;
+    }
+
     try {
       const last = sessionStorage.getItem(RECOVERY_KEY);
       if (last && Date.now() - parseInt(last, 10) < COOLDOWN_MS) {

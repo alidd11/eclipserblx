@@ -99,7 +99,12 @@ function handleChunkError(reason: string) {
     return;
   }
 
-  // On admin routes, use a longer cooldown to avoid Cloudflare challenge loops,
+  if (isAlreadyCacheBusted()) {
+    console.warn(`[ChunkError] ${reason} on an already cache-busted URL, skipping auto-recovery`);
+    return;
+  }
+
+  // On admin routes, use a longer cooldown to avoid challenge loops,
   // but still allow ONE automatic recovery per session.
   if (window.location.pathname.startsWith('/admin')) {
     const ADMIN_KEY = 'chunk-admin-recovered';
