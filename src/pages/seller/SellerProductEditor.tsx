@@ -370,14 +370,21 @@ export default function SellerProductEditor() {
       const shouldAutoApprove = !hasSecurityFlags();
       const moderationStatus = shouldAutoApprove ? 'approved' : 'pending';
 
+      // Generate a deterministic slug from the name (just for DB constraint, not shown to users)
+      const autoSlug = data.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '')
+        .slice(0, 60);
+
       const productData = {
         name: data.name,
-        slug: data.slug,
+        slug: autoSlug || `product-${crypto.randomUUID().slice(0, 8)}`,
         price: parseFloat(data.price) || 0,
         seller_price: parseFloat(data.seller_price) || parseFloat(data.price) || 0,
         description: data.description,
         category_id: data.category_id || null,
-        is_active: shouldAutoApprove ? data.is_active : false, // Only active if approved
+        is_active: shouldAutoApprove ? data.is_active : false,
         eclipse_free_eligible: data.eclipse_free_eligible,
         images: data.images,
         asset_file_url: data.asset_file_url || null,
@@ -402,14 +409,6 @@ export default function SellerProductEditor() {
         if (error) throw error;
         return { productId, isAutoApproved: shouldAutoApprove, productNumber: undefined as number | undefined };
       } else {
-        // Ensure slug has a unique suffix for new products
-        if (!productData.slug || productData.slug.length < 3) {
-          productData.slug = data.name
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/(^-|-$)/g, '')
-            .slice(0, 60) + '-' + crypto.randomUUID().slice(0, 8);
-        }
 
         const { data: insertedProduct, error } = await supabase
           .from('products')
