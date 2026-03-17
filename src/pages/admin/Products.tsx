@@ -925,7 +925,7 @@ export default function AdminProducts() {
                             </div>
                             <div>
                               <p className="font-medium">{product.name}</p>
-                              <p className="text-xs text-muted-foreground">{product.slug}</p>
+                              <p className="text-xs text-muted-foreground">#{(product as any).product_number}</p>
                             </div>
                           </div>
                         </TableCell>
