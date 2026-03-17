@@ -418,8 +418,8 @@ export default function SellerProductEditor() {
 
         if (error) {
           if (error.message?.includes('duplicate') || error.code === '23505') {
-            // Retry with a unique suffix on collision
-            productData.slug = autoSlug + '-' + crypto.randomUUID().slice(0, 8);
+            // Retry with timestamp suffix on collision
+            productData.slug = autoSlug + '-' + Date.now();
             const { data: retryProduct, error: retryError } = await supabase
               .from('products')
               .insert(productData)

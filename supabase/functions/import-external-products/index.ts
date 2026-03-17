@@ -1801,15 +1801,17 @@ Deno.serve(async (req) => {
             break;
           }
 
-          const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
-          const randomSuffix = crypto.randomUUID().slice(0, 8);
-          const uniqueSlug = `${productSlugForDb}-${randomSuffix}`;
+          const productSlugForDb = product.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'product';
           
-          const { data: createdProduct, error: createError } = await supabaseAdmin
-            .from('products')
-            .insert({
-              name: product.name,
-              slug: uniqueSlug,
+          let createdProduct: { id: string } | null = null;
+          let createError: any = null;
+          
+          for (const slugCandidate of [productSlugForDb, `${productSlugForDb}-${Date.now()}`]) {
+            const result = await supabaseAdmin
+              .from('products')
+              .insert({
+                name: product.name,
+                slug: slugCandidate,
               description: stripBlockedUrls(product.description) || null,
               price: product.price || 0,
               seller_price: product.price || 0,
