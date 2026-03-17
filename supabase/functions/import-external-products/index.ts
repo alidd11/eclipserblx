@@ -1601,16 +1601,19 @@ Deno.serve(async (req) => {
 
       console.log(`Import quota result: ${quotaResult} (${quotaResult === 'free' ? 'free tier' : 'credit deducted'})`);
 
-      // Auto-create product record with robust unique slug
-      const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
-      const randomSuffix = crypto.randomUUID().slice(0, 8);
-      const uniqueSlug = `${productSlugForDb}-${randomSuffix}`;
+      // Auto-create product record with clean deterministic slug
+      const productSlugForDb = product.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'product';
       
-      const { data: createdProduct, error: createError } = await supabaseAdmin
-        .from('products')
-        .insert({
-          name: product.name,
-          slug: uniqueSlug,
+      let createdProduct: { id: string } | null = null;
+      let createError: any = null;
+      
+      // Try clean slug first, then with timestamp suffix on collision
+      for (const slugCandidate of [productSlugForDb, `${productSlugForDb}-${Date.now()}`]) {
+        const result = await supabaseAdmin
+          .from('products')
+          .insert({
+            name: product.name,
+            slug: slugCandidate,
           description: stripBlockedUrls(product.description) || null,
           price: product.price || 0,
           seller_price: product.price || 0,
@@ -1619,13 +1622,27 @@ Deno.serve(async (req) => {
           is_seller_product: true,
           is_active: false,
           category_id: product.suggestedCategoryId || null,
-          external_link: product.sourceUrl || null,
-          moderation_status: 'approved',
-        })
-        .select('id')
-        .single();
+            external_link: product.sourceUrl || null,
+            moderation_status: 'approved',
+          })
+          .select('id')
+          .single();
+        
+        if (!result.error) {
+          createdProduct = result.data;
+          createError = null;
+          break;
+        }
+        
+        // Only retry on unique constraint violation
+        if (result.error.code !== '23505') {
+          createError = result.error;
+          break;
+        }
+        createError = result.error;
+      }
 
-      if (createError) {
+      if (createError || !createdProduct) {
         console.error(`Failed to create product record:`, createError.message);
         // Record the failed import
         await supabaseAdmin.from('product_imports').insert({
@@ -1784,30 +1801,45 @@ Deno.serve(async (req) => {
             break;
           }
 
-          const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
-          const randomSuffix = crypto.randomUUID().slice(0, 8);
-          const uniqueSlug = `${productSlugForDb}-${randomSuffix}`;
+          const productSlugForDb = product.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'product';
           
-          const { data: createdProduct, error: createError } = await supabaseAdmin
-            .from('products')
-            .insert({
-              name: product.name,
-              slug: uniqueSlug,
-              description: stripBlockedUrls(product.description) || null,
-              price: product.price || 0,
-              seller_price: product.price || 0,
-              images: product.images.length > 0 ? product.images : [],
-              store_id: store.id,
-              is_seller_product: true,
-              is_active: false,
-              category_id: product.suggestedCategoryId || null,
-              external_link: product.sourceUrl || null,
-              moderation_status: 'approved',
-            })
-            .select('id')
-            .single();
+          let createdProduct: { id: string } | null = null;
+          let createError: any = null;
+          
+          for (const slugCandidate of [productSlugForDb, `${productSlugForDb}-${Date.now()}`]) {
+            const result = await supabaseAdmin
+              .from('products')
+              .insert({
+                name: product.name,
+                slug: slugCandidate,
+                description: stripBlockedUrls(product.description) || null,
+                price: product.price || 0,
+                seller_price: product.price || 0,
+                images: product.images.length > 0 ? product.images : [],
+                store_id: store.id,
+                is_seller_product: true,
+                is_active: false,
+                category_id: product.suggestedCategoryId || null,
+                external_link: product.sourceUrl || null,
+                moderation_status: 'approved',
+              })
+              .select('id')
+              .single();
+            
+            if (!result.error) {
+              createdProduct = result.data;
+              createError = null;
+              break;
+            }
+            
+            if (result.error.code !== '23505') {
+              createError = result.error;
+              break;
+            }
+            createError = result.error;
+          }
 
-          if (createError) {
+          if (createError || !createdProduct) {
             console.error(`Failed to create product record for "${product.name}":`, createError.message);
             results.push({ url, success: false, error: `DB error: ${createError.message}` });
             await supabaseAdmin.from('product_imports').insert({
