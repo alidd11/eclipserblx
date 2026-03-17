@@ -418,7 +418,15 @@ export default function SellerProductEditor() {
 
         if (error) {
           if (error.message?.includes('duplicate') || error.code === '23505') {
-            throw new Error('A product with this URL slug already exists. Please change the slug.');
+            // Retry with a unique suffix on collision
+            productData.slug = autoSlug + '-' + crypto.randomUUID().slice(0, 8);
+            const { data: retryProduct, error: retryError } = await supabase
+              .from('products')
+              .insert(productData)
+              .select('id, product_number')
+              .single();
+            if (retryError) throw retryError;
+            return { productId: retryProduct.id, isAutoApproved: shouldAutoApprove, productNumber: (retryProduct as any).product_number };
           }
           throw error;
         }
