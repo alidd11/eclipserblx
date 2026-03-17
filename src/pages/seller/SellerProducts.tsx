@@ -210,53 +210,56 @@ export default function SellerProducts() {
       }
 
       const priceVal = parseFloat(data.price) || 0;
+      // Generate a deterministic slug from the name (just for DB constraint)
+      const autoSlug = data.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '')
+        .slice(0, 60);
+
       const productData: Record<string, any> = {
         name: data.name,
-        slug: data.slug,
+        slug: autoSlug || `product-${crypto.randomUUID().slice(0, 8)}`,
         price: priceVal,
         seller_price: priceVal,
         description: data.description,
         category_id: data.category_id || null,
-        is_active: data.is_active,
-        images: data.images,
+        images: data.images || [],
         asset_file_url: data.asset_file_url || null,
-        store_id: store.id,
+        store_id: store!.id,
         is_seller_product: true,
-        release_at: releaseAt,
+        is_active: data.is_active !== undefined ? data.is_active : false,
+        moderation_status: 'pending',
+        release_at: data.release_at || null,
+        early_access_hours: data.early_access_hours ? parseInt(data.early_access_hours) : null,
+        ip_ownership_confirmed: data.ip_ownership_confirmed || false,
+        is_pay_what_you_want: data.is_pay_what_you_want || false,
+        min_price: data.is_pay_what_you_want ? (parseFloat(data.min_price || '0') || 0) : null,
       };
-
-      // Auto-approve new products (no security scan in quick editor = no flags)
-      if (!data.id) {
-        productData.moderation_status = 'approved';
-      }
 
       if (data.id) {
         const { error } = await supabase
           .from('products')
           .update(productData)
           .eq('id', data.id)
-          .eq('store_id', store.id);
-
+          .eq('store_id', store!.id);
         if (error) throw error;
       } else {
-        // Ensure slug has a unique suffix for new products
-        if (!productData.slug || productData.slug.length < 3) {
-          productData.slug = data.name
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/(^-|-$)/g, '')
-            .slice(0, 60) + '-' + crypto.randomUUID().slice(0, 8);
-        }
-
         const { error } = await supabase
           .from('products')
           .insert(productData as any);
 
         if (error) {
           if (error.message?.includes('duplicate') || error.code === '23505') {
-            throw new Error('A product with this URL slug already exists. Please change the slug.');
+            // Retry with unique suffix
+            productData.slug = autoSlug + '-' + crypto.randomUUID().slice(0, 8);
+            const { error: retryError } = await supabase
+              .from('products')
+              .insert(productData as any);
+            if (retryError) throw retryError;
+          } else {
+            throw error;
           }
-          throw error;
         }
       }
     },
