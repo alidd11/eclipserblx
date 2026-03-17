@@ -1,12 +1,9 @@
 // Custom Service Worker for Push Notifications + Cache Busting + Offline Support
 // This file is imported by the Workbox-generated service worker
 
-const SW_VERSION = '1.0.8';
+const SW_VERSION = '1.0.9';
 const OFFLINE_CACHE = 'offline-v1';
 const OFFLINE_URL = '/offline.html';
-// Short-lived navigation cache: max 60s to prevent stale HTML loops after deployments
-const NAV_CACHE = 'navigation-cache-v2';
-const NAV_CACHE_MAX_AGE = 60000; // 60 seconds
 
 // Clear ALL caches on activation - full reset for every new SW version
 const clearOldCaches = async () => {
