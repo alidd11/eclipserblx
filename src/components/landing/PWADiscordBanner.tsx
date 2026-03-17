@@ -73,4 +73,4 @@ export function PWADiscordBanner() {
       </div>
     </a>
   );
-});
+}
