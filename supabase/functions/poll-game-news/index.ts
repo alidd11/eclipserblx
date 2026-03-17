@@ -460,7 +460,7 @@ Deno.serve(async (req) => {
         ];
 
         const newEntries = recentEntries
-          .filter(e => !existingUrls.has(e.url))
+          .filter(e => !existingUrls.has(e.url) && !existingTitles.has(e.title.substring(0, 500)))
           .filter(e => !SKIP_PATTERNS.some(p => p.test(e.title) || p.test(e.description || '')))
           .filter(e => isLikelyEnglish(e.title, e.description))
           .filter(e => {
