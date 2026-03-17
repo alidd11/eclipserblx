@@ -1622,13 +1622,27 @@ Deno.serve(async (req) => {
           is_seller_product: true,
           is_active: false,
           category_id: product.suggestedCategoryId || null,
-          external_link: product.sourceUrl || null,
-          moderation_status: 'approved',
-        })
-        .select('id')
-        .single();
+            external_link: product.sourceUrl || null,
+            moderation_status: 'approved',
+          })
+          .select('id')
+          .single();
+        
+        if (!result.error) {
+          createdProduct = result.data;
+          createError = null;
+          break;
+        }
+        
+        // Only retry on unique constraint violation
+        if (result.error.code !== '23505') {
+          createError = result.error;
+          break;
+        }
+        createError = result.error;
+      }
 
-      if (createError) {
+      if (createError || !createdProduct) {
         console.error(`Failed to create product record:`, createError.message);
         // Record the failed import
         await supabaseAdmin.from('product_imports').insert({
