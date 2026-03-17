@@ -105,19 +105,13 @@ export class RouteErrorBoundary extends Component<Props, State> {
   }
 
   handleRetry = () => {
-    const nextCount = this.state.retryCount + 1;
-
     if (isChunkError(this.state.error)) {
-      // First retry is a local remount (no full-page reload). Second escalates.
-      if (nextCount >= 2) {
-        this.attemptChunkRecovery();
-        return;
-      }
-
-      this.setState({ hasError: false, error: null, retryCount: nextCount });
+      // For chunk errors, skip the local remount — go straight to cache-busted reload
+      this.attemptChunkRecovery();
       return;
     }
 
+    const nextCount = this.state.retryCount + 1;
     if (nextCount >= 2) {
       this.performHardRecovery();
       return;

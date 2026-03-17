@@ -95,6 +95,11 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
   }
 
   handleRetry = () => {
+    if (isChunkOrLoadError(this.state.error)) {
+      // For chunk errors, always do a cache-busted hard reload — plain reload serves stale SW cache
+      this.attemptChunkRecovery();
+      return;
+    }
     this.setState({ hasError: false, error: null, isNetworkError: false });
     window.location.reload();
   };
