@@ -1,36 +1,96 @@
 
 
-## Issues Identified
+## Full End-to-End Audit Report
 
-**Issue 1: Sidebar positioned at top of screen on desktop**
-The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
+---
 
-**Issue 2: Excessive black empty space in the content area**
-The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
+### CRITICAL (Must Fix)
 
-## Plan
+**1. `PWADiscordBanner` missing `forwardRef` — Console error on every landing page load**
+- **File**: `src/components/landing/PWADiscordBanner.tsx`
+- The component is lazy-loaded inside a `ScrollReveal` (which passes a ref via `Suspense`), but the exported `PWADiscordBanner` function (line 22) is a plain function component — not wrapped with `forwardRef`.
+- The inner `DiscordLogo` SVG uses `forwardRef`, but the outer component does not.
+- **Fix**: Wrap the exported component with `forwardRef<HTMLDivElement>` and attach `ref` to the outer `<a>` element.
 
-### 1. Widen the content area on the Categories page
-- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
-- Reduce vertical padding between the header and grid
-- Tighten the gap between the page title/description and the cards
+**2. `import-external-products` edge function still generates legacy UUID slug suffixes**
+- **File**: `supabase/functions/import-external-products/index.ts` (lines 1604-1607 and 1787-1789)
+- Two code paths still append `crypto.randomUUID().slice(0, 8)` to product slugs, contradicting the new deterministic slug system.
+- **Fix**: Replace with the same clean slug logic used in the seller pages (derive from name, retry with collision suffix only on `23505` error).
 
-### 2. Improve the PageHeader component
-- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
-- This applies globally to all pages using PageHeader
+---
 
-### 3. Make category cards fill space better
-- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
-- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
-- Reduce grid gap slightly so cards feel more connected
+### HIGH (Should Fix)
 
-### 4. Sidebar desktop alignment fix
-- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
-- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
-- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
+**3. Database: 4 functions missing `search_path` — Security linter warnings**
+- The email-queue helper functions (`enqueue_email`, `read_email_batch`, `delete_email`, `move_to_dlq`) are `SECURITY DEFINER` but don't set `search_path = public`.
+- This is a search-path injection risk on security-definer functions.
+- **Fix**: Run a migration adding `SET search_path = public` to each of these 4 functions.
 
-### Files to modify
-- `src/pages/Categories.tsx` — widen container, tighten spacing
-- `src/components/ui/PageHeader.tsx` — reduce bottom margin
-- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
+**4. Database: `game_news_posted` has an overly permissive RLS policy**
+- Policy "Service can insert posted" uses `WITH CHECK (true)` for INSERT, meaning any authenticated user could insert rows.
+- **Fix**: Tighten to require admin role via `has_role(auth.uid(), 'admin')` or restrict to service-role only.
+
+**5. Database: Extension installed in `public` schema**
+- The linter flagged an extension in the `public` schema. Best practice is to use a dedicated `extensions` schema.
+- **Risk**: Low immediate impact, but noted for hygiene. Can be deferred.
+
+---
+
+### MEDIUM (Recommended)
+
+**6. Seller product creation has fallback UUID slug on collision retry**
+- **Files**: `src/pages/seller/SellerProductEditor.tsx` (line 422), `src/pages/seller/SellerProducts.tsx` (line 252)
+- Both files use `crypto.randomUUID().slice(0, 8)` in the collision-retry path. While this is only triggered on duplicate slugs, it reintroduces the random suffix pattern.
+- **Fix**: Use `product_number` or a sequential counter as the collision tiebreaker instead of a random UUID.
+
+---
+
+### LOW / INFORMATIONAL
+
+**7. Route coverage — no dead routes found**
+- All 150+ routes in `AppRoutes.tsx` have corresponding lazy-loaded page components. Legacy routes properly redirect via `<Navigate replace />`.
+- The catch-all `*` route correctly renders `NotFound`.
+
+**8. Performance architecture is sound**
+- Critical CSS is inlined in `index.html`. Fonts are preloaded. Hero images use `fetchpriority="high"`.
+- Non-critical components (`ChatWidget`, `CookieConsentBanner`, etc.) are lazy-loaded with `Suspense fallback={null}`.
+- `framer-motion` is isolated to non-critical paths. `PageTransition` uses CSS-only animation.
+- Manual chunk splitting in Vite config properly separates vendor bundles.
+- Query client uses 5-minute stale time and 30-minute GC to reduce refetches.
+
+**9. Responsive design patterns are consistent**
+- Mobile tabs use `Select` dropdown pattern (per project memory). Tables convert to card layouts below `md`.
+- Header uses `position: fixed` with safe-area spacing on mobile. Tab bar uses `--tab-bar-height` CSS variable.
+- `viewport-fit=cover` and `interactive-widget=resizes-content` are correctly set.
+
+**10. No duplicate pages or redundant route definitions found**
+- `/purchases`, `/downloads`, `/orders` all intentionally point to `MyPurchases` (aliased routes, not duplication).
+- `/marketplace` correctly aliases to `Products`.
+
+**11. `generateSlug` usage is appropriate in remaining files**
+- `SellerSettingsProfile.tsx` — generates store slugs (stores still need text slugs).
+- `admin/Categories.tsx` — generates category slugs (categories still need text slugs).
+- These are correct and should NOT be removed.
+
+**12. No database errors in recent logs**
+- Postgres error logs are clean. Edge function error logs show no 4xx/5xx responses.
+
+---
+
+### Summary
+
+| Severity | Count | Status |
+|----------|-------|--------|
+| Critical | 2 | Needs fix |
+| High | 3 | Needs fix (2 DB migrations + 1 deferred) |
+| Medium | 1 | Recommended |
+| Low/Info | 6 | Clean — no action needed |
+
+### Implementation Plan
+
+1. **Wrap `PWADiscordBanner` with `forwardRef`** — add ref to outer `<a>` element
+2. **Update `import-external-products` edge function** — replace 2 UUID slug generation blocks with deterministic slug + collision retry logic
+3. **DB migration** — set `search_path = public` on 4 email-queue functions
+4. **DB migration** — tighten `game_news_posted` INSERT policy
+5. **Optional** — replace UUID fallback in seller collision-retry paths with `product_number`-based suffix
 
