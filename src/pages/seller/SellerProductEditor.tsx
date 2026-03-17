@@ -178,24 +178,10 @@ export default function SellerProductEditor() {
     }
   }, [product]);
 
-  // Generate clean slug from name (no random suffix for cleaner URLs)
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-      .slice(0, 60);
-  };
-
-  // Track whether the slug was auto-generated (vs manually edited)
-  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
-
   const handleNameChange = (name: string) => {
     setFormData(prev => ({
       ...prev,
       name,
-      // Only auto-update slug if user hasn't manually edited it and we're creating (not editing)
-      slug: (!slugManuallyEdited && !isEditing) ? generateSlug(name) : prev.slug,
     }));
   };
 
