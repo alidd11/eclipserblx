@@ -210,53 +210,53 @@ export default function SellerProducts() {
       }
 
       const priceVal = parseFloat(data.price) || 0;
+      // Generate a deterministic slug from the name (just for DB constraint)
+      const autoSlug = data.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '')
+        .slice(0, 60);
+
       const productData: Record<string, any> = {
         name: data.name,
-        slug: data.slug,
+        slug: autoSlug || `product-${crypto.randomUUID().slice(0, 8)}`,
         price: priceVal,
         seller_price: priceVal,
         description: data.description,
         category_id: data.category_id || null,
-        is_active: data.is_active,
-        images: data.images,
+        images: data.images || [],
         asset_file_url: data.asset_file_url || null,
-        store_id: store.id,
+        store_id: store!.id,
         is_seller_product: true,
-        release_at: releaseAt,
+        is_active: data.is_active !== undefined ? data.is_active : false,
+        moderation_status: 'pending',
+        release_at: data.release_at || null,
+        is_pay_what_you_want: data.is_pay_what_you_want || false,
       };
-
-      // Auto-approve new products (no security scan in quick editor = no flags)
-      if (!data.id) {
-        productData.moderation_status = 'approved';
-      }
 
       if (data.id) {
         const { error } = await supabase
           .from('products')
           .update(productData)
           .eq('id', data.id)
-          .eq('store_id', store.id);
-
+          .eq('store_id', store!.id);
         if (error) throw error;
       } else {
-        // Ensure slug has a unique suffix for new products
-        if (!productData.slug || productData.slug.length < 3) {
-          productData.slug = data.name
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/(^-|-$)/g, '')
-            .slice(0, 60) + '-' + crypto.randomUUID().slice(0, 8);
-        }
-
         const { error } = await supabase
           .from('products')
           .insert(productData as any);
 
         if (error) {
           if (error.message?.includes('duplicate') || error.code === '23505') {
-            throw new Error('A product with this URL slug already exists. Please change the slug.');
+            // Retry with unique suffix
+            productData.slug = autoSlug + '-' + crypto.randomUUID().slice(0, 8);
+            const { error: retryError } = await supabase
+              .from('products')
+              .insert(productData as any);
+            if (retryError) throw retryError;
+          } else {
+            throw error;
           }
-          throw error;
         }
       }
     },
@@ -314,14 +314,6 @@ export default function SellerProducts() {
     },
   });
 
-  // Generate clean slug from name (no random suffix for cleaner URLs)
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-      .slice(0, 60);
-  };
 
   // Helper function to format datetime for input
   const formatDateTimeForInput = (isoString: string | null) => {
@@ -520,28 +512,7 @@ export default function SellerProducts() {
       toast.error('Please enter a valid price');
       return;
     }
-    // Validate slug format if manually entered (only check for invalid characters, not structure)
-    if (form.slug && /[^a-z0-9-]/.test(form.slug)) {
-      toast.error('URL slug can only contain lowercase letters, numbers, and hyphens');
-      return;
-    }
-    if (!form.asset_file_url) {
-      toast.error('A product file must be uploaded before saving');
-      return;
-    }
-    const plainDesc = form.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
-    if (plainDesc.length < 100) {
-      toast.error(`Description must be at least 100 characters (currently ${plainDesc.length})`);
-      return;
-    }
-
-    // Auto-generate slug if still empty (user never blurred name field)
-    const submissionForm = { ...form };
-    if (!submissionForm.slug && submissionForm.name.trim() && !submissionForm.id) {
-      submissionForm.slug = generateSlug(submissionForm.name);
-    }
-
-    saveProduct.mutate(submissionForm);
+    saveProduct.mutate(form);
   };
 
   const filteredProducts = products;
@@ -884,38 +855,17 @@ export default function SellerProducts() {
               <DialogTitle>{form.id ? 'Edit Product' : 'Create Product'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
-                  <Input
-                    id="name"
-                   value={form.name}
-                    onChange={(e) => setForm({ 
-                      ...form, 
-                      name: e.target.value,
-                    })}
-                    onBlur={() => {
-                      // Auto-generate slug from full name when field loses focus (only for new products)
-                      if (!form.id && !form.slug && form.name.trim()) {
-                        setForm(prev => ({ ...prev, slug: generateSlug(prev.name) }));
-                      }
-                    }}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="slug">URL Slug</Label>
-                  <Input
-                    id="slug"
-                    value={form.slug}
-                    onChange={(e) => {
-                      const sanitized = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
-                      setForm({ ...form, slug: sanitized });
-                    }}
-                    placeholder="auto-generated-from-name"
-                  />
-                  <p className="text-xs text-muted-foreground">Only lowercase letters, numbers, and hyphens.</p>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="name">Name *</Label>
+                <Input
+                  id="name"
+                  value={form.name}
+                  onChange={(e) => setForm({ 
+                    ...form, 
+                    name: e.target.value,
+                  })}
+                  required
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">

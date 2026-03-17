@@ -178,24 +178,10 @@ export default function SellerProductEditor() {
     }
   }, [product]);
 
-  // Generate clean slug from name (no random suffix for cleaner URLs)
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-      .slice(0, 60);
-  };
-
-  // Track whether the slug was auto-generated (vs manually edited)
-  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
-
   const handleNameChange = (name: string) => {
     setFormData(prev => ({
       ...prev,
       name,
-      // Only auto-update slug if user hasn't manually edited it and we're creating (not editing)
-      slug: (!slugManuallyEdited && !isEditing) ? generateSlug(name) : prev.slug,
     }));
   };
 
@@ -384,14 +370,21 @@ export default function SellerProductEditor() {
       const shouldAutoApprove = !hasSecurityFlags();
       const moderationStatus = shouldAutoApprove ? 'approved' : 'pending';
 
+      // Generate a deterministic slug from the name (just for DB constraint, not shown to users)
+      const autoSlug = data.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '')
+        .slice(0, 60);
+
       const productData = {
         name: data.name,
-        slug: data.slug,
+        slug: autoSlug || `product-${crypto.randomUUID().slice(0, 8)}`,
         price: parseFloat(data.price) || 0,
         seller_price: parseFloat(data.seller_price) || parseFloat(data.price) || 0,
         description: data.description,
         category_id: data.category_id || null,
-        is_active: shouldAutoApprove ? data.is_active : false, // Only active if approved
+        is_active: shouldAutoApprove ? data.is_active : false,
         eclipse_free_eligible: data.eclipse_free_eligible,
         images: data.images,
         asset_file_url: data.asset_file_url || null,
@@ -416,14 +409,6 @@ export default function SellerProductEditor() {
         if (error) throw error;
         return { productId, isAutoApproved: shouldAutoApprove, productNumber: undefined as number | undefined };
       } else {
-        // Ensure slug has a unique suffix for new products
-        if (!productData.slug || productData.slug.length < 3) {
-          productData.slug = data.name
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/(^-|-$)/g, '')
-            .slice(0, 60) + '-' + crypto.randomUUID().slice(0, 8);
-        }
 
         const { data: insertedProduct, error } = await supabase
           .from('products')
@@ -433,7 +418,15 @@ export default function SellerProductEditor() {
 
         if (error) {
           if (error.message?.includes('duplicate') || error.code === '23505') {
-            throw new Error('A product with this URL slug already exists. Please change the slug.');
+            // Retry with a unique suffix on collision
+            productData.slug = autoSlug + '-' + crypto.randomUUID().slice(0, 8);
+            const { data: retryProduct, error: retryError } = await supabase
+              .from('products')
+              .insert(productData)
+              .select('id, product_number')
+              .single();
+            if (retryError) throw retryError;
+            return { productId: retryProduct.id, isAutoApproved: shouldAutoApprove, productNumber: (retryProduct as any).product_number };
           }
           throw error;
         }
@@ -444,8 +437,6 @@ export default function SellerProductEditor() {
       // Submit to search engines if auto-approved
       if (result.isAutoApproved && result.productNumber) {
         submitProductUrl(result.productNumber);
-      } else if (result.isAutoApproved && formData.slug) {
-        submitProductUrl(formData.slug);
       }
       // Send Discord announcement for auto-approved new products
       if (result.isAutoApproved && !isEditing) {
@@ -502,10 +493,6 @@ export default function SellerProductEditor() {
     }
     if (name.length > 200) {
       toast.error('Product name must be under 200 characters');
-      return;
-    }
-    if (formData.slug && formData.slug.length > 200) {
-      toast.error('URL slug must be under 200 characters');
       return;
     }
     if (!formData.is_pay_what_you_want && (!formData.price || parseFloat(formData.price) <= 0)) {
@@ -617,22 +604,6 @@ export default function SellerProductEditor() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="slug">URL Slug</Label>
-                <Input
-                  id="slug"
-                  value={formData.slug}
-                  onChange={(e) => {
-                    const sanitized = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
-                    setSlugManuallyEdited(true);
-                    setFormData({ ...formData, slug: sanitized });
-                  }}
-                  placeholder="auto-generated-from-name"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Only lowercase letters, numbers, and hyphens. Used in the product URL.
-                </p>
-              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
