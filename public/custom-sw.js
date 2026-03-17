@@ -111,57 +111,36 @@ self.addEventListener('message', (event) => {
   }
 });
 
-// Network-first for navigation, with short-lived cache fallback only
+// Network-first for navigation (Safari-safe): no HTML stream rewriting / no nav cache reuse
 self.addEventListener('fetch', (event) => {
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          if (!response.ok && response.status >= 500) {
-            throw new Error(`Server error: ${response.status}`);
-          }
-          // Cache with timestamp header for age checking
-          const responseClone = response.clone();
-          caches.open(NAV_CACHE).then(cache => {
-            const headers = new Headers(responseClone.headers);
-            headers.set('sw-cache-time', Date.now().toString());
-            const timedResponse = new Response(responseClone.body, {
-              status: responseClone.status,
-              statusText: responseClone.statusText,
-              headers
-            });
-            cache.put(event.request, timedResponse);
-          });
-          return response;
-        })
-        .catch(async () => {
-          // Only use cached navigation if it's recent (< 60s old)
-          const cache = await caches.open(NAV_CACHE);
-          const cached = await cache.match(event.request);
-          if (cached) {
-            const cacheTime = parseInt(cached.headers.get('sw-cache-time') || '0', 10);
-            if (Date.now() - cacheTime < NAV_CACHE_MAX_AGE) {
-              return cached;
-            }
-            // Stale — delete it to prevent serving old HTML with wrong chunk hashes
-            await cache.delete(event.request);
-          }
+  if (event.request.mode !== 'navigate') return;
 
-          // Offline fallback chain
-          const offlineCache = await caches.open(OFFLINE_CACHE);
-          const offlinePage = await offlineCache.match(OFFLINE_URL);
-          if (offlinePage) return offlinePage;
+  event.respondWith((async () => {
+    try {
+      // Prefer navigation preload when available (enabled in activate)
+      const preload = await event.preloadResponse;
+      if (preload) return preload;
 
-          const indexCache = await caches.match('/index.html');
-          if (indexCache) return indexCache;
+      const response = await fetch(event.request);
+      if (!response.ok && response.status >= 500) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+      return response;
+    } catch {
+      // Offline fallback chain
+      const offlineCache = await caches.open(OFFLINE_CACHE);
+      const offlinePage = await offlineCache.match(OFFLINE_URL);
+      if (offlinePage) return offlinePage;
 
-          return new Response(
-            '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Offline</title></head><body style="background:#0a0a0f;color:white;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;"><div style="text-align:center;"><h1>You\'re Offline</h1><p>Please check your connection and try again.</p><button onclick="location.reload()" style="padding:10px 20px;background:#7c3aed;color:white;border:none;border-radius:8px;cursor:pointer;">Retry</button></div></body></html>',
-            { status: 200, headers: { 'Content-Type': 'text/html' } }
-          );
-        })
-    );
-  }
+      const indexCache = await caches.match('/index.html');
+      if (indexCache) return indexCache;
+
+      return new Response(
+        '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Offline</title></head><body style="background:#0a0a0f;color:white;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;"><div style="text-align:center;"><h1>You\'re Offline</h1><p>Please check your connection and try again.</p><button onclick="location.reload()" style="padding:10px 20px;background:#7c3aed;color:white;border:none;border-radius:8px;cursor:pointer;">Retry</button></div></body></html>',
+        { status: 200, headers: { 'Content-Type': 'text/html' } }
+      );
+    }
+  })());
 });
 
 // Install
