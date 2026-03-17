@@ -868,28 +868,10 @@ export default function SellerProducts() {
                       ...form, 
                       name: e.target.value,
                     })}
-                    onBlur={() => {
-                      // Auto-generate slug from full name when field loses focus (only for new products)
-                      if (!form.id && !form.slug && form.name.trim()) {
-                        setForm(prev => ({ ...prev, slug: generateSlug(prev.name) }));
-                      }
-                    }}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="slug">URL Slug</Label>
-                  <Input
-                    id="slug"
-                    value={form.slug}
-                    onChange={(e) => {
-                      const sanitized = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
-                      setForm({ ...form, slug: sanitized });
-                    }}
-                    placeholder="auto-generated-from-name"
-                  />
-                  <p className="text-xs text-muted-foreground">Only lowercase letters, numbers, and hyphens.</p>
-                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

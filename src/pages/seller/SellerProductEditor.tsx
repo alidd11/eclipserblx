@@ -606,22 +606,6 @@ export default function SellerProductEditor() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="slug">URL Slug</Label>
-                <Input
-                  id="slug"
-                  value={formData.slug}
-                  onChange={(e) => {
-                    const sanitized = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
-                    setSlugManuallyEdited(true);
-                    setFormData({ ...formData, slug: sanitized });
-                  }}
-                  placeholder="auto-generated-from-name"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Only lowercase letters, numbers, and hyphens. Used in the product URL.
-                </p>
-              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
