@@ -490,10 +490,6 @@ export default function SellerProductEditor() {
       toast.error('Product name must be under 200 characters');
       return;
     }
-    if (formData.slug && formData.slug.length > 200) {
-      toast.error('URL slug must be under 200 characters');
-      return;
-    }
     if (!formData.is_pay_what_you_want && (!formData.price || parseFloat(formData.price) <= 0)) {
       toast.error('Please enter a valid price');
       return;
