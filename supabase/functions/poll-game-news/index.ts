@@ -384,15 +384,25 @@ Deno.serve(async (req) => {
         // Only process the latest 5 entries to avoid spam on first run
         const recentEntries = entries.slice(0, maxPerFeed);
 
-        // Check which have already been posted
+        // Check which have already been posted (by URL)
         const urls = recentEntries.map(e => e.url);
-        const { data: existing } = await supabase
+        const { data: existingByUrl } = await supabase
           .from('game_news_posted')
           .select('article_url')
           .eq('feed_id', feed.id)
           .in('article_url', urls);
 
-        const existingUrls = new Set((existing || []).map(e => e.article_url));
+        const existingUrls = new Set((existingByUrl || []).map(e => e.article_url));
+
+        // Also check by title to catch feeds with rotating IDs (e.g. Fortnite API)
+        const titles = recentEntries.map(e => e.title.substring(0, 500));
+        const { data: existingByTitle } = await supabase
+          .from('game_news_posted')
+          .select('article_title')
+          .eq('feed_id', feed.id)
+          .in('article_title', titles);
+
+        const existingTitles = new Set((existingByTitle || []).map(e => e.article_title));
 
         // Filter out non-gaming content: corporate, financial, HR, legal, sustainability
         const SKIP_PATTERNS = [
@@ -450,7 +460,7 @@ Deno.serve(async (req) => {
         ];
 
         const newEntries = recentEntries
-          .filter(e => !existingUrls.has(e.url))
+          .filter(e => !existingUrls.has(e.url) && !existingTitles.has(e.title.substring(0, 500)))
           .filter(e => !SKIP_PATTERNS.some(p => p.test(e.title) || p.test(e.description || '')))
           .filter(e => isLikelyEnglish(e.title, e.description))
           .filter(e => {
