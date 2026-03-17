@@ -1,43 +1,36 @@
 
 
-## End-to-End Audit Results
+## Issues Identified
 
-After reviewing the codebase, database, console logs, and network requests, here's what I found:
+**Issue 1: Sidebar positioned at top of screen on desktop**
+The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
 
-### Issues Found
+**Issue 2: Excessive black empty space in the content area**
+The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
 
-**1. Admin Products page still has legacy slug logic** (`src/pages/admin/Products.tsx`)
-- Still shows a "Slug" input field in the product form (line 990-996)
-- Still auto-generates slug from name on change (line 985)
-- Still appends `crypto.randomUUID().slice(0, 8)` suffix for new products (lines 354-357)
-- Still displays slug under product name in the table (line 934)
-- **Fix**: Remove the slug input field, remove the forced UUID suffix logic, use the same clean deterministic slug approach as the seller pages, and replace slug display with product_number.
+## Plan
 
-**2. `AbandonedCartBanner` ref warning** (`src/components/marketplace/AbandonedCartBanner.tsx`)
-- Console error: "Function components cannot be given refs" when lazy-loaded in Landing page
-- The component is used with `lazy()` + `Suspense`, which tries to attach a ref
-- **Fix**: Wrap the component with `React.forwardRef`
+### 1. Widen the content area on the Categories page
+- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
+- Reduce vertical padding between the header and grid
+- Tighten the gap between the page title/description and the cards
 
-**3. Admin product table shows slug instead of product_number** (`src/pages/admin/Products.tsx`, line 934)
-- Shows the internal slug text under the product name
-- Should show the product number for consistency with the new system
-- **Fix**: Replace `{product.slug}` with `#{(product as any).product_number}` display
+### 2. Improve the PageHeader component
+- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
+- This applies globally to all pages using PageHeader
 
-### No Issues Found (Verified Clean)
-- **Database**: 0 products with legacy UUID-suffixed slugs (cleanup from earlier is confirmed)
-- **Seller product editor**: Slug field and `generateSlug` properly removed
-- **Seller products quick-add**: Slug field properly removed
-- **Product routing**: All routes correctly use `product_number` with slug fallback for legacy URLs
-- **Category slugs**: Still use `generateSlug` correctly (categories need text slugs)
-- **Store slugs**: Still use `generateSlug` correctly (stores need text slugs)
-- **Button/Badge components**: Properly accept `variant` and `size` props (build errors were from missing node_modules)
-- **Network**: Only issue is a CORS-blocked Discord invite API call (external, not actionable)
-- **Edge functions**: All running normally, no errors
+### 3. Make category cards fill space better
+- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
+- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
+- Reduce grid gap slightly so cards feel more connected
 
-### Changes Summary
+### 4. Sidebar desktop alignment fix
+- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
+- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
+- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
 
-| File | Change |
-|------|--------|
-| `src/pages/admin/Products.tsx` | Remove slug input field, remove UUID suffix logic, use clean deterministic slug, show product_number instead of slug |
-| `src/components/marketplace/AbandonedCartBanner.tsx` | Wrap with `forwardRef` to fix React ref warning |
+### Files to modify
+- `src/pages/Categories.tsx` — widen container, tighten spacing
+- `src/components/ui/PageHeader.tsx` — reduce bottom margin
+- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
 

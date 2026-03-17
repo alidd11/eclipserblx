@@ -348,14 +348,8 @@ export default function AdminProducts() {
 
       const priceVal = parseFloat(data.price);
       
-      // Ensure slug has uniqueness suffix for new products
-      let slug = data.slug;
-      if (!data.id && slug) {
-        // Only add suffix if it doesn't already have one (8-char hex at end)
-        if (!/^.+-[a-f0-9]{8}$/.test(slug)) {
-          slug = slug + '-' + crypto.randomUUID().slice(0, 8);
-        }
-      }
+      // Derive a clean deterministic slug from the name
+      const slug = data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'product';
 
       const payload: Record<string, any> = {
         name: data.name,
@@ -931,7 +925,7 @@ export default function AdminProducts() {
                             </div>
                             <div>
                               <p className="font-medium">{product.name}</p>
-                              <p className="text-xs text-muted-foreground">{product.slug}</p>
+                              <p className="text-xs text-muted-foreground">#{(product as any).product_number}</p>
                             </div>
                           </div>
                         </TableCell>
@@ -976,25 +970,14 @@ export default function AdminProducts() {
             <DialogTitle>{form.id ? 'Edit Product' : 'Create Product'}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name *</Label>
-                <Input
-                  id="name"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="slug">Slug *</Label>
-                <Input
-                  id="slug"
-                  value={form.slug}
-                  onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                  required
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="name">Name *</Label>
+              <Input
+                id="name"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                required
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">

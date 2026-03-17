@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { ShoppingCart, X, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,7 @@ import { useAbandonedCart } from '@/hooks/useAbandonedCart';
 import { useCart } from '@/hooks/useCart';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export function AbandonedCartBanner() {
+export const AbandonedCartBanner = forwardRef<HTMLDivElement>(function AbandonedCartBanner(_props, ref) {
   const { showRecoveryBanner, recoveryCart, dismissRecovery, markRecovered } = useAbandonedCart();
   const { addItem } = useCart();
 
@@ -19,6 +20,7 @@ export function AbandonedCartBanner() {
   return (
     <AnimatePresence>
       <motion.div
+        ref={ref}
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
@@ -52,4 +54,4 @@ export function AbandonedCartBanner() {
       </motion.div>
     </AnimatePresence>
   );
-}
+});
