@@ -314,14 +314,6 @@ export default function SellerProducts() {
     },
   });
 
-  // Generate clean slug from name (no random suffix for cleaner URLs)
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-      .slice(0, 60);
-  };
 
   // Helper function to format datetime for input
   const formatDateTimeForInput = (isoString: string | null) => {
