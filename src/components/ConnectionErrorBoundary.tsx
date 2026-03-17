@@ -68,7 +68,7 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
     }
   }
 
-  private attemptChunkRecovery() {
+  private attemptChunkRecovery(userInitiated = false) {
     const RECOVERY_KEY = 'ceb-chunk-recovery';
     const COOLDOWN_MS = 120_000;
 
@@ -79,10 +79,12 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
     }
 
     try {
-      const last = sessionStorage.getItem(RECOVERY_KEY);
-      if (last && Date.now() - parseInt(last, 10) < COOLDOWN_MS) {
-        console.warn('[ConnectionErrorBoundary] Chunk recovery in cooldown, showing fallback');
-        return;
+      if (!userInitiated) {
+        const last = sessionStorage.getItem(RECOVERY_KEY);
+        if (last && Date.now() - parseInt(last, 10) < COOLDOWN_MS) {
+          console.warn('[ConnectionErrorBoundary] Chunk recovery in cooldown, showing fallback');
+          return;
+        }
       }
       sessionStorage.setItem(RECOVERY_KEY, Date.now().toString());
     } catch {
