@@ -80,7 +80,7 @@ export class RouteErrorBoundary extends Component<Props, State> {
     window.location.replace(this.buildCacheBustedUrl(targetUrl));
   }
 
-  private attemptChunkRecovery() {
+  private attemptChunkRecovery(userInitiated = false) {
     const RECOVERY_KEY = 'reb-chunk-recovery';
     const COOLDOWN_MS = 120_000; // 2 min cooldown
 
@@ -91,10 +91,12 @@ export class RouteErrorBoundary extends Component<Props, State> {
     }
 
     try {
-      const last = sessionStorage.getItem(RECOVERY_KEY);
-      if (last && Date.now() - parseInt(last, 10) < COOLDOWN_MS) {
-        console.warn('[RouteErrorBoundary] Chunk recovery in cooldown, showing fallback');
-        return;
+      if (!userInitiated) {
+        const last = sessionStorage.getItem(RECOVERY_KEY);
+        if (last && Date.now() - parseInt(last, 10) < COOLDOWN_MS) {
+          console.warn('[RouteErrorBoundary] Chunk recovery in cooldown, showing fallback');
+          return;
+        }
       }
       sessionStorage.setItem(RECOVERY_KEY, Date.now().toString());
       console.log('[RouteErrorBoundary] Chunk error detected, forcing hard recovery');
@@ -106,8 +108,8 @@ export class RouteErrorBoundary extends Component<Props, State> {
 
   handleRetry = () => {
     if (isChunkError(this.state.error)) {
-      // For chunk errors, skip the local remount — go straight to cache-busted reload
-      this.attemptChunkRecovery();
+      // User-initiated: bypass cooldown
+      this.attemptChunkRecovery(true);
       return;
     }
 
