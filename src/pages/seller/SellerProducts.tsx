@@ -515,28 +515,7 @@ export default function SellerProducts() {
       toast.error('Please enter a valid price');
       return;
     }
-    // Validate slug format if manually entered (only check for invalid characters, not structure)
-    if (form.slug && /[^a-z0-9-]/.test(form.slug)) {
-      toast.error('URL slug can only contain lowercase letters, numbers, and hyphens');
-      return;
-    }
-    if (!form.asset_file_url) {
-      toast.error('A product file must be uploaded before saving');
-      return;
-    }
-    const plainDesc = form.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
-    if (plainDesc.length < 100) {
-      toast.error(`Description must be at least 100 characters (currently ${plainDesc.length})`);
-      return;
-    }
-
-    // Auto-generate slug if still empty (user never blurred name field)
-    const submissionForm = { ...form };
-    if (!submissionForm.slug && submissionForm.name.trim() && !submissionForm.id) {
-      submissionForm.slug = generateSlug(submissionForm.name);
-    }
-
-    saveProduct.mutate(submissionForm);
+    saveProduct.mutate(form);
   };
 
   const filteredProducts = products;
