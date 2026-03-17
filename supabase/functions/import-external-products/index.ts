@@ -1812,21 +1812,34 @@ Deno.serve(async (req) => {
               .insert({
                 name: product.name,
                 slug: slugCandidate,
-              description: stripBlockedUrls(product.description) || null,
-              price: product.price || 0,
-              seller_price: product.price || 0,
-              images: product.images.length > 0 ? product.images : [],
-              store_id: store.id,
-              is_seller_product: true,
-              is_active: false,
-              category_id: product.suggestedCategoryId || null,
-              external_link: product.sourceUrl || null,
-              moderation_status: 'approved',
-            })
-            .select('id')
-            .single();
+                description: stripBlockedUrls(product.description) || null,
+                price: product.price || 0,
+                seller_price: product.price || 0,
+                images: product.images.length > 0 ? product.images : [],
+                store_id: store.id,
+                is_seller_product: true,
+                is_active: false,
+                category_id: product.suggestedCategoryId || null,
+                external_link: product.sourceUrl || null,
+                moderation_status: 'approved',
+              })
+              .select('id')
+              .single();
+            
+            if (!result.error) {
+              createdProduct = result.data;
+              createError = null;
+              break;
+            }
+            
+            if (result.error.code !== '23505') {
+              createError = result.error;
+              break;
+            }
+            createError = result.error;
+          }
 
-          if (createError) {
+          if (createError || !createdProduct) {
             console.error(`Failed to create product record for "${product.name}":`, createError.message);
             results.push({ url, success: false, error: `DB error: ${createError.message}` });
             await supabaseAdmin.from('product_imports').insert({
