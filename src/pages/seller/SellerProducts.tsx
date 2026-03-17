@@ -231,10 +231,7 @@ export default function SellerProducts() {
         is_active: data.is_active !== undefined ? data.is_active : false,
         moderation_status: 'pending',
         release_at: data.release_at || null,
-        early_access_hours: data.early_access_hours ? parseInt(data.early_access_hours) : null,
-        ip_ownership_confirmed: data.ip_ownership_confirmed || false,
         is_pay_what_you_want: data.is_pay_what_you_want || false,
-        min_price: data.is_pay_what_you_want ? (parseFloat(data.min_price || '0') || 0) : null,
       };
 
       if (data.id) {
