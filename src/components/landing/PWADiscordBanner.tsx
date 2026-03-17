@@ -19,13 +19,14 @@ function formatCount(count: number | null): string {
   return count.toLocaleString();
 }
 
-export function PWADiscordBanner() {
+export const PWADiscordBanner = forwardRef<HTMLAnchorElement>(function PWADiscordBanner(_props, ref) {
   const { discordUrl } = useDiscordUrl();
   const { memberCount, onlineCount, isLoading } = useDiscordStats();
   const { t } = useTranslation();
 
   return (
     <a
+      ref={ref}
       href={discordUrl}
       target="_blank"
       rel="noopener noreferrer"
