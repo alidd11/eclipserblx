@@ -1601,16 +1601,19 @@ Deno.serve(async (req) => {
 
       console.log(`Import quota result: ${quotaResult} (${quotaResult === 'free' ? 'free tier' : 'credit deducted'})`);
 
-      // Auto-create product record with robust unique slug
-      const productSlugForDb = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
-      const randomSuffix = crypto.randomUUID().slice(0, 8);
-      const uniqueSlug = `${productSlugForDb}-${randomSuffix}`;
+      // Auto-create product record with clean deterministic slug
+      const productSlugForDb = product.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'product';
       
-      const { data: createdProduct, error: createError } = await supabaseAdmin
-        .from('products')
-        .insert({
-          name: product.name,
-          slug: uniqueSlug,
+      let createdProduct: { id: string } | null = null;
+      let createError: any = null;
+      
+      // Try clean slug first, then with timestamp suffix on collision
+      for (const slugCandidate of [productSlugForDb, `${productSlugForDb}-${Date.now()}`]) {
+        const result = await supabaseAdmin
+          .from('products')
+          .insert({
+            name: product.name,
+            slug: slugCandidate,
           description: stripBlockedUrls(product.description) || null,
           price: product.price || 0,
           seller_price: product.price || 0,
