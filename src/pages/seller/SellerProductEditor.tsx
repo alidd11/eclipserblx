@@ -437,8 +437,6 @@ export default function SellerProductEditor() {
       // Submit to search engines if auto-approved
       if (result.isAutoApproved && result.productNumber) {
         submitProductUrl(result.productNumber);
-      } else if (result.isAutoApproved && formData.slug) {
-        submitProductUrl(formData.slug);
       }
       // Send Discord announcement for auto-approved new products
       if (result.isAutoApproved && !isEditing) {
