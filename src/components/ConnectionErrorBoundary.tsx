@@ -2,6 +2,7 @@ import { Component, ReactNode } from 'react';
 import { RefreshCw, WifiOff, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { captureException } from '@/lib/sentry';
+import { isChunkError, attemptAutoRecovery, forceUserRecovery } from '@/lib/chunkRecovery';
 
 interface Props {
   children: ReactNode;
@@ -13,28 +14,6 @@ interface State {
   isNetworkError: boolean;
 }
 
-/**
- * STRICT chunk/module patterns — excludes generic 'failed to fetch' / 'networkerror'
- * which fire from normal API calls, ad blockers, analytics, etc.
- */
-const CHUNK_ERROR_PATTERNS = [
-  'failed to fetch dynamically imported module',
-  'importing a module script failed',
-  'chunkloaderror',
-  'loading chunk',
-  'loading css chunk',
-  'dynamically imported module',
-  'not a valid javascript mime type',
-  'application/octet-stream',
-];
-
-function isChunkOrLoadError(error: Error | null): boolean {
-  if (!error) return false;
-  const msg = (error.message || '').toLowerCase();
-  const name = (error.name || '').toLowerCase();
-  return CHUNK_ERROR_PATTERNS.some((p) => msg.includes(p) || name.includes(p));
-}
-
 export class ConnectionErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -42,64 +21,33 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
-    const isNetworkError = 
-      error.message.includes('fetch') ||
-      error.message.includes('network') ||
-      error.message.includes('Failed to fetch') ||
-      error.message.includes('NetworkError') ||
-      error.message.includes('CORS') ||
-      error.message.includes('ERR_') ||
-      error.name === 'TypeError' && error.message.includes('Failed');
-    
-    return { 
-      hasError: true, 
-      error,
-      isNetworkError
-    };
+    const msg = (error.message || '').toLowerCase();
+    const isNetworkError =
+      msg.includes('fetch') ||
+      msg.includes('network') ||
+      msg.includes('failed to fetch') ||
+      msg.includes('networkerror') ||
+      msg.includes('cors') ||
+      msg.includes('err_') ||
+      (error.name === 'TypeError' && msg.includes('failed'));
+
+    return { hasError: true, error, isNetworkError };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('[ConnectionErrorBoundary] Caught error:', error, errorInfo);
     captureException(error, { componentStack: errorInfo.componentStack });
 
-    // Only auto-recover for genuine chunk/module errors, NOT generic network failures
-    if (isChunkOrLoadError(error)) {
-      this.attemptChunkRecovery();
+    // Only auto-recover for genuine chunk/module errors
+    if (isChunkError(error)) {
+      attemptAutoRecovery('ConnectionErrorBoundary', 'componentDidCatch', error);
     }
-  }
-
-  private attemptChunkRecovery(userInitiated = false) {
-    const RECOVERY_KEY = 'ceb-chunk-recovery';
-    const COOLDOWN_MS = 120_000;
-
-    const currentUrl = new URL(window.location.href);
-    if (currentUrl.searchParams.has('__chunk')) {
-      console.warn('[ConnectionErrorBoundary] Already on cache-busted URL, showing fallback');
-      return;
-    }
-
-    try {
-      if (!userInitiated) {
-        const last = sessionStorage.getItem(RECOVERY_KEY);
-        if (last && Date.now() - parseInt(last, 10) < COOLDOWN_MS) {
-          console.warn('[ConnectionErrorBoundary] Chunk recovery in cooldown, showing fallback');
-          return;
-        }
-      }
-      sessionStorage.setItem(RECOVERY_KEY, Date.now().toString());
-    } catch {
-      // If sessionStorage fails, still try recovery
-    }
-
-    console.log('[ConnectionErrorBoundary] Chunk error detected, forcing cache-busted reload');
-    currentUrl.searchParams.set('__chunk', Date.now().toString());
-    window.location.replace(currentUrl.toString());
   }
 
   handleRetry = () => {
-    if (isChunkOrLoadError(this.state.error)) {
-      // User-initiated: bypass cooldown and force cache-busted reload
-      this.attemptChunkRecovery(true);
+    if (isChunkError(this.state.error)) {
+      // User-initiated: always force a fresh cache-busted reload
+      forceUserRecovery();
       return;
     }
     this.setState({ hasError: false, error: null, isNetworkError: false });
@@ -109,7 +57,7 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       const { isNetworkError } = this.state;
-      
+
       return (
         <div className="min-h-screen bg-gradient-to-br from-background to-background/80 flex items-center justify-center p-6 pt-safe pb-safe">
           <div className="text-center max-w-md w-full">
@@ -124,7 +72,7 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
               {isNetworkError ? 'Connection Issue' : 'Something Went Wrong'}
             </h1>
             <p className="text-muted-foreground mb-6 leading-relaxed">
-              {isNetworkError 
+              {isNetworkError
                 ? "We're having trouble connecting to Eclipse. This might be a temporary network issue."
                 : "An unexpected error occurred. Please try refreshing the page."
               }
