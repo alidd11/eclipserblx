@@ -87,15 +87,13 @@ function App() {
                               </Suspense>
                               <Suspense fallback={null}><InstallPrompt /></Suspense>
                             </PWAWrapper>
-                            {/* Chat components rendered OUTSIDE PWAWrapper to prevent transform-related positioning issues */}
-                            <Suspense fallback={null}>
-                              <MobileTabBar />
-                              <ChatWidget />
-                              <ChatSidePanel />
-                              <CookieConsentBanner />
-                              <ConnectivityBanner />
-                              <BackgroundRefreshIndicator />
-                            </Suspense>
+                            {/* Each non-critical widget is isolated so a chunk failure in one cannot crash the app */}
+                            <SafeLazyWidget><MobileTabBar /></SafeLazyWidget>
+                            <SafeLazyWidget><ChatWidget /></SafeLazyWidget>
+                            <SafeLazyWidget><ChatSidePanel /></SafeLazyWidget>
+                            <SafeLazyWidget><CookieConsentBanner /></SafeLazyWidget>
+                            <SafeLazyWidget><ConnectivityBanner /></SafeLazyWidget>
+                            <SafeLazyWidget><BackgroundRefreshIndicator /></SafeLazyWidget>
                           </IpBanCheck>
                         </BrowserRouter>
                       </TooltipProvider>
