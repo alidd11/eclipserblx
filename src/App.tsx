@@ -22,6 +22,7 @@ import { PWARouteRestorer } from "@/hooks/usePWALastRoute";
 import { NavigationProgress } from "@/components/NavigationProgress";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { GlobalBackground } from "@/components/layout/GlobalBackground";
+import { SafeLazyWidget } from "@/components/SafeLazyWidget";
 const AppRoutes = lazy(() => import("@/components/AppRoutes").then(m => ({ default: m.AppRoutes })));
 import { EmailGuard } from "@/components/auth/EmailGuard";
 
