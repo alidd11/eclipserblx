@@ -2,6 +2,7 @@ import { Component, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { captureException } from '@/lib/sentry';
+import { isChunkError, attemptAutoRecovery, forceUserRecovery } from '@/lib/chunkRecovery';
 
 interface Props {
   children: ReactNode;
@@ -16,33 +17,9 @@ interface State {
   retryCount: number;
 }
 
-const CHUNK_ERROR_PATTERNS = [
-  'load failed',
-  'failed to fetch dynamically imported module',
-  'importing a module script failed',
-  'chunkloaderror',
-  'loading chunk',
-  'loading css chunk',
-  'dynamically imported module',
-  'not a valid javascript mime type',
-  'application/octet-stream',
-];
-
-function isChunkError(error: Error | null): boolean {
-  if (!error) return false;
-  const msg = (error.message || '').toLowerCase();
-  const name = (error.name || '').toLowerCase();
-  return CHUNK_ERROR_PATTERNS.some((pattern) => msg.includes(pattern) || name.includes(pattern));
-}
-
 /**
  * Route-level error boundary. Catches render errors in a route
  * without crashing the entire app. Users can retry or go home.
- *
- * Improvements for Safari/iOS:
- * - Auto-resets when `resetKey` changes (navigation, resume from background)
- * - Detects chunk/import errors and triggers a cache-busted hard reload recovery
- * - Retry escalates to hard recovery if the same error persists
  */
 export class RouteErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
@@ -55,7 +32,6 @@ export class RouteErrorBoundary extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props) {
-    // Auto-reset when the route key changes (navigation or resume)
     if (this.state.hasError && prevProps.resetKey !== this.props.resetKey) {
       this.setState({ hasError: false, error: null, retryCount: 0 });
     }
@@ -66,56 +42,20 @@ export class RouteErrorBoundary extends Component<Props, State> {
     captureException(error, { componentStack: errorInfo.componentStack });
 
     if (isChunkError(error)) {
-      this.attemptChunkRecovery();
-    }
-  }
-
-  private buildCacheBustedUrl(base: string = window.location.href): string {
-    const url = new URL(base, window.location.origin);
-    url.searchParams.set('__chunk', Date.now().toString());
-    return url.toString();
-  }
-
-  private performHardRecovery(targetUrl: string = window.location.href) {
-    window.location.replace(this.buildCacheBustedUrl(targetUrl));
-  }
-
-  private attemptChunkRecovery(userInitiated = false) {
-    const RECOVERY_KEY = 'reb-chunk-recovery';
-    const COOLDOWN_MS = 120_000; // 2 min cooldown
-
-    const currentUrl = new URL(window.location.href);
-    if (currentUrl.searchParams.has('__chunk')) {
-      console.warn('[RouteErrorBoundary] Already on cache-busted URL, showing fallback');
-      return;
-    }
-
-    try {
-      if (!userInitiated) {
-        const last = sessionStorage.getItem(RECOVERY_KEY);
-        if (last && Date.now() - parseInt(last, 10) < COOLDOWN_MS) {
-          console.warn('[RouteErrorBoundary] Chunk recovery in cooldown, showing fallback');
-          return;
-        }
-      }
-      sessionStorage.setItem(RECOVERY_KEY, Date.now().toString());
-      console.log('[RouteErrorBoundary] Chunk error detected, forcing hard recovery');
-      this.performHardRecovery();
-    } catch {
-      this.performHardRecovery();
+      attemptAutoRecovery('RouteErrorBoundary', 'componentDidCatch', error);
     }
   }
 
   handleRetry = () => {
     if (isChunkError(this.state.error)) {
-      // User-initiated: bypass cooldown
-      this.attemptChunkRecovery(true);
+      // User-initiated: always force a fresh cache-busted reload
+      forceUserRecovery();
       return;
     }
 
     const nextCount = this.state.retryCount + 1;
     if (nextCount >= 2) {
-      this.performHardRecovery();
+      forceUserRecovery();
       return;
     }
 
@@ -123,7 +63,7 @@ export class RouteErrorBoundary extends Component<Props, State> {
   };
 
   handleGoHome = () => {
-    this.performHardRecovery(`${window.location.origin}/`);
+    forceUserRecovery(`${window.location.origin}/`);
   };
 
   render() {
