@@ -1,0 +1,1 @@
+UPDATE public.app_version SET version = '1.0.87', force_update = true, updated_at = now();

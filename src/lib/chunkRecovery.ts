@@ -32,11 +32,13 @@ const CHUNK_ERROR_PATTERNS = [
 ];
 
 /**
- * Safari-specific patterns that indicate a module script load failure.
+ * Safari-specific patterns — these MUST appear together with chunk/module context
+ * to avoid false positives from generic "Load failed" network errors (e.g. Discord API).
  */
-const SAFARI_MODULE_PATTERNS = [
-  'load failed',
+const SAFARI_CONTEXT_PATTERNS = [
   'module script',
+  'importing a module',
+  'import(',
 ];
 
 export function isChunkError(error: Error | null): boolean {
@@ -44,10 +46,16 @@ export function isChunkError(error: Error | null): boolean {
   const msg = (error.message || '').toLowerCase();
   const name = (error.name || '').toLowerCase();
   const combined = `${name} ${msg}`;
-  return (
-    CHUNK_ERROR_PATTERNS.some((p) => combined.includes(p)) ||
-    SAFARI_MODULE_PATTERNS.some((p) => combined.includes(p))
-  );
+
+  // Strict chunk patterns — any of these alone is enough
+  if (CHUNK_ERROR_PATTERNS.some((p) => combined.includes(p))) return true;
+
+  // Safari "load failed" — only treat as chunk error if it also mentions module/import context
+  if (combined.includes('load failed')) {
+    return SAFARI_CONTEXT_PATTERNS.some((p) => combined.includes(p));
+  }
+
+  return false;
 }
 
 export function isChunkErrorMessage(msg: string): boolean {
@@ -57,7 +65,11 @@ export function isChunkErrorMessage(msg: string): boolean {
 
 export function isSafariModuleError(msg: string): boolean {
   const normalized = msg.toLowerCase();
-  return SAFARI_MODULE_PATTERNS.some((p) => normalized.includes(p));
+  // Only true if "load failed" appears with module/import context
+  if (normalized.includes('load failed')) {
+    return SAFARI_CONTEXT_PATTERNS.some((p) => normalized.includes(p));
+  }
+  return normalized.includes('module script');
 }
 
 export function isChunkAssetUrl(url: string): boolean {

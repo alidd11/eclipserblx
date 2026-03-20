@@ -27,7 +27,7 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children, requiredRoles = [], requiredPermissions = [] }: AdminLayoutProps) {
   const isInsideHub = useIsInsideHub();
-  const { user, isStaff, isAdmin, hasRole, loading } = useAdminAuth();
+  const { user, isStaff, isAdmin, hasRole, loading, isAuthRecovering } = useAdminAuth();
   const { hasAnyPermission, isLoading: permissionsLoading } = useUserPermissions();
   const location = useLocation();
   const isChatPage =
@@ -103,7 +103,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
     window.location.reload();
   };
 
-  const isGateLoading = loading || (!!user?.id && permissionsLoading);
+  const isGateLoading = loading || (!!user?.id && permissionsLoading) || isAuthRecovering;
 
   if (isGateLoading) {
     return (
