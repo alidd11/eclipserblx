@@ -103,7 +103,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
     window.location.reload();
   };
 
-  const isGateLoading = loading || (!!user?.id && permissionsLoading);
+  const isGateLoading = loading || (!!user?.id && permissionsLoading) || isAuthRecovering;
 
   if (isGateLoading) {
     return (
