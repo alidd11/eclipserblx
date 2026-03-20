@@ -5,6 +5,18 @@ import { supabase } from '@/integrations/supabase/client';
 export function useUserPermissions() {
   const { user } = useAuth();
 
+  const isJwtError = (error: any) => {
+    const message = String(error?.message ?? '').toLowerCase();
+    const code = String(error?.code ?? '').toUpperCase();
+    return (
+      message.includes('jwt') ||
+      message.includes('bad_jwt') ||
+      message.includes('invalid claim') ||
+      message.includes('403') ||
+      code === 'PGRST301'
+    );
+  };
+
   const { data: permissions, isLoading } = useQuery({
     queryKey: ['user-permissions', user?.id],
     queryFn: async () => {
@@ -17,8 +29,7 @@ export function useUserPermissions() {
         .eq('user_id', user.id);
       
       if (rolesError) {
-        console.error('Error fetching user roles:', rolesError);
-        return [];
+        throw rolesError;
       }
       
       if (!userRoles?.length) return [];
@@ -32,8 +43,7 @@ export function useUserPermissions() {
         .in('role', roles);
       
       if (permError) {
-        console.error('Error fetching role permissions:', permError);
-        return [];
+        throw permError;
       }
       
       if (!rolePerms?.length) return [];
@@ -47,8 +57,7 @@ export function useUserPermissions() {
         .in('id', permissionIds);
       
       if (namesError) {
-        console.error('Error fetching permission names:', namesError);
-        return [];
+        throw namesError;
       }
       
       return perms?.map(p => p.name) ?? [];
@@ -56,6 +65,8 @@ export function useUserPermissions() {
     enabled: !!user?.id,
     staleTime: 1000 * 30, // Cache for 30 seconds for faster permission updates
     refetchOnWindowFocus: true, // Refresh permissions when user returns to tab
+    retry: (failureCount, error) => failureCount < 3 && isJwtError(error),
+    retryDelay: 1000,
   });
 
   const hasPermission = (permissionName: string) => {
