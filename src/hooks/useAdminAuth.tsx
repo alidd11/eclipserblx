@@ -20,6 +20,16 @@ export function useAdminAuth() {
     staleTime: 1000 * 60 * 5, // Cache roles for 5 minutes
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    // Retry on 403/bad_jwt errors — the token may be refreshing in the background
+    retry: (failureCount, error: any) => {
+      if (failureCount >= 3) return false;
+      const msg = error?.message ?? '';
+      const code = error?.code ?? '';
+      const isJwtError = msg.includes('JWT') || msg.includes('jwt') || msg.includes('bad_jwt')
+        || code === 'PGRST301' || msg.includes('403');
+      return isJwtError;
+    },
+    retryDelay: 1000,
   });
 
   const isAdmin = roles?.includes('admin') ?? false;

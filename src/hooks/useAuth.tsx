@@ -22,7 +22,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
-    // Set up auth state listener FIRST
+    // Safety timeout: if onAuthStateChange never fires (e.g. offline PWA cold start),
+    // resolve loading after 3 seconds so the app doesn't hang forever.
+    const safetyTimer = setTimeout(() => {
+      if (isMounted && loading) {
+        console.warn('[Auth] Safety timeout — resolving loading state');
+        setLoading(false);
+        setInitialized(true);
+      }
+    }, 3000);
+
+    // Rely solely on onAuthStateChange which handles INITIAL_SESSION,
+    // SIGNED_IN, TOKEN_REFRESHED, and SIGNED_OUT events.
+    // Supabase JS v2.47+ fires INITIAL_SESSION automatically on subscribe,
+    // so a separate getSession() call is redundant and causes a race
+    // where stale cached tokens are emitted before the refresh completes.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!isMounted) return;
@@ -70,23 +84,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!isMounted) return;
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-      setInitialized(true);
-    }).catch((error) => {
-      console.error('Failed to get session:', error);
-      if (isMounted) {
-        setLoading(false);
-        setInitialized(true);
-      }
-    });
-
     return () => {
       isMounted = false;
+      clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
   }, []);
