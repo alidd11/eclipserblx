@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -18,18 +18,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
+  const hasResolvedInitialAuth = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
 
-    // Safety timeout: if onAuthStateChange never fires (e.g. offline PWA cold start),
-    // resolve loading after 3 seconds so the app doesn't hang forever.
-    const safetyTimer = setTimeout(() => {
-      if (isMounted && loading) {
-        console.warn('[Auth] Safety timeout — resolving loading state');
-        setLoading(false);
-        setInitialized(true);
+    const resolveAuthState = (nextSession: Session | null) => {
+      if (!isMounted) return;
+      hasResolvedInitialAuth.current = true;
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
+      setLoading(false);
+      setInitialized(true);
+    };
+
+    const recoverSessionFromStorage = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          resolveAuthState(null);
+          return;
+        }
+
+        let recoveredSession = data.session ?? null;
+
+        // If the recovered token is near expiry/expired, attempt a refresh before using it.
+        const expiresAtMs = recoveredSession?.expires_at ? recoveredSession.expires_at * 1000 : null;
+        const shouldRefresh = !!expiresAtMs && expiresAtMs <= Date.now() + 15_000;
+        if (recoveredSession && shouldRefresh) {
+          const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+          if (!refreshError) {
+            recoveredSession = refreshed.session ?? null;
+          }
+        }
+
+        resolveAuthState(recoveredSession);
+      } catch {
+        resolveAuthState(null);
       }
+    };
+
+    // Safety timeout: if onAuthStateChange never fires (e.g. offline PWA cold start),
+    // attempt storage-based recovery after 3 seconds so the app doesn't hang forever.
+    const safetyTimer = setTimeout(() => {
+      if (!isMounted || hasResolvedInitialAuth.current) return;
+      console.warn('[Auth] Safety timeout — attempting session recovery');
+      void recoverSessionFromStorage();
     }, 3000);
 
     // Rely solely on onAuthStateChange which handles INITIAL_SESSION,
@@ -40,10 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!isMounted) return;
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-        setInitialized(true);
+        resolveAuthState(session);
 
         // Log staff login/logout activity (deferred to avoid deadlock)
         // Only on actual sign-in, not token refreshes or session restores
