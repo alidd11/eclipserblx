@@ -1,44 +1,66 @@
 
+Issue re-stated from your answers:
+- It still fails on the published installed PWA.
+- It affects both customer and admin routes.
+- It happens on every first open.
+- Symptoms are crash/error page or stuck loading.
 
-## Fix: Auth Race Condition Causing Access Denied on PWA Cold Open
+Do I know what the issue is? Yes — there are still two startup failure paths not fully covered.
 
-### Root Cause
+What’s still wrong (from code + logs):
+1) Auth bootstrap can still hang or resolve with a bad token on first-open PWA paths  
+- `useAuth` fallback recovery relies on `getSession()/refreshSession()` without a hard timeout; if those stall, loading can remain true (stuck screen).
+- Earlier logs show `invalid claim: missing sub claim`/`bad_jwt`, which means malformed/stale JWT can still be consumed during startup.
 
-When the PWA opens from a cold start (or resumes from background), the stored JWT is often expired. Here's what happens:
+2) Chunk recovery is still too broad for Safari-style “Load failed” messages  
+- `chunkRecovery.ts` treats plain `"load failed"` as chunk-like in `isChunkError`, which can misclassify non-chunk network failures.
+- Your network log shows external request failures with “Load failed” (Discord API), which should never trigger chunk hard-reload behavior.
 
-1. `useAuth` sets the user from the stale cached session immediately
-2. `useAdminAuth` fires the roles query with the expired token → gets a 403 `bad_jwt` error
-3. The query catches the error and returns an empty array → `isStaff = false`
-4. Supabase refreshes the token in the background, but it's too late — the roles query already failed
-5. User sees "Access Denied" or gets redirected
+Files to fix:
+- `src/hooks/useAuth.tsx`
+- `src/hooks/useAdminAuth.tsx`
+- `src/hooks/useUserPermissions.tsx`
+- `src/lib/chunkRecovery.ts`
+- `src/components/ConnectionErrorBoundary.tsx`
+- `src/components/RouteErrorBoundary.tsx`
+- `src/components/admin/AdminLayout.tsx`
 
-This affects **all users** (customers and admins) because `useAdminAuth` and `useUserPermissions` both query with the stale token.
+Implementation plan:
+1) Harden auth bootstrap with explicit timeout + token sanity gate (`useAuth`)
+- Add bounded promise wrappers for `getSession`, `refreshSession`, and optional `getUser` verification.
+- Validate access token payload has `sub` before trusting recovered session.
+- If token is malformed: attempt one refresh; if still invalid, clear local auth state cleanly and resolve unauthenticated (never infinite loading).
+- Keep existing listener-first strategy, but ensure safety path cannot hang.
 
-### Fix (2 files)
+2) Make role/permission hooks self-healing, not deny-by-default on transient JWT faults
+- In `useAdminAuth` and `useUserPermissions`, on JWT/403 errors:
+  - run one immediate `refreshSession()` attempt inside query flow,
+  - retry the same query once after refresh before surfacing error.
+- Return an explicit “authRecovering” state so UI does not interpret transient failure as no roles/no permissions.
 
-**1. `src/hooks/useAuth.tsx` — Remove the redundant `getSession()` call**
+3) Stop false chunk recovery triggers
+- Tighten `isChunkError` so Safari handling requires module/chunk context (e.g. module script/import/chunk asset), not plain `"load failed"` alone.
+- Keep strict asset URL checks for global listeners; mirror same strictness in boundaries.
 
-Supabase JS v2.47+ fires `INITIAL_SESSION` via `onAuthStateChange` automatically. The separate `getSession()` call is redundant and causes a race where stale session data is set before the token refresh completes.
+4) Prevent false “Access Denied” during recovery windows
+- In `AdminLayout`, if roles query is in auth-recovery/error-jwt state, show loading/retry UI instead of immediate access denied.
+- Only render “Access Denied” after role resolution is definitive.
 
-- Remove the `getSession()` call entirely
-- Rely solely on `onAuthStateChange` which handles `INITIAL_SESSION`, `SIGNED_IN`, `TOKEN_REFRESHED`, and `SIGNED_OUT` events correctly
-- Add a safety timeout (3 seconds) so loading doesn't hang forever if the listener never fires
+5) Add targeted diagnostics for final verification
+- Log one structured startup trace per boot: auth source path taken, token-valid/invalid, refresh attempted/succeeded, and whether recovery reload was chunk-qualified.
+- Keep logs concise and removable after stability confirmation.
 
-**2. `src/hooks/useAdminAuth.tsx` — Add JWT-aware retry logic**
+Technical details (non-UI behavior changes):
+- No database schema or policy changes.
+- No auth model changes.
+- No feature/UI redesign — this is startup reliability hardening.
+- Focus is deterministic boot order + strict error classification.
 
-Even with the auth fix, network hiccups can cause transient 403s. Make the roles query resilient:
-
-- Add `retry` function that retries on 403/JWT errors (up to 3 attempts with delay)
-- Add `retryDelay` of 1 second to give the token refresh time to complete
-- This ensures that even if the first query hits a stale token, the retry succeeds after refresh
-
-### Why this fixes both customer and admin access
-
-- Customer pages use `useAuth` → they get stuck in loading or see errors when the session is stale
-- Admin pages use `useAdminAuth` → roles query fails → `isStaff = false` → "Access Denied"
-- Both are fixed by ensuring the auth provider only emits a valid, fresh session
-
-### No visual or functional changes
-
-The fix is purely in the auth initialization timing. All existing routes, layouts, and permission checks remain identical.
-
+Validation plan (published PWA, not just preview):
+- Customer and admin apps, first open x5 each.
+- Cold open after force-close, and resume from background x5 each.
+- Confirm:
+  - no infinite loading,
+  - no false crash/reload from non-chunk “Load failed” requests,
+  - no false access denied for valid staff users,
+  - successful route entry on first attempt.
