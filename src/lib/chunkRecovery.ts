@@ -65,7 +65,11 @@ export function isChunkErrorMessage(msg: string): boolean {
 
 export function isSafariModuleError(msg: string): boolean {
   const normalized = msg.toLowerCase();
-  return SAFARI_MODULE_PATTERNS.some((p) => normalized.includes(p));
+  // Only true if "load failed" appears with module/import context
+  if (normalized.includes('load failed')) {
+    return SAFARI_CONTEXT_PATTERNS.some((p) => normalized.includes(p));
+  }
+  return normalized.includes('module script');
 }
 
 export function isChunkAssetUrl(url: string): boolean {
