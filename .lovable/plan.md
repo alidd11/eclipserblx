@@ -1,36 +1,44 @@
 
 
-## Issues Identified
+## Fix: Auth Race Condition Causing Access Denied on PWA Cold Open
 
-**Issue 1: Sidebar positioned at top of screen on desktop**
-The sidebar currently uses `sticky top-0 h-[100dvh]` — this means it sticks to the very top of the viewport, sitting flush against the top edge above the header. The user wants it to feel more integrated, not dominating the top. Looking at the reference screenshot, the sidebar is correctly at the top (which is standard) — but the real frustration is likely that the header row spans the full width while the sidebar also starts from the top, creating a visual clash. The sidebar sits beside the header, which makes the ECLIPSE brand title compete with the header bar.
+### Root Cause
 
-**Issue 2: Excessive black empty space in the content area**
-The categories grid uses `max-w-6xl` (~72rem / 1152px) centered in the content area. With the sidebar taking ~208px (w-52), the remaining space is constrained, but the `max-w-6xl` still leaves significant padding/gutters on wider screens. The cards themselves have dark backgrounds that blend into the dark page, creating a "sea of black" effect. There's also a lot of vertical space between the page header and the first card row.
+When the PWA opens from a cold start (or resumes from background), the stored JWT is often expired. Here's what happens:
 
-## Plan
+1. `useAuth` sets the user from the stale cached session immediately
+2. `useAdminAuth` fires the roles query with the expired token → gets a 403 `bad_jwt` error
+3. The query catches the error and returns an empty array → `isStaff = false`
+4. Supabase refreshes the token in the background, but it's too late — the roles query already failed
+5. User sees "Access Denied" or gets redirected
 
-### 1. Widen the content area on the Categories page
-- Change `max-w-6xl` to `max-w-7xl` to fill more of the available space
-- Reduce vertical padding between the header and grid
-- Tighten the gap between the page title/description and the cards
+This affects **all users** (customers and admins) because `useAdminAuth` and `useUserPermissions` both query with the stale token.
 
-### 2. Improve the PageHeader component
-- Reduce bottom margin from `mb-5 sm:mb-8` to `mb-4 sm:mb-6` to close the gap
-- This applies globally to all pages using PageHeader
+### Fix (2 files)
 
-### 3. Make category cards fill space better
-- Increase card hero height on large screens: `lg:h-56` instead of `lg:h-52`
-- Add subtle card background to differentiate from the page background (e.g., `bg-card` with visible border)
-- Reduce grid gap slightly so cards feel more connected
+**1. `src/hooks/useAuth.tsx` — Remove the redundant `getSession()` call**
 
-### 4. Sidebar desktop alignment fix
-- The sidebar already uses `sticky top-0` which is correct for sidebar behavior
-- The actual issue is that the sidebar header ("ECLIPSE" brand) duplicates the header bar identity — the sidebar starts at the viewport top while the header also shows the logo
-- Solution: On desktop, add a small top padding or visual separator so the sidebar feels subordinate to the header, not competing. Alternatively, reduce the sidebar header padding to be more compact.
+Supabase JS v2.47+ fires `INITIAL_SESSION` via `onAuthStateChange` automatically. The separate `getSession()` call is redundant and causes a race where stale session data is set before the token refresh completes.
 
-### Files to modify
-- `src/pages/Categories.tsx` — widen container, tighten spacing
-- `src/components/ui/PageHeader.tsx` — reduce bottom margin
-- `src/components/layout/CustomerSidebar.tsx` — compact the sidebar header area
+- Remove the `getSession()` call entirely
+- Rely solely on `onAuthStateChange` which handles `INITIAL_SESSION`, `SIGNED_IN`, `TOKEN_REFRESHED`, and `SIGNED_OUT` events correctly
+- Add a safety timeout (3 seconds) so loading doesn't hang forever if the listener never fires
+
+**2. `src/hooks/useAdminAuth.tsx` — Add JWT-aware retry logic**
+
+Even with the auth fix, network hiccups can cause transient 403s. Make the roles query resilient:
+
+- Add `retry` function that retries on 403/JWT errors (up to 3 attempts with delay)
+- Add `retryDelay` of 1 second to give the token refresh time to complete
+- This ensures that even if the first query hits a stale token, the retry succeeds after refresh
+
+### Why this fixes both customer and admin access
+
+- Customer pages use `useAuth` → they get stuck in loading or see errors when the session is stale
+- Admin pages use `useAdminAuth` → roles query fails → `isStaff = false` → "Access Denied"
+- Both are fixed by ensuring the auth provider only emits a valid, fresh session
+
+### No visual or functional changes
+
+The fix is purely in the auth initialization timing. All existing routes, layouts, and permission checks remain identical.
 
