@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
       patchSetting("always_online", "on", "always_online"),
       patchSetting("email_obfuscation", "on", "email_obfuscation"),
       patchSetting("server_side_exclude", "on", "server_side_exclude"),
-      patchSetting("browser_check", "on", "browser_check"),
+      patchSetting("browser_check", "off", "browser_check"),
     ]);
 
     // ─── 1b. TIERED CACHE ────────────────────────────────────────
@@ -333,14 +333,8 @@ Deno.serve(async (req) => {
       const allRulesets = listRes.data.result || [];
 
       // Simple rules without rate limiting (rate limit rules have stricter API requirements)
-      const wafRules = [
-        {
-          description: "Challenge admin/staff paths",
-          expression: '(starts_with(http.request.uri.path, "/admin") or starts_with(http.request.uri.path, "/ip-staff") or starts_with(http.request.uri.path, "/global-guard"))',
-          action: "managed_challenge",
-          action_parameters: {},
-        },
-      ];
+      // Admin/staff path challenges removed — auth is handled by the app, not Cloudflare WAF
+      const wafRules: any[] = [];
 
       const existingWaf = allRulesets.find((r: any) => r.phase === "http_request_firewall_custom");
 
