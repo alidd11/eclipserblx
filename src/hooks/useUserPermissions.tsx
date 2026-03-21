@@ -18,7 +18,7 @@ function isJwtError(error: any): boolean {
 export function useUserPermissions() {
   const { user } = useAuth();
 
-  const { data: permissions, isLoading } = useQuery({
+  const { data: permissions, isLoading, isError, error, failureCount } = useQuery({
     queryKey: ['user-permissions', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -57,7 +57,6 @@ export function useUserPermissions() {
         return await fetchPermissions();
       } catch (error) {
         if (isJwtError(error)) {
-          // Force refresh and retry once
           console.log('[Permissions] JWT error, refreshing session...');
           const { error: refreshErr } = await supabase.auth.refreshSession();
           if (refreshErr) {
@@ -84,10 +83,14 @@ export function useUserPermissions() {
     return permissionNames.some(p => permissions?.includes(p));
   };
 
+  // Bounded: once retries exhausted on JWT error, stop loading
+  const isAuthExpired = isError && isJwtError(error) && failureCount >= 3;
+
   return {
     permissions: permissions ?? [],
     hasPermission,
     hasAnyPermission,
-    isLoading,
+    isLoading: isLoading && !isAuthExpired,
+    isAuthExpired,
   };
 }

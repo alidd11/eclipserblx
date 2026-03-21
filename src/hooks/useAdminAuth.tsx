@@ -18,7 +18,7 @@ function isJwtError(error: any): boolean {
 export function useAdminAuth() {
   const { user, loading: authLoading } = useAuth();
 
-  const { data: roles, isLoading: rolesLoading, isError, error: rolesError } = useQuery({
+  const { data: roles, isLoading: rolesLoading, isError, error: rolesError, failureCount } = useQuery({
     queryKey: ['user-roles', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -73,8 +73,13 @@ export function useAdminAuth() {
 
   const hasRole = (role: string) => roles?.includes(role as any) ?? false;
 
-  // Treat JWT errors as "still loading" — don't let transient auth failures trigger Access Denied
-  const isAuthRecovering = isError && isJwtError(rolesError);
+  // Bounded recovery: only treat as recovering if we're still retrying (failureCount < 3)
+  // Once retries are exhausted, this is a terminal auth error — don't keep loading forever
+  const isJwtFailure = isError && isJwtError(rolesError);
+  const isAuthRecovering = isJwtFailure && failureCount < 3;
+  const isAuthExpired = isJwtFailure && failureCount >= 3;
+
+  // Loading is true only during initial auth load or active recovery (bounded)
   const loading = authLoading || (!!user?.id && rolesLoading && roles === undefined) || isAuthRecovering;
 
   return {
@@ -90,5 +95,6 @@ export function useAdminAuth() {
     hasRole,
     loading,
     isAuthRecovering,
+    isAuthExpired,
   };
 }
