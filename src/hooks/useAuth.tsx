@@ -24,6 +24,12 @@ function isTokenValid(accessToken: string | undefined): boolean {
   }
 }
 
+/** Check if session token is fresh (not expired and not near expiry) */
+function isSessionFresh(session: Session | null, bufferMs = 30_000): boolean {
+  if (!session?.expires_at) return false;
+  return session.expires_at * 1000 > Date.now() + bufferMs;
+}
+
 /** Bounded promise — resolves to null if the inner promise takes longer than `ms` */
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
   return Promise.race([
@@ -37,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const hasResolvedInitialAuth = useRef(false);
+  const isRefreshing = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -50,11 +57,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     /**
+     * Attempt to refresh the session and return a valid one, or null.
+     * Single-flight guard prevents concurrent refresh storms.
+     */
+    const tryRefresh = async (): Promise<Session | null> => {
+      if (isRefreshing.current) return null;
+      isRefreshing.current = true;
+      try {
+        console.log('[Auth] Attempting token refresh');
+        const result = await withTimeout(supabase.auth.refreshSession(), 5000);
+        if (!result || result.error || !result.data.session) {
+          console.warn('[Auth] Refresh failed:', result?.error?.message ?? 'timeout');
+          return null;
+        }
+        const refreshed = result.data.session;
+        if (!isTokenValid(refreshed.access_token) || !isSessionFresh(refreshed)) {
+          console.warn('[Auth] Refreshed token still invalid/stale');
+          return null;
+        }
+        console.log('[Auth] Refresh succeeded');
+        return refreshed;
+      } finally {
+        isRefreshing.current = false;
+      }
+    };
+
+    /**
+     * Validate and potentially refresh a session before trusting it.
+     * Returns a valid session or null.
+     */
+    const validateAndAccept = async (candidate: Session | null): Promise<Session | null> => {
+      if (!candidate) return null;
+
+      // Gate 1: token must have sub claim
+      if (!isTokenValid(candidate.access_token)) {
+        console.warn('[Auth] Token missing sub claim, attempting refresh');
+        return await tryRefresh();
+      }
+
+      // Gate 2: token must not be expired/near-expiry
+      if (!isSessionFresh(candidate)) {
+        console.log('[Auth] Token near-expiry, attempting refresh');
+        return await tryRefresh();
+      }
+
+      return candidate;
+    };
+
+    /**
      * Active session recovery — only runs if the listener hasn't fired.
-     * 1. getSession from storage (bounded 4s)
-     * 2. Validate token has `sub` claim
-     * 3. If invalid/expired, attempt refreshSession (bounded 5s)
-     * 4. Re-validate after refresh; if still bad, resolve unauthenticated
      */
     const recoverSessionFromStorage = async () => {
       console.log('[Auth] Safety recovery — listener did not fire in time');
@@ -73,31 +124,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        let recoveredSession = data.session ?? null;
-
-        // Validate token sanity (must have sub claim) + check expiry
-        const tokenOk = isTokenValid(recoveredSession?.access_token);
-        const expiresAtMs = recoveredSession?.expires_at ? recoveredSession.expires_at * 1000 : null;
-        const isNearExpiry = !!expiresAtMs && expiresAtMs <= Date.now() + 15_000;
-
-        if (recoveredSession && (!tokenOk || isNearExpiry)) {
-          console.log('[Auth] Token invalid or near-expiry, attempting refresh');
-          const refreshResult = await withTimeout(supabase.auth.refreshSession(), 5000);
-          if (refreshResult && !refreshResult.error && refreshResult.data.session) {
-            const refreshedToken = refreshResult.data.session.access_token;
-            if (isTokenValid(refreshedToken)) {
-              recoveredSession = refreshResult.data.session;
-            } else {
-              console.warn('[Auth] Refreshed token still invalid, clearing session');
-              recoveredSession = null;
-            }
-          } else {
-            console.warn('[Auth] Refresh failed or timed out, clearing session');
-            recoveredSession = null;
-          }
-        }
-
-        resolveAuthState(recoveredSession);
+        const validated = await validateAndAccept(data.session ?? null);
+        resolveAuthState(validated);
       } catch (e) {
         console.warn('[Auth] Recovery exception:', e);
         resolveAuthState(null);
@@ -114,48 +142,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Rely solely on onAuthStateChange which handles INITIAL_SESSION,
     // SIGNED_IN, TOKEN_REFRESHED, and SIGNED_OUT events.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
+      async (event, currentSession) => {
         if (!isMounted) return;
 
-        // Validate that the session token is sane before trusting it
+        // For INITIAL_SESSION — apply strict validation before resolving
+        if (event === 'INITIAL_SESSION' || !hasResolvedInitialAuth.current) {
+          const validated = await validateAndAccept(currentSession);
+          resolveAuthState(validated);
+
+          // Log staff login activity (deferred)
+          if (validated?.user && event === 'SIGNED_IN') {
+            setTimeout(() => logStaffActivity(validated), 0);
+          }
+          return;
+        }
+
+        // For subsequent events (SIGNED_IN, TOKEN_REFRESHED, SIGNED_OUT)
+        // Token has already been refreshed by Supabase, just validate sub claim
         if (currentSession && !isTokenValid(currentSession.access_token)) {
           console.warn('[Auth] Listener received session with invalid token, ignoring');
-          // Don't resolve with bad session — let safety timer handle recovery
           return;
         }
 
         resolveAuthState(currentSession);
 
-        // Log staff login/logout activity (deferred to avoid deadlock)
+        // Log staff login/logout activity (deferred)
         if (currentSession?.user && event === 'SIGNED_IN') {
-          setTimeout(async () => {
-            try {
-              const { data: roles } = await supabase
-                .from('user_roles')
-                .select('role, custom_roles!inner(is_status_role)')
-                .eq('user_id', currentSession.user.id)
-                .eq('custom_roles.is_status_role', false);
-
-              if (roles && roles.length > 0) {
-                await supabase.from('staff_activity').insert({
-                  user_id: currentSession.user.id,
-                  activity_type: 'login',
-                  details: { roles: roles.map(r => r.role) },
-                }).throwOnError();
-              }
-            } catch (e) {
-              console.debug('Staff activity log skipped:', e);
-            }
-
-            try {
-              const { data: promoResult } = await supabase.functions.invoke('claim-signup-promotion');
-              if (promoResult?.claimed) {
-                console.log(`Claimed signup promotion: ${promoResult.promotion} (${promoResult.days} days Eclipse+)`);
-              }
-            } catch (e) {
-              // Silent fail
-            }
-          }, 0);
+          setTimeout(() => logStaffActivity(currentSession), 0);
         }
       }
     );
@@ -166,6 +179,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
+
+  /** Deferred staff activity logging — non-blocking */
+  const logStaffActivity = async (sess: Session) => {
+    try {
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('role, custom_roles!inner(is_status_role)')
+        .eq('user_id', sess.user.id)
+        .eq('custom_roles.is_status_role', false);
+
+      if (roles && roles.length > 0) {
+        await supabase.from('staff_activity').insert({
+          user_id: sess.user.id,
+          activity_type: 'login',
+          details: { roles: roles.map(r => r.role) },
+        }).throwOnError();
+      }
+    } catch (e) {
+      console.debug('Staff activity log skipped:', e);
+    }
+
+    try {
+      const { data: promoResult } = await supabase.functions.invoke('claim-signup-promotion');
+      if (promoResult?.claimed) {
+        console.log(`Claimed signup promotion: ${promoResult.promotion} (${promoResult.days} days Eclipse+)`);
+      }
+    } catch (e) {
+      // Silent fail
+    }
+  };
 
   const signUp = async (email: string, password: string, displayName?: string) => {
     const redirectUrl = `${window.location.origin}/`;

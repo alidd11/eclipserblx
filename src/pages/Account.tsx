@@ -564,6 +564,17 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     navigate('/');
   };
 
+  // Wait for auth to finish initializing before showing sign-in prompt
+  if (authLoading) {
+    return (
+      <MainLayout>
+        <div className="container py-16 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </MainLayout>
+    );
+  }
+
   if (!user) {
     return (
       <MainLayout>

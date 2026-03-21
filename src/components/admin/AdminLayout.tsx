@@ -1,7 +1,7 @@
 import { ReactNode, useState, useEffect, useLayoutEffect } from 'react';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { useIOSChatKeyboard } from '@/hooks/useIOSChatKeyboard';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, Link } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminInstallPrompt } from './AdminInstallPrompt';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -27,8 +27,8 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children, requiredRoles = [], requiredPermissions = [] }: AdminLayoutProps) {
   const isInsideHub = useIsInsideHub();
-  const { user, isStaff, isAdmin, hasRole, loading, isAuthRecovering } = useAdminAuth();
-  const { hasAnyPermission, isLoading: permissionsLoading } = useUserPermissions();
+  const { user, isStaff, isAdmin, hasRole, loading, isAuthRecovering, isAuthExpired } = useAdminAuth();
+  const { hasAnyPermission, isLoading: permissionsLoading, isAuthExpired: permAuthExpired } = useUserPermissions();
   const location = useLocation();
   const isChatPage =
     location.pathname.startsWith('/admin/admin-chat') ||
@@ -81,7 +81,6 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
   }, [isChatPage]);
 
   // iOS PWA keyboard handling for chat pages
-  // Keep bottom inset stable on admin/staff chat screens to avoid focus/blur jump.
   useIOSChatKeyboard(isChatPage, {
     closedSafeBottom: '4px',
     openSafeBottom: '4px',
@@ -105,10 +104,32 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
 
   const isGateLoading = loading || (!!user?.id && permissionsLoading) || isAuthRecovering;
 
+  // Show loading spinner (bounded — will not hang forever)
   if (isGateLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background safe-area-page">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Session expired after exhausting retries — show actionable prompt instead of spinner
+  if (isAuthExpired || permAuthExpired) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background safe-area-page">
+        <div className="text-center space-y-4 p-6">
+          <h1 className="text-2xl font-display font-bold">Session Expired</h1>
+          <p className="text-muted-foreground">Your session has expired. Please sign in again.</p>
+          <div className="flex gap-3 justify-center">
+            <Button variant="outline" onClick={handleRefresh}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+            <Button asChild className="gradient-button border-0">
+              <Link to="/admin/login">Sign In</Link>
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
