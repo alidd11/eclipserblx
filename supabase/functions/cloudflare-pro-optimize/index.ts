@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
       patchSetting("always_online", "on", "always_online"),
       patchSetting("email_obfuscation", "on", "email_obfuscation"),
       patchSetting("server_side_exclude", "on", "server_side_exclude"),
-      patchSetting("browser_check", "on", "browser_check"),
+      patchSetting("browser_check", "off", "browser_check"),
     ]);
 
     // ─── 1b. TIERED CACHE ────────────────────────────────────────
