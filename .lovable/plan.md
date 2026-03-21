@@ -1,50 +1,76 @@
 
+Issue re-stated:
+- Failures still occur on first open (Safari + desktop), including stuck loading and crash/Access issues.
 
-## Root Cause Analysis: Cloudflare Worker Proxy + Unpublished Auth Fixes
+Do I know what the issue is? Yes.
 
-After deep investigation across Cloudflare diagnostics, auth logs, worker script, and client code, I've identified the real problem — it's two things working together.
+What the latest audit shows:
+1) Cloud/edge security is not the active blocker right now  
+- No recent optimize/fix function executions; current failures are happening in app auth bootstrap paths.
+2) Auth bootstrap still has a first-open race  
+- `useAuth` only rejects tokens missing `sub`, but it still accepts expired/near-expiry tokens from `onAuthStateChange` and resolves app state too early.
+- That lets role/permission queries run on stale tokens first, causing `bad_jwt` / `missing sub claim` bursts.
+3) Admin gate can get stuck in “recovering” forever  
+- `useAdminAuth` sets `isAuthRecovering` from error state and keeps loading true, which can lock the page on spinner.
+4) Account page can show wrong state during bootstrap  
+- `Account.tsx` checks `!user` before honoring auth initialization loading, causing false “Please sign in” flashes / bad UX on cold starts.
 
-### What's actually happening
+Implementation plan (support-style hardening, no schema changes):
+1) Harden auth initialization in `src/hooks/useAuth.tsx`
+- Add a strict session acceptance gate: token must have valid `sub` AND be fresh (`expires_at > now + buffer`).
+- On `INITIAL_SESSION` with stale token: refresh before resolving user/session.
+- Add single-flight refresh guard to prevent concurrent refresh storms.
+- If refresh fails or returns invalid token: clear local auth storage via local sign-out and resolve unauthenticated (never hang).
 
-**1. Your auth hardening code changes have NOT been published to production.**
+2) Remove infinite recovery state in `src/hooks/useAdminAuth.tsx`
+- Replace permanent `isAuthRecovering` loading with bounded recovery window.
+- After retry exhaustion on JWT errors, return a terminal auth error state (not infinite spinner).
+- Expose `authErrorCode` so UI can show “session expired, retry/sign in” instead of endless loading.
 
-All the auth fixes we've been making (token validation, JWT retry logic, safety timeouts in `useAuth`, `useAdminAuth`, `useUserPermissions`) exist only in the preview build. Users on `eclipserblx.com` are still running the OLD code that hangs on stale JWTs. The `force_update` we pushed only triggers a reload — it doesn't deploy new code. The new code needs to be **published**.
+3) Apply same bounded recovery in `src/hooks/useUserPermissions.tsx`
+- Keep one internal refresh+retry path.
+- If JWT error persists, fail fast with typed auth error, not silent endless retries.
 
-**2. `cloudflare-pro-optimize` conflicts with `fix-cloudflare-security`**
+4) Fix account bootstrap gate in `src/pages/Account.tsx`
+- Add early guard: while `authLoading` (and key profile bootstrap state), render loading skeleton.
+- Only render “Please Sign In” after auth initialization is definitively complete.
 
-These two edge functions fight each other:
-- `cloudflare-pro-optimize` sets `browser_check: "on"` and creates a "Challenge admin/staff paths" WAF rule
-- `fix-cloudflare-security` sets `browser_check: "off"` and disables the admin challenge rule
+5) Update admin gate UI in `src/components/admin/AdminLayout.tsx`
+- Distinguish:
+  - loading (temporary)
+  - session-expired/auth-error (actionable prompt)
+  - true access denied (final authorization result)
+- Prevent spinner lock on terminal auth faults.
 
-If `cloudflare-pro-optimize` ever runs again (e.g. if someone re-optimizes), it will:
-- Re-enable browser integrity check → iOS PWA WebViews get challenged on cold open → crash
-- Re-enable admin path challenges → admin dashboard blocked by Cloudflare interstitial
+6) Add targeted diagnostics (temporary) in the same files
+- One structured startup trace per boot:
+  - session source/event
+  - token fresh/invalid
+  - refresh attempted/success/fail
+  - gate outcome (loading/expired/denied/allowed)
+- Keep logs concise for 24–48h and then remove.
 
-I just ran `fix-cloudflare-security` and confirmed the settings are correct NOW (browser_check: off, admin challenge: disabled). But the code conflict remains.
+Why this should solve the “every first open” pattern:
+- Expired tokens will no longer be accepted as ready auth state.
+- Role/permission queries won’t run until a fresh session is confirmed.
+- Recovery failures become explicit and recoverable (retry/sign in) instead of infinite loading.
 
-### The fix (2 steps)
+Validation plan (published + installed PWA + desktop):
+1) Cold open x5 on Safari installed PWA (customer + admin routes).
+2) Cold open x5 on desktop browser (same routes).
+3) Resume from background x5 (both roles).
+4) Confirm:
+- no infinite spinner,
+- no false access denied for valid staff,
+- no first-open signed-out flicker on account,
+- no crash/reload loop from auth startup.
+5) Check runtime logs to ensure stale-token boots now go through refresh-before-resolve path.
 
-**Step 1: Fix `cloudflare-pro-optimize` to stop conflicting**
-- File: `supabase/functions/cloudflare-pro-optimize/index.ts`
-- Change `browser_check` from `"on"` to `"off"` (line 81)
-- Remove or disable the "Challenge admin/staff paths" WAF rule creation (lines 336-343) — admin auth is already handled by the app's own auth system, not by Cloudflare challenges
-- This prevents future runs of the optimizer from breaking the site
-
-**Step 2: Publish the app**
-- The auth fixes (token validation, JWT retry, safety timeouts) are already in the codebase
-- Publishing deploys these to production at `eclipserblx.com`
-- After publish, force update v1.0.87 will trigger a reload for all connected clients, pulling the new auth-hardened code
-
-### Why the Cloudflare settings aren't the cause right now
-
-I verified: `browser_check` is currently `"off"`, admin challenge is `"disabled"`, security level is `"medium"`, SBFM is set to allow. These are all correct. The worker is passing human traffic through correctly (`x-eclipse-worker: pass-human`). DNS resolves properly through Cloudflare proxy to the worker.
-
-The issue is purely that the live production code at `eclipserblx.com` still has the OLD auth bootstrap that hangs on stale JWTs — because the fixes were never published.
-
-### Technical detail
-- File to modify: `supabase/functions/cloudflare-pro-optimize/index.ts`
-  - Line 81: `patchSetting("browser_check", "on", "browser_check")` → change to `"off"`
-  - Lines 336-343: Remove the admin challenge WAF rule from the `wafRules` array (keep it as an empty array or remove the rule object)
-- No other file changes needed — the auth fixes are already done
-- After code change: **Publish the app**
-
+Scope:
+- Files to update:  
+  `src/hooks/useAuth.tsx`  
+  `src/hooks/useAdminAuth.tsx`  
+  `src/hooks/useUserPermissions.tsx`  
+  `src/pages/Account.tsx`  
+  `src/components/admin/AdminLayout.tsx`
+- No database migration required.
