@@ -1,76 +1,63 @@
 
-Issue re-stated:
-- Failures still occur on first open (Safari + desktop), including stuck loading and crash/Access issues.
+Issue restated:
+- Users are seeing a black screen on Safari and installed PWAs (customer + admin).
 
 Do I know what the issue is? Yes.
 
-What the latest audit shows:
-1) Cloud/edge security is not the active blocker right now  
-- No recent optimize/fix function executions; current failures are happening in app auth bootstrap paths.
-2) Auth bootstrap still has a first-open race  
-- `useAuth` only rejects tokens missing `sub`, but it still accepts expired/near-expiry tokens from `onAuthStateChange` and resolves app state too early.
-- That lets role/permission queries run on stale tokens first, causing `bad_jwt` / `missing sub claim` bursts.
-3) Admin gate can get stuck in “recovering” forever  
-- `useAdminAuth` sets `isAuthRecovering` from error state and keeps loading true, which can lock the page on spinner.
-4) Account page can show wrong state during bootstrap  
-- `Account.tsx` checks `!user` before honoring auth initialization loading, causing false “Please sign in” flashes / bad UX on cold starts.
+What’s most likely happening from code + logs:
+1) Global black screen path exists in `EmailGuard`
+- `src/components/auth/EmailGuard.tsx` returns `null` while auth is loading.
+- This creates an empty page (only background), which users perceive as a black screen.
 
-Implementation plan (support-style hardening, no schema changes):
-1) Harden auth initialization in `src/hooks/useAuth.tsx`
-- Add a strict session acceptance gate: token must have valid `sub` AND be fresh (`expires_at > now + buffer`).
-- On `INITIAL_SESSION` with stale token: refresh before resolving user/session.
-- Add single-flight refresh guard to prevent concurrent refresh storms.
-- If refresh fails or returns invalid token: clear local auth storage via local sign-out and resolve unauthenticated (never hang).
+2) First-open auth still hits invalid JWTs
+- Recent logs still show `/auth/v1/user` `403 bad_jwt` / `missing sub claim`.
+- During cold-open recovery, `useAuth` can spend several seconds in refresh/validation before resolving.
+- Combined with (1), users see a black screen instead of a visible loading/recovery state.
 
-2) Remove infinite recovery state in `src/hooks/useAdminAuth.tsx`
-- Replace permanent `isAuthRecovering` loading with bounded recovery window.
-- After retry exhaustion on JWT errors, return a terminal auth error state (not infinite spinner).
-- Expose `authErrorCode` so UI can show “session expired, retry/sign in” instead of endless loading.
+3) PWA startup redirect is duplicated
+- `usePWAAdminRedirect()` is called globally (`AdminPWAHandler`) and again in `Index.tsx`.
+- This can create extra startup churn on standalone launches.
 
-3) Apply same bounded recovery in `src/hooks/useUserPermissions.tsx`
-- Keep one internal refresh+retry path.
-- If JWT error persists, fail fast with typed auth error, not silent endless retries.
+Implementation plan:
+1) Replace black screen behavior with explicit bootstrap UI
+- Update `src/components/auth/EmailGuard.tsx`:
+  - Never return `null` while loading.
+  - Render a full-screen branded loader + “Reconnecting…” message.
+  - Add bounded timeout state (e.g. 8–10s) that switches to actionable recovery UI (Retry / Go to Sign In).
 
-4) Fix account bootstrap gate in `src/pages/Account.tsx`
-- Add early guard: while `authLoading` (and key profile bootstrap state), render loading skeleton.
-- Only render “Please Sign In” after auth initialization is definitively complete.
+2) Add hard auth bootstrap deadline
+- Update `src/hooks/useAuth.tsx`:
+  - Add absolute max bootstrap timer (independent of refresh/getSession retries).
+  - If deadline is reached, resolve auth as unauthenticated and stop loading.
+  - Keep existing token validation/refresh logic, but guarantee loading cannot hang.
 
-5) Update admin gate UI in `src/components/admin/AdminLayout.tsx`
-- Distinguish:
-  - loading (temporary)
-  - session-expired/auth-error (actionable prompt)
-  - true access denied (final authorization result)
-- Prevent spinner lock on terminal auth faults.
+3) Reduce PWA startup race noise
+- Remove duplicate admin redirect invocation (keep one source of truth):
+  - Prefer keeping `AdminPWAHandler` global hook.
+  - Remove `usePWAAdminRedirect()` call from `src/pages/Index.tsx`.
 
-6) Add targeted diagnostics (temporary) in the same files
-- One structured startup trace per boot:
-  - session source/event
-  - token fresh/invalid
-  - refresh attempted/success/fail
-  - gate outcome (loading/expired/denied/allowed)
-- Keep logs concise for 24–48h and then remove.
+4) Improve user-facing recovery for expired sessions
+- In `EmailGuard` and admin gate flows, show explicit “Session expired” state when JWT recovery fails, rather than blank/indeterminate states.
 
-Why this should solve the “every first open” pattern:
-- Expired tokens will no longer be accepted as ready auth state.
-- Role/permission queries won’t run until a fresh session is confirmed.
-- Recovery failures become explicit and recoverable (retry/sign in) instead of infinite loading.
+5) Add temporary startup diagnostics
+- Add concise one-line boot logs in `useAuth` and `EmailGuard`:
+  - auth event source
+  - bootstrap deadline hit/not hit
+  - final gate outcome (allow / redirect / expired)
+- Keep for short verification window, then remove.
 
-Validation plan (published + installed PWA + desktop):
-1) Cold open x5 on Safari installed PWA (customer + admin routes).
-2) Cold open x5 on desktop browser (same routes).
-3) Resume from background x5 (both roles).
-4) Confirm:
-- no infinite spinner,
-- no false access denied for valid staff,
-- no first-open signed-out flicker on account,
-- no crash/reload loop from auth startup.
-5) Check runtime logs to ensure stale-token boots now go through refresh-before-resolve path.
+Files to update:
+- `src/components/auth/EmailGuard.tsx`
+- `src/hooks/useAuth.tsx`
+- `src/pages/Index.tsx`
+- (optional for consistency) `src/components/admin/AdminLayout.tsx`
 
-Scope:
-- Files to update:  
-  `src/hooks/useAuth.tsx`  
-  `src/hooks/useAdminAuth.tsx`  
-  `src/hooks/useUserPermissions.tsx`  
-  `src/pages/Account.tsx`  
-  `src/components/admin/AdminLayout.tsx`
-- No database migration required.
+Validation plan (must be on published + installed PWAs):
+1) Cold open customer PWA 5 times (Safari + desktop browser).
+2) Cold open admin PWA 5 times.
+3) Confirm:
+- no black screen at startup,
+- loader/recovery UI appears instead of blank page,
+- no infinite wait,
+- valid users can enter routes on first attempt.
+4) Confirm auth logs: no prolonged bursts of `bad_jwt` without recovery.
