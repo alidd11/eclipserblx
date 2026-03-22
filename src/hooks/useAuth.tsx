@@ -175,6 +175,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       void recoverSessionFromStorage();
     }, 3000);
 
+    // Hard deadline: if auth is STILL loading after 7s, force-resolve as unauthenticated.
+    // This prevents black/blank screens on PWA cold starts with broken tokens.
+    const deadlineTimer = setTimeout(() => {
+      if (!isMounted || hasResolvedInitialAuth.current) return;
+      console.warn('[Auth] Hard bootstrap deadline reached (7s) — resolving unauthenticated');
+      resolveAuthState(null);
+    }, 7000);
+
     // Rely solely on onAuthStateChange which handles INITIAL_SESSION,
     // SIGNED_IN, TOKEN_REFRESHED, and SIGNED_OUT events.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
