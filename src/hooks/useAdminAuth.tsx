@@ -31,13 +31,12 @@ export function useAdminAuth() {
       if (!user?.id) return [];
 
       const fetchRoles = async () => {
-        const result = await withTimeout(
-          supabase
+        const result = await withTimeout((async () => {
+          return await supabase
             .from('user_roles')
             .select('role')
-            .eq('user_id', user.id),
-          7000
-        );
+            .eq('user_id', user.id);
+        })(), 7000);
 
         if (!result) {
           throw new Error('Roles query timeout');
