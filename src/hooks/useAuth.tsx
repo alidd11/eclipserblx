@@ -220,6 +220,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       isMounted = false;
       clearTimeout(safetyTimer);
+      clearTimeout(deadlineTimer);
       subscription.unsubscribe();
     };
   }, []);
