@@ -13,15 +13,23 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function decodeJwtPayload(accessToken: string | undefined): Record<string, any> | null {
+  if (!accessToken) return null;
+  try {
+    const part = accessToken.split('.')[1];
+    if (!part) return null;
+    const normalized = part.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+    return JSON.parse(atob(padded));
+  } catch {
+    return null;
+  }
+}
+
 /** Check if a JWT access token contains a valid `sub` claim */
 function isTokenValid(accessToken: string | undefined): boolean {
-  if (!accessToken) return false;
-  try {
-    const payload = JSON.parse(atob(accessToken.split('.')[1]));
-    return !!payload.sub;
-  } catch {
-    return false;
-  }
+  const payload = decodeJwtPayload(accessToken);
+  return typeof payload?.sub === 'string' && payload.sub.length > 0;
 }
 
 /** Check if session token is fresh (not expired and not near expiry) */
@@ -43,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const hasResolvedInitialAuth = useRef(false);
-  const isRefreshing = useRef(false);
+  const refreshPromise = useRef<Promise<Session | null> | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -56,14 +64,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     };
 
+    const clearCorruptSession = async () => {
+      console.warn('[Auth] Clearing corrupt local auth session');
+      try {
+        await withTimeout(supabase.auth.signOut({ scope: 'local' }), 2000);
+      } catch {
+        // Ignore cleanup failures
+      }
+    };
+
     /**
      * Attempt to refresh the session and return a valid one, or null.
      * Single-flight guard prevents concurrent refresh storms.
      */
     const tryRefresh = async (): Promise<Session | null> => {
-      if (isRefreshing.current) return null;
-      isRefreshing.current = true;
-      try {
+      if (refreshPromise.current) return refreshPromise.current;
+
+      refreshPromise.current = (async () => {
         console.log('[Auth] Attempting token refresh');
         const result = await withTimeout(supabase.auth.refreshSession(), 5000);
         if (!result || result.error || !result.data.session) {
@@ -77,8 +94,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         console.log('[Auth] Refresh succeeded');
         return refreshed;
+      })();
+
+      try {
+        return await refreshPromise.current;
       } finally {
-        isRefreshing.current = false;
+        refreshPromise.current = null;
       }
     };
 
@@ -92,13 +113,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Gate 1: token must have sub claim
       if (!isTokenValid(candidate.access_token)) {
         console.warn('[Auth] Token missing sub claim, attempting refresh');
-        return await tryRefresh();
+        const refreshed = await tryRefresh();
+        if (!refreshed) {
+          await clearCorruptSession();
+        }
+        return refreshed;
       }
 
       // Gate 2: token must not be expired/near-expiry
       if (!isSessionFresh(candidate)) {
         console.log('[Auth] Token near-expiry, attempting refresh');
-        return await tryRefresh();
+        const refreshed = await tryRefresh();
+        if (refreshed) return refreshed;
+
+        // If token is still technically valid right now, allow bootstrap and let
+        // normal refresh continue in background rather than forcing a false sign-out.
+        if ((candidate.expires_at ?? 0) * 1000 > Date.now()) {
+          console.warn('[Auth] Refresh failed but token still valid; accepting current session');
+          return candidate;
+        }
+
+        await clearCorruptSession();
+        return null;
       }
 
       return candidate;
