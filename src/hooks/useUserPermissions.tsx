@@ -2,6 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
+  return Promise.race([
+    promise,
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
+  ]);
+}
+
 function isJwtError(error: any): boolean {
   const message = String(error?.message ?? '').toLowerCase();
   const code = String(error?.code ?? '').toUpperCase();
@@ -15,8 +22,13 @@ function isJwtError(error: any): boolean {
   );
 }
 
-export function useUserPermissions() {
+interface UseUserPermissionsOptions {
+  enabled?: boolean;
+}
+
+export function useUserPermissions(options: UseUserPermissionsOptions = {}) {
   const { user } = useAuth();
+  const queryEnabled = (options.enabled ?? true) && !!user?.id;
 
   const { data: permissions, isLoading, isError, error, failureCount } = useQuery({
     queryKey: ['user-permissions', user?.id],
@@ -24,30 +36,48 @@ export function useUserPermissions() {
       if (!user?.id) return [];
 
       const fetchPermissions = async () => {
-        const { data: userRoles, error: rolesError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id);
+        const rolesResult = await withTimeout((async () => {
+          return await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id);
+        })(), 7000);
+
+        if (!rolesResult) throw new Error('Roles query timeout');
+
+        const { data: userRoles, error: rolesError } = rolesResult;
         
         if (rolesError) throw rolesError;
         if (!userRoles?.length) return [];
         
         const roles = userRoles.map(r => r.role);
         
-        const { data: rolePerms, error: permError } = await supabase
-          .from('role_permissions')
-          .select('permission_id')
-          .in('role', roles);
+        const rolePermsResult = await withTimeout((async () => {
+          return await supabase
+            .from('role_permissions')
+            .select('permission_id')
+            .in('role', roles);
+        })(), 7000);
+
+        if (!rolePermsResult) throw new Error('Role permissions query timeout');
+
+        const { data: rolePerms, error: permError } = rolePermsResult;
         
         if (permError) throw permError;
         if (!rolePerms?.length) return [];
         
         const permissionIds = [...new Set(rolePerms.map(rp => rp.permission_id))];
         
-        const { data: perms, error: namesError } = await supabase
-          .from('permissions')
-          .select('name')
-          .in('id', permissionIds);
+        const permsResult = await withTimeout((async () => {
+          return await supabase
+            .from('permissions')
+            .select('name')
+            .in('id', permissionIds);
+        })(), 7000);
+
+        if (!permsResult) throw new Error('Permissions names query timeout');
+
+        const { data: perms, error: namesError } = permsResult;
         
         if (namesError) throw namesError;
         return perms?.map(p => p.name) ?? [];
@@ -58,9 +88,9 @@ export function useUserPermissions() {
       } catch (error) {
         if (isJwtError(error)) {
           console.log('[Permissions] JWT error, refreshing session...');
-          const { error: refreshErr } = await supabase.auth.refreshSession();
-          if (refreshErr) {
-            console.warn('[Permissions] Session refresh failed:', refreshErr.message);
+          const refreshResult = await withTimeout(supabase.auth.refreshSession(), 5000);
+          if (!refreshResult || refreshResult.error) {
+            console.warn('[Permissions] Session refresh failed:', refreshResult?.error?.message ?? 'timeout');
             throw error;
           }
           return await fetchPermissions();
@@ -68,7 +98,7 @@ export function useUserPermissions() {
         throw error;
       }
     },
-    enabled: !!user?.id,
+    enabled: queryEnabled,
     staleTime: 1000 * 30,
     refetchOnWindowFocus: true,
     retry: (failureCount, error) => failureCount < 3 && isJwtError(error),
@@ -84,13 +114,13 @@ export function useUserPermissions() {
   };
 
   // Bounded: once retries exhausted on JWT error, stop loading
-  const isAuthExpired = isError && isJwtError(error) && failureCount >= 3;
+  const isAuthExpired = queryEnabled && isError && isJwtError(error) && failureCount >= 3;
 
   return {
     permissions: permissions ?? [],
     hasPermission,
     hasAnyPermission,
-    isLoading: isLoading && !isAuthExpired,
+    isLoading: queryEnabled ? (isLoading && !isAuthExpired) : false,
     isAuthExpired,
   };
 }

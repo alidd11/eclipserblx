@@ -2,6 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
+  return Promise.race([
+    promise,
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
+  ]);
+}
+
 function isJwtError(error: any): boolean {
   const msg = String(error?.message ?? '').toLowerCase();
   const code = String(error?.code ?? '').toUpperCase();
@@ -23,33 +30,37 @@ export function useAdminAuth() {
     queryFn: async () => {
       if (!user?.id) return [];
 
-      // First attempt
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id);
+      const fetchRoles = async () => {
+        const result = await withTimeout((async () => {
+          return await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id);
+        })(), 7000);
 
-      if (error && isJwtError(error)) {
+        if (!result) {
+          throw new Error('Roles query timeout');
+        }
+
+        if (result.error) throw result.error;
+        return (result.data ?? []).map(r => r.role);
+      };
+
+      try {
+        return await fetchRoles();
+      } catch (error) {
+        if (!isJwtError(error)) throw error;
+
         // Token may be stale — force a refresh and retry once
         console.log('[AdminAuth] JWT error on roles query, refreshing session...');
-        const { error: refreshErr } = await supabase.auth.refreshSession();
-        if (refreshErr) {
-          console.warn('[AdminAuth] Session refresh failed:', refreshErr.message);
+        const refreshResult = await withTimeout(supabase.auth.refreshSession(), 5000);
+        if (!refreshResult || refreshResult.error) {
+          console.warn('[AdminAuth] Session refresh failed:', refreshResult?.error?.message ?? 'timeout');
           throw error; // Let react-query retry handle it
         }
 
-        // Retry after refresh
-        const { data: retryData, error: retryError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id);
-
-        if (retryError) throw retryError;
-        return (retryData ?? []).map(r => r.role);
+        return await fetchRoles();
       }
-
-      if (error) throw error;
-      return (data ?? []).map(r => r.role);
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5,
