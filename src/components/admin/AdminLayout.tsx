@@ -28,7 +28,8 @@ interface AdminLayoutProps {
 export function AdminLayout({ children, requiredRoles = [], requiredPermissions = [] }: AdminLayoutProps) {
   const isInsideHub = useIsInsideHub();
   const { user, isStaff, isAdmin, hasRole, loading, isAuthRecovering, isAuthExpired } = useAdminAuth();
-  const { hasAnyPermission, isLoading: permissionsLoading, isAuthExpired: permAuthExpired } = useUserPermissions();
+  const permissionsRequired = requiredPermissions.length > 0 && !isAdmin;
+  const { hasAnyPermission, isLoading: permissionsLoading, isAuthExpired: permAuthExpired } = useUserPermissions({ enabled: permissionsRequired });
   const location = useLocation();
   const isChatPage =
     location.pathname.startsWith('/admin/admin-chat') ||
@@ -102,7 +103,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
     window.location.reload();
   };
 
-  const isGateLoading = loading || (!!user?.id && permissionsLoading) || isAuthRecovering;
+  const isGateLoading = loading || (!!user?.id && permissionsRequired && permissionsLoading) || isAuthRecovering;
 
   // Show loading spinner (bounded — will not hang forever)
   if (isGateLoading) {
