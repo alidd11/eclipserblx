@@ -245,11 +245,15 @@ export default {
         return fetchOrigin(request, "pass-store-miss");
       }
 
-      // PWA bootstrap files — always pass through with no-cache headers
+      // PWA bootstrap files — bypass CF internal fetch cache entirely
       var PWA_BOOTSTRAP = ["/sw.js", "/custom-sw.js", "/registerSW.js", "/offline.html", "/manifest.webmanifest", "/manifest-admin.json"];
       if (PWA_BOOTSTRAP.indexOf(path) !== -1) {
-        var pwaRes = await fetchOrigin(request, "pass-pwa-bootstrap");
+        var pwaOriginUrl = ORIGIN_URL + url.pathname + url.search;
+        var pwaReq = buildOriginRequest(request, pwaOriginUrl, hostname);
+        // cacheTtl: 0 forces CF to bypass its internal edge cache for this fetch
+        var pwaRes = await fetch(pwaReq, { cf: { cacheTtl: 0, cacheEverything: false } });
         var pwaHeaders = new Headers(pwaRes.headers);
+        pwaHeaders.set("X-Eclipse-Worker", "pass-pwa-bootstrap");
         if (path.endsWith(".js") || path === "/offline.html") {
           pwaHeaders.set("Cache-Control", "no-store, no-cache, must-revalidate");
           pwaHeaders.set("Pragma", "no-cache");
