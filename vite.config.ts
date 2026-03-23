@@ -98,12 +98,11 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         // Bump this to force workbox to invalidate its precache on next deploy
-        cacheId: 'eclipse-v4',
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
-        // Show branded offline page when network is unavailable
-        navigateFallback: '/offline.html',
-        // Ensure OAuth redirects always hit the network
-        navigateFallbackDenylist: [/^\/~oauth/],
+        cacheId: 'eclipse-v5',
+        globPatterns: ["**/*.{js,css,ico,png,svg,woff,woff2}"],
+        // Navigation is handled by custom-sw.js (network-first)
+        // Prevent Workbox from intercepting ANY navigation request
+        navigateFallbackDenylist: [/./],
         // Import custom service worker for push notifications
         importScripts: ["/custom-sw.js"],
         runtimeCaching: [

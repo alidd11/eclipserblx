@@ -1,0 +1,1 @@
+UPDATE app_version SET force_update = false WHERE id = 'current';
