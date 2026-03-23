@@ -1,84 +1,76 @@
 import { handleCors, jsonOk, internalError } from "../_shared/edge-response.ts";
 
+/**
+ * READ-ONLY diagnostics for the Cloudflare Worker.
+ * Does NOT deploy or mutate any production resources.
+ */
 Deno.serve(async (req) => {
   const corsResp = handleCors(req);
   if (corsResp) return corsResp;
 
   try {
-    const CF_TOKEN = Deno.env.get("CLOUDFLARE_API_TOKEN");
-    const CF_ZONE_ID = Deno.env.get("CLOUDFLARE_ZONE_ID");
-    if (!CF_TOKEN || !CF_ZONE_ID) return jsonOk({ error: "Missing secrets" }, 500);
+    const ts = Date.now();
 
-    const headers = { Authorization: `Bearer ${CF_TOKEN}`, "Content-Type": "application/json" };
+    // Probe custom domain for key assets
+    const probes = [
+      { name: "sw.js", url: `https://eclipserblx.com/sw.js?cb=${ts}` },
+      { name: "custom-sw.js", url: `https://eclipserblx.com/custom-sw.js?cb=${ts}` },
+      { name: "offline.html", url: `https://eclipserblx.com/offline.html?cb=${ts}` },
+      { name: "manifest", url: `https://eclipserblx.com/manifest.webmanifest?cb=${ts}` },
+      { name: "homepage", url: `https://eclipserblx.com/?cb=${ts}` },
+    ];
 
-    // Get account ID
-    const zoneResp = await fetch(`https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}`, { headers });
-    const zoneData = await zoneResp.json();
-    const accountId = zoneData.result?.account?.id;
+    const results: Record<string, unknown> = {};
 
-    // Deploy a MINIMAL test worker that just adds a header to prove Workers execute
-    const testScript = `
-export default {
-  async fetch(request) {
-    var response = await fetch(request);
-    var newResp = new Response(response.body, response);
-    newResp.headers.set("X-Eclipse-Test", "worker-is-alive");
-    return newResp;
-  }
-};`;
+    await Promise.all(probes.map(async (probe) => {
+      try {
+        const resp = await fetch(probe.url, {
+          headers: { "User-Agent": "Eclipse-HealthCheck/1.0" },
+          redirect: "manual",
+        });
+        const headers: Record<string, string> = {};
+        resp.headers.forEach((v, k) => { headers[k] = v; });
+        const body = await resp.text();
 
-    const workerName = "eclipse-og-proxy";
-    const boundary = "----TestBoundary" + Date.now();
-    const metadata = JSON.stringify({ main_module: "worker.js", compatibility_date: "2024-01-01" });
-    const body = [
-      `--${boundary}`,
-      'Content-Disposition: form-data; name="metadata"; filename="metadata.json"',
-      "Content-Type: application/json",
-      "",
-      metadata,
-      `--${boundary}`,
-      'Content-Disposition: form-data; name="worker.js"; filename="worker.js"',
-      "Content-Type: application/javascript+module",
-      "",
-      testScript,
-      `--${boundary}--`,
-    ].join("\r\n");
-
-    const uploadResp = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}`,
-      {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${CF_TOKEN}`, "Content-Type": `multipart/form-data; boundary=${boundary}` },
-        body,
+        results[probe.name] = {
+          status: resp.status,
+          xEclipseWorker: headers["x-eclipse-worker"] || null,
+          cacheStatus: headers["cf-cache-status"] || null,
+          cacheControl: headers["cache-control"] || null,
+          server: headers["server"] || null,
+          contentLength: body.length,
+          // For sw.js, extract the cacheId to verify version
+          ...(probe.name === "sw.js" && {
+            containsV5: body.includes("eclipse-v5"),
+            containsV6: body.includes("eclipse-v6"),
+            containsIndexHtml: body.includes("index.html"),
+          }),
+          ...(probe.name === "custom-sw.js" && {
+            swVersion: body.match(/SW_VERSION\s*=\s*'([^']+)'/)?.[1] || null,
+          }),
+        };
+      } catch (e) {
+        results[probe.name] = { error: (e as Error).message };
       }
-    );
-    const uploadData = await uploadResp.json();
+    }));
 
-    if (!uploadData.success) {
-      return jsonOk({ error: "Upload failed", details: uploadData.errors });
-    }
-
-    // Wait a moment for propagation
-    await new Promise(r => setTimeout(r, 3000));
-
-    // Now test if the header appears
-    const testResp = await fetch("https://eclipserblx.com/", {
-      headers: { "User-Agent": "Mozilla/5.0 TestClient" },
+    // Also probe the origin for comparison
+    const originResp = await fetch(`https://roleplay-hub-shop.lovable.app/sw.js?cb=${ts}`, {
+      headers: { "User-Agent": "Eclipse-HealthCheck/1.0" },
       redirect: "manual",
     });
-    const testHeaders: Record<string, string> = {};
-    testResp.headers.forEach((v, k) => { testHeaders[k] = v; });
-    await testResp.text();
+    const originBody = await originResp.text();
+    results["origin_sw"] = {
+      status: originResp.status,
+      containsV5: originBody.includes("eclipse-v5"),
+      containsV6: originBody.includes("eclipse-v6"),
+      contentLength: originBody.length,
+    };
 
     return jsonOk({
-      upload: { success: uploadData.success },
-      test: {
-        status: testResp.status,
-        xEclipseTest: testHeaders["x-eclipse-test"] || null,
-        server: testHeaders["server"] || null,
-        cfRay: testHeaders["cf-ray"] || null,
-      },
-      note: "If x-eclipse-test is null, Workers are NOT executing on this zone. You need to redeploy the full worker after this test.",
+      timestamp: new Date().toISOString(),
+      diagnostics: results,
+      note: "Read-only diagnostics. No production resources were modified.",
     });
   } catch (e) {
     return internalError(e);

@@ -98,7 +98,7 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         // Bump this to force workbox to invalidate its precache on next deploy
-        cacheId: 'eclipse-v5',
+        cacheId: 'eclipse-v6',
         globPatterns: ["**/*.{js,css,ico,png,svg,woff,woff2}"],
         // Navigation is handled by custom-sw.js (network-first)
         // Prevent Workbox from intercepting ANY navigation request
