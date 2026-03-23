@@ -1,63 +1,41 @@
 
-Issue restated:
-- Users are seeing a black screen on Safari and installed PWAs (customer + admin).
 
-Do I know what the issue is? Yes.
+## Root Cause (Confirmed with Evidence)
 
-What’s most likely happening from code + logs:
-1) Global black screen path exists in `EmailGuard`
-- `src/components/auth/EmailGuard.tsx` returns `null` while auth is loading.
-- This creates an empty page (only background), which users perceive as a black screen.
+**Why private mode works but normal Safari/PWA doesn't:**
 
-2) First-open auth still hits invalid JWTs
-- Recent logs still show `/auth/v1/user` `403 bad_jwt` / `missing sub claim`.
-- During cold-open recovery, `useAuth` can spend several seconds in refresh/validation before resolving.
-- Combined with (1), users see a black screen instead of a visible loading/recovery state.
+1. **`force_update` is STILL `true` in the database since March 20** — every page load triggers `window.location.reload()`, but the Service Worker serves the same stale cached HTML, creating an infinite reload loop.
 
-3) PWA startup redirect is duplicated
-- `usePWAAdminRedirect()` is called globally (`AdminPWAHandler`) and again in `Index.tsx`.
-- This can create extra startup churn on standalone launches.
+2. **Workbox is still precaching `index.html`** — `globPatterns` in `vite.config.ts` still includes `html`. The custom SW's network-first handler never runs because Workbox's `navigateFallback` intercepts navigation first, serving cached (stale) HTML.
 
-Implementation plan:
-1) Replace black screen behavior with explicit bootstrap UI
-- Update `src/components/auth/EmailGuard.tsx`:
-  - Never return `null` while loading.
-  - Render a full-screen branded loader + “Reconnecting…” message.
-  - Add bounded timeout state (e.g. 8–10s) that switches to actionable recovery UI (Retry / Go to Sign In).
+3. **SW version is still `1.0.9`** — old caches from `eclipse-v4` are never cleared.
 
-2) Add hard auth bootstrap deadline
-- Update `src/hooks/useAuth.tsx`:
-  - Add absolute max bootstrap timer (independent of refresh/getSession retries).
-  - If deadline is reached, resolve auth as unauthenticated and stop loading.
-  - Keep existing token validation/refresh logic, but guarantee loading cannot hang.
+Private/incognito has no SW and no cache → fresh HTML → works perfectly. Normal mode has SW + stale cache → old HTML → old chunk references → crash.
 
-3) Reduce PWA startup race noise
-- Remove duplicate admin redirect invocation (keep one source of truth):
-  - Prefer keeping `AdminPWAHandler` global hook.
-  - Remove `usePWAAdminRedirect()` call from `src/pages/Index.tsx`.
+The Sentry error is almost certainly a chunk load failure from this same stale-cache path.
 
-4) Improve user-facing recovery for expired sessions
-- In `EmailGuard` and admin gate flows, show explicit “Session expired” state when JWT recovery fails, rather than blank/indeterminate states.
+## Fix (3 changes)
 
-5) Add temporary startup diagnostics
-- Add concise one-line boot logs in `useAuth` and `EmailGuard`:
-  - auth event source
-  - bootstrap deadline hit/not hit
-  - final gate outcome (allow / redirect / expired)
-- Keep for short verification window, then remove.
+### 1. Fix Service Worker config (`vite.config.ts`)
+- Change `globPatterns` from `"**/*.{js,css,html,ico,png,svg,woff,woff2}"` to `"**/*.{js,css,ico,png,svg,woff,woff2}"` (remove `html`)
+- Remove `navigateFallback: '/offline.html'` (the custom SW already handles offline fallback via its fetch listener)
+- Change `navigateFallbackDenylist` to `[/./]` as safety net to prevent Workbox from handling ANY navigation
+- Bump `cacheId` from `'eclipse-v4'` to `'eclipse-v5'`
 
-Files to update:
-- `src/components/auth/EmailGuard.tsx`
-- `src/hooks/useAuth.tsx`
-- `src/pages/Index.tsx`
-- (optional for consistency) `src/components/admin/AdminLayout.tsx`
+### 2. Bump custom SW version (`public/custom-sw.js`)
+- Change `SW_VERSION` from `'1.0.9'` to `'1.1.0'`
+- This triggers activation → clears all old caches → network-first takes over
 
-Validation plan (must be on published + installed PWAs):
-1) Cold open customer PWA 5 times (Safari + desktop browser).
-2) Cold open admin PWA 5 times.
-3) Confirm:
-- no black screen at startup,
-- loader/recovery UI appears instead of blank page,
-- no infinite wait,
-- valid users can enter routes on first attempt.
-4) Confirm auth logs: no prolonged bursts of `bad_jwt` without recovery.
+### 3. Reset `force_update` in database
+- Run SQL: `UPDATE app_version SET force_update = false WHERE id = 'current'`
+- Stops the 3-day-old infinite reload loop
+
+### After code changes: Publish the app
+This is critical — the fixes must reach the production domain.
+
+### Why this will work
+- No more stale `index.html` served from cache
+- Navigation always goes to network first (custom SW handles it)
+- No more force-update reload loop
+- All previous auth hardening remains intact for genuine token issues
+
