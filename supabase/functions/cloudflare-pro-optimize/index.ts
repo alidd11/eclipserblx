@@ -134,8 +134,16 @@ Deno.serve(async (req) => {
 
       const cacheRules = [
         {
+          description: "Bypass cache for PWA bootstrap files",
+          expression: '(http.request.uri.path eq "/sw.js" or http.request.uri.path eq "/custom-sw.js" or http.request.uri.path eq "/registerSW.js" or http.request.uri.path eq "/offline.html" or http.request.uri.path eq "/manifest.webmanifest" or http.request.uri.path eq "/manifest-admin.json")',
+          action: "set_cache_settings",
+          action_parameters: {
+            cache: false,
+          },
+        },
+        {
           description: "Cache static assets aggressively (Pro)",
-          expression: '(http.request.uri.path contains "/assets/" or http.request.uri.path.extension in {"js" "css" "woff2" "woff" "webp" "png" "jpg" "jpeg" "svg" "ico" "gif" "avif"})',
+          expression: '(http.request.uri.path contains "/assets/" or (http.request.uri.path.extension in {"js" "css" "woff2" "woff" "webp" "png" "jpg" "jpeg" "svg" "ico" "gif" "avif"} and not http.request.uri.path eq "/sw.js" and not http.request.uri.path eq "/custom-sw.js" and not http.request.uri.path eq "/registerSW.js"))',
           action: "set_cache_settings",
           action_parameters: {
             cache: true,

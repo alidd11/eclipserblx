@@ -143,11 +143,28 @@ self.addEventListener('fetch', (event) => {
   })());
 });
 
-// Install
+// Install — resilient: if offline.html fetch fails, cache inline fallback instead
 self.addEventListener('install', (event) => {
   console.log('[Eclipse SW] Installing version:', SW_VERSION);
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(OFFLINE_CACHE).then(cache => cache.add(OFFLINE_URL))
+    caches.open(OFFLINE_CACHE).then(async (cache) => {
+      try {
+        const resp = await fetch(OFFLINE_URL, { cache: 'no-store' });
+        if (resp.ok) {
+          await cache.put(OFFLINE_URL, resp);
+          return;
+        }
+      } catch (e) {
+        console.warn('[Eclipse SW] offline.html fetch failed, using inline fallback');
+      }
+      // Cache an inline fallback so install never fails
+      const fallback = new Response(
+        '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Offline</title></head><body style="background:#0a0a0f;color:white;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;"><div style="text-align:center;"><h1>You\'re Offline</h1><p>Please check your connection and try again.</p><button onclick="location.reload()" style="padding:10px 20px;background:#7c3aed;color:white;border:none;border-radius:8px;cursor:pointer;">Retry</button></div></body></html>',
+        { headers: { 'Content-Type': 'text/html' } }
+      );
+      await cache.put(OFFLINE_URL, fallback);
+    })
   );
 });
 
