@@ -245,6 +245,18 @@ export default {
         return fetchOrigin(request, "pass-store-miss");
       }
 
+      // PWA bootstrap files — always pass through with no-cache headers
+      var PWA_BOOTSTRAP = ["/sw.js", "/custom-sw.js", "/registerSW.js", "/offline.html", "/manifest.webmanifest", "/manifest-admin.json"];
+      if (PWA_BOOTSTRAP.indexOf(path) !== -1) {
+        var pwaRes = await fetchOrigin(request, "pass-pwa-bootstrap");
+        var pwaHeaders = new Headers(pwaRes.headers);
+        if (path.endsWith(".js") || path === "/offline.html") {
+          pwaHeaders.set("Cache-Control", "no-store, no-cache, must-revalidate");
+          pwaHeaders.set("Pragma", "no-cache");
+        }
+        return new Response(pwaRes.body, { status: pwaRes.status, headers: pwaHeaders });
+      }
+
       // Static assets — always pass through
       if (STATIC_ASSET_RE.test(path) || path.startsWith("/assets/")) {
         return fetchOrigin(request, "pass-asset");
