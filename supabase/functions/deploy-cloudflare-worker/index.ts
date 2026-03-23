@@ -633,6 +633,54 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ─── POST-DEPLOY HEALTH CHECKS ───────────────────────────────
+    const ts = Date.now();
+    const healthChecks: Record<string, unknown> = {};
+    
+    // Wait for worker propagation
+    await new Promise(r => setTimeout(r, 3000));
+    
+    // Check sw.js
+    try {
+      const swResp = await fetch(`https://eclipserblx.com/sw.js?cb=${ts}`, {
+        headers: { "User-Agent": "Eclipse-Deploy-Check/1.0" },
+        redirect: "manual",
+      });
+      const swBody = await swResp.text();
+      healthChecks["sw.js"] = {
+        status: swResp.status,
+        hasLatestCache: swBody.includes("eclipse-v6") || swBody.includes("eclipse-v5"),
+        noIndexHtmlPrecache: !swBody.includes('"index.html"'),
+        contentLength: swBody.length,
+      };
+    } catch (e) {
+      healthChecks["sw.js"] = { error: (e as Error).message };
+    }
+    
+    // Check offline.html
+    try {
+      const offResp = await fetch(`https://eclipserblx.com/offline.html?cb=${ts}`, {
+        headers: { "User-Agent": "Eclipse-Deploy-Check/1.0" },
+        redirect: "manual",
+      });
+      healthChecks["offline.html"] = { status: offResp.status, ok: offResp.status === 200 };
+      await offResp.text();
+    } catch (e) {
+      healthChecks["offline.html"] = { error: (e as Error).message };
+    }
+    
+    // Check homepage
+    try {
+      const homeResp = await fetch(`https://eclipserblx.com/?cb=${ts}`, {
+        headers: { "User-Agent": "Eclipse-Deploy-Check/1.0" },
+        redirect: "manual",
+      });
+      healthChecks["homepage"] = { status: homeResp.status, ok: homeResp.status < 500 };
+      await homeResp.text();
+    } catch (e) {
+      healthChecks["homepage"] = { error: (e as Error).message };
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -642,6 +690,7 @@ Deno.serve(async (req) => {
         waf,
         redirect,
         sbfm,
+        healthChecks,
         dns: dnsResults,
         pagesProjects,
         pageRules: pageRules.map((r: any) => ({
