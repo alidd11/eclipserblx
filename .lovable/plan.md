@@ -1,41 +1,65 @@
 
+Issue confirmed and explicit root cause:
+1) Custom domain is still serving stale Service Worker bootstrap (`/sw.js` = `eclipse-v4`) while published origin serves `eclipse-v5`.
+2) `offline.html` on custom domain is not reliably served by origin pathing (seen as cached 404 previously; uncached probes now hitting 522).
+3) This is now infrastructure/cache lifecycle, not auth bootstrap: there are no recent `bad_jwt`/`missing sub claim` auth errors.
+4) There is a high-risk ops gap: the `test-worker-alive` function can overwrite the production worker script and cause origin-loop/522 behavior on uncached paths.
 
-## Fix: Cloudflare Worker Internal Fetch Cache for SW Bootstrap Files
+Implementation plan (to fully resolve disruption):
 
-### Root cause (final layer)
-The Cloudflare Worker code correctly passes through `/sw.js` to the origin. The origin correctly serves `eclipse-v5`. **But** Cloudflare's `fetch()` API inside Workers uses its own edge cache by default. The previous stale `/sw.js` is cached in this internal layer, so even after a zone-level cache purge, the Worker's `fetch()` still returns the old cached response.
+1) Emergency stabilization (first)
+- Redeploy the full production Cloudflare worker via `deploy-cloudflare-worker` immediately (restore known-good script pathing).
+- Run `cloudflare-pro-optimize` and `purge-cloudflare-cache` in sequence.
+- Verify uncached probes:
+  - `https://eclipserblx.com/sw.js?cb=<ts>` returns 200 and `eclipse-v5` (or newer).
+  - `https://eclipserblx.com/offline.html?cb=<ts>` returns 200 (not 404/522).
+  - Product route uncached probe returns 200 (no 522).
 
-### Fix
-**File: `supabase/functions/deploy-cloudflare-worker/index.ts`**
+2) Remove the infrastructure footgun
+- Update `supabase/functions/test-worker-alive/index.ts` so it no longer deploys/replaces the production worker.
+- Convert it to read-only diagnostics (header checks only), or hard-block it behind an explicit `allow_mutation` guard that defaults to false.
+- Apply same safety policy to any other “test” functions that can mutate worker scripts/routes.
 
-In the PWA bootstrap handler (lines 248-258 of the generated worker script), change the `fetchOrigin` call to a direct `fetch()` with `cf: { cacheTtl: 0 }` to bypass Cloudflare's internal edge cache for these critical files.
+3) Make worker deployment self-verifying (atomic deploy)
+- Update `supabase/functions/deploy-cloudflare-worker/index.ts` to include post-deploy health checks before returning success:
+  - `sw.js?cb=<ts>` contains expected cache prefix (`eclipse-v5+`) and excludes precached `index.html`.
+  - `offline.html?cb=<ts>` returns 200.
+  - critical route (`/products/<known-id>?cb=<ts>`) returns non-5xx.
+- If checks fail, return failure status with diagnostics instead of false-positive “success”.
 
-Replace the current PWA bootstrap block with:
-```javascript
-if (PWA_BOOTSTRAP.indexOf(path) !== -1) {
-  var pwaOriginUrl = ORIGIN_URL + url.pathname + url.search;
-  var pwaReq = buildOriginRequest(request, pwaOriginUrl, hostname);
-  // Bypass CF edge cache entirely for SW bootstrap files
-  var pwaRes = await fetch(pwaReq, { cf: { cacheTtl: 0, cacheEverything: false } });
-  var pwaHeaders = new Headers(pwaRes.headers);
-  pwaHeaders.set("X-Eclipse-Worker", "pass-pwa-bootstrap");
-  if (path.endsWith(".js") || path === "/offline.html") {
-    pwaHeaders.set("Cache-Control", "no-store, no-cache, must-revalidate");
-    pwaHeaders.set("Pragma", "no-cache");
-  }
-  return new Response(pwaRes.body, { status: pwaRes.status, headers: pwaHeaders });
-}
-```
+4) Harden cache policy against stale bootstrap pinning
+- Keep/ensure explicit no-cache bypass for:
+  - `/sw.js`, `/custom-sw.js`, `/registerSW.js`, `/offline.html`, `/manifest.webmanifest`, `/manifest-admin.json`.
+- Ensure aggressive cache rule excludes all above files (including manifests/offline).
+- Keep hashed `/assets/*` aggressive caching intact.
 
-### After code change
-1. Redeploy the Cloudflare Worker (run `deploy-cloudflare-worker`)
-2. Purge cache again (run `purge-cloudflare-cache`)
-3. Verify `eclipserblx.com/sw.js` shows `eclipse-v5`
+5) Force client-side migration safely
+- Bump PWA cache namespace and custom SW version together (next patch bump, e.g. `eclipse-v6` + `SW_VERSION 1.1.1`) so surviving clients get a hard cache boundary.
+- Keep resilient install fallback for offline page.
+- Optionally bump `app_version.version` (without permanent `force_update`) to help fresh-version convergence once worker path is stable.
 
-### Why this is the final fix
-- Origin confirmed serving `eclipse-v5` ✅
-- Worker script confirmed containing PWA passthrough ✅  
-- Worker confirmed deployed ✅
-- Zone cache confirmed purged ✅
-- Only remaining cache layer: Cloudflare Worker's internal `fetch()` cache — this fix bypasses it
+6) Validation matrix (must pass before closure)
+- Custom domain checks:
+  - `/sw.js` and `/sw.js?cb=` both return same latest worker generation.
+  - `/offline.html` and `/offline.html?cb=` both return 200.
+  - `/products/13?cb=` returns 200.
+- UX checks:
+  - Safari normal tab cold open x5
+  - installed customer PWA cold open x5
+  - installed admin PWA cold open x5
+- Acceptance:
+  - no black screen,
+  - no startup 5xx,
+  - no stale-v4 worker on custom domain.
 
+Files to update:
+- `supabase/functions/deploy-cloudflare-worker/index.ts`
+- `supabase/functions/cloudflare-pro-optimize/index.ts` (if any rule gaps remain)
+- `supabase/functions/test-worker-alive/index.ts`
+- `public/custom-sw.js` (version bump only, if required by migration step)
+- `vite.config.ts` (cacheId bump only, if required by migration step)
+
+Why this plan will resolve it:
+- It fixes the actual failing layer (custom-domain worker + edge cache), not already-stable auth logic.
+- It adds deployment-time verification so this exact stale/false-success outage can’t silently recur.
+- It removes the main operational hazard that can re-break production during diagnostics.
