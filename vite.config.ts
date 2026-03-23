@@ -99,7 +99,9 @@ export default defineConfig(({ mode }) => ({
         cleanupOutdatedCaches: true,
         // Bump this to force workbox to invalidate its precache on next deploy
         cacheId: 'eclipse-v6',
-        globPatterns: ["**/*.{js,css,ico,png,svg,woff,woff2}"],
+        // Only precache static assets — JS/CSS are content-hashed and served fresh from network.
+        // Precaching JS/CSS causes stale chunk errors after deploys on iOS Safari.
+        globPatterns: ["**/*.{ico,png,svg,woff,woff2}"],
         // Navigation is handled by custom-sw.js (network-first)
         // Prevent Workbox from intercepting ANY navigation request
         navigateFallbackDenylist: [/./],

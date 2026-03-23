@@ -89,12 +89,15 @@ function safeSet(k: string, v: string) {
 // ── Cache clearing ─────────────────────────────────────────────────
 
 async function clearRuntimeCaches(): Promise<void> {
-  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+  // Unregister all service workers to prevent stale chunk serving
+  if ('serviceWorker' in navigator) {
     try {
-      navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' });
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((r) => r.unregister()));
     } catch { /* ignore */ }
   }
 
+  // Delete all caches
   if ('caches' in window) {
     try {
       const names = await caches.keys();
