@@ -142,6 +142,7 @@ const AdminDisputesRefundsHub = lazy(() => import("@/pages/admin/DisputesRefunds
 const AdminAffiliateHub = lazy(() => import("@/pages/admin/AffiliateHub"));
 const AdminPlatformLedger = lazy(() => import("@/pages/admin/PlatformLedger"));
 const AdminCustomDomains = lazy(() => import("@/pages/admin/CustomDomains"));
+const AdminDailyReport = lazy(() => import("@/pages/admin/DailyReport"));
 
 // Recruiter page
 const Recruiter = lazy(() => import("@/pages/Recruiter"));
@@ -430,6 +431,7 @@ export function AppRoutes() {
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
         {/* Finance Hub routes */}
         <Route path="/admin/revenue" element={<AdminRevenueHub />} />
+        <Route path="/admin/daily-report" element={<AdminDailyReport />} />
         <Route path="/admin/payouts" element={<AdminPayoutsHub />} />
         <Route path="/admin/disputes-refunds" element={<AdminDisputesRefundsHub />} />
         <Route path="/admin/affiliate-hub" element={<AdminAffiliateHub />} />
