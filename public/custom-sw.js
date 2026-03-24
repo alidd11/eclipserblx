@@ -7,8 +7,6 @@ const OFFLINE_URL = '/offline.html';
 
 // Caches that should be purged on every activation (stale API data causes boot failures)
 const PURGE_CACHES = ['supabase-cache'];
-const OFFLINE_CACHE = 'offline-v1';
-const OFFLINE_URL = '/offline.html';
 
 // Clear ALL caches on activation - full reset for every new SW version
 const clearOldCaches = async () => {
