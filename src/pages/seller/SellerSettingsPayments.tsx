@@ -328,7 +328,7 @@ export default function SellerSettingsPayments() {
                     onClick={() => setupStripeConnect.mutate()}
                     disabled={setupStripeConnect.isPending}
                   >
-                    {setupStripeConnect.isPending ? 'Loading...' : 'Connect Stripe'}
+                    {setupStripeConnect.isPending ? 'Loading...' : 'Set Up Payouts'}
                   </Button>
                 </div>
               )}
