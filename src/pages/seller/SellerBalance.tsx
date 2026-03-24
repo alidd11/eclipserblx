@@ -419,7 +419,11 @@ export default function SellerBalance() {
                   </div>
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Method</span>
-                    <span>Stripe Connect</span>
+                    <span>
+                      {store?.paymentDetails?.payout_method === 'paypal' ? 'PayPal' :
+                       store?.paymentDetails?.payout_method === 'bank_transfer' ? 'Bank Transfer' :
+                       store?.paymentDetails?.payouts_enabled ? 'Direct Bank Payout' : 'Not configured'}
+                    </span>
                   </div>
                 </div>
               </div>
