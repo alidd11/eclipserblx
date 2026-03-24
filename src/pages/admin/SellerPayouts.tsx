@@ -442,7 +442,7 @@ export default function SellerPayouts() {
                         )}
                         {isBankMethod(getPayoutMethod(payout)) && (
                           <span className="ml-2">
-                            Bank: {payout.stores?.store_payment_details?.[0]?.bank_name || 'Transfer'}
+                            Bank: {getPaymentDetails(payout)?.bank_name || 'Transfer'}
                           </span>
                         )}
                       </div>
