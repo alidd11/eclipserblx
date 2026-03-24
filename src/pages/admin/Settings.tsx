@@ -48,7 +48,7 @@ export default function AdminSettings() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Desktop tabs */}
           <div className="hidden sm:block">
-            <TabsList className={`grid w-full max-w-xl grid-cols-${visibleTabs.length}`}>
+            <TabsList className={`grid w-full max-w-xl ${visibleTabs.length === 4 ? 'grid-cols-4' : 'grid-cols-3'}`}>
               {visibleTabs.map(t => (
                 <TabsTrigger key={t.value} value={t.value} className="gap-2">
                   <t.icon className="h-4 w-4" />
