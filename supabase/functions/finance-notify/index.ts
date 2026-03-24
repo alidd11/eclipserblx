@@ -57,7 +57,7 @@ serve(async (req) => {
       customerId = profile?.customer_id || null;
     }
 
-    // Fetch all finance channel IDs
+    // Fetch all finance channel IDs (stored as "ch_<id>" to prevent JSONB precision loss)
     const { data: settings } = await supabase
       .from("settings")
       .select("key, value")
@@ -66,8 +66,8 @@ serve(async (req) => {
     const channels: Record<string, string> = {};
     for (const s of settings ?? []) {
       const name = s.key.replace("finance_channel_", "");
-      let val = s.value;
-      try { val = JSON.parse(val); } catch { /* already plain string */ }
+      let val = typeof s.value === "string" ? s.value : String(s.value);
+      val = val.replace(/^"|"$/g, "").replace(/^ch_/, "");
       channels[name] = val;
     }
 
