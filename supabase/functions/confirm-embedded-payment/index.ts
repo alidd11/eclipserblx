@@ -80,7 +80,7 @@ serve(async (req) => {
         ? tierData.stripe_annual_price_id 
         : tierData.stripe_monthly_price_id;
 
-      if (!priceId) throw new Error("No Stripe price configured for this tier");
+      if (!priceId) throw new Error("No price configured for this tier");
 
       // Set the payment method as default for the customer
       await stripe.customers.update(setupIntent.customer as string, {
