@@ -26,11 +26,11 @@ serve(async (req) => {
     const { data: setting } = await supabase
       .from("settings")
       .select("value")
-      .eq("key", "finance_webhook_sales")
+      .eq("key", "finance_webhook_daily_report")
       .single();
 
     if (!setting?.value) {
-      return new Response(JSON.stringify({ error: "No sales webhook configured" }), {
+      return new Response(JSON.stringify({ error: "No daily report webhook configured. Add a 'finance_webhook_daily_report' setting." }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
