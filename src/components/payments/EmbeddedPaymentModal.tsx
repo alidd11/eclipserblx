@@ -265,7 +265,7 @@ export function EmbeddedPaymentModal({
     if (!open) return;
 
     if (!stripePromise) {
-      setError('Payments are temporarily unavailable (Stripe is not configured).');
+      setError('Payments are temporarily unavailable. Please try again later.');
       return;
     }
 
