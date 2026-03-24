@@ -96,5 +96,15 @@ export async function processRefund(
     });
   }
 
+  // Finance server notification (fire-and-forget)
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    await fetch(`${supabaseUrl}/functions/v1/finance-notify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
+      body: JSON.stringify({ type: "refund_processed", data: { orderId, amount: refundAmount / 100, customerEmail: order.customer_email, reason: isFullRefund ? "Full refund" : "Partial refund" } }),
+    });
+  } catch { /* non-fatal */ }
+
   LOG("Refund processing complete", { orderId, isFullRefund });
 }
