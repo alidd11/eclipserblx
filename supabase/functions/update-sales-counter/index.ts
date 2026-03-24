@@ -111,7 +111,7 @@ serve(async (req) => {
       maximumFractionDigits: 2,
     });
 
-    const newName = `\uD83D\uDCB0 Sales: \u00A3${formatted}`;
+    const newName = `Total Sales : \u00A3${formatted}`;
     LOG("Updating channel name", { channelId, newName, totalSales });
 
     // Update channel name
