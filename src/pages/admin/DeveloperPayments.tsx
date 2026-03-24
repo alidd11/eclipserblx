@@ -60,6 +60,15 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
  
  const paymentTypes = ['salary', 'commission', 'bonus', 'freelance', 'other'];
  
+const safeFormatDate = (value: string | null | undefined, pattern: string) => {
+  if (!value) return '—';
+  try {
+    return format(new Date(value), pattern);
+  } catch {
+    return '—';
+  }
+};
+
 export default function DeveloperPayments() {
   const isInsideHub = useIsInsideHub();
   const { user } = useAuth();
