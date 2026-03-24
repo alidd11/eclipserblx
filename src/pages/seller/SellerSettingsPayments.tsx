@@ -352,20 +352,20 @@ export default function SellerSettingsPayments() {
                 onValueChange={(value) => setPayoutMethod(value as 'stripe' | 'paypal' | 'bank_transfer')}
                 className="space-y-3"
               >
-                <div className={`flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors ${!connectStatus?.canReceivePayments && !store?.paymentDetails?.stripe_account_id ? 'opacity-60' : ''}`}>
-                  <RadioGroupItem value="stripe" id="stripe" className="mt-1" disabled={!connectStatus?.canReceivePayments && !store?.paymentDetails?.stripe_account_id} />
-                  <label htmlFor="stripe" className="flex-1 cursor-pointer">
-                    <p className="font-medium">Stripe Connect (Recommended)</p>
-                    <p className="text-sm text-muted-foreground">
-                      Automatic payouts directly to your bank. Fastest and most reliable.
-                    </p>
-                    {!connectStatus?.canReceivePayments && !store?.paymentDetails?.stripe_account_id && (
-                      <p className="text-xs text-destructive mt-1">
-                        Connect your Stripe account above before selecting this method.
-                      </p>
-                    )}
-                  </label>
-                </div>
+                 <div className={`flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors ${!connectStatus?.canReceivePayments && !store?.paymentDetails?.stripe_account_id ? 'opacity-60' : ''}`}>
+                   <RadioGroupItem value="stripe" id="stripe" className="mt-1" disabled={!connectStatus?.canReceivePayments && !store?.paymentDetails?.stripe_account_id} />
+                   <label htmlFor="stripe" className="flex-1 cursor-pointer">
+                     <p className="font-medium">Direct Bank Payout (Recommended)</p>
+                     <p className="text-sm text-muted-foreground">
+                       Automatic payouts directly to your bank. Fastest and most reliable.
+                     </p>
+                     {!connectStatus?.canReceivePayments && !store?.paymentDetails?.stripe_account_id && (
+                       <p className="text-xs text-destructive mt-1">
+                         Set up direct payouts above before selecting this method.
+                       </p>
+                     )}
+                   </label>
+                 </div>
                 <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                   <RadioGroupItem value="paypal" id="paypal" className="mt-1" />
                   <label htmlFor="paypal" className="flex-1 cursor-pointer">
