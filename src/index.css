@@ -619,7 +619,7 @@
   
   html {
     @apply bg-background text-foreground;
-    overscroll-behavior: none;
+    overscroll-behavior-x: none;
     overflow-x: hidden;
     width: 100%;
     max-width: 100%;
@@ -639,8 +639,7 @@
     -webkit-user-select: none;
     -webkit-touch-callout: none;
     user-select: none;
-    overscroll-behavior: none;
-    overscroll-behavior-y: contain;
+    overscroll-behavior-x: none;
     background-color: hsl(var(--background));
     padding-bottom: 0;
     box-sizing: border-box;
