@@ -34,6 +34,11 @@ import {
 import { format, formatDistanceToNow } from "date-fns";
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
+const safeFmt = (dateStr: string | null | undefined, fmt_str: string) => {
+  if (!dateStr) return '—';
+  try { return format(new Date(dateStr), fmt_str); } catch { return '—'; }
+};
+
 export default function SellerPayouts() {
   const isInsideHub = useIsInsideHub();
   const [searchParams] = useSearchParams();
