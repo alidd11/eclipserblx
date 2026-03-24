@@ -241,6 +241,14 @@ export default function SellerSettingsPayments() {
         .eq('store_id', store.id);
 
       if (error) throw error;
+
+      // Also sync payout_method to the stores table
+      const { error: storeError } = await supabase
+        .from('stores')
+        .update({ payout_method: method })
+        .eq('id', store.id);
+
+      if (storeError) throw storeError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seller-store'] });
