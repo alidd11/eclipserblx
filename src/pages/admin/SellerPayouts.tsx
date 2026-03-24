@@ -188,15 +188,18 @@ export default function SellerPayouts() {
   };
 
   const getPayoutMethodBadge = (payout: any) => {
-    const method = payout.stores?.payout_method;
-    if (method === 'bank') {
-      return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Bank (Wise)</Badge>;
+    const method = payout.payout_method || payout.stores?.payout_method;
+    if (method === 'bank' || method === 'bank_transfer') {
+      return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Bank Transfer</Badge>;
     }
     if (method === 'paypal') {
       return <Badge variant="secondary">PayPal</Badge>;
     }
     return <Badge variant="default">Stripe</Badge>;
   };
+
+  const getPayoutMethod = (payout: any) => payout.payout_method || payout.stores?.payout_method;
+  const isBankMethod = (method: string | undefined) => method === 'bank' || method === 'bank_transfer';
 
   const getEstimatedArrival = (payout: any) => {
     if (payout.funding_requested_at) {
