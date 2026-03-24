@@ -294,8 +294,17 @@ async function sendOrderNotifications(
   try { await fetch(`${supabaseUrl}/functions/v1/send-order-discord-notification`, { method: "POST", headers, body: JSON.stringify({ orderId: ctx.orderId, userId: ctx.userId, customerEmail: ctx.customerEmail, productNames: ctx.items.map((i: any) => i.name), total: ctx.total }) }); } catch {}
   try { await fetch(`${supabaseUrl}/functions/v1/process-referral`, { method: "POST", headers, body: JSON.stringify({ userId: ctx.userId, orderId: ctx.orderId, orderTotal: ctx.total }) }); } catch {}
 
-  // Finance server notification (fire-and-forget)
-  try { await fetch(`${supabaseUrl}/functions/v1/finance-notify`, { method: "POST", headers, body: JSON.stringify({ type: "new_sale", data: { orderId: ctx.orderId, userId: ctx.userId, productNames: ctx.items.map((i: any) => i.name), total: ctx.total } }) }); } catch {}
+  // Finance server notification with real store data
+  try {
+    let storeName: string | null = null;
+    const productIds = ctx.items.map((i: any) => i.id).filter(Boolean);
+    if (productIds.length > 0) {
+      const { data: prod } = await supabase.from("products").select("stores(name)").eq("id", productIds[0]).maybeSingle();
+      const s = (prod as any)?.stores;
+      storeName = Array.isArray(s) ? s[0]?.name : s?.name;
+    }
+    await fetch(`${supabaseUrl}/functions/v1/finance-notify`, { method: "POST", headers, body: JSON.stringify({ type: "new_sale", data: { orderId: ctx.orderId, userId: ctx.userId, productNames: ctx.items.map((i: any) => i.name), total: ctx.total, storeName: storeName || "Unknown" } }) });
+  } catch {}
   // Update sales counter voice channel (fire-and-forget)
   try { await fetch(`${supabaseUrl}/functions/v1/update-sales-counter`, { method: "POST", headers, body: JSON.stringify({}) }); } catch {}
 }
