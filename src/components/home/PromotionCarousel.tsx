@@ -16,17 +16,6 @@ export function PromotionCarousel() {
 
   const promotions = [
     {
-      id: 'ip-shield',
-      title: 'PROTECT YOUR CREATIONS WITH IP SHIELD',
-      description: 'DMCA takedowns, copy detection & ownership monitoring for Roblox creators.',
-      link: '/ip-shield',
-      icon: Shield,
-      accent: 'from-blue-500/15 to-cyan-500/5',
-      iconBg: 'bg-blue-500/10',
-      iconColor: 'text-blue-400',
-      dotColor: 'bg-blue-400',
-    },
-    {
       id: 'affiliate',
       title: t('landing.affiliateTitle'),
       description: t('landing.affiliateDesc'),
