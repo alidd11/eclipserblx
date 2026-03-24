@@ -285,10 +285,10 @@ export default function SellerSettingsPayments() {
                 <div className="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
                   <CheckCircle className="h-6 w-6 text-green-500" />
                   <div className="flex-1">
-                    <p className="font-medium">Stripe Connect Active</p>
-                    <p className="text-sm text-muted-foreground">
-                      Your account is set up to receive payouts
-                    </p>
+                     <p className="font-medium">Direct Payouts Active</p>
+                     <p className="text-sm text-muted-foreground">
+                       Your account is set up to receive payouts directly to your bank
+                     </p>
                   </div>
                   <Button variant="outline" size="sm" asChild>
                     <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer">
