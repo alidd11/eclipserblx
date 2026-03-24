@@ -425,7 +425,7 @@ export default function SellerPayouts() {
                         {getPayoutMethodBadge(payout)}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        <span>{format(new Date(payout.created_at), "dd MMM yyyy")}</span>
+                        <span>{safeFmt(payout.created_at, "dd MMM yyyy")}</span>
                         {getPayoutMethod(payout) === 'paypal' && (
                           <span className="ml-2">
                             PayPal: {payout.paypal_email || payout.stores?.store_payment_details?.[0]?.paypal_email || "Not set"}
