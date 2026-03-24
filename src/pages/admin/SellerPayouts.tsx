@@ -358,7 +358,7 @@ export default function SellerPayouts() {
                           {(() => {
                             const method = getPayoutMethod(payout);
                             if (method === 'paypal')
-                              return payout.paypal_email || payout.stores?.store_payment_details?.[0]?.paypal_email || "Not set";
+                              return payout.paypal_email || getPaymentDetails(payout)?.paypal_email || "Not set";
                             if (isBankMethod(method))
                               return "Bank Transfer";
                             if (method === 'stripe')
