@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useEffect, useCallback } from "react";
+import { Suspense, useState, useEffect, useCallback } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useStoreDomain } from "@/hooks/useStoreDomain";
 import { Skeleton } from "@/components/ui/skeleton";
