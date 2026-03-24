@@ -301,10 +301,10 @@ export default function SellerSettingsPayments() {
                 <div className="flex items-center gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                   <AlertCircle className="h-6 w-6 text-yellow-500" />
                   <div className="flex-1">
-                    <p className="font-medium">Setup Incomplete</p>
-                    <p className="text-sm text-muted-foreground">
-                      Please complete your Stripe Connect onboarding
-                    </p>
+                     <p className="font-medium">Setup Incomplete</p>
+                     <p className="text-sm text-muted-foreground">
+                       Please complete your payout account onboarding to start receiving payments
+                     </p>
                   </div>
                   <Button 
                     variant="default"
