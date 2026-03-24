@@ -136,11 +136,17 @@ export function LandingHero() {
               {t('landing.description')}
             </p>
 
-            <div className="mb-5">
+            <div className="space-y-2.5 mb-5">
               <Link to="/products" className="block">
                 <Button size="sm" className="w-full h-10 text-sm font-semibold uppercase tracking-wide">
                   Browse Marketplace
                   <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Link to="/seller" className="block">
+                <Button size="sm" variant="outline" className="w-full h-10 text-sm font-semibold uppercase tracking-wide">
+                  <Store className="mr-2 h-4 w-4" />
+                  Open a Store
                 </Button>
               </Link>
             </div>
