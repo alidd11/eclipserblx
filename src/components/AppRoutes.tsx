@@ -469,7 +469,7 @@ export function AppRoutes() {
         <Route path="/admin/advertisement-analytics" element={<AdminAdvertisementAnalytics />} />
         <Route path="/admin/gift-credits" element={<AdminGiftCredits />} />
         <Route path="/admin/ip-reports" element={<AdminIPReports />} />
-        <Route path="/admin/ip-shield-custom-plans" element={<AdminIPShieldCustomPlans />} />
+        
         <Route path="/admin/developer-submissions" element={<AdminDeveloperSubmissions />} />
         <Route path="/admin/developer-payments" element={<Navigate to="/admin/payouts?tab=developer" replace />} />
         <Route path="/admin/developer-payments/:id" element={<AdminDeveloperPaymentDetail />} />

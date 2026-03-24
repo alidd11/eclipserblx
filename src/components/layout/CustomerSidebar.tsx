@@ -146,7 +146,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: t('sidebar.allProducts'), icon: Grid3X3, href: '/products' },
         { title: t('sidebar.featured'), icon: Star, href: '/featured' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
-        { title: 'IP Shield', icon: Shield, href: '/ip-shield' },
+        
         { title: t('sidebar.advertise'), icon: Megaphone, href: '/advertise' },
       ],
     },

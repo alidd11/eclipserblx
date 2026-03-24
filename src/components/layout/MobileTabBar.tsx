@@ -13,7 +13,7 @@ const TAB_ITEMS: { icon: typeof Home; label: string; href: string; showBadge?: b
 ];
 
 /** Hidden routes where the tab bar should not appear */
-const HIDDEN_PREFIXES = ['/admin', '/seller', '/ip-shield/dashboard', '/ip-staff', '/auth', '/checkout', '/guard'];
+const HIDDEN_PREFIXES = ['/admin', '/seller', '/auth', '/checkout', '/guard'];
 
 export function MobileTabBar() {
   const location = useLocation();
