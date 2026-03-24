@@ -816,6 +816,7 @@ Deno.serve(async (req) => {
           } catch { /* non-fatal */ }
         } catch (_) { /* best effort */ }
       }
+    }
 
     logStep(`Run complete`, results);
 
