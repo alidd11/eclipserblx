@@ -261,9 +261,14 @@ export default {
         return new Response(pwaRes.body, { status: pwaRes.status, headers: pwaHeaders });
       }
 
-      // Static assets — always pass through
+      // Hashed assets — immutable cache (content-addressed filenames change per build)
       if (STATIC_ASSET_RE.test(path) || path.startsWith("/assets/")) {
-        return fetchOrigin(request, "pass-asset");
+        var assetRes = await fetchOrigin(request, "pass-asset");
+        var assetHeaders = new Headers(assetRes.headers);
+        if (/\\/assets\\/[^/]+\\.[a-f0-9]{8,}\\.(js|css)$/i.test(path)) {
+          assetHeaders.set("Cache-Control", "public, max-age=31536000, immutable");
+        }
+        return new Response(assetRes.body, { status: assetRes.status, headers: assetHeaders });
       }
 
       // Route validation: return 404 for unknown paths on main domain
