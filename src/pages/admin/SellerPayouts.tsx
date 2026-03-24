@@ -50,7 +50,7 @@ export default function SellerPayouts() {
         .from("seller_payouts")
         .select(`
           *,
-          stores (name, store_id, payout_method, store_payment_details (paypal_email)),
+          stores (name, store_id, payout_method, store_payment_details (paypal_email, bank_name, bank_account_holder, bank_account_number, bank_swift_bic, bank_country, bank_routing_number)),
           profiles!seller_payouts_seller_id_fkey (display_name, email)
         `)
         .order("created_at", { ascending: false });
@@ -188,15 +188,18 @@ export default function SellerPayouts() {
   };
 
   const getPayoutMethodBadge = (payout: any) => {
-    const method = payout.stores?.payout_method;
-    if (method === 'bank') {
-      return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Bank (Wise)</Badge>;
+    const method = payout.payout_method || payout.stores?.payout_method;
+    if (method === 'bank' || method === 'bank_transfer') {
+      return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Bank Transfer</Badge>;
     }
     if (method === 'paypal') {
       return <Badge variant="secondary">PayPal</Badge>;
     }
     return <Badge variant="default">Stripe</Badge>;
   };
+
+  const getPayoutMethod = (payout: any) => payout.payout_method || payout.stores?.payout_method;
+  const isBankMethod = (method: string | undefined) => method === 'bank' || method === 'bank_transfer';
 
   const getEstimatedArrival = (payout: any) => {
     if (payout.funding_requested_at) {
@@ -315,13 +318,16 @@ export default function SellerPayouts() {
                           {getPayoutMethodBadge(payout)}
                         </TableCell>
                         <TableCell className="text-sm">
-                          {payout.stores?.payout_method === 'paypal' 
-                            ? payout.stores?.store_payment_details?.[0]?.paypal_email || payout.stores?.store_payment_details?.paypal_email || "Not set"
-                            : payout.stores?.payout_method === 'bank' 
-                              ? "Bank Transfer"
-                              : payout.stores?.payout_method === 'stripe' 
-                                ? "Automatic via Stripe"
-                                : "Not configured"}
+                          {(() => {
+                            const method = getPayoutMethod(payout);
+                            if (method === 'paypal')
+                              return payout.paypal_email || payout.stores?.store_payment_details?.[0]?.paypal_email || "Not set";
+                            if (isBankMethod(method))
+                              return "Bank Transfer";
+                            if (method === 'stripe')
+                              return "Automatic via Stripe";
+                            return "Not configured";
+                          })()}
                         </TableCell>
                         <TableCell className="text-sm">
                           {format(new Date(payout.created_at), "dd MMM yyyy")}
@@ -392,9 +398,14 @@ export default function SellerPayouts() {
                       </div>
                       <div className="text-xs text-muted-foreground">
                         <span>{format(new Date(payout.created_at), "dd MMM yyyy")}</span>
-                        {payout.stores?.payout_method === 'paypal' && (
+                        {getPayoutMethod(payout) === 'paypal' && (
                           <span className="ml-2">
-                            PayPal: {payout.stores?.store_payment_details?.[0]?.paypal_email || payout.stores?.store_payment_details?.paypal_email || "Not set"}
+                            PayPal: {payout.paypal_email || payout.stores?.store_payment_details?.[0]?.paypal_email || "Not set"}
+                          </span>
+                        )}
+                        {isBankMethod(getPayoutMethod(payout)) && (
+                          <span className="ml-2">
+                            Bank: {payout.stores?.store_payment_details?.[0]?.bank_name || 'Transfer'}
                           </span>
                         )}
                       </div>
@@ -456,16 +467,32 @@ export default function SellerPayouts() {
                   <span className="text-muted-foreground">Payout Method:</span>
                   {selectedPayout && getPayoutMethodBadge(selectedPayout)}
                 </div>
-                {selectedPayout?.stores?.payout_method === 'paypal' && (
+                {getPayoutMethod(selectedPayout) === 'paypal' && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">PayPal Email:</span>
                     <span className="font-medium">
-                      {selectedPayout?.stores?.store_payment_details?.[0]?.paypal_email || selectedPayout?.stores?.store_payment_details?.paypal_email || "Not set"}
+                      {selectedPayout?.paypal_email || selectedPayout?.stores?.store_payment_details?.[0]?.paypal_email || "Not set"}
                     </span>
                   </div>
                 )}
-                {selectedPayout?.stores?.payout_method === 'bank' && (
+                {isBankMethod(getPayoutMethod(selectedPayout)) && (
                   <>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Bank:</span>
+                      <span className="font-medium">{selectedPayout?.stores?.store_payment_details?.[0]?.bank_name || 'N/A'} ({selectedPayout?.stores?.store_payment_details?.[0]?.bank_country || 'N/A'})</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Account Holder:</span>
+                      <span className="font-medium">{selectedPayout?.stores?.store_payment_details?.[0]?.bank_account_holder || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">IBAN:</span>
+                      <span className="font-medium font-mono text-xs">{selectedPayout?.stores?.store_payment_details?.[0]?.bank_account_number || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">SWIFT/BIC:</span>
+                      <span className="font-medium font-mono text-xs">{selectedPayout?.stores?.store_payment_details?.[0]?.bank_swift_bic || 'N/A'}</span>
+                    </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Transfer via:</span>
                       <span className="font-medium text-blue-400">Wise International Transfer</span>
@@ -503,7 +530,7 @@ export default function SellerPayouts() {
                 Reject
               </Button>
               
-              {selectedPayout?.stores?.payout_method === 'bank' ? (
+              {isBankMethod(getPayoutMethod(selectedPayout)) ? (
                 <Button
                   variant="default"
                   disabled={wisePayoutMutation.isPending || processMutation.isPending}
