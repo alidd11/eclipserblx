@@ -76,7 +76,7 @@ serve(async (req) => {
         method: "POST",
         headers: discordHeaders,
         body: JSON.stringify({
-          name: "\uD83D\uDCB0 Sales: \u00A30.00",
+          name: "Total Sales : \u00A30.00",
           type: 2, // Voice channel
           parent_id: eclipseCategory.id,
           permission_overwrites: permOverwrites,
@@ -111,7 +111,7 @@ serve(async (req) => {
       maximumFractionDigits: 2,
     });
 
-    const newName = `\uD83D\uDCB0 Sales: \u00A3${formatted}`;
+    const newName = `Total Sales : \u00A3${formatted}`;
     LOG("Updating channel name", { channelId, newName, totalSales });
 
     // Update channel name
