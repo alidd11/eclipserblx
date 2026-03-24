@@ -127,7 +127,7 @@ const AdminDisputes = lazyWithRetry(() => import("@/pages/admin/Disputes"));
 const AdminAdvertisementAnalytics = lazyWithRetry(() => import("@/pages/admin/AdvertisementAnalytics"));
 const AdminGiftCredits = lazyWithRetry(() => import("@/pages/admin/GiftCredits"));
 const AdminIPReports = lazyWithRetry(() => import("@/pages/admin/IPReports"));
-const AdminIPShieldCustomPlans = lazyWithRetry(() => import("@/pages/admin/IPShieldCustomPlans"));
+
 const AdminDeveloperSubmissions = lazyWithRetry(() => import("@/pages/admin/DeveloperSubmissions"));
 const AdminDeveloperPayments = lazyWithRetry(() => import("@/pages/admin/DeveloperPayments"));
 const AdminDeveloperPaymentDetail = lazyWithRetry(() => import("@/pages/admin/DeveloperPaymentDetail"));
@@ -209,23 +209,6 @@ const StoreCustomPage = lazyWithRetry(() => import("@/pages/StoreCustomPage"));
 // Store standalone page for custom domains
 const StoreStandalonePage = lazyWithRetry(() => import("@/pages/StoreStandalonePage"));
 
-// Standalone pages
-const IPShield = lazyWithRetry(() => import("@/pages/IPShield"));
-
-// IP Shield Dashboard pages
-const IPShieldOverview = lazyWithRetry(() => import("@/pages/ip-shield/IPShieldOverview"));
-const IPShieldTakedowns = lazyWithRetry(() => import("@/pages/ip-shield/IPShieldTakedowns"));
-const IPShieldRegistry = lazyWithRetry(() => import("@/pages/ip-shield/IPShieldRegistry"));
-const IPShieldDetections = lazyWithRetry(() => import("@/pages/ip-shield/IPShieldDetections"));
-const IPShieldSettings = lazyWithRetry(() => import("@/pages/ip-shield/IPShieldSettings"));
-const IPShieldCorrespondence = lazyWithRetry(() => import("@/pages/ip-shield/IPShieldCorrespondence"));
-
-// IP Staff Dashboard pages
-const IPStaffOverview = lazyWithRetry(() => import("@/pages/ip-staff/IPStaffOverview"));
-const IPStaffTakedowns = lazyWithRetry(() => import("@/pages/ip-staff/IPStaffTakedowns"));
-const IPStaffCustomPlans = lazyWithRetry(() => import("@/pages/ip-staff/IPStaffCustomPlans"));
-const IPStaffInbox = lazyWithRetry(() => import("@/pages/ip-staff/IPStaffInbox"));
-const IPStaffEmails = lazyWithRetry(() => import("@/pages/ip-staff/IPStaffEmails"));
 
 // Public pages
 const StorePage = lazyWithRetry(() => import("@/pages/StorePage"));
@@ -327,19 +310,6 @@ export function AppRoutes() {
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/dmca" element={<DMCA />} />
-        <Route path="/ip-shield" element={<IPShield />} />
-        <Route path="/ip-dashboard" element={<Navigate to="/ip-shield/dashboard" replace />} />
-        <Route path="/ip-shield/dashboard" element={<IPShieldOverview />} />
-        <Route path="/ip-shield/dashboard/takedowns" element={<IPShieldTakedowns />} />
-        <Route path="/ip-shield/dashboard/registry" element={<IPShieldRegistry />} />
-        <Route path="/ip-shield/dashboard/detections" element={<IPShieldDetections />} />
-        <Route path="/ip-shield/dashboard/correspondence" element={<IPShieldCorrespondence />} />
-        <Route path="/ip-shield/dashboard/settings" element={<IPShieldSettings />} />
-        <Route path="/ip-staff" element={<IPStaffOverview />} />
-        <Route path="/ip-staff/takedowns" element={<IPStaffTakedowns />} />
-        <Route path="/ip-staff/emails" element={<IPStaffEmails />} />
-        <Route path="/ip-staff/custom-plans" element={<IPStaffCustomPlans />} />
-        <Route path="/ip-staff/inbox" element={<IPStaffInbox />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/help-center/buyers" element={<HelpCenterBuyers />} />
@@ -499,7 +469,7 @@ export function AppRoutes() {
         <Route path="/admin/advertisement-analytics" element={<AdminAdvertisementAnalytics />} />
         <Route path="/admin/gift-credits" element={<AdminGiftCredits />} />
         <Route path="/admin/ip-reports" element={<AdminIPReports />} />
-        <Route path="/admin/ip-shield-custom-plans" element={<AdminIPShieldCustomPlans />} />
+        
         <Route path="/admin/developer-submissions" element={<AdminDeveloperSubmissions />} />
         <Route path="/admin/developer-payments" element={<Navigate to="/admin/payouts?tab=developer" replace />} />
         <Route path="/admin/developer-payments/:id" element={<AdminDeveloperPaymentDetail />} />

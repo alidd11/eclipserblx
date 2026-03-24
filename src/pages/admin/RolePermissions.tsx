@@ -95,11 +95,6 @@ const PERMISSION_CATEGORIES = {
     icon: <Wallet className="h-5 w-5" />,
     order: 8,
   },
-  ip_shield: {
-    label: 'IP Shield',
-    icon: <ShieldCheck className="h-5 w-5" />,
-    order: 9,
-  },
   system: {
     label: 'System & Settings',
     icon: <Settings className="h-5 w-5" />,
