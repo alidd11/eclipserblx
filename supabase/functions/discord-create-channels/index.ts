@@ -12,9 +12,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const BOT_TOKEN = Deno.env.get("DISCORD_BOT_TOKEN");
+  const BOT_TOKEN = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
   if (!BOT_TOKEN) {
-    return new Response(JSON.stringify({ error: "DISCORD_BOT_TOKEN not configured" }), {
+    return new Response(JSON.stringify({ error: "DISCORD_CUSTOMER_BOT_TOKEN not configured" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -42,7 +42,7 @@ serve(async (req) => {
       headers,
       body: JSON.stringify({
         name: category_name,
-        type: 4, // GUILD_CATEGORY
+        type: 4,
       }),
     });
 
@@ -64,7 +64,7 @@ serve(async (req) => {
         headers,
         body: JSON.stringify({
           name: channelName,
-          type: 0, // GUILD_TEXT
+          type: 0,
           parent_id: category.id,
         }),
       });
