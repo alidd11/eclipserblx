@@ -128,14 +128,13 @@ serve(async (req) => {
 
       case "refund_processed": {
         channel = "refunds";
-        const { orderId: roi, amount: ra, customerEmail: rce, storeName: rs, reason: rr } = data;
+        const { orderId: roi, amount: ra, storeName: rs, reason: rr } = data;
         embed = {
           title: "\uD83D\uDD04 Refund Processed",
           color: 0xf39c12,
           fields: [
             { name: "Amount", value: `\u00A3${Number(ra || 0).toFixed(2)}`, inline: true },
             { name: "Store", value: rs || "N/A", inline: true },
-            { name: "Customer", value: rce || "N/A", inline: true },
             { name: "Order", value: roi || "N/A", inline: true },
             { name: "Reason", value: (rr || "N/A").slice(0, 200), inline: false },
           ],
