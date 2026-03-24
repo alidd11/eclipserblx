@@ -1,0 +1,2 @@
+ALTER TABLE public.seller_payouts DROP CONSTRAINT seller_payouts_status_check;
+ALTER TABLE public.seller_payouts ADD CONSTRAINT seller_payouts_status_check CHECK (status = ANY (ARRAY['pending'::text, 'processing'::text, 'completed'::text, 'failed'::text, 'rejected'::text, 'awaiting_funds'::text]));
