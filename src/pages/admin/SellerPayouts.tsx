@@ -43,14 +43,14 @@ export default function SellerPayouts() {
   const [localFilterStatus, setLocalFilterStatus] = useState<string>("pending");
   const filterStatus = isInsideHub ? (searchParams.get("sellerStatus") || "pending") : localFilterStatus;
 
-  const { data: payouts, isLoading } = useQuery({
+  const { data: payouts, isLoading, isError, error: queryError, refetch } = useQuery({
     queryKey: ["seller-payouts", filterStatus],
     queryFn: async () => {
       let query = supabase
         .from("seller_payouts")
         .select(`
           *,
-          stores (name, store_id, payout_method, store_payment_details (paypal_email, bank_name, bank_account_holder, bank_account_number, bank_swift_bic, bank_country, bank_routing_number)),
+          stores!seller_payouts_store_id_fkey (name, store_id, payout_method, store_payment_details (paypal_email, bank_name, bank_account_holder, bank_account_number, bank_swift_bic, bank_country, bank_routing_number)),
           profiles!seller_payouts_seller_id_fkey (display_name, email)
         `)
         .order("created_at", { ascending: false });
@@ -60,7 +60,10 @@ export default function SellerPayouts() {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error("[SellerPayouts] Query error:", error);
+        throw error;
+      }
       return data;
     },
   });
