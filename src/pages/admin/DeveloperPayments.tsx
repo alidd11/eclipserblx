@@ -420,7 +420,7 @@ export default function DeveloperPayments() {
                                 <span className="text-muted-foreground capitalize">{payment.payment_type}</span>
                                 {payment.due_date && (
                                   <span className="text-muted-foreground">
-                                    Due: {format(new Date(payment.due_date), 'MMM d, yyyy')}
+                                    Due: {safeFormatDate(payment.due_date, 'MMM d, yyyy')}
                                   </span>
                                 )}
                               </div>

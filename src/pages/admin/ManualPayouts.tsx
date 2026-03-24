@@ -324,7 +324,7 @@ export default function ManualPayouts() {
                               </span>
                               {request.processed_at && (
                                 <span>
-                                  Processed: {format(new Date(request.processed_at), "PPp")}
+                                  Processed: {safeFormatDate(request.processed_at, "PPp")}
                                 </span>
                               )}
                             </div>
