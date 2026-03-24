@@ -1,54 +1,31 @@
 
 
-# Website-Wide Error & Security Audit — Fix Plan
+## Issues Identified from User Reports
 
-I did a comprehensive scan of the entire platform covering database security, backend linting, and runtime errors. Here's what I found and how I'll fix each issue.
+### Issue 1: `column "payout_method" of relation "seller_payouts" does not exist`
+**Root cause**: The recent migration (`20260324174736`) updated the `request_seller_payout` RPC function to insert `payout_method` and `paypal_email` columns into `seller_payouts`, but those columns were never added to the table. The table only has the original columns (no `payout_method`, no `paypal_email`).
 
----
-
-## Issues Found
-
-### 1. Security: Seller agreement IP/user-agent data publicly readable
-The `seller_agreements` table has a public RLS policy that exposes `ip_address` and `user_agent` columns to anonymous users. These are sensitive fields.
-
-**Fix:** Create a database view (e.g., `public_seller_agreements`) exposing only safe columns (`store_id`, `agreement_version`, `signed_at`), then update the RLS policy to restrict the public SELECT, or replace client queries to use the view.
-
-### 2. Security: Domain verification tokens publicly readable
-The `store_domains` table's "Anyone can read active domains" policy exposes the `verification_token` column to anonymous users.
-
-**Fix:** Drop the existing policy and replace it with one that uses a column-restricted approach — either via a secure view or by splitting into an authenticated-only policy for token access and a public policy via a view that excludes sensitive columns.
-
-### 3. Backend: 3 functions missing `search_path` setting
-The functions `enqueue_email`, `delete_email`, and `read_email_batch` are `SECURITY DEFINER` but don't set `search_path = public`, which is a security best practice to prevent search-path injection.
-
-**Fix:** Run `ALTER FUNCTION` for each to add `SET search_path = public`.
-
-### 4. False Positive (no action needed)
-The scan flagged `is_staff()` potentially granting access to sellers/customers, but I verified the database — `seller`, `customer`, and `eclipse_plus_member` all have `is_status_role = true`, so they're correctly excluded.
+### Issue 2: Scrolling not working on phone
+Needs further investigation but is likely a separate UI issue. Will focus on the critical payout bug first.
 
 ---
 
-## Implementation Steps
+## Plan
 
-1. **Database migration** — Single SQL migration that:
-   - Creates a `public_seller_agreements_view` with only safe columns and transfers the public policy to it
-   - Drops the overly-broad policy on `seller_agreements`
-   - Creates a `public_store_domains_view` excluding `verification_token` and `cloudflare_hostname_id`, with a public read policy
-   - Drops the overly-broad policy on `store_domains`
-   - Alters the 3 email functions to set `search_path = public`
+### Step 1: Add missing columns to `seller_payouts` table
+Create a database migration to add the two missing columns:
+- `payout_method TEXT DEFAULT 'stripe'` -- stores which method was selected at request time
+- `paypal_email TEXT` -- stores the PayPal email if method is paypal
 
-2. **Update frontend queries** — Any client code querying `seller_agreements` or `store_domains` publicly will be updated to use the new views instead.
+This will immediately fix the `request_seller_payout` RPC function that already references these columns.
+
+### Step 2: Backfill existing records
+In the same migration, backfill any existing `seller_payouts` records by looking up the `payout_method` from `store_payment_details` for their respective `store_id`.
 
 ---
 
-## Summary
-
-| Issue | Severity | Fix |
-|-------|----------|-----|
-| Seller agreement PII exposed | High | Restrict via secure view |
-| Domain verification tokens exposed | Medium | Restrict via secure view |
-| 3 functions missing search_path | Low | ALTER FUNCTION |
-| is_staff() role escalation | False positive | No action |
-
-No runtime JavaScript errors, console errors, or network failures were detected.
+### Technical Details
+- Single SQL migration adding two nullable columns with defaults
+- No code changes needed -- the RPC function and frontend code are already correct
+- The `auto-process-seller-payouts` edge function already handles `bank_transfer`/`bank`/`paypal` routing, so having this column populated will improve payout accuracy
 
