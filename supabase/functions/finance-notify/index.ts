@@ -78,7 +78,7 @@ serve(async (req) => {
 
       case "dispute_opened": {
         channel = "disputes";
-        const { disputeNumber, reason, amount, customerEmail: email, storeName: store, orderId: oid } = data;
+        const { disputeNumber, reason, amount, storeName: store, orderId: oid } = data;
         embed = {
           title: "\u26A0\uFE0F Dispute Opened",
           color: 0xe74c3c,
@@ -86,7 +86,6 @@ serve(async (req) => {
             { name: "Dispute #", value: disputeNumber || "N/A", inline: true },
             { name: "Amount", value: `\u00A3${Number(amount || 0).toFixed(2)}`, inline: true },
             { name: "Store", value: store || "N/A", inline: true },
-            { name: "Customer", value: email || "N/A", inline: true },
             { name: "Order", value: oid || "N/A", inline: true },
             { name: "Reason", value: (reason || "No reason provided").slice(0, 200), inline: false },
           ],
