@@ -11,16 +11,19 @@ const LOG = (step: string, d?: unknown) => {
   console.log(`[FINANCE-NOTIFY] ${step}${s}`);
 };
 
-/** Sends a Discord webhook embed */
-async function sendWebhook(url: string, embed: Record<string, unknown>) {
-  const res = await fetch(url, {
+/** Sends an embed to a Discord channel via the bot API */
+async function sendBotMessage(channelId: string, embed: Record<string, unknown>, botToken: string) {
+  const res = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      Authorization: `Bot ${botToken}`,
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({ embeds: [embed] }),
   });
   if (!res.ok) {
     const text = await res.text();
-    LOG("Webhook failed", { status: res.status, text });
+    LOG("Bot message failed", { status: res.status, channelId, text });
     return false;
   }
   return true;
@@ -32,6 +35,9 @@ serve(async (req) => {
   }
 
   try {
+    const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
+    if (!botToken) throw new Error("DISCORD_CUSTOMER_BOT_TOKEN not set");
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -51,18 +57,18 @@ serve(async (req) => {
       customerId = profile?.customer_id || null;
     }
 
-    // Fetch all finance webhook URLs
+    // Fetch all finance channel IDs
     const { data: settings } = await supabase
       .from("settings")
       .select("key, value")
-      .like("key", "finance_webhook_%");
+      .like("key", "finance_channel_%");
 
-    const webhooks: Record<string, string> = {};
+    const channels: Record<string, string> = {};
     for (const s of settings ?? []) {
-      const channel = s.key.replace("finance_webhook_", "");
-      let url = s.value;
-      try { url = JSON.parse(url); } catch { /* already plain string */ }
-      webhooks[channel] = url;
+      const name = s.key.replace("finance_channel_", "");
+      let val = s.value;
+      try { val = JSON.parse(val); } catch { /* already plain string */ }
+      channels[name] = val;
     }
 
     let embed: Record<string, unknown> = {};
@@ -246,16 +252,16 @@ serve(async (req) => {
         });
     }
 
-    const webhookUrl = webhooks[channel];
-    if (!webhookUrl) {
-      LOG("No webhook URL for channel", { channel });
-      return new Response(JSON.stringify({ skipped: true, message: `No webhook for ${channel}` }), {
+    const channelId = channels[channel];
+    if (!channelId) {
+      LOG("No channel ID for", { channel });
+      return new Response(JSON.stringify({ skipped: true, message: `No channel ID for ${channel}` }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     embed.author = { name: "Eclipse Finances" };
-    const sent = await sendWebhook(webhookUrl, embed);
+    const sent = await sendBotMessage(channelId, embed, botToken);
 
     return new Response(JSON.stringify({ success: sent, channel }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
