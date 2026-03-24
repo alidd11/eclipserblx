@@ -46,6 +46,15 @@ const statusConfig = {
   rejected: { label: "Rejected", color: "bg-red-500/10 text-red-500 border-red-500/20", icon: XCircle },
 };
 
+const safeFormatDate = (value: string | null | undefined, pattern: string) => {
+  if (!value) return '—';
+  try {
+    return format(new Date(value), pattern);
+  } catch {
+    return '—';
+  }
+};
+
 export default function ManualPayouts() {
   const isInsideHub = useIsInsideHub();
   const queryClient = useQueryClient();
@@ -222,7 +231,7 @@ export default function ManualPayouts() {
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3.5 w-3.5" />
-                              {format(new Date(request.created_at), "PPp")}
+                              {safeFormatDate(request.created_at, "PPp")}
                             </span>
                             {request.paypal_email && (
                               <span>PayPal: {request.paypal_email}</span>
@@ -311,11 +320,11 @@ export default function ManualPayouts() {
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <span className="flex items-center gap-1">
                                 <Calendar className="h-3.5 w-3.5" />
-                                {format(new Date(request.created_at), "PPp")}
+                                {safeFormatDate(request.created_at, "PPp")}
                               </span>
                               {request.processed_at && (
                                 <span>
-                                  Processed: {format(new Date(request.processed_at), "PPp")}
+                                  Processed: {safeFormatDate(request.processed_at, "PPp")}
                                 </span>
                               )}
                             </div>
