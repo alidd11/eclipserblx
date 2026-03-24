@@ -117,8 +117,8 @@ const payoutOptions = [
   },
   {
     method: "PayPal",
-    description: "Manual payout to your PayPal email",
-    timing: "Request anytime",
+    description: "Automatic payout to your PayPal email",
+    timing: "Automatic payouts",
     recommended: false,
   },
   {
