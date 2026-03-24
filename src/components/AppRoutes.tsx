@@ -310,19 +310,6 @@ export function AppRoutes() {
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/dmca" element={<DMCA />} />
-        <Route path="/ip-shield" element={<IPShield />} />
-        <Route path="/ip-dashboard" element={<Navigate to="/ip-shield/dashboard" replace />} />
-        <Route path="/ip-shield/dashboard" element={<IPShieldOverview />} />
-        <Route path="/ip-shield/dashboard/takedowns" element={<IPShieldTakedowns />} />
-        <Route path="/ip-shield/dashboard/registry" element={<IPShieldRegistry />} />
-        <Route path="/ip-shield/dashboard/detections" element={<IPShieldDetections />} />
-        <Route path="/ip-shield/dashboard/correspondence" element={<IPShieldCorrespondence />} />
-        <Route path="/ip-shield/dashboard/settings" element={<IPShieldSettings />} />
-        <Route path="/ip-staff" element={<IPStaffOverview />} />
-        <Route path="/ip-staff/takedowns" element={<IPStaffTakedowns />} />
-        <Route path="/ip-staff/emails" element={<IPStaffEmails />} />
-        <Route path="/ip-staff/custom-plans" element={<IPStaffCustomPlans />} />
-        <Route path="/ip-staff/inbox" element={<IPStaffInbox />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/help-center/buyers" element={<HelpCenterBuyers />} />
