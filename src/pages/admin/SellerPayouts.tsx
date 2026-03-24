@@ -516,7 +516,7 @@ export default function SellerPayouts() {
                   <>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Bank:</span>
-                      <span className="font-medium">{selectedPayout?.stores?.store_payment_details?.[0]?.bank_name || 'N/A'} ({selectedPayout?.stores?.store_payment_details?.[0]?.bank_country || 'N/A'})</span>
+                      <span className="font-medium">{getPaymentDetails(selectedPayout)?.bank_name || 'N/A'} ({getPaymentDetails(selectedPayout)?.bank_country || 'N/A'})</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Account Holder:</span>
