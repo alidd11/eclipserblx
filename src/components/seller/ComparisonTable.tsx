@@ -103,6 +103,12 @@ const comparisonData: ComparisonFeature[] = [
   },
 ];
 
+const competitors = [
+  { key: "clearlyDev" as const, label: "ClearlyDev" },
+  { key: "kwStudio" as const, label: "KW Studio" },
+  { key: "robloxStore" as const, label: "Roblox Creator Store" },
+];
+
 const getCellStyle = (value: string | boolean, isEclipse: boolean) => {
   if (isEclipse) {
     return "bg-primary/10 text-primary font-medium";
@@ -121,41 +127,83 @@ const renderValue = (value: string | boolean) => {
   return value;
 };
 
+const renderValueInline = (value: string | boolean) => {
+  if (typeof value === "boolean") {
+    return value ? (
+      <Check className="h-4 w-4 text-green-500 inline" />
+    ) : (
+      <X className="h-4 w-4 text-destructive inline" />
+    );
+  }
+  return <span>{value}</span>;
+};
+
 export function ComparisonTable() {
   return (
-    <div className="overflow-x-auto print:overflow-visible print:w-full print:break-inside-avoid">
-      <Table className="print:w-full print:table-fixed print:text-[8pt]">
-        <TableHeader>
-          <TableRow className="border-border">
-            <TableHead className="w-[140px] print:w-[15%] font-bold text-foreground print:text-[8pt] print:p-0.5 print:leading-tight">Feature</TableHead>
-            <TableHead className="text-center bg-primary/5 text-primary font-bold min-w-[120px] print:w-[21%] print:text-[8pt] print:p-0.5 print:leading-tight">
-              Eclipse ✨
-            </TableHead>
-            <TableHead className="text-center min-w-[120px] print:w-[21%] print:text-[8pt] print:p-0.5 print:leading-tight">ClearlyDev</TableHead>
-            <TableHead className="text-center min-w-[120px] print:w-[21%] print:text-[8pt] print:p-0.5 print:leading-tight">KW Studio</TableHead>
-            <TableHead className="text-center min-w-[120px] print:w-[22%] print:text-[8pt] print:p-0.5 print:leading-tight">Roblox Creator Store</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {comparisonData.map((row, index) => (
-            <TableRow key={index} className="border-border print:break-inside-avoid">
-              <TableCell className="font-medium text-foreground print:text-[8pt] print:p-0.5 print:leading-tight">{row.feature}</TableCell>
-              <TableCell className={`text-center print:text-[8pt] print:p-0.5 print:leading-tight ${getCellStyle(row.eclipse, true)}`}>
-                {renderValue(row.eclipse)}
-              </TableCell>
-              <TableCell className="text-center text-muted-foreground print:text-[8pt] print:p-0.5 print:leading-tight">
-                {renderValue(row.clearlyDev)}
-              </TableCell>
-              <TableCell className="text-center text-muted-foreground print:text-[8pt] print:p-0.5 print:leading-tight">
-                {renderValue(row.kwStudio)}
-              </TableCell>
-              <TableCell className="text-center text-muted-foreground print:text-[8pt] print:p-0.5 print:leading-tight">
-                {renderValue(row.robloxStore)}
-              </TableCell>
+    <>
+      {/* Desktop: full table */}
+      <div className="hidden md:block overflow-x-auto print:overflow-visible print:w-full print:break-inside-avoid">
+        <Table className="print:w-full print:table-fixed print:text-[8pt]">
+          <TableHeader>
+            <TableRow className="border-border">
+              <TableHead className="w-[140px] print:w-[15%] font-bold text-foreground print:text-[8pt] print:p-0.5 print:leading-tight">Feature</TableHead>
+              <TableHead className="text-center bg-primary/5 text-primary font-bold min-w-[120px] print:w-[21%] print:text-[8pt] print:p-0.5 print:leading-tight">
+                Eclipse ✨
+              </TableHead>
+              <TableHead className="text-center min-w-[120px] print:w-[21%] print:text-[8pt] print:p-0.5 print:leading-tight">ClearlyDev</TableHead>
+              <TableHead className="text-center min-w-[120px] print:w-[21%] print:text-[8pt] print:p-0.5 print:leading-tight">KW Studio</TableHead>
+              <TableHead className="text-center min-w-[120px] print:w-[22%] print:text-[8pt] print:p-0.5 print:leading-tight">Roblox Creator Store</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {comparisonData.map((row, index) => (
+              <TableRow key={index} className="border-border print:break-inside-avoid">
+                <TableCell className="font-medium text-foreground print:text-[8pt] print:p-0.5 print:leading-tight">{row.feature}</TableCell>
+                <TableCell className={`text-center print:text-[8pt] print:p-0.5 print:leading-tight ${getCellStyle(row.eclipse, true)}`}>
+                  {renderValue(row.eclipse)}
+                </TableCell>
+                <TableCell className="text-center text-muted-foreground print:text-[8pt] print:p-0.5 print:leading-tight">
+                  {renderValue(row.clearlyDev)}
+                </TableCell>
+                <TableCell className="text-center text-muted-foreground print:text-[8pt] print:p-0.5 print:leading-tight">
+                  {renderValue(row.kwStudio)}
+                </TableCell>
+                <TableCell className="text-center text-muted-foreground print:text-[8pt] print:p-0.5 print:leading-tight">
+                  {renderValue(row.robloxStore)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Mobile: card-based layout */}
+      <div className="md:hidden space-y-3 p-4">
+        {comparisonData.map((row, index) => (
+          <div key={index} className="rounded-lg border border-border/50 overflow-hidden">
+            <div className="bg-muted/30 px-4 py-2.5 font-semibold text-sm text-foreground">
+              {row.feature}
+            </div>
+            <div className="divide-y divide-border/30">
+              {/* Eclipse row - highlighted */}
+              <div className="flex items-center justify-between px-4 py-2.5 bg-primary/5">
+                <span className="text-xs font-semibold text-primary">Eclipse ✨</span>
+                <span className="text-xs font-medium text-primary text-right max-w-[60%]">
+                  {renderValueInline(row.eclipse)}
+                </span>
+              </div>
+              {competitors.map((comp) => (
+                <div key={comp.key} className="flex items-center justify-between px-4 py-2">
+                  <span className="text-xs text-muted-foreground">{comp.label}</span>
+                  <span className="text-xs text-muted-foreground text-right max-w-[60%]">
+                    {renderValueInline(row[comp.key])}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
