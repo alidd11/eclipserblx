@@ -530,7 +530,7 @@ export default function SellerPayouts() {
                 Reject
               </Button>
               
-              {selectedPayout?.stores?.payout_method === 'bank' ? (
+              {isBankMethod(getPayoutMethod(selectedPayout)) ? (
                 <Button
                   variant="default"
                   disabled={wisePayoutMutation.isPending || processMutation.isPending}
