@@ -40,6 +40,17 @@ serve(async (req) => {
     const { type, data } = await req.json();
     LOG("Received", { type });
 
+    // Resolve customer_id from userId if provided
+    let customerId: string | null = null;
+    if (data.userId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("customer_id")
+        .eq("user_id", data.userId)
+        .maybeSingle();
+      customerId = profile?.customer_id || null;
+    }
+
     // Fetch all finance webhook URLs
     const { data: settings } = await supabase
       .from("settings")
@@ -49,7 +60,6 @@ serve(async (req) => {
     const webhooks: Record<string, string> = {};
     for (const s of settings ?? []) {
       const channel = s.key.replace("finance_webhook_", "");
-      // Value may be stored as plain string or JSON-quoted string
       let url = s.value;
       try { url = JSON.parse(url); } catch { /* already plain string */ }
       webhooks[channel] = url;
