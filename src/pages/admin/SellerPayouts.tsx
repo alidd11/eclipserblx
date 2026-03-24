@@ -281,6 +281,26 @@ export default function SellerPayouts() {
           </div>
         )}
 
+        {isError && (
+          <Card className="border-destructive/30 bg-destructive/5">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="font-medium text-destructive">Failed to load payouts</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {(queryError as any)?.message || 'Something went wrong while fetching payout data.'}
+                  </p>
+                  <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-3 gap-2">
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    Retry
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardContent className="p-0">
             {/* Desktop table */}
