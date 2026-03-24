@@ -467,16 +467,32 @@ export default function SellerPayouts() {
                   <span className="text-muted-foreground">Payout Method:</span>
                   {selectedPayout && getPayoutMethodBadge(selectedPayout)}
                 </div>
-                {selectedPayout?.stores?.payout_method === 'paypal' && (
+                {getPayoutMethod(selectedPayout) === 'paypal' && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">PayPal Email:</span>
                     <span className="font-medium">
-                      {selectedPayout?.stores?.store_payment_details?.[0]?.paypal_email || selectedPayout?.stores?.store_payment_details?.paypal_email || "Not set"}
+                      {selectedPayout?.paypal_email || selectedPayout?.stores?.store_payment_details?.[0]?.paypal_email || "Not set"}
                     </span>
                   </div>
                 )}
-                {selectedPayout?.stores?.payout_method === 'bank' && (
+                {isBankMethod(getPayoutMethod(selectedPayout)) && (
                   <>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Bank:</span>
+                      <span className="font-medium">{selectedPayout?.stores?.store_payment_details?.[0]?.bank_name || 'N/A'} ({selectedPayout?.stores?.store_payment_details?.[0]?.bank_country || 'N/A'})</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Account Holder:</span>
+                      <span className="font-medium">{selectedPayout?.stores?.store_payment_details?.[0]?.bank_account_holder || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">IBAN:</span>
+                      <span className="font-medium font-mono text-xs">{selectedPayout?.stores?.store_payment_details?.[0]?.bank_account_number || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">SWIFT/BIC:</span>
+                      <span className="font-medium font-mono text-xs">{selectedPayout?.stores?.store_payment_details?.[0]?.bank_swift_bic || 'N/A'}</span>
+                    </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Transfer via:</span>
                       <span className="font-medium text-blue-400">Wise International Transfer</span>
