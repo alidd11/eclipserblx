@@ -94,7 +94,7 @@ export function LandingHero() {
               </Button>
             </Link>
             <Link
-              to="/seller"
+              to="/sell"
               className="text-xs font-medium text-foreground/70 hover:text-foreground transition-colors flex items-center gap-1.5"
             >
               <Store className="h-3.5 w-3.5" />
