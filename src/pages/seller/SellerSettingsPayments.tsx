@@ -371,7 +371,7 @@ export default function SellerSettingsPayments() {
                   <label htmlFor="paypal" className="flex-1 cursor-pointer">
                     <p className="font-medium">PayPal</p>
                     <p className="text-sm text-muted-foreground">
-                      Manual payouts via PayPal. Good for regions where Stripe isn't available.
+                      Manual payouts via PayPal. Good for regions where direct payouts aren't available.
                     </p>
                   </label>
                 </div>
