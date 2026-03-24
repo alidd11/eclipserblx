@@ -293,4 +293,7 @@ async function sendOrderNotifications(
   try { await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, { method: "POST", headers, body: JSON.stringify({ user_ids: [ctx.userId], payload: { title, body: msg, tag: `order-${ctx.orderId}`, url: '/downloads', requireInteraction: true } }) }); } catch {}
   try { await fetch(`${supabaseUrl}/functions/v1/send-order-discord-notification`, { method: "POST", headers, body: JSON.stringify({ orderId: ctx.orderId, userId: ctx.userId, customerEmail: ctx.customerEmail, productNames: ctx.items.map((i: any) => i.name), total: ctx.total }) }); } catch {}
   try { await fetch(`${supabaseUrl}/functions/v1/process-referral`, { method: "POST", headers, body: JSON.stringify({ userId: ctx.userId, orderId: ctx.orderId, orderTotal: ctx.total }) }); } catch {}
+
+  // Finance server notification (fire-and-forget)
+  try { await fetch(`${supabaseUrl}/functions/v1/finance-notify`, { method: "POST", headers, body: JSON.stringify({ type: "new_sale", data: { orderId: ctx.orderId, customerEmail: ctx.customerEmail, productNames: ctx.items.map((i: any) => i.name), total: ctx.total } }) }); } catch {}
 }
