@@ -190,7 +190,7 @@ export default function SellerSettingsPayments() {
     },
     onError: (error) => {
       const message = getEdgeFunctionErrorMessage(error);
-      toast.error(`Failed to setup Stripe Connect: ${message}`);
+      toast.error(`Failed to set up payouts: ${message}`);
     },
   });
 
