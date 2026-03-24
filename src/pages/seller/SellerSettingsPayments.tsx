@@ -190,7 +190,7 @@ export default function SellerSettingsPayments() {
     },
     onError: (error) => {
       const message = getEdgeFunctionErrorMessage(error);
-      toast.error(`Failed to setup Stripe Connect: ${message}`);
+      toast.error(`Failed to set up payouts: ${message}`);
     },
   });
 
@@ -262,15 +262,15 @@ export default function SellerSettingsPayments() {
         </div>
 
         <div className="space-y-6">
-          {/* Stripe Connect */}
+          {/* Direct Payouts */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
-                Stripe Connect
+                Direct Payouts
               </CardTitle>
               <CardDescription>
-                Connect your Stripe account to receive automatic payouts
+                Connect your account to receive automatic payouts directly to your bank
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -285,26 +285,26 @@ export default function SellerSettingsPayments() {
                 <div className="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
                   <CheckCircle className="h-6 w-6 text-green-500" />
                   <div className="flex-1">
-                    <p className="font-medium">Stripe Connect Active</p>
-                    <p className="text-sm text-muted-foreground">
-                      Your account is set up to receive payouts
-                    </p>
+                     <p className="font-medium">Direct Payouts Active</p>
+                     <p className="text-sm text-muted-foreground">
+                       Your account is set up to receive payouts directly to your bank
+                     </p>
                   </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer">
-                      Dashboard
-                      <ExternalLink className="h-4 w-4 ml-2" />
-                    </a>
-                  </Button>
+                   <Button variant="outline" size="sm" asChild>
+                     <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer">
+                       Manage Payouts
+                       <ExternalLink className="h-4 w-4 ml-2" />
+                     </a>
+                   </Button>
                 </div>
               ) : connectStatus?.hasAccount || store?.paymentDetails?.stripe_account_id ? (
                 <div className="flex items-center gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                   <AlertCircle className="h-6 w-6 text-yellow-500" />
                   <div className="flex-1">
-                    <p className="font-medium">Setup Incomplete</p>
-                    <p className="text-sm text-muted-foreground">
-                      Please complete your Stripe Connect onboarding
-                    </p>
+                     <p className="font-medium">Setup Incomplete</p>
+                     <p className="text-sm text-muted-foreground">
+                       Please complete your payout account onboarding to start receiving payments
+                     </p>
                   </div>
                   <Button 
                     variant="default"
@@ -316,19 +316,19 @@ export default function SellerSettingsPayments() {
                 </div>
               ) : (
                 <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
-                  <CreditCard className="h-6 w-6 text-muted-foreground" />
-                  <div className="flex-1">
-                    <p className="font-medium">Connect Stripe</p>
-                    <p className="text-sm text-muted-foreground">
-                      Set up Stripe Connect to receive payouts for your sales
-                    </p>
+                   <CreditCard className="h-6 w-6 text-muted-foreground" />
+                   <div className="flex-1">
+                     <p className="font-medium">Set Up Direct Payouts</p>
+                     <p className="text-sm text-muted-foreground">
+                       Connect your bank account to receive payouts for your sales
+                     </p>
                   </div>
                   <Button 
                     variant="default"
                     onClick={() => setupStripeConnect.mutate()}
                     disabled={setupStripeConnect.isPending}
                   >
-                    {setupStripeConnect.isPending ? 'Loading...' : 'Connect Stripe'}
+                    {setupStripeConnect.isPending ? 'Loading...' : 'Set Up Payouts'}
                   </Button>
                 </div>
               )}
@@ -352,26 +352,26 @@ export default function SellerSettingsPayments() {
                 onValueChange={(value) => setPayoutMethod(value as 'stripe' | 'paypal' | 'bank_transfer')}
                 className="space-y-3"
               >
-                <div className={`flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors ${!connectStatus?.canReceivePayments && !store?.paymentDetails?.stripe_account_id ? 'opacity-60' : ''}`}>
-                  <RadioGroupItem value="stripe" id="stripe" className="mt-1" disabled={!connectStatus?.canReceivePayments && !store?.paymentDetails?.stripe_account_id} />
-                  <label htmlFor="stripe" className="flex-1 cursor-pointer">
-                    <p className="font-medium">Stripe Connect (Recommended)</p>
-                    <p className="text-sm text-muted-foreground">
-                      Automatic payouts directly to your bank. Fastest and most reliable.
-                    </p>
-                    {!connectStatus?.canReceivePayments && !store?.paymentDetails?.stripe_account_id && (
-                      <p className="text-xs text-destructive mt-1">
-                        Connect your Stripe account above before selecting this method.
-                      </p>
-                    )}
-                  </label>
-                </div>
+                 <div className={`flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors ${!connectStatus?.canReceivePayments && !store?.paymentDetails?.stripe_account_id ? 'opacity-60' : ''}`}>
+                   <RadioGroupItem value="stripe" id="stripe" className="mt-1" disabled={!connectStatus?.canReceivePayments && !store?.paymentDetails?.stripe_account_id} />
+                   <label htmlFor="stripe" className="flex-1 cursor-pointer">
+                     <p className="font-medium">Direct Bank Payout (Recommended)</p>
+                     <p className="text-sm text-muted-foreground">
+                       Automatic payouts directly to your bank. Fastest and most reliable.
+                     </p>
+                     {!connectStatus?.canReceivePayments && !store?.paymentDetails?.stripe_account_id && (
+                       <p className="text-xs text-destructive mt-1">
+                         Set up direct payouts above before selecting this method.
+                       </p>
+                     )}
+                   </label>
+                 </div>
                 <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                   <RadioGroupItem value="paypal" id="paypal" className="mt-1" />
                   <label htmlFor="paypal" className="flex-1 cursor-pointer">
                     <p className="font-medium">PayPal</p>
                     <p className="text-sm text-muted-foreground">
-                      Manual payouts via PayPal. Good for regions where Stripe isn't available.
+                      Manual payouts via PayPal. Good for regions where direct payouts aren't available.
                     </p>
                   </label>
                 </div>
@@ -383,7 +383,7 @@ export default function SellerSettingsPayments() {
                       <Building2 className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Manual bank transfers for overseas accounts. Ideal for sellers outside Stripe-supported regions.
+                      Manual bank transfers for overseas accounts. Ideal for sellers outside supported regions.
                     </p>
                   </label>
                 </div>
