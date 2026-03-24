@@ -61,7 +61,7 @@ serve(async (req) => {
     switch (type) {
       case "new_sale": {
         channel = "sales";
-        const { orderId, customerEmail, productNames, total, sellerName, storeName } = data;
+        const { orderId, productNames, total, sellerName, storeName } = data;
         embed = {
           title: "\uD83D\uDCB0 New Sale",
           color: 0x2ecc71,
@@ -69,7 +69,6 @@ serve(async (req) => {
             { name: "\uD83D\uDCE6 Products", value: (productNames || []).join("\n") || "N/A", inline: false },
             { name: "\uD83C\uDFEA Store", value: storeName || sellerName || "Unknown", inline: true },
             { name: "\uD83D\uDCB7 Total", value: `\u00A3${Number(total || 0).toFixed(2)}`, inline: true },
-            { name: "\uD83D\uDCE7 Customer", value: customerEmail || "N/A", inline: true },
           ],
           footer: { text: `Order: ${orderId || "N/A"}` },
           timestamp: new Date().toISOString(),
