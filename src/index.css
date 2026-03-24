@@ -631,7 +631,7 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Manrope', sans-serif;
     -webkit-overflow-scrolling: touch;
-    overflow: clip;
+    overflow-x: hidden;
     width: 100%;
     max-width: 100%;
     min-height: 100vh;
