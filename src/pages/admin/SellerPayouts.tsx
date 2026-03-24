@@ -358,7 +358,7 @@ export default function SellerPayouts() {
                           })()}
                         </TableCell>
                         <TableCell className="text-sm">
-                          {format(new Date(payout.created_at), "dd MMM yyyy")}
+                          {safeFmt(payout.created_at, "dd MMM yyyy")}
                         </TableCell>
                         <TableCell>{getStatusBadge(payout.status, payout)}</TableCell>
                         <TableCell>
