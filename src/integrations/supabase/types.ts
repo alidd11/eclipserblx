@@ -7992,10 +7992,14 @@ export type Database = {
           discord_guild_id: string | null
           discord_role_id: string | null
           discord_webhook_url: string | null
+          disputes_channel_id: string | null
           early_product_drops_role_id: string | null
           id: string
+          orders_channel_id: string | null
           product_drops_role_id: string | null
+          refunds_channel_id: string | null
           review_discord_webhook_url: string | null
+          sales_channel_id: string | null
           store_id: string
           updated_at: string
         }
@@ -8007,10 +8011,14 @@ export type Database = {
           discord_guild_id?: string | null
           discord_role_id?: string | null
           discord_webhook_url?: string | null
+          disputes_channel_id?: string | null
           early_product_drops_role_id?: string | null
           id?: string
+          orders_channel_id?: string | null
           product_drops_role_id?: string | null
+          refunds_channel_id?: string | null
           review_discord_webhook_url?: string | null
+          sales_channel_id?: string | null
           store_id: string
           updated_at?: string
         }
@@ -8022,10 +8030,14 @@ export type Database = {
           discord_guild_id?: string | null
           discord_role_id?: string | null
           discord_webhook_url?: string | null
+          disputes_channel_id?: string | null
           early_product_drops_role_id?: string | null
           id?: string
+          orders_channel_id?: string | null
           product_drops_role_id?: string | null
+          refunds_channel_id?: string | null
           review_discord_webhook_url?: string | null
+          sales_channel_id?: string | null
           store_id?: string
           updated_at?: string
         }
