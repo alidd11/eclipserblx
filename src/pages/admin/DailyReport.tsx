@@ -62,7 +62,7 @@ function useDailyReport() {
           .eq('status', 'pending'),
         supabase
           .from('order_items')
-          .select('product_name, quantity')
+          .select('product_name')
           .gte('created_at', todayStart),
       ]);
 
