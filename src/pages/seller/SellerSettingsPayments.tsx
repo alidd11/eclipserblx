@@ -290,12 +290,12 @@ export default function SellerSettingsPayments() {
                        Your account is set up to receive payouts directly to your bank
                      </p>
                   </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer">
-                      Dashboard
-                      <ExternalLink className="h-4 w-4 ml-2" />
-                    </a>
-                  </Button>
+                   <Button variant="outline" size="sm" asChild>
+                     <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer">
+                       Manage Payouts
+                       <ExternalLink className="h-4 w-4 ml-2" />
+                     </a>
+                   </Button>
                 </div>
               ) : connectStatus?.hasAccount || store?.paymentDetails?.stripe_account_id ? (
                 <div className="flex items-center gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
