@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useStoreDomain } from "@/hooks/useStoreDomain";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
 // Lazy load Global Guard router for /guard path
 const GlobalGuardRouter = lazyWithRetry(() => import("@/components/global-guard/GlobalGuardRouter").then(m => ({ default: m.GlobalGuardRouter })));
