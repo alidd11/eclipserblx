@@ -46,6 +46,15 @@ const statusConfig = {
   rejected: { label: "Rejected", color: "bg-red-500/10 text-red-500 border-red-500/20", icon: XCircle },
 };
 
+const safeFormatDate = (value: string | null | undefined, pattern: string) => {
+  if (!value) return '—';
+  try {
+    return format(new Date(value), pattern);
+  } catch {
+    return '—';
+  }
+};
+
 export default function ManualPayouts() {
   const isInsideHub = useIsInsideHub();
   const queryClient = useQueryClient();
