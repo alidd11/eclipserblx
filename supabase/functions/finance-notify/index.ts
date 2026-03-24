@@ -79,6 +79,7 @@ serve(async (req) => {
             { name: "\uD83D\uDCE6 Products", value: (productNames || []).join("\n") || "N/A", inline: false },
             { name: "\uD83C\uDFEA Store", value: storeName || sellerName || "Unknown", inline: true },
             { name: "\uD83D\uDCB7 Total", value: `\u00A3${Number(total || 0).toFixed(2)}`, inline: true },
+            ...(customerId ? [{ name: "\uD83D\uDC64 Customer", value: customerId, inline: true }] : []),
           ],
           footer: { text: `Order: ${orderId || "N/A"}` },
           timestamp: new Date().toISOString(),
