@@ -94,7 +94,7 @@ export function LandingHero() {
               </Button>
             </Link>
             <Link
-              to="/seller"
+              to="/sell"
               className="text-xs font-medium text-foreground/70 hover:text-foreground transition-colors flex items-center gap-1.5"
             >
               <Store className="h-3.5 w-3.5" />
@@ -143,7 +143,7 @@ export function LandingHero() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/seller" className="block">
+              <Link to="/sell" className="block">
                 <Button size="sm" variant="outline" className="w-full h-10 text-sm font-semibold uppercase tracking-wide">
                   <Store className="mr-2 h-4 w-4" />
                   Open a Store
