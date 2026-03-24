@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, Clock, CheckCircle, Send, Link as LinkIcon, User, Store, AlertCircle, XCircle, AlertTriangle, Paperclip, X, ChevronDown, Zap, Loader2, ShoppingBag, History, UserCheck, Mail } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, Send, Link as LinkIcon, User, Store, AlertCircle, XCircle, AlertTriangle, Paperclip, X, ChevronDown, Zap, Loader2, ShoppingBag, History, UserCheck, Mail, Headphones } from 'lucide-react';
 import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { AdminStatCard } from '@/components/admin/AdminStatCard';
