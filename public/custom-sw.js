@@ -13,7 +13,9 @@ const OFFLINE_URL = '/offline.html';
 // Clear ALL caches on activation - full reset for every new SW version
 const clearOldCaches = async () => {
   const cacheNames = await caches.keys();
-  console.log('[Eclipse SW] Force-clearing ALL caches:', cacheNames);
+  // Always purge known-bad caches; clear all others on version change
+  const toPurge = cacheNames.filter(name => PURGE_CACHES.includes(name));
+  console.log('[Eclipse SW] Force-clearing caches:', cacheNames);
   return Promise.all(cacheNames.map(cache => caches.delete(cache)));
 };
 
