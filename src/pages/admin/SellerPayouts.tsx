@@ -398,9 +398,14 @@ export default function SellerPayouts() {
                       </div>
                       <div className="text-xs text-muted-foreground">
                         <span>{format(new Date(payout.created_at), "dd MMM yyyy")}</span>
-                        {payout.stores?.payout_method === 'paypal' && (
+                        {getPayoutMethod(payout) === 'paypal' && (
                           <span className="ml-2">
-                            PayPal: {payout.stores?.store_payment_details?.[0]?.paypal_email || payout.stores?.store_payment_details?.paypal_email || "Not set"}
+                            PayPal: {payout.paypal_email || payout.stores?.store_payment_details?.[0]?.paypal_email || "Not set"}
+                          </span>
+                        )}
+                        {isBankMethod(getPayoutMethod(payout)) && (
+                          <span className="ml-2">
+                            Bank: {payout.stores?.store_payment_details?.[0]?.bank_name || 'Transfer'}
                           </span>
                         )}
                       </div>
