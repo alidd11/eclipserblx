@@ -431,6 +431,7 @@ export function AppRoutes() {
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
         {/* Finance Hub routes */}
         <Route path="/admin/revenue" element={<AdminRevenueHub />} />
+        <Route path="/admin/daily-report" element={<AdminDailyReport />} />
         <Route path="/admin/payouts" element={<AdminPayoutsHub />} />
         <Route path="/admin/disputes-refunds" element={<AdminDisputesRefundsHub />} />
         <Route path="/admin/affiliate-hub" element={<AdminAffiliateHub />} />

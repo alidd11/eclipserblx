@@ -75,7 +75,7 @@ function useDailyReport() {
       const productCounts: Record<string, number> = {};
       for (const item of topRes.data || []) {
         const name = item.product_name || 'Unknown';
-        productCounts[name] = (productCounts[name] || 0) + (item.quantity || 1);
+        productCounts[name] = (productCounts[name] || 0) + 1;
       }
       const topProducts = Object.entries(productCounts)
         .sort((a, b) => b[1] - a[1])
