@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -10,6 +10,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 import {
   Select,
   SelectContent,
@@ -17,10 +19,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { ArrowLeft, Send, Clock, User, Headphones, Eye, Tag, Mail, Paperclip, X, Loader2 } from 'lucide-react';
+import {
+  ArrowLeft, Send, Clock, User, Headphones, Eye, Tag, Mail,
+  Paperclip, X, Loader2, MessageSquare, ShoppingBag, ChevronDown,
+  Zap, AlertTriangle, UserCheck, Package, CreditCard, History,
+} from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -67,8 +86,18 @@ const categoryLabels: Record<string, string> = {
   other: 'Other',
 };
 
+const CANNED_RESPONSES = [
+  { label: 'Greeting', text: 'Hi there! Thanks for reaching out. I\'d be happy to help you with this.' },
+  { label: 'Need more info', text: 'Thanks for your message. Could you please provide more details about the issue so we can assist you better?' },
+  { label: 'Order lookup', text: 'I\'m looking into your order now. Please give me a moment to review the details.' },
+  { label: 'Issue resolved', text: 'Great news! The issue has been resolved. Please let us know if you need anything else.' },
+  { label: 'Refund processing', text: 'Your refund has been initiated. It typically takes 5-10 business days to appear in your account.' },
+  { label: 'Escalating', text: 'I\'m escalating this to our senior support team for further investigation. You\'ll receive an update shortly.' },
+  { label: 'Follow up', text: 'Just checking in — were you able to resolve the issue? Let us know if you still need help!' },
+];
+
 const ATTACHMENT_BUCKET = 'support-ticket-attachments';
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 export default function CustomerTicketDetail() {
   const { ticketId } = useParams();
@@ -78,10 +107,11 @@ export default function CustomerTicketDetail() {
   const [newMessage, setNewMessage] = useState('');
   const [isInternalNote, setIsInternalNote] = useState(false);
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [showContext, setShowContext] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Fetch ticket
+  // ── Ticket ────────────────────────────────────────────────────────────────
   const { data: ticket, isLoading: loadingTicket } = useQuery({
     queryKey: ['admin-ticket', ticketId],
     queryFn: async () => {
@@ -96,7 +126,7 @@ export default function CustomerTicketDetail() {
     enabled: !!ticketId,
   });
 
-  // Fetch messages (including internal notes for staff)
+  // ── Messages ──────────────────────────────────────────────────────────────
   const { data: messages, isLoading: loadingMessages } = useQuery({
     queryKey: ['admin-ticket-messages', ticketId],
     queryFn: async () => {
@@ -111,14 +141,14 @@ export default function CustomerTicketDetail() {
     enabled: !!ticketId,
   });
 
-  // Fetch customer profile
+  // ── Customer profile ──────────────────────────────────────────────────────
   const { data: customerProfile } = useQuery({
     queryKey: ['customer-profile', ticket?.user_id],
     queryFn: async () => {
       if (!ticket?.user_id) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, display_name, avatar_url, email')
+        .select('user_id, display_name, avatar_url, email, customer_id, created_at, discord_username, roblox_username')
         .eq('user_id', ticket.user_id)
         .single();
       if (error) return null;
@@ -127,7 +157,58 @@ export default function CustomerTicketDetail() {
     enabled: !!ticket?.user_id,
   });
 
-  // Realtime subscription
+  // ── Customer order history ────────────────────────────────────────────────
+  const { data: customerOrders } = useQuery({
+    queryKey: ['customer-orders', ticket?.user_id],
+    queryFn: async () => {
+      if (!ticket?.user_id) return [];
+      const { data, error } = await supabase
+        .from('orders')
+        .select('id, order_number, total, status, created_at')
+        .eq('user_id', ticket.user_id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (error) return [];
+      return data;
+    },
+    enabled: !!ticket?.user_id,
+  });
+
+  // ── Customer past tickets ─────────────────────────────────────────────────
+  const { data: pastTickets } = useQuery({
+    queryKey: ['customer-past-tickets', ticket?.user_id, ticketId],
+    queryFn: async () => {
+      if (!ticket?.user_id) return [];
+      const { data, error } = await supabase
+        .from('support_tickets')
+        .select('id, ticket_number, subject, status, created_at')
+        .eq('user_id', ticket.user_id)
+        .neq('id', ticketId!)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (error) return [];
+      return data;
+    },
+    enabled: !!ticket?.user_id && !!ticketId,
+  });
+
+  // ── Assigned staff profile ────────────────────────────────────────────────
+  const { data: assignedProfile } = useQuery({
+    queryKey: ['assigned-profile', ticket?.assigned_to],
+    queryFn: async () => {
+      if (!ticket?.assigned_to) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url')
+        .eq('user_id', ticket.assigned_to)
+        .single();
+      if (error) return null;
+      return data;
+    },
+    enabled: !!ticket?.assigned_to,
+  });
+
+  // ── Realtime ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!ticketId) return;
     const channel = supabase
@@ -139,18 +220,34 @@ export default function CustomerTicketDetail() {
     return () => { supabase.removeChannel(channel); };
   }, [ticketId, queryClient]);
 
-  // Scroll to bottom
+  // ── Scroll to bottom ─────────────────────────────────────────────────────
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Send message mutation
+  // ── Grouped messages by date ──────────────────────────────────────────────
+  const groupedMessages = useMemo(() => {
+    if (!messages) return [];
+    const groups: { date: string; messages: TicketMessage[] }[] = [];
+    let currentDate = '';
+    for (const msg of messages) {
+      const date = format(new Date(msg.created_at), 'MMM d, yyyy');
+      if (date !== currentDate) {
+        currentDate = date;
+        groups.push({ date, messages: [msg] });
+      } else {
+        groups[groups.length - 1].messages.push(msg);
+      }
+    }
+    return groups;
+  }, [messages]);
+
+  // ── Send message ──────────────────────────────────────────────────────────
   const sendMessage = useMutation({
     mutationFn: async ({ message, isInternal }: { message: string; isInternal: boolean }) => {
       if (!user?.id) throw new Error('Not authenticated');
 
       let attachmentUrl: string | null = null;
-
       if (attachmentFile) {
         const fileExt = attachmentFile.name.split('.').pop();
         const filePath = `${user.id}/${ticketId}/${Date.now()}.${fileExt}`;
@@ -167,7 +264,7 @@ export default function CustomerTicketDetail() {
           ticket_id: ticketId,
           sender_id: user.id,
           sender_type: 'staff',
-          message: message.trim() || (attachmentUrl ? '📎 Attachment' : ''),
+          message: message.trim() || (attachmentUrl ? '\uD83D\uDCCE Attachment' : ''),
           is_internal_note: isInternal,
           attachment_url: attachmentUrl,
         });
@@ -176,11 +273,7 @@ export default function CustomerTicketDetail() {
       const newStatus = isInternal ? ticket?.status : 'awaiting_customer';
       await supabase
         .from('support_tickets')
-        .update({
-          status: newStatus,
-          updated_at: new Date().toISOString(),
-          assigned_to: user.id,
-        })
+        .update({ status: newStatus, updated_at: new Date().toISOString(), assigned_to: user.id })
         .eq('id', ticketId);
     },
     onSuccess: () => {
@@ -191,12 +284,10 @@ export default function CustomerTicketDetail() {
       queryClient.invalidateQueries({ queryKey: ['admin-ticket', ticketId] });
       toast.success(isInternalNote ? 'Internal note added' : 'Reply sent');
     },
-    onError: () => {
-      toast.error('Failed to send message');
-    },
+    onError: () => toast.error('Failed to send message'),
   });
 
-  // Update status mutation
+  // ── Update status ─────────────────────────────────────────────────────────
   const updateStatus = useMutation({
     mutationFn: async (newStatus: string) => {
       const { error } = await supabase
@@ -209,14 +300,51 @@ export default function CustomerTicketDetail() {
       queryClient.invalidateQueries({ queryKey: ['admin-ticket', ticketId] });
       toast.success('Status updated');
     },
-    onError: () => {
-      toast.error('Failed to update status');
+    onError: () => toast.error('Failed to update status'),
+  });
+
+  // ── Update priority ───────────────────────────────────────────────────────
+  const updatePriority = useMutation({
+    mutationFn: async (newPriority: string) => {
+      const { error } = await supabase
+        .from('support_tickets')
+        .update({ priority: newPriority, updated_at: new Date().toISOString() })
+        .eq('id', ticketId);
+      if (error) throw error;
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-ticket', ticketId] });
+      toast.success('Priority updated');
+    },
+    onError: () => toast.error('Failed to update priority'),
+  });
+
+  // ── Claim ticket ──────────────────────────────────────────────────────────
+  const claimTicket = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('support_tickets')
+        .update({ assigned_to: user?.id, status: 'in_progress', updated_at: new Date().toISOString() })
+        .eq('id', ticketId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-ticket', ticketId] });
+      toast.success('Ticket claimed');
+    },
+    onError: () => toast.error('Failed to claim ticket'),
   });
 
   const handleSend = () => {
     if (!newMessage.trim() && !attachmentFile) return;
     sendMessage.mutate({ message: newMessage, isInternal: isInternalNote });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      handleSend();
+    }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -230,12 +358,17 @@ export default function CustomerTicketDetail() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  const insertCannedResponse = (text: string) => {
+    setNewMessage(prev => prev ? `${prev}\n\n${text}` : text);
+  };
+
+  // ── Loading / not found ───────────────────────────────────────────────────
   if (loadingTicket) {
     return (
       <AdminLayout>
         <div className="space-y-4">
           <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-64 rounded-xl" />
+          <Skeleton className="h-[70vh] rounded-xl" />
         </div>
       </AdminLayout>
     );
@@ -246,9 +379,7 @@ export default function CustomerTicketDetail() {
       <AdminLayout>
         <div className="text-center py-12">
           <h1 className="text-2xl font-bold mb-2">Ticket not found</h1>
-          <Button variant="outline" onClick={() => navigate('/admin/customer-tickets')}>
-            Back to Tickets
-          </Button>
+          <Button variant="outline" onClick={() => navigate('/admin/customer-tickets')}>Back to Tickets</Button>
         </div>
       </AdminLayout>
     );
@@ -259,210 +390,428 @@ export default function CustomerTicketDetail() {
 
   return (
     <AdminLayout>
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div>
-          <Button variant="ghost" size="sm" className="mb-2 -ml-2" onClick={() => navigate('/admin/customer-tickets')}>
+      <div className="space-y-4">
+        {/* ── Top bar ──────────────────────────────────────────────────────── */}
+        <div className="flex flex-col gap-3">
+          <Button variant="ghost" size="sm" className="-ml-2 w-fit" onClick={() => navigate('/admin/customer-tickets')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Tickets
           </Button>
 
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <Badge variant="outline" className="font-mono text-xs">{ticket.ticket_number}</Badge>
-                <Badge className={cn('text-xs', status.color)}>{status.label}</Badge>
-                {ticket.priority === 'high' && (
-                  <Badge variant="destructive" className="text-xs">High Priority</Badge>
-                )}
-              </div>
-              <h1 className="text-xl font-bold">{ticket.subject}</h1>
-              <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mt-1">
-                <span className="flex items-center gap-1">
-                  <User className="h-3.5 w-3.5" />
-                  {customerProfile?.display_name || ticket.customer_email}
-                </span>
-                {categoryLabel && (
-                  <span className="flex items-center gap-1">
-                    <Tag className="h-3.5 w-3.5" />
-                    {categoryLabel}
-                  </span>
-                )}
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3.5 w-3.5" />
-                  {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}
-                </span>
-              </div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="outline" className="font-mono text-xs">{ticket.ticket_number}</Badge>
+              <Badge className={cn('text-xs', status.color)}>{status.label}</Badge>
+              {ticket.priority === 'high' && <Badge variant="destructive" className="text-xs">High</Badge>}
+              {ticket.priority === 'urgent' && <Badge variant="destructive" className="text-xs"><AlertTriangle className="h-3 w-3 mr-1" />Urgent</Badge>}
+              {categoryLabel && <Badge variant="secondary" className="text-xs">{categoryLabel}</Badge>}
             </div>
 
-            <Select value={ticket.status} onValueChange={(v) => updateStatus.mutate(v)}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="open">Open</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="awaiting_customer">Awaiting Customer</SelectItem>
-                <SelectItem value="resolved">Resolved</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Customer Info */}
-        <Card>
-          <CardHeader className="py-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Customer Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="py-3">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-12 w-12">
-                <AvatarImage src={customerProfile?.avatar_url || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary">
-                  {customerProfile?.display_name?.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="font-medium">{customerProfile?.display_name || 'Unknown'}</div>
-                <div className="text-sm text-muted-foreground flex items-center gap-1">
-                  <Mail className="h-3.5 w-3.5" />
-                  {ticket.customer_email}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Messages */}
-        <Card>
-          <CardHeader className="py-3">
-            <CardTitle className="text-sm font-medium">Conversation</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 max-h-[50vh] overflow-y-auto">
-            {loadingMessages ? (
-              <div className="space-y-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-16 rounded-lg" />
-                ))}
-              </div>
-            ) : messages?.length === 0 ? (
-              <div className="text-center text-muted-foreground py-8">
-                <p>No messages yet.</p>
-              </div>
-            ) : (
-              messages?.map((msg) => {
-                const isStaff = msg.sender_type === 'staff';
-                const isInternal = msg.is_internal_note;
-
-                return (
-                  <div key={msg.id} className={cn('flex gap-3', isStaff ? 'flex-row-reverse' : 'flex-row')}>
-                    <Avatar className="h-8 w-8 shrink-0">
-                      {isStaff ? (
-                        <AvatarFallback className="bg-green-500/20 text-green-500">
-                          <Headphones className="h-4 w-4" />
-                        </AvatarFallback>
-                      ) : (
-                        <>
-                          <AvatarImage src={customerProfile?.avatar_url || undefined} />
-                          <AvatarFallback className="bg-primary/20 text-primary">
-                            <User className="h-4 w-4" />
-                          </AvatarFallback>
-                        </>
-                      )}
-                    </Avatar>
-                    <div
-                      className={cn(
-                        'max-w-[75%] rounded-lg px-3 py-2',
-                        isInternal
-                          ? 'bg-yellow-500/10 border border-yellow-500/30'
-                          : isStaff
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
-                      )}
-                    >
-                      <div className="text-xs opacity-70 mb-1 flex items-center gap-1">
-                        {isInternal && <Eye className="h-3 w-3" />}
-                        {isStaff ? 'Staff' : (customerProfile?.display_name || 'Customer')} •{' '}
-                        {format(new Date(msg.created_at), 'MMM d, h:mm a')}
-                        {isInternal && <span className="ml-1">(Internal Note)</span>}
-                      </div>
-                      <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
-                      {msg.attachment_url && (
-                        <div className="mt-2">
-                          <AttachmentDisplay url={msg.attachment_url} bucket={ATTACHMENT_BUCKET} />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-            <div ref={messagesEndRef} />
-          </CardContent>
-        </Card>
-
-        {/* Reply Input */}
-        <Card>
-          <CardContent className="p-4 space-y-3">
-            {attachmentFile && (
-              <div className="flex items-center gap-2 text-sm bg-muted rounded-md px-3 py-1.5">
-                <Paperclip className="h-3 w-3 shrink-0" />
-                <span className="truncate flex-1">{attachmentFile.name}</span>
-                <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setAttachmentFile(null)}>
-                  <X className="h-3 w-3" />
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Claim */}
+              {!ticket.assigned_to && (
+                <Button size="sm" variant="outline" onClick={() => claimTicket.mutate()} disabled={claimTicket.isPending}>
+                  <UserCheck className="h-4 w-4 mr-1" />
+                  Claim
                 </Button>
-              </div>
-            )}
-            <Textarea
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder={isInternalNote ? "Add an internal note (not visible to customer)..." : "Type your reply..."}
-              className="min-h-[80px]"
-            />
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept="image/*,.pdf,.zip,.rar,.txt,.doc,.docx"
-                  onChange={handleFileSelect}
-                />
-                <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                  <Paperclip className="h-4 w-4 mr-2" />
-                  Attach
-                </Button>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="internal"
-                    checked={isInternalNote}
-                    onCheckedChange={(checked) => setIsInternalNote(!!checked)}
-                  />
-                  <Label htmlFor="internal" className="text-sm text-muted-foreground cursor-pointer">
-                    Internal note
-                  </Label>
-                </div>
-              </div>
-              <Button
-                onClick={handleSend}
-                disabled={(!newMessage.trim() && !attachmentFile) || sendMessage.isPending}
-                className={isInternalNote ? '' : 'gradient-button'}
-                variant={isInternalNote ? 'outline' : 'default'}
-              >
-                {sendMessage.isPending ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4 mr-2" />
-                )}
-                {isInternalNote ? 'Add Note' : 'Send Reply'}
+              )}
+
+              {/* Priority */}
+              <Select value={ticket.priority || 'medium'} onValueChange={(v) => updatePriority.mutate(v)}>
+                <SelectTrigger className="w-auto min-w-[110px] h-9 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low Priority</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High Priority</SelectItem>
+                  <SelectItem value="urgent">Urgent</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Status */}
+              <Select value={ticket.status} onValueChange={(v) => updateStatus.mutate(v)}>
+                <SelectTrigger className="w-auto min-w-[140px] h-9 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="open">Open</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="awaiting_customer">Awaiting Customer</SelectItem>
+                  <SelectItem value="resolved">Resolved</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Toggle context on mobile */}
+              <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setShowContext(!showContext)}>
+                <User className="h-4 w-4" />
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          <h1 className="text-lg font-bold">{ticket.subject}</h1>
+        </div>
+
+        {/* ── Main content: conversation + context sidebar ─────────────────── */}
+        <div className="flex flex-col md:flex-row gap-4">
+          {/* ── Conversation panel ─────────────────────────────────────────── */}
+          <div className="flex-1 min-w-0 flex flex-col">
+            <Card className="flex-1 flex flex-col">
+              <CardHeader className="py-3 px-4 border-b">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Conversation
+                  <span className="text-muted-foreground font-normal">({messages?.length || 0} messages)</span>
+                </CardTitle>
+              </CardHeader>
+
+              {/* Messages area */}
+              <ScrollArea className="flex-1 max-h-[50vh] md:max-h-[55vh]">
+                <div className="p-4 space-y-6">
+                  {loadingMessages ? (
+                    <div className="space-y-4">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <Skeleton key={i} className="h-16 rounded-lg" />
+                      ))}
+                    </div>
+                  ) : messages?.length === 0 ? (
+                    <div className="text-center text-muted-foreground py-8">
+                      <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>No messages yet.</p>
+                    </div>
+                  ) : (
+                    groupedMessages.map((group) => (
+                      <div key={group.date} className="space-y-4">
+                        {/* Date separator */}
+                        <div className="flex items-center gap-3">
+                          <Separator className="flex-1" />
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">{group.date}</span>
+                          <Separator className="flex-1" />
+                        </div>
+
+                        {group.messages.map((msg) => {
+                          const isStaff = msg.sender_type === 'staff';
+                          const isInternal = msg.is_internal_note;
+
+                          return (
+                            <div key={msg.id} className={cn('flex gap-3', isStaff ? 'flex-row-reverse' : 'flex-row')}>
+                              <Avatar className="h-8 w-8 shrink-0 mt-1">
+                                {isStaff ? (
+                                  <AvatarFallback className="bg-green-500/20 text-green-500">
+                                    <Headphones className="h-4 w-4" />
+                                  </AvatarFallback>
+                                ) : (
+                                  <>
+                                    <AvatarImage src={customerProfile?.avatar_url || undefined} />
+                                    <AvatarFallback className="bg-primary/20 text-primary">
+                                      <User className="h-4 w-4" />
+                                    </AvatarFallback>
+                                  </>
+                                )}
+                              </Avatar>
+                              <div className={cn(
+                                'max-w-[80%] rounded-xl px-4 py-2.5',
+                                isInternal
+                                  ? 'bg-yellow-500/10 border border-yellow-500/30 border-dashed'
+                                  : isStaff
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-muted'
+                              )}>
+                                <div className={cn(
+                                  'text-xs mb-1 flex items-center gap-1.5',
+                                  isStaff && !isInternal ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                                )}>
+                                  {isInternal && <Eye className="h-3 w-3" />}
+                                  <span className="font-medium">
+                                    {isStaff ? 'Staff' : (customerProfile?.display_name || 'Customer')}
+                                  </span>
+                                  <span>•</span>
+                                  <span>{format(new Date(msg.created_at), 'h:mm a')}</span>
+                                  {isInternal && <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-yellow-500/50 text-yellow-600">Note</Badge>}
+                                </div>
+                                <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{msg.message}</p>
+                                {msg.attachment_url && (
+                                  <div className="mt-2">
+                                    <AttachmentDisplay url={msg.attachment_url} bucket={ATTACHMENT_BUCKET} />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+              </ScrollArea>
+
+              {/* Reply input */}
+              <div className="border-t p-4 space-y-3">
+                {attachmentFile && (
+                  <div className="flex items-center gap-2 text-sm bg-muted rounded-md px-3 py-1.5">
+                    <Paperclip className="h-3 w-3 shrink-0" />
+                    <span className="truncate flex-1">{attachmentFile.name}</span>
+                    <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setAttachmentFile(null)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+
+                <Textarea
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={isInternalNote ? 'Add an internal note (staff only)...' : 'Type your reply to the customer...'}
+                  className={cn(
+                    'min-h-[80px] resize-none',
+                    isInternalNote && 'border-yellow-500/30 bg-yellow-500/5'
+                  )}
+                />
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*,.pdf,.zip,.rar,.txt,.doc,.docx"
+                      onChange={handleFileSelect}
+                    />
+                    <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                      <Paperclip className="h-3.5 w-3.5 mr-1.5" />
+                      Attach
+                    </Button>
+
+                    {/* Canned responses */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Zap className="h-3.5 w-3.5 mr-1.5" />
+                          Quick Reply
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-64">
+                        <DropdownMenuLabel>Canned Responses</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {CANNED_RESPONSES.map((resp) => (
+                          <DropdownMenuItem key={resp.label} onClick={() => insertCannedResponse(resp.text)}>
+                            <div>
+                              <div className="font-medium text-sm">{resp.label}</div>
+                              <div className="text-xs text-muted-foreground truncate max-w-[220px]">{resp.text}</div>
+                            </div>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <div className="flex items-center gap-1.5">
+                      <Checkbox
+                        id="internal"
+                        checked={isInternalNote}
+                        onCheckedChange={(checked) => setIsInternalNote(!!checked)}
+                      />
+                      <Label htmlFor="internal" className="text-xs text-muted-foreground cursor-pointer">
+                        Internal note
+                      </Label>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handleSend}
+                    disabled={(!newMessage.trim() && !attachmentFile) || sendMessage.isPending}
+                    className={isInternalNote ? '' : 'gradient-button'}
+                    variant={isInternalNote ? 'outline' : 'default'}
+                  >
+                    {sendMessage.isPending ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    {isInternalNote ? 'Add Note' : 'Send Reply'}
+                  </Button>
+                </div>
+
+                <p className="text-[10px] text-muted-foreground">
+                  Press Ctrl+Enter to send
+                </p>
+              </div>
+            </Card>
+          </div>
+
+          {/* ── Context sidebar ────────────────────────────────────────────── */}
+          <div className={cn(
+            'md:w-80 lg:w-96 space-y-4 shrink-0',
+            !showContext && 'hidden md:block'
+          )}>
+            {/* Customer info */}
+            <Card>
+              <CardHeader className="py-3 px-4">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Customer
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={customerProfile?.avatar_url || undefined} />
+                    <AvatarFallback className="bg-primary/20 text-primary">
+                      {customerProfile?.display_name?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <div className="font-medium text-sm truncate">{customerProfile?.display_name || 'Unknown'}</div>
+                    <div className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                      <Mail className="h-3 w-3 shrink-0" />
+                      {ticket.customer_email}
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-muted-foreground">Customer ID</span>
+                    <p className="font-mono mt-0.5">{customerProfile?.customer_id || '—'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Member since</span>
+                    <p className="mt-0.5">{customerProfile?.created_at ? format(new Date(customerProfile.created_at), 'MMM yyyy') : '—'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Discord</span>
+                    <p className="mt-0.5 truncate">{customerProfile?.discord_username || '—'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Roblox</span>
+                    <p className="mt-0.5 truncate">{customerProfile?.roblox_username || '—'}</p>
+                  </div>
+                </div>
+
+                {/* Assigned to */}
+                {ticket.assigned_to && (
+                  <>
+                    <Separator />
+                    <div className="flex items-center gap-2 text-xs">
+                      <UserCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-muted-foreground">Assigned to</span>
+                      <span className="font-medium">{assignedProfile?.display_name || 'Staff'}</span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Recent orders */}
+            <Collapsible defaultOpen>
+              <Card>
+                <CollapsibleTrigger className="w-full">
+                  <CardHeader className="py-3 px-4 flex flex-row items-center justify-between">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <ShoppingBag className="h-4 w-4" />
+                      Recent Orders
+                      {customerOrders && customerOrders.length > 0 && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 h-4">{customerOrders.length}</Badge>
+                      )}
+                    </CardTitle>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-180" />
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="px-4 pb-4 space-y-2">
+                    {!customerOrders?.length ? (
+                      <p className="text-xs text-muted-foreground text-center py-3">No orders found</p>
+                    ) : (
+                      customerOrders.map((order) => (
+                        <div key={order.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50 text-xs">
+                          <div>
+                            <span className="font-mono font-medium">{order.order_number}</span>
+                            <p className="text-muted-foreground mt-0.5">
+                              {formatDistanceToNow(new Date(order.created_at), { addSuffix: true })}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-medium">&pound;{Number(order.total).toFixed(2)}</span>
+                            <Badge variant="outline" className="ml-2 text-[10px] px-1.5 h-4">{order.status}</Badge>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+
+            {/* Past tickets */}
+            <Collapsible>
+              <Card>
+                <CollapsibleTrigger className="w-full">
+                  <CardHeader className="py-3 px-4 flex flex-row items-center justify-between">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <History className="h-4 w-4" />
+                      Past Tickets
+                      {pastTickets && pastTickets.length > 0 && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 h-4">{pastTickets.length}</Badge>
+                      )}
+                    </CardTitle>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-180" />
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="px-4 pb-4 space-y-2">
+                    {!pastTickets?.length ? (
+                      <p className="text-xs text-muted-foreground text-center py-3">No past tickets</p>
+                    ) : (
+                      pastTickets.map((pt) => (
+                        <div
+                          key={pt.id}
+                          className="p-2 rounded-lg bg-muted/50 text-xs cursor-pointer hover:bg-muted transition-colors"
+                          onClick={() => navigate(`/admin/customer-tickets/${pt.id}`)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="font-mono text-[10px] px-1 h-4">{pt.ticket_number}</Badge>
+                            <Badge className={cn('text-[10px] px-1.5 h-4', statusConfig[pt.status]?.color || '')}>{statusConfig[pt.status]?.label || pt.status}</Badge>
+                          </div>
+                          <p className="truncate mt-1">{pt.subject}</p>
+                          <p className="text-muted-foreground mt-0.5">{formatDistanceToNow(new Date(pt.created_at), { addSuffix: true })}</p>
+                        </div>
+                      ))
+                    )}
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+
+            {/* Ticket meta */}
+            <Card>
+              <CardHeader className="py-3 px-4">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Ticket Info
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4 space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Created</span>
+                  <span>{format(new Date(ticket.created_at), 'MMM d, yyyy h:mm a')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Last updated</span>
+                  <span>{formatDistanceToNow(new Date(ticket.updated_at), { addSuffix: true })}</span>
+                </div>
+                {categoryLabel && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Category</span>
+                    <span>{categoryLabel}</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );
