@@ -49,7 +49,7 @@ serve(async (req) => {
     if (!user?.id) throw new Error("User not authenticated");
     logStep("User authenticated", { userId: user.id });
 
-    const { amount } = await req.json();
+    const { amount, method } = await req.json();
 
     // Validate amount is a number
     if (typeof amount !== 'number' || !Number.isFinite(amount) || !Number.isInteger(amount)) {
@@ -62,6 +62,11 @@ serve(async (req) => {
 
     if (amount > MAXIMUM_PAYOUT_AMOUNT) {
       throw new Error(`Maximum payout amount is £${(MAXIMUM_PAYOUT_AMOUNT / 100).toFixed(2)}`);
+    }
+
+    // Validate method
+    if (method && !['stripe', 'paypal'].includes(method)) {
+      throw new Error("Invalid payout method");
     }
 
     // Check for pending payouts FIRST (before touching balance)
@@ -92,6 +97,22 @@ serve(async (req) => {
 
     logStep("Balance check passed", { available: balance.available_balance, requested: amount });
 
+    // Get user's affiliate application to check payout method and details
+    const { data: application, error: appError } = await supabaseClient
+      .from('affiliate_applications')
+      .select('paypal_email, preferred_payout_method')
+      .eq('user_id', user.id)
+      .eq('status', 'approved')
+      .single();
+
+    if (appError || !application) {
+      throw new Error("No approved affiliate application found");
+    }
+
+    // Determine which payout method to use
+    const payoutMethod = method || application.preferred_payout_method || 'paypal';
+    logStep("Payout method determined", { payoutMethod });
+
     // Get user's profile for stripe_account_id
     const { data: profile } = await supabaseClient
       .from('profiles')
@@ -99,8 +120,15 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .single();
 
-    if (!profile?.stripe_account_id) {
-      throw new Error("Please connect your Stripe account first to receive payouts.");
+    // Validate based on payout method
+    if (payoutMethod === 'stripe') {
+      if (!profile?.stripe_account_id) {
+        throw new Error("Please connect your Stripe account first to receive automatic payouts.");
+      }
+    } else {
+      if (!application.paypal_email) {
+        throw new Error("Please add your PayPal email to receive payouts. Update your payout settings.");
+      }
     }
 
     // Deduct from available balance first
@@ -121,61 +149,91 @@ serve(async (req) => {
 
     logStep("Balance deducted", { previousBalance: balance.available_balance, newBalance, amount });
 
-    // Process Stripe transfer
-    try {
-      const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-      if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-      
-      const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+    // For Stripe payouts, attempt automatic transfer
+    if (payoutMethod === 'stripe' && profile?.stripe_account_id) {
+      try {
+        const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+        if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+        
+        const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
-      const transfer = await stripe.transfers.create({
-        amount: amount,
-        currency: 'gbp',
-        destination: profile.stripe_account_id,
-        metadata: {
-          user_id: user.id,
-          type: 'affiliate_payout',
-        },
-      });
-
-      logStep("Stripe transfer created", { transferId: transfer.id, amount });
-
-      const { data: payout } = await supabaseClient
-        .from('affiliate_payouts')
-        .insert({
-          user_id: user.id,
+        const transfer = await stripe.transfers.create({
           amount: amount,
-          stripe_account_id: profile.stripe_account_id,
-          payout_method: 'stripe',
-          status: 'completed',
-          processed_at: new Date().toISOString(),
-          notes: `Automatic Stripe transfer: ${transfer.id}`,
-        })
-        .select()
-        .single();
+          currency: 'gbp',
+          destination: profile.stripe_account_id,
+          metadata: {
+            user_id: user.id,
+            type: 'affiliate_payout',
+          },
+        });
 
-      // Update total_paid
-      await supabaseClient
-        .from('affiliate_balances')
-        .update({
-          total_paid: (balance.available_balance - newBalance) + amount,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', user.id);
+        logStep("Stripe transfer created", { transferId: transfer.id, amount });
 
-      return new Response(JSON.stringify({ 
-        success: true,
-        payoutId: payout?.id,
-        transferId: transfer.id,
-        method: 'stripe',
-        message: "Payout completed! Funds have been transferred to your Stripe account.",
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+        const { data: payout } = await supabaseClient
+          .from('affiliate_payouts')
+          .insert({
+            user_id: user.id,
+            amount: amount,
+            stripe_account_id: profile.stripe_account_id,
+            payout_method: 'stripe',
+            status: 'completed',
+            processed_at: new Date().toISOString(),
+            notes: `Automatic Stripe transfer: ${transfer.id}`,
+          })
+          .select()
+          .single();
 
-    } catch (stripeError) {
-      // Rollback balance deduction on Stripe failure
+        // Update total_paid
+        await supabaseClient
+          .from('affiliate_balances')
+          .update({
+            total_paid: (balance.available_balance - newBalance) + amount,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', user.id);
+
+        return new Response(JSON.stringify({ 
+          success: true,
+          payoutId: payout?.id,
+          transferId: transfer.id,
+          method: 'stripe',
+          message: "Payout completed! Funds have been transferred to your Stripe account.",
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+
+      } catch (stripeError) {
+        // Rollback balance deduction on Stripe failure
+        await supabaseClient
+          .from('affiliate_balances')
+          .update({ 
+            available_balance: balance.available_balance,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', user.id);
+
+        const errorMsg = stripeError instanceof Error ? stripeError.message : String(stripeError);
+        logStep("Stripe transfer failed, balance rolled back", { error: errorMsg });
+        throw new Error(`Stripe transfer failed: ${errorMsg}`);
+      }
+    }
+
+    // PayPal payout - create pending request
+    const { data: payout, error: payoutError } = await supabaseClient
+      .from('affiliate_payouts')
+      .insert({
+        user_id: user.id,
+        amount: amount,
+        paypal_email: application.paypal_email,
+        payout_method: 'paypal',
+        status: 'pending',
+      })
+      .select()
+      .single();
+
+    if (payoutError) {
+      // Rollback balance deduction
       await supabaseClient
         .from('affiliate_balances')
         .update({ 
@@ -183,11 +241,20 @@ serve(async (req) => {
           updated_at: new Date().toISOString(),
         })
         .eq('user_id', user.id);
-
-      const errorMsg = stripeError instanceof Error ? stripeError.message : String(stripeError);
-      logStep("Stripe transfer failed, balance rolled back", { error: errorMsg });
-      throw new Error(`Stripe transfer failed: ${errorMsg}`);
+      throw new Error("Failed to create payout request");
     }
+
+    logStep("PayPal payout request created", { payoutId: payout.id, amount });
+
+    return new Response(JSON.stringify({ 
+      success: true,
+      payoutId: payout.id,
+      method: 'paypal',
+      message: "Payout request submitted! Your PayPal payment will be processed today.",
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
