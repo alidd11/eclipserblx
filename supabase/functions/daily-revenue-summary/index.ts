@@ -39,8 +39,12 @@ serve(async (req) => {
       });
     }
 
-    let channelId = setting.value;
-    try { channelId = JSON.parse(channelId); } catch { /* already plain string */ }
+    // value is JSONB — could be a JSON string or number (precision-lossy for snowflakes)
+    // Always treat as string; if it's a number, toString will lose precision, so store as JSON string
+    let channelId = typeof setting.value === "string" ? setting.value : String(setting.value);
+    // Strip surrounding quotes if present
+    channelId = channelId.replace(/^"|"$/g, "");
+    LOG("Resolved channel ID", { channelId });
 
     const now = new Date();
     const todayStart = new Date(now);
