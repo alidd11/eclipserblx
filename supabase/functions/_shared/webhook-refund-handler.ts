@@ -96,13 +96,20 @@ export async function processRefund(
     });
   }
 
-  // Finance server notification (fire-and-forget)
+  // Finance server notification with real store data
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    let storeName: string | null = null;
+    const { data: firstItem } = await supabase.from("order_items").select("product_id").eq("order_id", orderId).limit(1).maybeSingle();
+    if (firstItem?.product_id) {
+      const { data: prod } = await supabase.from("products").select("stores(name)").eq("id", firstItem.product_id).maybeSingle();
+      const s = (prod as any)?.stores;
+      storeName = Array.isArray(s) ? s[0]?.name : s?.name;
+    }
     await fetch(`${supabaseUrl}/functions/v1/finance-notify`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
-      body: JSON.stringify({ type: "refund_processed", data: { orderId, userId: order.user_id, amount: refundAmount / 100, reason: isFullRefund ? "Full refund" : "Partial refund" } }),
+      body: JSON.stringify({ type: "refund_processed", data: { orderId, userId: order.user_id, amount: refundAmount / 100, storeName: storeName || "Unknown", reason: isFullRefund ? "Full refund" : "Partial refund" } }),
     });
   } catch { /* non-fatal */ }
 
