@@ -61,7 +61,7 @@ serve(async (req) => {
     switch (type) {
       case "new_sale": {
         channel = "sales";
-        const { orderId, customerEmail, productNames, total, sellerName, storeName } = data;
+        const { orderId, productNames, total, sellerName, storeName } = data;
         embed = {
           title: "\uD83D\uDCB0 New Sale",
           color: 0x2ecc71,
@@ -69,7 +69,6 @@ serve(async (req) => {
             { name: "\uD83D\uDCE6 Products", value: (productNames || []).join("\n") || "N/A", inline: false },
             { name: "\uD83C\uDFEA Store", value: storeName || sellerName || "Unknown", inline: true },
             { name: "\uD83D\uDCB7 Total", value: `\u00A3${Number(total || 0).toFixed(2)}`, inline: true },
-            { name: "\uD83D\uDCE7 Customer", value: customerEmail || "N/A", inline: true },
           ],
           footer: { text: `Order: ${orderId || "N/A"}` },
           timestamp: new Date().toISOString(),
@@ -79,7 +78,7 @@ serve(async (req) => {
 
       case "dispute_opened": {
         channel = "disputes";
-        const { disputeNumber, reason, amount, customerEmail: email, storeName: store, orderId: oid } = data;
+        const { disputeNumber, reason, amount, storeName: store, orderId: oid } = data;
         embed = {
           title: "\u26A0\uFE0F Dispute Opened",
           color: 0xe74c3c,
@@ -87,7 +86,6 @@ serve(async (req) => {
             { name: "Dispute #", value: disputeNumber || "N/A", inline: true },
             { name: "Amount", value: `\u00A3${Number(amount || 0).toFixed(2)}`, inline: true },
             { name: "Store", value: store || "N/A", inline: true },
-            { name: "Customer", value: email || "N/A", inline: true },
             { name: "Order", value: oid || "N/A", inline: true },
             { name: "Reason", value: (reason || "No reason provided").slice(0, 200), inline: false },
           ],
@@ -130,14 +128,13 @@ serve(async (req) => {
 
       case "refund_processed": {
         channel = "refunds";
-        const { orderId: roi, amount: ra, customerEmail: rce, storeName: rs, reason: rr } = data;
+        const { orderId: roi, amount: ra, storeName: rs, reason: rr } = data;
         embed = {
           title: "\uD83D\uDD04 Refund Processed",
           color: 0xf39c12,
           fields: [
             { name: "Amount", value: `\u00A3${Number(ra || 0).toFixed(2)}`, inline: true },
             { name: "Store", value: rs || "N/A", inline: true },
-            { name: "Customer", value: rce || "N/A", inline: true },
             { name: "Order", value: roi || "N/A", inline: true },
             { name: "Reason", value: (rr || "N/A").slice(0, 200), inline: false },
           ],
