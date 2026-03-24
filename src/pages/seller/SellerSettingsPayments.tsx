@@ -383,7 +383,7 @@ export default function SellerSettingsPayments() {
                       <Building2 className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Manual bank transfers for overseas accounts. Ideal for sellers outside Stripe-supported regions.
+                      Manual bank transfers for overseas accounts. Ideal for sellers outside supported regions.
                     </p>
                   </label>
                 </div>
