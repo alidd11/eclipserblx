@@ -17,27 +17,32 @@ serve(async (req) => {
   }
 
   try {
+    const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
+    if (!botToken) throw new Error("DISCORD_CUSTOMER_BOT_TOKEN not set");
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Get webhook URL
+    // Get channel ID
     const { data: setting } = await supabase
       .from("settings")
       .select("value")
-      .eq("key", "finance_webhook_daily_report")
+      .eq("key", "finance_channel_daily_report")
       .single();
 
     if (!setting?.value) {
-      return new Response(JSON.stringify({ error: "No daily report webhook configured. Add a 'finance_webhook_daily_report' setting." }), {
+      return new Response(JSON.stringify({ error: "No daily report channel configured. Add a 'finance_channel_daily_report' setting." }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    let webhookUrl = setting.value;
-    try { webhookUrl = JSON.parse(webhookUrl); } catch { /* already plain string */ }
+    let channelId = typeof setting.value === "string" ? setting.value : String(setting.value);
+    channelId = channelId.replace(/^"|"$/g, "").replace(/^ch_/, "");
+    LOG("Resolved channel ID", { channelId });
+
     const now = new Date();
     const todayStart = new Date(now);
     todayStart.setUTCHours(0, 0, 0, 0);
@@ -56,9 +61,9 @@ serve(async (req) => {
     const todayRevenue = (todayOrders || []).reduce((sum, o) => sum + (o.total || 0), 0);
 
     // Yesterday's orders (for comparison)
-    const { data: yesterdayOrders, count: yesterdayCount } = await supabase
+    const { data: yesterdayOrders } = await supabase
       .from("orders")
-      .select("total", { count: "exact" })
+      .select("total")
       .gte("created_at", yesterdayStart.toISOString())
       .lt("created_at", todayStart.toISOString())
       .in("status", ["paid", "completed"]);
@@ -95,13 +100,13 @@ serve(async (req) => {
     // Top selling products today
     const { data: topProducts } = await supabase
       .from("order_items")
-      .select("product_name, quantity")
+      .select("product_name")
       .gte("created_at", todayStart.toISOString());
 
     const productCounts: Record<string, number> = {};
     for (const item of topProducts || []) {
       const name = item.product_name || "Unknown";
-      productCounts[name] = (productCounts[name] || 0) + (item.quantity || 1);
+      productCounts[name] = (productCounts[name] || 0) + 1;
     }
 
     const topList = Object.entries(productCounts)
@@ -163,16 +168,19 @@ serve(async (req) => {
       timestamp: now.toISOString(),
     };
 
-    // Send to Discord
-    const res = await fetch(webhookUrl, {
+    // Send via bot API
+    const res = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bot ${botToken}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ embeds: [embed] }),
     });
 
     if (!res.ok) {
       const text = await res.text();
-      throw new Error(`Webhook failed [${res.status}]: ${text}`);
+      throw new Error(`Bot message failed [${res.status}]: ${text}`);
     }
 
     LOG("Daily summary sent successfully");
