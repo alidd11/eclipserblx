@@ -325,7 +325,7 @@ Deno.serve(async (req) => {
                 user_ids: [payout.seller_id],
                 payload: {
                   title: "💰 Payout Completed",
-                  body: `Your payout of £${payout.amount.toFixed(2)} has been sent to your Stripe account.`,
+                  body: `Your payout of £${payout.amount.toFixed(2)} has been sent to your bank account.`,
                   tag: `payout-completed-${payoutId}`,
                   url: "/seller/payouts",
                 },
