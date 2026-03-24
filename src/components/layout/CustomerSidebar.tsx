@@ -101,11 +101,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     staleTime: 5 * 60 * 1000,
   });
 
-  // Check if user has an active IP Shield subscription (or is admin test user)
-  const ADMIN_TEST_EMAILS = ['alicanimir1@gmail.com'];
-  const isIPShieldAdmin = !!user?.email && ADMIN_TEST_EMAILS.includes(user.email);
-  const { data: ipShieldData } = useIPShieldSubscription();
-  const hasIPShield = isIPShieldAdmin || ipShieldData?.subscribed === true;
 
   // Use the shared notification hook — eliminates duplicate realtime channel + DB query
   const { unreadCount: unreadNotifications } = useNotifications();
