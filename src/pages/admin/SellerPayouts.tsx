@@ -126,8 +126,9 @@ export default function SellerPayouts() {
       setSelectedPayout(null);
       setNotes("");
     },
-    onError: () => {
-      toast.error("Failed to process payout");
+    onError: (error: any) => {
+      console.error("[SellerPayouts] Process error:", error);
+      toast.error(error?.message || "Failed to process payout");
     },
   });
 
