@@ -97,6 +97,7 @@ serve(async (req) => {
             { name: "Dispute #", value: disputeNumber || "N/A", inline: true },
             { name: "Amount", value: `\u00A3${Number(amount || 0).toFixed(2)}`, inline: true },
             { name: "Store", value: store || "N/A", inline: true },
+            ...(customerId ? [{ name: "\uD83D\uDC64 Customer", value: customerId, inline: true }] : []),
             { name: "Order", value: oid || "N/A", inline: true },
             { name: "Reason", value: (reason || "No reason provided").slice(0, 200), inline: false },
           ],
