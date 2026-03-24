@@ -262,15 +262,15 @@ export default function SellerSettingsPayments() {
         </div>
 
         <div className="space-y-6">
-          {/* Stripe Connect */}
+          {/* Direct Payouts */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
-                Stripe Connect
+                Direct Payouts
               </CardTitle>
               <CardDescription>
-                Connect your Stripe account to receive automatic payouts
+                Connect your account to receive automatic payouts directly to your bank
               </CardDescription>
             </CardHeader>
             <CardContent>
