@@ -619,7 +619,7 @@
   
   html {
     @apply bg-background text-foreground;
-    overscroll-behavior: none;
+    overscroll-behavior-x: none;
     overflow-x: hidden;
     width: 100%;
     max-width: 100%;
