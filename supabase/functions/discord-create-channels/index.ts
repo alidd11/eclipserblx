@@ -14,76 +14,155 @@ serve(async (req) => {
 
   const BOT_TOKEN = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
   if (!BOT_TOKEN) {
-    return new Response(JSON.stringify({ error: "DISCORD_CUSTOMER_BOT_TOKEN not configured" }), {
+    return new Response(JSON.stringify({ error: "Bot token not configured" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
   try {
-    const { guild_id, category_name, channels } = await req.json();
-
-    if (!guild_id || !category_name || !channels?.length) {
-      return new Response(JSON.stringify({ error: "guild_id, category_name, and channels[] are required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const { action, guild_id } = await req.json();
 
     const headers = {
       Authorization: `Bot ${BOT_TOKEN}`,
       "Content-Type": "application/json",
     };
 
-    // 1. Create the category (type 4)
-    console.log(`Creating category: ${category_name}`);
-    const categoryRes = await fetch(`${DISCORD_API}/guilds/${guild_id}/channels`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        name: category_name,
-        type: 4,
-      }),
-    });
-
-    if (!categoryRes.ok) {
-      const err = await categoryRes.text();
-      throw new Error(`Failed to create category [${categoryRes.status}]: ${err}`);
-    }
-
-    const category = await categoryRes.json();
-    console.log(`Category created: ${category.id}`);
-
-    // 2. Create each text channel under the category
-    const created: { name: string; id: string }[] = [];
-
-    for (const channelName of channels) {
-      console.log(`Creating channel: ${channelName}`);
-      const channelRes = await fetch(`${DISCORD_API}/guilds/${guild_id}/channels`, {
+    if (action === "setup") {
+      // Step 1: Create "Finance Staff" role
+      console.log("Creating Finance Staff role...");
+      const roleRes = await fetch(`${DISCORD_API}/guilds/${guild_id}/roles`, {
         method: "POST",
         headers,
         body: JSON.stringify({
-          name: channelName,
-          type: 0,
-          parent_id: category.id,
+          name: "Finance Staff",
+          color: 0x2ecc71, // Green
+          hoist: true,
+          mentionable: false,
+          permissions: "0",
         }),
       });
+      if (!roleRes.ok) throw new Error(`Role creation failed: ${await roleRes.text()}`);
+      const role = await roleRes.json();
+      console.log(`Finance Staff role created: ${role.id}`);
 
-      if (!channelRes.ok) {
-        const err = await channelRes.text();
-        console.error(`Failed to create channel ${channelName}: ${err}`);
-        continue;
+      // Step 2: Get existing channels to find the ECLIPSE category
+      const channelsRes = await fetch(`${DISCORD_API}/guilds/${guild_id}/channels`, { headers });
+      const allChannels = await channelsRes.json();
+      const eclipseCategory = allChannels.find(
+        (c: any) => c.type === 4 && c.name.toUpperCase() === "ECLIPSE"
+      );
+
+      if (!eclipseCategory) {
+        throw new Error("ECLIPSE category not found");
       }
 
-      const channel = await channelRes.json();
-      created.push({ name: channel.name, id: channel.id });
+      // Step 3: Create #payouts and #security channels
+      const newChannels = ["payouts", "security"];
+      const created: any[] = [];
+
+      for (const name of newChannels) {
+        const res = await fetch(`${DISCORD_API}/guilds/${guild_id}/channels`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            name,
+            type: 0,
+            parent_id: eclipseCategory.id,
+          }),
+        });
+        if (!res.ok) {
+          console.error(`Failed to create #${name}: ${await res.text()}`);
+          continue;
+        }
+        const ch = await res.json();
+        created.push({ name: ch.name, id: ch.id });
+      }
+
+      // Step 4: Lock ALL channels in the category to Finance Staff only
+      // Get all channels under the ECLIPSE category (including existing ones)
+      const eclipseChannels = allChannels
+        .filter((c: any) => c.parent_id === eclipseCategory.id)
+        .concat(created.map((c) => ({ id: c.id })));
+
+      // Also lock the category itself
+      const channelsToLock = [
+        { id: eclipseCategory.id },
+        ...eclipseChannels,
+      ];
+
+      // Remove duplicates by id
+      const uniqueIds = [...new Set(channelsToLock.map((c: any) => c.id))];
+
+      for (const channelId of uniqueIds) {
+        // Deny @everyone (role id = guild id) VIEW_CHANNEL
+        await fetch(`${DISCORD_API}/channels/${channelId}/permissions/${guild_id}`, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({
+            id: guild_id,
+            type: 0, // role
+            deny: "1024", // VIEW_CHANNEL
+            allow: "0",
+          }),
+        });
+
+        // Allow Finance Staff role VIEW_CHANNEL + READ_MESSAGE_HISTORY
+        await fetch(`${DISCORD_API}/channels/${channelId}/permissions/${role.id}`, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({
+            id: role.id,
+            type: 0,
+            allow: "66560", // VIEW_CHANNEL (1024) + READ_MESSAGE_HISTORY (65536)
+            deny: "0",
+          }),
+        });
+      }
+
+      // Step 5: Create webhooks for all 5 channels
+      const allEclipseChannels = allChannels
+        .filter((c: any) => c.parent_id === eclipseCategory.id && c.type === 0);
+      // Add newly created channels
+      for (const c of created) {
+        if (!allEclipseChannels.find((e: any) => e.id === c.id)) {
+          allEclipseChannels.push(c);
+        }
+      }
+
+      const webhooks: Record<string, { id: string; url: string }> = {};
+
+      for (const ch of allEclipseChannels) {
+        const whRes = await fetch(`${DISCORD_API}/channels/${ch.id}/webhooks`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            name: `Eclipse ${ch.name} Alerts`,
+          }),
+        });
+
+        if (!whRes.ok) {
+          console.error(`Webhook for #${ch.name} failed: ${await whRes.text()}`);
+          continue;
+        }
+
+        const wh = await whRes.json();
+        webhooks[ch.name] = { id: wh.id, url: wh.url };
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        role: { name: role.name, id: role.id },
+        new_channels: created,
+        webhooks,
+        message: "All channels locked to Finance Staff role. Webhooks created.",
+      }, null, 2), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    return new Response(JSON.stringify({
-      success: true,
-      category: { name: category.name, id: category.id },
-      channels: created,
-    }), {
+    return new Response(JSON.stringify({ error: "Unknown action" }), {
+      status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
