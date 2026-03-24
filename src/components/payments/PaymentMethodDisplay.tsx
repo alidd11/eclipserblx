@@ -240,7 +240,7 @@ function TrustBadge() {
   return (
     <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1.5">
       <Lock className="h-3 w-3" />
-      Secure payment powered by Stripe
+      Secure encrypted payment
     </p>
   );
 }

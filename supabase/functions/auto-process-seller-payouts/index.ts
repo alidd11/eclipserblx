@@ -314,7 +314,7 @@ Deno.serve(async (req) => {
             user_id: payout.seller_id,
             type: 'payout_completed',
             title: 'Payout Completed',
-            message: `Your payout of £${payout.amount.toFixed(2)} has been sent to your Stripe account.`,
+            message: `Your payout of £${payout.amount.toFixed(2)} has been sent to your bank account.`,
             action_url: '/seller/payouts',
           });
 
@@ -325,7 +325,7 @@ Deno.serve(async (req) => {
                 user_ids: [payout.seller_id],
                 payload: {
                   title: "💰 Payout Completed",
-                  body: `Your payout of £${payout.amount.toFixed(2)} has been sent to your Stripe account.`,
+                  body: `Your payout of £${payout.amount.toFixed(2)} has been sent to your bank account.`,
                   tag: `payout-completed-${payoutId}`,
                   url: "/seller/payouts",
                 },
@@ -343,7 +343,7 @@ Deno.serve(async (req) => {
           results.processed++;
           results.details.push({ payoutId, status: 'completed', method: 'stripe', transferId: transfer.id });
 
-        } else if (effectiveMethod === 'bank') {
+        } else if (effectiveMethod === 'bank_transfer' || effectiveMethod === 'bank') {
           // === WISE / BANK TRANSFER ===
           if (!wiseApiKey) {
             logStep(`No Wise API key, skipping`, { payoutId });

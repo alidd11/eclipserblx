@@ -244,7 +244,9 @@ serve(async (req) => {
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     LOG("ERROR", { message: msg });
-    return new Response(JSON.stringify({ error: msg }), {
+    // Mask internal Stripe errors from the client
+    const safeMsg = msg.toLowerCase().includes("stripe") ? "Payment service error. Please try again." : msg;
+    return new Response(JSON.stringify({ error: safeMsg }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
     });
   }

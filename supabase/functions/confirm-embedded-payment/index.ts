@@ -80,7 +80,7 @@ serve(async (req) => {
         ? tierData.stripe_annual_price_id 
         : tierData.stripe_monthly_price_id;
 
-      if (!priceId) throw new Error("No Stripe price configured for this tier");
+      if (!priceId) throw new Error("No price configured for this tier");
 
       // Set the payment method as default for the customer
       await stripe.customers.update(setupIntent.customer as string, {
@@ -187,7 +187,8 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    const safeMessage = errorMessage.toLowerCase().includes("stripe") ? "Payment processing error. Please try again." : errorMessage;
+    return new Response(JSON.stringify({ error: safeMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,
     });
