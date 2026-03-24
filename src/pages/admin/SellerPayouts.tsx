@@ -318,13 +318,16 @@ export default function SellerPayouts() {
                           {getPayoutMethodBadge(payout)}
                         </TableCell>
                         <TableCell className="text-sm">
-                          {payout.stores?.payout_method === 'paypal' 
-                            ? payout.stores?.store_payment_details?.[0]?.paypal_email || payout.stores?.store_payment_details?.paypal_email || "Not set"
-                            : payout.stores?.payout_method === 'bank' 
-                              ? "Bank Transfer"
-                              : payout.stores?.payout_method === 'stripe' 
-                                ? "Automatic via Stripe"
-                                : "Not configured"}
+                          {(() => {
+                            const method = getPayoutMethod(payout);
+                            if (method === 'paypal')
+                              return payout.paypal_email || payout.stores?.store_payment_details?.[0]?.paypal_email || "Not set";
+                            if (isBankMethod(method))
+                              return "Bank Transfer";
+                            if (method === 'stripe')
+                              return "Automatic via Stripe";
+                            return "Not configured";
+                          })()}
                         </TableCell>
                         <TableCell className="text-sm">
                           {format(new Date(payout.created_at), "dd MMM yyyy")}
