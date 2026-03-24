@@ -528,7 +528,7 @@ export default function SellerPayouts() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">SWIFT/BIC:</span>
-                      <span className="font-medium font-mono text-xs">{selectedPayout?.stores?.store_payment_details?.[0]?.bank_swift_bic || 'N/A'}</span>
+                      <span className="font-medium font-mono text-xs">{getPaymentDetails(selectedPayout)?.bank_swift_bic || 'N/A'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Transfer via:</span>
