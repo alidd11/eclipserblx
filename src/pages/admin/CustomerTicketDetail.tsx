@@ -728,7 +728,7 @@ export default function CustomerTicketDetail() {
                       customerOrders.map((order) => (
                         <div key={order.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50 text-xs">
                           <div>
-                            <span className="font-mono font-medium">{order.order_number}</span>
+                            <span className="font-mono font-medium">{order.id.slice(0, 8)}</span>
                             <p className="text-muted-foreground mt-0.5">
                               {formatDistanceToNow(new Date(order.created_at), { addSuffix: true })}
                             </p>
