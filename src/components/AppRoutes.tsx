@@ -209,23 +209,6 @@ const StoreCustomPage = lazyWithRetry(() => import("@/pages/StoreCustomPage"));
 // Store standalone page for custom domains
 const StoreStandalonePage = lazyWithRetry(() => import("@/pages/StoreStandalonePage"));
 
-// Standalone pages
-const IPShield = lazyWithRetry(() => import("@/pages/IPShield"));
-
-// IP Shield Dashboard pages
-const IPShieldOverview = lazyWithRetry(() => import("@/pages/ip-shield/IPShieldOverview"));
-const IPShieldTakedowns = lazyWithRetry(() => import("@/pages/ip-shield/IPShieldTakedowns"));
-const IPShieldRegistry = lazyWithRetry(() => import("@/pages/ip-shield/IPShieldRegistry"));
-const IPShieldDetections = lazyWithRetry(() => import("@/pages/ip-shield/IPShieldDetections"));
-const IPShieldSettings = lazyWithRetry(() => import("@/pages/ip-shield/IPShieldSettings"));
-const IPShieldCorrespondence = lazyWithRetry(() => import("@/pages/ip-shield/IPShieldCorrespondence"));
-
-// IP Staff Dashboard pages
-const IPStaffOverview = lazyWithRetry(() => import("@/pages/ip-staff/IPStaffOverview"));
-const IPStaffTakedowns = lazyWithRetry(() => import("@/pages/ip-staff/IPStaffTakedowns"));
-const IPStaffCustomPlans = lazyWithRetry(() => import("@/pages/ip-staff/IPStaffCustomPlans"));
-const IPStaffInbox = lazyWithRetry(() => import("@/pages/ip-staff/IPStaffInbox"));
-const IPStaffEmails = lazyWithRetry(() => import("@/pages/ip-staff/IPStaffEmails"));
 
 // Public pages
 const StorePage = lazyWithRetry(() => import("@/pages/StorePage"));
