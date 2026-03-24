@@ -40,6 +40,17 @@ serve(async (req) => {
     const { type, data } = await req.json();
     LOG("Received", { type });
 
+    // Resolve customer_id from userId if provided
+    let customerId: string | null = null;
+    if (data.userId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("customer_id")
+        .eq("user_id", data.userId)
+        .maybeSingle();
+      customerId = profile?.customer_id || null;
+    }
+
     // Fetch all finance webhook URLs
     const { data: settings } = await supabase
       .from("settings")
@@ -49,7 +60,6 @@ serve(async (req) => {
     const webhooks: Record<string, string> = {};
     for (const s of settings ?? []) {
       const channel = s.key.replace("finance_webhook_", "");
-      // Value may be stored as plain string or JSON-quoted string
       let url = s.value;
       try { url = JSON.parse(url); } catch { /* already plain string */ }
       webhooks[channel] = url;
@@ -69,6 +79,7 @@ serve(async (req) => {
             { name: "\uD83D\uDCE6 Products", value: (productNames || []).join("\n") || "N/A", inline: false },
             { name: "\uD83C\uDFEA Store", value: storeName || sellerName || "Unknown", inline: true },
             { name: "\uD83D\uDCB7 Total", value: `\u00A3${Number(total || 0).toFixed(2)}`, inline: true },
+            ...(customerId ? [{ name: "\uD83D\uDC64 Customer", value: customerId, inline: true }] : []),
           ],
           footer: { text: `Order: ${orderId || "N/A"}` },
           timestamp: new Date().toISOString(),
@@ -86,6 +97,7 @@ serve(async (req) => {
             { name: "Dispute #", value: disputeNumber || "N/A", inline: true },
             { name: "Amount", value: `\u00A3${Number(amount || 0).toFixed(2)}`, inline: true },
             { name: "Store", value: store || "N/A", inline: true },
+            ...(customerId ? [{ name: "\uD83D\uDC64 Customer", value: customerId, inline: true }] : []),
             { name: "Order", value: oid || "N/A", inline: true },
             { name: "Reason", value: (reason || "No reason provided").slice(0, 200), inline: false },
           ],
@@ -135,6 +147,7 @@ serve(async (req) => {
           fields: [
             { name: "Amount", value: `\u00A3${Number(ra || 0).toFixed(2)}`, inline: true },
             { name: "Store", value: rs || "N/A", inline: true },
+            ...(customerId ? [{ name: "\uD83D\uDC64 Customer", value: customerId, inline: true }] : []),
             { name: "Order", value: roi || "N/A", inline: true },
             { name: "Reason", value: (rr || "N/A").slice(0, 200), inline: false },
           ],
