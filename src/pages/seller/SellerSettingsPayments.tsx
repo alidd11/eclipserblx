@@ -316,12 +316,12 @@ export default function SellerSettingsPayments() {
                 </div>
               ) : (
                 <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
-                  <CreditCard className="h-6 w-6 text-muted-foreground" />
-                  <div className="flex-1">
-                    <p className="font-medium">Connect Stripe</p>
-                    <p className="text-sm text-muted-foreground">
-                      Set up Stripe Connect to receive payouts for your sales
-                    </p>
+                   <CreditCard className="h-6 w-6 text-muted-foreground" />
+                   <div className="flex-1">
+                     <p className="font-medium">Set Up Direct Payouts</p>
+                     <p className="text-sm text-muted-foreground">
+                       Connect your bank account to receive payouts for your sales
+                     </p>
                   </div>
                   <Button 
                     variant="default"
