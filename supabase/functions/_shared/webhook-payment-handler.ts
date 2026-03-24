@@ -295,5 +295,5 @@ async function sendOrderNotifications(
   try { await fetch(`${supabaseUrl}/functions/v1/process-referral`, { method: "POST", headers, body: JSON.stringify({ userId: ctx.userId, orderId: ctx.orderId, orderTotal: ctx.total }) }); } catch {}
 
   // Finance server notification (fire-and-forget)
-  try { await fetch(`${supabaseUrl}/functions/v1/finance-notify`, { method: "POST", headers, body: JSON.stringify({ type: "new_sale", data: { orderId: ctx.orderId, productNames: ctx.items.map((i: any) => i.name), total: ctx.total } }) }); } catch {}
+  try { await fetch(`${supabaseUrl}/functions/v1/finance-notify`, { method: "POST", headers, body: JSON.stringify({ type: "new_sale", data: { orderId: ctx.orderId, userId: ctx.userId, productNames: ctx.items.map((i: any) => i.name), total: ctx.total } }) }); } catch {}
 }
