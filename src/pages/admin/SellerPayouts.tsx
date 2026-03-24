@@ -210,12 +210,14 @@ export default function SellerPayouts() {
   const isBankMethod = (method: string | undefined) => method === 'bank' || method === 'bank_transfer';
 
   const getEstimatedArrival = (payout: any) => {
-    if (payout.funding_requested_at) {
-      const requestedAt = new Date(payout.funding_requested_at);
-      const estimatedArrival = new Date(requestedAt);
-      estimatedArrival.setDate(estimatedArrival.getDate() + 2); // 1-2 business days
-      return format(estimatedArrival, "dd MMM yyyy");
-    }
+    try {
+      if (payout.funding_requested_at) {
+        const requestedAt = new Date(payout.funding_requested_at);
+        const estimatedArrival = new Date(requestedAt);
+        estimatedArrival.setDate(estimatedArrival.getDate() + 2);
+        return format(estimatedArrival, "dd MMM yyyy");
+      }
+    } catch { /* fall through */ }
     return "1-2 business days";
   };
 
