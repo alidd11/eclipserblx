@@ -314,7 +314,7 @@ Deno.serve(async (req) => {
             user_id: payout.seller_id,
             type: 'payout_completed',
             title: 'Payout Completed',
-            message: `Your payout of £${payout.amount.toFixed(2)} has been sent to your Stripe account.`,
+            message: `Your payout of £${payout.amount.toFixed(2)} has been sent to your bank account.`,
             action_url: '/seller/payouts',
           });
 
