@@ -10,12 +10,12 @@ import { NotificationsSettingsTab } from '@/components/admin/settings/Notificati
 import { SecuritySettingsTab } from '@/components/admin/settings/SecuritySettingsTab';
 import { PlatformSettingsTab } from '@/components/admin/settings/PlatformSettingsTab';
 
-const tabs = [
+const tabs: Array<{ value: string; label: string; icon: typeof SettingsIcon; adminOnly?: boolean }> = [
   { value: 'general', label: 'General', icon: SettingsIcon },
   { value: 'notifications', label: 'Notifications', icon: Bell },
   { value: 'security', label: 'Security', icon: Shield },
   { value: 'platform', label: 'Platform', icon: Rocket, adminOnly: true },
-] as const;
+];
 
 export default function AdminSettings() {
   const [searchParams, setSearchParams] = useSearchParams();
