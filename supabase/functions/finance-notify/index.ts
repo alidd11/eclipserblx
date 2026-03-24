@@ -147,6 +147,7 @@ serve(async (req) => {
           fields: [
             { name: "Amount", value: `\u00A3${Number(ra || 0).toFixed(2)}`, inline: true },
             { name: "Store", value: rs || "N/A", inline: true },
+            ...(customerId ? [{ name: "\uD83D\uDC64 Customer", value: customerId, inline: true }] : []),
             { name: "Order", value: roi || "N/A", inline: true },
             { name: "Reason", value: (rr || "N/A").slice(0, 200), inline: false },
           ],
