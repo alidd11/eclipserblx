@@ -143,7 +143,7 @@ export function LandingHero() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/seller" className="block">
+              <Link to="/sell" className="block">
                 <Button size="sm" variant="outline" className="w-full h-10 text-sm font-semibold uppercase tracking-wide">
                   <Store className="mr-2 h-4 w-4" />
                   Open a Store
