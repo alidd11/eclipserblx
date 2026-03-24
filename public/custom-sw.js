@@ -1,7 +1,12 @@
 // Custom Service Worker for Push Notifications + Cache Busting + Offline Support
 // This file is imported by the Workbox-generated service worker
 
-const SW_VERSION = '1.1.1';
+const SW_VERSION = '1.2.0';
+const OFFLINE_CACHE = 'offline-v1';
+const OFFLINE_URL = '/offline.html';
+
+// Caches that should be purged on every activation (stale API data causes boot failures)
+const PURGE_CACHES = ['supabase-cache'];
 const OFFLINE_CACHE = 'offline-v1';
 const OFFLINE_URL = '/offline.html';
 
