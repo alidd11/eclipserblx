@@ -437,7 +437,7 @@ export default function SellerPayouts() {
                         <span>{safeFmt(payout.created_at, "dd MMM yyyy")}</span>
                         {getPayoutMethod(payout) === 'paypal' && (
                           <span className="ml-2">
-                            PayPal: {payout.paypal_email || payout.stores?.store_payment_details?.[0]?.paypal_email || "Not set"}
+                            PayPal: {payout.paypal_email || getPaymentDetails(payout)?.paypal_email || "Not set"}
                           </span>
                         )}
                         {isBankMethod(getPayoutMethod(payout)) && (
