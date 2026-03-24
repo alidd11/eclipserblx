@@ -422,7 +422,7 @@ export default function SellerBalance() {
                     <span>
                       {store?.paymentDetails?.payout_method === 'paypal' ? 'PayPal' :
                        store?.paymentDetails?.payout_method === 'bank_transfer' ? 'Bank Transfer' :
-                       store?.paymentDetails?.payouts_enabled ? 'Direct Bank Payout' : 'Not configured'}
+                       'Stripe'}
                     </span>
                   </div>
                 </div>
