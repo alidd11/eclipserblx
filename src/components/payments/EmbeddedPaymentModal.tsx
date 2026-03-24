@@ -232,7 +232,7 @@ function PaymentForm({
 
       <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1.5">
         <Lock className="h-3 w-3" />
-        Secure payment powered by Stripe
+        Secure encrypted payment
       </p>
     </form>
   );
@@ -265,7 +265,7 @@ export function EmbeddedPaymentModal({
     if (!open) return;
 
     if (!stripePromise) {
-      setError('Payments are temporarily unavailable (Stripe is not configured).');
+      setError('Payments are temporarily unavailable. Please try again later.');
       return;
     }
 
