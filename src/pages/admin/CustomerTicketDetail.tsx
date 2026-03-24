@@ -164,7 +164,7 @@ export default function CustomerTicketDetail() {
       if (!ticket?.user_id) return [];
       const { data, error } = await supabase
         .from('orders')
-        .select('id, order_number, total, status, created_at')
+        .select('id, total, status, created_at')
         .eq('user_id', ticket.user_id)
         .order('created_at', { ascending: false })
         .limit(5);
