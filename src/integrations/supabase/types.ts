@@ -7010,6 +7010,8 @@ export type Database = {
           funding_status: string | null
           id: string
           notes: string | null
+          payout_method: string | null
+          paypal_email: string | null
           processed_at: string | null
           processed_by: string | null
           processing_lock_id: string | null
@@ -7032,6 +7034,8 @@ export type Database = {
           funding_status?: string | null
           id?: string
           notes?: string | null
+          payout_method?: string | null
+          paypal_email?: string | null
           processed_at?: string | null
           processed_by?: string | null
           processing_lock_id?: string | null
@@ -7054,6 +7058,8 @@ export type Database = {
           funding_status?: string | null
           id?: string
           notes?: string | null
+          payout_method?: string | null
+          paypal_email?: string | null
           processed_at?: string | null
           processed_by?: string | null
           processing_lock_id?: string | null
