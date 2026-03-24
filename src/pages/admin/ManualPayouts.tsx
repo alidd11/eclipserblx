@@ -231,7 +231,7 @@ export default function ManualPayouts() {
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3.5 w-3.5" />
-                              {format(new Date(request.created_at), "PPp")}
+                              {safeFormatDate(request.created_at, "PPp")}
                             </span>
                             {request.paypal_email && (
                               <span>PayPal: {request.paypal_email}</span>
