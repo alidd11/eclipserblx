@@ -808,8 +808,13 @@ Deno.serve(async (req) => {
               },
             },
           });
-        } catch (_) { /* best effort */ }
-      }
+          // Finance server — payout failure
+          try {
+            const fnUrl = Deno.env.get("SUPABASE_URL") + "/functions/v1/finance-notify";
+            const fnHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` };
+            await fetch(fnUrl, { method: "POST", headers: fnHeaders, body: JSON.stringify({ type: "payout_failed", data: { sellerName: storeData?.name || "Unknown", amount: payout.amount, error: err.message } }) });
+          } catch { /* non-fatal */ }
+        }
     }
 
     logStep(`Run complete`, results);
