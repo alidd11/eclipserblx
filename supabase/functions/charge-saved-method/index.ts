@@ -375,9 +375,12 @@ serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
       );
     }
-
+    // Mask internal errors from the client
+    const safeMessage = errorMessage.toLowerCase().includes("stripe") && stripeError.type !== 'StripeCardError'
+      ? "Payment service error. Please try again."
+      : errorMessage;
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: safeMessage }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
     );
   }
