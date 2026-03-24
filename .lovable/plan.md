@@ -1,24 +1,55 @@
 
 
-## Analysis
+## Improve Admin Discord Settings Page
 
-The **Reject button already exists** in the SellerPayouts page (inside the "Process Payout" dialog). However, when a payout is rejected, the current code only updates the payout status to "rejected" — it does **not** return the funds to the seller's `available_balance` in `seller_balances`.
+The current `DiscordSettings.tsx` is a 1080-line monolith using collapsible accordion sections. We'll refactor it to match the tabbed pattern already used in the admin Settings page -- cleaner navigation, better mobile UX, and modular code.
 
-This is the bug: sellers lose their balance when a payout is rejected because the funds were already deducted when the payout was requested, but never restored on rejection.
+### Current State
+- 4 collapsible sections: General, Notifications, Announcements, Configuration
+- All in one 1080-line file with inline test functions, webhook handlers, and UI
+- Mobile users must scroll and expand/collapse sections manually
 
-## Plan
+### Plan
 
-**File: `src/pages/admin/SellerPayouts.tsx`**
+**1. Extract shared logic into a parent hook/context**
 
-Modify the `processMutation` handler (around lines 68-103) to add balance restoration logic when `status === "rejected"`:
+Create `src/hooks/useDiscordSettings.ts` containing:
+- The `DiscordSettings` interface and defaults
+- The settings query, save mutation, webhook test handler, copy handler
+- All test functions (testOrderWebhook, testReviewWebhook, etc.)
+- Shared state (testingWebhook, webhookTestResults, formData)
 
-- After updating the payout status to "rejected", fetch the seller's current `seller_balances` record
-- Add the payout `amount` back to `available_balance`
-- This mirrors the existing "completed" branch but restores funds instead of deducting them
+**2. Extract each section into a tab component**
 
-The change is ~10 lines inside the existing `mutationFn`, adding an `else if (status === "rejected" && payout)` block that:
-1. Fetches `available_balance` from `seller_balances` for the seller
-2. Updates `available_balance += payout.amount`
+Create 4 files in `src/components/admin/discord-settings/`:
+- `GeneralTab.tsx` -- Invite URL, widget server ID
+- `NotificationsTab.tsx` -- Orders, reviews, promotions webhooks
+- `AnnouncementsTab.tsx` -- Community, product drops, early drops, affiliate, Eclipse+, marketplace
+- `ConfigurationTab.tsx` -- Role integration, ads, QOTD, polls, modmail, bot commands, sync all
 
-No new UI elements needed — the reject button and dialog already exist and work correctly. This is purely a backend-logic fix on the client mutation.
+Each receives shared state/handlers from the hook via props.
+
+**3. Refactor `DiscordSettings.tsx` to tabbed layout**
+
+- Replace collapsible sections with `Tabs` component (same pattern as admin Settings)
+- URL-persisted active tab via `useSearchParams` (`?tab=general`)
+- Desktop: horizontal `TabsList` with icons
+- Mobile: `Select` dropdown fallback
+- Keep the header with Save button and Quick Announce dropdown
+- Move `WebhookInput`, `TestResultBadge`, `SectionHeader` helper components into a shared file `src/components/admin/discord-settings/WebhookInput.tsx`
+
+**4. Tab definitions**
+
+| Tab | Icon | Content |
+|-----|------|---------|
+| General | Settings | Invite link, widget |
+| Notifications | Bell | Order/review/promo webhooks |
+| Announcements | Megaphone | Community, drops, programmes |
+| Configuration | Zap | Roles, ads, QOTD, polls, modmail, bot commands |
+
+### Result
+- ~1080-line monolith split into 6 focused files
+- Consistent UX with admin Settings page
+- URL-persisted tabs for deep-linking
+- Mobile-friendly Select dropdown
 
