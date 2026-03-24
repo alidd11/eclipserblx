@@ -127,7 +127,7 @@ const AdminDisputes = lazyWithRetry(() => import("@/pages/admin/Disputes"));
 const AdminAdvertisementAnalytics = lazyWithRetry(() => import("@/pages/admin/AdvertisementAnalytics"));
 const AdminGiftCredits = lazyWithRetry(() => import("@/pages/admin/GiftCredits"));
 const AdminIPReports = lazyWithRetry(() => import("@/pages/admin/IPReports"));
-const AdminIPShieldCustomPlans = lazyWithRetry(() => import("@/pages/admin/IPShieldCustomPlans"));
+
 const AdminDeveloperSubmissions = lazyWithRetry(() => import("@/pages/admin/DeveloperSubmissions"));
 const AdminDeveloperPayments = lazyWithRetry(() => import("@/pages/admin/DeveloperPayments"));
 const AdminDeveloperPaymentDetail = lazyWithRetry(() => import("@/pages/admin/DeveloperPaymentDetail"));
