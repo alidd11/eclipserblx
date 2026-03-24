@@ -142,6 +142,7 @@ const AdminDisputesRefundsHub = lazy(() => import("@/pages/admin/DisputesRefunds
 const AdminAffiliateHub = lazy(() => import("@/pages/admin/AffiliateHub"));
 const AdminPlatformLedger = lazy(() => import("@/pages/admin/PlatformLedger"));
 const AdminCustomDomains = lazy(() => import("@/pages/admin/CustomDomains"));
+const AdminDailyReport = lazy(() => import("@/pages/admin/DailyReport"));
 
 // Recruiter page
 const Recruiter = lazy(() => import("@/pages/Recruiter"));
