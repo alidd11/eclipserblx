@@ -36,7 +36,8 @@ serve(async (req) => {
       });
     }
 
-    const webhookUrl = JSON.parse(setting.value);
+    let webhookUrl = setting.value;
+    try { webhookUrl = JSON.parse(webhookUrl); } catch { /* already plain string */ }
     const now = new Date();
     const todayStart = new Date(now);
     todayStart.setUTCHours(0, 0, 0, 0);

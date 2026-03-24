@@ -49,7 +49,10 @@ serve(async (req) => {
     const webhooks: Record<string, string> = {};
     for (const s of settings ?? []) {
       const channel = s.key.replace("finance_webhook_", "");
-      webhooks[channel] = JSON.parse(s.value);
+      // Value may be stored as plain string or JSON-quoted string
+      let url = s.value;
+      try { url = JSON.parse(url); } catch { /* already plain string */ }
+      webhooks[channel] = url;
     }
 
     let embed: Record<string, unknown> = {};
