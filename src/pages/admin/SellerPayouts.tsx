@@ -101,6 +101,24 @@ export default function SellerPayouts() {
             .eq("user_id", payout.seller_id);
         }
       }
+
+      // If rejected, restore funds to seller's available balance
+      if (status === "rejected" && payout) {
+        const { data: currentBalance } = await supabase
+          .from("seller_balances")
+          .select("available_balance")
+          .eq("user_id", payout.seller_id)
+          .single();
+        
+        if (currentBalance) {
+          await supabase
+            .from("seller_balances")
+            .update({
+              available_balance: (currentBalance.available_balance || 0) + payout.amount,
+            })
+            .eq("user_id", payout.seller_id);
+        }
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["seller-payouts"] });
