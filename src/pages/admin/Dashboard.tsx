@@ -331,6 +331,110 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
+        {/* Duty Clock In/Out */}
+        <Card className="bg-card border-border max-w-md">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Clock className="h-4 w-4" />
+              Duty Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {/* Weekly/Monthly Stats */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-2 rounded-lg bg-muted/50 text-center">
+                <p className="text-[10px] text-muted-foreground">This Week</p>
+                <p className="text-sm font-bold font-mono">{formatHoursMinutes(weeklyMinutes)}</p>
+              </div>
+              <div className="p-2 rounded-lg bg-muted/50 text-center">
+                <p className="text-[10px] text-muted-foreground">This Month</p>
+                <p className="text-sm font-bold font-mono">{formatHoursMinutes(monthlyMinutes)}</p>
+              </div>
+            </div>
+
+            {activeSession ? (
+              <div className="space-y-3">
+                <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Timer className="h-4 w-4 text-green-500 shrink-0" />
+                    <span className="font-medium text-green-500 text-sm">Currently On Duty</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground whitespace-nowrap">
+                    Clocked in at {format(new Date(activeSession.clock_in), 'h:mm a')}
+                  </p>
+                  <p className="text-xl font-mono font-bold text-green-500">
+                    {elapsedTime}
+                  </p>
+                </div>
+                <Textarea
+                  placeholder="Add notes for this session (optional)..."
+                  value={clockOutNotes}
+                  onChange={(e) => setClockOutNotes(e.target.value)}
+                  rows={2}
+                  className="text-sm"
+                />
+                <Dialog open={showClockOutConfirm} onOpenChange={setShowClockOutConfirm}>
+                  <DialogTrigger asChild>
+                    <Button variant="destructive" className="w-full" size="sm">
+                      <Square className="h-3.5 w-3.5 mr-1.5" />
+                      Clock Out
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Confirm Clock Out</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <p className="text-muted-foreground">
+                        You've been on duty for <span className="font-mono font-bold text-foreground">{elapsedTime}</span>. Are you sure you want to clock out?
+                      </p>
+                      <div className="flex gap-3">
+                        <Button
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => setShowClockOutConfirm(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          className="flex-1"
+                          disabled={clockOutMutation.isPending}
+                          onClick={() => {
+                            clockOutMutation.mutate();
+                            setShowClockOutConfirm(false);
+                          }}
+                        >
+                          {clockOutMutation.isPending ? 'Clocking Out...' : 'Clock Out'}
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                  <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Not On Duty</p>
+                    <p className="text-xs text-muted-foreground whitespace-nowrap">Clock in to start logging hours</p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => clockInMutation.mutate()} 
+                  disabled={clockInMutation.isPending}
+                  className="w-full"
+                  size="sm"
+                >
+                  <Play className="h-3.5 w-3.5 mr-1.5" />
+                  {clockInMutation.isPending ? 'Clocking In...' : 'Clock In'}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Quick Actions - right after hero like seller dashboard */}
         <Card>
           <CardHeader className="pb-3">
