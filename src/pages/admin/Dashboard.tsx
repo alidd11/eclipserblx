@@ -320,11 +320,11 @@ export default function AdminDashboard() {
                 <h1 className="text-lg sm:text-xl font-bold leading-tight">
                   {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
                 </h1>
-                <div className="flex flex-col gap-0.5 mt-1.5 text-[11px] text-muted-foreground">
-                  <span className="whitespace-nowrap">🕐 Local: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                  <span className="whitespace-nowrap">🇬🇧 UK: {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })}</span>
-                  <span className="whitespace-nowrap">🇺🇸 EST: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' })}</span>
-                  <span className="whitespace-nowrap">🇺🇸 PST: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Los_Angeles' })}</span>
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 text-[11px] text-muted-foreground">
+                  <span className="whitespace-nowrap">🕐 {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span className="whitespace-nowrap">🇬🇧 {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })}</span>
+                  <span className="whitespace-nowrap">🇺🇸 {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' })}</span>
+                  <span className="whitespace-nowrap">🇺🇸 {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Los_Angeles' })}</span>
                 </div>
               </div>
             </div>
