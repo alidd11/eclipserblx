@@ -52,7 +52,7 @@ export function SellerHeroBanner() {
 
           <div className="flex-1 min-w-0 pb-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-bold truncate">
+              <h1 className="text-xl sm:text-2xl font-bold truncate whitespace-nowrap">
                 {getTimeBasedGreeting()}, {store?.name || 'Seller'}
               </h1>
               {store?.is_verified && (
