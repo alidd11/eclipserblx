@@ -417,15 +417,6 @@ export default function CustomerTicketDetail() {
                 </Button>
               )}
 
-              <Button
-                variant="outline"
-                size="sm"
-                className="md:hidden"
-                onClick={() => setShowContext(!showContext)}
-              >
-                <User className="h-4 w-4 mr-1" />
-                {showContext ? 'Hide Context' : 'Show Context'}
-              </Button>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
@@ -467,6 +458,15 @@ export default function CustomerTicketDetail() {
                   <MessageSquare className="h-4 w-4" />
                   Conversation
                   <span className="text-muted-foreground font-normal">({messages?.length || 0} messages)</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ml-auto md:hidden h-7 px-2 text-xs"
+                    onClick={() => setShowContext(!showContext)}
+                  >
+                    <User className="h-3.5 w-3.5 mr-1" />
+                    {showContext ? 'Hide' : 'Context'}
+                  </Button>
                 </CardTitle>
               </CardHeader>
 
