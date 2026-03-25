@@ -296,35 +296,35 @@ export default function AdminDashboard() {
         <SystemAlerts />
 
         {/* Hero Banner */}
-        <Card className="overflow-hidden border-border bg-card">
+        <Card className="overflow-hidden border-border bg-card max-w-lg">
           {/* Banner area with branding */}
-          <div className="relative h-28 sm:h-32 bg-gradient-to-br from-primary/20 via-muted/80 to-card overflow-hidden">
+          <div className="relative h-20 sm:h-28 bg-gradient-to-br from-primary/20 via-muted/80 to-card overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
           </div>
 
-          <CardContent className="relative -mt-10 px-4 sm:px-6 pb-5">
+          <CardContent className="relative -mt-8 px-4 sm:px-5 pb-4">
             {/* Avatar + Name row */}
-            <div className="flex items-start gap-4 mb-4">
-              <div className="flex flex-col items-center gap-1.5">
-                <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-4 border-card shadow-lg">
+            <div className="flex items-start gap-3 mb-3">
+              <div className="flex flex-col items-center gap-1">
+                <Avatar className="h-14 w-14 sm:h-16 sm:w-16 border-4 border-card shadow-lg">
                   <AvatarImage src={marketplaceLogo} alt="Eclipse" className="object-contain" />
-                  <AvatarFallback className="bg-muted text-2xl font-bold">E</AvatarFallback>
+                  <AvatarFallback className="bg-muted text-xl font-bold">E</AvatarFallback>
                 </Avatar>
-                <Badge variant="default" className="gap-1">
-                  <Shield className="h-3 w-3" />
+                <Badge variant="default" className="gap-1 text-[10px]">
+                  <Shield className="h-2.5 w-2.5" />
                   Admin
                 </Badge>
               </div>
 
-              <div className="flex-1 min-w-0 pt-2">
-                <h1 className="text-xl sm:text-2xl font-bold">
+              <div className="flex-1 min-w-0 pt-1">
+                <h1 className="text-lg sm:text-xl font-bold leading-tight">
                   {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
                 </h1>
-                <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
-                  <span>🕐 Local: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                  <span>🇬🇧 UK: {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })}</span>
-                  <span>🇺🇸 EST: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' })}</span>
-                  <span>🇺🇸 PST: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Los_Angeles' })}</span>
+                <div className="flex flex-col gap-0.5 mt-1.5 text-[11px] text-muted-foreground">
+                  <span className="whitespace-nowrap">🕐 Local: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span className="whitespace-nowrap">🇬🇧 UK: {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })}</span>
+                  <span className="whitespace-nowrap">🇺🇸 EST: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' })}</span>
+                  <span className="whitespace-nowrap">🇺🇸 PST: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Los_Angeles' })}</span>
                 </div>
               </div>
             </div>
