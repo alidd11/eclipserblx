@@ -1,41 +1,24 @@
 
 
-## Improve Ticket Pages Layout
+## Plan: Move Duty Status & Remove Activity Feed
 
-The current ticket detail page has separate Cards for the message area and reply input, and the messages container uses `max-h-[50vh]` which can be too restrictive on mobile (especially with the header and stats taking space). The ticket list page also feels fragmented with separate stat cards and ticket cards.
+### Changes to `src/pages/admin/Dashboard.tsx`
 
-### Changes
+**1. Move Duty Status card below the Welcome (Hero) card**
+- Cut the entire Duty Status card block (lines 394-496) from its current position
+- Paste it immediately after the Hero Banner card (after line 332), before Quick Actions
 
-**1. `SupportTicketDetail.tsx` -- Unified chat-style layout**
-- Remove the separate Card wrappers for messages and reply input
-- Use a single unified container that fills available viewport height
-- Replace `max-h-[50vh]` with a flex layout: header at top, messages area grows to fill space (`flex-1 overflow-y-auto`), reply input pinned at bottom
-- This mimics a native messaging app where the conversation scrolls freely and the input stays fixed
-- Structure:
-```text
-┌─────────────────────┐
-│ Back + Title + Badge │  (fixed)
-├─────────────────────┤
-│                     │
-│   Messages scroll   │  (flex-1, overflow-y-auto)
-│                     │
-├─────────────────────┤
-│ Reply input         │  (fixed at bottom)
-└─────────────────────┘
-```
+**2. Remove the Activity Feed**
+- Remove the `ActivityFeed` import (line 4)
+- In the "Activity Feed + My Duty Logs" grid section (lines 498-547), remove the `<ActivityFeed />` component and unwrap "My Recent Duty Logs" so it stands alone (no longer in a 2-column grid)
 
-**2. `SupportTickets.tsx` -- Consolidated list page**
-- Merge the 3 stat counters into a single compact row inside one card (inline badges/chips instead of 3 separate cards)
-- This saves vertical space and feels more integrated
-- Keep the ticket list as-is (each ticket is a navigable item, separate cards make sense there)
-
-**3. `TicketCard.tsx` -- No changes needed**
-- Individual ticket cards work well as tappable list items
-
-### Technical details
-
-- The detail page will use `h-[calc(100dvh-var(--header-height,64px)-var(--tab-bar-height,0px))]` with `flex flex-col` to create a full-height chat layout
-- Messages area: `flex-1 min-h-0 overflow-y-auto` with padding
-- Reply area: pinned at bottom with border-top separator instead of a separate card
-- Stats on list page: single card with 3 inline sections divided by borders
+### Result
+The dashboard order will be:
+1. System Alerts
+2. Hero Banner (welcome card)
+3. Duty Status (moved here)
+4. Quick Actions
+5. Your Tools (role-based)
+6. My Recent Duty Logs (full width, no grid wrapper)
+7. All Staff Duty Logs (admin only)
 
