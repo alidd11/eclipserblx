@@ -197,13 +197,7 @@ export default function AdminDashboard() {
     ? allRoleLinks
     : allRoleLinks.filter(link => hasAnyPermission(link.permissions));
 
-  const formatDuration = (minutes: number | null) => {
-    if (minutes === null || minutes === undefined) return '-';
-    if (minutes === 0) return '<1m';
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-  };
+
 
 
   const getTimeBasedGreeting = () => {
