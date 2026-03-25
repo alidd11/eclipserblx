@@ -398,59 +398,53 @@ export default function CustomerTicketDetail() {
             Back to Tickets
           </Button>
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="outline" className="font-mono text-xs">{ticket.ticket_number}</Badge>
-              <Badge className={cn('text-xs', status.color)}>{status.label}</Badge>
-              {ticket.priority === 'high' && <Badge variant="destructive" className="text-xs">High</Badge>}
-              {ticket.priority === 'urgent' && <Badge variant="destructive" className="text-xs"><AlertTriangle className="h-3 w-3 mr-1" />Urgent</Badge>}
-              {categoryLabel && <Badge variant="secondary" className="text-xs">{categoryLabel}</Badge>}
-            </div>
+          <h1 className="text-lg font-bold leading-tight">{ticket.subject}</h1>
 
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* Claim */}
-              {!ticket.assigned_to && (
-                <Button size="sm" variant="outline" onClick={() => claimTicket.mutate()} disabled={claimTicket.isPending}>
-                  <UserCheck className="h-4 w-4 mr-1" />
-                  Claim
-                </Button>
-              )}
-
-              {/* Priority */}
-              <Select value={ticket.priority || 'medium'} onValueChange={(v) => updatePriority.mutate(v)}>
-                <SelectTrigger className="w-auto min-w-[110px] h-9 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low Priority</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High Priority</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Status */}
-              <Select value={ticket.status} onValueChange={(v) => updateStatus.mutate(v)}>
-                <SelectTrigger className="w-auto min-w-[140px] h-9 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="awaiting_customer">Awaiting Customer</SelectItem>
-                  <SelectItem value="resolved">Resolved</SelectItem>
-                  <SelectItem value="closed">Closed</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Toggle context on mobile */}
-              <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setShowContext(!showContext)}>
-                <User className="h-4 w-4" />
-              </Button>
-            </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Badge variant="outline" className="font-mono text-xs">{ticket.ticket_number}</Badge>
+            <Badge className={cn('text-xs', status.color)}>{status.label}</Badge>
+            {ticket.priority === 'high' && <Badge variant="destructive" className="text-xs">High</Badge>}
+            {ticket.priority === 'urgent' && <Badge variant="destructive" className="text-xs"><AlertTriangle className="h-3 w-3 mr-1" />Urgent</Badge>}
+            {categoryLabel && <Badge variant="secondary" className="text-xs">{categoryLabel}</Badge>}
           </div>
 
-          <h1 className="text-lg font-bold">{ticket.subject}</h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            {!ticket.assigned_to && (
+              <Button size="sm" variant="outline" onClick={() => claimTicket.mutate()} disabled={claimTicket.isPending}>
+                <UserCheck className="h-4 w-4 mr-1" />
+                Claim
+              </Button>
+            )}
+
+            <Select value={ticket.priority || 'medium'} onValueChange={(v) => updatePriority.mutate(v)}>
+              <SelectTrigger className="w-auto min-w-[90px] h-9 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low Priority</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High Priority</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={ticket.status} onValueChange={(v) => updateStatus.mutate(v)}>
+              <SelectTrigger className="w-auto min-w-[100px] h-9 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="open">Open</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="awaiting_customer">Awaiting Customer</SelectItem>
+                <SelectItem value="resolved">Resolved</SelectItem>
+                <SelectItem value="closed">Closed</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setShowContext(!showContext)}>
+              <User className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* ── Main content: conversation + context sidebar ─────────────────── */}
