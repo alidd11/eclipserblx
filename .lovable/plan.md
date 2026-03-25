@@ -1,96 +1,27 @@
 
 
-# Fix Recurring RouteErrorBoundary Crashes on Published Site
+## Fix Ticket Detail Headers on Mobile
 
-## Problem
+The screenshot shows the admin `CustomerTicketDetail` header is cluttered on mobile -- badges, two Select dropdowns (Priority + Status), and a context toggle button all sit in a cramped row, causing wrapping and visual noise.
 
-On the published site (eclipserblx.com), navigating to product pages and certain sidebar pages triggers the RouteErrorBoundary error screen. This happens because:
+The same pattern affects the `SellerTickets` drawer header and the customer-facing `SupportTicketDetail` header.
 
-1. The service worker (`custom-sw.js`) has a **fatal bug** -- duplicate `const` declarations that crash it in strict mode
-2. After deployments, browsers with cached HTML try to load old JS chunk files that no longer exist on the server
-3. Lazy-loaded routes have no retry mechanism, so a failed chunk import immediately crashes the page
+### Changes
 
-## Root Cause Analysis
+**1. `src/pages/admin/CustomerTicketDetail.tsx` -- Restructure mobile header (lines 394-454)**
+- Move the ticket subject (`h1`) up directly after the back button for immediate context
+- Stack badges on one row, controls on a separate row below
+- Make the Priority and Status selects full-width on mobile (`w-full sm:w-auto`) so they don't squeeze together
+- Reduce `min-w` on select triggers for mobile (`min-w-[90px]` instead of `110px`/`140px`)
+- Layout: Back button -> Title -> Badges row -> Controls row (claim, priority, status, context toggle)
 
-```text
-User opens site -> cached HTML references old JS chunks
-                -> browser requests old chunk file (404)
-                -> lazy import() rejects
-                -> RouteErrorBoundary catches error
-                -> shows "This page encountered an error"
+**2. `src/pages/admin/SellerTickets.tsx` -- Tighten drawer header (lines 472-496)**
+- Same pattern: stack badges and controls vertically instead of trying to fit everything in one `flex-wrap` row
+- Reduce select trigger widths for the compact drawer
 
-Service Worker should prevent this by serving fresh HTML,
-but custom-sw.js crashes on boot due to duplicate const declarations,
-so navigation handler never registers.
-```
+**3. `src/pages/SupportTicketDetail.tsx` -- Minor cleanup (lines 228-246)**
+- Already cleaner but ensure badges don't overflow on very narrow screens by adding `flex-wrap` consistently
 
-## Plan
-
-### Step 1: Fix the Service Worker crash
-
-**File: `public/custom-sw.js`**
-
-Remove the duplicate `const OFFLINE_CACHE` and `const OFFLINE_URL` declarations on lines 10-11. These duplicate lines 5-6 and crash the entire service worker in strict mode, preventing the navigation handler from ever registering.
-
-### Step 2: Add retry logic to lazy imports
-
-**File: `src/lib/lazyWithRetry.ts`** (new)
-
-Create a `lazyWithRetry` wrapper that retries failed dynamic imports up to 3 times with cache-busted URLs before giving up. This handles the case where the first attempt fails due to a stale chunk reference.
-
-### Step 3: Apply retry wrapper to all route-level lazy imports
-
-**File: `src/components/AppRoutes.tsx`**
-
-Replace all `lazy(() => import(...))` calls with `lazyWithRetry(() => import(...))`. This covers ~100+ route components. When a chunk fails to load, the retry wrapper will:
-- Wait briefly (1 second backoff)
-- Clear the module cache entry
-- Retry the import
-
-### Step 4: Improve the RouteErrorBoundary auto-recovery for chunk errors
-
-**File: `src/components/RouteErrorBoundary.tsx`**
-
-When a chunk error is detected, instead of showing the error UI and waiting for user action, perform an inline retry of the failed route by resetting the boundary state. Only show the error UI after the retry mechanism in Step 2 has exhausted all attempts.
-
-### Step 5: Add Cloudflare cache headers for hashed assets
-
-**File: `supabase/functions/deploy-cloudflare-worker/index.ts`**
-
-Update the Cloudflare Worker's `fetchOrigin` function to add `Cache-Control: public, max-age=31536000, immutable` headers for content-hashed asset files (`/assets/*.js`, `/assets/*.css`). This ensures browsers cache these files permanently (they have unique hashes per build), reducing the window where stale references can cause failures.
-
-### Step 6: Purge Cloudflare cache after deployment
-
-Trigger the existing `purge-cloudflare-cache` edge function to clear any stale assets currently cached at the edge.
-
-## Technical Details
-
-**`lazyWithRetry` implementation:**
-```typescript
-function lazyWithRetry(importFn, retries = 3) {
-  return lazy(async () => {
-    for (let i = 0; i < retries; i++) {
-      try {
-        return await importFn();
-      } catch (error) {
-        if (i === retries - 1) throw error;
-        await new Promise(r => setTimeout(r, 1000 * (i + 1)));
-        // Bust module cache by appending timestamp to URL
-      }
-    }
-    return importFn(); // final attempt
-  });
-}
-```
-
-**Service Worker fix:**
-Lines 9-11 of `custom-sw.js` are exact duplicates of lines 4-6 and must be removed.
-
-## Expected Outcome
-
-- Service worker correctly registers its navigation handler, always serving fresh `index.html` from the network
-- Failed lazy imports retry automatically 3 times before giving up
-- Hashed assets get immutable cache headers, preventing mid-session cache eviction
-- Edge cache is purged so no stale assets are served
-- Users will no longer see the RouteErrorBoundary on product pages or sidebar navigation
+### Result
+On mobile, each ticket detail header will have a clear visual hierarchy: back button, title, status badges, then action controls -- each on its own row with proper spacing rather than wrapping chaotically.
 
