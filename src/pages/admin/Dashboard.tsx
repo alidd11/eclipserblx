@@ -360,6 +360,37 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
+        {/* Role-Based Actions */}
+        {roleLinks.length > 0 && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-medium">Your Tools</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1.5 sm:gap-2">
+                {roleLinks.map((link) => (
+                  <Link key={link.href} to={link.href}>
+                    <motion.div
+                      whileHover={{ y: -2, scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                      className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3.5 rounded-lg bg-muted/50 hover:bg-accent transition-colors text-center group cursor-pointer"
+                    >
+                      <div className="p-1.5 sm:p-2.5 rounded-xl bg-card border border-border group-hover:border-primary/30 transition-colors">
+                        <link.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] sm:text-xs font-medium block leading-tight">{link.title}</span>
+                        <span className="text-[10px] text-muted-foreground hidden sm:block">{link.description}</span>
+                      </div>
+                    </motion.div>
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Duty Clock In/Out */}
         <Card className="bg-card border-border max-w-md">
           <CardHeader className="pb-3">
