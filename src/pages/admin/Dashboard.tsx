@@ -3,7 +3,7 @@ import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock
 import { SystemAlerts } from '@/components/admin/dashboard/SystemAlerts';
 import { ActivityFeed } from '@/components/admin/dashboard/ActivityFeed';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import marketplaceLogo from '@/assets/marketplace-logo-icon.webp';
+
 import { motion } from 'framer-motion';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,7 +40,7 @@ export default function AdminDashboard() {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('display_name')
+        .select('display_name, avatar_url')
         .eq('user_id', user.id)
         .single();
       if (error) return null;
@@ -307,8 +307,8 @@ export default function AdminDashboard() {
             <div className="flex items-start gap-3 mb-3">
               <div className="flex flex-col items-center gap-1">
                 <Avatar className="h-14 w-14 sm:h-16 sm:w-16 border-4 border-card shadow-lg">
-                  <AvatarImage src={marketplaceLogo} alt="Eclipse" className="object-contain" />
-                  <AvatarFallback className="bg-muted text-xl font-bold">E</AvatarFallback>
+                  <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.display_name || 'User'} className="object-cover" />
+                  <AvatarFallback className="bg-muted text-xl font-bold">{profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
                 <Badge variant="default" className="gap-1 text-[10px]">
                   <Shield className="h-2.5 w-2.5" />
