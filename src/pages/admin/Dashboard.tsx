@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Shield, TrendingUp, TrendingDown, Gavel, CreditCard, Settings, UserCheck, Headphones, Store, Bot, Ticket, BookOpen } from 'lucide-react';
 import { SystemAlerts } from '@/components/admin/dashboard/SystemAlerts';
-import { ActivityFeed } from '@/components/admin/dashboard/ActivityFeed';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import { motion } from 'framer-motion';
