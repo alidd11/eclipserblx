@@ -40,7 +40,7 @@ export default function AdminDashboard() {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('display_name')
+        .select('display_name, avatar_url')
         .eq('user_id', user.id)
         .single();
       if (error) return null;
