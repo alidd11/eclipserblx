@@ -258,17 +258,6 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {/* Weekly/Monthly Stats */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2 rounded-lg bg-muted/50 text-center">
-                <p className="text-[10px] text-muted-foreground">This Week</p>
-                <p className="text-sm font-bold font-mono">{formatHoursMinutes(weeklyMinutes)}</p>
-              </div>
-              <div className="p-2 rounded-lg bg-muted/50 text-center">
-                <p className="text-[10px] text-muted-foreground">This Month</p>
-                <p className="text-sm font-bold font-mono">{formatHoursMinutes(monthlyMinutes)}</p>
-              </div>
-            </div>
 
             {activeSession ? (
               <div className="space-y-3">
