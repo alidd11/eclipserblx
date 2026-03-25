@@ -107,7 +107,7 @@ export default function CustomerTicketDetail() {
   const [newMessage, setNewMessage] = useState('');
   const [isInternalNote, setIsInternalNote] = useState(false);
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
-  const [showContext, setShowContext] = useState(true);
+  const [showContext, setShowContext] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
