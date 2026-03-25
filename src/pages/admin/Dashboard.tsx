@@ -33,10 +33,6 @@ export default function AdminDashboard() {
   const queryClient = useQueryClient();
   const [clockOutNotes, setClockOutNotes] = useState('');
   const [elapsedTime, setElapsedTime] = useState<string>('00:00:00');
-  const [showNewAnnouncement, setShowNewAnnouncement] = useState(false);
-  const [newAnnouncementTitle, setNewAnnouncementTitle] = useState('');
-  const [newAnnouncementContent, setNewAnnouncementContent] = useState('');
-  const [newAnnouncementPriority, setNewAnnouncementPriority] = useState<'low' | 'normal' | 'high' | 'urgent'>('normal');
   const [showClockOutConfirm, setShowClockOutConfirm] = useState(false);
 
   // Fetch user profile for display name
