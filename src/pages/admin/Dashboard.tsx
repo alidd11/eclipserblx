@@ -359,23 +359,6 @@ export default function AdminDashboard() {
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case 'urgent': return <AlertCircle className="h-4 w-4 text-destructive" />;
-      case 'high': return <AlertTriangle className="h-4 w-4 text-orange-500" />;
-      case 'normal': return <Info className="h-4 w-4 text-primary" />;
-      default: return <Info className="h-4 w-4 text-muted-foreground" />;
-    }
-  };
-
-  const getPriorityStyles = (priority: string) => {
-    switch (priority) {
-      case 'urgent': return 'border-destructive/50 bg-destructive/5';
-      case 'high': return 'border-orange-500/50 bg-orange-500/5';
-      case 'normal': return 'border-primary/50 bg-primary/5';
-      default: return 'border-muted bg-muted/50';
-    }
-  };
 
   const getTimeBasedGreeting = () => {
     const hour = new Date().getHours();
