@@ -613,7 +613,7 @@ export default function AdminProducts() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.slug || !form.price) {
+    if (!form.name || !form.price) {
       toast.error('Please fill in required fields');
       return;
     }
