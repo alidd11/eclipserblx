@@ -14,14 +14,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { toast } from 'sonner';
-import { format, differenceInMinutes, formatDistanceToNow } from 'date-fns';
+import { format, differenceInMinutes } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
-import { useState, useEffect, useMemo } from 'react';
-import { startOfWeek, startOfMonth, endOfWeek, endOfMonth, isWithinInterval } from 'date-fns';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
 
 
 export default function AdminDashboard() {
