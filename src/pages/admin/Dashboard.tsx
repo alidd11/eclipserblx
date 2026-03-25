@@ -253,6 +253,26 @@ export default function AdminDashboard() {
     ? allQuickLinks 
     : allQuickLinks.filter(link => hasAnyPermission(link.permissions));
 
+  // Role-based quick actions — contextual shortcuts based on what the user can do
+  const allRoleLinks = [
+    { title: 'Revenue', href: '/admin/revenue', icon: CreditCard, description: 'Financial overview', permissions: ['view_income'] },
+    { title: 'Disputes', href: '/admin/disputes', icon: Gavel, description: 'Handle disputes', permissions: ['view_orders', 'manage_orders'] },
+    { title: 'Tickets', href: '/admin/customer-tickets', icon: Ticket, description: 'Customer tickets', permissions: ['view_live_chat', 'manage_live_chat'] },
+    { title: 'Stores', href: '/admin/store-applications', icon: Store, description: 'Store applications', permissions: ['view_applications', 'manage_applications'] },
+    { title: 'Staff Chat', href: '/admin/admin-chat', icon: Headphones, description: 'Internal chat', permissions: ['view_admin_chat'] },
+    { title: 'Roles', href: '/admin/role-permissions', icon: UserCheck, description: 'Manage roles', permissions: ['manage_roles'] },
+    { title: 'Settings', href: '/admin/settings', icon: Settings, description: 'System settings', permissions: ['manage_settings'] },
+    { title: 'Moderation', href: '/admin/moderation', icon: Shield, description: 'Content review', permissions: ['view_products', 'manage_products'] },
+    { title: 'Audit Logs', href: '/admin/audit-logs', icon: BookOpen, description: 'Activity logs', permissions: ['view_analytics'] },
+    { title: 'Bot Setup', href: '/admin/bot-ghost-setup', icon: Bot, description: 'Discord bot config', permissions: ['manage_settings'] },
+    { title: 'Affiliates', href: '/admin/affiliates', icon: TrendingUp, description: 'Affiliate hub', permissions: ['view_applications', 'manage_applications'] },
+    { title: 'Staff Activity', href: '/admin/staff-activity', icon: Timer, description: 'Staff hours', permissions: ['view_analytics'] },
+  ];
+
+  const roleLinks = isAdmin
+    ? allRoleLinks
+    : allRoleLinks.filter(link => hasAnyPermission(link.permissions));
+
   const formatDuration = (minutes: number | null) => {
     if (minutes === null || minutes === undefined) return '-';
     if (minutes === 0) return '<1m';
