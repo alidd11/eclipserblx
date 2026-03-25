@@ -79,30 +79,26 @@
            </Button>
          </div>
  
-         {/* Stats Cards */}
-         <div className="grid grid-cols-3 gap-3 mb-6">
-           <Card className="bg-card">
-             <CardContent className="p-4 text-center">
-               <MessageSquare className="h-5 w-5 mx-auto mb-1 text-yellow-500" />
-               <div className="text-2xl font-bold">{openCount}</div>
-               <div className="text-xs text-muted-foreground">Open</div>
-             </CardContent>
-           </Card>
-           <Card className="bg-card">
-             <CardContent className="p-4 text-center">
-               <Clock className="h-5 w-5 mx-auto mb-1 text-blue-500" />
-               <div className="text-2xl font-bold">{inProgressCount}</div>
-               <div className="text-xs text-muted-foreground">In Progress</div>
-             </CardContent>
-           </Card>
-           <Card className="bg-card">
-             <CardContent className="p-4 text-center">
-               <CheckCircle className="h-5 w-5 mx-auto mb-1 text-green-500" />
-               <div className="text-2xl font-bold">{resolvedCount}</div>
-               <div className="text-xs text-muted-foreground">Resolved</div>
-             </CardContent>
-           </Card>
-         </div>
+          {/* Stats Row */}
+          <Card className="mb-6">
+            <CardContent className="p-3 flex items-center justify-around divide-x divide-border">
+              <div className="flex items-center gap-2 px-3">
+                <MessageSquare className="h-4 w-4 text-yellow-500 shrink-0" />
+                <span className="text-lg font-bold">{openCount}</span>
+                <span className="text-xs text-muted-foreground">Open</span>
+              </div>
+              <div className="flex items-center gap-2 px-3">
+                <Clock className="h-4 w-4 text-blue-500 shrink-0" />
+                <span className="text-lg font-bold">{inProgressCount}</span>
+                <span className="text-xs text-muted-foreground">In Progress</span>
+              </div>
+              <div className="flex items-center gap-2 px-3">
+                <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+                <span className="text-lg font-bold">{resolvedCount}</span>
+                <span className="text-xs text-muted-foreground">Resolved</span>
+              </div>
+            </CardContent>
+          </Card>
  
          {/* Tickets List */}
          <div className="space-y-3">

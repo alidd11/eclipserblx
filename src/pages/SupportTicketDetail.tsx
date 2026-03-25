@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
@@ -223,87 +222,81 @@ export default function SupportTicketDetail() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-6 max-w-3xl">
-        {/* Header */}
-        <div className="mb-4">
-          <Button variant="ghost" size="sm" className="mb-2 -ml-2" onClick={() => navigate('/support/tickets')}>
+      <div className="flex flex-col h-[calc(100dvh-var(--header-height,56px)-var(--tab-bar-height,0px))]">
+        {/* Header - fixed at top */}
+        <div className="shrink-0 border-b border-border bg-background px-4 py-3">
+          <Button variant="ghost" size="sm" className="-ml-2 mb-1.5" onClick={() => navigate('/support/tickets')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Tickets
           </Button>
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl font-bold leading-tight line-clamp-2">{ticket.subject}</h1>
-              <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
-                <Badge variant="outline" className="text-xs shrink-0">{ticket.ticket_number}</Badge>
-                <Badge className={cn('text-xs shrink-0', status.color)}>{status.label}</Badge>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                <Clock className="h-3 w-3" />
-                <span>Created {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}</span>
-              </div>
-            </div>
+          <h1 className="text-lg font-bold leading-tight line-clamp-2">{ticket.subject}</h1>
+          <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
+            <Badge variant="outline" className="text-xs">{ticket.ticket_number}</Badge>
+            <Badge className={cn('text-xs', status.color)}>{status.label}</Badge>
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}
+            </span>
           </div>
         </div>
 
-        {/* Messages */}
-        <Card className="mb-4">
-          <CardContent className="p-4 space-y-4 max-h-[50vh] overflow-y-auto">
-            {loadingMessages ? (
-              <div className="space-y-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-16 rounded-lg" />
-                ))}
-              </div>
-            ) : messages?.length === 0 ? (
-              <div className="text-center text-muted-foreground py-8">
-                <p>Waiting for a response from our support team.</p>
-                <p className="text-xs mt-1">We typically respond within 24 hours.</p>
-              </div>
-            ) : (
-              messages?.map((msg) => {
-                const isCustomer = msg.sender_type === 'customer';
-                const staffProfile = !isCustomer && msg.sender_id ? staffProfiles?.[msg.sender_id] : null;
+        {/* Messages - scrollable area */}
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-4">
+          {loadingMessages ? (
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 rounded-lg" />
+              ))}
+            </div>
+          ) : messages?.length === 0 ? (
+            <div className="text-center text-muted-foreground py-12">
+              <p>Waiting for a response from our support team.</p>
+              <p className="text-xs mt-1">We typically respond within 24 hours.</p>
+            </div>
+          ) : (
+            messages?.map((msg) => {
+              const isCustomer = msg.sender_type === 'customer';
+              const staffProfile = !isCustomer && msg.sender_id ? staffProfiles?.[msg.sender_id] : null;
 
-                return (
-                  <div key={msg.id} className={cn('flex gap-3', isCustomer ? 'flex-row-reverse' : 'flex-row')}>
-                    <Avatar className="h-8 w-8 shrink-0">
-                      {isCustomer ? (
-                        <AvatarFallback className="bg-primary/20 text-primary">
-                          <User className="h-4 w-4" />
+              return (
+                <div key={msg.id} className={cn('flex gap-3', isCustomer ? 'flex-row-reverse' : 'flex-row')}>
+                  <Avatar className="h-8 w-8 shrink-0">
+                    {isCustomer ? (
+                      <AvatarFallback className="bg-primary/20 text-primary">
+                        <User className="h-4 w-4" />
+                      </AvatarFallback>
+                    ) : (
+                      <>
+                        <AvatarImage src={staffProfile?.avatar_url || undefined} />
+                        <AvatarFallback className="bg-green-500/20 text-green-500">
+                          <Headphones className="h-4 w-4" />
                         </AvatarFallback>
-                      ) : (
-                        <>
-                          <AvatarImage src={staffProfile?.avatar_url || undefined} />
-                          <AvatarFallback className="bg-green-500/20 text-green-500">
-                            <Headphones className="h-4 w-4" />
-                          </AvatarFallback>
-                        </>
-                      )}
-                    </Avatar>
-                    <div className={cn('max-w-[75%] rounded-lg px-3 py-2', isCustomer ? 'bg-primary text-primary-foreground' : 'bg-muted')}>
-                      <div className="text-xs opacity-70 mb-1">
-                        {isCustomer ? 'You' : (staffProfile?.display_name || 'Support Team')} •{' '}
-                        {format(new Date(msg.created_at), 'MMM d, h:mm a')}
-                      </div>
-                      <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
-                      {msg.attachment_url && (
-                        <div className="mt-2">
-                          <AttachmentDisplay url={msg.attachment_url} bucket={ATTACHMENT_BUCKET} />
-                        </div>
-                      )}
+                      </>
+                    )}
+                  </Avatar>
+                  <div className={cn('max-w-[75%] rounded-lg px-3 py-2', isCustomer ? 'bg-primary text-primary-foreground' : 'bg-muted')}>
+                    <div className="text-xs opacity-70 mb-1">
+                      {isCustomer ? 'You' : (staffProfile?.display_name || 'Support Team')} •{' '}
+                      {format(new Date(msg.created_at), 'MMM d, h:mm a')}
                     </div>
+                    <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
+                    {msg.attachment_url && (
+                      <div className="mt-2">
+                        <AttachmentDisplay url={msg.attachment_url} bucket={ATTACHMENT_BUCKET} />
+                      </div>
+                    )}
                   </div>
-                );
-              })
-            )}
-            <div ref={messagesEndRef} />
-          </CardContent>
-        </Card>
+                </div>
+              );
+            })
+          )}
+          <div ref={messagesEndRef} />
+        </div>
 
-        {/* Reply Input */}
-        {!isTicketClosed ? (
-          <Card>
-            <CardContent className="p-3 space-y-2">
+        {/* Reply input - pinned at bottom */}
+        <div className="shrink-0 border-t border-border bg-background px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+          {!isTicketClosed ? (
+            <div className="space-y-2">
               {attachmentFile && (
                 <div className="flex items-center gap-2 text-sm bg-muted rounded-md px-3 py-1.5">
                   <Paperclip className="h-3 w-3 shrink-0" />
@@ -329,7 +322,7 @@ export default function SupportTicketDetail() {
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Type your reply..."
-                  className="min-h-[60px] resize-none"
+                  className="min-h-[44px] max-h-[120px] resize-none"
                 />
                 <Button
                   onClick={handleSend}
@@ -339,15 +332,13 @@ export default function SupportTicketDetail() {
                   {sendMessage.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="bg-muted/50">
-            <CardContent className="p-4 text-center text-muted-foreground">
+            </div>
+          ) : (
+            <p className="text-center text-sm text-muted-foreground">
               This ticket has been closed. Please create a new ticket if you need further assistance.
-            </CardContent>
-          </Card>
-        )}
+            </p>
+          )}
+        </div>
       </div>
     </MainLayout>
   );
