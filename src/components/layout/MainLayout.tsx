@@ -6,9 +6,11 @@ import { useDeferredScheduledReleaseCheck } from '@/hooks/useScheduledReleaseChe
 
 interface MainLayoutProps {
   children: ReactNode;
+  showFooter?: boolean;
+  showBreadcrumb?: boolean;
 }
 
-function MainLayoutContent({ children }: MainLayoutProps) {
+function MainLayoutContent({ children, showFooter = true, showBreadcrumb = true }: MainLayoutProps) {
   // Deferred: waits for idle before starting polling
   useDeferredScheduledReleaseCheck();
 
@@ -26,6 +28,8 @@ function MainLayoutContent({ children }: MainLayoutProps) {
         />
       )}
       headerProps={{ mobileFixed: true }}
+      showFooter={showFooter}
+      showBreadcrumb={showBreadcrumb}
       mainStyle={{ paddingBottom: 'calc(var(--chat-safe-bottom, env(safe-area-inset-bottom)) + var(--tab-bar-height, 0px))' }}
     >
       <PageTransition>{children}</PageTransition>
@@ -33,6 +37,6 @@ function MainLayoutContent({ children }: MainLayoutProps) {
   );
 }
 
-export function MainLayout({ children }: MainLayoutProps) {
-  return <MainLayoutContent>{children}</MainLayoutContent>;
+export function MainLayout({ children, showFooter = true, showBreadcrumb = true }: MainLayoutProps) {
+  return <MainLayoutContent showFooter={showFooter} showBreadcrumb={showBreadcrumb}>{children}</MainLayoutContent>;
 }

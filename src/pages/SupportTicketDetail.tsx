@@ -221,8 +221,8 @@ export default function SupportTicketDetail() {
   const isTicketClosed = ticket.status === 'closed';
 
   return (
-    <MainLayout>
-      <div className="flex flex-col h-[calc(100dvh-var(--header-height,56px)-var(--tab-bar-height,0px))]">
+    <MainLayout showFooter={false} showBreadcrumb={false}>
+      <div className="flex flex-col h-[calc(100dvh-var(--header-height,56px)-var(--tab-bar-height,0px))] min-h-0 overflow-hidden">
         {/* Header - fixed at top */}
         <div className="shrink-0 border-b border-border bg-background px-4 py-3">
           <Button variant="ghost" size="sm" className="-ml-2 mb-1.5" onClick={() => navigate('/support/tickets')}>
@@ -241,7 +241,10 @@ export default function SupportTicketDetail() {
         </div>
 
         {/* Messages - scrollable area */}
-        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-4">
+        <div
+          className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y px-4 py-4 space-y-4"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
           {loadingMessages ? (
             <div className="space-y-4">
               {Array.from({ length: 3 }).map((_, i) => (
