@@ -34,7 +34,8 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
   const isChatPage =
     location.pathname.startsWith('/admin/admin-chat') ||
     location.pathname.startsWith('/admin/staff-messages') ||
-    location.pathname.startsWith('/admin/live-chat');
+    location.pathname.startsWith('/admin/live-chat') ||
+    location.pathname.startsWith('/admin/customer-tickets/');
 
   const [isStandalone, setIsStandalone] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
