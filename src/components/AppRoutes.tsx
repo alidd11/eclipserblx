@@ -68,6 +68,7 @@ const AdminAnalytics = lazyWithRetry(() => import("@/pages/admin/Analytics"));
 const AdminIncome = lazyWithRetry(() => import("@/pages/admin/Income"));
 const AdminIncomeSources = lazyWithRetry(() => import("@/pages/admin/IncomeSources"));
 const AdminStaffActivity = lazyWithRetry(() => import("@/pages/admin/StaffActivity"));
+const AdminDutyLogs = lazyWithRetry(() => import("@/pages/admin/DutyLogs"));
 const AdminStaffMessages = lazyWithRetry(() => import("@/pages/admin/StaffMessages"));
 const AdminChat = lazyWithRetry(() => import("@/pages/admin/AdminChat"));
 const AdminProducts = lazyWithRetry(() => import("@/pages/admin/Products"));
@@ -408,6 +409,7 @@ export function AppRoutes() {
         <Route path="/admin/income" element={<Navigate to="/admin/revenue?tab=overview" replace />} />
         <Route path="/admin/income-sources" element={<Navigate to="/admin/revenue?tab=sources" replace />} />
         <Route path="/admin/staff-activity" element={<AdminStaffActivity />} />
+        <Route path="/admin/duty-logs" element={<AdminDutyLogs />} />
         <Route path="/admin/staff-messages" element={<AdminStaffMessages />} />
         <Route path="/admin/admin-chat" element={<AdminChat />} />
         {/* Legacy compatibility redirect */}

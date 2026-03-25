@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Shield, TrendingUp, TrendingDown, Gavel, CreditCard, Settings, UserCheck, Headphones, Store, Bot, Ticket, BookOpen } from 'lucide-react';
+import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Shield, TrendingUp, TrendingDown, Gavel, CreditCard, Settings, UserCheck, Headphones, Store, Bot, Ticket, BookOpen, ClipboardList } from 'lucide-react';
 import { SystemAlerts } from '@/components/admin/dashboard/SystemAlerts';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -14,14 +14,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { toast } from 'sonner';
-import { format, differenceInMinutes, formatDistanceToNow } from 'date-fns';
+import { format, differenceInMinutes } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
-import { useState, useEffect, useMemo } from 'react';
-import { startOfWeek, startOfMonth, endOfWeek, endOfMonth, isWithinInterval } from 'date-fns';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
 
 
 export default function AdminDashboard() {
@@ -112,84 +109,7 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, [activeSession?.clock_in]);
 
-  // Staff's recent duty logs
-  const { data: myDutyLogs } = useQuery({
-    queryKey: ['my-duty-logs', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from('staff_duty_logs')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('clock_in', { ascending: false })
-        .limit(50); // Fetch more for stats calculation
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
 
-  // Calculate weekly and monthly hours
-  const { weeklyMinutes, monthlyMinutes } = useMemo(() => {
-    if (!myDutyLogs) return { weeklyMinutes: 0, monthlyMinutes: 0 };
-    
-    const now = new Date();
-    const weekStart = startOfWeek(now, { weekStartsOn: 1 }); // Monday
-    const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
-    const monthStart = startOfMonth(now);
-    const monthEnd = endOfMonth(now);
-    
-    let weekly = 0;
-    let monthly = 0;
-    
-    myDutyLogs.forEach(log => {
-      if (!log.clock_out || !log.duration_minutes) return;
-      const logDate = new Date(log.clock_in);
-      
-      if (isWithinInterval(logDate, { start: weekStart, end: weekEnd })) {
-        weekly += log.duration_minutes;
-      }
-      if (isWithinInterval(logDate, { start: monthStart, end: monthEnd })) {
-        monthly += log.duration_minutes;
-      }
-    });
-    
-    return { weeklyMinutes: weekly, monthlyMinutes: monthly };
-  }, [myDutyLogs]);
-
-  const formatHoursMinutes = (totalMinutes: number) => {
-    const hours = Math.floor(totalMinutes / 60);
-    const mins = totalMinutes % 60;
-    return `${hours}h ${mins}m`;
-  };
-
-  // Admin: All staff duty logs with profile info
-  const { data: allDutyLogs } = useQuery({
-    queryKey: ['all-duty-logs'],
-    queryFn: async () => {
-      const { data: logs, error } = await supabase
-        .from('staff_duty_logs')
-        .select('*')
-        .order('clock_in', { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      
-      // Fetch profiles for all unique user_ids
-      const userIds = [...new Set(logs?.map(l => l.user_id) || [])];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, email')
-        .in('user_id', userIds);
-      
-      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
-      
-      return logs?.map(log => ({
-        ...log,
-        profile: profileMap.get(log.user_id),
-      }));
-    },
-    enabled: isAdmin,
-  });
 
   const clockInMutation = useMutation({
     mutationFn: async () => {
@@ -267,19 +187,14 @@ export default function AdminDashboard() {
     { title: 'Bot Setup', href: '/admin/bot-ghost-setup', icon: Bot, description: 'Discord bot config', permissions: ['manage_settings'] },
     { title: 'Affiliates', href: '/admin/affiliates', icon: TrendingUp, description: 'Affiliate hub', permissions: ['view_applications', 'manage_applications'] },
     { title: 'Staff Activity', href: '/admin/staff-activity', icon: Timer, description: 'Staff hours', permissions: ['view_analytics'] },
+    { title: 'Duty Logs', href: '/admin/duty-logs', icon: ClipboardList, description: 'Your duty history', permissions: [] },
   ];
 
   const roleLinks = isAdmin
     ? allRoleLinks
     : allRoleLinks.filter(link => hasAnyPermission(link.permissions));
 
-  const formatDuration = (minutes: number | null) => {
-    if (minutes === null || minutes === undefined) return '-';
-    if (minutes === 0) return '<1m';
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-  };
+
 
 
   const getTimeBasedGreeting = () => {
@@ -340,17 +255,6 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {/* Weekly/Monthly Stats */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2 rounded-lg bg-muted/50 text-center">
-                <p className="text-[10px] text-muted-foreground">This Week</p>
-                <p className="text-sm font-bold font-mono">{formatHoursMinutes(weeklyMinutes)}</p>
-              </div>
-              <div className="p-2 rounded-lg bg-muted/50 text-center">
-                <p className="text-[10px] text-muted-foreground">This Month</p>
-                <p className="text-sm font-bold font-mono">{formatHoursMinutes(monthlyMinutes)}</p>
-              </div>
-            </div>
 
             {activeSession ? (
               <div className="space-y-3">
@@ -495,96 +399,7 @@ export default function AdminDashboard() {
           </Card>
         )}
 
-        {/* My Recent Duty Logs */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Timer className="h-5 w-5" />
-                My Recent Duty Logs
-              </div>
-              {user?.id && (
-                <Link 
-                  to={`/admin/staff-activity?staff=${user.id}`}
-                  className="text-xs text-primary hover:underline font-normal"
-                >
-                  View Full History
-                </Link>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {myDutyLogs?.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">No duty logs yet</p>
-            ) : (
-              <ScrollArea className="h-[300px]">
-                <div className="space-y-2">
-                  {myDutyLogs?.filter(log => log.clock_out).slice(0, 10).map((log) => (
-                    <div key={log.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">
-                          {format(new Date(log.clock_in), 'MMM d, yyyy')}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {format(new Date(log.clock_in), 'h:mm a')} - {format(new Date(log.clock_out!), 'h:mm a')}
-                        </p>
-                        {log.notes && (
-                          <p className="text-xs text-muted-foreground mt-1 italic">"{log.notes}"</p>
-                        )}
-                      </div>
-                      <Badge variant="secondary">{formatDuration(log.duration_minutes)}</Badge>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            )}
-          </CardContent>
-        </Card>
 
-        {/* Admin: All Staff Duty Logs */}
-        {isAdmin && (
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                All Staff Duty Logs
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {allDutyLogs?.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">No duty logs yet</p>
-              ) : (
-                <ScrollArea className="h-[300px]">
-                  <div className="space-y-2">
-                    {allDutyLogs?.map((log) => (
-                      <div key={log.id} className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
-                            {log.profile?.display_name || log.profile?.email || 'Unknown User'}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(new Date(log.clock_in), 'MMM d, yyyy · h:mm a')}
-                            {log.clock_out && ` - ${format(new Date(log.clock_out), 'h:mm a')}`}
-                          </p>
-                          {log.notes && (
-                            <p className="text-xs text-muted-foreground mt-1 italic truncate">"{log.notes}"</p>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {log.clock_out ? (
-                            <Badge variant="secondary">{formatDuration(log.duration_minutes)}</Badge>
-                          ) : (
-                            <Badge variant="default" className="bg-green-500">On Duty</Badge>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              )}
-            </CardContent>
-          </Card>
-        )}
 
       </div>
     </AdminLayout>
