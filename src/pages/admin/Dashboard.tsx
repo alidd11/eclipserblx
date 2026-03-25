@@ -3,7 +3,7 @@ import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock
 import { SystemAlerts } from '@/components/admin/dashboard/SystemAlerts';
 import { ActivityFeed } from '@/components/admin/dashboard/ActivityFeed';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import marketplaceLogo from '@/assets/marketplace-logo-icon.webp';
+
 import { motion } from 'framer-motion';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
