@@ -25,16 +25,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
-interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  priority: 'low' | 'normal' | 'high' | 'urgent';
-  created_by: string;
-  created_at: string;
-  expires_at: string | null;
-  is_active: boolean;
-}
 
 export default function AdminDashboard() {
   const { user } = useAuth();
