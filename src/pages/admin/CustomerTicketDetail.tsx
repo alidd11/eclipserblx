@@ -390,15 +390,15 @@ export default function CustomerTicketDetail() {
 
   return (
     <AdminLayout>
-      <div className="space-y-4">
+      <div className="flex h-full min-h-0 flex-col gap-3 p-3 md:p-4">
         {/* ── Top bar ──────────────────────────────────────────────────────── */}
-        <div className="flex flex-col gap-3">
-          <Button variant="ghost" size="sm" className="-ml-2 w-fit" onClick={() => navigate('/admin/customer-tickets')}>
+        <div className="rounded-lg border bg-card p-3 space-y-3">
+          <Button variant="ghost" size="sm" className="w-fit" onClick={() => navigate('/admin/customer-tickets')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Tickets
           </Button>
 
-          <h1 className="text-lg font-bold leading-tight">{ticket.subject}</h1>
+          <h1 className="text-xl font-bold leading-tight">{ticket.subject}</h1>
 
           <div className="flex items-center gap-1.5 flex-wrap">
             <Badge variant="outline" className="font-mono text-xs">{ticket.ticket_number}</Badge>
@@ -408,50 +408,60 @@ export default function CustomerTicketDetail() {
             {categoryLabel && <Badge variant="secondary" className="text-xs">{categoryLabel}</Badge>}
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            {!ticket.assigned_to && (
-              <Button size="sm" variant="outline" onClick={() => claimTicket.mutate()} disabled={claimTicket.isPending}>
-                <UserCheck className="h-4 w-4 mr-1" />
-                Claim
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              {!ticket.assigned_to && (
+                <Button size="sm" variant="outline" onClick={() => claimTicket.mutate()} disabled={claimTicket.isPending}>
+                  <UserCheck className="h-4 w-4 mr-1" />
+                  Claim
+                </Button>
+              )}
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="md:hidden"
+                onClick={() => setShowContext(!showContext)}
+              >
+                <User className="h-4 w-4 mr-1" />
+                {showContext ? 'Hide Context' : 'Show Context'}
               </Button>
-            )}
+            </div>
 
-            <Select value={ticket.priority || 'medium'} onValueChange={(v) => updatePriority.mutate(v)}>
-              <SelectTrigger className="w-auto min-w-[90px] h-9 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Low Priority</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High Priority</SelectItem>
-                <SelectItem value="urgent">Urgent</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="grid grid-cols-2 gap-2">
+              <Select value={ticket.priority || 'medium'} onValueChange={(v) => updatePriority.mutate(v)}>
+                <SelectTrigger className="w-full min-w-0 h-9 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low Priority</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High Priority</SelectItem>
+                  <SelectItem value="urgent">Urgent</SelectItem>
+                </SelectContent>
+              </Select>
 
-            <Select value={ticket.status} onValueChange={(v) => updateStatus.mutate(v)}>
-              <SelectTrigger className="w-auto min-w-[100px] h-9 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="open">Open</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="awaiting_customer">Awaiting Customer</SelectItem>
-                <SelectItem value="resolved">Resolved</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setShowContext(!showContext)}>
-              <User className="h-4 w-4" />
-            </Button>
+              <Select value={ticket.status} onValueChange={(v) => updateStatus.mutate(v)}>
+                <SelectTrigger className="w-full min-w-0 h-9 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="open">Open</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="awaiting_customer">Awaiting Customer</SelectItem>
+                  <SelectItem value="resolved">Resolved</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
         {/* ── Main content: conversation + context sidebar ─────────────────── */}
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-4">
           {/* ── Conversation panel ─────────────────────────────────────────── */}
-          <div className="flex-1 min-w-0 flex flex-col">
-            <Card className="flex-1 flex flex-col">
+          <div className="flex-1 min-w-0 flex flex-col min-h-0">
+            <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
               <CardHeader className="py-3 px-4 border-b">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" />
@@ -461,7 +471,10 @@ export default function CustomerTicketDetail() {
               </CardHeader>
 
               {/* Messages area */}
-              <ScrollArea className="flex-1 max-h-[50vh] md:max-h-[55vh]">
+              <div
+                className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y"
+                style={{ WebkitOverflowScrolling: 'touch' }}
+              >
                 <div className="p-4 space-y-6">
                   {loadingMessages ? (
                     <div className="space-y-4">
@@ -539,7 +552,7 @@ export default function CustomerTicketDetail() {
                   )}
                   <div ref={messagesEndRef} />
                 </div>
-              </ScrollArea>
+              </div>
 
               {/* Reply input */}
               <div className="border-t p-4 space-y-3">
