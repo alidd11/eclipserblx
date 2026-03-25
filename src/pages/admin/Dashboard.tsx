@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, Clock, Play, Square, Timer, Shield, TrendingUp, TrendingDown, Gavel, CreditCard, Settings, UserCheck, Headphones, Store, Bot, Ticket, BookOpen } from 'lucide-react';
 import { SystemAlerts } from '@/components/admin/dashboard/SystemAlerts';
-import { ActivityFeed } from '@/components/admin/dashboard/ActivityFeed';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import { motion } from 'framer-motion';
@@ -331,66 +331,6 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Quick Actions - right after hero like seller dashboard */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 sm:gap-2">
-              {quickLinks.map((link) => (
-                <Link key={link.href} to={link.href}>
-                  <motion.div
-                    whileHover={{ y: -2, scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                    className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3.5 rounded-lg bg-muted/50 hover:bg-accent transition-colors text-center group cursor-pointer"
-                  >
-                    <div className="p-1.5 sm:p-2.5 rounded-xl bg-card border border-border group-hover:border-primary/30 transition-colors">
-                      <link.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                    <div>
-                      <span className="text-[10px] sm:text-xs font-medium block leading-tight">{link.title}</span>
-                      <span className="text-[10px] text-muted-foreground hidden sm:block">{link.description}</span>
-                    </div>
-                  </motion.div>
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Role-Based Actions */}
-        {roleLinks.length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium">Your Tools</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1.5 sm:gap-2">
-                {roleLinks.map((link) => (
-                  <Link key={link.href} to={link.href}>
-                    <motion.div
-                      whileHover={{ y: -2, scale: 1.02 }}
-                      whileTap={{ scale: 0.97 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                      className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3.5 rounded-lg bg-muted/50 hover:bg-accent transition-colors text-center group cursor-pointer"
-                    >
-                      <div className="p-1.5 sm:p-2.5 rounded-xl bg-card border border-border group-hover:border-primary/30 transition-colors">
-                        <link.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                      </div>
-                      <div>
-                        <span className="text-[10px] sm:text-xs font-medium block leading-tight">{link.title}</span>
-                        <span className="text-[10px] text-muted-foreground hidden sm:block">{link.description}</span>
-                      </div>
-                    </motion.div>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Duty Clock In/Out */}
         <Card className="bg-card border-border max-w-md">
           <CardHeader className="pb-3">
@@ -493,58 +433,113 @@ export default function AdminDashboard() {
               </div>
             )}
           </CardContent>
-          </Card>
+        </Card>
 
-        {/* Activity Feed + My Duty Logs */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <ActivityFeed />
-
-          {/* My Recent Duty Logs */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Timer className="h-5 w-5" />
-                  My Recent Duty Logs
-                </div>
-                {user?.id && (
-                  <Link 
-                    to={`/admin/staff-activity?staff=${user.id}`}
-                    className="text-xs text-primary hover:underline font-normal"
+        {/* Quick Actions - right after hero like seller dashboard */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-medium">Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 sm:gap-2">
+              {quickLinks.map((link) => (
+                <Link key={link.href} to={link.href}>
+                  <motion.div
+                    whileHover={{ y: -2, scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                    className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3.5 rounded-lg bg-muted/50 hover:bg-accent transition-colors text-center group cursor-pointer"
                   >
-                    View Full History
-                  </Link>
-                )}
-              </CardTitle>
+                    <div className="p-1.5 sm:p-2.5 rounded-xl bg-card border border-border group-hover:border-primary/30 transition-colors">
+                      <link.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] sm:text-xs font-medium block leading-tight">{link.title}</span>
+                      <span className="text-[10px] text-muted-foreground hidden sm:block">{link.description}</span>
+                    </div>
+                  </motion.div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Role-Based Actions */}
+        {roleLinks.length > 0 && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-medium">Your Tools</CardTitle>
             </CardHeader>
-            <CardContent>
-              {myDutyLogs?.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">No duty logs yet</p>
-              ) : (
-                <ScrollArea className="h-[300px]">
-                  <div className="space-y-2">
-                    {myDutyLogs?.filter(log => log.clock_out).slice(0, 10).map((log) => (
-                      <div key={log.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">
-                            {format(new Date(log.clock_in), 'MMM d, yyyy')}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(new Date(log.clock_in), 'h:mm a')} - {format(new Date(log.clock_out!), 'h:mm a')}
-                          </p>
-                          {log.notes && (
-                            <p className="text-xs text-muted-foreground mt-1 italic">"{log.notes}"</p>
-                          )}
-                        </div>
-                        <Badge variant="secondary">{formatDuration(log.duration_minutes)}</Badge>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1.5 sm:gap-2">
+                {roleLinks.map((link) => (
+                  <Link key={link.href} to={link.href}>
+                    <motion.div
+                      whileHover={{ y: -2, scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                      className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3.5 rounded-lg bg-muted/50 hover:bg-accent transition-colors text-center group cursor-pointer"
+                    >
+                      <div className="p-1.5 sm:p-2.5 rounded-xl bg-card border border-border group-hover:border-primary/30 transition-colors">
+                        <link.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              )}
+                      <div>
+                        <span className="text-[10px] sm:text-xs font-medium block leading-tight">{link.title}</span>
+                        <span className="text-[10px] text-muted-foreground hidden sm:block">{link.description}</span>
+                      </div>
+                    </motion.div>
+                  </Link>
+                ))}
+              </div>
             </CardContent>
           </Card>
-        </div>
+        )}
+
+        {/* My Recent Duty Logs */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Timer className="h-5 w-5" />
+                My Recent Duty Logs
+              </div>
+              {user?.id && (
+                <Link 
+                  to={`/admin/staff-activity?staff=${user.id}`}
+                  className="text-xs text-primary hover:underline font-normal"
+                >
+                  View Full History
+                </Link>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {myDutyLogs?.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">No duty logs yet</p>
+            ) : (
+              <ScrollArea className="h-[300px]">
+                <div className="space-y-2">
+                  {myDutyLogs?.filter(log => log.clock_out).slice(0, 10).map((log) => (
+                    <div key={log.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">
+                          {format(new Date(log.clock_in), 'MMM d, yyyy')}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(log.clock_in), 'h:mm a')} - {format(new Date(log.clock_out!), 'h:mm a')}
+                        </p>
+                        {log.notes && (
+                          <p className="text-xs text-muted-foreground mt-1 italic">"{log.notes}"</p>
+                        )}
+                      </div>
+                      <Badge variant="secondary">{formatDuration(log.duration_minutes)}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Admin: All Staff Duty Logs */}
         {isAdmin && (
