@@ -190,9 +190,38 @@ export default function AdminDashboard() {
     { title: 'Duty Logs', href: '/admin/duty-logs', icon: ClipboardList, description: 'Your duty history', permissions: [] },
   ];
 
-  const roleLinks = isAdmin
+  const roleLinks = (isAdmin
     ? allRoleLinks
-    : allRoleLinks.filter(link => hasAnyPermission(link.permissions));
+    : allRoleLinks.filter(link => hasAnyPermission(link.permissions))
+  ).slice(0, 9);
+
+  // Fetch assigned tickets
+  const { data: assignedTickets } = useQuery({
+    queryKey: ['my-assigned-tickets', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const [customerRes, sellerRes] = await Promise.all([
+        supabase
+          .from('support_tickets')
+          .select('id, ticket_number, subject, status, priority, created_at')
+          .eq('assigned_to', user.id)
+          .in('status', ['open', 'in_progress', 'awaiting_customer'])
+          .order('created_at', { ascending: false })
+          .limit(5),
+        supabase
+          .from('seller_support_tickets')
+          .select('id, ticket_number, subject, status, priority, created_at')
+          .eq('assigned_to', user.id)
+          .in('status', ['open', 'in_progress', 'awaiting_seller'])
+          .order('created_at', { ascending: false })
+          .limit(5),
+      ]);
+      const customer = (customerRes.data || []).map(t => ({ ...t, type: 'customer' as const }));
+      const seller = (sellerRes.data || []).map(t => ({ ...t, type: 'seller' as const }));
+      return [...customer, ...seller].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 6);
+    },
+    enabled: !!user?.id,
+  });
 
 
 
