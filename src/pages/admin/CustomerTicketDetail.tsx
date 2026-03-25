@@ -417,15 +417,6 @@ export default function CustomerTicketDetail() {
                 </Button>
               )}
 
-              <Button
-                variant="outline"
-                size="sm"
-                className="md:hidden"
-                onClick={() => setShowContext(!showContext)}
-              >
-                <User className="h-4 w-4 mr-1" />
-                {showContext ? 'Hide Context' : 'Show Context'}
-              </Button>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
