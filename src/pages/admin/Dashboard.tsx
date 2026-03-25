@@ -546,7 +546,6 @@ export default function AdminDashboard() {
             )}
           </CardContent>
           </Card>
-        </div>
 
         {/* Activity Feed + My Duty Logs */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
