@@ -232,11 +232,11 @@ export default function SupportTicketDetail() {
           </Button>
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 mb-1">
+              <h1 className="text-xl font-bold leading-tight line-clamp-2">{ticket.subject}</h1>
+              <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
                 <Badge variant="outline" className="text-xs shrink-0">{ticket.ticket_number}</Badge>
                 <Badge className={cn('text-xs shrink-0', status.color)}>{status.label}</Badge>
               </div>
-              <h1 className="text-xl font-bold truncate">{ticket.subject}</h1>
               <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                 <Clock className="h-3 w-3" />
                 <span>Created {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}</span>

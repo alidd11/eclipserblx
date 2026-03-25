@@ -470,30 +470,31 @@ export default function SellerTickets() {
               <>
                 {/* Header */}
                 <div className="px-4 pt-2 pb-3 border-b space-y-2">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className="font-mono text-xs">{selectedTicket.ticket_number}</Badge>
-                      {getStatusBadge(selectedTicket.status)}
-                      {getPriorityBadge(selectedTicket.priority)}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Select value={selectedTicket.priority || 'medium'} onValueChange={(v) => updatePriority.mutate(v)}>
-                        <SelectTrigger className="w-auto min-w-[90px] h-7 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="urgent">Urgent</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <DrawerTitle className="text-base leading-tight">{selectedTicket.subject}</DrawerTitle>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <Badge variant="outline" className="font-mono text-xs">{selectedTicket.ticket_number}</Badge>
+                    {getStatusBadge(selectedTicket.status)}
+                    {getPriorityBadge(selectedTicket.priority)}
+                    {(CATEGORY_LABELS[selectedTicket.category] || selectedTicket.category) && (
+                      <Badge variant="secondary" className="text-xs">
+                        {CATEGORY_LABELS[selectedTicket.category] || selectedTicket.category}
+                      </Badge>
+                    )}
                   </div>
-                  <DrawerTitle className="text-base">{selectedTicket.subject}</DrawerTitle>
-                  <DrawerDescription className="text-xs">
-                    {CATEGORY_LABELS[selectedTicket.category] || selectedTicket.category}
-                  </DrawerDescription>
+                  <div className="flex items-center gap-2">
+                    <Select value={selectedTicket.priority || 'medium'} onValueChange={(v) => updatePriority.mutate(v)}>
+                      <SelectTrigger className="w-auto min-w-[90px] h-7 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="urgent">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <DrawerDescription className="sr-only">Ticket details</DrawerDescription>
 
                   {/* Collapsible seller info */}
                   <Collapsible>
