@@ -348,9 +348,11 @@ export default function AdminAffiliates() {
                               <Badge variant="outline" className={
                                 payout.payout_method === 'stripe' 
                                   ? 'bg-purple-500/10 text-purple-400 border-purple-500/30'
+                                  : payout.payout_method === 'bank_transfer'
+                                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                                   : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
                               }>
-                                {payout.payout_method === 'stripe' ? 'Stripe' : 'PayPal'}
+                                {payout.payout_method === 'stripe' ? 'Stripe' : payout.payout_method === 'bank_transfer' ? 'Bank Transfer' : 'PayPal'}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -360,6 +362,8 @@ export default function AdminAffiliates() {
                                 </code>
                               ) : payout.paypal_email ? (
                                 <span className="text-sm">{payout.paypal_email}</span>
+                              ) : payout.payout_method === 'bank_transfer' && payout.notes ? (
+                                <span className="text-xs text-muted-foreground">{payout.notes.slice(0, 40)}...</span>
                               ) : (
                                 <span className="text-muted-foreground text-sm">N/A</span>
                               )}
