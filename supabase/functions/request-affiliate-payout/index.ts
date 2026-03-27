@@ -65,7 +65,7 @@ serve(async (req) => {
     }
 
     // Validate method
-    if (method && !['stripe', 'paypal'].includes(method)) {
+    if (method && !['stripe', 'paypal', 'bank_transfer'].includes(method)) {
       throw new Error("Invalid payout method");
     }
 
@@ -100,13 +100,12 @@ serve(async (req) => {
     // Get user's affiliate application to check payout method and details
     const { data: application, error: appError } = await supabaseClient
       .from('affiliate_applications')
-      .select('paypal_email, preferred_payout_method')
+      .select('paypal_email, preferred_payout_method, bank_account_holder, bank_account_number, bank_swift_bic, bank_name')
       .eq('user_id', user.id)
-      .eq('status', 'approved')
-      .single();
+      .maybeSingle();
 
     if (appError || !application) {
-      throw new Error("No approved affiliate application found");
+      throw new Error("No affiliate record found");
     }
 
     // Determine which payout method to use
@@ -124,6 +123,10 @@ serve(async (req) => {
     if (payoutMethod === 'stripe') {
       if (!profile?.stripe_account_id) {
         throw new Error("Please connect your Stripe account first to receive automatic payouts.");
+      }
+    } else if (payoutMethod === 'bank_transfer') {
+      if (!application.bank_account_holder || !application.bank_account_number) {
+        throw new Error("Please add your bank details to receive bank transfer payouts.");
       }
     } else {
       if (!application.paypal_email) {
@@ -219,21 +222,28 @@ serve(async (req) => {
       }
     }
 
-    // PayPal payout - create pending request
+    // Non-Stripe payout (PayPal or Bank Transfer) - create pending request
+    const payoutData: any = {
+      user_id: user.id,
+      amount: amount,
+      payout_method: payoutMethod,
+      status: 'pending',
+    };
+    
+    if (payoutMethod === 'paypal') {
+      payoutData.paypal_email = application.paypal_email;
+    }
+    if (payoutMethod === 'bank_transfer') {
+      payoutData.notes = `Bank: ${application.bank_name || 'N/A'}, Holder: ${application.bank_account_holder}, Account: ${application.bank_account_number}, SWIFT: ${(application as any).bank_swift_bic || 'N/A'}`;
+    }
+
     const { data: payout, error: payoutError } = await supabaseClient
       .from('affiliate_payouts')
-      .insert({
-        user_id: user.id,
-        amount: amount,
-        paypal_email: application.paypal_email,
-        payout_method: 'paypal',
-        status: 'pending',
-      })
+      .insert(payoutData)
       .select()
       .single();
 
     if (payoutError) {
-      // Rollback balance deduction
       await supabaseClient
         .from('affiliate_balances')
         .update({ 
@@ -244,13 +254,14 @@ serve(async (req) => {
       throw new Error("Failed to create payout request");
     }
 
-    logStep("PayPal payout request created", { payoutId: payout.id, amount });
+    const methodLabel = payoutMethod === 'bank_transfer' ? 'bank transfer' : 'PayPal';
+    logStep(`${methodLabel} payout request created`, { payoutId: payout.id, amount });
 
     return new Response(JSON.stringify({ 
       success: true,
       payoutId: payout.id,
-      method: 'paypal',
-      message: "Payout request submitted! Your PayPal payment will be processed today.",
+      method: payoutMethod,
+      message: `Payout request submitted! Your ${methodLabel} payment will be processed today.`,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

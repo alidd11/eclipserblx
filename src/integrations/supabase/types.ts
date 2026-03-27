@@ -353,6 +353,12 @@ export type Database = {
         Row: {
           affiliate_id: string | null
           audience_size: string | null
+          bank_account_holder: string | null
+          bank_account_number: string | null
+          bank_country: string | null
+          bank_name: string | null
+          bank_routing_number: string | null
+          bank_swift_bic: string | null
           created_at: string
           discord_username: string | null
           display_name: string | null
@@ -372,6 +378,12 @@ export type Database = {
         Insert: {
           affiliate_id?: string | null
           audience_size?: string | null
+          bank_account_holder?: string | null
+          bank_account_number?: string | null
+          bank_country?: string | null
+          bank_name?: string | null
+          bank_routing_number?: string | null
+          bank_swift_bic?: string | null
           created_at?: string
           discord_username?: string | null
           display_name?: string | null
@@ -391,6 +403,12 @@ export type Database = {
         Update: {
           affiliate_id?: string | null
           audience_size?: string | null
+          bank_account_holder?: string | null
+          bank_account_number?: string | null
+          bank_country?: string | null
+          bank_name?: string | null
+          bank_routing_number?: string | null
+          bank_swift_bic?: string | null
           created_at?: string
           discord_username?: string | null
           display_name?: string | null

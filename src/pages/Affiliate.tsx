@@ -4,16 +4,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { 
   DollarSign, TrendingUp, Loader2, CheckCircle, AlertCircle,
-  ArrowUpRight, Clock, Send, Users, Gift, Zap, Copy, ExternalLink,
+  ArrowUpRight, Clock, Users, Gift, Zap, Copy, ExternalLink,
   CreditCard, BadgePercent, Star, Construction, MousePointerClick, UserPlus,
-  Link as LinkIcon, Wallet
+  Link as LinkIcon, Wallet, Building2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -34,29 +33,23 @@ export default function Affiliate() {
   const { settings: affiliateSettings, isLoading: settingsLoading } = useAffiliateSettings();
   const [payoutAmount, setPayoutAmount] = useState('');
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
-  
-  // Application form state
-  const [applicationForm, setApplicationForm] = useState({
-    paypal_email: '',
-    discord_username: '',
-    promotion_method: '',
-    audience_size: '',
-    notes: '',
-    preferred_payout_method: 'stripe' as 'stripe' | 'paypal',
-  });
 
-  // Payout settings state (for approved affiliates)
+  // Payout settings state
   const [payoutSettings, setPayoutSettings] = useState({
-    preferred_method: 'stripe' as 'stripe' | 'paypal',
+    preferred_method: 'stripe' as 'stripe' | 'paypal' | 'bank_transfer',
     paypal_email: '',
+    bank_account_holder: '',
+    bank_account_number: '',
+    bank_swift_bic: '',
+    bank_name: '',
+    bank_country: '',
+    bank_routing_number: '',
   });
   const [paypalEmailError, setPaypalEmailError] = useState<string | null>(null);
 
-  // Email validation helper
   const validateEmail = (email: string): boolean => {
     if (!email) return true;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
   // Handle Stripe onboarding return
@@ -70,7 +63,7 @@ export default function Affiliate() {
     }
   }, [searchParams, queryClient]);
 
-  // Check if user has an application
+  // Get affiliate application (auto-created on signup)
   const { data: application, isLoading: applicationLoading } = useQuery({
     queryKey: ['affiliate-application', user?.id],
     queryFn: async () => {
@@ -99,12 +92,10 @@ export default function Affiliate() {
       if (error) throw error;
       return data;
     },
-    enabled: !!user?.id && application?.status === 'approved',
+    enabled: !!user?.id,
   });
 
-  const { data: connectStatus, isLoading: connectStatusLoading } = useAffiliateConnectStatus(
-    !!user?.id && application?.status === 'approved'
-  );
+  const { data: connectStatus, isLoading: connectStatusLoading } = useAffiliateConnectStatus(!!user?.id);
 
   // Get recent commissions
   const { data: commissions } = useQuery({
@@ -120,7 +111,7 @@ export default function Affiliate() {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!user?.id && application?.status === 'approved',
+    enabled: !!user?.id,
   });
 
   // Get pending payouts
@@ -137,7 +128,7 @@ export default function Affiliate() {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!user?.id && application?.status === 'approved',
+    enabled: !!user?.id,
   });
 
   // Get user profile for referral code
@@ -158,76 +149,19 @@ export default function Affiliate() {
 
   // Sync payout settings from application data
   useEffect(() => {
-    if (application && application.status === 'approved') {
+    if (application) {
       setPayoutSettings({
-        preferred_method: (application.preferred_payout_method as 'stripe' | 'paypal') || 'stripe',
+        preferred_method: (application.preferred_payout_method as any) || 'stripe',
         paypal_email: application.paypal_email || '',
+        bank_account_holder: (application as any).bank_account_holder || '',
+        bank_account_number: (application as any).bank_account_number || '',
+        bank_swift_bic: (application as any).bank_swift_bic || '',
+        bank_name: (application as any).bank_name || '',
+        bank_country: (application as any).bank_country || '',
+        bank_routing_number: (application as any).bank_routing_number || '',
       });
     }
   }, [application]);
-
-  // Submit application
-  const submitApplicationMutation = useMutation({
-    mutationFn: async () => {
-      if (!user?.id || !user?.email) throw new Error('Not authenticated');
-      if (!profile) throw new Error('Profile not loaded. Please try again.');
-      if (!profile.display_name) throw new Error('Please set a display name in your account settings before applying.');
-      if (!applicationForm.promotion_method.trim()) throw new Error('Please describe how you will promote us.');
-      if (applicationForm.preferred_payout_method === 'paypal' && !applicationForm.paypal_email.trim()) {
-        throw new Error('PayPal email is required when selecting PayPal as payout method.');
-      }
-      
-      const { error } = await supabase
-        .from('affiliate_applications')
-        .insert({
-          user_id: user.id,
-          email: user.email,
-          display_name: profile.display_name,
-          paypal_email: applicationForm.paypal_email.trim() || null,
-          discord_username: applicationForm.discord_username.trim() || null,
-          promotion_method: applicationForm.promotion_method.trim(),
-          audience_size: applicationForm.audience_size.trim() || null,
-          notes: applicationForm.notes.trim() || null,
-          preferred_payout_method: applicationForm.preferred_payout_method,
-          status: 'approved',
-          reviewed_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Create affiliate balance record
-      const { error: balanceError } = await supabase
-        .from('affiliate_balances')
-        .upsert({
-          user_id: user.id,
-          total_earned: 0,
-          available_balance: 0,
-          total_paid: 0,
-          total_clicks: 0,
-          total_signups: 0,
-        }, { onConflict: 'user_id' });
-
-      if (balanceError) throw balanceError;
-
-      // Update profile with PayPal email if provided
-      if (applicationForm.paypal_email) {
-        await supabase
-          .from('profiles')
-          .update({ paypal_email: applicationForm.paypal_email })
-          .eq('id', user.id);
-      }
-    },
-    onSuccess: () => {
-      toast.success("Welcome to the Affiliate Program!", { description: "Your account is now active. Start earning by sharing your referral link!" });
-      queryClient.invalidateQueries({ queryKey: ['affiliate-application', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['affiliate-balance', user?.id] });
-    },
-    onError: (error: Error) => {
-      toast.error("Error", { description: error.message });
-    },
-  });
 
   // Connect Stripe account
   const connectStripeMutation = useMutation({
@@ -248,8 +182,10 @@ export default function Affiliate() {
   // Request payout
   const requestPayoutMutation = useMutation({
     mutationFn: async (amount: number) => {
-      const method = application?.preferred_payout_method === 'stripe' && connectStatus?.canReceivePayments
+      const method = payoutSettings.preferred_method === 'stripe' && connectStatus?.canReceivePayments
         ? 'stripe'
+        : payoutSettings.preferred_method === 'bank_transfer'
+        ? 'bank_transfer'
         : 'paypal';
       
       const { data, error } = await supabase.functions.invoke('request-affiliate-payout', {
@@ -271,25 +207,31 @@ export default function Affiliate() {
 
   // Update payout settings mutation
   const updatePayoutSettingsMutation = useMutation({
-    mutationFn: async (settings: { preferred_method: 'stripe' | 'paypal'; paypal_email: string }) => {
+    mutationFn: async (settings: typeof payoutSettings) => {
       if (!user?.id) throw new Error('Not authenticated');
       
       const { error: appError } = await supabase
         .from('affiliate_applications')
         .update({
           preferred_payout_method: settings.preferred_method,
-          paypal_email: settings.paypal_email,
-        })
+          paypal_email: settings.paypal_email || null,
+          bank_account_holder: settings.bank_account_holder || null,
+          bank_account_number: settings.bank_account_number || null,
+          bank_swift_bic: settings.bank_swift_bic || null,
+          bank_name: settings.bank_name || null,
+          bank_country: settings.bank_country || null,
+          bank_routing_number: settings.bank_routing_number || null,
+        } as any)
         .eq('user_id', user.id);
       
       if (appError) throw appError;
       
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ paypal_email: settings.paypal_email })
-        .eq('id', user.id);
-      
-      if (profileError) throw profileError;
+      if (settings.paypal_email) {
+        await supabase
+          .from('profiles')
+          .update({ paypal_email: settings.paypal_email })
+          .eq('id', user.id);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['affiliate-application', user?.id] });
@@ -329,98 +271,59 @@ export default function Affiliate() {
   const conversionRate = totalClicks > 0 ? ((totalSignups / totalClicks) * 100).toFixed(1) : '0.0';
   const hasPendingPayout = pendingPayouts?.some(p => p.status === 'pending');
   const canUseStripe = connectStatus?.canReceivePayments === true;
-  const needsStripeOnboarding = application?.status === 'approved' && !connectStatus?.canReceivePayments;
+  const needsStripeOnboarding = !connectStatus?.canReceivePayments;
 
   const isLoading = applicationLoading || balanceLoading || settingsLoading;
 
-  // Benefits for the landing page
   const benefits = [
-    {
-      icon: BadgePercent,
-      title: `${affiliateSettings.commissionRate}% Commission`,
-      description: 'Earn on every sale from users you refer',
-    },
-    {
-      icon: TrendingUp,
-      title: 'Lifetime Earnings',
-      description: 'Earn from all purchases your referrals make',
-    },
-    {
-      icon: Wallet,
-      title: 'Same-Day Payouts',
-      description: 'Get paid the same day via Stripe or PayPal',
-    },
-    {
-      icon: Users,
-      title: 'No Limits',
-      description: 'Refer as many people as you want',
-    },
+    { icon: BadgePercent, title: `${affiliateSettings.commissionRate}% Commission`, description: 'Earn on every sale from users you refer' },
+    { icon: TrendingUp, title: 'Lifetime Earnings', description: 'Earn from all purchases your referrals make' },
+    { icon: Wallet, title: 'Same-Day Payouts', description: 'Get paid via Stripe, PayPal, or bank transfer' },
+    { icon: Users, title: 'No Limits', description: 'Refer as many people as you want' },
   ];
 
-  // Program disabled - show coming soon
+  // Program disabled
   if (!affiliateSettings.isEnabled) {
     return (
       <MainLayout>
         <div className="container py-8 max-w-2xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center space-y-6"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-6">
             <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
               <Construction className="h-10 w-10 text-primary" />
             </div>
             <div className="space-y-2">
               <h1 className="text-3xl font-display font-bold">Coming Soon</h1>
               <p className="text-muted-foreground max-w-md mx-auto">
-                Our affiliate program is currently being set up. Check back soon for the opportunity to earn commissions by referring customers!
+                Our affiliate program is currently being set up. Check back soon!
               </p>
             </div>
-            <Button asChild variant="outline">
-              <Link to="/">
-                Return Home
-              </Link>
-            </Button>
+            <Button asChild variant="outline"><Link to="/">Return Home</Link></Button>
           </motion.div>
         </div>
       </MainLayout>
     );
   }
 
-  // Not logged in - show landing with sign in prompt
+  // Not logged in - landing page
   if (!user) {
     return (
       <MainLayout>
         <div className="container py-8 max-w-4xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
-          >
-            {/* Hero Section */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
             <div className="text-center space-y-4">
               <Badge className="bg-primary/20 text-primary border-primary/30">
-                <Star className="h-3 w-3 mr-1" />
-                Partner Program
+                <Star className="h-3 w-3 mr-1" />Partner Program
               </Badge>
               <h1 className="text-4xl md:text-5xl font-display font-bold gradient-text">
-                Join Our Affiliate Program
+                Earn With Every Referral
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Earn {affiliateSettings.commissionRate}% commission on every sale you refer. 
-                Share your unique link and start earning today.
+                Every Eclipse account comes with a built-in affiliate link. Earn {affiliateSettings.commissionRate}% commission on every sale you refer.
               </p>
             </div>
-
-            {/* Benefits Grid */}
             <div className="grid md:grid-cols-2 gap-4">
               {benefits.map((benefit, index) => (
-                <motion.div
-                  key={benefit.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
+                <motion.div key={benefit.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
                   <Card className="bg-card/50 border-border h-full">
                     <CardContent className="pt-6">
                       <div className="flex gap-4">
@@ -437,18 +340,16 @@ export default function Affiliate() {
                 </motion.div>
               ))}
             </div>
-
-            {/* CTA */}
             <Card className="bg-muted/30 border-border">
               <CardContent className="py-8 text-center space-y-4">
                 <Gift className="h-12 w-12 text-primary mx-auto" />
                 <h2 className="text-2xl font-bold">Ready to Start Earning?</h2>
                 <p className="text-muted-foreground">
-                  Sign in to apply for our affiliate program and get your unique referral link.
+                  Sign up or log in to access your affiliate dashboard and referral link.
                 </p>
                 <Button asChild size="lg" className="gradient-button">
                   <Link to="/auth">
-                    Sign In to Apply
+                    Get Started
                     <ArrowUpRight className="h-4 w-4 ml-2" />
                   </Link>
                 </Button>
@@ -470,270 +371,7 @@ export default function Affiliate() {
     );
   }
 
-  // No application yet - show application form
-  if (!application) {
-    return (
-      <MainLayout>
-        <div className="container py-8 max-w-4xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
-          >
-            {/* Hero */}
-            <div className="text-center space-y-4">
-              <Badge className="bg-primary/20 text-primary border-primary/30">
-                <Star className="h-3 w-3 mr-1" />
-                Partner Program
-              </Badge>
-              <h1 className="text-3xl md:text-4xl font-display font-bold">
-                Apply to Become an Affiliate
-              </h1>
-              <p className="text-muted-foreground max-w-xl mx-auto">
-                Earn {affiliateSettings.commissionRate}% lifetime commission on all sales from users you refer.
-              </p>
-            </div>
-
-            {/* Benefits */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {benefits.map((benefit) => (
-                <Card key={benefit.title} className="bg-card/50 border-border text-center">
-                  <CardContent className="pt-6">
-                    <benefit.icon className="h-8 w-8 text-primary mx-auto mb-2" />
-                    <h3 className="font-semibold text-sm">{benefit.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-1">{benefit.description}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* Application Form */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Send className="h-5 w-5 text-primary" />
-                  Application Form
-                </CardTitle>
-                <CardDescription>
-                  Tell us about yourself and how you plan to promote our products.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Payout Method Selection */}
-                <div className="space-y-3">
-                  <Label>Preferred Payout Method *</Label>
-                  <RadioGroup
-                    value={applicationForm.preferred_payout_method}
-                    onValueChange={(value: 'stripe' | 'paypal') => 
-                      setApplicationForm(prev => ({ ...prev, preferred_payout_method: value }))
-                    }
-                    className="grid gap-3"
-                  >
-                    <div className="flex items-start space-x-3 p-4 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer">
-                      <RadioGroupItem value="stripe" id="stripe" className="mt-1" />
-                      <div className="flex-1">
-                        <Label htmlFor="stripe" className="flex items-center gap-2 cursor-pointer font-medium">
-                          <CreditCard className="h-4 w-4 text-primary" />
-                          Stripe Connect (Instant)
-                          <Badge variant="secondary" className="text-xs">Recommended</Badge>
-                        </Label>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Automatic payouts directly to your bank account. Connect your Stripe account after joining to activate.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3 p-4 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer">
-                      <RadioGroupItem value="paypal" id="paypal" className="mt-1" />
-                      <div className="flex-1">
-                        <Label htmlFor="paypal" className="flex items-center gap-2 cursor-pointer font-medium">
-                          <DollarSign className="h-4 w-4 text-blue-500" />
-                          PayPal (Same Day)
-                        </Label>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Same-day payouts processed by our team to your PayPal email.
-                        </p>
-                      </div>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                {applicationForm.preferred_payout_method === 'paypal' && (
-                  <div className="space-y-2">
-                    <Label htmlFor="paypal">PayPal Email *</Label>
-                    <Input
-                      id="paypal"
-                      type="email"
-                      placeholder="your@paypal.email"
-                      value={applicationForm.paypal_email}
-                      onChange={(e) => setApplicationForm(prev => ({ ...prev, paypal_email: e.target.value }))}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Payouts will be sent to this email address.
-                    </p>
-                  </div>
-                )}
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <Label htmlFor="discord">Discord Username (optional)</Label>
-                  <Input
-                    id="discord"
-                    placeholder="username"
-                    value={applicationForm.discord_username}
-                    onChange={(e) => setApplicationForm(prev => ({ ...prev, discord_username: e.target.value }))}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="promotion">How will you promote us? *</Label>
-                  <Textarea
-                    id="promotion"
-                    placeholder="E.g., YouTube channel, Discord server, social media, website..."
-                    value={applicationForm.promotion_method}
-                    onChange={(e) => setApplicationForm(prev => ({ ...prev, promotion_method: e.target.value }))}
-                    rows={3}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="audience">Audience Size (optional)</Label>
-                  <Input
-                    id="audience"
-                    placeholder="E.g., 5k YouTube subscribers, 1k Discord members"
-                    value={applicationForm.audience_size}
-                    onChange={(e) => setApplicationForm(prev => ({ ...prev, audience_size: e.target.value }))}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Additional Notes (optional)</Label>
-                  <Textarea
-                    id="notes"
-                    placeholder="Anything else you'd like us to know..."
-                    value={applicationForm.notes}
-                    onChange={(e) => setApplicationForm(prev => ({ ...prev, notes: e.target.value }))}
-                    rows={2}
-                  />
-                </div>
-
-                {!profile?.display_name && (
-                  <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                    <p className="text-sm text-yellow-500 flex items-center gap-2">
-                      <AlertCircle className="h-4 w-4" />
-                      Please <Link to="/account" className="underline font-medium">set a display name</Link> before applying.
-                    </p>
-                  </div>
-                )}
-
-                <Button
-                  className="w-full gradient-button"
-                  onClick={() => submitApplicationMutation.mutate()}
-                  disabled={
-                    !profile?.display_name ||
-                    !applicationForm.promotion_method.trim() || 
-                    (applicationForm.preferred_payout_method === 'paypal' && !applicationForm.paypal_email.trim()) ||
-                    submitApplicationMutation.isPending
-                  }
-                >
-                  {submitApplicationMutation.isPending ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4 mr-2" />
-                  )}
-                  Submit Application
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      </MainLayout>
-    );
-  }
-
-  // Application pending
-  if (application.status === 'pending') {
-    return (
-      <MainLayout>
-        <div className="container py-8 max-w-2xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <Card className="bg-card border-border">
-              <CardHeader className="text-center">
-                <div className="h-16 w-16 rounded-full bg-yellow-500/10 flex items-center justify-center mx-auto mb-4">
-                  <Clock className="h-8 w-8 text-yellow-500" />
-                </div>
-                <CardTitle className="text-2xl">Application Under Review</CardTitle>
-                <CardDescription>
-                  We're reviewing your affiliate application. You'll be notified once it's approved!
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                  <p className="text-sm text-center text-yellow-500">
-                    Submitted on {format(new Date(application.created_at), 'PPP')}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <Button variant="outline" asChild>
-                    <Link to="/">
-                      Return to Home
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      </MainLayout>
-    );
-  }
-
-  // Application rejected
-  if (application.status === 'rejected') {
-    return (
-      <MainLayout>
-        <div className="container py-8 max-w-2xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <Card className="bg-card border-border">
-              <CardHeader className="text-center">
-                <div className="h-16 w-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
-                  <AlertCircle className="h-8 w-8 text-red-500" />
-                </div>
-                <CardTitle className="text-2xl">Application Not Approved</CardTitle>
-                <CardDescription>
-                  Unfortunately, your affiliate application was not approved at this time.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {application.rejection_reason && (
-                  <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      <span className="font-medium text-foreground">Reason:</span> {application.rejection_reason}
-                    </p>
-                  </div>
-                )}
-                <div className="text-center">
-                  <Button variant="outline" asChild>
-                    <Link to="/">
-                      Return to Home
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      </MainLayout>
-    );
-  }
-
-  // Approved affiliate - full dashboard
+  // Full affiliate dashboard (auto-enrolled)
   return (
     <MainLayout>
       <div className="px-4 sm:px-6 lg:px-8 py-8 max-w-6xl mx-auto">
@@ -976,17 +614,19 @@ export default function Affiliate() {
             <CardContent className="space-y-6">
               <RadioGroup
                 value={payoutSettings.preferred_method}
-                onValueChange={(value: 'stripe' | 'paypal') => 
+                onValueChange={(value: 'stripe' | 'paypal' | 'bank_transfer') => 
                   setPayoutSettings(prev => ({ ...prev, preferred_method: value }))
                 }
                 className="space-y-4"
               >
                 {/* Stripe Option */}
-                <div className="flex items-start space-x-3">
+                <div className="flex items-start space-x-3 p-4 rounded-lg border border-border hover:border-primary/50 transition-colors">
                   <RadioGroupItem value="stripe" id="payout-stripe" className="mt-1" />
                   <div className="flex-1 space-y-2">
-                    <Label htmlFor="payout-stripe" className="font-medium cursor-pointer">
+                    <Label htmlFor="payout-stripe" className="font-medium cursor-pointer flex items-center gap-2">
+                      <CreditCard className="h-4 w-4 text-primary" />
                       Stripe Connect (Instant)
+                      <Badge variant="secondary" className="text-xs">Recommended</Badge>
                     </Label>
                     <p className="text-sm text-muted-foreground">
                       Automatic payouts directly to your bank account
@@ -1020,39 +660,110 @@ export default function Affiliate() {
                 </div>
 
                 {/* PayPal Option */}
-                <div className="flex items-start space-x-3">
+                <div className="flex items-start space-x-3 p-4 rounded-lg border border-border hover:border-primary/50 transition-colors">
                   <RadioGroupItem value="paypal" id="payout-paypal" className="mt-1" />
                   <div className="flex-1 space-y-2">
-                    <Label htmlFor="payout-paypal" className="font-medium cursor-pointer">
+                    <Label htmlFor="payout-paypal" className="font-medium cursor-pointer flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-blue-500" />
                       PayPal (Same Day)
                     </Label>
                     <p className="text-sm text-muted-foreground">
                       Same-day payouts processed by our team
                     </p>
-                    <div className="max-w-sm">
-                      <Label htmlFor="paypal-email" className="text-sm text-muted-foreground">
-                        PayPal Email
-                      </Label>
-                      <Input
-                        id="paypal-email"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={payoutSettings.paypal_email}
-                        onChange={(e) => {
-                          const email = e.target.value;
-                          setPayoutSettings(prev => ({ ...prev, paypal_email: email }));
-                          if (email && !validateEmail(email)) {
-                            setPaypalEmailError('Please enter a valid email address');
-                          } else {
-                            setPaypalEmailError(null);
-                          }
-                        }}
-                        className={`mt-1 ${paypalEmailError ? 'border-destructive' : ''}`}
-                      />
-                      {paypalEmailError && (
-                        <p className="text-xs text-destructive mt-1">{paypalEmailError}</p>
-                      )}
-                    </div>
+                    {payoutSettings.preferred_method === 'paypal' && (
+                      <div className="max-w-sm">
+                        <Label htmlFor="paypal-email" className="text-sm text-muted-foreground">PayPal Email</Label>
+                        <Input
+                          id="paypal-email"
+                          type="email"
+                          placeholder="your@email.com"
+                          value={payoutSettings.paypal_email}
+                          onChange={(e) => {
+                            const email = e.target.value;
+                            setPayoutSettings(prev => ({ ...prev, paypal_email: email }));
+                            setPaypalEmailError(email && !validateEmail(email) ? 'Please enter a valid email address' : null);
+                          }}
+                          className={`mt-1 ${paypalEmailError ? 'border-destructive' : ''}`}
+                        />
+                        {paypalEmailError && <p className="text-xs text-destructive mt-1">{paypalEmailError}</p>}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Bank Transfer Option */}
+                <div className="flex items-start space-x-3 p-4 rounded-lg border border-border hover:border-primary/50 transition-colors">
+                  <RadioGroupItem value="bank_transfer" id="payout-bank" className="mt-1" />
+                  <div className="flex-1 space-y-2">
+                    <Label htmlFor="payout-bank" className="font-medium cursor-pointer flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-emerald-500" />
+                      Bank Transfer
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Direct bank transfer processed by our team
+                    </p>
+                    {payoutSettings.preferred_method === 'bank_transfer' && (
+                      <div className="grid gap-3 max-w-md pt-2">
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Account Holder Name</Label>
+                          <Input
+                            placeholder="John Doe"
+                            value={payoutSettings.bank_account_holder}
+                            onChange={(e) => setPayoutSettings(prev => ({ ...prev, bank_account_holder: e.target.value }))}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label className="text-sm text-muted-foreground">Account Number</Label>
+                            <Input
+                              placeholder="12345678"
+                              value={payoutSettings.bank_account_number}
+                              onChange={(e) => setPayoutSettings(prev => ({ ...prev, bank_account_number: e.target.value }))}
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-sm text-muted-foreground">Sort Code / Routing</Label>
+                            <Input
+                              placeholder="12-34-56"
+                              value={payoutSettings.bank_routing_number}
+                              onChange={(e) => setPayoutSettings(prev => ({ ...prev, bank_routing_number: e.target.value }))}
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label className="text-sm text-muted-foreground">Bank Name</Label>
+                            <Input
+                              placeholder="Barclays"
+                              value={payoutSettings.bank_name}
+                              onChange={(e) => setPayoutSettings(prev => ({ ...prev, bank_name: e.target.value }))}
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-sm text-muted-foreground">SWIFT/BIC</Label>
+                            <Input
+                              placeholder="BARCGB22"
+                              value={payoutSettings.bank_swift_bic}
+                              onChange={(e) => setPayoutSettings(prev => ({ ...prev, bank_swift_bic: e.target.value }))}
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Country</Label>
+                          <Input
+                            placeholder="United Kingdom"
+                            value={payoutSettings.bank_country}
+                            onChange={(e) => setPayoutSettings(prev => ({ ...prev, bank_country: e.target.value }))}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </RadioGroup>
@@ -1071,6 +782,7 @@ export default function Affiliate() {
                   disabled={
                     updatePayoutSettingsMutation.isPending ||
                     (payoutSettings.preferred_method === 'paypal' && !payoutSettings.paypal_email) ||
+                    (payoutSettings.preferred_method === 'bank_transfer' && !payoutSettings.bank_account_holder) ||
                     !!paypalEmailError
                   }
                 >
@@ -1143,12 +855,9 @@ export default function Affiliate() {
                         <div>
                           <p className="font-medium flex items-center gap-2">
                             £{(payout.amount / 100).toFixed(2)}
-                            {payout.payout_method === 'stripe' && (
-                              <Badge variant="outline" className="text-xs">Stripe</Badge>
-                            )}
-                            {payout.payout_method === 'paypal' && (
-                              <Badge variant="outline" className="text-xs">PayPal</Badge>
-                            )}
+                            <Badge variant="outline" className="text-xs">
+                              {payout.payout_method === 'stripe' ? 'Stripe' : payout.payout_method === 'bank_transfer' ? 'Bank' : 'PayPal'}
+                            </Badge>
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {format(new Date(payout.created_at), 'dd MMM yyyy')}
