@@ -100,13 +100,12 @@ serve(async (req) => {
     // Get user's affiliate application to check payout method and details
     const { data: application, error: appError } = await supabaseClient
       .from('affiliate_applications')
-      .select('paypal_email, preferred_payout_method')
+      .select('paypal_email, preferred_payout_method, bank_account_holder, bank_account_number, bank_swift_bic, bank_name')
       .eq('user_id', user.id)
-      .eq('status', 'approved')
-      .single();
+      .maybeSingle();
 
     if (appError || !application) {
-      throw new Error("No approved affiliate application found");
+      throw new Error("No affiliate record found");
     }
 
     // Determine which payout method to use
@@ -124,6 +123,10 @@ serve(async (req) => {
     if (payoutMethod === 'stripe') {
       if (!profile?.stripe_account_id) {
         throw new Error("Please connect your Stripe account first to receive automatic payouts.");
+      }
+    } else if (payoutMethod === 'bank_transfer') {
+      if (!application.bank_account_holder || !application.bank_account_number) {
+        throw new Error("Please add your bank details to receive bank transfer payouts.");
       }
     } else {
       if (!application.paypal_email) {
