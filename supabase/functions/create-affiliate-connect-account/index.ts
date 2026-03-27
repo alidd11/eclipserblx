@@ -40,19 +40,14 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Verify user has an approved affiliate application
-    const { data: application, error: appError } = await supabaseClient
+    // Verify user has an affiliate record (auto-created on signup)
+    const { data: application } = await supabaseClient
       .from('affiliate_applications')
-      .select('id, preferred_payout_method')
+      .select('id')
       .eq('user_id', user.id)
-      .eq('status', 'approved')
-      .single();
+      .maybeSingle();
 
-    if (appError || !application) {
-      throw new Error("No approved affiliate application found");
-    }
-
-    logStep("Affiliate application verified", { applicationId: application.id });
+    logStep("Affiliate record check", { hasRecord: !!application });
 
     // Check if user already has a stripe account in profiles
     const { data: profile, error: profileError } = await supabaseClient

@@ -65,7 +65,7 @@ serve(async (req) => {
     }
 
     // Validate method
-    if (method && !['stripe', 'paypal'].includes(method)) {
+    if (method && !['stripe', 'paypal', 'bank_transfer'].includes(method)) {
       throw new Error("Invalid payout method");
     }
 
