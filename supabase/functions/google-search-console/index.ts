@@ -80,9 +80,13 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const saJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON");
+    let saJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON");
     if (!saJson) throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON not configured");
-
+    // Strip wrapping quotes if the secret was stored as a quoted string
+    saJson = saJson.trim();
+    if (saJson.startsWith('"') && saJson.endsWith('"')) {
+      saJson = JSON.parse(saJson);
+    }
     const serviceAccount = JSON.parse(saJson);
 
     const accessToken = await getAccessToken(
