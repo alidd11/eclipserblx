@@ -1,98 +1,45 @@
 
 
-# Persistent Eclipse Portal Bot — Deployable Node.js Application
+# Two Issues to Fix
 
-## What this is
-A self-hosted, always-on Node.js bot that replaces the `discord-customer-bot` edge function (3,281 lines). It connects to Discord via WebSocket gateway instead of HTTP webhooks, eliminating per-invocation costs. All data stays linked to your platform via your existing database.
+## Issue 1: Bot ENV not loading (`DISCORD_CUSTOMER_BOT_TOKEN`)
 
-## How data stays linked
-The bot uses the same database connection (via Supabase service role key) as the current edge functions. It reads/writes the same tables (`profiles`, `orders`, `order_items`, `products`, `stores`, `store_credentials`, etc.) so everything stays in sync with your web app. When a customer runs `/retrieve` in a seller's Discord, the bot looks up the guild → finds the linked store → checks the user's purchases → serves the file. No data duplication needed.
+Altair says the `.env` is set up but the bot crashes with "Missing required env var: DISCORD_CUSTOMER_BOT_TOKEN". The bot uses ES modules (`"type": "module"`) and has no `dotenv` dependency — Node.js does not auto-load `.env` files.
 
-## Files to create
+**Fix:** Add `dotenv` as a dependency and load it at the top of `index.js`:
 
-All files go in `eclipse-portal-bot/` at the project root:
+- Add `"dotenv": "^16.4.0"` to `package.json` dependencies
+- Add `import 'dotenv/config';` as the first line of `index.js` (before any other imports)
+- Also add the same import to `src/register-commands.js` so env vars load when registering commands
 
-```text
-eclipse-portal-bot/
-├── package.json              — discord.js + supabase-js dependencies
-├── Dockerfile                — For Railway/Fly.io/VPS deployment
-├── fly.toml                  — Fly.io config (optional)
-├── .env.example              — All required env vars documented
-├── README.md                 — Setup & deployment guide
-└── src/
-    ├── index.js              — Entry point: client setup, event routing, health check server
-    ├── config.js             — Env var validation + constants
-    ├── supabase.js           — Supabase client init (service role)
-    ├── utils/
-    │   ├── embeds.js         — Shared embed builders, branding helper
-    │   ├── responses.js      — Ephemeral/public reply helpers
-    │   └── server-context.js — Guild → store resolution (same logic as edge fn)
-    ├── commands/
-    │   ├── link.js           — /link command
-    │   ├── verify.js         — /verify command
-    │   ├── profile.js        — /profile command
-    │   ├── purchases.js      — /purchases command
-    │   ├── retrieve.js       — /retrieve command (signed download URLs)
-    │   ├── getrole.js        — /getrole command (role sync)
-    │   ├── store.js          — /store command
-    │   ├── unlink.js         — /unlink command
-    │   ├── showcase.js       — /showcase command + modal handler
-    │   ├── walletbalance.js  — /walletbalance command
-    │   ├── help.js           — /help command (paginated)
-    │   ├── update.js         — /update command (admin role sync)
-    │   ├── globalban.js      — /globalban command
-    │   ├── globalunban.js    — /globalunban command
-    │   └── globalbans.js     — /globalbans command
-    ├── handlers/
-    │   ├── interaction.js    — Routes interactionCreate to command files
-    │   ├── dm.js             — Modmail DM handler (merged from discord-support-bot)
-    │   └── member-join.js    — Welcome DM on guildMemberAdd
-    └── register-commands.js  — One-off script to register slash commands with Discord API
-```
+This is the standard Node.js pattern for loading `.env` files.
 
-## Key design decisions
+## Issue 2: Bot subdomains being hijacked
 
-1. **Gateway-based** — Uses discord.js `interactionCreate` event via WebSocket. No HTTP signature verification needed. Discord sends interactions directly through the gateway.
+Three subdomains need to point to Apollo Panel instead of the main site:
+- `staff.eclipserblx.com` → CNAME `proxy-eu.apollopanel.com` (DNS-only)
+- `tracker.eclipserblx.com` → CNAME `proxy-eu.apollopanel.com` (DNS-only)
+- `forms.eclipserblx.com` → CNAME `proxy-eu.apollopanel.com` (DNS-only)
 
-2. **Same bot token** — Uses `DISCORD_CUSTOMER_BOT_TOKEN` (the Eclipse Portal Bot). Same bot, different hosting.
+**Changes needed:**
 
-3. **Same database** — Connects to your existing database with `SUPABASE_SERVICE_ROLE_KEY`. Reads the same `stores.discord_guild_id` to resolve which server belongs to which store.
+1. **`src/hooks/useStoreDomain.tsx`** — Add `staff`, `tracker`, `forms` to `RESERVED_SUBDOMAINS` array so the store domain resolver ignores them
 
-4. **Merges modmail** — The DM handler from `discord-support-bot/` is included, so you only need one running bot process.
+2. **Cloudflare Worker reference (`docs/cloudflare-worker-og.js`)** — Add `staff`, `tracker`, `forms` to `RESERVED_SUBS` so the Worker passes them through without intercepting
 
-5. **Health check server** — Runs a tiny HTTP server on port 8080 for Railway/Fly.io liveness checks.
+3. **Deploy Worker** — The actual Worker needs redeployment with the updated reserved list (via the `deploy-cloudflare-worker` edge function)
 
-6. **Edge functions remain** — `invite-portal-bot` (OAuth callback) stays as an edge function since it needs to be an HTTP endpoint for Discord's OAuth redirect. Notification webhooks also stay.
+4. **DNS records** — Create CNAME records for all three subdomains pointing to `proxy-eu.apollopanel.com` with proxy disabled (DNS-only/grey cloud). This will be done via the Cloudflare API, replacing any existing A records from the wildcard
 
-## Environment variables needed
+5. **New edge function `setup-bot-subdomains`** — A one-time function to create the three CNAME records via Cloudflare API with `proxied: false`
 
-```
-DISCORD_CUSTOMER_BOT_TOKEN        — Bot token (already have this)
-SUPABASE_URL                      — Database URL
-SUPABASE_SERVICE_ROLE_KEY         — Service role key
-DISCORD_GUILD_ID                  — Main Eclipse server ID
-DISCORD_CUSTOMER_ROLE_ID          — Role IDs for auto-assignment
-DISCORD_LOYAL_CUSTOMER_ROLE_ID
-DISCORD_STORE_CREATOR_ROLE_ID
-DISCORD_ROLE_ID                   — Eclipse+ role
-DISCORD_VERIFIED_SELLER_ROLE_ID
-DISCORD_WEBHOOK_URL               — Staff modmail notifications
-SITE_URL                          — https://eclipserblx.com
-```
-
-## After deployment
-
-1. Deploy to Railway ($5/mo) or Fly.io (free tier available)
-2. Set all env vars on the hosting platform
-3. Run `node src/register-commands.js` once to register slash commands
-4. In Discord Developer Portal → remove the Interactions Endpoint URL (gateway bots don't use it)
-5. The existing edge function can remain as a fallback or be disabled
-
-## Cost comparison
-
-| | Edge Functions | Persistent Bot |
-|---|---|---|
-| Per command | ~$0.001-0.005 | $0 |
-| Monthly (est.) | $10-50+ | $0-5 |
-| Cold starts | 200-500ms | None |
+## Files to modify
+- `eclipse-portal-bot/package.json` — add dotenv dependency
+- `eclipse-portal-bot/index.js` — add `import 'dotenv/config'`
+- `eclipse-portal-bot/src/register-commands.js` — add `import 'dotenv/config'`
+- `src/hooks/useStoreDomain.tsx` — extend reserved subdomains
+- `docs/cloudflare-worker-og.js` — extend reserved subs
+- `supabase/functions/deploy-cloudflare-worker/index.ts` — extend reserved subs in the built Worker script
+- New: `supabase/functions/setup-bot-subdomains/index.ts` — create CNAME records via CF API
+- Update embedded bot files in `src/pages/admin/PortalBotSetup.tsx` to include dotenv
 
