@@ -88,7 +88,26 @@
   <body>
     <!-- Skip to main content link for accessibility -->
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:outline-none">Skip to main content</a>
-    <div id="root"></div>
+    <!-- Static HTML shell: visible to crawlers & users before JS boots -->
+    <div id="root">
+      <div id="static-shell" style="max-width:1200px;margin:0 auto;padding:16px 20px;font-family:'Source Sans 3',system-ui,sans-serif;color:#edeeef">
+        <header style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08)">
+          <a href="/" aria-label="Eclipse home" style="font-family:'Sora',sans-serif;font-size:1.25rem;font-weight:700;color:#edeeef;text-decoration:none">Eclipse</a>
+          <nav aria-label="Main navigation" style="display:flex;gap:16px;flex-wrap:wrap;font-size:0.875rem">
+            <a href="/products" style="color:#a0a8c0">Products</a>
+            <a href="/stores" style="color:#a0a8c0">Stores</a>
+            <a href="/categories" style="color:#a0a8c0">Categories</a>
+            <a href="/featured" style="color:#a0a8c0">Featured</a>
+            <a href="/eclipse-plus" style="color:#a0a8c0">Eclipse+</a>
+            <a href="/sell" style="color:#a0a8c0">Sell</a>
+          </nav>
+        </header>
+        <main style="padding:40px 0;text-align:center">
+          <h1 style="font-family:'Sora',sans-serif;font-size:1.75rem;font-weight:700;margin:0 0 12px">The Roblox Asset Marketplace</h1>
+          <p style="color:#a0a8c0;max-width:600px;margin:0 auto 24px;line-height:1.6">Browse premium roleplay scripts, vehicles, maps and game assets. Lower fees than competitors, instant delivery.</p>
+        </main>
+      </div>
+    </div>
     <noscript>
       <div style="max-width:800px;margin:40px auto;padding:0 20px;font-family:system-ui,sans-serif;color:#edeeef">
         <h1>Eclipse — Roblox Asset Marketplace</h1>

@@ -25,15 +25,61 @@ const STATIC_PAGES: Record<string, { title: string; description: string }> = {
   "/jobs": { title: "Jobs | Eclipse", description: "Join the Eclipse team — we're hiring passionate people to build the future of Roblox commerce." },
 };
 
+// Route-based cache durations (seconds)
+const CACHE_DURATIONS: Record<string, { maxAge: number; swr: number }> = {
+  "/": { maxAge: 60, swr: 30 },
+  "/products": { maxAge: 120, swr: 60 },
+  "/stores": { maxAge: 120, swr: 60 },
+  "/categories": { maxAge: 120, swr: 60 },
+  "/featured": { maxAge: 120, swr: 60 },
+};
+
+function getCacheHeader(path: string): string {
+  // Product pages
+  if (path.startsWith("/products/")) return "public, max-age=300, stale-while-revalidate=60";
+  // Store pages
+  if (path.startsWith("/store/")) return "public, max-age=600, stale-while-revalidate=120";
+  // Category sub-pages
+  if (path.startsWith("/categories/")) return "public, max-age=120, stale-while-revalidate=60";
+  // Known routes
+  const known = CACHE_DURATIONS[path];
+  if (known) return `public, max-age=${known.maxAge}, stale-while-revalidate=${known.swr}`;
+  // Static pages
+  if (STATIC_PAGES[path]) return "public, max-age=3600, stale-while-revalidate=300";
+  return "public, max-age=60, stale-while-revalidate=30";
+}
+
 function esc(str: string): string {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-function buildHtml(t: string, d: string, img: string, url: string, type = "website", extra = ""): string {
+// Shared nav links for the static HTML shell
+const NAV_HTML = `<nav aria-label="Main navigation"><ul>
+<li><a href="${SITE_URL}/products">Browse Products</a></li>
+<li><a href="${SITE_URL}/stores">Browse Stores</a></li>
+<li><a href="${SITE_URL}/categories">Categories</a></li>
+<li><a href="${SITE_URL}/featured">Featured</a></li>
+<li><a href="${SITE_URL}/eclipse-plus">Eclipse+</a></li>
+<li><a href="${SITE_URL}/sell">Start Selling</a></li>
+<li><a href="${SITE_URL}/help-center">Help Centre</a></li>
+<li><a href="${SITE_URL}/contact">Contact</a></li>
+</ul></nav>`;
+
+function buildHtml(t: string, d: string, img: string, url: string, type = "website", extra = "", bodyContent = ""): string {
+  const jsonLd = type === "product" ? "" : `<script type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": SITE_NAME,
+    "url": SITE_URL,
+    "description": DEFAULT_DESCRIPTION,
+    "potentialAction": { "@type": "SearchAction", "target": `${SITE_URL}/products?q={search_term_string}`, "query-input": "required name=search_term_string" }
+  })}</script>`;
+
   return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"/><title>${esc(t)}</title>
 <meta name="description" content="${esc(d)}"/>
 <link rel="canonical" href="${esc(url)}"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta property="og:type" content="${type}"/>
 <meta property="og:site_name" content="${SITE_NAME}"/>
 <meta property="og:title" content="${esc(t)}"/>
@@ -48,40 +94,69 @@ ${extra}
 <meta name="twitter:title" content="${esc(t)}"/>
 <meta name="twitter:description" content="${esc(d)}"/>
 <meta name="twitter:image" content="${esc(img)}"/>
+${jsonLd}
+<style>body{font-family:system-ui,sans-serif;background:#0f1012;color:#edeeef;margin:0;padding:20px}a{color:#7c8aff}h1{font-size:1.5rem}nav ul{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:12px}img{max-width:100%;height:auto;border-radius:8px}.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}.price{font-size:1.25rem;font-weight:700;color:#7c8aff}</style>
 <meta http-equiv="refresh" content="0;url=${esc(url)}"/>
-</head><body><p>Redirecting to <a href="${esc(url)}">${esc(t)}</a>…</p></body></html>`;
+</head><body>
+<header><h1><a href="${SITE_URL}">${SITE_NAME}</a></h1>${NAV_HTML}</header>
+<main>${bodyContent || `<p>${esc(d)}</p>`}</main>
+<footer><p>&copy; ${new Date().getFullYear()} Eclipse. All rights reserved.</p></footer>
+</body></html>`;
+}
+
+function buildProductBody(product: any, storeName?: string): string {
+  const name = esc(product.name || "Product");
+  const desc = product.description ? esc(product.description.replace(/<[^>]*>/g, "").slice(0, 500)) : "";
+  const price = product.price != null ? `<p class="price">\u00A3${Number(product.price).toFixed(2)}</p>` : "";
+  const store = storeName ? `<p>By <strong>${esc(storeName)}</strong></p>` : "";
+  const img = product.images?.[0] ? `<img src="${esc(product.images[0])}" alt="${name}" width="600" height="400" loading="eager"/>` : "";
+  return `<article><h2>${name}</h2>${store}${price}${img}<p>${desc}</p></article>`;
+}
+
+function buildStoreBody(store: any): string {
+  const name = esc(store.name || "Store");
+  const desc = store.description ? esc(store.description.replace(/<[^>]*>/g, "").slice(0, 500)) : "";
+  const count = store.product_count || 0;
+  const logo = store.logo_url ? `<img src="${esc(store.logo_url)}" alt="${name} logo" width="128" height="128"/>` : "";
+  return `<article>${logo}<h2>${name}</h2><p>${desc}</p><p>${count} products available</p></article>`;
+}
+
+function buildProductJsonLd(product: any, url: string, storeName?: string): string {
+  const ld: any = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.name,
+    "url": url,
+    "description": product.description ? product.description.replace(/<[^>]*>/g, "").slice(0, 500) : undefined,
+    "image": product.images?.[0],
+  };
+  if (storeName) ld.brand = { "@type": "Brand", "name": storeName };
+  if (product.price != null) {
+    ld.offers = {
+      "@type": "Offer",
+      "price": product.price,
+      "priceCurrency": "GBP",
+      "availability": "https://schema.org/InStock",
+      "url": url,
+    };
+  }
+  return `<script type="application/ld+json">${JSON.stringify(ld)}</script>`;
 }
 
 async function resolveStoreByHostname(hostname: string): Promise<any> {
   const url = Deno.env.get("SUPABASE_URL")!;
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-  // Look up store_domains for this hostname
   const domainRes = await fetch(
     `${url}/rest/v1/store_domains?select=store_id&domain=eq.${encodeURIComponent(hostname)}&status=eq.active&limit=1`,
-    {
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        Accept: "application/json",
-      },
-    }
+    { headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: "application/json" } }
   );
   if (!domainRes.ok) { await domainRes.text(); return null; }
   const domains = await domainRes.json();
   if (!domains?.length) return null;
 
-  const storeId = domains[0].store_id;
-  // Fetch store details
   const storeRes = await fetch(
-    `${url}/rest/v1/stores?select=id,name,description,logo_url,banner_url,slug,product_count&id=eq.${storeId}&is_active=eq.true`,
-    {
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        Accept: "application/vnd.pgrst.object+json",
-      },
-    }
+    `${url}/rest/v1/stores?select=id,name,description,logo_url,banner_url,slug,product_count&id=eq.${domains[0].store_id}&is_active=eq.true`,
+    { headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: "application/vnd.pgrst.object+json" } }
   );
   if (!storeRes.ok) { await storeRes.text(); return null; }
   return storeRes.json();
@@ -91,11 +166,7 @@ async function pgQuery(table: string, select: string, filters: string): Promise<
   const url = Deno.env.get("SUPABASE_URL")!;
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const res = await fetch(`${url}/rest/v1/${table}?select=${encodeURIComponent(select)}&${filters}`, {
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-      Accept: "application/vnd.pgrst.object+json",
-    },
+    headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: "application/vnd.pgrst.object+json" },
   });
   if (!res.ok) { await res.text(); return null; }
   return res.json();
@@ -115,10 +186,9 @@ Deno.serve(async (req) => {
       const storeUrl = `https://${hostname}${path}`;
       const desc = store.description
         ? store.description.replace(/<[^>]*>/g, "").slice(0, 200)
-        : `Browse ${store.name}'s products on Eclipse — ${store.product_count || 0} items available.`;
+        : `Browse ${store.name}'s products on Eclipse \u2014 ${store.product_count || 0} items available.`;
       const img = store.banner_url || store.logo_url || DEFAULT_IMAGE;
 
-      // If path matches a product number, try to serve product-level OG
       const pm = path.match(/^\/products\/(\d+)$/);
       if (pm) {
         const product = await pgQuery("products", "name,description,images,price,product_number,store_id", `product_number=eq.${pm[1]}&store_id=eq.${store.id}&is_active=eq.true`);
@@ -126,18 +196,19 @@ Deno.serve(async (req) => {
           const pDesc = product.description ? product.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Check out ${product.name} on ${store.name}`;
           const pImg = product.images?.[0] || img;
           const priceExtra = product.price != null ? `<meta property="product:price:amount" content="${product.price}"/><meta property="product:price:currency" content="GBP"/>` : "";
-          return new Response(buildHtml(`${product.name} | ${store.name}`, pDesc, pImg, storeUrl, "product", priceExtra), {
-            headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300", ...corsHeaders },
+          const body = buildProductBody(product, store.name);
+          const jsonLd = buildProductJsonLd(product, storeUrl, store.name);
+          return new Response(buildHtml(`${product.name} | ${store.name}`, pDesc, pImg, storeUrl, "product", priceExtra + jsonLd, body), {
+            headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": getCacheHeader(path), ...corsHeaders },
           });
         }
       }
 
-      // Default: store-level OG
-      return new Response(buildHtml(`${store.name} | ${SITE_NAME}`, desc, img, storeUrl, "profile"), {
-        headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=600", ...corsHeaders },
+      const body = buildStoreBody(store);
+      return new Response(buildHtml(`${store.name} | ${SITE_NAME}`, desc, img, storeUrl, "profile", "", body), {
+        headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": getCacheHeader("/store/x"), ...corsHeaders },
       });
     }
-    // Unknown hostname — redirect to main site
     return new Response(null, { status: 302, headers: { Location: `${SITE_URL}${path}`, ...corsHeaders } });
   }
 
@@ -145,11 +216,11 @@ Deno.serve(async (req) => {
   const s = STATIC_PAGES[path];
   if (s) {
     return new Response(buildHtml(s.title, s.description, DEFAULT_IMAGE, `${SITE_URL}${path}`), {
-      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600", ...corsHeaders },
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": getCacheHeader(path), ...corsHeaders },
     });
   }
 
-  // Product pages — now numeric: /products/12345
+  // Product pages — numeric: /products/12345
   const pm = path.match(/^\/products\/(\d+)$/);
   if (pm) {
     const productNumber = pm[1];
@@ -159,16 +230,18 @@ Deno.serve(async (req) => {
 
     const storeName = product.stores?.name;
     const rawDesc = product.description ? product.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Check out ${product.name} on Eclipse`;
-    const desc = storeName ? `By ${storeName} — ${rawDesc}` : rawDesc;
+    const desc = storeName ? `By ${storeName} \u2014 ${rawDesc}` : rawDesc;
     const img = product.images?.[0] || DEFAULT_IMAGE;
     const priceExtra = product.price != null ? `<meta property="product:price:amount" content="${product.price}"/><meta property="product:price:currency" content="GBP"/>` : "";
+    const body = buildProductBody(product, storeName);
+    const jsonLd = buildProductJsonLd(product, pageUrl, storeName);
 
-    return new Response(buildHtml(`${product.name} | ${SITE_NAME}`, desc, img, pageUrl, "product", priceExtra), {
-      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300", ...corsHeaders },
+    return new Response(buildHtml(`${product.name} | ${SITE_NAME}`, desc, img, pageUrl, "product", priceExtra + jsonLd, body), {
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": getCacheHeader(path), ...corsHeaders },
     });
   }
 
-  // Legacy slug-based product pages: /products/my-product-slug
+  // Legacy slug-based product pages
   const slugPm = path.match(/^\/products\/([a-zA-Z][a-zA-Z0-9\-_]{0,200})$/);
   if (slugPm) {
     const slugVal = slugPm[1];
@@ -177,12 +250,14 @@ Deno.serve(async (req) => {
       const canonicalUrl = product.product_number ? `${SITE_URL}/products/${product.product_number}` : `${SITE_URL}/products/${encodeURIComponent(slugVal)}`;
       const storeName = product.stores?.name;
       const rawDesc = product.description ? product.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Check out ${product.name} on Eclipse`;
-      const desc = storeName ? `By ${storeName} — ${rawDesc}` : rawDesc;
+      const desc = storeName ? `By ${storeName} \u2014 ${rawDesc}` : rawDesc;
       const img = product.images?.[0] || DEFAULT_IMAGE;
       const priceExtra = product.price != null ? `<meta property="product:price:amount" content="${product.price}"/><meta property="product:price:currency" content="GBP"/>` : "";
+      const body = buildProductBody(product, storeName);
+      const jsonLd = buildProductJsonLd(product, canonicalUrl, storeName);
 
-      return new Response(buildHtml(`${product.name} | ${SITE_NAME}`, desc, img, canonicalUrl, "product", priceExtra), {
-        headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300", ...corsHeaders },
+      return new Response(buildHtml(`${product.name} | ${SITE_NAME}`, desc, img, canonicalUrl, "product", priceExtra + jsonLd, body), {
+        headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": getCacheHeader("/products/1"), ...corsHeaders },
       });
     }
   }
@@ -195,11 +270,12 @@ Deno.serve(async (req) => {
     const pageUrl = `${SITE_URL}/store/${encodeURIComponent(slug)}`;
     if (!store) return new Response(null, { status: 302, headers: { Location: pageUrl, ...corsHeaders } });
 
-    const desc = store.description ? store.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Browse ${store.name}'s products on Eclipse — ${store.product_count || 0} items available.`;
+    const desc = store.description ? store.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Browse ${store.name}'s products on Eclipse \u2014 ${store.product_count || 0} items available.`;
     const img = store.banner_url || store.logo_url || DEFAULT_IMAGE;
+    const body = buildStoreBody(store);
 
-    return new Response(buildHtml(`${store.name} | ${SITE_NAME}`, desc, img, pageUrl, "profile"), {
-      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=600", ...corsHeaders },
+    return new Response(buildHtml(`${store.name} | ${SITE_NAME}`, desc, img, pageUrl, "profile", "", body), {
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": getCacheHeader(path), ...corsHeaders },
     });
   }
 
