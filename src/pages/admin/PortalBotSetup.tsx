@@ -95,7 +95,7 @@ primary_region = "lhr"
     protocol = "http"
     timeout = 5000`,
 
-  'src/index.js': `import { Client, GatewayIntentBits, ChannelType } from 'discord.js';
+  'index.js': `import { Client, GatewayIntentBits, ChannelType } from 'discord.js';
 import http from 'http';
 import { config } from './config.js';
 import { handleInteraction } from './handlers/interaction.js';
