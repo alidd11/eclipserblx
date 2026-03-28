@@ -63,7 +63,7 @@ COPY . .
 
 EXPOSE 8080
 
-CMD ["node", "src/index.js"]`,
+CMD ["node", "index.js"]`,
 
   'fly.toml': `app = "eclipse-portal-bot"
 primary_region = "lhr"
