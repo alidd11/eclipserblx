@@ -18,10 +18,10 @@ const BOT_FILES: Record<string, string> = {
   "name": "eclipse-portal-bot",
   "version": "1.0.0",
   "description": "Persistent Eclipse Portal Bot — gateway-based Discord bot",
-  "main": "src/index.js",
+  "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node index.js",
     "register": "node src/register-commands.js"
   },
   "dependencies": {
@@ -63,7 +63,7 @@ COPY . .
 
 EXPOSE 8080
 
-CMD ["node", "src/index.js"]`,
+CMD ["node", "index.js"]`,
 
   'fly.toml': `app = "eclipse-portal-bot"
 primary_region = "lhr"
@@ -95,12 +95,12 @@ primary_region = "lhr"
     protocol = "http"
     timeout = 5000`,
 
-  'src/index.js': `import { Client, GatewayIntentBits, ChannelType } from 'discord.js';
+  'index.js': `import { Client, GatewayIntentBits, ChannelType } from 'discord.js';
 import http from 'http';
-import { config } from './config.js';
-import { handleInteraction } from './handlers/interaction.js';
-import { handleDM } from './handlers/dm.js';
-import { handleMemberJoin } from './handlers/member-join.js';
+import { config } from './src/config.js';
+import { handleInteraction } from './src/handlers/interaction.js';
+import { handleDM } from './src/handlers/dm.js';
+import { handleMemberJoin } from './src/handlers/member-join.js';
 
 // Initialize Discord client
 const client = new Client({
