@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Copy, Check, ChevronDown, ChevronRight, FileCode, FolderOpen, Bot, Terminal, Server, Shield } from 'lucide-react';
+import { Copy, Check, ChevronDown, ChevronRight, FileCode, FolderOpen, Bot, Terminal, Server, Shield, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ALLOWED_EMAILS = ['alicanimir1@gmail.com', 'altair4481@gmail.com'];
@@ -2132,8 +2132,35 @@ export default function AdminPortalBotSetup() {
         {/* File Browser */}
         <Card className="overflow-hidden">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Bot Files ({Object.keys(BOT_FILES).length} files)</CardTitle>
-            <CardDescription>Tap a file to view, then copy</CardDescription>
+        <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Bot Files ({Object.keys(BOT_FILES).length} files)</CardTitle>
+                <CardDescription>Tap a file to view, then copy</CardDescription>
+              </div>
+              <Button
+                size="sm"
+                onClick={async () => {
+                  const JSZip = (await import('jszip')).default;
+                  const zip = new JSZip();
+                  const folder = zip.folder('eclipse-portal-bot')!;
+                  Object.entries(BOT_FILES).forEach(([path, content]) => {
+                    folder.file(path, content);
+                  });
+                  const blob = await zip.generateAsync({ type: 'blob' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'eclipse-portal-bot.zip';
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success('Downloading eclipse-portal-bot.zip');
+                }}
+                className="shrink-0"
+              >
+                <Download className="h-4 w-4 mr-1" />
+                Download ZIP
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             {/* File Tree */}
