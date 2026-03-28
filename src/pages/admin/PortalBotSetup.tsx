@@ -96,7 +96,8 @@ primary_region = "lhr"
     protocol = "http"
     timeout = 5000`,
 
-  'index.js': `import { Client, GatewayIntentBits, ChannelType } from 'discord.js';
+  'index.js': `import 'dotenv/config';
+import { Client, GatewayIntentBits, ChannelType } from 'discord.js';
 import http from 'http';
 import { config } from './src/config.js';
 import { handleInteraction } from './src/handlers/interaction.js';
