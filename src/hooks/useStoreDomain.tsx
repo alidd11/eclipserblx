@@ -33,7 +33,7 @@ const MAIN_DOMAINS = [
   'localhost',
 ];
 
-const RESERVED_SUBDOMAINS = ['guard', 'www', 'api', 'admin', 'mail', 'stores'];
+const RESERVED_SUBDOMAINS = ['guard', 'www', 'api', 'admin', 'mail', 'stores', 'staff', 'tracker', 'forms'];
 
 function isStoreDomainHostname(hostname: string): boolean {
   // Not a lovable preview/dev domain

@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { Client, GatewayIntentBits, ChannelType } from 'discord.js';
 import http from 'http';
 import { config } from './src/config.js';

@@ -4,6 +4,7 @@
  *
  * This registers commands GLOBALLY (all guilds where the bot is installed).
  */
+import 'dotenv/config';
 import { config } from './config.js';
 
 const DISCORD_API = 'https://discord.com/api/v10';

@@ -26,7 +26,8 @@ const BOT_FILES: Record<string, string> = {
   },
   "dependencies": {
     "discord.js": "^14.14.1",
-    "@supabase/supabase-js": "^2.39.0"
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.4.0"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -95,7 +96,8 @@ primary_region = "lhr"
     protocol = "http"
     timeout = 5000`,
 
-  'index.js': `import { Client, GatewayIntentBits, ChannelType } from 'discord.js';
+  'index.js': `import 'dotenv/config';
+import { Client, GatewayIntentBits, ChannelType } from 'discord.js';
 import http from 'http';
 import { config } from './src/config.js';
 import { handleInteraction } from './src/handlers/interaction.js';
@@ -1878,6 +1880,7 @@ export async function handleGlobalBans(interaction) {
  * One-off script to register slash commands with Discord.
  * Run: node src/register-commands.js
  */
+import 'dotenv/config';
 import { config } from './config.js';
 
 const DISCORD_API = 'https://discord.com/api/v10';

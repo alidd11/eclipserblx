@@ -35,7 +35,7 @@ const STATIC_OG_PATHS = new Set([
 ]);
 
 const MAIN_DOMAINS = ["eclipserblx.com", "www.eclipserblx.com"];
-const RESERVED_SUBS = ["guard", "www", "api", "admin", "mail", "stores"];
+const RESERVED_SUBS = ["guard", "www", "api", "admin", "mail", "stores", "staff", "tracker", "forms"];
 
 const SUPABASE_REST = "https://qlnbergwjfrmgkjhrbkj.supabase.co/rest/v1";
 
