@@ -319,6 +319,11 @@ Deno.serve(async (req) => {
     const priceExtra = product.price != null ? `<meta property="product:price:amount" content="${product.price}"/><meta property="product:price:currency" content="GBP"/>` : "";
     const body = buildProductBody(product, storeName);
     const jsonLd = buildProductJsonLd(product, pageUrl, storeName);
+    const breadcrumb = buildBreadcrumbLd([
+      { name: "Home", url: SITE_URL },
+      { name: "Products", url: `${SITE_URL}/products` },
+      { name: product.name, url: pageUrl },
+    ]);
 
     return new Response(buildHtml(`${product.name} | ${SITE_NAME}`, desc, img, pageUrl, "product", priceExtra + jsonLd, body), {
       headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": getCacheHeader(path), ...corsHeaders },
