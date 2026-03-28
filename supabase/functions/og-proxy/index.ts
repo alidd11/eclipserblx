@@ -143,6 +143,19 @@ function buildProductJsonLd(product: any, url: string, storeName?: string): stri
   return `<script type="application/ld+json">${JSON.stringify(ld)}</script>`;
 }
 
+function buildBreadcrumbLd(items: { name: string; url: string }[]): string {
+  return `<script type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": items.map((item, i) => ({
+      "@type": "ListItem",
+      "position": i + 1,
+      "name": item.name,
+      "item": item.url,
+    })),
+  })}</script>`;
+}
+
 async function resolveStoreByHostname(hostname: string): Promise<any> {
   const url = Deno.env.get("SUPABASE_URL")!;
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
