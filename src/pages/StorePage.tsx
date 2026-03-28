@@ -381,6 +381,11 @@ export default function StorePage() {
 
   return (
     <>
+    <BreadcrumbSchema items={[
+      { name: 'Home', url: 'https://eclipserblx.com/' },
+      { name: 'Stores', url: 'https://eclipserblx.com/stores' },
+      { name: store.name, url: `https://eclipserblx.com/store/${store.slug || storeSlug}` },
+    ]} />
     <StoreSchema
       name={store.name}
       description={store.description || undefined}

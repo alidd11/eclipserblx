@@ -295,6 +295,10 @@ export default function Categories() {
 
   return (
     <MainLayout>
+      <BreadcrumbSchema items={[
+        { name: 'Home', url: 'https://eclipserblx.com/' },
+        { name: 'Categories', url: 'https://eclipserblx.com/categories' },
+      ]} />
       <PullToRefresh onRefresh={handleRefresh}>
       <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <PageHeader
