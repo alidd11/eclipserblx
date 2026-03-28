@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { BreadcrumbSchema } from '@/components/seo/StructuredData';
 import { useCallback } from 'react';
 
 const CUSTOM_BANNER_CATEGORIES = new Set(['bots']);
