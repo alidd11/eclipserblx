@@ -83,11 +83,17 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const saJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON");
+    let saJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON");
     if (!saJson) throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON not configured");
-
+    saJson = saJson.trim();
+    if (saJson.startsWith('"') && saJson.endsWith('"')) {
+      saJson = JSON.parse(saJson);
+    }
     const serviceAccount = JSON.parse(saJson);
-    const { urls, action, submitSitemap } = await req.json();
+
+    let body: Record<string, unknown> = {};
+    try { body = await req.json(); } catch { /* empty body is fine */ }
+    const { urls, action, submitSitemap } = body as any;
 
     const results: Record<string, unknown>[] = [];
 
