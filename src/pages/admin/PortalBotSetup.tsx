@@ -2037,9 +2037,14 @@ function FileItem({ node, selectedFile, onSelect }: { node: FileTreeNode; select
 }
 
 export default function AdminPortalBotSetup() {
+  const { user } = useAuth();
   const [selectedFile, setSelectedFile] = useState<string | null>('package.json');
   const [copiedFile, setCopiedFile] = useState<string | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
+
+  if (!user || !ALLOWED_EMAILS.includes(user.email ?? '')) {
+    return <Navigate to="/admin" replace />;
+  }
 
   const fileTree = buildFileTree();
 
