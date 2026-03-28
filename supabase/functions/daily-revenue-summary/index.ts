@@ -97,16 +97,16 @@ serve(async (req) => {
 
     const pendingPayoutTotal = (pendingPayouts || []).reduce((sum, p) => sum + (p.amount || 0), 0);
 
-    // Top selling products today
+    // Top selling products today - join with products to get real names
     const { data: topProducts } = await supabase
       .from("order_items")
-      .select("product_name")
+      .select("product_name, product_id, products:product_id(name)")
       .gte("created_at", todayStart.toISOString());
 
     const productCounts: Record<string, number> = {};
     for (const item of topProducts || []) {
-      const name = item.product_name || "Unknown";
-      productCounts[name] = (productCounts[name] || 0) + 1;
+      const realName = (item as any).products?.name || item.product_name || "Unknown";
+      productCounts[realName] = (productCounts[realName] || 0) + 1;
     }
 
     const topList = Object.entries(productCounts)
