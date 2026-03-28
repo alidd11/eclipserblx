@@ -5,13 +5,15 @@ import { supabase } from '@/integrations/supabase/client';
  * Call this after a product or store is created/approved.
  */
 export async function submitUrlsToSearchEngines(urls: string[]) {
-  try {
-    await supabase.functions.invoke('submit-indexnow', {
-      body: { urls },
-    });
-  } catch (error) {
-    console.error('IndexNow submission failed:', error);
-  }
+  // Submit via IndexNow and Google Indexing API in parallel
+  const promises = [
+    supabase.functions.invoke('submit-indexnow', { body: { urls } })
+      .catch((e) => console.error('IndexNow submission failed:', e)),
+    supabase.functions.invoke('google-indexing', { body: { urls } })
+      .catch((e) => console.error('Google Indexing API submission failed:', e)),
+  ];
+
+  await Promise.allSettled(promises);
 }
 
 const SITE_URL = 'https://eclipserblx.com';
