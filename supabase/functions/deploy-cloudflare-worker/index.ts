@@ -315,7 +315,7 @@ export default {
       }
 
       // OG handling for bots on known pages
-      var isDynamic = /^\\/(products|store)\\/[^\\/?#]+/.test(path);
+      var isDynamic = /^\\/(products|store|categories)\\/[^\\/?#]+/.test(path);
       var isStatic = STATIC_OG_PATHS.has(path);
       if (!isDynamic && !isStatic) return fetchOrigin(request, "pass-valid-no-og");
       if (isTestingTool(ua)) return fetchOrigin(request, "pass-test-tool");
