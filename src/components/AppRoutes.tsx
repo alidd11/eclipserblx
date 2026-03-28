@@ -138,6 +138,7 @@ const AdminRecruiterPayouts = lazyWithRetry(() => import("@/pages/admin/Recruite
 const AdminRecruiterCommissions = lazyWithRetry(() => import("@/pages/admin/RecruiterCommissions"));
 const AdminGDPRCompliance = lazyWithRetry(() => import("@/pages/admin/GDPRCompliance"));
 const AdminBotGhostSetup = lazyWithRetry(() => import("@/pages/admin/BotGhostSetup"));
+const AdminPortalBotSetup = lazyWithRetry(() => import("@/pages/admin/PortalBotSetup"));
 const AdminRevenueHub = lazyWithRetry(() => import("@/pages/admin/RevenueHub"));
 const AdminPayoutsHub = lazyWithRetry(() => import("@/pages/admin/PayoutsHub"));
 const AdminDisputesRefundsHub = lazyWithRetry(() => import("@/pages/admin/DisputesRefundsHub"));
