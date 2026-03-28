@@ -319,7 +319,21 @@ export default {
       var isStatic = STATIC_OG_PATHS.has(path);
       if (!isDynamic && !isStatic) return fetchOrigin(request, "pass-valid-no-og");
       if (isTestingTool(ua)) return fetchOrigin(request, "pass-test-tool");
-      if (!isBot(ua)) return fetchOrigin(request, "pass-human");
+      if (!isBot(ua)) {
+        // Data injection for human users on key routes
+        if (DATA_INJECT_ROUTES[path]) {
+          var data = await fetchInitialData(path);
+          if (data) {
+            var originRes = await fetchOrigin(request, "pass-human-injected");
+            var injectedHtml = await injectDataIntoHtml(originRes, data);
+            var injHeaders = new Headers(originRes.headers);
+            injHeaders.set("X-Eclipse-Worker", "data-injected");
+            injHeaders.set("Cache-Control", "public, max-age=60, stale-while-revalidate=30");
+            return new Response(injectedHtml, { status: originRes.status, headers: injHeaders });
+          }
+        }
+        return fetchOrigin(request, "pass-human");
+      }
 
       // Bot detected on a relevant page — serve OG
       var ogRes = await serveOg(path, null);
