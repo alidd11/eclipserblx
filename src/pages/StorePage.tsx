@@ -38,7 +38,7 @@ import {
 } from 'lucide-react';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
-import { StoreSchema } from '@/components/seo/StructuredData';
+import { StoreSchema, BreadcrumbSchema } from '@/components/seo/StructuredData';
 
 // Theme configurations
 const getThemeStyles = (theme: string, accentColor: string) => {
