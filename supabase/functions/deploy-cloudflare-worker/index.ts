@@ -114,6 +114,22 @@ async function serveOg(path, hostname) {
   });
 }
 
+// Private routes that should never be indexed
+var NOINDEX_PREFIXES = ["/admin", "/seller", "/account", "/auth", "/guard", "/cart", "/checkout"];
+
+function isNoindexRoute(path) {
+  return NOINDEX_PREFIXES.some(function(p) { return path === p || path.startsWith(p + "/"); });
+}
+
+function injectCanonical(html, path) {
+  // Replace hardcoded canonical with the correct one for this path
+  var canonical = SITE_URL + (path === "/" ? "/" : path.replace(/\\/$/, ""));
+  html = html.replace(/<link rel="canonical"[^>]*>/, '<link rel="canonical" href="' + canonical + '" />');
+  // Also fix og:url
+  html = html.replace(/<meta property="og:url"[^>]*>/, '<meta property="og:url" content="' + canonical + '" />');
+  return html;
+}
+
 function buildOriginRequest(request, originUrl, forwardedHost) {
   var headers = new Headers(request.headers);
   // Never forward incoming Host header when proxying to ORIGIN_URL
