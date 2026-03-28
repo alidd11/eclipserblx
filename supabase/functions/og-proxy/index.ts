@@ -363,7 +363,13 @@ Deno.serve(async (req) => {
     const img = store.banner_url || store.logo_url || DEFAULT_IMAGE;
     const body = buildStoreBody(store);
 
-    return new Response(buildHtml(`${store.name} | ${SITE_NAME}`, desc, img, pageUrl, "profile", "", body), {
+    const storeBreadcrumb = buildBreadcrumbLd([
+      { name: "Home", url: SITE_URL },
+      { name: "Stores", url: `${SITE_URL}/stores` },
+      { name: store.name, url: pageUrl },
+    ]);
+
+    return new Response(buildHtml(`${store.name} | ${SITE_NAME}`, desc, img, pageUrl, "profile", storeBreadcrumb, body), {
       headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": getCacheHeader(path), ...corsHeaders },
     });
   }
