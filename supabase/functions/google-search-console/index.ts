@@ -82,10 +82,14 @@ Deno.serve(async (req) => {
   try {
     let saJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON");
     if (!saJson) throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON not configured");
-    // Strip wrapping quotes if the secret was stored as a quoted string
     saJson = saJson.trim();
-    if (saJson.startsWith('"') && saJson.endsWith('"')) {
-      saJson = JSON.parse(saJson);
+    // Debug: log first 20 chars to identify format issues
+    console.log("Secret starts with:", saJson.substring(0, 20), "length:", saJson.length);
+    // Try to find the JSON object within the string
+    const jsonStart = saJson.indexOf('{');
+    const jsonEnd = saJson.lastIndexOf('}');
+    if (jsonStart >= 0 && jsonEnd > jsonStart) {
+      saJson = saJson.substring(jsonStart, jsonEnd + 1);
     }
     const serviceAccount = JSON.parse(saJson);
 
