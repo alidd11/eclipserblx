@@ -482,6 +482,7 @@ export function AppRoutes() {
         <Route path="/admin/recruiter-commissions" element={<AdminRecruiterCommissions />} />
         <Route path="/admin/gdpr-compliance" element={<AdminGDPRCompliance />} />
         <Route path="/admin/botghost-setup" element={<AdminBotGhostSetup />} />
+        <Route path="/admin/portal-bot-setup" element={<AdminPortalBotSetup />} />
         <Route path="/admin/platform-ledger" element={<AdminPlatformLedger />} />
         <Route path="/admin/custom-domains" element={<AdminCustomDomains />} />
         {/* Global Guard routes (path-based instead of subdomain) */}
