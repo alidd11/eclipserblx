@@ -26,7 +26,8 @@ const BOT_FILES: Record<string, string> = {
   },
   "dependencies": {
     "discord.js": "^14.14.1",
-    "@supabase/supabase-js": "^2.39.0"
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.4.0"
   },
   "engines": {
     "node": ">=18.0.0"
