@@ -299,6 +299,28 @@ export default {
         return new Response(pwaRes.body, { status: pwaRes.status, headers: pwaHeaders });
       }
 
+      // Sitemap & robots.txt — proxy to edge function / return inline
+      if (path === "/sitemap.xml") {
+        var smRes = await fetch("https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/sitemap", {
+          headers: { "apikey": ANON_KEY, "Authorization": "Bearer " + ANON_KEY }
+        });
+        var smHeaders = new Headers(smRes.headers);
+        smHeaders.set("X-Eclipse-Worker", "sitemap");
+        smHeaders.set("Cache-Control", "public, max-age=3600, stale-while-revalidate=600");
+        return new Response(smRes.body, { status: smRes.status, headers: smHeaders });
+      }
+
+      if (path === "/robots.txt") {
+        var robotsTxt = "User-agent: *\\nAllow: /\\nDisallow: /admin\\nDisallow: /auth\\nDisallow: /seller\\nDisallow: /guard\\nDisallow: /cart\\nDisallow: /checkout\\nDisallow: /account\\n\\nSitemap: https://eclipserblx.com/sitemap.xml\\n";
+        return new Response(robotsTxt, {
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+            "Cache-Control": "public, max-age=86400",
+            "X-Eclipse-Worker": "robots"
+          }
+        });
+      }
+
       // Hashed assets — immutable cache (content-addressed filenames change per build)
       if (STATIC_ASSET_RE.test(path) || path.startsWith("/assets/")) {
         var assetRes = await fetchOrigin(request, "pass-asset");

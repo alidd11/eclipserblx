@@ -38,7 +38,7 @@ import {
 } from 'lucide-react';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
-import { StoreSchema } from '@/components/seo/StructuredData';
+import { StoreSchema, BreadcrumbSchema } from '@/components/seo/StructuredData';
 
 // Theme configurations
 const getThemeStyles = (theme: string, accentColor: string) => {
@@ -381,6 +381,11 @@ export default function StorePage() {
 
   return (
     <>
+    <BreadcrumbSchema items={[
+      { name: 'Home', url: 'https://eclipserblx.com/' },
+      { name: 'Stores', url: 'https://eclipserblx.com/stores' },
+      { name: store.name, url: `https://eclipserblx.com/store/${store.slug || storeSlug}` },
+    ]} />
     <StoreSchema
       name={store.name}
       description={store.description || undefined}

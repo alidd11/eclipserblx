@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { BreadcrumbSchema } from '@/components/seo/StructuredData';
 import { useCallback } from 'react';
 
 const CUSTOM_BANNER_CATEGORIES = new Set(['bots']);
@@ -294,6 +295,10 @@ export default function Categories() {
 
   return (
     <MainLayout>
+      <BreadcrumbSchema items={[
+        { name: 'Home', url: 'https://eclipserblx.com/' },
+        { name: 'Categories', url: 'https://eclipserblx.com/categories' },
+      ]} />
       <PullToRefresh onRefresh={handleRefresh}>
       <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <PageHeader
