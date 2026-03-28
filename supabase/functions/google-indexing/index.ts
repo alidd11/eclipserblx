@@ -86,8 +86,10 @@ Deno.serve(async (req) => {
     let saJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON");
     if (!saJson) throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON not configured");
     saJson = saJson.trim();
-    if (saJson.startsWith('"') && saJson.endsWith('"')) {
-      saJson = JSON.parse(saJson);
+    const jsonStart = saJson.indexOf('{');
+    const jsonEnd = saJson.lastIndexOf('}');
+    if (jsonStart >= 0 && jsonEnd > jsonStart) {
+      saJson = saJson.substring(jsonStart, jsonEnd + 1);
     }
     const serviceAccount = JSON.parse(saJson);
 
