@@ -325,7 +325,7 @@ Deno.serve(async (req) => {
       { name: product.name, url: pageUrl },
     ]);
 
-    return new Response(buildHtml(`${product.name} | ${SITE_NAME}`, desc, img, pageUrl, "product", priceExtra + jsonLd, body), {
+    return new Response(buildHtml(`${product.name} | ${SITE_NAME}`, desc, img, pageUrl, "product", priceExtra + jsonLd + breadcrumb, body), {
       headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": getCacheHeader(path), ...corsHeaders },
     });
   }
