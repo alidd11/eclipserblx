@@ -97,10 +97,10 @@ primary_region = "lhr"
 
   'index.js': `import { Client, GatewayIntentBits, ChannelType } from 'discord.js';
 import http from 'http';
-import { config } from './config.js';
-import { handleInteraction } from './handlers/interaction.js';
-import { handleDM } from './handlers/dm.js';
-import { handleMemberJoin } from './handlers/member-join.js';
+import { config } from './src/config.js';
+import { handleInteraction } from './src/handlers/interaction.js';
+import { handleDM } from './src/handlers/dm.js';
+import { handleMemberJoin } from './src/handlers/member-join.js';
 
 // Initialize Discord client
 const client = new Client({
