@@ -143,6 +143,19 @@ function buildProductJsonLd(product: any, url: string, storeName?: string): stri
   return `<script type="application/ld+json">${JSON.stringify(ld)}</script>`;
 }
 
+function buildBreadcrumbLd(items: { name: string; url: string }[]): string {
+  return `<script type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": items.map((item, i) => ({
+      "@type": "ListItem",
+      "position": i + 1,
+      "name": item.name,
+      "item": item.url,
+    })),
+  })}</script>`;
+}
+
 async function resolveStoreByHostname(hostname: string): Promise<any> {
   const url = Deno.env.get("SUPABASE_URL")!;
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -220,6 +233,77 @@ Deno.serve(async (req) => {
     });
   }
 
+  // Category pages — /categories/:slug
+  const catMatch = path.match(/^\/categories\/([a-zA-Z0-9][a-zA-Z0-9\-_]{0,200})$/);
+  if (catMatch) {
+    const catSlug = catMatch[1];
+    const category = await pgQuery("categories", "id,name,description,slug", `slug=eq.${catSlug}`);
+    const pageUrl = `${SITE_URL}/categories/${encodeURIComponent(catSlug)}`;
+    if (!category) return new Response(null, { status: 302, headers: { Location: pageUrl, ...corsHeaders } });
+
+    // Fetch top products in this category
+    const url = Deno.env.get("SUPABASE_URL")!;
+    const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    let categoryProducts: any[] = [];
+    try {
+      const prodRes = await fetch(
+        `${url}/rest/v1/products?select=name,price,images,product_number,stores(name)&category_id=eq.${category.id}&is_active=eq.true&order=created_at.desc&limit=8`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: "application/json" } }
+      );
+      if (prodRes.ok) categoryProducts = await prodRes.json();
+      else await prodRes.text();
+    } catch {}
+
+    const catDesc = category.description
+      ? category.description.replace(/<[^>]*>/g, "").slice(0, 200)
+      : `Browse ${category.name} assets on Eclipse — premium Roblox products at lower fees.`;
+
+    // Build product grid HTML for crawlers
+    let productGridHtml = "";
+    if (categoryProducts.length > 0) {
+      productGridHtml = `<div class="product-grid">${categoryProducts.map(p => {
+        const pImg = p.images?.[0] ? `<img src="${esc(p.images[0])}" alt="${esc(p.name)}" width="200" height="150" loading="lazy"/>` : "";
+        const pPrice = p.price != null ? `<p class="price">\u00A3${Number(p.price).toFixed(2)}</p>` : "";
+        const pLink = p.product_number ? `${SITE_URL}/products/${p.product_number}` : "#";
+        return `<a href="${esc(pLink)}" style="text-decoration:none;color:inherit"><article>${pImg}<h3>${esc(p.name)}</h3>${pPrice}</article></a>`;
+      }).join("")}</div>`;
+    }
+
+    const body = `<h2>${esc(category.name)}</h2><p>${esc(catDesc)}</p>${productGridHtml}`;
+
+    // ItemList JSON-LD
+    const itemListLd: any = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": category.name,
+      "url": pageUrl,
+      "numberOfItems": categoryProducts.length,
+      "itemListElement": categoryProducts.map((p, i) => ({
+        "@type": "ListItem",
+        "position": i + 1,
+        "name": p.name,
+        "url": p.product_number ? `${SITE_URL}/products/${p.product_number}` : pageUrl,
+      })),
+    };
+
+    // Breadcrumb JSON-LD
+    const breadcrumbLd = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": SITE_URL },
+        { "@type": "ListItem", "position": 2, "name": "Categories", "item": `${SITE_URL}/categories` },
+        { "@type": "ListItem", "position": 3, "name": category.name, "item": pageUrl },
+      ],
+    };
+
+    const extra = `<script type="application/ld+json">${JSON.stringify(itemListLd)}</script><script type="application/ld+json">${JSON.stringify(breadcrumbLd)}</script>`;
+
+    return new Response(buildHtml(`${category.name} | ${SITE_NAME}`, catDesc, DEFAULT_IMAGE, pageUrl, "website", extra, body), {
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=120, stale-while-revalidate=60", ...corsHeaders },
+    });
+  }
+
   // Product pages — numeric: /products/12345
   const pm = path.match(/^\/products\/(\d+)$/);
   if (pm) {
@@ -235,8 +319,13 @@ Deno.serve(async (req) => {
     const priceExtra = product.price != null ? `<meta property="product:price:amount" content="${product.price}"/><meta property="product:price:currency" content="GBP"/>` : "";
     const body = buildProductBody(product, storeName);
     const jsonLd = buildProductJsonLd(product, pageUrl, storeName);
+    const breadcrumb = buildBreadcrumbLd([
+      { name: "Home", url: SITE_URL },
+      { name: "Products", url: `${SITE_URL}/products` },
+      { name: product.name, url: pageUrl },
+    ]);
 
-    return new Response(buildHtml(`${product.name} | ${SITE_NAME}`, desc, img, pageUrl, "product", priceExtra + jsonLd, body), {
+    return new Response(buildHtml(`${product.name} | ${SITE_NAME}`, desc, img, pageUrl, "product", priceExtra + jsonLd + breadcrumb, body), {
       headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": getCacheHeader(path), ...corsHeaders },
     });
   }
@@ -274,7 +363,13 @@ Deno.serve(async (req) => {
     const img = store.banner_url || store.logo_url || DEFAULT_IMAGE;
     const body = buildStoreBody(store);
 
-    return new Response(buildHtml(`${store.name} | ${SITE_NAME}`, desc, img, pageUrl, "profile", "", body), {
+    const storeBreadcrumb = buildBreadcrumbLd([
+      { name: "Home", url: SITE_URL },
+      { name: "Stores", url: `${SITE_URL}/stores` },
+      { name: store.name, url: pageUrl },
+    ]);
+
+    return new Response(buildHtml(`${store.name} | ${SITE_NAME}`, desc, img, pageUrl, "profile", storeBreadcrumb, body), {
       headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": getCacheHeader(path), ...corsHeaders },
     });
   }

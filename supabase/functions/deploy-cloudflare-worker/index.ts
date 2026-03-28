@@ -37,6 +37,44 @@ const STATIC_OG_PATHS = new Set([
 const MAIN_DOMAINS = ["eclipserblx.com", "www.eclipserblx.com"];
 const RESERVED_SUBS = ["guard", "www", "api", "admin", "mail", "stores"];
 
+const SUPABASE_REST = "https://qlnbergwjfrmgkjhrbkj.supabase.co/rest/v1";
+
+// Routes eligible for data injection
+var DATA_INJECT_ROUTES = {
+  "/": true,
+  "/products": true,
+  "/categories": true,
+  "/featured": true
+};
+
+async function fetchInitialData(path) {
+  try {
+    var headers = { "apikey": ANON_KEY, "Authorization": "Bearer " + ANON_KEY, "Accept": "application/json" };
+    if (path === "/" || path === "/products" || path === "/featured") {
+      var res = await fetch(SUPABASE_REST + "/products?select=id,name,slug,product_number,price,images,average_rating,category_id,is_resellable,categories(name),stores(name,logo_url,is_verified,is_trusted,eclipse_plus_discount_enabled)&is_active=eq.true&order=created_at.desc&limit=12", { headers: headers });
+      if (!res.ok) { await res.text(); return null; }
+      var products = await res.json();
+      return { products: products, route: path, ts: Date.now() };
+    }
+    if (path === "/categories") {
+      var res = await fetch(SUPABASE_REST + "/categories?select=id,name,slug,description,icon,display_order,parent_id&order=display_order.asc&limit=50", { headers: headers });
+      if (!res.ok) { await res.text(); return null; }
+      var categories = await res.json();
+      return { categories: categories, route: path, ts: Date.now() };
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function injectDataIntoHtml(response, data) {
+  var html = await response.text();
+  var script = '<script>window.__INITIAL_DATA__=' + JSON.stringify(data).replace(/</g, "\\u003c") + ';<\/script>';
+  html = html.replace('</head>', script + '</head>');
+  return html;
+}
+
 function isStoreHostname(hostname) {
   if (MAIN_DOMAINS.includes(hostname)) return false;
   if (hostname.endsWith(".eclipserblx.com")) {
@@ -277,11 +315,25 @@ export default {
       }
 
       // OG handling for bots on known pages
-      var isDynamic = /^\\/(products|store)\\/[^\\/?#]+/.test(path);
+      var isDynamic = /^\\/(products|store|categories)\\/[^\\/?#]+/.test(path);
       var isStatic = STATIC_OG_PATHS.has(path);
       if (!isDynamic && !isStatic) return fetchOrigin(request, "pass-valid-no-og");
       if (isTestingTool(ua)) return fetchOrigin(request, "pass-test-tool");
-      if (!isBot(ua)) return fetchOrigin(request, "pass-human");
+      if (!isBot(ua)) {
+        // Data injection for human users on key routes
+        if (DATA_INJECT_ROUTES[path]) {
+          var data = await fetchInitialData(path);
+          if (data) {
+            var originRes = await fetchOrigin(request, "pass-human-injected");
+            var injectedHtml = await injectDataIntoHtml(originRes, data);
+            var injHeaders = new Headers(originRes.headers);
+            injHeaders.set("X-Eclipse-Worker", "data-injected");
+            injHeaders.set("Cache-Control", "public, max-age=60, stale-while-revalidate=30");
+            return new Response(injectedHtml, { status: originRes.status, headers: injHeaders });
+          }
+        }
+        return fetchOrigin(request, "pass-human");
+      }
 
       // Bot detected on a relevant page — serve OG
       var ogRes = await serveOg(path, null);
