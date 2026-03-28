@@ -151,6 +151,7 @@ function toOriginUrl(location) {
 async function fetchOrigin(request, tag) {
   var url = new URL(request.url);
   var hostname = url.hostname;
+  var path = url.pathname;
 
   // Always proxy to explicit origin host (never to incoming host)
   var originUrl = ORIGIN_URL + url.pathname + url.search;
@@ -171,7 +172,22 @@ async function fetchOrigin(request, tag) {
   var h = new Headers(r.headers);
   h.set("X-Eclipse-Worker", tag);
   h.delete("Location");
-  return new Response(r.body, { status: r.status >= 300 && r.status < 400 ? 200 : r.status, headers: h });
+  var finalStatus = r.status >= 300 && r.status < 400 ? 200 : r.status;
+
+  // Add noindex header for private routes
+  if (isNoindexRoute(path)) {
+    h.set("X-Robots-Tag", "noindex, nofollow");
+  }
+
+  // Inject correct canonical into HTML responses
+  var ct = (h.get("Content-Type") || "");
+  if (ct.includes("text/html")) {
+    var body = await r.text();
+    body = injectCanonical(body, path);
+    return new Response(body, { status: finalStatus, headers: h });
+  }
+
+  return new Response(r.body, { status: finalStatus, headers: h });
 }
 
 const DEAD_PREFIXES = [
