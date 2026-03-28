@@ -1880,6 +1880,7 @@ export async function handleGlobalBans(interaction) {
  * One-off script to register slash commands with Discord.
  * Run: node src/register-commands.js
  */
+import 'dotenv/config';
 import { config } from './config.js';
 
 const DISCORD_API = 'https://discord.com/api/v10';
