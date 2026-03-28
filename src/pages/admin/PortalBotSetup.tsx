@@ -18,10 +18,10 @@ const BOT_FILES: Record<string, string> = {
   "name": "eclipse-portal-bot",
   "version": "1.0.0",
   "description": "Persistent Eclipse Portal Bot — gateway-based Discord bot",
-  "main": "src/index.js",
+  "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node index.js",
     "register": "node src/register-commands.js"
   },
   "dependencies": {
