@@ -5,6 +5,7 @@ import { ScheduledAnnouncementCard } from '@/components/seller/ScheduledAnnounce
 import { DiscordRolePingsCard } from '@/components/seller/DiscordRolePingsCard';
 import { DiscordServerOverview } from '@/components/seller/DiscordServerOverview';
 import { DiscordNotificationsTab } from '@/components/seller/discord/DiscordNotificationsTab';
+import { CommandPermissionsTab } from '@/components/seller/discord/CommandPermissionsTab';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
