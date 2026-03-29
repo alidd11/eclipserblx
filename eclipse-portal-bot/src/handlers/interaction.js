@@ -124,6 +124,16 @@ export async function handleInteraction(interaction) {
     if (commandName === 'showcase') {
       setCooldown(commandName, userId);
       const serverContext = await getServerContext(interaction.guildId);
+      // Check permissions for seller servers
+      if (!serverContext.isMainServer) {
+        const allowed = await hasCommandPermission(interaction, commandName, false);
+        if (!allowed) {
+          return interaction.reply({
+            embeds: [{ color: 0xf59e0b, description: '\u26D4 You don\u2019t have the required role to use this command here.' }],
+            ephemeral: true,
+          });
+        }
+      }
       return handleShowcaseCommand(interaction, serverContext);
     }
 
@@ -142,6 +152,16 @@ export async function handleInteraction(interaction) {
     setCooldown(commandName, userId);
 
     const serverContext = await getServerContext(interaction.guildId);
+
+    // Check permissions for seller servers (after deferring)
+    if (!serverContext.isMainServer && commandName !== 'help') {
+      const allowed = await hasCommandPermission(interaction, commandName, false);
+      if (!allowed) {
+        return interaction.editReply({
+          embeds: [{ color: 0xf59e0b, description: '\u26D4 You don\u2019t have the required role to use this command here.' }],
+        });
+      }
+    }
 
     switch (commandName) {
       case 'link': return handleLink(interaction, serverContext);
