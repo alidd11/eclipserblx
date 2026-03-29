@@ -20,6 +20,7 @@ import {
   XCircle,
   Bot,
   Hash,
+  Package,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -32,6 +33,13 @@ interface ChannelConfig {
 }
 
 const CHANNELS: ChannelConfig[] = [
+  {
+    key: 'product_feed_channel_id',
+    label: 'Product Feed',
+    description: 'Auto-post new product listings when they go live on the marketplace',
+    icon: <Package className="h-4 w-4 text-cyan-500" />,
+    placeholder: 'Channel ID for product feed auto-posts',
+  },
   {
     key: 'orders_channel_id',
     label: 'New Orders',

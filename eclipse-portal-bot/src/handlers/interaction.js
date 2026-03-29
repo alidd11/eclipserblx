@@ -20,13 +20,14 @@ import { handleGlobalBans } from '../commands/globalbans.js';
 import { handleDaily } from '../commands/daily.js';
 import { handleLeaderboard } from '../commands/leaderboard.js';
 import { handleBalance } from '../commands/balance.js';
+import { handleNewDrops } from '../commands/newdrops.js';
 
 // Commands that need deferral (do DB work before responding)
 const DEFERRED_COMMANDS = new Set([
   'link', 'verify', 'profile', 'purchases', 'retrieve',
   'getrole', 'roles', 'store', 'unlink', 'walletbalance',
   'update', 'globalban', 'globalunban', 'globalbans',
-  'daily', 'leaderboard', 'balance',
+  'daily', 'leaderboard', 'balance', 'newdrops',
 ]);
 
 // Commands that use ephemeral replies
@@ -159,6 +160,7 @@ export async function handleInteraction(interaction) {
       case 'daily': return handleDaily(interaction, serverContext);
       case 'leaderboard': return handleLeaderboard(interaction, serverContext);
       case 'balance': return handleBalance(interaction, serverContext);
+      case 'newdrops': return handleNewDrops(interaction, serverContext);
       default:
         console.log(`[interaction] Unknown command: ${commandName}`);
         return interaction.editReply({ content: `Unknown command: ${commandName}` });
