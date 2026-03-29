@@ -119,6 +119,7 @@ const navGroups: NavGroup[] = [
       { title: 'Staff Directory', icon: IdCard, href: '/admin/staff-directory', permissions: ['view_staff_directory'] },
       { title: 'Staff Activity', icon: Activity, href: '/admin/staff-activity', permissions: ['view_staff_activity'] },
       { title: 'Duty Logs', icon: Activity, href: '/admin/duty-logs', permissions: [] },
+      { title: 'Internal Notes', icon: FileText, href: '/admin/internal-notes', permissions: [] },
       { title: 'Staff Documents', icon: FolderOpen, href: '/admin/staff-documents', permissions: ['manage_staff'], dividerAfter: true },
       { title: 'Job Channels', icon: Megaphone, href: '/admin/job-channels', permissions: ['view_job_channels'] },
       { title: 'Applications', icon: FileText, href: '/admin/applications', permissions: ['view_applications'] },

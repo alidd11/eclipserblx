@@ -148,6 +148,10 @@ const BotCommandsPage = lazyWithRetry(() => import("@/pages/bot/BotCommands"));
 const BotRolesPage = lazyWithRetry(() => import("@/pages/bot/BotRoles"));
 const BotActionsPage = lazyWithRetry(() => import("@/pages/bot/BotActions"));
 const BotSettingsPage = lazyWithRetry(() => import("@/pages/bot/BotSettings"));
+const BotModerationPage = lazyWithRetry(() => import("@/pages/bot/BotModeration"));
+const BotAnalyticsPage = lazyWithRetry(() => import("@/pages/bot/BotAnalytics"));
+const BotLogsPage = lazyWithRetry(() => import("@/pages/bot/BotLogs"));
+const AdminInternalNotes = lazyWithRetry(() => import("@/pages/admin/InternalNotes"));
 const AdminRevenueHub = lazyWithRetry(() => import("@/pages/admin/RevenueHub"));
 const AdminPayoutsHub = lazyWithRetry(() => import("@/pages/admin/PayoutsHub"));
 const AdminDisputesRefundsHub = lazyWithRetry(() => import("@/pages/admin/DisputesRefundsHub"));
@@ -497,9 +501,13 @@ export function AppRoutes() {
         <Route path="/bot" element={<BotOverviewPage />} />
         <Route path="/bot/servers" element={<BotServersPage />} />
         <Route path="/bot/commands" element={<BotCommandsPage />} />
+        <Route path="/bot/moderation" element={<BotModerationPage />} />
         <Route path="/bot/roles" element={<BotRolesPage />} />
         <Route path="/bot/actions" element={<BotActionsPage />} />
+        <Route path="/bot/analytics" element={<BotAnalyticsPage />} />
         <Route path="/bot/settings" element={<BotSettingsPage />} />
+        <Route path="/bot/logs" element={<BotLogsPage />} />
+        <Route path="/admin/internal-notes" element={<AdminInternalNotes />} />
         <Route path="/admin/platform-ledger" element={<AdminPlatformLedger />} />
         <Route path="/admin/custom-domains" element={<AdminCustomDomains />} />
         {/* Global Guard routes (path-based instead of subdomain) */}

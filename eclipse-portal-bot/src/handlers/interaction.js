@@ -22,6 +22,12 @@ import { handleDaily } from '../commands/daily.js';
 import { handleLeaderboard } from '../commands/leaderboard.js';
 import { handleBalance } from '../commands/balance.js';
 import { handleNewDrops } from '../commands/newdrops.js';
+import { handleBan } from '../commands/ban.js';
+import { handleKick } from '../commands/kick.js';
+import { handleTimeout } from '../commands/timeout.js';
+import { handleUnban } from '../commands/unban.js';
+import { handleModlog } from '../commands/modlog.js';
+import { handleAfk } from '../commands/afk.js';
 
 // Commands that need deferral (do DB work before responding)
 const DEFERRED_COMMANDS = new Set([
@@ -29,12 +35,13 @@ const DEFERRED_COMMANDS = new Set([
   'getrole', 'roles', 'store', 'unlink', 'walletbalance',
   'update', 'globalban', 'globalunban', 'globalbans',
   'daily', 'leaderboard', 'balance', 'newdrops',
+  'ban', 'kick', 'timeout', 'unban', 'modlog', 'afk',
 ]);
 
 // Commands that use ephemeral replies
 const EPHEMERAL_COMMANDS = new Set([
   'retrieve', 'walletbalance', 'update', 'globalban',
-  'globalunban', 'globalbans', 'balance',
+  'globalunban', 'globalbans', 'balance', 'modlog',
 ]);
 
 // Commands exempt from cooldown checks
@@ -182,6 +189,12 @@ export async function handleInteraction(interaction) {
       case 'leaderboard': return handleLeaderboard(interaction, serverContext);
       case 'balance': return handleBalance(interaction, serverContext);
       case 'newdrops': return handleNewDrops(interaction, serverContext);
+      case 'ban': return handleBan(interaction, serverContext);
+      case 'kick': return handleKick(interaction, serverContext);
+      case 'timeout': return handleTimeout(interaction, serverContext);
+      case 'unban': return handleUnban(interaction, serverContext);
+      case 'modlog': return handleModlog(interaction, serverContext);
+      case 'afk': return handleAfk(interaction, serverContext);
       default:
         console.log(`[interaction] Unknown command: ${commandName}`);
         return interaction.editReply({ content: `Unknown command: ${commandName}` });

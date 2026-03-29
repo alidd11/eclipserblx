@@ -1,7 +1,8 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
-  LayoutDashboard, Server, Code, Shield, Zap, Settings, Bot, X
+  LayoutDashboard, Server, Code, Shield, Zap, Settings, Bot, X,
+  Gavel, BarChart3, ScrollText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -14,9 +15,12 @@ const navItems = [
   { title: 'Overview', icon: LayoutDashboard, href: '/bot' },
   { title: 'Servers', icon: Server, href: '/bot/servers' },
   { title: 'Commands', icon: Code, href: '/bot/commands' },
+  { title: 'Moderation', icon: Gavel, href: '/bot/moderation' },
   { title: 'Roles', icon: Shield, href: '/bot/roles' },
   { title: 'Actions', icon: Zap, href: '/bot/actions' },
-  { title: 'Settings & Logs', icon: Settings, href: '/bot/settings' },
+  { title: 'Analytics', icon: BarChart3, href: '/bot/analytics' },
+  { title: 'Settings', icon: Settings, href: '/bot/settings' },
+  { title: 'Logs', icon: ScrollText, href: '/bot/logs' },
 ];
 
 export function BotDashboardSidebar({ onClose }: BotDashboardSidebarProps) {

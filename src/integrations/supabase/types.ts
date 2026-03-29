@@ -8861,6 +8861,108 @@ export type Database = {
           },
         ]
       }
+      store_team_permissions: {
+        Row: {
+          created_at: string
+          id: string
+          permission: string
+          role: string
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          permission: string
+          role: string
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          permission?: string
+          role?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_team_permissions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_team_permissions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_welcome_embeds: {
+        Row: {
+          channel_id: string | null
+          color: string | null
+          created_at: string
+          description: string | null
+          enabled: boolean
+          fields: Json | null
+          footer_text: string | null
+          id: string
+          image_url: string | null
+          store_id: string
+          thumbnail_url: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          channel_id?: string | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          fields?: Json | null
+          footer_text?: string | null
+          id?: string
+          image_url?: string | null
+          store_id: string
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          channel_id?: string | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          fields?: Json | null
+          footer_text?: string | null
+          id?: string
+          image_url?: string | null
+          store_id?: string
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_welcome_embeds_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_welcome_embeds_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores: {
         Row: {
           about_content: string | null

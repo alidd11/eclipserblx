@@ -48,7 +48,53 @@ export async function handleMemberJoin(member) {
     }
 
     embed.setFooter({ text: 'Eclipse Marketplace', iconURL: ECLIPSE_ICON });
-    await member.send({ embeds: [embed] });
+    await member.send({ embeds: [embed] }).catch(() => {});
+    console.log(`[WELCOME] Sent welcome DM to ${member.user.tag}`);
+
+    // Check for store welcome embed (channel-based)
+    if (store) {
+      try {
+        const { data: welcomeEmbed } = await supabase
+          .from('store_welcome_embeds')
+          .select('*')
+          .eq('store_id', store.id)
+          .eq('enabled', true)
+          .maybeSingle();
+
+        if (welcomeEmbed && welcomeEmbed.channel_id) {
+          const channel = member.guild.channels.cache.get(welcomeEmbed.channel_id);
+          if (channel) {
+            const desc = (welcomeEmbed.description || '')
+              .replace(/\{user\}/g, member.user.username)
+              .replace(/\{server\}/g, member.guild.name);
+
+            const channelEmbed = new EmbedBuilder()
+              .setTitle(welcomeEmbed.title || 'Welcome!')
+              .setDescription(desc)
+              .setColor(parseInt((welcomeEmbed.color || '#7C3AED').replace('#', ''), 16))
+              .setTimestamp();
+
+            if (welcomeEmbed.thumbnail_url) channelEmbed.setThumbnail(welcomeEmbed.thumbnail_url);
+            if (welcomeEmbed.image_url) channelEmbed.setImage(welcomeEmbed.image_url);
+            if (welcomeEmbed.footer_text) channelEmbed.setFooter({ text: welcomeEmbed.footer_text });
+
+            const fields = welcomeEmbed.fields || [];
+            if (Array.isArray(fields)) {
+              fields.forEach(f => {
+                if (f.name && f.value) {
+                  channelEmbed.addFields({ name: f.name, value: f.value, inline: !!f.inline });
+                }
+              });
+            }
+
+            await channel.send({ content: `Welcome <@${member.id}>!`, embeds: [channelEmbed] });
+            console.log(`[WELCOME] Sent channel welcome embed for ${member.user.tag}`);
+          }
+        }
+      } catch (err) {
+        console.error('[WELCOME] Channel embed error:', err.message);
+      }
+    }
     console.log(`[WELCOME] Sent welcome DM to ${member.user.tag}`);
   } catch (error) {
     if (error.code === 50007) {

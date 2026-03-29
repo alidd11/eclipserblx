@@ -5,6 +5,7 @@ import { config } from './src/config.js';
 import { handleInteraction } from './src/handlers/interaction.js';
 import { handleDM } from './src/handlers/dm.js';
 import { handleMemberJoin } from './src/handlers/member-join.js';
+import { handleAfkListener } from './src/handlers/afk-listener.js';
 import { logBotError } from './src/utils/error-logger.js';
 
 // Track uptime and stats
@@ -33,11 +34,14 @@ client.on('interactionCreate', (interaction) => {
   handleInteraction(interaction);
 });
 
-// Route DMs (modmail)
+// Route DMs (modmail) + AFK listener
 client.on('messageCreate', (message) => {
   if (message.author.bot) return;
   if (message.channel.type === ChannelType.DM) {
     handleDM(message);
+  } else {
+    // AFK listener for guild messages
+    handleAfkListener(message);
   }
 });
 
