@@ -62,11 +62,6 @@ export default function BotSettings() {
             </Suspense>
           </TabsContent>
 
-          <TabsContent value="portal-bot">
-            <Suspense fallback={<TabLoader />}>
-              <PortalBotContent />
-            </Suspense>
-          </TabsContent>
         </Tabs>
       </div>
     </BotDashboardLayout>
