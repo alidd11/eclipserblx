@@ -74,7 +74,7 @@ export function WelcomeEmbedBuilder() {
       setThumbnailUrl(embedSettings.thumbnail_url || '');
       setImageUrl(embedSettings.image_url || '');
       setFooterText(embedSettings.footer_text || '');
-      setFields((embedSettings.fields as EmbedField[]) || []);
+      setFields((embedSettings.fields as unknown as EmbedField[]) || []);
     }
   }, [embedSettings]);
 
