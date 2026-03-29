@@ -1,88 +1,94 @@
 
 
-# Eclipse Portal Bot — Admin Control Dashboard
+# Standalone Bot Dashboard — Wick/Dyno Style
 
-## What this builds
+## What changes
 
-A new admin page (`/admin/bot-dashboard`) that gives you full visibility and control over the Eclipse Portal Bot directly from the admin panel — no SSH or Discord Developer Portal needed.
+Transform the bot dashboard from a card inside the admin panel into its own standalone-feeling section at `/bot` (or `/bot-dashboard`) with dedicated layout, sidebar, and branding — similar to how Wick Bot or Dyno Bot have their own web dashboards.
 
-## Dashboard sections
+## New layout and routes
 
-### 1. Bot Status & Health
-- Calls the bot's health endpoint (`/health`) to show uptime, connected guilds count, and online/offline status
-- Manual "Refresh Status" button
-- Stores the bot's host URL in a new `bot_settings` table
+### Route structure
+```text
+/bot                  → Overview (status, stats, quick actions)
+/bot/servers          → Server list + per-server management
+/bot/commands         → Command toggle/config
+/bot/roles            → Role management
+/bot/actions          → Send messages / embeds
+/bot/settings         → Bot settings + error logs
+```
 
-### 2. Connected Servers
-- Lists all guilds the bot is in (fetched via a new edge function that queries Discord API using the bot token)
-- Shows server name, member count, icon, and whether a store is linked
-- Quick link to configure store-to-server mapping
+### Standalone layout: `BotDashboardLayout`
+- Its own sidebar with bot branding (Eclipse Bot logo/icon, purple accent)
+- Dark theme by default (matching Discord aesthetic)
+- Own top header with bot name, status indicator (green dot), and user avatar
+- No admin sidebar, no admin header — completely independent feel
+- Still uses `useAdminAuth` for authentication (admin-only access)
+- Mobile: collapsible sidebar with hamburger menu
+- Safe-area support for PWA
 
-### 3. Role Configuration Manager
-- Full CRUD for `discord_role_configs` entries — create, edit, delete auto-assign roles
-- Filter by store / server
-- Configure: role ID, role name, min order count, auto-assign on purchase toggle
-- Also manage the main server role IDs (Customer, Loyal Customer, Eclipse+, Store Creator, Verified Seller) stored as bot env vars — surfaced as editable settings
+### Sidebar navigation
+- Overview (status + stats)
+- Servers (list + manage)
+- Commands (toggle on/off, configure)
+- Roles (manage role configs)
+- Actions (send messages, embeds)
+- Settings & Logs
 
-### 4. Command Registry
-- View all 15 registered slash commands
-- "Re-register Commands" button that calls a new edge function to PUT commands via Discord API
-- Toggle commands on/off (maintained in a `bot_command_settings` table)
+## Pages to build
 
-### 5. Bot Actions
-- **Send Announcement**: compose and send a message to a selected channel in a selected server
-- **Trigger Role Sync**: manually sync roles for a specific user (same as `/update` command but from the dashboard)
-- **View Modmail**: link to existing modmail/ticket pages
+### 1. Bot Overview (`/bot`)
+- Large status hero: online/offline badge, uptime, ping, memory (existing `BotStatusCard` data)
+- Stats grid: commands processed, errors, reconnects, servers count
+- Quick action buttons: send announcement, refresh status
+- Recent errors preview (last 3)
 
-### 6. Bot Settings
-- Edit the bot's environment config (site URL, webhook URL, main guild ID, role IDs) stored in a `bot_settings` table
-- These are reference values for the dashboard; the actual bot reads from its `.env` file on the host
+### 2. Server Management (`/bot/servers`)
+- Server list with icons, member counts
+- Click into a server to see channels, roles, and command permissions for that server
 
-## Database changes
+### 3. Commands (`/bot/commands`)
+- Full list of all 19+ commands with toggle switches
+- Group by category (support, community, moderation, fun)
+- Existing `BotCommandsCard` logic extracted into full page
 
-**New table: `bot_settings`**
-- `id` (uuid, PK)
-- `key` (text, unique) — e.g. `bot_host_url`, `main_guild_id`, `customer_role_id`
-- `value` (text)
-- `updated_at` (timestamptz)
-- RLS: admin-only read/write
+### 4. Roles (`/bot/roles`)
+- Existing `BotRolesCard` logic as a full-page view
 
-**New table: `bot_command_settings`**
-- `id` (uuid, PK)
-- `command_name` (text, unique)
-- `enabled` (boolean, default true)
-- `updated_at` (timestamptz)
-- RLS: admin-only read/write
+### 5. Actions (`/bot/actions`)
+- Embed builder (existing `BotActionsCard` logic) with live preview
+- Server/channel picker
 
-## New edge functions
+### 6. Settings & Logs (`/bot/settings`)
+- Bot settings from `BotSettingsCard`
+- Error logs table from `BotErrorLogsCard`
 
-1. **`bot-control`** — Proxies requests to the Discord API using the bot token (stored as a secret). Supports actions:
-   - `list-guilds` — GET `/users/@me/guilds`
-   - `register-commands` — PUT global slash commands
-   - `send-message` — POST message to a channel
-   - `guild-channels` — GET channels for a guild
-   - `sync-roles` — trigger role sync for a user in a guild
-
-2. Uses `DISCORD_CUSTOMER_BOT_TOKEN` secret (already configured)
-
-## Files to create/modify
+## Files
 
 | File | Action |
-|---|---|
-| `src/pages/admin/BotDashboard.tsx` | New — main dashboard page |
-| `src/components/admin/bot/BotStatusCard.tsx` | New — health/uptime display |
-| `src/components/admin/bot/BotServersCard.tsx` | New — connected guilds list |
-| `src/components/admin/bot/BotRolesCard.tsx` | New — role config CRUD |
-| `src/components/admin/bot/BotCommandsCard.tsx` | New — command registry |
-| `src/components/admin/bot/BotActionsCard.tsx` | New — announcement/sync actions |
-| `src/components/admin/bot/BotSettingsCard.tsx` | New — env/config editor |
-| `supabase/functions/bot-control/index.ts` | New — Discord API proxy |
-| `src/App.tsx` | Add route `/admin/bot-dashboard` |
-| `src/components/admin/AdminSidebar.tsx` | Add nav link |
-| Migration | Create `bot_settings` and `bot_command_settings` tables |
+|------|--------|
+| `src/components/bot-dashboard/BotDashboardLayout.tsx` | New — standalone layout shell |
+| `src/components/bot-dashboard/BotDashboardSidebar.tsx` | New — dedicated sidebar |
+| `src/pages/bot/BotOverview.tsx` | New — overview page |
+| `src/pages/bot/BotServers.tsx` | New — servers page |
+| `src/pages/bot/BotCommands.tsx` | New — commands page |
+| `src/pages/bot/BotRoles.tsx` | New — roles page |
+| `src/pages/bot/BotActions.tsx` | New — actions/embed builder page |
+| `src/pages/bot/BotSettings.tsx` | New — settings + logs page |
+| `src/components/AppRoutes.tsx` | Add `/bot/*` routes |
+| `src/pages/admin/AdminBotDashboard.tsx` | Redirect to `/bot` |
+| `src/components/admin/AdminSidebar.tsx` | Update link to point to `/bot` |
 
-## Access control
+## Authentication
 
-- Restricted to `admin` role only (passed via `requiredRoles={['admin']}` on AdminLayout)
-- Edge function validates admin JWT before executing any Discord API calls
+- `BotDashboardLayout` uses the same `useAdminAuth` hook
+- Only users with `admin` role can access
+- No new auth flow needed — just a different layout wrapper
+
+## Design direction
+
+- Dark card-based UI with purple/violet accents (matching the bot's Discord branding)
+- Discord-inspired aesthetic: dark backgrounds, rounded cards, status indicators
+- Responsive: works on mobile with collapsible sidebar
+- Reuses all existing edge function calls (`bot-control`) — no backend changes needed
 
