@@ -1218,15 +1218,22 @@ export async function handleGetRole(interaction, serverContext) {
     );
   }
 
-  // Execute role operations
+  // Fetch member ONCE before role operations
+  const guild = interaction.guild;
+  let member;
+  try {
+    member = await guild.members.fetch(discordUserId);
+  } catch (e) {
+    console.error('[getrole] Failed to fetch member:', e.message);
+    return publicReply(interaction, [{ color: 0xef4444, title: '❌ Error', description: 'Could not fetch your server membership. Please try again.', footer: { text: branding.footer } }]);
+  }
+
   const rolesAssigned = [];
   const rolesFailed = [];
-  const guild = interaction.guild;
 
   await Promise.all([
     ...rolesToAssign.map(async role => {
       try {
-        const member = await guild.members.fetch(discordUserId);
         await member.roles.add(role.id);
         rolesAssigned.push(role.name);
       } catch (e) {
@@ -1236,7 +1243,6 @@ export async function handleGetRole(interaction, serverContext) {
     }),
     ...rolesToRemove.map(async role => {
       try {
-        const member = await guild.members.fetch(discordUserId);
         await member.roles.remove(role.id);
       } catch {}
     }),
