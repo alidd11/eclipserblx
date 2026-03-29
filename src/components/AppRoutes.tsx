@@ -498,8 +498,8 @@ export function AppRoutes() {
         <Route path="/admin/recruiter-payouts" element={<AdminRecruiterPayouts />} />
         <Route path="/admin/recruiter-commissions" element={<AdminRecruiterCommissions />} />
         <Route path="/admin/gdpr-compliance" element={<AdminGDPRCompliance />} />
-        <Route path="/admin/botghost-setup" element={<AdminBotGhostSetup />} />
-        <Route path="/admin/portal-bot-setup" element={<AdminPortalBotSetup />} />
+        <Route path="/admin/botghost-setup" element={<Navigate to="/bot/settings?tab=botghost" replace />} />
+        <Route path="/admin/portal-bot-setup" element={<Navigate to="/bot/settings?tab=portal-bot" replace />} />
         <Route path="/admin/bot-control" element={<AdminBotDashboard />} />
         {/* Standalone bot dashboard */}
         <Route path="/bot" element={<BotOverviewPage />} />
