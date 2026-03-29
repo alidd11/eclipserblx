@@ -20,7 +20,6 @@ function TabLoader() {
 const tabs = [
   { value: 'general', label: 'General', icon: Settings },
   { value: 'license-codes', label: 'License Codes', icon: Key },
-  { value: 'portal-bot', label: 'Portal Bot', icon: Code },
 ];
 
 export default function BotSettings() {
