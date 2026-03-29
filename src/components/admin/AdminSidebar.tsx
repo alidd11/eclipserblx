@@ -158,6 +158,7 @@ const navGroups: NavGroup[] = [
       { title: 'GDPR Compliance', icon: Scale, href: '/admin/gdpr-compliance', permissions: [], roles: ['admin'] },
       { title: 'BotGhost Setup', icon: Bot, href: '/admin/botghost-setup', permissions: [], roles: ['admin'] },
       { title: 'Portal Bot Setup', icon: Bot, href: '/admin/portal-bot-setup', permissions: [], roles: ['admin'] },
+      { title: 'Bot Control', icon: Bot, href: '/admin/bot-control', permissions: [], roles: ['admin'] },
       { title: 'Settings', icon: Settings, href: '/admin/settings', permissions: [] },
       { title: 'Help', icon: HelpCircle, href: '/admin/help', permissions: [] },
     ],
