@@ -189,6 +189,12 @@ export async function handleInteraction(interaction) {
       case 'leaderboard': return handleLeaderboard(interaction, serverContext);
       case 'balance': return handleBalance(interaction, serverContext);
       case 'newdrops': return handleNewDrops(interaction, serverContext);
+      case 'ban': return handleBan(interaction, serverContext);
+      case 'kick': return handleKick(interaction, serverContext);
+      case 'timeout': return handleTimeout(interaction, serverContext);
+      case 'unban': return handleUnban(interaction, serverContext);
+      case 'modlog': return handleModlog(interaction, serverContext);
+      case 'afk': return handleAfk(interaction, serverContext);
       default:
         console.log(`[interaction] Unknown command: ${commandName}`);
         return interaction.editReply({ content: `Unknown command: ${commandName}` });

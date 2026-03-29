@@ -34,11 +34,14 @@ client.on('interactionCreate', (interaction) => {
   handleInteraction(interaction);
 });
 
-// Route DMs (modmail)
+// Route DMs (modmail) + AFK listener
 client.on('messageCreate', (message) => {
   if (message.author.bot) return;
   if (message.channel.type === ChannelType.DM) {
     handleDM(message);
+  } else {
+    // AFK listener for guild messages
+    handleAfkListener(message);
   }
 });
 
