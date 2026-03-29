@@ -3441,6 +3441,51 @@ export type Database = {
         }
         Relationships: []
       }
+      guild_command_permissions: {
+        Row: {
+          allowed_role_ids: string[]
+          command_name: string
+          created_at: string
+          guild_id: string
+          id: string
+          store_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          allowed_role_ids?: string[]
+          command_name: string
+          created_at?: string
+          guild_id: string
+          id?: string
+          store_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          allowed_role_ids?: string[]
+          command_name?: string
+          created_at?: string
+          guild_id?: string
+          id?: string
+          store_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_command_permissions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guild_command_permissions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       identity_verifications: {
         Row: {
           created_at: string

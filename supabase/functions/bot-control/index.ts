@@ -225,6 +225,36 @@ Deno.serve(async (req) => {
         }
       }
 
+      case "guild-roles": {
+        const { guild_id } = body;
+        if (!guild_id) {
+          return new Response(
+            JSON.stringify({ error: "guild_id required" }),
+            { status: 400, headers: corsHeaders }
+          );
+        }
+        const res = await fetch(
+          `${DISCORD_API}/guilds/${guild_id}/roles`,
+          { headers: { Authorization: `Bot ${BOT_TOKEN}` } }
+        );
+        const roles = await res.json();
+        // Filter out @everyone and bot roles, sort by position desc
+        const filteredRoles = Array.isArray(roles)
+          ? roles
+              .filter((r: any) => r.name !== "@everyone" && !r.managed)
+              .sort((a: any, b: any) => b.position - a.position)
+              .map((r: any) => ({
+                id: r.id,
+                name: r.name,
+                color: r.color,
+                position: r.position,
+              }))
+          : [];
+        return new Response(JSON.stringify({ roles: filteredRoles }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       default:
         return new Response(
           JSON.stringify({ error: `Unknown action: ${action}` }),
