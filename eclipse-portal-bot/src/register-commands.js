@@ -51,6 +51,10 @@ const commands = [
     options: [{ name: 'user', description: 'Discord user ID or @mention', type: 3, required: true }],
   },
   { name: 'globalbans', description: 'View your active global bans' },
+  // New commands
+  { name: 'daily', description: 'Claim your daily XP reward (streak bonuses!)' },
+  { name: 'leaderboard', description: 'View the Eclipse XP leaderboard' },
+  { name: 'balance', description: 'View your Eclipse credits and XP in one place' },
 ];
 
 async function registerCommands() {
@@ -79,8 +83,8 @@ async function registerCommands() {
   }
 
   const registered = await res.json();
-  console.log(`✅ Successfully registered ${registered.length} commands globally!`);
-  registered.forEach(cmd => console.log(`  /${cmd.name} — ${cmd.description}`));
+  console.log(`\u2705 Successfully registered ${registered.length} commands globally!`);
+  registered.forEach(cmd => console.log(`  /${cmd.name} \u2014 ${cmd.description}`));
 }
 
 registerCommands().catch(console.error);
