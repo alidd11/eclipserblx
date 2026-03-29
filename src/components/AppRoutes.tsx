@@ -493,6 +493,13 @@ export function AppRoutes() {
         <Route path="/admin/botghost-setup" element={<AdminBotGhostSetup />} />
         <Route path="/admin/portal-bot-setup" element={<AdminPortalBotSetup />} />
         <Route path="/admin/bot-control" element={<AdminBotDashboard />} />
+        {/* Standalone bot dashboard */}
+        <Route path="/bot" element={<BotOverviewPage />} />
+        <Route path="/bot/servers" element={<BotServersPage />} />
+        <Route path="/bot/commands" element={<BotCommandsPage />} />
+        <Route path="/bot/roles" element={<BotRolesPage />} />
+        <Route path="/bot/actions" element={<BotActionsPage />} />
+        <Route path="/bot/settings" element={<BotSettingsPage />} />
         <Route path="/admin/platform-ledger" element={<AdminPlatformLedger />} />
         <Route path="/admin/custom-domains" element={<AdminCustomDomains />} />
         {/* Global Guard routes (path-based instead of subdomain) */}
