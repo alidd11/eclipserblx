@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bot, Megaphone, Bell, AtSign, Shield } from 'lucide-react';
+import { Bot, Megaphone, Bell, AtSign, Shield, Settings } from 'lucide-react';
 
 const tabs = [
   { value: 'bot', label: 'Bot', icon: Bot },
