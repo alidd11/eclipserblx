@@ -55,7 +55,7 @@ const navGroups: NavGroup[] = [
       { title: 'Discord Polls', icon: BarChart3, href: '/admin/discord-polls', permissions: ['manage_discord_engagement'] },
       { title: 'QOTD', icon: MessageCircle, href: '/admin/discord-qotd', permissions: ['manage_discord_engagement'] },
       { title: 'Promotions', icon: Tags, href: '/admin/promotions', permissions: ['manage_discounts'], dividerAfter: true },
-      { title: 'Bot Servers', icon: Bell, href: '/admin/bot-servers', permissions: ['view_bot_codes'] },
+      
     ],
   },
   {
@@ -155,11 +155,8 @@ const navGroups: NavGroup[] = [
       { title: 'Roblox', icon: Gamepad2, href: '/admin/roblox-settings', permissions: ['manage_settings'], dividerAfter: true },
       { title: 'SEO & Indexing', icon: Activity, href: '/admin/seo-indexing', permissions: ['manage_settings'] },
       { title: 'Email Templates', icon: Mail, href: '/admin/email-templates', permissions: ['manage_settings'] },
-      { title: 'Bot Codes', icon: Code, href: '/admin/bot-codes', permissions: ['view_bot_codes'] },
       { title: 'GDPR Compliance', icon: Scale, href: '/admin/gdpr-compliance', permissions: [], roles: ['admin'] },
-      { title: 'BotGhost Setup', icon: Bot, href: '/admin/botghost-setup', permissions: [], roles: ['admin'] },
-      { title: 'Portal Bot Setup', icon: Bot, href: '/admin/portal-bot-setup', permissions: [], roles: ['admin'] },
-      { title: 'Bot Control', icon: Bot, href: '/bot', permissions: [], roles: ['admin'] },
+      { title: 'Bot Dashboard', icon: Bot, href: '/bot', permissions: [], roles: ['admin'] },
       { title: 'Settings', icon: Settings, href: '/admin/settings', permissions: [] },
       { title: 'Help', icon: HelpCircle, href: '/admin/help', permissions: [] },
     ],

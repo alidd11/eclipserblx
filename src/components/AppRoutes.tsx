@@ -454,9 +454,9 @@ export function AppRoutes() {
         <Route path="/admin/ip-bans" element={<AdminIpBans />} />
         <Route path="/admin/referrals" element={<Navigate to="/admin/affiliate-hub?tab=referrals" replace />} />
         <Route path="/admin/affiliates" element={<Navigate to="/admin/affiliate-hub?tab=overview" replace />} />
-        <Route path="/admin/bot-codes" element={<AdminBotCodes />} />
+        <Route path="/admin/bot-codes" element={<Navigate to="/bot/settings?tab=license-codes" replace />} />
         <Route path="/admin/bot-requests" element={<AdminBotRequests />} />
-        <Route path="/admin/bot-servers" element={<AdminBotServers />} />
+        <Route path="/admin/bot-servers" element={<Navigate to="/bot/servers" replace />} />
         
         <Route path="/admin/customer-tickets" element={<AdminCustomerTickets />} />
         <Route path="/admin/customer-tickets/:ticketId" element={<AdminCustomerTicketDetail />} />
@@ -498,8 +498,8 @@ export function AppRoutes() {
         <Route path="/admin/recruiter-payouts" element={<AdminRecruiterPayouts />} />
         <Route path="/admin/recruiter-commissions" element={<AdminRecruiterCommissions />} />
         <Route path="/admin/gdpr-compliance" element={<AdminGDPRCompliance />} />
-        <Route path="/admin/botghost-setup" element={<AdminBotGhostSetup />} />
-        <Route path="/admin/portal-bot-setup" element={<AdminPortalBotSetup />} />
+        <Route path="/admin/botghost-setup" element={<Navigate to="/bot/settings?tab=botghost" replace />} />
+        <Route path="/admin/portal-bot-setup" element={<Navigate to="/bot/settings?tab=portal-bot" replace />} />
         <Route path="/admin/bot-control" element={<AdminBotDashboard />} />
         {/* Standalone bot dashboard */}
         <Route path="/bot" element={<BotOverviewPage />} />
