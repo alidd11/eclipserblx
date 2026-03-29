@@ -1,94 +1,55 @@
 
 
-# Standalone Bot Dashboard — Wick/Dyno Style
+# Consolidate Bot Features into Standalone Dashboard
 
-## What changes
+## Summary
 
-Transform the bot dashboard from a card inside the admin panel into its own standalone-feeling section at `/bot` (or `/bot-dashboard`) with dedicated layout, sidebar, and branding — similar to how Wick Bot or Dyno Bot have their own web dashboards.
+Move all Eclipse Portal Bot-related pages out of the admin sidebar and into the standalone `/bot` dashboard. The admin sidebar keeps only a single "Bot Control" link pointing to `/bot`. This eliminates duplication and makes the bot dashboard the single source of truth.
 
-## New layout and routes
+## What moves to `/bot`
 
-### Route structure
-```text
-/bot                  → Overview (status, stats, quick actions)
-/bot/servers          → Server list + per-server management
-/bot/commands         → Command toggle/config
-/bot/roles            → Role management
-/bot/actions          → Send messages / embeds
-/bot/settings         → Bot settings + error logs
-```
+| Current admin location | New home in `/bot` dashboard |
+|---|---|
+| `/admin/bot-servers` (Bot Servers) | `/bot/servers` (already exists) |
+| `/admin/bot-codes` (Bot Codes) | `/bot/settings` — new "License Codes" tab |
+| `/admin/botghost-setup` (BotGhost Setup) | `/bot/settings` — new "BotGhost" tab |
+| `/admin/portal-bot-setup` (Portal Bot Setup) | `/bot/settings` — new "Portal Bot" tab |
+| `/admin/bot-control` | Already redirects to `/bot` — keep as-is |
 
-### Standalone layout: `BotDashboardLayout`
-- Its own sidebar with bot branding (Eclipse Bot logo/icon, purple accent)
-- Dark theme by default (matching Discord aesthetic)
-- Own top header with bot name, status indicator (green dot), and user avatar
-- No admin sidebar, no admin header — completely independent feel
-- Still uses `useAdminAuth` for authentication (admin-only access)
-- Mobile: collapsible sidebar with hamburger menu
-- Safe-area support for PWA
+## What stays in admin sidebar
 
-### Sidebar navigation
-- Overview (status + stats)
-- Servers (list + manage)
-- Commands (toggle on/off, configure)
-- Roles (manage role configs)
-- Actions (send messages, embeds)
-- Settings & Logs
+- **One link only**: "Bot Dashboard" under System group → links to `/bot`
+- Remove: Bot Servers, Bot Codes, BotGhost Setup, Portal Bot Setup entries from admin sidebar
 
-## Pages to build
+## Changes needed
 
-### 1. Bot Overview (`/bot`)
-- Large status hero: online/offline badge, uptime, ping, memory (existing `BotStatusCard` data)
-- Stats grid: commands processed, errors, reconnects, servers count
-- Quick action buttons: send announcement, refresh status
-- Recent errors preview (last 3)
+### 1. Admin Sidebar cleanup
+**`src/components/admin/AdminSidebar.tsx`**
+- Remove `Bot Servers` from Daily Operations group
+- Remove `Bot Codes`, `BotGhost Setup`, `Portal Bot Setup` from System group
+- Keep single "Bot Dashboard" link → `/bot`
 
-### 2. Server Management (`/bot/servers`)
-- Server list with icons, member counts
-- Click into a server to see channels, roles, and command permissions for that server
+### 2. Bot Settings page expansion
+**`src/pages/bot/BotSettings.tsx`**
+- Add tabs: General, License Codes, BotGhost, Portal Bot
+- Import and embed the existing content from `AdminBotCodes`, `AdminBotGhostSetup`, `AdminPortalBotSetup` components into their respective tabs
 
-### 3. Commands (`/bot/commands`)
-- Full list of all 19+ commands with toggle switches
-- Group by category (support, community, moderation, fun)
-- Existing `BotCommandsCard` logic extracted into full page
+### 3. Bot Servers integration
+- Verify `/bot/servers` page already covers what `AdminBotServers` shows
+- If not, merge the admin bot-servers content into the bot dashboard's servers page
 
-### 4. Roles (`/bot/roles`)
-- Existing `BotRolesCard` logic as a full-page view
+### 4. Route cleanup
+**`src/components/AppRoutes.tsx`**
+- Add redirects: `/admin/bot-codes` → `/bot/settings`, `/admin/botghost-setup` → `/bot/settings`, `/admin/bot-servers` → `/bot/servers`
+- Keep existing pages importable but redirect old URLs
 
-### 5. Actions (`/bot/actions`)
-- Embed builder (existing `BotActionsCard` logic) with live preview
-- Server/channel picker
+### 5. Seller Discord page
+- The seller Discord integration page (`/seller/discord`) stays as-is — it's seller-facing config, not bot management
 
-### 6. Settings & Logs (`/bot/settings`)
-- Bot settings from `BotSettingsCard`
-- Error logs table from `BotErrorLogsCard`
+## Technical details
 
-## Files
-
-| File | Action |
-|------|--------|
-| `src/components/bot-dashboard/BotDashboardLayout.tsx` | New — standalone layout shell |
-| `src/components/bot-dashboard/BotDashboardSidebar.tsx` | New — dedicated sidebar |
-| `src/pages/bot/BotOverview.tsx` | New — overview page |
-| `src/pages/bot/BotServers.tsx` | New — servers page |
-| `src/pages/bot/BotCommands.tsx` | New — commands page |
-| `src/pages/bot/BotRoles.tsx` | New — roles page |
-| `src/pages/bot/BotActions.tsx` | New — actions/embed builder page |
-| `src/pages/bot/BotSettings.tsx` | New — settings + logs page |
-| `src/components/AppRoutes.tsx` | Add `/bot/*` routes |
-| `src/pages/admin/AdminBotDashboard.tsx` | Redirect to `/bot` |
-| `src/components/admin/AdminSidebar.tsx` | Update link to point to `/bot` |
-
-## Authentication
-
-- `BotDashboardLayout` uses the same `useAdminAuth` hook
-- Only users with `admin` role can access
-- No new auth flow needed — just a different layout wrapper
-
-## Design direction
-
-- Dark card-based UI with purple/violet accents (matching the bot's Discord branding)
-- Discord-inspired aesthetic: dark backgrounds, rounded cards, status indicators
-- Responsive: works on mobile with collapsible sidebar
-- Reuses all existing edge function calls (`bot-control`) — no backend changes needed
+- No database changes needed
+- No new tables or migrations
+- Reuses existing admin page components, just re-mounted inside `BotDashboardLayout`
+- Old admin URLs redirect to new `/bot/*` locations for bookmarks
 
