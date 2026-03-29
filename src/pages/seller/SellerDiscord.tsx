@@ -106,6 +106,10 @@ export default function SellerDiscord() {
           <TabsContent value="roles" className="mt-4">
             <DiscordRolePingsCard />
           </TabsContent>
+
+          <TabsContent value="permissions" className="mt-4">
+            <CommandPermissionsTab />
+          </TabsContent>
         </Tabs>
       </div>
     </SellerLayout>
