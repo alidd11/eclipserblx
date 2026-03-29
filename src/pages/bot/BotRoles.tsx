@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Shield, Plus, Trash2, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -81,29 +82,33 @@ export default function BotRoles() {
 
   return (
     <BotDashboardLayout>
-      <div className="space-y-6 max-w-4xl">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Shield className="h-5 w-5 text-[hsl(258,90%,66%)]" />
-              Role Configurations
-              <Badge className="bg-[hsl(258,90%,66%)]/20 text-[hsl(258,90%,76%)] border-[hsl(258,90%,66%)]/30 ml-2">{roles.length}</Badge>
+      <div className="space-y-5 max-w-4xl mx-auto">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+              <Shield className="h-5 w-5 text-[hsl(258,90%,66%)] shrink-0" />
+              <span className="truncate">Role Configs</span>
+              {!isLoading && (
+                <Badge className="bg-[hsl(258,90%,66%)]/20 text-[hsl(258,90%,76%)] border-[hsl(258,90%,66%)]/30 shrink-0">
+                  {roles.length}
+                </Badge>
+              )}
             </h2>
-            <p className="text-sm text-white/50 mt-1">Manage auto-assigned Discord roles</p>
+            <p className="text-xs sm:text-sm text-white/50 mt-1">Manage auto-assigned Discord roles</p>
           </div>
           <Button
-            className="bg-[hsl(258,90%,66%)] hover:bg-[hsl(258,90%,60%)] text-white"
+            className="bg-[hsl(258,90%,66%)] hover:bg-[hsl(258,90%,60%)] text-white shrink-0"
             size="sm"
             onClick={() => setShowAdd(!showAdd)}
           >
-            {showAdd ? <X className="h-4 w-4 mr-1.5" /> : <Plus className="h-4 w-4 mr-1.5" />}
-            {showAdd ? 'Cancel' : 'Add Role'}
+            {showAdd ? <X className="h-4 w-4 sm:mr-1.5" /> : <Plus className="h-4 w-4 sm:mr-1.5" />}
+            <span className="hidden sm:inline">{showAdd ? 'Cancel' : 'Add Role'}</span>
           </Button>
         </div>
 
         {showAdd && (
-          <div className="p-5 rounded-xl bg-white/5 border border-[hsl(258,90%,66%)]/30 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="p-4 sm:p-5 rounded-xl bg-white/5 border border-[hsl(258,90%,66%)]/30 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div>
                 <Label className="text-xs text-white/60">Role ID</Label>
                 <Input
@@ -145,28 +150,38 @@ export default function BotRoles() {
         )}
 
         {isLoading ? (
-          <p className="text-sm text-white/40">Loading...</p>
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-24 bg-white/10" />
+                  <Skeleton className="h-3 w-40 bg-white/10" />
+                </div>
+                <Skeleton className="h-5 w-9 rounded-full bg-white/10" />
+              </div>
+            ))}
+          </div>
         ) : !roles.length ? (
-          <div className="text-center py-12 text-white/40">
-            <Shield className="h-10 w-10 mx-auto mb-3 opacity-30" />
-            <p>No role configs yet. Add one above.</p>
+          <div className="text-center py-16">
+            <Shield className="h-10 w-10 mx-auto mb-3 text-white/20" />
+            <p className="text-sm text-white/40">No role configs yet. Add one above.</p>
           </div>
         ) : (
           <div className="space-y-2">
             {roles.map((role) => (
-              <div key={role.id} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
+              <div key={role.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/[0.07] transition-colors">
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-white">{role.role_name}</p>
-                  <p className="text-xs text-white/40 font-mono">{role.role_id}</p>
-                  <p className="text-xs text-white/40">Min orders: {role.min_order_count}</p>
+                  <p className="font-semibold text-white text-sm sm:text-base truncate">{role.role_name}</p>
+                  <p className="text-[10px] sm:text-xs text-white/40 font-mono truncate">{role.role_id}</p>
+                  <p className="text-[10px] sm:text-xs text-white/40">Min orders: {role.min_order_count}</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                   <div className="text-center">
                     <Switch
                       checked={role.auto_assign_on_purchase}
                       onCheckedChange={(checked) => toggleAutoAssign.mutate({ id: role.id, enabled: checked })}
                     />
-                    <p className="text-[10px] text-white/30 mt-1">Auto</p>
+                    <p className="text-[10px] text-white/30 mt-0.5">Auto</p>
                   </div>
                   <Button
                     variant="ghost"

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Settings, Save, Loader2, AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
@@ -106,39 +107,51 @@ export default function BotSettings() {
 
   return (
     <BotDashboardLayout>
-      <div className="space-y-8 max-w-4xl">
+      <div className="space-y-6 sm:space-y-8 max-w-4xl mx-auto">
         {/* Settings Section */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Settings className="h-5 w-5 text-[hsl(258,90%,66%)]" />
-                Bot Settings
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                <Settings className="h-5 w-5 text-[hsl(258,90%,66%)] shrink-0" />
+                <span className="truncate">Bot Settings</span>
               </h2>
-              <p className="text-sm text-white/50 mt-1">Configure bot environment values</p>
+              <p className="text-xs sm:text-sm text-white/50 mt-1">Configure bot environment values</p>
             </div>
             {dirty && (
               <Button
                 size="sm"
                 onClick={() => saveSettings.mutate()}
                 disabled={saveSettings.isPending}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white shrink-0"
               >
-                {saveSettings.isPending ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Save className="h-4 w-4 mr-1.5" />}
-                Save Changes
+                {saveSettings.isPending ? <Loader2 className="h-4 w-4 sm:mr-1.5 animate-spin" /> : <Save className="h-4 w-4 sm:mr-1.5" />}
+                <span className="hidden sm:inline">Save Changes</span>
               </Button>
             )}
           </div>
 
           {settingsLoading ? (
-            <p className="text-sm text-white/40">Loading...</p>
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="rounded-xl bg-white/5 border border-white/10 p-4">
+                  <Skeleton className="h-3 w-24 bg-white/10 mb-2" />
+                  <Skeleton className="h-9 w-full bg-white/10 rounded" />
+                </div>
+              ))}
+            </div>
+          ) : !settings.length ? (
+            <div className="text-center py-12 text-white/40">
+              <Settings className="h-10 w-10 mx-auto mb-3 opacity-30" />
+              <p className="text-sm">No settings configured</p>
+            </div>
           ) : (
             <div className="space-y-3">
               {settings.map((setting) => (
-                <div key={setting.id} className="rounded-xl bg-white/5 border border-white/10 p-4">
+                <div key={setting.id} className="rounded-xl bg-white/5 border border-white/10 p-3 sm:p-4">
                   <Label className="text-xs text-white/60">{formatLabel(setting.key)}</Label>
                   {setting.description && (
-                    <p className="text-xs text-white/30 mb-1.5">{setting.description}</p>
+                    <p className="text-[10px] sm:text-xs text-white/30 mb-1.5">{setting.description}</p>
                   )}
                   <Input
                     value={values[setting.key] || ''}
@@ -151,34 +164,37 @@ export default function BotSettings() {
           )}
         </div>
 
+        {/* Divider */}
+        <div className="border-t border-white/10" />
+
         {/* Error Logs Section */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-400" />
-              Error Logs
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2 min-w-0">
+              <AlertTriangle className="h-5 w-5 text-red-400 shrink-0" />
+              <span className="truncate">Error Logs</span>
               {errors.length > 0 && (
-                <Badge className="bg-red-500/20 text-red-400 border-red-500/30 ml-2">{errors.length}</Badge>
+                <Badge className="bg-red-500/20 text-red-400 border-red-500/30 shrink-0">{errors.length}</Badge>
               )}
             </h2>
-            <div className="flex gap-2">
+            <div className="flex gap-1 shrink-0">
               {errors.length > 0 && (
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="icon"
                   onClick={() => clearLogs.mutate()}
                   disabled={clearLogs.isPending}
-                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-8 w-8"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               )}
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => refetchErrors()}
                 disabled={fetchingErrors}
-                className="text-white/60 hover:text-white hover:bg-white/10"
+                className="text-white/60 hover:text-white hover:bg-white/10 h-8 w-8"
               >
                 <RefreshCw className={`h-4 w-4 ${fetchingErrors ? 'animate-spin' : ''}`} />
               </Button>
@@ -186,26 +202,36 @@ export default function BotSettings() {
           </div>
 
           {errorsLoading ? (
-            <p className="text-sm text-white/40">Loading...</p>
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                  <div className="flex justify-between">
+                    <Skeleton className="h-5 w-20 bg-white/10 rounded-full" />
+                    <Skeleton className="h-3 w-16 bg-white/10" />
+                  </div>
+                  <Skeleton className="h-3 w-full bg-white/10" />
+                </div>
+              ))}
+            </div>
           ) : !errors.length ? (
             <div className="text-center py-8 text-white/40">
-              <p>No errors logged — looking good! ✅</p>
+              <p className="text-sm">No errors logged — looking good! ✅</p>
             </div>
           ) : (
             <div className="space-y-2">
               {errors.map((err) => (
-                <div key={err.id} className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                <div key={err.id} className="p-3 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1 hover:bg-white/[0.07] transition-colors">
                   <div className="flex items-center justify-between gap-2">
-                    <Badge variant="outline" className="text-xs text-red-400 border-red-500/30 bg-red-500/10">
+                    <Badge variant="outline" className="text-[10px] sm:text-xs text-red-400 border-red-500/30 bg-red-500/10">
                       {err.context}
                     </Badge>
-                    <span className="text-xs text-white/30 shrink-0">{formatTime(err.created_at)}</span>
+                    <span className="text-[10px] sm:text-xs text-white/30 shrink-0">{formatTime(err.created_at)}</span>
                   </div>
-                  <p className="text-xs font-mono text-white/60 break-all">{err.error_message}</p>
+                  <p className="text-xs font-mono text-white/60 break-all line-clamp-2">{err.error_message}</p>
                   {err.metadata && Object.keys(err.metadata).length > 0 && (
                     <div className="flex gap-2 flex-wrap">
                       {Object.entries(err.metadata).map(([k, v]) => (
-                        <span key={k} className="text-xs text-white/30">
+                        <span key={k} className="text-[10px] sm:text-xs text-white/30">
                           {k}: <span className="font-mono">{String(v)}</span>
                         </span>
                       ))}
