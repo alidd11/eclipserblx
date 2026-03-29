@@ -740,6 +740,105 @@ export type Database = {
         }
         Relationships: []
       }
+      bot_auto_roles: {
+        Row: {
+          created_at: string
+          delay_seconds: number | null
+          enabled: boolean
+          guild_id: string
+          id: string
+          role_id: string
+          role_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          delay_seconds?: number | null
+          enabled?: boolean
+          guild_id: string
+          id?: string
+          role_id: string
+          role_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          delay_seconds?: number | null
+          enabled?: boolean
+          guild_id?: string
+          id?: string
+          role_id?: string
+          role_name?: string | null
+        }
+        Relationships: []
+      }
+      bot_automod_heat: {
+        Row: {
+          created_at: string
+          decay_at: string | null
+          guild_id: string
+          heat_points: number
+          id: string
+          last_infraction_at: string
+          user_discord_id: string
+        }
+        Insert: {
+          created_at?: string
+          decay_at?: string | null
+          guild_id: string
+          heat_points?: number
+          id?: string
+          last_infraction_at?: string
+          user_discord_id: string
+        }
+        Update: {
+          created_at?: string
+          decay_at?: string | null
+          guild_id?: string
+          heat_points?: number
+          id?: string
+          last_infraction_at?: string
+          user_discord_id?: string
+        }
+        Relationships: []
+      }
+      bot_automod_rules: {
+        Row: {
+          action: string
+          config: Json
+          created_at: string
+          enabled: boolean
+          guild_id: string
+          heat_points: number
+          id: string
+          name: string
+          rule_type: string
+          updated_at: string
+        }
+        Insert: {
+          action?: string
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          guild_id: string
+          heat_points?: number
+          id?: string
+          name: string
+          rule_type?: string
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          guild_id?: string
+          heat_points?: number
+          id?: string
+          name?: string
+          rule_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bot_command_settings: {
         Row: {
           command_name: string
@@ -761,6 +860,54 @@ export type Database = {
           enabled?: boolean
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      bot_custom_commands: {
+        Row: {
+          allowed_roles: string[] | null
+          cooldown_seconds: number | null
+          created_at: string
+          created_by: string | null
+          embed_config: Json | null
+          enabled: boolean
+          guild_id: string
+          id: string
+          response: string
+          trigger: string
+          trigger_type: string
+          updated_at: string
+          usage_count: number | null
+        }
+        Insert: {
+          allowed_roles?: string[] | null
+          cooldown_seconds?: number | null
+          created_at?: string
+          created_by?: string | null
+          embed_config?: Json | null
+          enabled?: boolean
+          guild_id: string
+          id?: string
+          response: string
+          trigger: string
+          trigger_type?: string
+          updated_at?: string
+          usage_count?: number | null
+        }
+        Update: {
+          allowed_roles?: string[] | null
+          cooldown_seconds?: number | null
+          created_at?: string
+          created_by?: string | null
+          embed_config?: Json | null
+          enabled?: boolean
+          guild_id?: string
+          id?: string
+          response?: string
+          trigger?: string
+          trigger_type?: string
+          updated_at?: string
+          usage_count?: number | null
         }
         Relationships: []
       }
@@ -788,6 +935,60 @@ export type Database = {
           id?: string
           metadata?: Json | null
           stack_trace?: string | null
+        }
+        Relationships: []
+      }
+      bot_giveaways: {
+        Row: {
+          channel_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          ended: boolean | null
+          ends_at: string
+          entries: Json | null
+          guild_id: string
+          id: string
+          message_id: string | null
+          prize: string
+          required_role_id: string | null
+          title: string
+          winner_ids: string[] | null
+          winners_count: number
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          ended?: boolean | null
+          ends_at: string
+          entries?: Json | null
+          guild_id: string
+          id?: string
+          message_id?: string | null
+          prize: string
+          required_role_id?: string | null
+          title: string
+          winner_ids?: string[] | null
+          winners_count?: number
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          ended?: boolean | null
+          ends_at?: string
+          entries?: Json | null
+          guild_id?: string
+          id?: string
+          message_id?: string | null
+          prize?: string
+          required_role_id?: string | null
+          title?: string
+          winner_ids?: string[] | null
+          winners_count?: number
         }
         Relationships: []
       }
@@ -952,6 +1153,96 @@ export type Database = {
           },
         ]
       }
+      bot_join_gate_config: {
+        Row: {
+          action: string
+          block_bots: boolean | null
+          created_at: string
+          enabled: boolean
+          guild_id: string
+          id: string
+          log_channel_id: string | null
+          min_account_age_days: number | null
+          require_avatar: boolean | null
+          require_verified_email: boolean | null
+          updated_at: string
+          whitelist_role_id: string | null
+        }
+        Insert: {
+          action?: string
+          block_bots?: boolean | null
+          created_at?: string
+          enabled?: boolean
+          guild_id: string
+          id?: string
+          log_channel_id?: string | null
+          min_account_age_days?: number | null
+          require_avatar?: boolean | null
+          require_verified_email?: boolean | null
+          updated_at?: string
+          whitelist_role_id?: string | null
+        }
+        Update: {
+          action?: string
+          block_bots?: boolean | null
+          created_at?: string
+          enabled?: boolean
+          guild_id?: string
+          id?: string
+          log_channel_id?: string | null
+          min_account_age_days?: number | null
+          require_avatar?: boolean | null
+          require_verified_email?: boolean | null
+          updated_at?: string
+          whitelist_role_id?: string | null
+        }
+        Relationships: []
+      }
+      bot_join_leave_config: {
+        Row: {
+          created_at: string
+          guild_id: string
+          id: string
+          join_channel_id: string | null
+          join_embed_config: Json | null
+          join_enabled: boolean | null
+          join_message: string | null
+          leave_channel_id: string | null
+          leave_embed_config: Json | null
+          leave_enabled: boolean | null
+          leave_message: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          guild_id: string
+          id?: string
+          join_channel_id?: string | null
+          join_embed_config?: Json | null
+          join_enabled?: boolean | null
+          join_message?: string | null
+          leave_channel_id?: string | null
+          leave_embed_config?: Json | null
+          leave_enabled?: boolean | null
+          leave_message?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          guild_id?: string
+          id?: string
+          join_channel_id?: string | null
+          join_embed_config?: Json | null
+          join_enabled?: boolean | null
+          join_message?: string | null
+          leave_channel_id?: string | null
+          leave_embed_config?: Json | null
+          leave_enabled?: boolean | null
+          leave_message?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bot_license_bundles: {
         Row: {
           bot_product_id: string
@@ -998,6 +1289,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      bot_mod_log_config: {
+        Row: {
+          channel_id: string | null
+          created_at: string
+          enabled: boolean
+          guild_id: string
+          id: string
+          log_bans: boolean | null
+          log_kicks: boolean | null
+          log_member_joins: boolean | null
+          log_member_leaves: boolean | null
+          log_message_deletes: boolean | null
+          log_message_edits: boolean | null
+          log_role_changes: boolean | null
+          log_timeouts: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          channel_id?: string | null
+          created_at?: string
+          enabled?: boolean
+          guild_id: string
+          id?: string
+          log_bans?: boolean | null
+          log_kicks?: boolean | null
+          log_member_joins?: boolean | null
+          log_member_leaves?: boolean | null
+          log_message_deletes?: boolean | null
+          log_message_edits?: boolean | null
+          log_role_changes?: boolean | null
+          log_timeouts?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          channel_id?: string | null
+          created_at?: string
+          enabled?: boolean
+          guild_id?: string
+          id?: string
+          log_bans?: boolean | null
+          log_kicks?: boolean | null
+          log_member_joins?: boolean | null
+          log_member_leaves?: boolean | null
+          log_message_deletes?: boolean | null
+          log_message_edits?: boolean | null
+          log_role_changes?: boolean | null
+          log_timeouts?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       bot_products: {
         Row: {
@@ -1047,6 +1389,96 @@ export type Database = {
           },
         ]
       }
+      bot_reaction_roles: {
+        Row: {
+          channel_id: string
+          color: string | null
+          created_at: string
+          description: string | null
+          guild_id: string
+          id: string
+          message_id: string | null
+          roles: Json
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          channel_id: string
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          guild_id: string
+          id?: string
+          message_id?: string | null
+          roles?: Json
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          channel_id?: string
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          guild_id?: string
+          id?: string
+          message_id?: string | null
+          roles?: Json
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bot_scheduled_messages: {
+        Row: {
+          channel_id: string
+          content: string | null
+          created_at: string
+          created_by: string | null
+          cron_expression: string | null
+          embed_config: Json | null
+          enabled: boolean
+          guild_id: string
+          id: string
+          last_run_at: string | null
+          next_run_at: string | null
+          repeat: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          channel_id: string
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          cron_expression?: string | null
+          embed_config?: Json | null
+          enabled?: boolean
+          guild_id: string
+          id?: string
+          last_run_at?: string | null
+          next_run_at?: string | null
+          repeat?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          channel_id?: string
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          cron_expression?: string | null
+          embed_config?: Json | null
+          enabled?: boolean
+          guild_id?: string
+          id?: string
+          last_run_at?: string | null
+          next_run_at?: string | null
+          repeat?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bot_settings: {
         Row: {
           description: string | null
@@ -1068,6 +1500,210 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: string
+        }
+        Relationships: []
+      }
+      bot_starboard_config: {
+        Row: {
+          channel_id: string | null
+          created_at: string
+          emoji: string
+          enabled: boolean
+          guild_id: string
+          id: string
+          ignored_channels: string[] | null
+          self_star: boolean | null
+          threshold: number
+          updated_at: string
+        }
+        Insert: {
+          channel_id?: string | null
+          created_at?: string
+          emoji?: string
+          enabled?: boolean
+          guild_id: string
+          id?: string
+          ignored_channels?: string[] | null
+          self_star?: boolean | null
+          threshold?: number
+          updated_at?: string
+        }
+        Update: {
+          channel_id?: string | null
+          created_at?: string
+          emoji?: string
+          enabled?: boolean
+          guild_id?: string
+          id?: string
+          ignored_channels?: string[] | null
+          self_star?: boolean | null
+          threshold?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bot_starboard_entries: {
+        Row: {
+          author_id: string
+          channel_id: string
+          content: string | null
+          created_at: string
+          guild_id: string
+          id: string
+          source_message_id: string
+          star_count: number
+          starboard_message_id: string | null
+        }
+        Insert: {
+          author_id: string
+          channel_id: string
+          content?: string | null
+          created_at?: string
+          guild_id: string
+          id?: string
+          source_message_id: string
+          star_count?: number
+          starboard_message_id?: string | null
+        }
+        Update: {
+          author_id?: string
+          channel_id?: string
+          content?: string | null
+          created_at?: string
+          guild_id?: string
+          id?: string
+          source_message_id?: string
+          star_count?: number
+          starboard_message_id?: string | null
+        }
+        Relationships: []
+      }
+      bot_suggestions: {
+        Row: {
+          author_id: string
+          author_username: string | null
+          channel_id: string | null
+          content: string
+          created_at: string
+          downvotes: number | null
+          guild_id: string
+          id: string
+          message_id: string | null
+          responded_by: string | null
+          staff_response: string | null
+          status: string
+          updated_at: string
+          upvotes: number | null
+        }
+        Insert: {
+          author_id: string
+          author_username?: string | null
+          channel_id?: string | null
+          content: string
+          created_at?: string
+          downvotes?: number | null
+          guild_id: string
+          id?: string
+          message_id?: string | null
+          responded_by?: string | null
+          staff_response?: string | null
+          status?: string
+          updated_at?: string
+          upvotes?: number | null
+        }
+        Update: {
+          author_id?: string
+          author_username?: string | null
+          channel_id?: string | null
+          content?: string
+          created_at?: string
+          downvotes?: number | null
+          guild_id?: string
+          id?: string
+          message_id?: string | null
+          responded_by?: string | null
+          staff_response?: string | null
+          status?: string
+          updated_at?: string
+          upvotes?: number | null
+        }
+        Relationships: []
+      }
+      bot_suggestions_config: {
+        Row: {
+          allow_anonymous: boolean | null
+          channel_id: string | null
+          created_at: string
+          enabled: boolean
+          guild_id: string
+          id: string
+          review_channel_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          allow_anonymous?: boolean | null
+          channel_id?: string | null
+          created_at?: string
+          enabled?: boolean
+          guild_id: string
+          id?: string
+          review_channel_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          allow_anonymous?: boolean | null
+          channel_id?: string | null
+          created_at?: string
+          enabled?: boolean
+          guild_id?: string
+          id?: string
+          review_channel_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bot_verification_config: {
+        Row: {
+          captcha_enabled: boolean | null
+          channel_id: string | null
+          created_at: string
+          enabled: boolean
+          guild_id: string
+          id: string
+          message_description: string | null
+          message_title: string | null
+          min_account_age_days: number | null
+          type: string
+          updated_at: string
+          verified_role_id: string | null
+        }
+        Insert: {
+          captcha_enabled?: boolean | null
+          channel_id?: string | null
+          created_at?: string
+          enabled?: boolean
+          guild_id: string
+          id?: string
+          message_description?: string | null
+          message_title?: string | null
+          min_account_age_days?: number | null
+          type?: string
+          updated_at?: string
+          verified_role_id?: string | null
+        }
+        Update: {
+          captcha_enabled?: boolean | null
+          channel_id?: string | null
+          created_at?: string
+          enabled?: boolean
+          guild_id?: string
+          id?: string
+          message_description?: string | null
+          message_title?: string | null
+          min_account_age_days?: number | null
+          type?: string
+          updated_at?: string
+          verified_role_id?: string | null
         }
         Relationships: []
       }

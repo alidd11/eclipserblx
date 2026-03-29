@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Server, Code, Shield, Zap, Settings, Bot, X,
-  Gavel, BarChart3, ScrollText
+  Gavel, BarChart3, ScrollText, ShieldAlert, SmilePlus, Terminal, Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -15,7 +15,11 @@ const navItems = [
   { title: 'Overview', icon: LayoutDashboard, href: '/bot' },
   { title: 'Servers', icon: Server, href: '/bot/servers' },
   { title: 'Commands', icon: Code, href: '/bot/commands' },
+  { title: 'Auto-Mod', icon: ShieldAlert, href: '/bot/automod' },
   { title: 'Moderation', icon: Gavel, href: '/bot/moderation' },
+  { title: 'Reaction Roles', icon: SmilePlus, href: '/bot/reaction-roles' },
+  { title: 'Custom Commands', icon: Terminal, href: '/bot/custom-commands' },
+  { title: 'Community', icon: Users, href: '/bot/community' },
   { title: 'Roles', icon: Shield, href: '/bot/roles' },
   { title: 'Actions', icon: Zap, href: '/bot/actions' },
   { title: 'Analytics', icon: BarChart3, href: '/bot/analytics' },

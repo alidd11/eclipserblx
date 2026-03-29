@@ -151,6 +151,10 @@ const BotSettingsPage = lazyWithRetry(() => import("@/pages/bot/BotSettings"));
 const BotModerationPage = lazyWithRetry(() => import("@/pages/bot/BotModeration"));
 const BotAnalyticsPage = lazyWithRetry(() => import("@/pages/bot/BotAnalytics"));
 const BotLogsPage = lazyWithRetry(() => import("@/pages/bot/BotLogs"));
+const BotAutoModPage = lazyWithRetry(() => import("@/pages/bot/BotAutoMod"));
+const BotReactionRolesPage = lazyWithRetry(() => import("@/pages/bot/BotReactionRoles"));
+const BotCustomCommandsPage = lazyWithRetry(() => import("@/pages/bot/BotCustomCommands"));
+const BotCommunityPage = lazyWithRetry(() => import("@/pages/bot/BotCommunity"));
 const AdminInternalNotes = lazyWithRetry(() => import("@/pages/admin/InternalNotes"));
 const AdminRevenueHub = lazyWithRetry(() => import("@/pages/admin/RevenueHub"));
 const AdminPayoutsHub = lazyWithRetry(() => import("@/pages/admin/PayoutsHub"));
@@ -507,6 +511,10 @@ export function AppRoutes() {
         <Route path="/bot/analytics" element={<BotAnalyticsPage />} />
         <Route path="/bot/settings" element={<BotSettingsPage />} />
         <Route path="/bot/logs" element={<BotLogsPage />} />
+        <Route path="/bot/automod" element={<BotAutoModPage />} />
+        <Route path="/bot/reaction-roles" element={<BotReactionRolesPage />} />
+        <Route path="/bot/custom-commands" element={<BotCustomCommandsPage />} />
+        <Route path="/bot/community" element={<BotCommunityPage />} />
         <Route path="/admin/internal-notes" element={<AdminInternalNotes />} />
         <Route path="/admin/platform-ledger" element={<AdminPlatformLedger />} />
         <Route path="/admin/custom-domains" element={<AdminCustomDomains />} />
