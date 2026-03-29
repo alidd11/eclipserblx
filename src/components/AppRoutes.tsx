@@ -140,6 +140,14 @@ const AdminGDPRCompliance = lazyWithRetry(() => import("@/pages/admin/GDPRCompli
 const AdminBotGhostSetup = lazyWithRetry(() => import("@/pages/admin/BotGhostSetup"));
 const AdminPortalBotSetup = lazyWithRetry(() => import("@/pages/admin/PortalBotSetup"));
 const AdminBotDashboard = lazyWithRetry(() => import("@/pages/admin/AdminBotDashboard"));
+
+// Standalone bot dashboard pages
+const BotOverviewPage = lazyWithRetry(() => import("@/pages/bot/BotOverview"));
+const BotServersPage = lazyWithRetry(() => import("@/pages/bot/BotServers"));
+const BotCommandsPage = lazyWithRetry(() => import("@/pages/bot/BotCommands"));
+const BotRolesPage = lazyWithRetry(() => import("@/pages/bot/BotRoles"));
+const BotActionsPage = lazyWithRetry(() => import("@/pages/bot/BotActions"));
+const BotSettingsPage = lazyWithRetry(() => import("@/pages/bot/BotSettings"));
 const AdminRevenueHub = lazyWithRetry(() => import("@/pages/admin/RevenueHub"));
 const AdminPayoutsHub = lazyWithRetry(() => import("@/pages/admin/PayoutsHub"));
 const AdminDisputesRefundsHub = lazyWithRetry(() => import("@/pages/admin/DisputesRefundsHub"));
