@@ -6,15 +6,17 @@ import { DiscordRolePingsCard } from '@/components/seller/DiscordRolePingsCard';
 import { DiscordServerOverview } from '@/components/seller/DiscordServerOverview';
 import { DiscordNotificationsTab } from '@/components/seller/discord/DiscordNotificationsTab';
 import { CommandPermissionsTab } from '@/components/seller/discord/CommandPermissionsTab';
+import { WelcomeEmbedBuilder } from '@/components/seller/WelcomeEmbedBuilder';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bot, Megaphone, Bell, AtSign, Shield, Settings } from 'lucide-react';
+import { Bot, Megaphone, Bell, AtSign, Shield, Settings, MessageCircle } from 'lucide-react';
 
 const tabs = [
   { value: 'bot', label: 'Bot', icon: Bot },
+  { value: 'welcome', label: 'Welcome', icon: MessageCircle },
   { value: 'announcements', label: 'Announcements', icon: Megaphone },
   { value: 'notifications', label: 'Notifications', icon: Bell },
   { value: 'roles', label: 'Roles', icon: AtSign },
