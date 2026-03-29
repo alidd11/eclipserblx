@@ -389,6 +389,19 @@ import { handleGlobalBan } from '../commands/globalban.js';
 import { handleGlobalUnban } from '../commands/globalunban.js';
 import { handleGlobalBans } from '../commands/globalbans.js';
 
+// Commands that need deferral (do DB work before responding)
+const DEFERRED_COMMANDS = new Set([
+  'link', 'verify', 'profile', 'purchases', 'retrieve',
+  'getrole', 'roles', 'store', 'unlink', 'walletbalance',
+  'update', 'globalban', 'globalunban', 'globalbans',
+]);
+
+// Commands that use ephemeral replies
+const EPHEMERAL_COMMANDS = new Set([
+  'retrieve', 'walletbalance', 'update', 'globalban',
+  'globalunban', 'globalbans',
+]);
+
 export async function handleInteraction(interaction) {
   try {
     // Handle button interactions (help pagination)
@@ -404,9 +417,10 @@ export async function handleInteraction(interaction) {
       return;
     }
 
-    // Handle modal submissions
+    // Handle modal submissions — showcase uses its own deferral
     if (interaction.isModalSubmit()) {
       if (interaction.customId === 'showcase_modal') {
+        await interaction.deferReply();
         const serverContext = await getServerContext(interaction.guildId);
         return handleShowcaseModal(interaction, serverContext);
       }
@@ -416,10 +430,27 @@ export async function handleInteraction(interaction) {
     // Handle slash commands
     if (!interaction.isChatInputCommand()) return;
 
-    const serverContext = await getServerContext(interaction.guildId);
     const { commandName } = interaction;
-
     console.log(\`[interaction] /\${commandName} by \${interaction.user.tag} in guild \${interaction.guildId}\`);
+
+    // Showcase opens a modal — must NOT be deferred
+    if (commandName === 'showcase') {
+      const serverContext = await getServerContext(interaction.guildId);
+      return handleShowcaseCommand(interaction, serverContext);
+    }
+
+    // Help is lightweight — respond immediately
+    if (commandName === 'help') {
+      const serverContext = await getServerContext(interaction.guildId);
+      return handleHelp(interaction, serverContext);
+    }
+
+    // Defer all other commands to prevent 3-second timeout
+    if (DEFERRED_COMMANDS.has(commandName)) {
+      await interaction.deferReply({ ephemeral: EPHEMERAL_COMMANDS.has(commandName) });
+    }
+
+    const serverContext = await getServerContext(interaction.guildId);
 
     switch (commandName) {
       case 'link': return handleLink(interaction, serverContext);
@@ -431,16 +462,14 @@ export async function handleInteraction(interaction) {
       case 'roles': return handleGetRole(interaction, serverContext);
       case 'store': return handleStore(interaction, serverContext);
       case 'unlink': return handleUnlink(interaction, serverContext);
-      case 'showcase': return handleShowcaseCommand(interaction, serverContext);
       case 'walletbalance': return handleWalletBalance(interaction);
-      case 'help': return handleHelp(interaction, serverContext);
       case 'update': return handleUpdate(interaction, serverContext);
       case 'globalban': return handleGlobalBan(interaction);
       case 'globalunban': return handleGlobalUnban(interaction);
       case 'globalbans': return handleGlobalBans(interaction);
       default:
         console.log(\`[interaction] Unknown command: \${commandName}\`);
-        return interaction.reply({ content: \`Unknown command: \${commandName}\`, ephemeral: true });
+        return interaction.editReply({ content: \`Unknown command: \${commandName}\` });
     }
   } catch (error) {
     console.error('[interaction] Error:', error);
