@@ -4,41 +4,51 @@ import { ephemeralReply } from '../utils/responses.js';
 
 const PAGES = [
   {
-    title: '📖 Eclipse Portal Bot - Account',
+    title: '\uD83D\uDCD6 Eclipse Portal Bot - Account',
     commands: [
       { name: '/link', desc: 'Check if your Discord is linked to Eclipse' },
       { name: '/verify', desc: 'Link your Discord using a code from Eclipse' },
       { name: '/profile', desc: 'View your Eclipse profile and stats' },
       { name: '/unlink', desc: 'Disconnect your Discord from Eclipse' },
     ],
-    tip: '💡 Use `/verify` with your code from the Eclipse website to link your account!',
+    tip: '\uD83D\uDCA1 Use `/verify` with your code from the Eclipse website to link your account!',
   },
   {
-    title: '📖 Eclipse Portal Bot - Shopping',
+    title: '\uD83D\uDCD6 Eclipse Portal Bot - Shopping',
     commands: [
       { name: '/purchases', desc: 'View your recent purchases' },
       { name: '/retrieve', desc: 'Get a download link for a purchased product' },
       { name: '/store', desc: "View this server's store information" },
-      { name: '/showcase', desc: 'View a featured product from the marketplace' },
+      { name: '/showcase', desc: 'Showcase your store or product' },
     ],
-    tip: '🛒 Browse products and retrieve your purchases anytime!',
+    tip: '\uD83D\uDED2 Browse products and retrieve your purchases anytime!',
   },
   {
-    title: '📖 Eclipse Portal Bot - Roles & Support',
+    title: '\uD83D\uDCD6 Eclipse Portal Bot - Community',
+    commands: [
+      { name: '/daily', desc: 'Claim your daily XP reward (streak bonuses!)' },
+      { name: '/leaderboard', desc: 'View the Eclipse XP leaderboard' },
+      { name: '/balance', desc: 'View your credits and XP in one place' },
+      { name: '/walletbalance', desc: 'Check your Eclipse wallet balance (via DM)' },
+    ],
+    tip: '\uD83D\uDD25 Claim daily rewards to build your streak and climb the leaderboard!',
+  },
+  {
+    title: '\uD83D\uDCD6 Eclipse Portal Bot - Roles & Support',
     commands: [
       { name: '/getrole', desc: 'Sync your Discord roles based on your account' },
       { name: '/help', desc: 'View this help message' },
     ],
-    tip: '🎫 Use `/getrole` after purchases to sync your roles!',
+    tip: '\uD83C\uDFAB Use `/getrole` after purchases to sync your roles!',
   },
   {
-    title: '🛡️ Eclipse Portal Bot - Global Guard',
+    title: '\uD83D\uDEE1\uFE0F Eclipse Portal Bot - Global Guard',
     commands: [
       { name: '/globalban', desc: 'Ban a user across all your servers' },
       { name: '/globalunban', desc: 'Remove a global ban from a user' },
       { name: '/globalbans', desc: 'View your active global bans' },
     ],
-    tip: '🛡️ Requires an active bot license. Visit guard.eclipserblx.com for full management!',
+    tip: '\uD83D\uDEE1\uFE0F Requires an active bot license. Visit guard.eclipserblx.com for full management!',
   },
 ];
 
@@ -47,7 +57,7 @@ export function buildHelpResponse(serverContext, page = 0) {
   const currentPage = PAGES[page] || PAGES[0];
   const totalPages = PAGES.length;
 
-  const commandList = currentPage.commands.map(cmd => `**${cmd.name}** — ${cmd.desc}`).join('\n');
+  const commandList = currentPage.commands.map(cmd => `**${cmd.name}** \u2014 ${cmd.desc}`).join('\n');
   const embed = {
     color: branding.color,
     title: currentPage.title,
@@ -58,9 +68,9 @@ export function buildHelpResponse(serverContext, page = 0) {
   };
 
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`portalhelp_prev_${page}`).setLabel('◀ Previous').setStyle(ButtonStyle.Secondary).setDisabled(page === 0),
+    new ButtonBuilder().setCustomId(`portalhelp_prev_${page}`).setLabel('\u25C0 Previous').setStyle(ButtonStyle.Secondary).setDisabled(page === 0),
     new ButtonBuilder().setCustomId(`portalhelp_page_${page}`).setLabel(`${page + 1}/${totalPages}`).setStyle(ButtonStyle.Primary).setDisabled(true),
-    new ButtonBuilder().setCustomId(`portalhelp_next_${page}`).setLabel('Next ▶').setStyle(ButtonStyle.Secondary).setDisabled(page >= totalPages - 1),
+    new ButtonBuilder().setCustomId(`portalhelp_next_${page}`).setLabel('Next \u25B6').setStyle(ButtonStyle.Secondary).setDisabled(page >= totalPages - 1),
   );
 
   return { embeds: [embed], components: [row], ephemeral: true };
