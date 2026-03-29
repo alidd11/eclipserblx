@@ -15,6 +15,7 @@ const COMMAND_COOLDOWNS = {
   walletbalance: 5,
   balance: 5,
   leaderboard: 10,
+  newdrops: 10,
   link: 10,
   verify: 10,
   store: 5,

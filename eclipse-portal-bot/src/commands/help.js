@@ -30,6 +30,7 @@ const PAGES = [
       { name: '/leaderboard', desc: 'View the Eclipse XP leaderboard' },
       { name: '/balance', desc: 'View your credits and XP in one place' },
       { name: '/walletbalance', desc: 'Check your Eclipse wallet balance (via DM)' },
+      { name: '/newdrops', desc: 'View the latest product drops' },
     ],
     tip: '\uD83D\uDD25 Claim daily rewards to build your streak and climb the leaderboard!',
   },

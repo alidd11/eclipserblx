@@ -267,5 +267,6 @@ function getCommandDefinitions() {
     { name: "daily", description: "Claim your daily XP reward (streak bonuses!)" },
     { name: "leaderboard", description: "View the Eclipse XP leaderboard" },
     { name: "balance", description: "View your Eclipse credits and XP in one place" },
+    { name: "newdrops", description: "View the latest product drops on Eclipse" },
   ];
 }
