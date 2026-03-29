@@ -160,6 +160,7 @@ export async function handleInteraction(interaction) {
       case 'daily': return handleDaily(interaction, serverContext);
       case 'leaderboard': return handleLeaderboard(interaction, serverContext);
       case 'balance': return handleBalance(interaction, serverContext);
+      case 'newdrops': return handleNewDrops(interaction, serverContext);
       default:
         console.log(`[interaction] Unknown command: ${commandName}`);
         return interaction.editReply({ content: `Unknown command: ${commandName}` });
