@@ -27,7 +27,7 @@ const DEFERRED_COMMANDS = new Set([
   'link', 'verify', 'profile', 'purchases', 'retrieve',
   'getrole', 'roles', 'store', 'unlink', 'walletbalance',
   'update', 'globalban', 'globalunban', 'globalbans',
-  'daily', 'leaderboard', 'balance',
+  'daily', 'leaderboard', 'balance', 'newdrops',
 ]);
 
 // Commands that use ephemeral replies
