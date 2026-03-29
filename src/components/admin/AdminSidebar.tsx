@@ -4,7 +4,7 @@ import {
   ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
   AlertTriangle, Tags, Ban, Gift, Inbox, LucideIcon, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Ticket, Bot, RotateCcw, Upload, Wallet, DollarSign,
-  UserCheck, Link2, Code, Globe, Scale, Rss
+  UserCheck, Link2, Code, Globe, Scale, Rss, FileCode
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -157,6 +157,7 @@ const navGroups: NavGroup[] = [
       { title: 'Email Templates', icon: Mail, href: '/admin/email-templates', permissions: ['manage_settings'] },
       { title: 'GDPR Compliance', icon: Scale, href: '/admin/gdpr-compliance', permissions: [], roles: ['admin'] },
       { title: 'Bot Dashboard', icon: Bot, href: '/bot', permissions: [], roles: ['admin'] },
+      { title: 'Portal Bot Files', icon: FileCode, href: '/admin/portal-bot-setup', permissions: [], roles: ['admin'] },
       { title: 'Settings', icon: Settings, href: '/admin/settings', permissions: [] },
       { title: 'Help', icon: HelpCircle, href: '/admin/help', permissions: [] },
     ],
