@@ -764,6 +764,33 @@ export type Database = {
         }
         Relationships: []
       }
+      bot_error_logs: {
+        Row: {
+          context: string
+          created_at: string
+          error_message: string
+          id: string
+          metadata: Json | null
+          stack_trace: string | null
+        }
+        Insert: {
+          context: string
+          created_at?: string
+          error_message: string
+          id?: string
+          metadata?: Json | null
+          stack_trace?: string | null
+        }
+        Update: {
+          context?: string
+          created_at?: string
+          error_message?: string
+          id?: string
+          metadata?: Json | null
+          stack_trace?: string | null
+        }
+        Relationships: []
+      }
       bot_guild_settings: {
         Row: {
           bot_product_id: string
