@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useAuth } from '@/hooks/useAuth';
 import { BotDashboardSidebar } from './BotDashboardSidebar';
-import { Menu, X, ArrowLeft } from 'lucide-react';
+import { Menu, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -25,9 +25,17 @@ export function BotDashboardLayout({ children }: BotDashboardLayoutProps) {
     }
   }, [loading, isAdmin, navigate]);
 
+  // Lock body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [sidebarOpen]);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-[hsl(228,15%,10%)] flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-[hsl(228,15%,10%)] flex items-center justify-center">
         <div className="space-y-4 w-full max-w-md px-4">
           <Skeleton className="h-8 w-3/4 mx-auto bg-white/10" />
           <Skeleton className="h-4 w-1/2 mx-auto bg-white/10" />
@@ -40,26 +48,30 @@ export function BotDashboardLayout({ children }: BotDashboardLayoutProps) {
   if (!isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-[hsl(228,15%,10%)] text-white flex">
+    <div className="h-[100dvh] bg-[hsl(228,15%,10%)] text-white flex overflow-hidden">
       {/* Desktop sidebar */}
-      <div className="hidden lg:flex">
+      <div className="hidden lg:flex shrink-0">
         <BotDashboardSidebar />
       </div>
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setSidebarOpen(false)} />
-          <div className="relative w-64 h-full">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setSidebarOpen(false)}
+          />
+          <div className="relative w-64 h-full animate-in slide-in-from-left duration-200">
             <BotDashboardSidebar onClose={() => setSidebarOpen(false)} />
           </div>
         </div>
       )}
 
-      {/* Main content */}
+      {/* Main content column */}
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* Top header */}
-        <header className="h-14 border-b border-white/10 flex items-center justify-between px-4 bg-[hsl(228,15%,12%)] sticky top-0 z-40"
+        {/* Top header — sticky within this column */}
+        <header
+          className="shrink-0 h-14 border-b border-white/10 flex items-center justify-between px-4 bg-[hsl(228,15%,12%)]/95 backdrop-blur-md z-30"
           style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
         >
           <div className="flex items-center gap-3">
@@ -92,9 +104,17 @@ export function BotDashboardLayout({ children }: BotDashboardLayoutProps) {
           </div>
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          {children}
+        {/* Scrollable page content */}
+        <main
+          className="flex-1 overflow-y-auto overscroll-contain"
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          }}
+        >
+          <div className="p-4 sm:p-6 lg:p-8">
+            {children}
+          </div>
         </main>
       </div>
     </div>
