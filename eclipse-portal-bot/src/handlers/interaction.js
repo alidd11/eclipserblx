@@ -20,6 +20,7 @@ import { handleGlobalBans } from '../commands/globalbans.js';
 import { handleDaily } from '../commands/daily.js';
 import { handleLeaderboard } from '../commands/leaderboard.js';
 import { handleBalance } from '../commands/balance.js';
+import { handleNewDrops } from '../commands/newdrops.js';
 
 // Commands that need deferral (do DB work before responding)
 const DEFERRED_COMMANDS = new Set([
