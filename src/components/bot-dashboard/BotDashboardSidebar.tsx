@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Server, Code, Shield, Zap, Settings, Bot, X,
-  Gavel, BarChart3, ScrollText
+  Gavel, BarChart3, ScrollText, ShieldAlert, SmilePlus, Terminal, Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
