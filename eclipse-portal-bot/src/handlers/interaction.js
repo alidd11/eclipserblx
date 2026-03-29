@@ -35,6 +35,7 @@ const DEFERRED_COMMANDS = new Set([
   'getrole', 'roles', 'store', 'unlink', 'walletbalance',
   'update', 'globalban', 'globalunban', 'globalbans',
   'daily', 'leaderboard', 'balance', 'newdrops',
+  'ban', 'kick', 'timeout', 'unban', 'modlog', 'afk',
 ]);
 
 // Commands that use ephemeral replies
