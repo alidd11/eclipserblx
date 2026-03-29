@@ -740,6 +740,30 @@ export type Database = {
         }
         Relationships: []
       }
+      bot_afk_status: {
+        Row: {
+          afk_since: string
+          guild_id: string
+          id: string
+          reason: string | null
+          user_discord_id: string
+        }
+        Insert: {
+          afk_since?: string
+          guild_id: string
+          id?: string
+          reason?: string | null
+          user_discord_id: string
+        }
+        Update: {
+          afk_since?: string
+          guild_id?: string
+          id?: string
+          reason?: string | null
+          user_discord_id?: string
+        }
+        Relationships: []
+      }
       bot_auto_roles: {
         Row: {
           created_at: string
@@ -860,6 +884,30 @@ export type Database = {
           enabled?: boolean
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      bot_command_usage: {
+        Row: {
+          command_name: string
+          guild_id: string | null
+          id: string
+          used_at: string
+          user_discord_id: string | null
+        }
+        Insert: {
+          command_name: string
+          guild_id?: string | null
+          id?: string
+          used_at?: string
+          user_discord_id?: string | null
+        }
+        Update: {
+          command_name?: string
+          guild_id?: string | null
+          id?: string
+          used_at?: string
+          user_discord_id?: string | null
         }
         Relationships: []
       }
@@ -1289,6 +1337,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      bot_mod_actions: {
+        Row: {
+          action_type: string
+          created_at: string
+          duration: string | null
+          guild_id: string | null
+          id: string
+          moderator_id: string
+          moderator_username: string | null
+          reason: string | null
+          target_user_id: string
+          target_username: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          duration?: string | null
+          guild_id?: string | null
+          id?: string
+          moderator_id: string
+          moderator_username?: string | null
+          reason?: string | null
+          target_user_id: string
+          target_username?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          duration?: string | null
+          guild_id?: string | null
+          id?: string
+          moderator_id?: string
+          moderator_username?: string | null
+          reason?: string | null
+          target_user_id?: string
+          target_username?: string | null
+        }
+        Relationships: []
       }
       bot_mod_log_config: {
         Row: {
@@ -4218,6 +4305,74 @@ export type Database = {
           severity?: string
           started_at?: string
           status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      internal_note_attachments: {
+        Row: {
+          created_at: string
+          file_name: string | null
+          file_type: string | null
+          file_url: string
+          id: string
+          note_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name?: string | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          note_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          note_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_note_attachments_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "internal_notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      internal_notes: {
+        Row: {
+          category: string | null
+          content: string | null
+          created_at: string
+          created_by: string
+          id: string
+          priority: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          content?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          priority?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          content?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          priority?: string | null
           title?: string
           updated_at?: string
         }
