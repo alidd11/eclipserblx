@@ -297,6 +297,10 @@ export async function publicReply(interaction, embeds, components) {
   'src/utils/server-context.js': `import { supabase } from '../supabase.js';
 import { config } from '../config.js';
 
+// Simple in-memory cache for server context (avoids re-querying every command)
+const contextCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 /**
  * Determine server context — main Eclipse server or a linked store server
  */
@@ -309,19 +313,37 @@ export async function getServerContext(guildId) {
     return { guildId, isMainServer: true };
   }
 
+  // Check cache first
+  const cached = contextCache.get(guildId);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.value;
+  }
+
   // Check if this guild is associated with a store
   const { data: store, error } = await supabase
     .from('stores')
     .select('id, name, slug, logo_url')
     .eq('discord_guild_id', guildId)
-    .eq('is_active', true)
+    .eq('status', 'approved')
     .maybeSingle();
 
+  let result;
   if (store && !error) {
-    return { guildId, isMainServer: false, store };
+    result = { guildId, isMainServer: false, store };
+  } else {
+    result = { guildId, isMainServer: false };
   }
 
-  return { guildId, isMainServer: false };
+  // Cache the result
+  contextCache.set(guildId, { value: result, timestamp: Date.now() });
+  return result;
+}
+
+/**
+ * Clear cached context for a guild (e.g. after store changes)
+ */
+export function clearServerContext(guildId) {
+  contextCache.delete(guildId);
 }
 
 /**
@@ -367,6 +389,19 @@ import { handleGlobalBan } from '../commands/globalban.js';
 import { handleGlobalUnban } from '../commands/globalunban.js';
 import { handleGlobalBans } from '../commands/globalbans.js';
 
+// Commands that need deferral (do DB work before responding)
+const DEFERRED_COMMANDS = new Set([
+  'link', 'verify', 'profile', 'purchases', 'retrieve',
+  'getrole', 'roles', 'store', 'unlink', 'walletbalance',
+  'update', 'globalban', 'globalunban', 'globalbans',
+]);
+
+// Commands that use ephemeral replies
+const EPHEMERAL_COMMANDS = new Set([
+  'retrieve', 'walletbalance', 'update', 'globalban',
+  'globalunban', 'globalbans',
+]);
+
 export async function handleInteraction(interaction) {
   try {
     // Handle button interactions (help pagination)
@@ -382,9 +417,10 @@ export async function handleInteraction(interaction) {
       return;
     }
 
-    // Handle modal submissions
+    // Handle modal submissions — showcase uses its own deferral
     if (interaction.isModalSubmit()) {
       if (interaction.customId === 'showcase_modal') {
+        await interaction.deferReply();
         const serverContext = await getServerContext(interaction.guildId);
         return handleShowcaseModal(interaction, serverContext);
       }
@@ -394,10 +430,27 @@ export async function handleInteraction(interaction) {
     // Handle slash commands
     if (!interaction.isChatInputCommand()) return;
 
-    const serverContext = await getServerContext(interaction.guildId);
     const { commandName } = interaction;
-
     console.log(\`[interaction] /\${commandName} by \${interaction.user.tag} in guild \${interaction.guildId}\`);
+
+    // Showcase opens a modal — must NOT be deferred
+    if (commandName === 'showcase') {
+      const serverContext = await getServerContext(interaction.guildId);
+      return handleShowcaseCommand(interaction, serverContext);
+    }
+
+    // Help is lightweight — respond immediately
+    if (commandName === 'help') {
+      const serverContext = await getServerContext(interaction.guildId);
+      return handleHelp(interaction, serverContext);
+    }
+
+    // Defer all other commands to prevent 3-second timeout
+    if (DEFERRED_COMMANDS.has(commandName)) {
+      await interaction.deferReply({ ephemeral: EPHEMERAL_COMMANDS.has(commandName) });
+    }
+
+    const serverContext = await getServerContext(interaction.guildId);
 
     switch (commandName) {
       case 'link': return handleLink(interaction, serverContext);
@@ -409,16 +462,14 @@ export async function handleInteraction(interaction) {
       case 'roles': return handleGetRole(interaction, serverContext);
       case 'store': return handleStore(interaction, serverContext);
       case 'unlink': return handleUnlink(interaction, serverContext);
-      case 'showcase': return handleShowcaseCommand(interaction, serverContext);
       case 'walletbalance': return handleWalletBalance(interaction);
-      case 'help': return handleHelp(interaction, serverContext);
       case 'update': return handleUpdate(interaction, serverContext);
       case 'globalban': return handleGlobalBan(interaction);
       case 'globalunban': return handleGlobalUnban(interaction);
       case 'globalbans': return handleGlobalBans(interaction);
       default:
         console.log(\`[interaction] Unknown command: \${commandName}\`);
-        return interaction.reply({ content: \`Unknown command: \${commandName}\`, ephemeral: true });
+        return interaction.editReply({ content: \`Unknown command: \${commandName}\` });
     }
   } catch (error) {
     console.error('[interaction] Error:', error);
@@ -1117,7 +1168,7 @@ export async function handleGetRole(interaction, serverContext) {
     const [ordersResult, subscriptionResult, storeResult] = await Promise.all([
       supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
       supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
-      supabase.from('stores').select('id').eq('owner_id', profile.user_id).eq('is_active', true).maybeSingle(),
+      supabase.from('stores').select('id').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
     ]);
 
     const purchaseCount = ordersResult.count || 0;
@@ -1167,15 +1218,22 @@ export async function handleGetRole(interaction, serverContext) {
     );
   }
 
-  // Execute role operations
+  // Fetch member ONCE before role operations
+  const guild = interaction.guild;
+  let member;
+  try {
+    member = await guild.members.fetch(discordUserId);
+  } catch (e) {
+    console.error('[getrole] Failed to fetch member:', e.message);
+    return publicReply(interaction, [{ color: 0xef4444, title: '❌ Error', description: 'Could not fetch your server membership. Please try again.', footer: { text: branding.footer } }]);
+  }
+
   const rolesAssigned = [];
   const rolesFailed = [];
-  const guild = interaction.guild;
 
   await Promise.all([
     ...rolesToAssign.map(async role => {
       try {
-        const member = await guild.members.fetch(discordUserId);
         await member.roles.add(role.id);
         rolesAssigned.push(role.name);
       } catch (e) {
@@ -1185,7 +1243,6 @@ export async function handleGetRole(interaction, serverContext) {
     }),
     ...rolesToRemove.map(async role => {
       try {
-        const member = await guild.members.fetch(discordUserId);
         await member.roles.remove(role.id);
       } catch {}
     }),
@@ -1204,7 +1261,7 @@ export async function handleGetRole(interaction, serverContext) {
     const [ordersRes, subRes, storeRes] = await Promise.all([
       supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
       supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
-      supabase.from('stores').select('id').eq('owner_id', profile.user_id).eq('is_active', true).maybeSingle(),
+      supabase.from('stores').select('id').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
     ]);
     const eligibility = [];
     const count = ordersRes.count || 0;
@@ -1313,7 +1370,7 @@ export async function handleUnlink(interaction, serverContext) {
 
   // Check if locked
   const [storeResult, roleResult] = await Promise.all([
-    supabase.from('stores').select('id, name').eq('owner_id', profile.user_id).eq('is_active', true).maybeSingle(),
+    supabase.from('stores').select('id, name').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
     supabase.from('user_roles').select('role').eq('user_id', profile.user_id),
   ]);
   const store = storeResult.data;
@@ -1647,7 +1704,7 @@ export async function handleUpdate(interaction, serverContext) {
       const [ordersResult, subscriptionResult, storeResult] = await Promise.all([
         supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
         supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
-        supabase.from('stores').select('id, is_verified').eq('owner_id', profile.user_id).eq('is_active', true).maybeSingle(),
+        supabase.from('stores').select('id, is_verified').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
       ]);
       const purchaseCount = ordersResult.count || 0;
       const hasSubscription = !!subscriptionResult.data;

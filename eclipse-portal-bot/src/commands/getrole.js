@@ -30,7 +30,7 @@ export async function handleGetRole(interaction, serverContext) {
     const [ordersResult, subscriptionResult, storeResult] = await Promise.all([
       supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
       supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
-      supabase.from('stores').select('id').eq('owner_id', profile.user_id).eq('is_active', true).maybeSingle(),
+      supabase.from('stores').select('id').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
     ]);
 
     const purchaseCount = ordersResult.count || 0;
@@ -80,15 +80,22 @@ export async function handleGetRole(interaction, serverContext) {
     );
   }
 
-  // Execute role operations
+  // Fetch member ONCE before role operations
+  const guild = interaction.guild;
+  let member;
+  try {
+    member = await guild.members.fetch(discordUserId);
+  } catch (e) {
+    console.error('[getrole] Failed to fetch member:', e.message);
+    return publicReply(interaction, [{ color: 0xef4444, title: '❌ Error', description: 'Could not fetch your server membership. Please try again.', footer: { text: branding.footer } }]);
+  }
+
   const rolesAssigned = [];
   const rolesFailed = [];
-  const guild = interaction.guild;
 
   await Promise.all([
     ...rolesToAssign.map(async role => {
       try {
-        const member = await guild.members.fetch(discordUserId);
         await member.roles.add(role.id);
         rolesAssigned.push(role.name);
       } catch (e) {
@@ -98,7 +105,6 @@ export async function handleGetRole(interaction, serverContext) {
     }),
     ...rolesToRemove.map(async role => {
       try {
-        const member = await guild.members.fetch(discordUserId);
         await member.roles.remove(role.id);
       } catch {}
     }),
@@ -109,7 +115,7 @@ export async function handleGetRole(interaction, serverContext) {
     fields.push({ name: '✅ Roles Synced', value: rolesToAssign.filter(r => rolesAssigned.includes(r.name)).map(r => `<@&${r.id}>`).join('\n'), inline: true });
   }
   if (rolesFailed.length > 0) {
-    fields.push({ name: '❌ Failed', value: rolesFailed.map(r => `\u2022 ${r}`).join('\n'), inline: true });
+    fields.push({ name: '❌ Failed', value: rolesFailed.map(r => `• ${r}`).join('\n'), inline: true });
   }
 
   // Build eligibility hints
@@ -117,14 +123,14 @@ export async function handleGetRole(interaction, serverContext) {
     const [ordersRes, subRes, storeRes] = await Promise.all([
       supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
       supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
-      supabase.from('stores').select('id').eq('owner_id', profile.user_id).eq('is_active', true).maybeSingle(),
+      supabase.from('stores').select('id').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
     ]);
     const eligibility = [];
     const count = ordersRes.count || 0;
-    if (count === 0) eligibility.push('\u2022 Make a purchase → **Customer**');
-    if (count > 0 && count < 5) eligibility.push(`\u2022 ${5 - count} more purchases → **Loyal Customer**`);
-    if (!subRes.data) eligibility.push('\u2022 Subscribe to Eclipse+ → **Eclipse+**');
-    if (!storeRes.data) eligibility.push('\u2022 Create a store → **Store Creator**');
+    if (count === 0) eligibility.push('• Make a purchase → **Customer**');
+    if (count > 0 && count < 5) eligibility.push(`• ${5 - count} more purchases → **Loyal Customer**`);
+    if (!subRes.data) eligibility.push('• Subscribe to Eclipse+ → **Eclipse+**');
+    if (!storeRes.data) eligibility.push('• Create a store → **Store Creator**');
     if (eligibility.length > 0) fields.push({ name: '📋 How to Earn Roles', value: eligibility.join('\n') });
   }
 
