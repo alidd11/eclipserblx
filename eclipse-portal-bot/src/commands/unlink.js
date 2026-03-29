@@ -16,9 +16,9 @@ export async function handleUnlink(interaction, serverContext) {
     );
   }
 
-  // Check if locked
+  // Check if locked — use status='approved' for consistency
   const [storeResult, roleResult] = await Promise.all([
-    supabase.from('stores').select('id, name').eq('owner_id', profile.user_id).eq('is_active', true).maybeSingle(),
+    supabase.from('stores').select('id, name').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
     supabase.from('user_roles').select('role').eq('user_id', profile.user_id),
   ]);
   const store = storeResult.data;
@@ -27,8 +27,8 @@ export async function handleUnlink(interaction, serverContext) {
 
   if (store || hasStoreCreatorRole) {
     const reasons = [];
-    if (store) reasons.push(`\u2022 You own an active store (**${store.name || 'Unknown'}**)`);
-    if (hasStoreCreatorRole) reasons.push('\u2022 You have the **Store Creator** role');
+    if (store) reasons.push(`• You own an active store (**${store.name || 'Unknown'}**)`);
+    if (hasStoreCreatorRole) reasons.push('• You have the **Store Creator** role');
     return publicReplyWithDM(interaction,
       { color: 0xef4444, description: `<@${discordUserId}>\n🔒 Your account is locked. Check your DMs for details.`, thumbnail: { url: avatarUrl }, footer: { text: branding.footer } },
       [{ color: 0xef4444, title: '🔒 Account Locked', description: 'Your Discord account cannot be unlinked for the following reasons:', thumbnail: { url: avatarUrl }, fields: [{ name: 'Reasons', value: reasons.join('\n') }, { name: 'Need Help?', value: 'Contact support if you need to make changes to your linked accounts.' }], footer: { text: branding.footer }, timestamp: new Date().toISOString() }]
