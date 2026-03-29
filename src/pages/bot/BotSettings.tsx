@@ -1,13 +1,12 @@
 import { BotDashboardLayout } from '@/components/bot-dashboard/BotDashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSearchParams } from 'react-router-dom';
-import { Settings, Key, Code } from 'lucide-react';
+import { Settings, Key } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BotSettingsGeneral } from '@/components/bot-dashboard/settings/BotSettingsGeneral';
 
 const BotCodesContent = lazy(() => import('@/components/bot-dashboard/settings/BotCodesContent'));
-const PortalBotContent = lazy(() => import('@/components/bot-dashboard/settings/PortalBotContent'));
 
 function TabLoader() {
   return (
