@@ -1,45 +1,88 @@
 
 
-# Two Issues to Fix
+# Eclipse Portal Bot — Admin Control Dashboard
 
-## Issue 1: Bot ENV not loading (`DISCORD_CUSTOMER_BOT_TOKEN`)
+## What this builds
 
-Altair says the `.env` is set up but the bot crashes with "Missing required env var: DISCORD_CUSTOMER_BOT_TOKEN". The bot uses ES modules (`"type": "module"`) and has no `dotenv` dependency — Node.js does not auto-load `.env` files.
+A new admin page (`/admin/bot-dashboard`) that gives you full visibility and control over the Eclipse Portal Bot directly from the admin panel — no SSH or Discord Developer Portal needed.
 
-**Fix:** Add `dotenv` as a dependency and load it at the top of `index.js`:
+## Dashboard sections
 
-- Add `"dotenv": "^16.4.0"` to `package.json` dependencies
-- Add `import 'dotenv/config';` as the first line of `index.js` (before any other imports)
-- Also add the same import to `src/register-commands.js` so env vars load when registering commands
+### 1. Bot Status & Health
+- Calls the bot's health endpoint (`/health`) to show uptime, connected guilds count, and online/offline status
+- Manual "Refresh Status" button
+- Stores the bot's host URL in a new `bot_settings` table
 
-This is the standard Node.js pattern for loading `.env` files.
+### 2. Connected Servers
+- Lists all guilds the bot is in (fetched via a new edge function that queries Discord API using the bot token)
+- Shows server name, member count, icon, and whether a store is linked
+- Quick link to configure store-to-server mapping
 
-## Issue 2: Bot subdomains being hijacked
+### 3. Role Configuration Manager
+- Full CRUD for `discord_role_configs` entries — create, edit, delete auto-assign roles
+- Filter by store / server
+- Configure: role ID, role name, min order count, auto-assign on purchase toggle
+- Also manage the main server role IDs (Customer, Loyal Customer, Eclipse+, Store Creator, Verified Seller) stored as bot env vars — surfaced as editable settings
 
-Three subdomains need to point to Apollo Panel instead of the main site:
-- `staff.eclipserblx.com` → CNAME `proxy-eu.apollopanel.com` (DNS-only)
-- `tracker.eclipserblx.com` → CNAME `proxy-eu.apollopanel.com` (DNS-only)
-- `forms.eclipserblx.com` → CNAME `proxy-eu.apollopanel.com` (DNS-only)
+### 4. Command Registry
+- View all 15 registered slash commands
+- "Re-register Commands" button that calls a new edge function to PUT commands via Discord API
+- Toggle commands on/off (maintained in a `bot_command_settings` table)
 
-**Changes needed:**
+### 5. Bot Actions
+- **Send Announcement**: compose and send a message to a selected channel in a selected server
+- **Trigger Role Sync**: manually sync roles for a specific user (same as `/update` command but from the dashboard)
+- **View Modmail**: link to existing modmail/ticket pages
 
-1. **`src/hooks/useStoreDomain.tsx`** — Add `staff`, `tracker`, `forms` to `RESERVED_SUBDOMAINS` array so the store domain resolver ignores them
+### 6. Bot Settings
+- Edit the bot's environment config (site URL, webhook URL, main guild ID, role IDs) stored in a `bot_settings` table
+- These are reference values for the dashboard; the actual bot reads from its `.env` file on the host
 
-2. **Cloudflare Worker reference (`docs/cloudflare-worker-og.js`)** — Add `staff`, `tracker`, `forms` to `RESERVED_SUBS` so the Worker passes them through without intercepting
+## Database changes
 
-3. **Deploy Worker** — The actual Worker needs redeployment with the updated reserved list (via the `deploy-cloudflare-worker` edge function)
+**New table: `bot_settings`**
+- `id` (uuid, PK)
+- `key` (text, unique) — e.g. `bot_host_url`, `main_guild_id`, `customer_role_id`
+- `value` (text)
+- `updated_at` (timestamptz)
+- RLS: admin-only read/write
 
-4. **DNS records** — Create CNAME records for all three subdomains pointing to `proxy-eu.apollopanel.com` with proxy disabled (DNS-only/grey cloud). This will be done via the Cloudflare API, replacing any existing A records from the wildcard
+**New table: `bot_command_settings`**
+- `id` (uuid, PK)
+- `command_name` (text, unique)
+- `enabled` (boolean, default true)
+- `updated_at` (timestamptz)
+- RLS: admin-only read/write
 
-5. **New edge function `setup-bot-subdomains`** — A one-time function to create the three CNAME records via Cloudflare API with `proxied: false`
+## New edge functions
 
-## Files to modify
-- `eclipse-portal-bot/package.json` — add dotenv dependency
-- `eclipse-portal-bot/index.js` — add `import 'dotenv/config'`
-- `eclipse-portal-bot/src/register-commands.js` — add `import 'dotenv/config'`
-- `src/hooks/useStoreDomain.tsx` — extend reserved subdomains
-- `docs/cloudflare-worker-og.js` — extend reserved subs
-- `supabase/functions/deploy-cloudflare-worker/index.ts` — extend reserved subs in the built Worker script
-- New: `supabase/functions/setup-bot-subdomains/index.ts` — create CNAME records via CF API
-- Update embedded bot files in `src/pages/admin/PortalBotSetup.tsx` to include dotenv
+1. **`bot-control`** — Proxies requests to the Discord API using the bot token (stored as a secret). Supports actions:
+   - `list-guilds` — GET `/users/@me/guilds`
+   - `register-commands` — PUT global slash commands
+   - `send-message` — POST message to a channel
+   - `guild-channels` — GET channels for a guild
+   - `sync-roles` — trigger role sync for a user in a guild
+
+2. Uses `DISCORD_CUSTOMER_BOT_TOKEN` secret (already configured)
+
+## Files to create/modify
+
+| File | Action |
+|---|---|
+| `src/pages/admin/BotDashboard.tsx` | New — main dashboard page |
+| `src/components/admin/bot/BotStatusCard.tsx` | New — health/uptime display |
+| `src/components/admin/bot/BotServersCard.tsx` | New — connected guilds list |
+| `src/components/admin/bot/BotRolesCard.tsx` | New — role config CRUD |
+| `src/components/admin/bot/BotCommandsCard.tsx` | New — command registry |
+| `src/components/admin/bot/BotActionsCard.tsx` | New — announcement/sync actions |
+| `src/components/admin/bot/BotSettingsCard.tsx` | New — env/config editor |
+| `supabase/functions/bot-control/index.ts` | New — Discord API proxy |
+| `src/App.tsx` | Add route `/admin/bot-dashboard` |
+| `src/components/admin/AdminSidebar.tsx` | Add nav link |
+| Migration | Create `bot_settings` and `bot_command_settings` tables |
+
+## Access control
+
+- Restricted to `admin` role only (passed via `requiredRoles={['admin']}` on AdminLayout)
+- Edge function validates admin JWT before executing any Discord API calls
 
