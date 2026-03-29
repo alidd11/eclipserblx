@@ -501,9 +501,13 @@ export function AppRoutes() {
         <Route path="/bot" element={<BotOverviewPage />} />
         <Route path="/bot/servers" element={<BotServersPage />} />
         <Route path="/bot/commands" element={<BotCommandsPage />} />
+        <Route path="/bot/moderation" element={<BotModerationPage />} />
         <Route path="/bot/roles" element={<BotRolesPage />} />
         <Route path="/bot/actions" element={<BotActionsPage />} />
+        <Route path="/bot/analytics" element={<BotAnalyticsPage />} />
         <Route path="/bot/settings" element={<BotSettingsPage />} />
+        <Route path="/bot/logs" element={<BotLogsPage />} />
+        <Route path="/admin/internal-notes" element={<AdminInternalNotes />} />
         <Route path="/admin/platform-ledger" element={<AdminPlatformLedger />} />
         <Route path="/admin/custom-domains" element={<AdminCustomDomains />} />
         {/* Global Guard routes (path-based instead of subdomain) */}

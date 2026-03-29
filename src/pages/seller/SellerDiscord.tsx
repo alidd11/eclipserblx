@@ -97,6 +97,10 @@ export default function SellerDiscord() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="welcome" className="mt-4">
+            <WelcomeEmbedBuilder />
+          </TabsContent>
+
           <TabsContent value="announcements" className="mt-4">
             <ScheduledAnnouncementCard />
           </TabsContent>
