@@ -22,6 +22,12 @@ import { handleDaily } from '../commands/daily.js';
 import { handleLeaderboard } from '../commands/leaderboard.js';
 import { handleBalance } from '../commands/balance.js';
 import { handleNewDrops } from '../commands/newdrops.js';
+import { handleBan } from '../commands/ban.js';
+import { handleKick } from '../commands/kick.js';
+import { handleTimeout } from '../commands/timeout.js';
+import { handleUnban } from '../commands/unban.js';
+import { handleModlog } from '../commands/modlog.js';
+import { handleAfk } from '../commands/afk.js';
 
 // Commands that need deferral (do DB work before responding)
 const DEFERRED_COMMANDS = new Set([
