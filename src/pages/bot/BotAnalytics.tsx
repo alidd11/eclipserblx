@@ -10,7 +10,7 @@ export default function BotAnalytics() {
   const { data: usageData = [], isLoading } = useQuery({
     queryKey: ['bot-command-usage-analytics'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('bot_command_usage')
         .select('command_name, executed_at')
         .gte('executed_at', subDays(new Date(), 30).toISOString())

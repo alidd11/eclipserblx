@@ -30,7 +30,7 @@ export default function BotModeration() {
   const { data: modActions = [], isLoading } = useQuery({
     queryKey: ['bot-mod-actions', filterAction],
     queryFn: async () => {
-      let query = supabase
+      let query = (supabase as any)
         .from('bot_mod_actions')
         .select('*')
         .order('created_at', { ascending: false })

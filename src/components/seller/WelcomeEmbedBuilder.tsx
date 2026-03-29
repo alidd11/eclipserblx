@@ -94,7 +94,7 @@ export function WelcomeEmbedBuilder() {
         updated_at: new Date().toISOString(),
       };
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('store_welcome_embeds')
         .upsert(payload, { onConflict: 'store_id' });
       if (error) throw error;

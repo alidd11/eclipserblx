@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { AdminLayout } from '@/components/admin/AdminLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,6 +24,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   evidence: 'bg-orange-500/10 text-orange-500',
 };
 
+const db = supabase as any;
+
 export default function InternalNotes() {
   const { user } = useAuth();
   const { isAdmin } = useAdminAuth();
@@ -38,7 +40,7 @@ export default function InternalNotes() {
   const { data: notes = [], isLoading } = useQuery({
     queryKey: ['internal-notes', filterCategory],
     queryFn: async () => {
-      let query = supabase
+      let query = db
         .from('internal_notes')
         .select('*')
         .order('is_pinned', { ascending: false })
@@ -56,7 +58,7 @@ export default function InternalNotes() {
 
   const createNote = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from('internal_notes').insert({
+      const { error } = await db.from('internal_notes').insert({
         author_id: user!.id,
         title: newTitle,
         content: newContent,
@@ -77,7 +79,7 @@ export default function InternalNotes() {
 
   const togglePin = useMutation({
     mutationFn: async ({ id, pinned }: { id: string; pinned: boolean }) => {
-      const { error } = await supabase.from('internal_notes').update({ is_pinned: !pinned }).eq('id', id);
+      const { error } = await db.from('internal_notes').update({ is_pinned: !pinned }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['internal-notes'] }),
@@ -85,7 +87,7 @@ export default function InternalNotes() {
 
   const deleteNote = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('internal_notes').delete().eq('id', id);
+      const { error } = await db.from('internal_notes').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -144,7 +146,6 @@ export default function InternalNotes() {
           </Dialog>
         </div>
 
-        {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -163,7 +164,6 @@ export default function InternalNotes() {
           </Select>
         </div>
 
-        {/* Notes list */}
         {isLoading ? (
           <div className="text-center text-muted-foreground py-8">Loading...</div>
         ) : filtered.length === 0 ? (
