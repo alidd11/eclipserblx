@@ -1,6 +1,7 @@
 import { getServerContext } from '../utils/server-context.js';
 import { checkCooldown, setCooldown } from '../utils/rate-limiter.js';
 import { logBotError } from '../utils/error-logger.js';
+import { supabase } from '../supabase.js';
 import { handleLink } from '../commands/link.js';
 import { handleVerify } from '../commands/verify.js';
 import { handleProfile } from '../commands/profile.js';
@@ -37,6 +38,28 @@ const EPHEMERAL_COMMANDS = new Set([
 // Commands exempt from cooldown checks
 const COOLDOWN_EXEMPT = new Set(['help']);
 
+// Cache for disabled commands (refreshed every 2 minutes)
+let disabledCommandsCache = new Set();
+let disabledCacheTimestamp = 0;
+const DISABLED_CACHE_TTL = 2 * 60 * 1000;
+
+async function getDisabledCommands() {
+  if (Date.now() - disabledCacheTimestamp < DISABLED_CACHE_TTL) {
+    return disabledCommandsCache;
+  }
+  try {
+    const { data } = await supabase
+      .from('bot_command_settings')
+      .select('command_name')
+      .eq('enabled', false);
+    disabledCommandsCache = new Set((data || []).map(c => c.command_name));
+    disabledCacheTimestamp = Date.now();
+  } catch (err) {
+    console.error('[interaction] Failed to fetch command settings:', err.message);
+  }
+  return disabledCommandsCache;
+}
+
 export async function handleInteraction(interaction) {
   try {
     // Handle button interactions (help pagination)
@@ -68,6 +91,18 @@ export async function handleInteraction(interaction) {
     const { commandName } = interaction;
     const userId = interaction.user.id;
     console.log(`[interaction] /${commandName} by ${interaction.user.tag} in guild ${interaction.guildId}`);
+
+    // Check if command is disabled in dashboard
+    const disabled = await getDisabledCommands();
+    if (disabled.has(commandName)) {
+      return interaction.reply({
+        embeds: [{
+          color: 0xf59e0b,
+          description: `\u26A0\uFE0F The \`/${commandName}\` command is currently disabled.`,
+        }],
+        ephemeral: true,
+      });
+    }
 
     // Cooldown check (before deferring)
     if (!COOLDOWN_EXEMPT.has(commandName)) {
