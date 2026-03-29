@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Zap, Send, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -21,6 +22,9 @@ export function BotActionsCard() {
   const [selectedGuild, setSelectedGuild] = useState('');
   const [selectedChannel, setSelectedChannel] = useState('');
   const [message, setMessage] = useState('');
+  const [useEmbed, setUseEmbed] = useState(false);
+  const [embedTitle, setEmbedTitle] = useState('');
+  const [embedColor, setEmbedColor] = useState('#8b5cf6');
 
   // Get guilds for the dropdown
   const { data: guilds = [] } = useQuery({
@@ -49,12 +53,26 @@ export function BotActionsCard() {
 
   const sendMessage = useMutation({
     mutationFn: async () => {
+      const payload: Record<string, unknown> = {
+        action: 'send-message',
+        channel_id: selectedChannel,
+      };
+
+      if (useEmbed) {
+        // Convert hex to Discord int color
+        const colorInt = parseInt(embedColor.replace('#', ''), 16);
+        payload.embed = {
+          title: embedTitle || undefined,
+          description: message,
+          color: colorInt,
+          timestamp: new Date().toISOString(),
+        };
+      } else {
+        payload.content = message;
+      }
+
       const { data, error } = await supabase.functions.invoke('bot-control', {
-        body: {
-          action: 'send-message',
-          channel_id: selectedChannel,
-          content: message,
-        },
+        body: payload,
       });
       if (error) throw error;
       return data;
@@ -62,6 +80,7 @@ export function BotActionsCard() {
     onSuccess: () => {
       toast.success('Message sent!');
       setMessage('');
+      setEmbedTitle('');
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -77,7 +96,13 @@ export function BotActionsCard() {
       <CardContent className="space-y-4">
         {/* Send Announcement */}
         <div className="space-y-3 p-4 rounded-lg border bg-muted/30">
-          <h4 className="font-medium text-sm">Send Message</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="font-medium text-sm">Send Message</h4>
+            <div className="flex items-center gap-2">
+              <Label className="text-xs text-muted-foreground">Embed</Label>
+              <Switch checked={useEmbed} onCheckedChange={setUseEmbed} />
+            </div>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <Label className="text-xs">Server</Label>
@@ -106,10 +131,41 @@ export function BotActionsCard() {
               </Select>
             </div>
           </div>
+
+          {useEmbed && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Embed Title</Label>
+                <Input
+                  placeholder="Announcement title..."
+                  value={embedTitle}
+                  onChange={(e) => setEmbedTitle(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Color</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="color"
+                    value={embedColor}
+                    onChange={(e) => setEmbedColor(e.target.value)}
+                    className="w-12 h-9 p-1 cursor-pointer"
+                  />
+                  <Input
+                    value={embedColor}
+                    onChange={(e) => setEmbedColor(e.target.value)}
+                    className="font-mono text-xs"
+                    placeholder="#8b5cf6"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
           <div>
-            <Label className="text-xs">Message</Label>
+            <Label className="text-xs">{useEmbed ? 'Description' : 'Message'}</Label>
             <Textarea
-              placeholder="Type your message..."
+              placeholder={useEmbed ? 'Embed description...' : 'Type your message...'}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={3}

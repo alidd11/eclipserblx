@@ -2,8 +2,26 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Activity, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { Activity, RefreshCw, Wifi, WifiOff, Cpu, Gauge, Terminal, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+
+interface HealthData {
+  online: boolean;
+  uptime?: number;
+  uptimeFormatted?: string;
+  guilds?: number;
+  ping?: number;
+  memory?: { heapUsed: number; heapTotal: number; rss: number };
+  stats?: {
+    commandsProcessed: number;
+    errorsLogged: number;
+    reconnects: number;
+    lastError: { message: string; at: string } | null;
+    startedAt: string;
+  };
+  node?: string;
+  error?: string;
+}
 
 export function BotStatusCard() {
   const { data: health, isLoading, refetch, isFetching } = useQuery({
@@ -13,7 +31,7 @@ export function BotStatusCard() {
         body: { action: 'bot-health' },
       });
       if (error) throw error;
-      return data as { online: boolean; uptime?: number; guilds?: number; error?: string };
+      return data as HealthData;
     },
     refetchInterval: 60000,
   });
@@ -24,6 +42,13 @@ export function BotStatusCard() {
     const h = Math.floor((seconds % 86400) / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     return `${d}d ${h}h ${m}m`;
+  };
+
+  const getPingColor = (ping?: number) => {
+    if (!ping || ping < 0) return 'text-muted-foreground';
+    if (ping < 100) return 'text-green-500';
+    if (ping < 250) return 'text-yellow-500';
+    return 'text-red-500';
   };
 
   return (
@@ -52,19 +77,75 @@ export function BotStatusCard() {
                   <WifiOff className="h-3 w-3 mr-1" /> Offline
                 </Badge>
               )}
+              {health?.node && (
+                <span className="text-xs text-muted-foreground font-mono">{health.node}</span>
+              )}
             </div>
+
             {health?.online && (
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground">Uptime</p>
-                  <p className="text-sm font-medium">{formatUptime(health.uptime)}</p>
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2.5 rounded-lg bg-muted/50">
+                    <p className="text-xs text-muted-foreground">Uptime</p>
+                    <p className="text-sm font-medium">{health.uptimeFormatted || formatUptime(health.uptime)}</p>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-muted/50">
+                    <p className="text-xs text-muted-foreground">Servers</p>
+                    <p className="text-sm font-medium">{health.guilds ?? 'N/A'}</p>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-muted/50">
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Gauge className="h-3 w-3" /> Ping
+                    </p>
+                    <p className={`text-sm font-medium ${getPingColor(health.ping)}`}>
+                      {health.ping && health.ping > 0 ? `${health.ping}ms` : 'N/A'}
+                    </p>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-muted/50">
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Cpu className="h-3 w-3" /> Memory
+                    </p>
+                    <p className="text-sm font-medium">
+                      {health.memory ? `${health.memory.heapUsed}/${health.memory.heapTotal}MB` : 'N/A'}
+                    </p>
+                  </div>
                 </div>
-                <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground">Servers</p>
-                  <p className="text-sm font-medium">{health.guilds ?? 'N/A'}</p>
-                </div>
-              </div>
+
+                {health.stats && (
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="p-2.5 rounded-lg bg-muted/50 text-center">
+                      <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                        <Terminal className="h-3 w-3" /> Commands
+                      </p>
+                      <p className="text-sm font-medium">{health.stats.commandsProcessed.toLocaleString()}</p>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-muted/50 text-center">
+                      <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                        <AlertTriangle className="h-3 w-3" /> Errors
+                      </p>
+                      <p className={`text-sm font-medium ${health.stats.errorsLogged > 0 ? 'text-red-500' : ''}`}>
+                        {health.stats.errorsLogged}
+                      </p>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-muted/50 text-center">
+                      <p className="text-xs text-muted-foreground">Reconnects</p>
+                      <p className="text-sm font-medium">{health.stats.reconnects}</p>
+                    </div>
+                  </div>
+                )}
+
+                {health.stats?.lastError && (
+                  <div className="p-2.5 rounded-lg bg-destructive/10 border border-destructive/20">
+                    <p className="text-xs font-medium text-destructive">Last Error</p>
+                    <p className="text-xs text-muted-foreground truncate">{health.stats.lastError.message}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(health.stats.lastError.at).toLocaleString()}
+                    </p>
+                  </div>
+                )}
+              </>
             )}
+
             {!health?.online && health?.error && (
               <p className="text-xs text-muted-foreground">{health.error}</p>
             )}

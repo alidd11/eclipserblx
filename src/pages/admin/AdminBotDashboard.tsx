@@ -5,6 +5,7 @@ import { BotRolesCard } from '@/components/admin/bot/BotRolesCard';
 import { BotCommandsCard } from '@/components/admin/bot/BotCommandsCard';
 import { BotActionsCard } from '@/components/admin/bot/BotActionsCard';
 import { BotSettingsCard } from '@/components/admin/bot/BotSettingsCard';
+import { BotErrorLogsCard } from '@/components/admin/bot/BotErrorLogsCard';
 import { Bot } from 'lucide-react';
 
 export default function AdminBotDashboard() {
@@ -38,6 +39,9 @@ export default function AdminBotDashboard() {
           <BotActionsCard />
           <BotSettingsCard />
         </div>
+
+        {/* Error Logs - full width */}
+        <BotErrorLogsCard />
       </div>
     </AdminLayout>
   );
