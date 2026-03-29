@@ -41,7 +41,7 @@ const DEFERRED_COMMANDS = new Set([
 // Commands that use ephemeral replies
 const EPHEMERAL_COMMANDS = new Set([
   'retrieve', 'walletbalance', 'update', 'globalban',
-  'globalunban', 'globalbans', 'balance',
+  'globalunban', 'globalbans', 'balance', 'modlog',
 ]);
 
 // Commands exempt from cooldown checks
