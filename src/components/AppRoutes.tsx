@@ -454,9 +454,9 @@ export function AppRoutes() {
         <Route path="/admin/ip-bans" element={<AdminIpBans />} />
         <Route path="/admin/referrals" element={<Navigate to="/admin/affiliate-hub?tab=referrals" replace />} />
         <Route path="/admin/affiliates" element={<Navigate to="/admin/affiliate-hub?tab=overview" replace />} />
-        <Route path="/admin/bot-codes" element={<AdminBotCodes />} />
+        <Route path="/admin/bot-codes" element={<Navigate to="/bot/settings?tab=license-codes" replace />} />
         <Route path="/admin/bot-requests" element={<AdminBotRequests />} />
-        <Route path="/admin/bot-servers" element={<AdminBotServers />} />
+        <Route path="/admin/bot-servers" element={<Navigate to="/bot/servers" replace />} />
         
         <Route path="/admin/customer-tickets" element={<AdminCustomerTickets />} />
         <Route path="/admin/customer-tickets/:ticketId" element={<AdminCustomerTicketDetail />} />
