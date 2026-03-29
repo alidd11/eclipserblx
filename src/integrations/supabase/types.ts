@@ -740,6 +740,30 @@ export type Database = {
         }
         Relationships: []
       }
+      bot_command_settings: {
+        Row: {
+          command_name: string
+          description: string | null
+          enabled: boolean
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          command_name: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          command_name?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bot_guild_settings: {
         Row: {
           bot_product_id: string
@@ -995,6 +1019,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      bot_settings: {
+        Row: {
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          value?: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
       }
       categories: {
         Row: {
