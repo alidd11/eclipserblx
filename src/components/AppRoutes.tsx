@@ -137,7 +137,7 @@ const AdminRecruiterApplications = lazyWithRetry(() => import("@/pages/admin/Rec
 const AdminRecruiterPayouts = lazyWithRetry(() => import("@/pages/admin/RecruiterPayouts"));
 const AdminRecruiterCommissions = lazyWithRetry(() => import("@/pages/admin/RecruiterCommissions"));
 const AdminGDPRCompliance = lazyWithRetry(() => import("@/pages/admin/GDPRCompliance"));
-const AdminBotGhostSetup = lazyWithRetry(() => import("@/pages/admin/BotGhostSetup"));
+
 const AdminPortalBotSetup = lazyWithRetry(() => import("@/pages/admin/PortalBotSetup"));
 const AdminBotDashboard = lazyWithRetry(() => import("@/pages/admin/AdminBotDashboard"));
 
