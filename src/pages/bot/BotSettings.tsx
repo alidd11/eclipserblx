@@ -1,14 +1,12 @@
 import { BotDashboardLayout } from '@/components/bot-dashboard/BotDashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSearchParams } from 'react-router-dom';
-import { Settings, Key, Bot, Code } from 'lucide-react';
+import { Settings, Key, Code } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BotSettingsGeneral } from '@/components/bot-dashboard/settings/BotSettingsGeneral';
 
-// Lazy load the heavy admin content components
 const BotCodesContent = lazy(() => import('@/components/bot-dashboard/settings/BotCodesContent'));
-const BotGhostContent = lazy(() => import('@/components/bot-dashboard/settings/BotGhostContent'));
 const PortalBotContent = lazy(() => import('@/components/bot-dashboard/settings/PortalBotContent'));
 
 function TabLoader() {
@@ -23,7 +21,6 @@ function TabLoader() {
 const tabs = [
   { value: 'general', label: 'General', icon: Settings },
   { value: 'license-codes', label: 'License Codes', icon: Key },
-  { value: 'botghost', label: 'BotGhost', icon: Bot },
   { value: 'portal-bot', label: 'Portal Bot', icon: Code },
 ];
 
@@ -64,12 +61,6 @@ export default function BotSettings() {
           <TabsContent value="license-codes">
             <Suspense fallback={<TabLoader />}>
               <BotCodesContent />
-            </Suspense>
-          </TabsContent>
-
-          <TabsContent value="botghost">
-            <Suspense fallback={<TabLoader />}>
-              <BotGhostContent />
             </Suspense>
           </TabsContent>
 

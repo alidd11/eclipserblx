@@ -137,7 +137,7 @@ const AdminRecruiterApplications = lazyWithRetry(() => import("@/pages/admin/Rec
 const AdminRecruiterPayouts = lazyWithRetry(() => import("@/pages/admin/RecruiterPayouts"));
 const AdminRecruiterCommissions = lazyWithRetry(() => import("@/pages/admin/RecruiterCommissions"));
 const AdminGDPRCompliance = lazyWithRetry(() => import("@/pages/admin/GDPRCompliance"));
-const AdminBotGhostSetup = lazyWithRetry(() => import("@/pages/admin/BotGhostSetup"));
+
 const AdminPortalBotSetup = lazyWithRetry(() => import("@/pages/admin/PortalBotSetup"));
 const AdminBotDashboard = lazyWithRetry(() => import("@/pages/admin/AdminBotDashboard"));
 
@@ -498,7 +498,7 @@ export function AppRoutes() {
         <Route path="/admin/recruiter-payouts" element={<AdminRecruiterPayouts />} />
         <Route path="/admin/recruiter-commissions" element={<AdminRecruiterCommissions />} />
         <Route path="/admin/gdpr-compliance" element={<AdminGDPRCompliance />} />
-        <Route path="/admin/botghost-setup" element={<Navigate to="/bot/settings?tab=botghost" replace />} />
+        <Route path="/admin/botghost-setup" element={<Navigate to="/bot/settings" replace />} />
         <Route path="/admin/portal-bot-setup" element={<Navigate to="/bot/settings?tab=portal-bot" replace />} />
         <Route path="/admin/bot-control" element={<AdminBotDashboard />} />
         {/* Standalone bot dashboard */}
