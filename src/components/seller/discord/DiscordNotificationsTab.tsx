@@ -20,6 +20,7 @@ import {
   XCircle,
   Bot,
   Hash,
+  Package,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
