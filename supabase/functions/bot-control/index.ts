@@ -379,5 +379,35 @@ function getCommandDefinitions() {
     { name: "leaderboard", description: "View the Eclipse XP leaderboard" },
     { name: "balance", description: "View your Eclipse credits and XP in one place" },
     { name: "newdrops", description: "View the latest product drops on Eclipse" },
+    { name: "ban", description: "Ban a user from this server", options: [
+      { name: "user", description: "User to ban", type: 6, required: true },
+      { name: "reason", description: "Reason for ban", type: 3, required: false },
+      { name: "delete_messages", description: "Days of messages to delete (0-7)", type: 4, required: false, min_value: 0, max_value: 7 },
+    ] },
+    { name: "kick", description: "Kick a user from this server", options: [
+      { name: "user", description: "User to kick", type: 6, required: true },
+      { name: "reason", description: "Reason for kick", type: 3, required: false },
+    ] },
+    { name: "timeout", description: "Timeout a user in this server", options: [
+      { name: "user", description: "User to timeout", type: 6, required: true },
+      { name: "duration", description: "Timeout duration", type: 3, required: true, choices: [
+        { name: "60 Seconds", value: "60s" }, { name: "5 Minutes", value: "5m" },
+        { name: "10 Minutes", value: "10m" }, { name: "30 Minutes", value: "30m" },
+        { name: "1 Hour", value: "1h" }, { name: "6 Hours", value: "6h" },
+        { name: "12 Hours", value: "12h" }, { name: "1 Day", value: "1d" },
+        { name: "7 Days", value: "7d" }, { name: "28 Days", value: "28d" },
+      ] },
+      { name: "reason", description: "Reason for timeout", type: 3, required: false },
+    ] },
+    { name: "unban", description: "Unban a user from this server", options: [
+      { name: "user_id", description: "User ID to unban", type: 3, required: true },
+      { name: "reason", description: "Reason for unban", type: 3, required: false },
+    ] },
+    { name: "modlog", description: "View recent moderation actions", options: [
+      { name: "count", description: "Number of entries to show (max 25)", type: 4, required: false, min_value: 1, max_value: 25 },
+    ] },
+    { name: "afk", description: "Set your AFK status", options: [
+      { name: "reason", description: "AFK reason", type: 3, required: false },
+    ] },
   ];
 }
