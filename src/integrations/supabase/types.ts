@@ -8096,6 +8096,7 @@ export type Database = {
           id: string
           orders_channel_id: string | null
           product_drops_role_id: string | null
+          product_feed_channel_id: string | null
           refunds_channel_id: string | null
           review_discord_webhook_url: string | null
           sales_channel_id: string | null
@@ -8115,6 +8116,7 @@ export type Database = {
           id?: string
           orders_channel_id?: string | null
           product_drops_role_id?: string | null
+          product_feed_channel_id?: string | null
           refunds_channel_id?: string | null
           review_discord_webhook_url?: string | null
           sales_channel_id?: string | null
@@ -8134,6 +8136,7 @@ export type Database = {
           id?: string
           orders_channel_id?: string | null
           product_drops_role_id?: string | null
+          product_feed_channel_id?: string | null
           refunds_channel_id?: string | null
           review_discord_webhook_url?: string | null
           sales_channel_id?: string | null
