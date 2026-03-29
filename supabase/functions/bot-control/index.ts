@@ -255,6 +255,87 @@ Deno.serve(async (req) => {
         });
       }
 
+      case "ban-member": {
+        const { guild_id, user_id: targetId, reason } = body;
+        if (!guild_id || !targetId) {
+          return new Response(JSON.stringify({ error: "guild_id and user_id required" }), { status: 400, headers: corsHeaders });
+        }
+        const res = await fetch(`${DISCORD_API}/guilds/${guild_id}/bans/${targetId}`, {
+          method: "PUT",
+          headers: { Authorization: `Bot ${BOT_TOKEN}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ delete_message_seconds: 0, ...(reason ? { reason } : {}) }),
+        });
+        if (!res.ok) {
+          const err = await res.text();
+          return new Response(JSON.stringify({ error: err }), { status: res.status, headers: corsHeaders });
+        }
+        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      case "kick-member": {
+        const { guild_id, user_id: targetId, reason } = body;
+        if (!guild_id || !targetId) {
+          return new Response(JSON.stringify({ error: "guild_id and user_id required" }), { status: 400, headers: corsHeaders });
+        }
+        const res = await fetch(`${DISCORD_API}/guilds/${guild_id}/members/${targetId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bot ${BOT_TOKEN}`, "X-Audit-Log-Reason": reason || "Kicked via dashboard" },
+        });
+        if (!res.ok && res.status !== 204) {
+          const err = await res.text();
+          return new Response(JSON.stringify({ error: err }), { status: res.status, headers: corsHeaders });
+        }
+        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      case "timeout-member": {
+        const { guild_id, user_id: targetId, duration_seconds, reason } = body;
+        if (!guild_id || !targetId) {
+          return new Response(JSON.stringify({ error: "guild_id and user_id required" }), { status: 400, headers: corsHeaders });
+        }
+        const until = duration_seconds
+          ? new Date(Date.now() + duration_seconds * 1000).toISOString()
+          : null;
+        const res = await fetch(`${DISCORD_API}/guilds/${guild_id}/members/${targetId}`, {
+          method: "PATCH",
+          headers: { Authorization: `Bot ${BOT_TOKEN}`, "Content-Type": "application/json", "X-Audit-Log-Reason": reason || "Timed out via dashboard" },
+          body: JSON.stringify({ communication_disabled_until: until }),
+        });
+        if (!res.ok) {
+          const err = await res.text();
+          return new Response(JSON.stringify({ error: err }), { status: res.status, headers: corsHeaders });
+        }
+        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      case "unban-member": {
+        const { guild_id, user_id: targetId } = body;
+        if (!guild_id || !targetId) {
+          return new Response(JSON.stringify({ error: "guild_id and user_id required" }), { status: 400, headers: corsHeaders });
+        }
+        const res = await fetch(`${DISCORD_API}/guilds/${guild_id}/bans/${targetId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bot ${BOT_TOKEN}` },
+        });
+        if (!res.ok && res.status !== 204) {
+          const err = await res.text();
+          return new Response(JSON.stringify({ error: err }), { status: res.status, headers: corsHeaders });
+        }
+        return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      case "mod-actions": {
+        const { guild_id, limit } = body;
+        const { data, error } = await adminClient
+          .from("bot_mod_actions")
+          .select("*")
+          .eq("guild_id", guild_id || "")
+          .order("created_at", { ascending: false })
+          .limit(limit || 50);
+        if (error) throw error;
+        return new Response(JSON.stringify({ actions: data }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
       default:
         return new Response(
           JSON.stringify({ error: `Unknown action: ${action}` }),
