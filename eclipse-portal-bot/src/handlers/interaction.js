@@ -1,6 +1,7 @@
 import { getServerContext } from '../utils/server-context.js';
 import { checkCooldown, setCooldown } from '../utils/rate-limiter.js';
 import { logBotError } from '../utils/error-logger.js';
+import { hasCommandPermission } from '../utils/command-permissions.js';
 import { supabase } from '../supabase.js';
 import { handleLink } from '../commands/link.js';
 import { handleVerify } from '../commands/verify.js';
