@@ -1370,7 +1370,7 @@ export async function handleUnlink(interaction, serverContext) {
 
   // Check if locked
   const [storeResult, roleResult] = await Promise.all([
-    supabase.from('stores').select('id, name').eq('owner_id', profile.user_id).eq('is_active', true).maybeSingle(),
+    supabase.from('stores').select('id, name').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
     supabase.from('user_roles').select('role').eq('user_id', profile.user_id),
   ]);
   const store = storeResult.data;
