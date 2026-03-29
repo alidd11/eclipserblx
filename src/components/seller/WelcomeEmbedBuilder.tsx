@@ -37,7 +37,7 @@ export function WelcomeEmbedBuilder() {
   const { data: embedSettings } = useQuery({
     queryKey: ['store-welcome-embed', store?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('store_welcome_embeds')
         .select('*')
         .eq('store_id', store!.id)
