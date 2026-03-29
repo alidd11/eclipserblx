@@ -1261,7 +1261,7 @@ export async function handleGetRole(interaction, serverContext) {
     const [ordersRes, subRes, storeRes] = await Promise.all([
       supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
       supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
-      supabase.from('stores').select('id').eq('owner_id', profile.user_id).eq('is_active', true).maybeSingle(),
+      supabase.from('stores').select('id').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
     ]);
     const eligibility = [];
     const count = ordersRes.count || 0;
