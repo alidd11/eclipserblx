@@ -233,7 +233,7 @@ export default function StaffProfile() {
     enabled: !!user?.id,
   });
 
-  const isPrimaryAdmin = currentProfile?.email === PRIMARY_ADMIN_EMAIL;
+  const isPrimaryAdmin = isAdmin;
 
   // Fetch current user's max hierarchy level (uses custom_roles table now)
   const { data: currentUserHierarchy } = useQuery({
