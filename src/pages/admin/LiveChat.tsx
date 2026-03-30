@@ -156,6 +156,7 @@ const ISSUE_CATEGORY_COLORS: Record<string, string> = {
 
 export default function AdminLiveChat() {
   const { user } = useAuth();
+  const { isAdmin } = useAdminAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
