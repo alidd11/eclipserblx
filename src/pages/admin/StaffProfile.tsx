@@ -534,8 +534,8 @@ export default function StaffProfile() {
                 <span className="text-sm text-muted-foreground">Staff ID</span>
                 <span className="font-mono text-sm">{profile.staff_id || 'N/A'}</span>
               </div>
-              {/* Hide email for primary admin, show for others */}
-              {profile.email !== 'alicanimir1@gmail.com' && (
+              {/* Hide email for the viewed profile if they're an admin */}
+              {!isPrimaryAdmin && (
                 <>
                   <Separator />
                   <div className="flex items-center justify-between">

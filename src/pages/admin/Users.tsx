@@ -405,7 +405,7 @@ export default function AdminUsers() {
     // Only primary admin can delete accounts
     if (!isPrimaryAdmin) return false;
     // Can't delete the primary admin
-    if (profile.email === PRIMARY_ADMIN_EMAIL) return false;
+    if (profile.user_id === user?.id) return false;
     return true;
   };
 
