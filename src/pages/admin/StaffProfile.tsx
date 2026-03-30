@@ -49,7 +49,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 // Note: Roles are now text-based (stored in custom_roles table), not an enum
 
-const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
+// Primary admin identified by role, not email
 
 interface StaffNote {
   id: string;
