@@ -274,9 +274,10 @@ const PLATFORM_TAX_POSITION = {
 
 export default function GDPRCompliance() {
   const { user, loading: authLoading } = useAuth();
+  const { isAdmin } = useAdminAuth();
   const [consentSearch, setConsentSearch] = useState('');
 
-  // Strict access: only primary admin
+  // Strict access: only admin
   if (authLoading) {
     return (
       <AdminLayout>
