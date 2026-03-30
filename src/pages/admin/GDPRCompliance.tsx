@@ -286,7 +286,7 @@ export default function GDPRCompliance() {
     );
   }
 
-  if (!user || user.email !== 'alicanimir1@gmail.com') {
+  if (!user || !isAdmin) {
     return <Navigate to="/admin" replace />;
   }
 
