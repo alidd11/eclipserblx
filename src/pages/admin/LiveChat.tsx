@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useDropZone } from '@/hooks/useDropZone';
@@ -155,6 +156,7 @@ const ISSUE_CATEGORY_COLORS: Record<string, string> = {
 
 export default function AdminLiveChat() {
   const { user } = useAuth();
+  const { isAdmin } = useAdminAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -812,8 +814,8 @@ export default function AdminLiveChat() {
                           </Badge>
                         )}
                       </div>
-                      {/* Row 3: Email (primary admin only) */}
-                      {selectedConversation.customer_email && user?.email === 'alicanimir1@gmail.com' && (
+                      {/* Row 3: Email (admin only) */}
+                      {selectedConversation.customer_email && isAdmin && (
                         <p className="text-xs text-muted-foreground truncate">
                           {selectedConversation.customer_email}
                         </p>

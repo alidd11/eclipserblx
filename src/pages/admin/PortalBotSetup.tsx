@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Copy, Check, ChevronDown, ChevronRight, FileCode, FolderOpen, Bot, Terminal, Server, Shield, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
-const ALLOWED_EMAILS = ['alicanimir1@gmail.com', 'altair4481@gmail.com'];
+// Access controlled by admin role check below
 
 // All bot files embedded
 const BOT_FILES: Record<string, string> = {
@@ -2098,11 +2099,12 @@ function FileItem({ node, selectedFile, onSelect }: { node: FileTreeNode; select
 
 export default function AdminPortalBotSetup() {
   const { user } = useAuth();
+  const { isAdmin } = useAdminAuth();
   const [selectedFile, setSelectedFile] = useState<string | null>('package.json');
   const [copiedFile, setCopiedFile] = useState<string | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
 
-  if (!user || !ALLOWED_EMAILS.includes(user.email ?? '')) {
+  if (!user || !isAdmin) {
     return <Navigate to="/admin" replace />;
   }
 

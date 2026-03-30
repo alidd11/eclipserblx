@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -36,7 +37,7 @@ import {
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
+// Primary admin identified by role, not email
 
 const normalizeRoleKey = (value: string) =>
   value
@@ -93,7 +94,7 @@ const COLOR_OPTIONS = [
 ];
 
 export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHierarchy = 0, userEmail }: CreateRoleDialogProps) {
-  const isPrimaryAdmin = userEmail === PRIMARY_ADMIN_EMAIL;
+  const { isAdmin: isPrimaryAdmin } = useAdminAuth();
   const queryClient = useQueryClient();
   const isEditing = !!editRole;
   

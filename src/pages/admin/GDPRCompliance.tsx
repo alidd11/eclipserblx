@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -273,9 +274,10 @@ const PLATFORM_TAX_POSITION = {
 
 export default function GDPRCompliance() {
   const { user, loading: authLoading } = useAuth();
+  const { isAdmin } = useAdminAuth();
   const [consentSearch, setConsentSearch] = useState('');
 
-  // Strict access: only primary admin
+  // Strict access: only admin
   if (authLoading) {
     return (
       <AdminLayout>
@@ -286,7 +288,7 @@ export default function GDPRCompliance() {
     );
   }
 
-  if (!user || user.email !== 'alicanimir1@gmail.com') {
+  if (!user || !isAdmin) {
     return <Navigate to="/admin" replace />;
   }
 
@@ -306,7 +308,7 @@ export default function GDPRCompliance() {
         <div className="flex gap-2 flex-wrap">
           <Badge variant="outline" className="text-xs">
             <FileText className="h-3 w-3 mr-1" />
-            Data Controller: Eclipse (alicanimir1@gmail.com)
+            Data Controller: Eclipse
           </Badge>
           <Badge variant="outline" className="text-xs">
             <Globe className="h-3 w-3 mr-1" />

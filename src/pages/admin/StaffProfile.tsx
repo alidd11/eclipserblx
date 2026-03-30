@@ -49,7 +49,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 // Note: Roles are now text-based (stored in custom_roles table), not an enum
 
-const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
+// Primary admin identified by role, not email
 
 interface StaffNote {
   id: string;
@@ -233,7 +233,7 @@ export default function StaffProfile() {
     enabled: !!user?.id,
   });
 
-  const isPrimaryAdmin = currentProfile?.email === PRIMARY_ADMIN_EMAIL;
+  const isPrimaryAdmin = isAdmin;
 
   // Fetch current user's max hierarchy level (uses custom_roles table now)
   const { data: currentUserHierarchy } = useQuery({
@@ -534,8 +534,8 @@ export default function StaffProfile() {
                 <span className="text-sm text-muted-foreground">Staff ID</span>
                 <span className="font-mono text-sm">{profile.staff_id || 'N/A'}</span>
               </div>
-              {/* Hide email for primary admin, show for others */}
-              {profile.email !== 'alicanimir1@gmail.com' && (
+              {/* Hide email for the viewed profile if they're an admin */}
+              {!isPrimaryAdmin && (
                 <>
                   <Separator />
                   <div className="flex items-center justify-between">

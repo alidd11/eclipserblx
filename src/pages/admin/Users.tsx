@@ -4,6 +4,7 @@ import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle, ShieldAlert, Filte
 import { useDebounce } from '@/hooks/useDebounce';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useCurrentIp } from '@/hooks/useCurrentIp';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -59,7 +60,7 @@ interface CustomRole {
   hierarchy_level: number;
 }
 
-const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
+// Primary admin identified by role, not email
 
 const CUSTOMERS_PER_PAGE = 10;
 
@@ -117,23 +118,8 @@ export default function AdminUsers() {
     setSelfBanConfirmOpen(false);
   };
 
-  // Check if current user is the primary admin
-  const { data: currentProfile } = useQuery({
-    queryKey: ['current-profile', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('user_id', user.id)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  const isPrimaryAdmin = currentProfile?.email === PRIMARY_ADMIN_EMAIL;
+  // Check if current user is admin (role-based)
+  const { isAdmin: isPrimaryAdmin } = useAdminAuth();
 
   // Fetch custom roles from database
   const { data: customRoles = [] } = useQuery({
@@ -419,7 +405,7 @@ export default function AdminUsers() {
     // Only primary admin can delete accounts
     if (!isPrimaryAdmin) return false;
     // Can't delete the primary admin
-    if (profile.email === PRIMARY_ADMIN_EMAIL) return false;
+    if (profile.user_id === user?.id) return false;
     return true;
   };
 

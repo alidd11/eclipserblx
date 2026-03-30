@@ -44,6 +44,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { ORDER_STATUSES } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 const ORDERS_PER_PAGE = 20;
 
@@ -55,8 +56,8 @@ export default function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
   
-  // Check if current user is the primary admin
-  const isPrimaryAdmin = user?.email === 'alicanimir1@gmail.com';
+  // Check if current user is admin (role-based)
+  const { isAdmin: isPrimaryAdmin } = useAdminAuth();
   const queryClient = useQueryClient();
 
   // Get total count for pagination
