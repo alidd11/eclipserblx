@@ -10,7 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Copy, Check, ChevronDown, ChevronRight, FileCode, FolderOpen, Bot, Terminal, Server, Shield, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
-const ALLOWED_EMAILS = ['alicanimir1@gmail.com', 'altair4481@gmail.com'];
+// Access controlled by admin role check below
 
 // All bot files embedded
 const BOT_FILES: Record<string, string> = {
