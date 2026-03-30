@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useAdTiers, useAdSubscription, useAdSubscriptionCheckout, calculateAdAnnualSavingsPercent, AdTier, AdBillingPeriod } from '@/hooks/useAdSubscription';
 import { Megaphone, Loader2, CheckCircle, ExternalLink, Image as ImageIcon, Link2, AtSign, Sparkles, AlertCircle, Crown, Zap, Star, Bell, Users, Plus, Minus, ShoppingCart, History, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
