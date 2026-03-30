@@ -94,7 +94,7 @@ const COLOR_OPTIONS = [
 ];
 
 export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHierarchy = 0, userEmail }: CreateRoleDialogProps) {
-  const isPrimaryAdmin = !!userEmail; // Caller passes flag via prop; actual check is role-based in parent
+  const { isAdmin: isPrimaryAdmin } = useAdminAuth();
   const queryClient = useQueryClient();
   const isEditing = !!editRole;
   
