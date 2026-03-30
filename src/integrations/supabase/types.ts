@@ -10804,6 +10804,42 @@ export type Database = {
           },
         ]
       }
+      store_domains_public: {
+        Row: {
+          domain: string | null
+          domain_type: string | null
+          status: string | null
+          store_id: string | null
+        }
+        Insert: {
+          domain?: string | null
+          domain_type?: string | null
+          status?: string | null
+          store_id?: string | null
+        }
+        Update: {
+          domain?: string | null
+          domain_type?: string | null
+          status?: string | null
+          store_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_domains_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_domains_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores_public: {
         Row: {
           about_content: string | null
