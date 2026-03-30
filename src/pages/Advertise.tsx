@@ -131,9 +131,8 @@ export default function Advertise() {
     }
   };
 
-  // Admin testing bypass - grant full access without payment
-  const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
-  const isAdminTester = user?.email === PRIMARY_ADMIN_EMAIL;
+  // Admin testing bypass - grant full access without payment (role-based)
+  const isAdminTester = !!user && roles?.includes('admin');
 
   const { data: tiers, isLoading: tiersLoading } = useAdTiers();
   const { data: realSubscription, isLoading: subLoading, refetch: refetchSubscription } = useAdSubscription();

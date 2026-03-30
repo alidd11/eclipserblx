@@ -2102,7 +2102,7 @@ export default function AdminPortalBotSetup() {
   const [copiedFile, setCopiedFile] = useState<string | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
 
-  if (!user || !ALLOWED_EMAILS.includes(user.email ?? '')) {
+  if (!user || !isAdmin) {
     return <Navigate to="/admin" replace />;
   }
 

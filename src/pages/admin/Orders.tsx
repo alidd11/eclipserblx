@@ -55,8 +55,8 @@ export default function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
   
-  // Check if current user is the primary admin
-  const isPrimaryAdmin = user?.email === 'alicanimir1@gmail.com';
+  // Check if current user is admin (role-based)
+  const { isAdmin: isPrimaryAdmin } = useAdminAuth();
   const queryClient = useQueryClient();
 
   // Get total count for pagination

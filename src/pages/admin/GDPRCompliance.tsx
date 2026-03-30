@@ -306,7 +306,7 @@ export default function GDPRCompliance() {
         <div className="flex gap-2 flex-wrap">
           <Badge variant="outline" className="text-xs">
             <FileText className="h-3 w-3 mr-1" />
-            Data Controller: Eclipse (alicanimir1@gmail.com)
+            Data Controller: Eclipse
           </Badge>
           <Badge variant="outline" className="text-xs">
             <Globe className="h-3 w-3 mr-1" />
