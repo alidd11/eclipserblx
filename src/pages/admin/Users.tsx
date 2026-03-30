@@ -118,23 +118,8 @@ export default function AdminUsers() {
     setSelfBanConfirmOpen(false);
   };
 
-  // Check if current user is the primary admin
-  const { data: currentProfile } = useQuery({
-    queryKey: ['current-profile', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('user_id', user.id)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  const isPrimaryAdmin = currentProfile?.email === PRIMARY_ADMIN_EMAIL;
+  // Check if current user is admin (role-based)
+  const { isAdmin: isPrimaryAdmin } = useAdminAuth();
 
   // Fetch custom roles from database
   const { data: customRoles = [] } = useQuery({
