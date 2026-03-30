@@ -60,7 +60,7 @@ interface CustomRole {
   hierarchy_level: number;
 }
 
-const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
+// Primary admin identified by role, not email
 
 const CUSTOMERS_PER_PAGE = 10;
 
