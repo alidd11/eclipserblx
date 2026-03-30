@@ -4,6 +4,7 @@ import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle, ShieldAlert, Filte
 import { useDebounce } from '@/hooks/useDebounce';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useCurrentIp } from '@/hooks/useCurrentIp';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
