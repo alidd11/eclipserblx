@@ -133,6 +133,7 @@ export default function Advertise() {
   };
 
   // Admin testing bypass - grant full access without payment (role-based)
+  const { roles } = useAdminAuth();
   const isAdminTester = !!user && roles?.includes('admin');
 
   const { data: tiers, isLoading: tiersLoading } = useAdTiers();
