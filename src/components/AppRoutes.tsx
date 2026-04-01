@@ -518,6 +518,7 @@ export function AppRoutes() {
         <Route path="/bot/custom-commands" element={<BotCustomCommandsPage />} />
         <Route path="/bot/community" element={<BotCommunityPage />} />
         <Route path="/admin/twitter-posts" element={<AdminTwitterPosts />} />
+        <Route path="/admin/youtube-podcasts" element={<AdminYouTubePodcasts />} />
         <Route path="/admin/internal-notes" element={<AdminInternalNotes />} />
         <Route path="/admin/platform-ledger" element={<AdminPlatformLedger />} />
         <Route path="/admin/custom-domains" element={<AdminCustomDomains />} />
