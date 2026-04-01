@@ -1,8 +1,21 @@
 import { Component, ReactNode } from 'react';
-import { RefreshCw, WifiOff, AlertTriangle } from 'lucide-react';
+import { RefreshCw, WifiOff, AlertTriangle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { captureException } from '@/lib/sentry';
 import { isChunkError, attemptAutoRecovery, forceUserRecovery } from '@/lib/chunkRecovery';
+
+/** Detect in-app browsers (Twitter, Instagram, Facebook, LinkedIn, etc.) */
+function isInAppBrowser(): boolean {
+  const ua = navigator.userAgent || '';
+  return /FBAN|FBAV|Instagram|Twitter|LinkedInApp|Line\/|Snapchat|TikTok/i.test(ua);
+}
+
+/** Open the current URL in the device's default browser */
+function openInExternalBrowser() {
+  const url = window.location.href;
+  // iOS: window.open with _blank often opens in Safari from in-app browsers
+  window.open(url, '_blank');
+}
 
 interface Props {
   children: ReactNode;
