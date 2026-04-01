@@ -10446,6 +10446,78 @@ export type Database = {
           },
         ]
       }
+      twitter_hashtags: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          is_active: boolean
+          last_used_at: string | null
+          tag: string
+          updated_at: string
+          usage_count: number
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_used_at?: string | null
+          tag: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_used_at?: string | null
+          tag?: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Relationships: []
+      }
+      twitter_posts: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          hashtags_used: string[]
+          id: string
+          post_type: string
+          posted_at: string | null
+          status: string
+          tweet_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          hashtags_used?: string[]
+          id?: string
+          post_type?: string
+          posted_at?: string | null
+          status?: string
+          tweet_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          hashtags_used?: string[]
+          id?: string
+          post_type?: string
+          posted_at?: string | null
+          status?: string
+          tweet_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string
