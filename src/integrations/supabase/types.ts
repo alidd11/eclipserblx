@@ -10684,6 +10684,63 @@ export type Database = {
           },
         ]
       }
+      youtube_podcasts: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          error_message: string | null
+          id: string
+          privacy_status: string
+          published_at: string | null
+          status: string
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+          video_file_url: string
+          youtube_url: string | null
+          youtube_video_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          error_message?: string | null
+          id?: string
+          privacy_status?: string
+          published_at?: string | null
+          status?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+          video_file_url: string
+          youtube_url?: string | null
+          youtube_video_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          error_message?: string | null
+          id?: string
+          privacy_status?: string
+          published_at?: string | null
+          status?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          video_file_url?: string
+          youtube_url?: string | null
+          youtube_video_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       ip_shield_stats: {
