@@ -119,6 +119,17 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
               <RefreshCw className="w-4 h-4 mr-2" />
               Try Again
             </Button>
+            {isInAppBrowser() && (
+              <Button
+                onClick={openInExternalBrowser}
+                variant="outline"
+                size="lg"
+                className="w-full max-w-xs mt-3"
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Open in Browser
+              </Button>
+            )}
           </div>
         </div>
       );
