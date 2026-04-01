@@ -158,7 +158,7 @@ export function YouTubeUploadTab() {
           <Label>Video File *</Label>
           {videoFile ? (
             <div className="flex items-center gap-2 p-2 border rounded">
-              <Upload className="h-4 w-4 text-green-500" />
+              <Upload className="h-4 w-4 text-primary" />
               <span className="text-sm truncate flex-1">{videoFile.name}</span>
               {videoUrl && <Badge variant="secondary">Uploaded</Badge>}
             </div>
