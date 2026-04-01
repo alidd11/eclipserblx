@@ -140,6 +140,7 @@ const AdminGDPRCompliance = lazyWithRetry(() => import("@/pages/admin/GDPRCompli
 
 const AdminPortalBotSetup = lazyWithRetry(() => import("@/pages/admin/PortalBotSetup"));
 const AdminBotDashboard = lazyWithRetry(() => import("@/pages/admin/AdminBotDashboard"));
+const AdminTwitterPosts = lazyWithRetry(() => import("@/pages/admin/TwitterPosts"));
 
 // Standalone bot dashboard pages
 const BotOverviewPage = lazyWithRetry(() => import("@/pages/bot/BotOverview"));
