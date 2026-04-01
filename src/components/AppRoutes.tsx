@@ -140,6 +140,7 @@ const AdminGDPRCompliance = lazyWithRetry(() => import("@/pages/admin/GDPRCompli
 
 const AdminPortalBotSetup = lazyWithRetry(() => import("@/pages/admin/PortalBotSetup"));
 const AdminBotDashboard = lazyWithRetry(() => import("@/pages/admin/AdminBotDashboard"));
+const AdminTwitterPosts = lazyWithRetry(() => import("@/pages/admin/TwitterPosts"));
 
 // Standalone bot dashboard pages
 const BotOverviewPage = lazyWithRetry(() => import("@/pages/bot/BotOverview"));
@@ -515,6 +516,7 @@ export function AppRoutes() {
         <Route path="/bot/reaction-roles" element={<BotReactionRolesPage />} />
         <Route path="/bot/custom-commands" element={<BotCustomCommandsPage />} />
         <Route path="/bot/community" element={<BotCommunityPage />} />
+        <Route path="/admin/twitter-posts" element={<AdminTwitterPosts />} />
         <Route path="/admin/internal-notes" element={<AdminInternalNotes />} />
         <Route path="/admin/platform-ledger" element={<AdminPlatformLedger />} />
         <Route path="/admin/custom-domains" element={<AdminCustomDomains />} />
