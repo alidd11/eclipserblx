@@ -1,8 +1,21 @@
 import { Component, ReactNode } from 'react';
-import { RefreshCw, WifiOff, AlertTriangle } from 'lucide-react';
+import { RefreshCw, WifiOff, AlertTriangle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { captureException } from '@/lib/sentry';
 import { isChunkError, attemptAutoRecovery, forceUserRecovery } from '@/lib/chunkRecovery';
+
+/** Detect in-app browsers (Twitter, Instagram, Facebook, LinkedIn, etc.) */
+function isInAppBrowser(): boolean {
+  const ua = navigator.userAgent || '';
+  return /FBAN|FBAV|Instagram|Twitter|LinkedInApp|Line\/|Snapchat|TikTok/i.test(ua);
+}
+
+/** Open the current URL in the device's default browser */
+function openInExternalBrowser() {
+  const url = window.location.href;
+  // iOS: window.open with _blank often opens in Safari from in-app browsers
+  window.open(url, '_blank');
+}
 
 interface Props {
   children: ReactNode;
@@ -106,6 +119,17 @@ export class ConnectionErrorBoundary extends Component<Props, State> {
               <RefreshCw className="w-4 h-4 mr-2" />
               Try Again
             </Button>
+            {isInAppBrowser() && (
+              <Button
+                onClick={openInExternalBrowser}
+                variant="outline"
+                size="lg"
+                className="w-full max-w-xs mt-3"
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Open in Browser
+              </Button>
+            )}
           </div>
         </div>
       );

@@ -129,6 +129,29 @@
         <p>Please enable JavaScript for the full experience.</p>
       </div>
     </noscript>
+    <script>
+      // Pre-React safety net: catch catastrophic JS failures in restricted WebViews
+      !function(){
+        var t=setTimeout(function(){
+          // If React hasn't mounted after 8s, show fallback
+          if(document.getElementById('static-shell')){
+            var ua=navigator.userAgent||'';
+            if(/FBAN|FBAV|Instagram|Twitter|LinkedInApp|Line\/|Snapchat|TikTok/i.test(ua)){
+              var s=document.getElementById('static-shell');
+              if(s){
+                var m=s.querySelector('#static-main');
+                if(m) m.innerHTML='<div style="padding:40px 0;text-align:center"><p style="color:#a0a8c0;margin-bottom:20px">This page works best in your browser.</p><a href="'+location.href+'" target="_blank" rel="noopener" style="display:inline-block;padding:12px 24px;background:#4f46e5;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">Open in Browser</a></div>';
+              }
+            }
+          }
+        },8000);
+        // Cancel the timeout if React mounts successfully
+        var o=new MutationObserver(function(){
+          if(!document.getElementById('static-shell')){clearTimeout(t);o.disconnect()}
+        });
+        o.observe(document.getElementById('root'),{childList:true,subtree:true});
+      }();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
