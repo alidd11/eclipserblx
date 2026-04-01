@@ -6,7 +6,7 @@ import { TwitterPostHistoryTab } from '@/components/admin/twitter/TwitterPostHis
 
 export default function TwitterPosts() {
   return (
-    <AdminLayout title="Twitter / X Posts">
+    <AdminLayout>
       <Tabs defaultValue="compose" className="space-y-4">
         <TabsList>
           <TabsTrigger value="compose">Compose</TabsTrigger>
