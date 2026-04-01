@@ -136,7 +136,7 @@ export function YouTubeUploadTab() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Youtube className="h-5 w-5 text-red-500" />
+          <Youtube className="h-5 w-5 text-destructive" />
           Upload Podcast to YouTube
         </CardTitle>
         <CardDescription>Upload a podcast episode directly to your YouTube channel</CardDescription>
