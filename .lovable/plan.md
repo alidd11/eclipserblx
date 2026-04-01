@@ -1,55 +1,66 @@
 
 
-# Consolidate Bot Features into Standalone Dashboard
+# Smart Hashtag System for Twitter/X Auto-Posting
 
 ## Summary
+Build a Twitter/X auto-posting system with a smart hashtag engine that tracks usage, rotates hashtags, and maximises discoverability while keeping posts clean and on-brand.
 
-Move all Eclipse Portal Bot-related pages out of the admin sidebar and into the standalone `/bot` dashboard. The admin sidebar keeps only a single "Bot Control" link pointing to `/bot`. This eliminates duplication and makes the bot dashboard the single source of truth.
+## What gets built
 
-## What moves to `/bot`
+### 1. Database — `twitter_hashtags` + `twitter_posts` tables
 
-| Current admin location | New home in `/bot` dashboard |
-|---|---|
-| `/admin/bot-servers` (Bot Servers) | `/bot/servers` (already exists) |
-| `/admin/bot-codes` (Bot Codes) | `/bot/settings` — new "License Codes" tab |
-| `/admin/botghost-setup` (BotGhost Setup) | `/bot/settings` — new "BotGhost" tab |
-| `/admin/portal-bot-setup` (Portal Bot Setup) | `/bot/settings` — new "Portal Bot" tab |
-| `/admin/bot-control` | Already redirects to `/bot` — keep as-is |
+**`twitter_hashtags`** — the hashtag pool:
+- `id`, `tag` (e.g. `#RobloxDev`), `category` (niche / audience / content), `usage_count`, `last_used_at`, `is_active`
+- Pre-seeded with the niche and audience hashtags from your list
 
-## What stays in admin sidebar
+**`twitter_posts`** — log of every tweet sent:
+- `id`, `content`, `hashtags_used` (text array), `posted_at`, `tweet_id` (from X API), `post_type` (product_drop / store_showcase / announcement / scheduled), `status`
 
-- **One link only**: "Bot Dashboard" under System group → links to `/bot`
-- Remove: Bot Servers, Bot Codes, BotGhost Setup, Portal Bot Setup entries from admin sidebar
+### 2. Edge function — `post-twitter-update`
 
-## Changes needed
+- Accepts a post type + content payload (title, description, link, optional image)
+- **Smart hashtag selection algorithm:**
+  1. Always pick 2–5 hashtags
+  2. Pull from pool filtered by `is_active = true`
+  3. Score each tag: lower `usage_count` + older `last_used_at` = higher priority
+  4. Mix categories: at least 1 niche + 1 audience + 1 content-specific (dynamically generated from the tweet topic)
+  5. Reject any combo used in the last 5 posts
+  6. Append hashtags at the end of the tweet text, separated by spaces
+- Posts via X API v2 (`https://api.x.com/2/tweets`) using OAuth 1.0a
+- Updates `usage_count` and `last_used_at` on used hashtags
+- Logs the post to `twitter_posts`
 
-### 1. Admin Sidebar cleanup
-**`src/components/admin/AdminSidebar.tsx`**
-- Remove `Bot Servers` from Daily Operations group
-- Remove `Bot Codes`, `BotGhost Setup`, `Portal Bot Setup` from System group
-- Keep single "Bot Dashboard" link → `/bot`
+### 3. Admin UI — `/admin/twitter-posts`
 
-### 2. Bot Settings page expansion
-**`src/pages/bot/BotSettings.tsx`**
-- Add tabs: General, License Codes, BotGhost, Portal Bot
-- Import and embed the existing content from `AdminBotCodes`, `AdminBotGhostSetup`, `AdminPortalBotSetup` components into their respective tabs
+- **Compose tab**: write a tweet, preview with auto-selected hashtags, override if needed, send immediately
+- **Hashtag pool tab**: view/add/deactivate hashtags, see usage stats, last used dates
+- **Post history tab**: see all sent tweets with status and hashtags used
+- **Auto-post toggles**: opt-in triggers for automatic tweets on:
+  - New product approved
+  - New verified store
+  - Platform announcements
 
-### 3. Bot Servers integration
-- Verify `/bot/servers` page already covers what `AdminBotServers` shows
-- If not, merge the admin bot-servers content into the bot dashboard's servers page
+### 4. Secrets required
 
-### 4. Route cleanup
-**`src/components/AppRoutes.tsx`**
-- Add redirects: `/admin/bot-codes` → `/bot/settings`, `/admin/botghost-setup` → `/bot/settings`, `/admin/bot-servers` → `/bot/servers`
-- Keep existing pages importable but redirect old URLs
+Four Twitter/X API credentials need to be added:
+- `TWITTER_CONSUMER_KEY`
+- `TWITTER_CONSUMER_SECRET`
+- `TWITTER_ACCESS_TOKEN`
+- `TWITTER_ACCESS_TOKEN_SECRET`
 
-### 5. Seller Discord page
-- The seller Discord integration page (`/seller/discord`) stays as-is — it's seller-facing config, not bot management
+These will be requested via the secrets tool before implementation.
+
+### 5. Integration hooks
+
+- `notify-product-approved` edge function → optionally triggers `post-twitter-update` with product info
+- `post-store-showcase` → optionally triggers a tweet for new verified stores
+- `send-community-announcement` → optionally triggers a tweet mirroring the Discord announcement
 
 ## Technical details
 
-- No database changes needed
-- No new tables or migrations
-- Reuses existing admin page components, just re-mounted inside `BotDashboardLayout`
-- Old admin URLs redirect to new `/bot/*` locations for bookmarks
+- OAuth 1.0a signature generation in Deno (using `crypto.subtle.importKey` for HMAC-SHA1)
+- No POST body params in OAuth signature base string (X API requirement)
+- Tweet character limit: 280 chars total including hashtags — the function trims content to fit
+- RLS: admin-only access on both tables via `has_role(auth.uid(), 'admin')`
+- No realtime needed
 
