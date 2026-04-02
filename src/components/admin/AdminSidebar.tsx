@@ -54,6 +54,7 @@ const navGroups: NavGroup[] = [
       { title: 'Community Announcements', icon: Megaphone, href: '/admin/community-announcements', permissions: ['manage_discord_engagement'] },
       { title: 'Discord Polls', icon: BarChart3, href: '/admin/discord-polls', permissions: ['manage_discord_engagement'] },
       { title: 'QOTD', icon: MessageCircle, href: '/admin/discord-qotd', permissions: ['manage_discord_engagement'] },
+      { title: 'Twitter / X', icon: Twitter, href: '/admin/twitter-posts', permissions: [], roles: ['admin'] },
       { title: 'Promotions', icon: Tags, href: '/admin/promotions', permissions: ['manage_discounts'], dividerAfter: true },
       
     ],
@@ -153,7 +154,6 @@ const navGroups: NavGroup[] = [
       { title: 'Discord', icon: MessageCircle, href: '/admin/discord-settings', permissions: ['manage_settings'] },
       { title: 'Game News Feeds', icon: Rss, href: '/admin/game-news-feeds', permissions: ['manage_settings'] },
       { title: 'Roblox', icon: Gamepad2, href: '/admin/roblox-settings', permissions: ['manage_settings'], dividerAfter: true },
-      { title: 'Twitter / X', icon: Twitter, href: '/admin/twitter-posts', permissions: [], roles: ['admin'] },
       { title: 'YouTube Podcasts', icon: Upload, href: '/admin/youtube-podcasts', permissions: [], roles: ['admin'] },
       { title: 'SEO & Indexing', icon: Activity, href: '/admin/seo-indexing', permissions: ['manage_settings'] },
       { title: 'Email Templates', icon: Mail, href: '/admin/email-templates', permissions: ['manage_settings'] },
