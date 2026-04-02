@@ -36,13 +36,13 @@ export default function TwitterPosts() {
 
   async function handleApprove(id: string) {
     await supabase.from('twitter_posts').update({ status: 'queued' }).eq('id', id);
-    toast({ title: 'Post approved', description: 'It will be posted at the scheduled time.' });
+    toast.success('Post approved — will be posted at the scheduled time');
     fetchScheduledPosts();
   }
 
   async function handleReject(id: string) {
     await supabase.from('twitter_posts').update({ status: 'cancelled' }).eq('id', id);
-    toast({ title: 'Post rejected', description: 'The scheduled post has been cancelled.' });
+    toast.info('Scheduled post cancelled');
     fetchScheduledPosts();
   }
 
