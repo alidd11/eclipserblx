@@ -10481,6 +10481,7 @@ export type Database = {
       }
       twitter_posts: {
         Row: {
+          ai_generated: boolean | null
           content: string
           created_at: string
           created_by: string | null
@@ -10488,11 +10489,13 @@ export type Database = {
           id: string
           post_type: string
           posted_at: string | null
+          scheduled_for: string | null
           status: string
           tweet_id: string | null
           updated_at: string
         }
         Insert: {
+          ai_generated?: boolean | null
           content: string
           created_at?: string
           created_by?: string | null
@@ -10500,11 +10503,13 @@ export type Database = {
           id?: string
           post_type?: string
           posted_at?: string | null
+          scheduled_for?: string | null
           status?: string
           tweet_id?: string | null
           updated_at?: string
         }
         Update: {
+          ai_generated?: boolean | null
           content?: string
           created_at?: string
           created_by?: string | null
@@ -10512,6 +10517,7 @@ export type Database = {
           id?: string
           post_type?: string
           posted_at?: string | null
+          scheduled_for?: string | null
           status?: string
           tweet_id?: string | null
           updated_at?: string
