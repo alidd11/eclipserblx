@@ -16,7 +16,7 @@ export default function TwitterPosts() {
   const [xDark, setXDark] = useState(true);
   const [scheduledPosts, setScheduledPosts] = useState<any[]>([]);
   const [loadingScheduled, setLoadingScheduled] = useState(true);
-  const { toast } = useToast();
+  
 
   useEffect(() => {
     fetchScheduledPosts();
