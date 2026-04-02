@@ -28,6 +28,8 @@ export function useTwitterAction() {
       };
       if (labels[variables.action]) toast.success(labels[variables.action]);
       queryClient.invalidateQueries({ queryKey: ['twitter-posts-feed'] });
+      queryClient.invalidateQueries({ queryKey: ['twitter-posts-history'] });
+      queryClient.invalidateQueries({ queryKey: ['twitter-scheduled-posts'] });
       queryClient.invalidateQueries({ queryKey: ['twitter-mentions'] });
       queryClient.invalidateQueries({ queryKey: ['twitter-timeline'] });
     },

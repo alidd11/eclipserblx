@@ -86,6 +86,8 @@ export function TwitterComposer({ xTheme }: { xTheme: XTheme }) {
       setSelectedHashtags([]);
       setShowHashtags(false);
       queryClient.invalidateQueries({ queryKey: ['twitter-posts-feed'] });
+      queryClient.invalidateQueries({ queryKey: ['twitter-scheduled-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['twitter-posts-history'] });
     } catch (err: any) {
       toast.error(err.message || 'Failed to send tweet');
     } finally {

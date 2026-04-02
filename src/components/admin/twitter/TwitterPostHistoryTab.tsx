@@ -13,7 +13,7 @@ export function TwitterPostHistoryTab() {
       const { data, error } = await supabase
         .from('twitter_posts')
         .select('*')
-        .order('posted_at', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(50);
       if (error) throw error;
       return data;
@@ -23,6 +23,7 @@ export function TwitterPostHistoryTab() {
   const statusBadge = (status: string) => {
     switch (status) {
       case 'sent': return <Badge className="bg-green-500/10 text-green-500 border-green-500/20">Sent</Badge>;
+      case 'queued': return <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20">Queued</Badge>;
       case 'draft': return <Badge variant="secondary">Draft</Badge>;
       case 'failed': return <Badge variant="destructive">Failed</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
@@ -52,7 +53,7 @@ export function TwitterPostHistoryTab() {
               <TableHead>Type</TableHead>
               <TableHead>Hashtags</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Posted</TableHead>
+                <TableHead>When</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -78,7 +79,11 @@ export function TwitterPostHistoryTab() {
                 </TableCell>
                 <TableCell>{statusBadge(post.status)}</TableCell>
                 <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
-                  {format(new Date(post.posted_at), 'dd MMM yyyy HH:mm')}
+                  {post.posted_at
+                    ? format(new Date(post.posted_at), 'dd MMM yyyy HH:mm')
+                    : post.scheduled_for
+                      ? `Scheduled ${format(new Date(post.scheduled_for), 'dd MMM yyyy HH:mm')}`
+                      : format(new Date(post.created_at), 'dd MMM yyyy HH:mm')}
                 </TableCell>
                 <TableCell>
                   {post.tweet_id && (
