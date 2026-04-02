@@ -94,7 +94,7 @@ export function TwitterComposer({ xTheme }: { xTheme: XTheme }) {
   };
 
   return (
-    <div className={`${xTheme.border} border-b px-4 pt-3 pb-2`}>
+    <div className={`${xTheme.border} border-b px-4 pt-3 pb-2 sticky top-[53px] z-10 backdrop-blur-xl ${xTheme.bg}`} style={{ backgroundColor: 'inherit' }}>
       <div className="flex gap-3">
         {/* Avatar */}
         <div className="shrink-0 pt-1">

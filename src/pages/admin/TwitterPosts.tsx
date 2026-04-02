@@ -124,7 +124,7 @@ export default function TwitterPosts() {
           </div>
 
           {/* Main feed column */}
-          <div className={`w-full max-w-[600px] ${theme.border} border-x min-h-screen`}>
+          <div className={`w-full lg:max-w-[600px] ${theme.border} lg:border-x min-h-screen`}>
             {/* Top header */}
             <div className={`sticky top-0 z-20 backdrop-blur-xl ${theme.headerBg} ${theme.border} border-b`}>
               {/* Top row */}
