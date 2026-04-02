@@ -122,21 +122,23 @@ export function TwitterFeed({ xTheme }: { xTheme: XTheme }) {
                 )}
               </div>
 
-              {/* Tweet text */}
+              {/* Tweet text — strip hashtags from content since they're shown separately */}
               <p className={`text-[15px] ${xTheme.text} mt-0.5 whitespace-pre-wrap break-words leading-[20px]`}>
-                {post.content}
+                {post.content?.replace(/\n*#\w+/g, '').trim()}
               </p>
 
               {/* Hashtags */}
               {(post.hashtags_used as string[])?.length > 0 && (
-                <p className="text-[15px] text-[#1d9bf0] mt-0.5">
+                <p className="text-[15px] text-[#1d9bf0] mt-1">
                   {(post.hashtags_used as string[]).join(' ')}
                 </p>
               )}
 
               {/* Timestamp */}
               <p className={`text-[13px] ${xTheme.textSecondary} mt-2`}>
-                {format(new Date(post.posted_at), "h:mm a \u00B7 MMM d, yyyy")}
+                {post.posted_at
+                  ? format(new Date(post.posted_at), "h:mm a · MMM d, yyyy")
+                  : 'Scheduled'}
               </p>
 
               {/* Action bar - functional buttons */}
