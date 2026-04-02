@@ -82,7 +82,7 @@ export function TwitterFeed({ xTheme }: { xTheme: XTheme }) {
           <div className="flex gap-3">
             {/* Avatar */}
             <div className="shrink-0">
-              <img src="/src/assets/marketplace-logo-icon-sm.webp" alt="Eclipse" className="h-10 w-10 rounded-full" />
+              <img src={avatarImg} alt="Eclipse" className="h-10 w-10 rounded-full" />
             </div>
 
             {/* Content */}
