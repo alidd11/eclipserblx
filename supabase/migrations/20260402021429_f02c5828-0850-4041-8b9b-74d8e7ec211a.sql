@@ -1,0 +1,1 @@
+DELETE FROM twitter_posts WHERE status = 'failed' OR posted_at IS NULL;
