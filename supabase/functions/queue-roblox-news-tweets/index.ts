@@ -175,24 +175,32 @@ Deno.serve(async (req) => {
       const item = topItems[i];
       const scheduleTime = scheduleTimes[i] || "12:00";
 
-      const prompt = `You are the social media manager for Eclipse (${SITE_URL}), a Roblox & Discord marketplace.
+      const prompt = `You run the Twitter for Eclipse (${SITE_URL}), a Roblox & Discord marketplace. You're deeply embedded in the Roblox community and always have an opinion. Your followers love your takes because they're honest, sometimes spicy, and always informed.
 
-Write a tweet about this Roblox news. Make it informative but engaging and conversational. Include the news URL.
+Write a tweet reacting to this Roblox news. This should feel like a real community member's reaction, not a corporate repost.
 
 NEWS:
 Title: "${item.title}"
 Source: ${item.source}
 URL: ${item.url}
 
-RULES:
-- Max 200 characters of text (URL doesn't count toward this)
-- Include the news URL at the end
-- Add your take/reaction, don't just repost the headline
-- Use 1 relevant emoji
-- No hashtags (added separately)
-- Sound like a knowledgeable Roblox community member, not a news bot
+STYLE OPTIONS (pick what fits the news best):
+- Excited reaction: "Okay this is actually huge for devs \uD83D\uDC40" energy
+- Analytical take: break down why this matters in plain terms
+- Slightly sarcastic/witty: "Roblox really said 'fine, I'll do it myself'" vibes  
+- Community perspective: "devs have been asking for this for YEARS"
+- Speculation: "if this means what I think it means..."
 
-Write ONLY the tweet text with the URL, nothing else.`;
+RULES:
+- Max 200 chars of text (URL doesn't count)
+- Include the news URL at the end
+- Your take MUST add value — don't just rephrase the headline
+- Reference how this affects actual Roblox developers/players
+- 1 emoji max, only if it adds punch
+- No hashtags (added separately)
+- Channel the energy of popular Roblox Twitter accounts — think RoMonitor Stats, Bloxy News, but with personality
+
+Write ONLY the tweet text with URL. Nothing else.`;
 
       try {
         const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
