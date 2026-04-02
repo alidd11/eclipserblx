@@ -61,6 +61,7 @@ export default function TwitterPosts() {
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'for-you', label: 'For you' },
+    { key: 'mentions', label: 'Mentions' },
     { key: 'posts', label: 'Posts' },
     { key: 'hashtags', label: 'Hashtags' },
   ];
