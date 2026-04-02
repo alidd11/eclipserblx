@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Heart, Repeat2, BarChart2, Share, MoreHorizontal, MessageCircle } from 'lucide-react';
+import avatarImg from '@/assets/marketplace-logo-icon-sm.webp';
 
 interface XTheme {
   bg: string;
@@ -81,9 +82,7 @@ export function TwitterFeed({ xTheme }: { xTheme: XTheme }) {
           <div className="flex gap-3">
             {/* Avatar */}
             <div className="shrink-0">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#1d9bf0] to-[#1d9bf0]/60 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">E</span>
-              </div>
+              <img src={avatarImg} alt="Eclipse" className="h-10 w-10 rounded-full" />
             </div>
 
             {/* Content */}

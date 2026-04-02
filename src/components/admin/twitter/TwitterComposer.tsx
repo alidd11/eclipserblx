@@ -4,6 +4,7 @@ import { Loader2, Image as ImageIcon, Hash, Globe, ListPlus, Smile, MapPin, Cale
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import avatarImg from '@/assets/marketplace-logo-icon-sm.webp';
 
 interface XTheme {
   bg: string;
@@ -97,9 +98,7 @@ export function TwitterComposer({ xTheme }: { xTheme: XTheme }) {
       <div className="flex gap-3">
         {/* Avatar */}
         <div className="shrink-0 pt-1">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#1d9bf0] to-[#1d9bf0]/60 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">E</span>
-          </div>
+          <img src={avatarImg} alt="Eclipse" className="h-10 w-10 rounded-full" />
         </div>
 
         {/* Compose area */}
