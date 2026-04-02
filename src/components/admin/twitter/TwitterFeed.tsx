@@ -72,9 +72,10 @@ export function TwitterFeed({ xTheme }: { xTheme: XTheme }) {
 
   const statusBadge = (status: string) => {
     switch (status) {
-      case 'sent': return <span className="text-[#00ba7c] text-[13px]">\u00B7 Posted</span>;
-      case 'draft': return <span className="text-[#ffd400] text-[13px]">\u00B7 Draft</span>;
-      case 'failed': return <span className="text-[#f4212e] text-[13px]">\u00B7 Failed</span>;
+      case 'sent': return <span className="text-[#00ba7c] text-[13px]">· Posted</span>;
+      case 'draft': return <span className="text-[#ffd400] text-[13px]">· Draft</span>;
+      case 'queued': return <span className="text-[#1d9bf0] text-[13px]">· Queued</span>;
+      case 'failed': return <span className="text-[#f4212e] text-[13px]">· Failed</span>;
       default: return null;
     }
   };
