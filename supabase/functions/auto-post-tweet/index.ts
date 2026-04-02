@@ -1,6 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { handleCors, jsonOk, jsonError, internalError } from "../_shared/edge-response.ts";
 
+const SITE_URL = "https://eclipserblx.com";
+
 // ── OAuth 1.0a helpers ──────────────────────────────────────────────────
 function percentEncode(str: string): string {
   return encodeURIComponent(str).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
@@ -52,7 +54,7 @@ async function buildOAuthHeader(method: string, url: string): Promise<string> {
   return `OAuth ${header}`;
 }
 
-// ── Smart hashtag selection (same algorithm as post-twitter-update) ──
+// ── Smart hashtag selection ─────────────────────────────────────────────
 interface Hashtag { id: string; tag: string; category: string; usage_count: number; last_used_at: string | null; }
 
 function scoreHashtag(h: Hashtag): number {
@@ -94,12 +96,11 @@ async function selectHashtags(supabase: ReturnType<typeof createClient>, count: 
   return selected.slice(0, targetCount);
 }
 
-// ── AI content generation ───────────────────────────────────────────────
+// ── AI content generation with product links ────────────────────────────
 async function generateTweetContent(supabase: ReturnType<typeof createClient>): Promise<string> {
-  // Gather context: recent products, promotions, and past tweets to avoid repetition
   const [productsRes, recentTweetsRes, promotionsRes] = await Promise.all([
-    supabase.from("products").select("title, short_description, price, category").eq("is_active", true).eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(10),
-    supabase.from("twitter_posts").select("content").order("posted_at", { ascending: false }).limit(10),
+    supabase.from("products").select("name, slug, price, description, category").eq("is_active", true).eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(15),
+    supabase.from("twitter_posts").select("content").order("posted_at", { ascending: false }).limit(15),
     supabase.from("promotions").select("title, description, discount_percent").eq("is_active", true).limit(5),
   ]);
 
@@ -107,40 +108,49 @@ async function generateTweetContent(supabase: ReturnType<typeof createClient>): 
   const recentTweets = (recentTweetsRes.data || []).map((t) => t.content);
   const promotions = promotionsRes.data || [];
 
-  const productContext = products.slice(0, 5).map((p) => `- ${p.title} (\u00A3${p.price}): ${p.short_description || ""}`).join("\n");
-  const promoContext = promotions.map((p) => `- ${p.title}: ${p.discount_percent}% off - ${p.description || ""}`).join("\n");
-  const recentContext = recentTweets.slice(0, 5).join("\n---\n");
+  // Build product context WITH links
+  const productContext = products.slice(0, 8).map((p) =>
+    `- "${p.name}" (\u00A3${p.price}) \u2192 ${SITE_URL}/product/${p.slug}`
+  ).join("\n");
 
-  const prompt = `You are the social media manager for Eclipse, a marketplace for Roblox and Discord products (scripts, maps, bots, UI packs, etc.).
+  const promoContext = promotions.map((p) =>
+    `- ${p.title}: ${p.discount_percent}% off - ${p.description || ""}`
+  ).join("\n");
 
-Write ONE tweet (max 220 characters, leave room for hashtags). Be engaging, casual, and authentic. Vary your style between:
-- Product highlights / new arrivals
-- Community engagement (questions, polls)
+  const recentContext = recentTweets.slice(0, 8).join("\n---\n");
+
+  const prompt = `You are the social media manager for Eclipse (${SITE_URL}), a marketplace for Roblox and Discord products (scripts, maps, bots, UI packs, etc.).
+
+Write ONE tweet (max 200 characters EXCLUDING the link, leave room for hashtags). Be engaging, casual, and authentic.
+
+IMPORTANT: You MUST include a product link from the list below when highlighting a product. Place the link at the end of your tweet text.
+
+Vary your style between these (rotate, don't repeat the same style as recent tweets):
+- Product spotlight with link (feature 1 specific product)
+- New arrivals roundup with link to top pick
+- Community question or poll (no link needed for these)
 - Tips for Roblox/Discord developers
-- Promotional announcements
-- Milestone celebrations
+- Promotional announcement
 
 RULES:
-- Max 220 characters (hashtags added separately)
-- No hashtags in your response
+- Max 200 characters of text (the link URL does NOT count toward this)
+- No hashtags in your response (added separately)
 - Use emojis sparingly (1-2 max)
-- Sound human, not corporate
+- Sound human and enthusiastic, not corporate
+- When featuring a product, include its EXACT URL from the list below
 - NEVER repeat or closely resemble these recent tweets:
 ${recentContext}
 
-CONTEXT:
-Recent products:
-${productContext || "Various Roblox scripts, maps, and Discord bots"}
+AVAILABLE PRODUCTS (use these exact URLs):
+${productContext || "Check out our latest drops at " + SITE_URL + "/products"}
 
-Active promotions:
-${promoContext || "No active promotions right now"}
+ACTIVE PROMOTIONS:
+${promoContext || "No active promotions"}
 
-Write ONLY the tweet text, nothing else.`;
+Write ONLY the tweet text (with product link if applicable), nothing else.`;
 
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-  if (!LOVABLE_API_KEY) {
-    throw new Error("LOVABLE_API_KEY not configured");
-  }
+  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
   const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -151,14 +161,14 @@ Write ONLY the tweet text, nothing else.`;
     body: JSON.stringify({
       model: "google/gemini-2.5-flash",
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 300,
+      max_tokens: 400,
       temperature: 0.9,
     }),
   });
 
   if (!aiResponse.ok) {
     const errText = await aiResponse.text();
-    console.error("[auto-post-tweet] AI proxy error:", aiResponse.status, errText);
+    console.error("[auto-post-tweet] AI error:", aiResponse.status, errText);
     throw new Error(`AI generation failed: ${aiResponse.status}`);
   }
 
@@ -169,15 +179,14 @@ Write ONLY the tweet text, nothing else.`;
     throw new Error("AI generated empty or too-short content");
   }
 
-  return generatedText.slice(0, 220);
+  // Don't truncate aggressively — links can be long; let the final assembly handle 280 limit
+  return generatedText;
 }
 
 // ── Post tweet to X API ─────────────────────────────────────────────────
 async function postTweet(text: string): Promise<{ tweetId: string | null; success: boolean; error?: string }> {
   const consumerKey = Deno.env.get("TWITTER_CONSUMER_KEY");
-  if (!consumerKey) {
-    return { tweetId: null, success: false, error: "Twitter credentials not configured" };
-  }
+  if (!consumerKey) return { tweetId: null, success: false, error: "Twitter credentials not configured" };
 
   const tweetUrl = "https://api.x.com/2/tweets";
   const oauthHeader = await buildOAuthHeader("POST", tweetUrl);
@@ -208,7 +217,7 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    // STEP 1: Check if there's a queued tweet ready to post
+    // STEP 1: Check for queued tweet ready to post
     const { data: queuedTweet } = await adminClient
       .from("twitter_posts")
       .select("*")
@@ -223,30 +232,39 @@ Deno.serve(async (req) => {
     let postId: string | undefined;
 
     if (queuedTweet) {
-      // Use pre-written/approved queued tweet
       tweetContent = queuedTweet.content;
       hashtagsToUse = queuedTweet.hashtags_used || [];
       postId = queuedTweet.id;
       console.log("[auto-post-tweet] Posting queued tweet:", postId);
     } else {
-      // STEP 2: Generate new content via AI
       console.log("[auto-post-tweet] No queued tweets, generating via AI...");
       tweetContent = await generateTweetContent(adminClient);
-
-      // Select hashtags
       const selected = await selectHashtags(adminClient, 3);
       hashtagsToUse = selected.map((h) => h.tag);
     }
 
-    // Build final tweet text
+    // Build final tweet (280 char limit)
     const hashtagString = hashtagsToUse.join(" ");
     const separator = hashtagsToUse.length > 0 ? "\n\n" : "";
-    const maxContentLength = 280 - separator.length - hashtagString.length;
+    const maxLen = 280 - separator.length - hashtagString.length;
 
     let finalContent = tweetContent.trim();
-    if (finalContent.length > maxContentLength) {
-      finalContent = finalContent.slice(0, maxContentLength - 3) + "...";
+    if (finalContent.length > maxLen) {
+      // Try to truncate before the link if present
+      const urlMatch = finalContent.match(/(https?:\/\/\S+)$/);
+      if (urlMatch) {
+        const url = urlMatch[1];
+        const textPart = finalContent.slice(0, finalContent.length - url.length).trim();
+        const availableForText = maxLen - url.length - 1; // 1 for space
+        const truncatedText = textPart.length > availableForText
+          ? textPart.slice(0, availableForText - 3) + "..."
+          : textPart;
+        finalContent = `${truncatedText} ${url}`;
+      } else {
+        finalContent = finalContent.slice(0, maxLen - 3) + "...";
+      }
     }
+
     const fullTweet = hashtagsToUse.length > 0
       ? `${finalContent}${separator}${hashtagString}`
       : finalContent;
@@ -255,7 +273,6 @@ Deno.serve(async (req) => {
     const result = await postTweet(fullTweet);
 
     if (queuedTweet && postId) {
-      // Update existing queued tweet
       await adminClient.from("twitter_posts").update({
         content: fullTweet,
         tweet_id: result.tweetId,
@@ -263,7 +280,6 @@ Deno.serve(async (req) => {
         posted_at: result.success ? new Date().toISOString() : null,
       }).eq("id", postId);
     } else {
-      // Insert new AI-generated tweet record
       await adminClient.from("twitter_posts").insert({
         content: fullTweet,
         hashtags_used: hashtagsToUse,
@@ -275,13 +291,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Update hashtag usage stats
+    // Update hashtag usage
     if (result.success && hashtagsToUse.length > 0) {
       const { data: usedTags } = await adminClient
-        .from("twitter_hashtags")
-        .select("id, tag, usage_count")
-        .in("tag", hashtagsToUse);
-
+        .from("twitter_hashtags").select("id, tag, usage_count").in("tag", hashtagsToUse);
       if (usedTags) {
         for (const tag of usedTags) {
           await adminClient.from("twitter_hashtags").update({
