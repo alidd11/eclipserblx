@@ -7,7 +7,7 @@ import { TwitterHashtagPoolTab } from '@/components/admin/twitter/TwitterHashtag
 import { Sun, Moon, Bell, Search, MoreHorizontal, Home, Users, Mail, Bookmark, ListTodo, User, Sparkles, Check, X as XIcon, Clock, CalendarClock } from 'lucide-react';
 import marketplaceLogo from '@/assets/marketplace-logo-icon-sm.webp';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 type Tab = 'for-you' | 'mentions' | 'posts' | 'hashtags';
 
