@@ -153,7 +153,6 @@ Deno.serve(async (req) => {
     // 4. Pick the top 2-3 most interesting items and generate tweets via AI
     const topItems = newItems.slice(0, 3);
 
-    // Get hashtags for Roblox news
     const { data: robloxTags } = await adminClient
       .from("twitter_hashtags")
       .select("tag")
@@ -163,44 +162,62 @@ Deno.serve(async (req) => {
 
     const defaultTags = robloxTags?.map((t) => t.tag) || ["#Roblox", "#RobloxDev"];
 
-    // 5. Generate tweet for each news item
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-
-    // Schedule times: 9:00, 12:00, 16:00 UK time (spread across the day)
     const scheduleTimes = ["09:00", "12:00", "16:00"];
     const queuedTweets: any[] = [];
 
     for (let i = 0; i < topItems.length; i++) {
       const item = topItems[i];
       const scheduleTime = scheduleTimes[i] || "12:00";
+      const isThreadWorthy = item.title.length > 40 || item.source === "Roblox Blog";
 
-      const prompt = `You run the Twitter for Eclipse (${SITE_URL}), a Roblox & Discord marketplace. You're deeply embedded in the Roblox community and always have an opinion. Your followers love your takes because they're honest, sometimes spicy, and always informed.
+      const prompt = isThreadWorthy
+        ? `You run the Twitter for Eclipse (${SITE_URL}), a Roblox & Discord marketplace. You're a respected voice in the Roblox dev community \u2014 your followers trust your takes.
 
-Write a tweet reacting to this Roblox news. This should feel like a real community member's reaction, not a corporate repost.
+Write a 2-tweet THREAD reacting to this news. Read like a dev who genuinely cares.
 
 NEWS:
 Title: "${item.title}"
 Source: ${item.source}
 URL: ${item.url}
 
-STYLE OPTIONS (pick what fits the news best):
-- Excited reaction: "Okay this is actually huge for devs \uD83D\uDC40" energy
-- Analytical take: break down why this matters in plain terms
-- Slightly sarcastic/witty: "Roblox really said 'fine, I'll do it myself'" vibes  
-- Community perspective: "devs have been asking for this for YEARS"
-- Speculation: "if this means what I think it means..."
+FORMAT: Return exactly 2 tweets separated by "---THREAD---"
+- Tweet 1: Your immediate reaction + news URL (max 200 chars excl URL). The hook
+- Tweet 2: Deeper take, what this means for devs, or a question (max 250 chars). No URL
 
-RULES:
-- Max 200 chars of text (URL doesn't count)
-- Include the news URL at the end
-- Your take MUST add value — don't just rephrase the headline
-- Reference how this affects actual Roblox developers/players
-- 1 emoji max, only if it adds punch
+VOICE:
+- React like you actually care \u2014 "this changes everything for small devs" > "exciting update!"
+- Reference specific impacts (DevEx, Studio workflow, scripting, UGC)
+- Can be opinionated \u2014 "cautiously optimistic" or "honestly this was overdue"
+- Natural caps, loose punctuation fine
+- 0-1 emoji per tweet
 - No hashtags (added separately)
-- Channel the energy of popular Roblox Twitter accounts — think RoMonitor Stats, Bloxy News, but with personality
+- NEVER start with "BREAKING" or use alarm emojis
 
-Write ONLY the tweet text with URL. Nothing else.`;
+Write the 2 tweets separated by ---THREAD---. Nothing else.`
+        : `You run Twitter for Eclipse (${SITE_URL}), a Roblox & Discord marketplace. You're deeply embedded in the community and always have a genuine take.
+
+Write a tweet reacting to this news. Sound like a real community member sharing their honest thoughts.
+
+NEWS:
+Title: "${item.title}"
+Source: ${item.source}
+URL: ${item.url}
+
+VOICE:
+- React naturally \u2014 excitement, skepticism, curiosity, whatever fits
+- Add genuine insight: WHY does this matter for devs/players?
+- "finally, devs have been asking for this" > "exciting new feature!"
+- Reference Roblox concepts (Luau, Studio, DevEx, UGC, experiences)
+- Natural caps, loose punctuation fine
+- 0-1 emoji, only if it adds punch
+- No hashtags (added separately)
+- Max 200 chars (URL doesn't count)
+- Include news URL at the end
+- NEVER start with "BREAKING" or alarm emojis
+
+Write ONLY the tweet. Nothing else.`;
 
       try {
         const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -212,8 +229,8 @@ Write ONLY the tweet text with URL. Nothing else.`;
           body: JSON.stringify({
             model: "google/gemini-2.5-flash",
             messages: [{ role: "user", content: prompt }],
-            max_tokens: 300,
-            temperature: 0.8,
+            max_tokens: 500,
+            temperature: 0.9,
           }),
         });
 
@@ -223,50 +240,68 @@ Write ONLY the tweet text with URL. Nothing else.`;
         }
 
         const aiData = await aiResponse.json();
-        const tweetText = aiData?.choices?.[0]?.message?.content?.trim();
+        const rawText = aiData?.choices?.[0]?.message?.content?.trim();
 
-        if (!tweetText || tweetText.length < 15) {
+        if (!rawText || rawText.length < 15) {
           console.warn(`[queue-roblox-news] AI generated too-short content for item ${i}`);
           continue;
         }
 
-        // Build full tweet with hashtags
         const hashtagString = defaultTags.slice(0, 3).join(" ");
-        const fullTweet = `${tweetText}\n\n${hashtagString}`;
-
-        // Calculate scheduled_for timestamp
         const [hours, mins] = scheduleTime.split(":").map(Number);
         const scheduledFor = new Date(tomorrow);
         scheduledFor.setUTCHours(hours, mins, 0, 0);
 
-        // Insert as queued tweet
-        const { data: inserted, error: insertError } = await adminClient
-          .from("twitter_posts")
-          .insert({
-            content: fullTweet,
-            hashtags_used: defaultTags.slice(0, 3),
-            post_type: "news",
-            status: "queued",
-            ai_generated: true,
-            scheduled_for: scheduledFor.toISOString(),
-          })
-          .select("id")
-          .single();
+        if (isThreadWorthy && rawText.includes("---THREAD---")) {
+          const parts = rawText.split("---THREAD---").map((p: string) => p.trim()).filter((p: string) => p.length > 10);
 
-        if (insertError) {
-          console.error(`[queue-roblox-news] Insert error for item ${i}:`, insertError);
-          continue;
+          if (parts.length >= 2) {
+            const tweet1 = `${parts[0]}\n\n${hashtagString}`;
+            const { data: inserted1 } = await adminClient.from("twitter_posts").insert({
+              content: tweet1, hashtags_used: defaultTags.slice(0, 3),
+              post_type: "news", status: "queued", ai_generated: true,
+              scheduled_for: scheduledFor.toISOString(),
+            }).select("id").single();
+
+            const replyTime = new Date(scheduledFor.getTime() + 2 * 60 * 1000);
+            await adminClient.from("twitter_posts").insert({
+              content: parts[1], hashtags_used: [],
+              post_type: "news", status: "queued", ai_generated: true,
+              scheduled_for: replyTime.toISOString(),
+            });
+
+            queuedTweets.push({
+              id: inserted1?.id, title: item.title, type: "thread",
+              scheduled_for: scheduledFor.toISOString(),
+              preview: tweet1.slice(0, 80) + "...",
+            });
+            console.log(`[queue-roblox-news] Queued thread for "${item.title}" at ${scheduleTime}`);
+          } else {
+            // Fallback single
+            const fullTweet = `${rawText}\n\n${hashtagString}`;
+            const { data: inserted } = await adminClient.from("twitter_posts").insert({
+              content: fullTweet, hashtags_used: defaultTags.slice(0, 3),
+              post_type: "news", status: "queued", ai_generated: true,
+              scheduled_for: scheduledFor.toISOString(),
+            }).select("id").single();
+            queuedTweets.push({ id: inserted?.id, title: item.title, type: "single",
+              scheduled_for: scheduledFor.toISOString(), preview: fullTweet.slice(0, 80) + "..." });
+          }
+        } else {
+          const fullTweet = `${rawText}\n\n${hashtagString}`;
+          const { data: inserted, error: insertError } = await adminClient.from("twitter_posts").insert({
+            content: fullTweet, hashtags_used: defaultTags.slice(0, 3),
+            post_type: "news", status: "queued", ai_generated: true,
+            scheduled_for: scheduledFor.toISOString(),
+          }).select("id").single();
+
+          if (insertError) { console.error(`[queue-roblox-news] Insert error:`, insertError); continue; }
+          queuedTweets.push({ id: inserted.id, title: item.title, type: "single",
+            scheduled_for: scheduledFor.toISOString(), preview: fullTweet.slice(0, 80) + "..." });
+          console.log(`[queue-roblox-news] Queued tweet for "${item.title}" at ${scheduleTime}`);
         }
 
-        queuedTweets.push({
-          id: inserted.id,
-          title: item.title,
-          scheduled_for: scheduledFor.toISOString(),
-          preview: fullTweet.slice(0, 80) + "...",
-        });
-
-        console.log(`[queue-roblox-news] Queued tweet for "${item.title}" at ${scheduleTime}`);
-
+        if (i < topItems.length - 1) await new Promise((r) => setTimeout(r, 1500));
         // Small delay between AI calls
         if (i < topItems.length - 1) {
           await new Promise((r) => setTimeout(r, 1500));
