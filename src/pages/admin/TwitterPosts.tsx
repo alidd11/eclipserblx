@@ -1,17 +1,50 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { TwitterComposer } from '@/components/admin/twitter/TwitterComposer';
 import { TwitterFeed } from '@/components/admin/twitter/TwitterFeed';
 import { TwitterMentions } from '@/components/admin/twitter/TwitterMentions';
 import { TwitterHashtagPoolTab } from '@/components/admin/twitter/TwitterHashtagPoolTab';
-import { Sun, Moon, Bell, Search, MoreHorizontal, Home, Users, Mail, Bookmark, ListTodo, User, Sparkles } from 'lucide-react';
+import { Sun, Moon, Bell, Search, MoreHorizontal, Home, Users, Mail, Bookmark, ListTodo, User, Sparkles, Check, X as XIcon, Clock, CalendarClock } from 'lucide-react';
 import marketplaceLogo from '@/assets/marketplace-logo-icon-sm.webp';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 type Tab = 'for-you' | 'mentions' | 'posts' | 'hashtags';
 
 export default function TwitterPosts() {
   const [activeTab, setActiveTab] = useState<Tab>('for-you');
   const [xDark, setXDark] = useState(true);
+  const [scheduledPosts, setScheduledPosts] = useState<any[]>([]);
+  const [loadingScheduled, setLoadingScheduled] = useState(true);
+  
+
+  useEffect(() => {
+    fetchScheduledPosts();
+  }, []);
+
+  async function fetchScheduledPosts() {
+    setLoadingScheduled(true);
+    const { data } = await supabase
+      .from('twitter_posts')
+      .select('id, content, status, scheduled_for, ai_generated, post_type, created_at')
+      .in('status', ['queued', 'draft'])
+      .order('scheduled_for', { ascending: true })
+      .limit(10);
+    setScheduledPosts(data || []);
+    setLoadingScheduled(false);
+  }
+
+  async function handleApprove(id: string) {
+    await supabase.from('twitter_posts').update({ status: 'queued' }).eq('id', id);
+    toast.success('Post approved — will be posted at the scheduled time');
+    fetchScheduledPosts();
+  }
+
+  async function handleReject(id: string) {
+    await supabase.from('twitter_posts').update({ status: 'cancelled' }).eq('id', id);
+    toast.info('Scheduled post cancelled');
+    fetchScheduledPosts();
+  }
 
   const theme = xDark
     ? {
@@ -203,23 +236,79 @@ export default function TwitterPosts() {
                 />
               </div>
 
-              {/* Trending / What's happening */}
+              {/* Scheduled Posts / What's happening */}
               <div className={`rounded-2xl ${theme.trendBg} overflow-hidden`}>
-                <h3 className={`text-xl font-extrabold ${theme.text} px-4 py-3`}>What's happening</h3>
-                {[
-                  { category: 'Gaming · Trending', topic: 'Roblox', posts: '125K posts' },
-                  { category: 'Technology · Trending', topic: 'Eclipse', posts: '2,841 posts' },
-                  { category: 'Gaming', topic: 'Discord Bots', posts: '8,124 posts' },
-                  { category: 'Business · Trending', topic: 'Marketplace', posts: '4,521 posts' },
-                ].map((trend, i) => (
-                  <div key={i} className={`px-4 py-3 ${theme.hover} transition-colors cursor-pointer`}>
-                    <p className={`text-[13px] ${theme.textSecondary}`}>{trend.category}</p>
-                    <p className={`text-[15px] font-bold ${theme.text}`}>{trend.topic}</p>
-                    <p className={`text-[13px] ${theme.textSecondary}`}>{trend.posts}</p>
-                  </div>
-                ))}
-                <button className={`px-4 py-3 text-[15px] ${theme.accent} ${theme.hover} w-full text-left transition-colors`}>
-                  Show more
+                <div className="flex items-center gap-2 px-4 py-3">
+                  <CalendarClock className={`h-5 w-5 ${theme.accent}`} />
+                  <h3 className={`text-xl font-extrabold ${theme.text}`}>Scheduled Posts</h3>
+                </div>
+                {loadingScheduled ? (
+                  <div className={`px-4 py-6 text-center ${theme.textSecondary} text-[13px]`}>Loading...</div>
+                ) : scheduledPosts.length === 0 ? (
+                  <div className={`px-4 py-6 text-center ${theme.textSecondary} text-[13px]`}>No scheduled posts</div>
+                ) : (
+                  scheduledPosts.map((post) => {
+                    const scheduledDate = post.scheduled_for ? new Date(post.scheduled_for) : null;
+                    const timeStr = scheduledDate
+                      ? scheduledDate.toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+                      : 'Not scheduled';
+                    const statusColor = post.status === 'queued'
+                      ? 'text-green-400'
+                      : post.status === 'draft'
+                        ? 'text-yellow-400'
+                        : theme.textSecondary;
+                    const statusLabel = post.status === 'queued' ? 'Approved' : post.status === 'draft' ? 'Pending' : post.status;
+
+                    return (
+                      <div key={post.id} className={`px-4 py-3 ${theme.hover} transition-colors border-t ${theme.border}`}>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-1.5">
+                            <Clock className={`h-3 w-3 ${theme.textSecondary}`} />
+                            <span className={`text-[12px] ${theme.textSecondary}`}>{timeStr}</span>
+                          </div>
+                          <span className={`text-[11px] font-semibold uppercase ${statusColor}`}>{statusLabel}</span>
+                        </div>
+                        <p className={`text-[13px] ${theme.text} line-clamp-2 mb-1.5`}>
+                          {post.content?.replace(/#\w+/g, '').trim().slice(0, 100)}
+                          {post.content?.length > 100 ? '...' : ''}
+                        </p>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          {post.ai_generated && (
+                            <span className={`text-[11px] px-1.5 py-0.5 rounded-full ${xDark ? 'bg-[#1d9bf0]/20 text-[#1d9bf0]' : 'bg-[#1d9bf0]/10 text-[#1d9bf0]'}`}>
+                              AI
+                            </span>
+                          )}
+                          {post.post_type && (
+                            <span className={`text-[11px] ${theme.textSecondary}`}>
+                              {post.post_type === 'news' ? '📰 News' : post.post_type === 'automated' ? '🤖 Auto' : post.post_type}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex gap-1.5 mt-2">
+                          {post.status !== 'queued' && (
+                            <button
+                              onClick={() => handleApprove(post.id)}
+                              className="flex items-center gap-1 text-[12px] text-green-400 hover:text-green-300 transition-colors"
+                            >
+                              <Check className="h-3.5 w-3.5" /> Approve
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleReject(post.id)}
+                            className="flex items-center gap-1 text-[12px] text-red-400 hover:text-red-300 transition-colors"
+                          >
+                            <XIcon className="h-3.5 w-3.5" /> Reject
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+                <button
+                  onClick={fetchScheduledPosts}
+                  className={`px-4 py-3 text-[15px] ${theme.accent} ${theme.hover} w-full text-left transition-colors`}
+                >
+                  Refresh
                 </button>
               </div>
 
