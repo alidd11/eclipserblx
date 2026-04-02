@@ -81,9 +81,7 @@ export function TwitterFeed({ xTheme }: { xTheme: XTheme }) {
           <div className="flex gap-3">
             {/* Avatar */}
             <div className="shrink-0">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#1d9bf0] to-[#1d9bf0]/60 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">E</span>
-              </div>
+              <img src="/src/assets/marketplace-logo-icon-sm.webp" alt="Eclipse" className="h-10 w-10 rounded-full" />
             </div>
 
             {/* Content */}
