@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Heart, Repeat2, BarChart2, Share, MoreHorizontal, MessageCircle } from 'lucide-react';
+import avatarImg from '@/assets/marketplace-logo-icon-sm.webp';
 
 interface XTheme {
   bg: string;

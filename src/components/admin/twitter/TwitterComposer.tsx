@@ -4,6 +4,7 @@ import { Loader2, Image as ImageIcon, Hash, Globe, ListPlus, Smile, MapPin, Cale
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import avatarImg from '@/assets/marketplace-logo-icon-sm.webp';
 
 interface XTheme {
   bg: string;
