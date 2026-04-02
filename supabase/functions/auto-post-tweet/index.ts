@@ -96,6 +96,31 @@ async function selectHashtags(supabase: ReturnType<typeof createClient>, count: 
   return selected.slice(0, targetCount);
 }
 
+// ── Time-aware context ──────────────────────────────────────────────────
+function getTimeContext(): string {
+  const now = new Date();
+  const ukHour = (now.getUTCHours() + 1) % 24;
+  const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const day = dayNames[now.getUTCDay()];
+
+  let timeVibe = "";
+  if (ukHour >= 6 && ukHour < 10) timeVibe = "early morning \u2014 devs grabbing coffee before opening Studio";
+  else if (ukHour >= 10 && ukHour < 13) timeVibe = "mid-morning \u2014 peak dev hours, deep in projects";
+  else if (ukHour >= 13 && ukHour < 15) timeVibe = "afternoon \u2014 post-lunch, checking Twitter between builds";
+  else if (ukHour >= 15 && ukHour < 18) timeVibe = "late afternoon \u2014 wrapping up, sharing progress";
+  else if (ukHour >= 18 && ukHour < 21) timeVibe = "evening \u2014 casual browsing, playing experiences";
+  else if (ukHour >= 21 && ukHour < 24) timeVibe = "late night \u2014 the dedicated devs still grinding";
+  else timeVibe = "late night/early hours \u2014 only the real ones are up coding";
+
+  let dayVibe = "";
+  if (day === "Monday") dayVibe = "Start of the week \u2014 fresh builds, new ideas.";
+  else if (day === "Friday") dayVibe = "Friday \u2014 winding down, weekend projects ahead.";
+  else if (day === "Saturday" || day === "Sunday") dayVibe = "Weekend \u2014 devs have time to experiment.";
+  else dayVibe = `${day} \u2014 mid-week grind.`;
+
+  return `Current vibe: ${timeVibe}. ${dayVibe} Weave this in naturally IF it fits \u2014 a subtle "evening Studio session" or "Friday energy" is perfect. Don't force it.`;
+}
+
 // ── AI content generation with product links ────────────────────────────
 async function generateTweetContent(supabase: ReturnType<typeof createClient>): Promise<string> {
   const [productsRes, recentTweetsRes, promotionsRes] = await Promise.all([
@@ -108,7 +133,6 @@ async function generateTweetContent(supabase: ReturnType<typeof createClient>): 
   const recentTweets = (recentTweetsRes.data || []).map((t) => t.content);
   const promotions = promotionsRes.data || [];
 
-  // Build product context WITH links
   const productContext = products.slice(0, 8).map((p) =>
     `- "${p.name}" (\u00A3${p.price}) \u2192 ${SITE_URL}/product/${p.slug}`
   ).join("\n");
@@ -118,37 +142,48 @@ async function generateTweetContent(supabase: ReturnType<typeof createClient>): 
   ).join("\n");
 
   const recentContext = recentTweets.slice(0, 8).join("\n---\n");
+  const timeContext = getTimeContext();
 
-  const prompt = `You are the social media manager for Eclipse (${SITE_URL}), a Roblox & Discord marketplace. You're plugged into the Roblox community — you know the memes, the culture, the dev struggles. Your tone is witty, slightly cheeky, but always professional. Think "cool dev friend who runs a business."
+  const prompt = `You are the social media manager for Eclipse (${SITE_URL}), a Roblox & Discord marketplace. You're a genuine part of the community \u2014 you know Luau quirks, Studio crashes, the DevEx grind, UGC drama, and what's trending. Your personality: witty, slightly cheeky, always professional. Think "the dev friend who also happens to run a sick marketplace."
+
+${timeContext}
 
 Write ONE tweet (max 200 chars EXCLUDING any link). Leave room for hashtags.
 
-TWEET STYLE — randomly pick ONE (vary from recent tweets):
-1. \uD83D\uDDE3\uFE0F Hot take / opinion on Roblox development (e.g. "Unpopular opinion: free models aren't that bad if you actually read the code")
-2. \uD83E\uDD14 Community question that sparks replies (e.g. "What's the most cursed thing you've found in a free model?")  
-3. \uD83D\uDCA1 Quick dev tip or insight (genuinely useful, not generic)
-4. \uD83D\uDE02 Relatable Roblox dev humor (the "it's 3am and my script still doesn't work" energy)
-5. \uD83D\uDECD\uFE0F Product spotlight — ONLY for this style, include ONE product link from below
-6. \uD83D\uDD25 Hype / announcement about Eclipse or promotions (include link only if there's an active promo)
+TWEET STYLE \u2014 randomly pick ONE (vary from recent tweets):
+1. Hot take on Roblox dev life (e.g. "The jump from 'it works in Studio' to 'it works in-game' is the hardest boss fight in Roblox")
+2. Community question that makes people WANT to reply (e.g. "Be honest, how many times have you rage-quit Studio this week?")
+3. Actually useful dev insight (specific Luau tips, optimization tricks, things learned the hard way)
+4. Relatable dev humor (the shared pain of scripting, building, playtesting at 2am)
+5. Product spotlight \u2014 ONLY this style gets a product link. Frame as genuine rec, not an ad
+6. Eclipse hype / promo (only if active promotion exists)
+7. Player/community moment (trending experiences, UGC items, community events)
 
-CRITICAL RULES:
-- NOT every tweet needs a product link! Only styles 5 and 6 should have links
-- Sound like a real person, not a brand bot. Be the account people WANT to follow
-- Use internet/gaming culture naturally (but don't force it)
-- Emojis: 1-2 max, only if they feel natural
+VOICE GUIDELINES:
+- Write like you're tweeting from your personal account, not a brand account
+- Capitalize naturally \u2014 sometimes all lowercase is fine, sometimes proper caps. Mix it up
+- Punctuation can be loose \u2014 dashes, ellipses, no period at the end all feel natural
+- You can start tweets with lowercase if it fits
+- Use "ngl", "lowkey", "fr", "W" VERY sparingly and only when they genuinely fit
+- Subtle time-of-day references are great when natural
+- Ask yourself: "Would a real person with 5k followers tweet this?" If no, rewrite
+- Emojis: 0-2, only when they genuinely add something
 - No hashtags (added separately)
-- Reference real Roblox concepts (Luau, Studio, experiences, DevEx, UGC, etc.)
-- Be the kind of tweet that gets quote-tweeted with "\uD83D\uDCA0" or "W take"
-- NEVER repeat or closely resemble these recent tweets:
+
+HARD RULES:
+- NOT every tweet needs a product link \u2014 only style 5 and 6
+- NEVER start with "Hey devs!" or "BREAKING:" \u2014 brand bot energy
+- Don't use "just" to start a tweet
+- NEVER repeat or closely resemble recent tweets:
 ${recentContext}
 
-AVAILABLE PRODUCTS (use ONLY when doing a product spotlight):
+PRODUCTS (for style 5 ONLY):
 ${productContext || SITE_URL + "/products"}
 
 ACTIVE PROMOTIONS:
-${promoContext || "None right now"}
+${promoContext || "None"}
 
-Write ONLY the tweet text. Nothing else.`;
+Write ONLY the tweet. Nothing else.`;
 
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
@@ -163,7 +198,7 @@ Write ONLY the tweet text. Nothing else.`;
       model: "google/gemini-2.5-flash",
       messages: [{ role: "user", content: prompt }],
       max_tokens: 400,
-      temperature: 0.9,
+      temperature: 0.95,
     }),
   });
 
@@ -180,7 +215,6 @@ Write ONLY the tweet text. Nothing else.`;
     throw new Error("AI generated empty or too-short content");
   }
 
-  // Don't truncate aggressively — links can be long; let the final assembly handle 280 limit
   return generatedText;
 }
 
