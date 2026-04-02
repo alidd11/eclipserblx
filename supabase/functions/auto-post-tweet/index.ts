@@ -137,15 +137,16 @@ ${promoContext || "No active promotions right now"}
 
 Write ONLY the tweet text, nothing else.`;
 
-  // Use Lovable AI proxy (Gemini Flash)
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) {
+    throw new Error("LOVABLE_API_KEY not configured");
+  }
 
-  const aiResponse = await fetch(`${supabaseUrl}/functions/v1/ai-proxy`, {
+  const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: {
+      Authorization: `Bearer ${LOVABLE_API_KEY}`,
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${supabaseAnonKey}`,
     },
     body: JSON.stringify({
       model: "google/gemini-2.5-flash",
