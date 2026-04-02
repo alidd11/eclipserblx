@@ -7,7 +7,7 @@ import { TwitterHashtagPoolTab } from '@/components/admin/twitter/TwitterHashtag
 import { Sun, Moon, Bell, Search, MoreHorizontal, Home, Users, Mail, Bookmark, ListTodo, User, Sparkles } from 'lucide-react';
 import marketplaceLogo from '@/assets/marketplace-logo-icon-sm.webp';
 
-type Tab = 'for-you' | 'posts' | 'hashtags';
+type Tab = 'for-you' | 'mentions' | 'posts' | 'hashtags';
 
 export default function TwitterPosts() {
   const [activeTab, setActiveTab] = useState<Tab>('for-you');
