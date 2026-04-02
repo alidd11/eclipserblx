@@ -180,6 +180,8 @@ export default function TwitterPosts() {
               <div className="p-4">
                 <TwitterHashtagPoolTab />
               </div>
+            ) : activeTab === 'mentions' ? (
+              <TwitterMentions xTheme={theme} />
             ) : (
               <>
                 <TwitterComposer xTheme={theme} />
