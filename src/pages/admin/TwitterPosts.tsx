@@ -224,8 +224,8 @@ export default function TwitterPosts() {
           </div>
 
           {/* Right Sidebar - hidden on smaller screens */}
-          <div className="hidden lg:block w-[350px] shrink-0 pl-7 sticky top-0 h-screen overflow-y-auto">
-            <div className="py-3 space-y-4">
+          <div className="hidden lg:block w-[350px] shrink-0 pl-7">
+            <div className="sticky top-0 h-screen overflow-y-auto py-3 space-y-4">
               {/* Search */}
               <div className={`rounded-full ${theme.searchBg} ${theme.searchBorder} border flex items-center px-4 py-2.5 transition-colors`}>
                 <Search className={`h-[18px] w-[18px] ${theme.textSecondary} mr-3 shrink-0`} />
