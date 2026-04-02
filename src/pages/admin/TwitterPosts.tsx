@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { TwitterComposer } from '@/components/admin/twitter/TwitterComposer';
 import { TwitterFeed } from '@/components/admin/twitter/TwitterFeed';
+import { TwitterMentions } from '@/components/admin/twitter/TwitterMentions';
 import { TwitterHashtagPoolTab } from '@/components/admin/twitter/TwitterHashtagPoolTab';
 import { Sun, Moon, Bell, Search, MoreHorizontal, Home, Users, Mail, Bookmark, ListTodo, User, Sparkles } from 'lucide-react';
 import marketplaceLogo from '@/assets/marketplace-logo-icon-sm.webp';
 
-type Tab = 'for-you' | 'posts' | 'hashtags';
+type Tab = 'for-you' | 'mentions' | 'posts' | 'hashtags';
 
 export default function TwitterPosts() {
   const [activeTab, setActiveTab] = useState<Tab>('for-you');
@@ -60,6 +61,7 @@ export default function TwitterPosts() {
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'for-you', label: 'For you' },
+    { key: 'mentions', label: 'Mentions' },
     { key: 'posts', label: 'Posts' },
     { key: 'hashtags', label: 'Hashtags' },
   ];
@@ -178,6 +180,8 @@ export default function TwitterPosts() {
               <div className="p-4">
                 <TwitterHashtagPoolTab />
               </div>
+            ) : activeTab === 'mentions' ? (
+              <TwitterMentions xTheme={theme} />
             ) : (
               <>
                 <TwitterComposer xTheme={theme} />
