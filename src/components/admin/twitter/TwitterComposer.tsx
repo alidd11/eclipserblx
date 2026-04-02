@@ -115,7 +115,6 @@ export function TwitterComposer({ xTheme }: { xTheme: XTheme }) {
             onChange={(e) => setContent(e.target.value)}
             placeholder="What is happening?!"
             className={`w-full bg-transparent ${xTheme.text} text-xl placeholder:${xTheme.textSecondary} placeholder:opacity-60 outline-none resize-none min-h-[52px] leading-relaxed`}
-            style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}
             rows={2}
           />
 
