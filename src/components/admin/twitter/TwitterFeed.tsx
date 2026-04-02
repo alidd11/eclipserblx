@@ -23,6 +23,7 @@ export function TwitterFeed({ xTheme }: { xTheme: XTheme }) {
       const { data, error } = await supabase
         .from('twitter_posts')
         .select('*')
+        .eq('status', 'sent')
         .order('posted_at', { ascending: false })
         .limit(50);
       if (error) throw error;
