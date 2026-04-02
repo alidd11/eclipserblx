@@ -204,37 +204,39 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
           />
         )}
         customHeader={(onMenuClick) => (
-          <>
-            <header className="fixed top-0 left-0 right-0 z-40 border-b border-border bg-card px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="shrink-0 md:hidden"
-                  onClick={onMenuClick}
-                >
-                  <Menu className="h-5 w-5" />
-                </Button>
-                <EclipseLogo size="sm" />
-                <span className="font-display font-bold text-sm">Admin Dashboard</span>
-              </div>
-              <div className="flex items-center gap-1">
-                {isStandalone && (
+          isImmersivePage ? null : (
+            <>
+              <header className="fixed top-0 left-0 right-0 z-40 border-b border-border bg-card px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
+                <div className="flex items-center gap-3">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="shrink-0"
-                    onClick={handleRefresh}
-                    disabled={isRefreshing}
+                    className="shrink-0 md:hidden"
+                    onClick={onMenuClick}
                   >
-                    <RefreshCw className={cn("h-5 w-5", isRefreshing && "animate-spin")} />
+                    <Menu className="h-5 w-5" />
                   </Button>
-                )}
-              </div>
-            </header>
-            {/* Spacer to prevent content from hiding behind the fixed header */}
-            <div className="h-[calc(env(safe-area-inset-top)+3rem)]" />
-          </>
+                  <EclipseLogo size="sm" />
+                  <span className="font-display font-bold text-sm">Admin Dashboard</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  {isStandalone && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={handleRefresh}
+                      disabled={isRefreshing}
+                    >
+                      <RefreshCw className={cn("h-5 w-5", isRefreshing && "animate-spin")} />
+                    </Button>
+                  )}
+                </div>
+              </header>
+              {/* Spacer to prevent content from hiding behind the fixed header */}
+              <div className="h-[calc(env(safe-area-inset-top)+3rem)]" />
+            </>
+          )
         )}
         showBreadcrumb={false}
         showFooter={false}
