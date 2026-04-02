@@ -79,7 +79,7 @@ export default function TwitterPosts() {
 
   return (
     <AdminLayout>
-      <div className={`min-h-screen w-full ${theme.bg} transition-colors duration-200`}>
+      <div className={`min-h-screen w-full ${theme.bg} transition-colors duration-200`} style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
         <div className="flex justify-center w-full">
           {/* Left Sidebar - hidden on mobile */}
           <div className="hidden xl:flex flex-col items-end w-[275px] shrink-0 pr-3 sticky top-0 h-screen">

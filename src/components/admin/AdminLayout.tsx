@@ -36,6 +36,9 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
     location.pathname.startsWith('/admin/staff-messages') ||
     location.pathname.startsWith('/admin/live-chat') ||
     location.pathname.startsWith('/admin/customer-tickets/');
+  
+  const isImmersivePage =
+    location.pathname === '/admin/twitter-posts';
 
   const [isStandalone, setIsStandalone] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -249,7 +252,9 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
         contentClassName={cn(
           isChatPage
             ? 'flex-1 flex flex-col min-h-0 p-0'
-            : 'p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
+            : isImmersivePage
+              ? 'p-0'
+              : 'p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
         )}
         extra={<AdminInstallPrompt />}
       >

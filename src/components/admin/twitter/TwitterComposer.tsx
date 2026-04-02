@@ -94,7 +94,7 @@ export function TwitterComposer({ xTheme }: { xTheme: XTheme }) {
   };
 
   return (
-    <div className={`${xTheme.border} border-b px-4 pt-3 pb-2 sticky top-[97px] z-10 backdrop-blur-xl`} style={{ backgroundColor: xTheme.bg.includes('black') ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' }}>
+    <div className={`${xTheme.border} border-b px-4 pt-3 pb-2`}>
       <div className="flex gap-3">
         {/* Avatar */}
         <div className="shrink-0 pt-1">
@@ -115,7 +115,6 @@ export function TwitterComposer({ xTheme }: { xTheme: XTheme }) {
             onChange={(e) => setContent(e.target.value)}
             placeholder="What is happening?!"
             className={`w-full bg-transparent ${xTheme.text} text-xl placeholder:${xTheme.textSecondary} placeholder:opacity-60 outline-none resize-none min-h-[52px] leading-relaxed`}
-            style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}
             rows={2}
           />
 
