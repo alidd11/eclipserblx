@@ -72,9 +72,10 @@ export function TwitterFeed({ xTheme }: { xTheme: XTheme }) {
 
   const statusBadge = (status: string) => {
     switch (status) {
-      case 'sent': return <span className="text-[#00ba7c] text-[13px]">\u00B7 Posted</span>;
-      case 'draft': return <span className="text-[#ffd400] text-[13px]">\u00B7 Draft</span>;
-      case 'failed': return <span className="text-[#f4212e] text-[13px]">\u00B7 Failed</span>;
+      case 'sent': return <span className="text-[#00ba7c] text-[13px]">· Posted</span>;
+      case 'draft': return <span className="text-[#ffd400] text-[13px]">· Draft</span>;
+      case 'queued': return <span className="text-[#1d9bf0] text-[13px]">· Queued</span>;
+      case 'failed': return <span className="text-[#f4212e] text-[13px]">· Failed</span>;
       default: return null;
     }
   };
@@ -95,9 +96,9 @@ export function TwitterFeed({ xTheme }: { xTheme: XTheme }) {
                   <path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.69-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.636.433 1.221.878 1.69.47.446 1.055.752 1.69.883.635.13 1.294.083 1.902-.143.271.586.702 1.084 1.24 1.438.54.354 1.167.551 1.813.568.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.225 1.261.276 1.897.143.634-.131 1.217-.437 1.687-.883.445-.47.751-1.054.882-1.69.132-.633.083-1.29-.14-1.896.587-.274 1.084-.705 1.438-1.246.355-.54.553-1.17.57-1.817zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z" />
                 </svg>
                 <span className={`${xTheme.textSecondary} text-[15px]`}>@EclipseRblx</span>
-                <span className={`${xTheme.textSecondary} text-[15px]`}>&middot;</span>
+                <span className={`${xTheme.textSecondary} text-[15px]`}>·</span>
                 <span className={`${xTheme.textSecondary} text-[15px]`}>
-                  {formatDistanceToNow(new Date(post.posted_at), { addSuffix: false })}
+                  {post.posted_at ? formatDistanceToNow(new Date(post.posted_at), { addSuffix: false }) : 'pending'}
                 </span>
                 {statusBadge(post.status)}
                 {/* More menu with delete */}
@@ -121,21 +122,23 @@ export function TwitterFeed({ xTheme }: { xTheme: XTheme }) {
                 )}
               </div>
 
-              {/* Tweet text */}
+              {/* Tweet text — strip hashtags from content since they're shown separately */}
               <p className={`text-[15px] ${xTheme.text} mt-0.5 whitespace-pre-wrap break-words leading-[20px]`}>
-                {post.content}
+                {post.content?.replace(/\n*#\w+/g, '').trim()}
               </p>
 
               {/* Hashtags */}
               {(post.hashtags_used as string[])?.length > 0 && (
-                <p className="text-[15px] text-[#1d9bf0] mt-0.5">
+                <p className="text-[15px] text-[#1d9bf0] mt-1">
                   {(post.hashtags_used as string[]).join(' ')}
                 </p>
               )}
 
               {/* Timestamp */}
               <p className={`text-[13px] ${xTheme.textSecondary} mt-2`}>
-                {format(new Date(post.posted_at), "h:mm a \u00B7 MMM d, yyyy")}
+                {post.posted_at
+                  ? format(new Date(post.posted_at), "h:mm a · MMM d, yyyy")
+                  : 'Scheduled'}
               </p>
 
               {/* Action bar - functional buttons */}
