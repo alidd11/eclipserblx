@@ -1,17 +1,50 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { TwitterComposer } from '@/components/admin/twitter/TwitterComposer';
 import { TwitterFeed } from '@/components/admin/twitter/TwitterFeed';
 import { TwitterMentions } from '@/components/admin/twitter/TwitterMentions';
 import { TwitterHashtagPoolTab } from '@/components/admin/twitter/TwitterHashtagPoolTab';
-import { Sun, Moon, Bell, Search, MoreHorizontal, Home, Users, Mail, Bookmark, ListTodo, User, Sparkles } from 'lucide-react';
+import { Sun, Moon, Bell, Search, MoreHorizontal, Home, Users, Mail, Bookmark, ListTodo, User, Sparkles, Check, X as XIcon, Clock, CalendarClock } from 'lucide-react';
 import marketplaceLogo from '@/assets/marketplace-logo-icon-sm.webp';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 type Tab = 'for-you' | 'mentions' | 'posts' | 'hashtags';
 
 export default function TwitterPosts() {
   const [activeTab, setActiveTab] = useState<Tab>('for-you');
   const [xDark, setXDark] = useState(true);
+  const [scheduledPosts, setScheduledPosts] = useState<any[]>([]);
+  const [loadingScheduled, setLoadingScheduled] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchScheduledPosts();
+  }, []);
+
+  async function fetchScheduledPosts() {
+    setLoadingScheduled(true);
+    const { data } = await supabase
+      .from('twitter_posts')
+      .select('id, content, status, scheduled_for, ai_generated, post_type, created_at')
+      .in('status', ['queued', 'draft'])
+      .order('scheduled_for', { ascending: true })
+      .limit(10);
+    setScheduledPosts(data || []);
+    setLoadingScheduled(false);
+  }
+
+  async function handleApprove(id: string) {
+    await supabase.from('twitter_posts').update({ status: 'queued' }).eq('id', id);
+    toast({ title: 'Post approved', description: 'It will be posted at the scheduled time.' });
+    fetchScheduledPosts();
+  }
+
+  async function handleReject(id: string) {
+    await supabase.from('twitter_posts').update({ status: 'cancelled' }).eq('id', id);
+    toast({ title: 'Post rejected', description: 'The scheduled post has been cancelled.' });
+    fetchScheduledPosts();
+  }
 
   const theme = xDark
     ? {
