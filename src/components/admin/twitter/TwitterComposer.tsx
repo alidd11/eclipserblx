@@ -1,13 +1,23 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Image as ImageIcon, Hash, Globe, ChevronDown } from 'lucide-react';
+import { Loader2, Image as ImageIcon, Hash, Globe, ListPlus, Smile, MapPin, CalendarClock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-export function TwitterComposer() {
+interface XTheme {
+  bg: string;
+  text: string;
+  textSecondary: string;
+  border: string;
+  hover: string;
+  accent: string;
+  accentBg: string;
+  inputBg: string;
+  [key: string]: string;
+}
+
+export function TwitterComposer({ xTheme }: { xTheme: XTheme }) {
   const queryClient = useQueryClient();
   const [content, setContent] = useState('');
   const [postType, setPostType] = useState('scheduled');
@@ -31,9 +41,7 @@ export function TwitterComposer() {
 
   const hashtagString = selectedHashtags.join(' ');
   const separator = selectedHashtags.length > 0 ? '\n\n' : '';
-  const fullPreview = selectedHashtags.length > 0
-    ? `${content}${separator}${hashtagString}`
-    : content;
+  const fullPreview = selectedHashtags.length > 0 ? `${content}${separator}${hashtagString}` : content;
   const charCount = fullPreview.length;
   const charPercent = Math.min((charCount / 280) * 100, 100);
 
@@ -85,55 +93,46 @@ export function TwitterComposer() {
   };
 
   return (
-    <div className="border-b border-border p-4">
+    <div className={`${xTheme.border} border-b px-4 pt-3 pb-2`}>
       <div className="flex gap-3">
         {/* Avatar */}
-        <div className="shrink-0">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">E</span>
+        <div className="shrink-0 pt-1">
+          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#1d9bf0] to-[#1d9bf0]/60 flex items-center justify-center">
+            <span className="text-white font-bold text-sm">E</span>
           </div>
         </div>
 
         {/* Compose area */}
         <div className="flex-1 min-w-0">
-          {/* Audience selector */}
-          <Select value={postType} onValueChange={setPostType}>
-            <SelectTrigger className="w-auto h-6 text-xs text-primary border-primary/30 rounded-full px-3 gap-1 mb-2 inline-flex">
-              <Globe className="h-3 w-3" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="product_drop">Product Drop</SelectItem>
-              <SelectItem value="store_showcase">Store Showcase</SelectItem>
-              <SelectItem value="announcement">Announcement</SelectItem>
-              <SelectItem value="scheduled">Scheduled</SelectItem>
-            </SelectContent>
-          </Select>
+          {/* Audience pill */}
+          <button className={`flex items-center gap-1 text-[13px] font-bold ${xTheme.accent} border border-[#1d9bf0]/30 rounded-full px-3 py-0.5 mb-3 ${xTheme.hover} transition-colors`}>
+            <Globe className="h-3 w-3" />
+            Everyone
+          </button>
 
           {/* Text input */}
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="What's happening on Eclipse?"
-            className="w-full bg-transparent text-foreground text-lg placeholder:text-muted-foreground/50 outline-none resize-none min-h-[80px]"
-            rows={3}
+            placeholder="What is happening?!"
+            className={`w-full bg-transparent ${xTheme.text} text-xl placeholder:${xTheme.textSecondary} placeholder:opacity-60 outline-none resize-none min-h-[52px] leading-relaxed`}
+            style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}
+            rows={2}
           />
 
           {/* Hashtag section */}
           {showHashtags && (
             <div className="mt-2 mb-3 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
-                  {useCustomHashtags ? `Pick up to 5 hashtags (${selectedHashtags.length}/5)` : 'Auto-selected hashtags (2-5)'}
+                <span className={`text-xs ${xTheme.textSecondary}`}>
+                  {useCustomHashtags ? `Pick up to 5 (${selectedHashtags.length}/5)` : 'Auto-selected (2-5)'}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs h-6 text-primary"
+                <button
+                  className={`text-xs font-bold ${xTheme.accent} ${xTheme.hover} px-2 py-1 rounded-full`}
                   onClick={() => setUseCustomHashtags(!useCustomHashtags)}
                 >
                   {useCustomHashtags ? 'Use Auto' : 'Pick Manually'}
-                </Button>
+                </button>
               </div>
               {useCustomHashtags && (
                 <div className="flex flex-wrap gap-1.5">
@@ -141,7 +140,11 @@ export function TwitterComposer() {
                     <Badge
                       key={h.id}
                       variant={selectedHashtags.includes(h.tag) ? 'default' : 'outline'}
-                      className="cursor-pointer text-xs"
+                      className={`cursor-pointer text-xs ${
+                        selectedHashtags.includes(h.tag)
+                          ? 'bg-[#1d9bf0] text-white border-[#1d9bf0]'
+                          : `${xTheme.textSecondary} border-[#2f3336]`
+                      }`}
                       onClick={() => toggleHashtag(h.tag)}
                     >
                       {h.tag}
@@ -152,55 +155,78 @@ export function TwitterComposer() {
             </div>
           )}
 
+          {/* Reply setting */}
+          <button className={`flex items-center gap-1.5 text-[13px] font-bold ${xTheme.accent} mb-3 ${xTheme.hover} rounded-full px-1 py-1 -ml-1 transition-colors`}>
+            <Globe className="h-4 w-4" />
+            Everyone can reply
+          </button>
+
           {/* Divider */}
-          <div className="border-t border-border mt-2 pt-3 flex items-center justify-between">
+          <div className={`${xTheme.border} border-t`} />
+
+          {/* Bottom toolbar */}
+          <div className="flex items-center justify-between pt-2 pb-1">
             {/* Tools */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center -ml-2">
+              <button className={`p-2 rounded-full ${xTheme.accent} hover:bg-[#1d9bf0]/10 transition-colors`}>
+                <ImageIcon className="h-[18px] w-[18px]" />
+              </button>
+              <button className={`p-2 rounded-full ${xTheme.accent} hover:bg-[#1d9bf0]/10 transition-colors`}>
+                <ListPlus className="h-[18px] w-[18px]" />
+              </button>
+              <button className={`p-2 rounded-full ${xTheme.accent} hover:bg-[#1d9bf0]/10 transition-colors`}>
+                <Smile className="h-[18px] w-[18px]" />
+              </button>
+              <button className={`p-2 rounded-full ${xTheme.accent} hover:bg-[#1d9bf0]/10 transition-colors`}>
+                <CalendarClock className="h-[18px] w-[18px]" />
+              </button>
+              <button className={`p-2 rounded-full ${xTheme.accent} hover:bg-[#1d9bf0]/10 transition-colors`}>
+                <MapPin className="h-[18px] w-[18px]" />
+              </button>
               <button
                 onClick={() => setShowHashtags(!showHashtags)}
-                className={`p-2 rounded-full transition-colors ${showHashtags ? 'text-primary bg-primary/10' : 'text-primary/70 hover:bg-primary/10'}`}
+                className={`p-2 rounded-full transition-colors ${
+                  showHashtags ? 'text-[#1d9bf0] bg-[#1d9bf0]/10' : `${xTheme.accent} hover:bg-[#1d9bf0]/10`
+                }`}
               >
-                <Hash className="h-5 w-5" />
-              </button>
-              <button className="p-2 rounded-full text-primary/70 hover:bg-primary/10 transition-colors">
-                <ImageIcon className="h-5 w-5" />
+                <Hash className="h-[18px] w-[18px]" />
               </button>
             </div>
 
-            {/* Right side: char count + post button */}
+            {/* Right: char count + post */}
             <div className="flex items-center gap-3">
               {content.length > 0 && (
                 <div className="flex items-center gap-2">
-                  {/* Circular progress */}
-                  <div className="relative h-6 w-6">
-                    <svg className="h-6 w-6 -rotate-90" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" className="text-muted/30" strokeWidth="2.5" />
+                  <div className="relative h-[30px] w-[30px]">
+                    <svg className="h-[30px] w-[30px] -rotate-90" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" className="text-[#2f3336]" strokeWidth="2" />
                       <circle
                         cx="12" cy="12" r="10" fill="none"
-                        stroke={charCount > 280 ? 'hsl(var(--destructive))' : charCount > 260 ? 'hsl(45 100% 50%)' : 'hsl(var(--primary))'}
-                        strokeWidth="2.5"
+                        stroke={charCount > 280 ? '#f4212e' : charCount > 260 ? '#ffd400' : '#1d9bf0'}
+                        strokeWidth="2"
                         strokeDasharray={`${charPercent * 0.628} 62.8`}
                         strokeLinecap="round"
                       />
                     </svg>
                     {charCount > 260 && (
-                      <span className={`absolute inset-0 flex items-center justify-center text-[9px] font-bold ${charCount > 280 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      <span className={`absolute inset-0 flex items-center justify-center text-[11px] font-medium ${
+                        charCount > 280 ? 'text-[#f4212e]' : xTheme.textSecondary
+                      }`}>
                         {280 - charCount}
                       </span>
                     )}
                   </div>
-                  <div className="w-px h-6 bg-border" />
+                  <div className="w-px h-7 bg-[#2f3336]" />
                 </div>
               )}
 
-              <Button
+              <button
                 onClick={handleSend}
                 disabled={sending || !content.trim() || charCount > 280}
-                className="rounded-full px-5 font-bold"
-                size="sm"
+                className="bg-[#1d9bf0] hover:bg-[#1a8cd8] disabled:opacity-50 disabled:hover:bg-[#1d9bf0] text-white rounded-full px-5 py-[7px] text-[15px] font-bold transition-colors"
               >
                 {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Post'}
-              </Button>
+              </button>
             </div>
           </div>
         </div>
