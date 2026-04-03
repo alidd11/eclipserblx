@@ -38,16 +38,15 @@ const topLevelItems: NavItem[] = [
   { title: 'Dashboard', icon: LayoutDashboard, href: '/seller' },
   { title: 'Orders', icon: ShoppingCart, href: '/seller/orders' },
   { title: 'Analytics', icon: BarChart3, href: '/seller/analytics' },
-  { title: 'Goals', icon: TrendingUp, href: '/seller/goals' },
+  { title: 'Store Builder', icon: Sparkles, href: '/seller/store-builder' },
 ];
 
 const navGroups: NavGroup[] = [
   {
-    id: 'catalog',
-    title: 'Catalog',
+    id: 'products',
+    title: 'Products & Content',
     icon: Package,
     items: [
-      { title: 'Store Builder', icon: Sparkles, href: '/seller/store-builder' },
       { title: 'Products', icon: Package, href: '/seller/products' },
       { title: 'Categories', icon: LayoutGrid, href: '/seller/categories' },
       { title: 'Store Sections', icon: Layers, href: '/seller/tabs' },
@@ -58,28 +57,27 @@ const navGroups: NavGroup[] = [
   },
   {
     id: 'marketing',
-    title: 'Marketing',
+    title: 'Marketing & Sales',
     icon: Megaphone,
     items: [
+      { title: 'Ad Manager', icon: Sparkles, href: '/seller/promote' },
       { title: 'Discount Codes', icon: Tag, href: '/seller/discounts' },
       { title: 'Flash Sales', icon: Zap, href: '/seller/flash-sales' },
       { title: 'Campaigns', icon: Megaphone, href: '/seller/campaigns' },
       { title: 'Bundle Deals', icon: PackagePlus, href: '/seller/bundles' },
-      { title: 'Announcements', icon: Megaphone, href: '/seller/announcements' },
-      { title: 'Ad Manager', icon: Sparkles, href: '/seller/promote' },
+      { title: 'Announcements', icon: Bell, href: '/seller/announcements' },
     ],
   },
   {
-    id: 'inbox',
-    title: 'Inbox',
+    id: 'customers',
+    title: 'Customers & Inbox',
     icon: Inbox,
     items: [
       { title: 'Messages', icon: MessageCircle, href: '/seller/messages' },
       { title: 'Reviews', icon: Star, href: '/seller/reviews' },
       { title: 'Disputes', icon: RotateCcw, href: '/seller/refunds' },
-      { title: 'Support Tickets', icon: HelpCircle, href: '/seller/support' },
-      { title: 'Notifications', icon: Bell, href: '/seller/notifications' },
       { title: 'Customer Insights', icon: Heart, href: '/seller/customer-insights' },
+      { title: 'Notifications', icon: Bell, href: '/seller/notifications' },
     ],
   },
   {
@@ -89,6 +87,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Finance', icon: DollarSign, href: '/seller/finance' },
       { title: 'Documents', icon: FileText, href: '/seller/documents' },
+      { title: 'Goals', icon: TrendingUp, href: '/seller/goals' },
     ],
   },
   {
@@ -111,7 +110,6 @@ const navGroups: NavGroup[] = [
       { title: 'Custom Domain', icon: Globe, href: '/seller/settings/domain' },
       { title: 'Payments', icon: CreditCard, href: '/seller/settings/payments' },
       { title: 'Team', icon: Users, href: '/seller/settings/team' },
-      { title: 'Notifications', icon: Bell, href: '/seller/settings/notifications' },
     ],
   },
 ];
@@ -144,7 +142,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
         return {};
       }
     }
-    return { catalog: true, inbox: true, marketing: false, finance: false, integrations: false, settings: false };
+    return { products: true, customers: true, marketing: false, finance: false, integrations: false, settings: false };
   });
 
   useEffect(() => {

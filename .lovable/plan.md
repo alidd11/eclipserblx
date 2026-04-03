@@ -1,44 +1,68 @@
 
+# Seller Sidebar Reorganisation
 
-# Sidebar User Card Improvements
+## Current Problems
+1. **Too many groups (6)** — Catalog, Marketing, Inbox, Finance, Integrations, Settings creates choice overload
+2. **Scattered items** — "Customer Insights" is under Inbox (should be Analytics), "Store Builder" is under Catalog (it's a top-level action)
+3. **Redundancy** — "Notifications" appears in both Inbox and Settings groups
+4. **Weak top-level** — Dashboard, Orders, Analytics, Goals are ungrouped but Goals feels buried
+5. **Finance group only has 2 items** — not worth a collapsible group
 
-## Current State
-The user card section shows: avatar (or initial fallback), display name, hardcoded "Free Plan" label, wallet balance with "Add Funds" link, and a CTA button (Start Selling / Seller Dashboard).
+## New Structure
 
-## Proposed Improvements
+### Top-Level (always visible, no group header)
+- Dashboard
+- Orders
+- Analytics
+- Store Builder ← promoted from Catalog (it's the main builder tool)
 
-### 1. Show Real Plan Status
-Replace the hardcoded "Free Plan" text with actual Eclipse+ membership status. Query the database for active subscriptions and show "Eclipse+" with a sparkle icon when active, or "Free Plan" with an "Upgrade" link when not.
+### Products & Content
+- Products
+- Categories
+- Store Sections
+- Custom Sections
+- Pages
+- Import
 
-### 2. Online Status Indicator
-Add a small green dot on the avatar (bottom-right corner) to show online status, similar to Discord. This gives the sidebar a more social/app-like feel.
+### Marketing & Sales
+- Ad Manager
+- Discount Codes
+- Flash Sales
+- Campaigns
+- Bundle Deals
+- Announcements
 
-### 3. Username Below Display Name
-Show the user's `@username` (from profiles table) in muted text below the display name, giving users identity context at a glance.
+### Customers & Inbox
+- Messages
+- Reviews
+- Disputes
+- Customer Insights ← moved from Inbox
+- Notifications ← single location (removed from Settings)
 
-### 4. Quick Stats Row
-Add a compact row below the balance showing key stats: number of orders and wishlist count as small icon+number pairs. Keeps users engaged without cluttering.
+### Finance
+- Finance
+- Documents
+- Goals ← moved from top-level (fits better here)
 
-### 5. Upgrade CTA for Free Users
-When the user is on the free plan, replace or supplement the "Start Selling" CTA with a subtle "Upgrade to Eclipse+" banner using a gradient background, making the upsell contextual rather than a separate page visit.
+### Integrations
+- Discord
+- Discord Bots
+- Roblox
 
-### 6. Avatar Ring for Premium Users
-Eclipse+ subscribers get a purple gradient ring around their avatar, visually distinguishing premium members (similar to how Instagram shows story rings).
+### Settings
+- Store Profile
+- Appearance
+- Custom Domain
+- Payments
+- Team
 
-## Technical Details
+## What Changes
+- Store Builder promoted to top-level
+- Goals moved to Finance
+- Customer Insights moved to Customers & Inbox
+- Duplicate Notifications removed from Settings
+- "Catalog" renamed to "Products & Content"
+- "Inbox" renamed to "Customers & Inbox"
 
-### File: `src/components/layout/CustomerSidebar.tsx`
-- Expand the profile query to also fetch `username` from profiles
-- Add a subscription status query (or check if Eclipse+ subscription data exists -- may need a new table/column if none exists yet)
-- Add online status dot overlay on avatar
-- Add `@username` line below display name
-- Add compact stats row (orders count, wishlist count) using small queries
-- Conditionally show premium avatar ring
-- Replace hardcoded "Free Plan" with dynamic label
-
-### Database
-- May need to check if an Eclipse+ subscription table exists; if not, we can still show "Free Plan" for now and add the subscription system later
-
-### No new files needed
-All changes are within the existing sidebar component and its profile query.
-
+## File Modified
+- `src/components/seller/SellerSidebar.tsx` — restructure nav groups and top-level items
