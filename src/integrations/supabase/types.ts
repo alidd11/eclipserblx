@@ -5886,10 +5886,13 @@ export type Database = {
           campaign_name: string | null
           category_id: string | null
           clicks: number
+          cpc_bid: number | null
+          cpm_bid: number | null
           created_at: string
           creative_images: string[] | null
           current_bid: number
           daily_budget: number | null
+          daily_budget_limit: number | null
           duration_days: number
           expires_at: string | null
           goal: string
@@ -5897,6 +5900,8 @@ export type Database = {
           impressions: number
           max_bid: number
           paused_at: string | null
+          placement_zones: string[]
+          pricing_model: string
           product_id: string
           slot_type: string
           started_at: string | null
@@ -5904,6 +5909,7 @@ export type Database = {
           store_id: string
           target_countries: string[] | null
           target_devices: string[] | null
+          total_budget: number
           total_spent: number
           updated_at: string
           user_id: string
@@ -5913,10 +5919,13 @@ export type Database = {
           campaign_name?: string | null
           category_id?: string | null
           clicks?: number
+          cpc_bid?: number | null
+          cpm_bid?: number | null
           created_at?: string
           creative_images?: string[] | null
           current_bid?: number
           daily_budget?: number | null
+          daily_budget_limit?: number | null
           duration_days?: number
           expires_at?: string | null
           goal?: string
@@ -5924,6 +5933,8 @@ export type Database = {
           impressions?: number
           max_bid?: number
           paused_at?: string | null
+          placement_zones?: string[]
+          pricing_model?: string
           product_id: string
           slot_type: string
           started_at?: string | null
@@ -5931,6 +5942,7 @@ export type Database = {
           store_id: string
           target_countries?: string[] | null
           target_devices?: string[] | null
+          total_budget?: number
           total_spent?: number
           updated_at?: string
           user_id: string
@@ -5940,10 +5952,13 @@ export type Database = {
           campaign_name?: string | null
           category_id?: string | null
           clicks?: number
+          cpc_bid?: number | null
+          cpm_bid?: number | null
           created_at?: string
           creative_images?: string[] | null
           current_bid?: number
           daily_budget?: number | null
+          daily_budget_limit?: number | null
           duration_days?: number
           expires_at?: string | null
           goal?: string
@@ -5951,6 +5966,8 @@ export type Database = {
           impressions?: number
           max_bid?: number
           paused_at?: string | null
+          placement_zones?: string[]
+          pricing_model?: string
           product_id?: string
           slot_type?: string
           started_at?: string | null
@@ -5958,6 +5975,7 @@ export type Database = {
           store_id?: string
           target_countries?: string[] | null
           target_devices?: string[] | null
+          total_budget?: number
           total_spent?: number
           updated_at?: string
           user_id?: string
@@ -11241,6 +11259,10 @@ export type Database = {
       }
       can_seller_upload: { Args: { p_store_id: string }; Returns: boolean }
       can_user_download: { Args: { _user_id: string }; Returns: boolean }
+      charge_promotion_impression: {
+        Args: { p_count?: number; p_promotion_id: string }
+        Returns: boolean
+      }
       check_and_award_badges: {
         Args: { _user_id: string }
         Returns: {
@@ -11368,6 +11390,16 @@ export type Database = {
       }
       get_user_email: { Args: { _user_id: string }; Returns: string }
       get_user_max_hierarchy: { Args: { _user_id: string }; Returns: number }
+      get_weighted_promotion: {
+        Args: { p_category_id?: string; p_zone: string }
+        Returns: {
+          cpc_bid: number
+          cpm_bid: number
+          pricing_model: string
+          product_id: string
+          promotion_id: string
+        }[]
+      }
       has_permission: {
         Args: { _permission_name: string; _user_id: string }
         Returns: boolean
@@ -11453,6 +11485,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      record_promotion_click: {
+        Args: { p_promotion_id: string }
+        Returns: boolean
       }
       record_rate_limit: {
         Args: { p_action_type: string; p_identifier: string }
