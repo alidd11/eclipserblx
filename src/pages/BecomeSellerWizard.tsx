@@ -65,6 +65,7 @@ export default function BecomeSellerWizard() {
   const { isSeller, hasPendingApplication, application, loading } = useSellerStatus();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(0);
+  const [wasAutoApproved, setWasAutoApproved] = useState(false);
 
   const [formValues, setFormValues, clearFormValues, isDirty] = useFormPersistence('seller-application', INITIAL_FORM);
 
@@ -144,7 +145,7 @@ export default function BecomeSellerWizard() {
         throw new Error('Please provide a valid Discord server invite');
       }
 
-      const { error } = await supabase.from('store_applications').insert({
+      const { data, error } = await supabase.from('store_applications').insert({
         user_id: user.id,
         store_name: formValues.storeName.trim(),
         store_description: formValues.storeDescription.trim() || null,
@@ -154,13 +155,23 @@ export default function BecomeSellerWizard() {
         terms_accepted: formValues.termsAccepted,
         terms_accepted_at: new Date().toISOString(),
         verification_results: verificationResults as any,
-      });
+      }).select('status, auto_approved').single();
 
       if (error) throw error;
+      return data;
     },
-    onSuccess: () => {
-      toast.success('Application Submitted!');
+    onSuccess: (data) => {
+      const autoApproved = data?.auto_approved === true && data?.status === 'approved';
+      setWasAutoApproved(autoApproved);
+      
+      if (autoApproved) {
+        toast.success('Store Approved!', { description: 'Your identity was verified automatically.' });
+      } else {
+        toast.success('Application Submitted!');
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['seller-application'] });
+      queryClient.invalidateQueries({ queryKey: ['seller-status'] });
       clearFormValues();
       setCurrentStep(4); // Show success state
     },
@@ -218,7 +229,7 @@ export default function BecomeSellerWizard() {
     return (
       <MainLayout>
         <ResponsiveContainer size="md" className="py-12 px-4">
-          <ApplicationSubmittedView />
+          {wasAutoApproved ? <AutoApprovedView /> : <ApplicationSubmittedView />}
         </ResponsiveContainer>
       </MainLayout>
     );
@@ -634,8 +645,29 @@ function StepConfirm({ formValues, setFormValues, verificationResults, settings,
               <span>{verificationResults.discord_server.guild_name}</span>
             </div>
           )}
+          {verificationResults.identity_consistency && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Identity Match</span>
+              <Badge variant={verificationResults.identity_consistency.similarity_score >= 80 ? 'default' : 'secondary'} className="text-xs">
+                {verificationResults.identity_consistency.similarity_score}%
+              </Badge>
+            </div>
+          )}
         </div>
       </div>
+
+      {verificationResults.identity_consistency && 
+       verificationResults.identity_consistency.similarity_score >= 80 &&
+       verificationResults.roblox_group?.in_group &&
+       verificationResults.discord_server?.valid &&
+       verificationResults.email_verified && (
+        <Alert className="bg-green-500/10 border-green-500/30">
+          <Sparkles className="h-4 w-4 text-green-500" />
+          <AlertDescription className="text-sm">
+            <strong>Instant approval eligible!</strong> Your identity match qualifies you for automatic approval.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Verification checks */}
       <div className="space-y-2">
@@ -687,6 +719,62 @@ function StepConfirm({ formValues, setFormValues, verificationResults, settings,
 }
 
 /* ─── State Views ─── */
+
+function AutoApprovedView() {
+  return (
+    <div className="text-center space-y-8 py-8">
+      <div className="space-y-4">
+        <div className="mx-auto w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center">
+          <PartyPopper className="h-8 w-8 text-green-500" />
+        </div>
+        <h1 className="text-2xl font-bold">You're Approved! 🎉</h1>
+        <p className="text-muted-foreground max-w-md mx-auto">
+          Your identity was verified automatically through your linked accounts. Your store is ready to set up!
+        </p>
+      </div>
+
+      {/* What's next */}
+      <div className="max-w-sm mx-auto space-y-0">
+        {[
+          { step: 'Identity Verified', desc: 'Discord & Roblox accounts matched', done: true, icon: CheckCircle2 },
+          { step: 'Store Created', desc: 'Your store is live and ready', done: true, icon: Store },
+          { step: 'Customize Your Store', desc: 'Add logo, banner, and categories', done: false, icon: Sparkles },
+          { step: 'List Your First Product', desc: 'Start earning immediately', done: false, icon: Rocket },
+        ].map((item, i) => (
+          <div key={i} className="flex gap-3">
+            <div className="flex flex-col items-center">
+              <div className={cn(
+                'h-8 w-8 rounded-full flex items-center justify-center',
+                item.done ? 'bg-green-500/10' : 'bg-muted'
+              )}>
+                <item.icon className={cn('h-4 w-4', item.done ? 'text-green-500' : 'text-muted-foreground')} />
+              </div>
+              {i < 3 && <div className="w-px h-8 bg-border" />}
+            </div>
+            <div className="pb-8 text-left">
+              <p className={cn('text-sm font-medium', item.done && 'text-green-600 dark:text-green-400')}>
+                {item.step}
+              </p>
+              <p className="text-xs text-muted-foreground">{item.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <Button asChild>
+          <Link to="/seller/setup">
+            Set Up Your Store
+            <ArrowRight className="h-4 w-4 ml-1" />
+          </Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link to="/seller">Go to Dashboard</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function ApplicationSubmittedView() {
   return (
