@@ -454,15 +454,15 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               <img
                 src={profileAvatar}
                 alt=""
-                className="h-9 w-9 rounded-full object-cover shrink-0"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }}
+                className="h-9 w-9 rounded-full object-cover shrink-0 bg-muted"
               />
-            ) : null}
-            <div className={cn("h-9 w-9 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center shrink-0", profileAvatar && "hidden")}>
-              <span className="text-sm font-bold text-primary-foreground">
-                {(user.user_metadata?.display_name || user.email || '?')[0].toUpperCase()}
-              </span>
-            </div>
+            ) : (
+              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center shrink-0">
+                <span className="text-sm font-bold text-primary-foreground">
+                  {(user.user_metadata?.display_name || user.email || '?')[0].toUpperCase()}
+                </span>
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold truncate">{user.user_metadata?.display_name || 'User'}</p>
               <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Free Plan</p>
