@@ -33,7 +33,7 @@ export default function FreeAssets() {
     staleTime: 30 * 60 * 1000,
   });
 
-  const sortColumn = sort === 'newest' ? 'created_at' : sort === 'popular' ? 'total_sales' : 'download_count';
+  const sortColumn = sort === 'newest' ? 'created_at' : 'download_count';
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['free-assets', sort, categoryFilter],
