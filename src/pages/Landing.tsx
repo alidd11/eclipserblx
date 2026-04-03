@@ -96,20 +96,11 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* Top Sellers */}
+      {/* Top Creators (merged Top Sellers + Featured Creators) */}
       <LazySection minHeight="150px" rootMargin="200px">
-        <SectionErrorBoundary section="top-sellers" compact>
+        <SectionErrorBoundary section="top-creators" compact>
           <Suspense fallback={null}>
             <TopSellers />
-          </Suspense>
-        </SectionErrorBoundary>
-      </LazySection>
-
-      {/* Featured Creators */}
-      <LazySection minHeight="150px" rootMargin="200px">
-        <SectionErrorBoundary section="featured-creators" compact>
-          <Suspense fallback={null}>
-            <FeaturedCreators />
           </Suspense>
         </SectionErrorBoundary>
       </LazySection>
