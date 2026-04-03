@@ -754,8 +754,15 @@ function AutoApprovedView() {
       action: { label: 'Customize', href: '/seller/setup' },
     },
     { 
+      step: 'Import Existing Products', 
+      desc: 'Already selling on ClearlyDev, BuiltByBit, or Payhip? Import your catalog instantly', 
+      done: false, 
+      icon: Download,
+      action: { label: 'Import Products', href: '/seller/import' },
+    },
+    { 
       step: 'List Your First Product', 
-      desc: 'Upload your first asset and start earning immediately', 
+      desc: 'Or create a new product from scratch and start earning', 
       done: false, 
       icon: Rocket,
       action: { label: 'Add Product', href: '/seller/products/new' },
