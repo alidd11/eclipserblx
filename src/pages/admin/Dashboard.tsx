@@ -264,11 +264,7 @@ export default function AdminDashboard() {
                 <h1 className="text-lg sm:text-xl font-bold leading-tight">
                   {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
                 </h1>
-                <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 text-[11px] text-muted-foreground">
-                  <span className="whitespace-nowrap">🕐 {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
-                  <span className="whitespace-nowrap">🇬🇧 {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/London' })}</span>
-                  <span className="whitespace-nowrap">🇺🇸 {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/New_York' })}</span>
-                  <span className="whitespace-nowrap">🇺🇸 {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Los_Angeles' })}</span>
+                  <TimezoneClock />
                 </div>
               </div>
             </div>
