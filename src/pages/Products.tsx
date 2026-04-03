@@ -318,7 +318,7 @@ function ProductsGrid({
     <div className="space-y-6">
       <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
         {(products || []).map((product, index) => (
-          <>
+          <React.Fragment key={product.id}>
             {/* Inject promoted product at position 3 on first page */}
             {index === 2 && currentPage === 1 && promotedProduct?.product && (
               <PromotedProductCard
