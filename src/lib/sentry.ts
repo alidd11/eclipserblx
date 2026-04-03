@@ -38,6 +38,7 @@ async function loadSentry() {
       "Importing a module script failed",
       "Failed to fetch dynamically imported module",
       "View transition was skipped",
+      "Rejected",  // SW registration rejection on older Android/iOS
     ],
     beforeSend(event) {
       if (event.exception?.values?.[0]?.stacktrace?.frames?.some(
