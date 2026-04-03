@@ -653,7 +653,6 @@ function StepConfirm({ formValues, setFormValues, verificationResults, settings,
 
       {verificationResults.identity_consistency && 
        verificationResults.identity_consistency.similarity_score >= 80 &&
-       verificationResults.roblox_group?.in_group &&
        verificationResults.discord_server?.valid &&
        verificationResults.email_verified && (
         <Alert className="bg-green-500/10 border-green-500/30">
