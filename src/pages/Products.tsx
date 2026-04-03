@@ -6,6 +6,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductGridSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { CategoryBar } from '@/components/shop/CategoryBar';
+import { ShopSidebar } from '@/components/shop/ShopSidebar';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
