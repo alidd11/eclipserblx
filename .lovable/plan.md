@@ -1,81 +1,54 @@
 
 
-# Account Page Revamp
+# Customer Sidebar Improvements
 
 ## Current Problems
-- 1000-line monolith file with inline components (`UserIdsSection`, `StatusBadgesSection`)
-- Stats shown twice (quick stats bar in profile card + `AccountStatsBar` below)
-- Unbalanced tabs -- Security tab only has saved cards; Profile tab is overloaded with 6+ cards
-- IDs section clutters the profile card with technical info most users never need
-- Order history is fully rendered inline instead of linking to a dedicated page
+1. **Too many items** -- The "My Account" group has 6-8 items that duplicate what the revamped Account page now handles (cart, wishlist, purchases, wallet, following, notifications). Users can reach all of these from /account now.
+2. **Resources section is over-nested** -- Three separate collapsible sub-groups (Roblox, Discord, Templates) inside a collapsible parent creates 4 levels of nesting. Most have only 1-2 items each.
+3. **Redundant navigation** -- Cart, Wishlist, Purchases, and Wallet appear in both the sidebar and the Account page's navigation rows.
+4. **638 lines** for a sidebar component -- heavy inline rendering logic with duplicated patterns for collapsed/expanded/mobile states.
+5. **No visual personality** -- Plain text header ("ECLIPSE") with no icon or branding. Other dashboards (Bot, Guard) have branded headers with icons.
 
-## Design Approach (Roblox-inspired)
+## Proposed Changes
 
-Replace the tab-based layout with a **single scrollable page of clearly separated sections**, each as a compact, tappable row/card that either expands inline or links to a detail page. Think of it as a native settings screen -- clean, scannable, zero clutter.
+### 1. Slim down "My Account" group
+Since the Account page is now a central hub, reduce this group to just 3 items:
+- **My Account** → `/account`
+- **Notifications** → `/messages` (keep badge)
+- **Cart** → `/cart` (keep for quick access)
 
+Remove: Wishlist, Purchases, Wallet, Following -- all accessible from /account.
+
+### 2. Flatten Resources into a single group
+Replace the triple-nested Roblox/Discord/Templates collapsibles with a flat list:
+- Roblox categories listed directly (no sub-collapsible)
+- Discord Bots as a single item
+- Templates as a single item
+
+This eliminates 3 levels of nesting and ~100 lines of code.
+
+### 3. Add branded header
+Replace the plain "ECLIPSE" text with a small logo icon + "Eclipse" label, consistent with Bot Dashboard and Guard sidebar styling. Include a collapse toggle button.
+
+### 4. Reorder groups for user intent
 ```text
-┌─────────────────────────────┐
-│  Avatar + Name + @username  │
-│  Member since · Eclipse+    │
-│  [Edit Profile]  [Sign Out] │
-├─────────────────────────────┤
-│  Quick Stats Row            │
-│  Orders · Wallet · Alerts   │
-├─────────────────────────────┤
-│  ▸ My Purchases        →    │
-│  ▸ Order History        →    │
-│  ▸ Wallet & Credits     →    │
-│  ▸ Wishlist             →    │
-├─────────────────────────────┤
-│  ▸ Linked Accounts      →    │
-│  ▸ Saved Payment Methods →    │
-│  ▸ Eclipse+ Subscription →   │
-├─────────────────────────────┤
-│  ▸ Theme                 →    │
-│  ▸ Notifications         →    │
-│  ▸ Email Preferences     →    │
-│  ▸ Sound Effects         →    │
-├─────────────────────────────┤
-│  ▸ Become a Seller       →    │
-│  ▸ Referrals             →    │
-│  ▸ Affiliate Program     →    │
-├─────────────────────────────┤
-│  ▸ Your IDs (collapsible)    │
-│  [Delete Account]            │
-│  App version                 │
-└─────────────────────────────┘
+Quick Access:  Home, Admin*, Seller*
+My Account:    Account, Notifications, Cart
+Explore:       All Products, Stores, Categories, Featured, Eclipse+
+Resources:     [Roblox categories], Discord Bots, Templates
+Support:       Help Center, My Tickets, FAQ, Discord, Jobs
 ```
+Move "Advertise" from Explore into a standalone item or into Support (it's not an exploration action).
 
-## Key Changes
-
-### 1. Simplify profile header
-- Keep avatar, display name (editable), @username, member since date, status badges
-- Remove the 4-column quick-stats grid from inside the card; replace with a cleaner 3-stat row below
-
-### 2. Replace tabs with section groups
-- **Shopping** section: links to `/purchases`, `/account#orders`, `/credits`, `/wishlist`
-- **Account** section: linked accounts (inline expandable), saved cards, Eclipse+ subscription
-- **Preferences** section: theme, notifications, email, sound -- each as a link-style row
-- **More** section: become seller, referrals, affiliate, IDs (collapsed by default)
-
-### 3. Navigation rows instead of full card renders
-- Each row is a `Link` or expandable accordion -- no heavy card components rendered on the main page
-- Existing sub-components (`LinkedAccountsCard`, `ThemeSettingsCard`, etc.) remain but are rendered on expand or on their own routes
-
-### 4. Remove redundancy
-- Remove `AccountStatsBar` from the page (stats are in the header)
-- Remove inline `UserIdsSection` -- move to a collapsible "Your IDs" row at the bottom
-- Remove full order history render -- link to `/purchases` instead
-
-### 5. Clean sign-out and danger zone
-- Sign out button in profile header (already exists)
-- Delete account at the very bottom, subtle, with existing dialog
+### 5. Clean up conditional items
+- Seller Dashboard and Admin Dashboard stay in Quick Access (role-gated)
+- Store Messages moves to the Seller Dashboard sidebar (not the customer sidebar)
+- Affiliate link only shows if approved (already works, keep as-is but move to Account page)
 
 ## Files Modified
-- `src/pages/Account.tsx` -- full rewrite with new layout structure
-- Extract `UserIdsSection` and `StatusBadgesSection` into the file as smaller helpers (or remove `StatusBadgesSection` and inline badges into the header)
+- `src/components/layout/CustomerSidebar.tsx` -- restructure nav groups, flatten Resources, slim Account group, add branded header
+- `src/components/layout/sidebar/SidebarFooter.tsx` -- no changes needed
 
 ## Files NOT Modified
-- All existing card components (`LinkedAccountsCard`, `ThemeSettingsCard`, etc.) stay as-is
-- No new routes needed -- expandable sections handle inline content
+- Account page, other sidebars, bottom tab bar -- all stay as-is
 
