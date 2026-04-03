@@ -4,7 +4,7 @@ import { SystemAlerts } from '@/components/admin/dashboard/SystemAlerts';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-import { motion } from 'framer-motion';
+
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
