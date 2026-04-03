@@ -1,15 +1,24 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Grid3X3, ShoppingCart, User } from 'lucide-react';
+import { Home, Compass, ShoppingCart, Package, Grid3X3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/hooks/useCart';
 import { hapticTap } from '@/lib/haptics';
 import { useAuth } from '@/hooks/useAuth';
 
-const TAB_ITEMS: { icon: typeof Home; label: string; href: string; showBadge?: boolean }[] = [
+interface TabItem {
+  icon: typeof Home;
+  label: string;
+  href: string;
+  isCenter?: boolean;
+  showBadge?: boolean;
+}
+
+const TAB_ITEMS: TabItem[] = [
   { icon: Home, label: 'Home', href: '/' },
-  { icon: Grid3X3, label: 'Shop', href: '/products' },
-  { icon: ShoppingCart, label: 'Cart', href: '/cart', showBadge: true },
-  { icon: User, label: 'Account', href: '/account' },
+  { icon: Compass, label: 'Browse', href: '/products' },
+  { icon: ShoppingCart, label: 'Cart', href: '/cart', isCenter: true, showBadge: true },
+  { icon: Package, label: 'Orders', href: '/account?section=purchases' },
+  { icon: Grid3X3, label: 'Hub', href: '/account' },
 ];
 
 /** Hidden routes where the tab bar should not appear */
@@ -21,7 +30,6 @@ export function MobileTabBar() {
   const { user } = useAuth();
   const cartCount = items.length;
 
-  // Hide on certain routes
   if (HIDDEN_PREFIXES.some(p => location.pathname.startsWith(p))) return null;
 
   return (
@@ -31,14 +39,47 @@ export function MobileTabBar() {
       role="tablist"
       aria-label="Main navigation"
     >
-      <div className="flex items-center justify-around h-14">
-        {TAB_ITEMS.map(({ icon: Icon, label, href, showBadge }) => {
+      <div className="flex items-center justify-around h-16">
+        {TAB_ITEMS.map(({ icon: Icon, label, href, isCenter, showBadge }) => {
           const isActive = href === '/'
             ? location.pathname === '/'
-            : location.pathname.startsWith(href);
+            : href.startsWith('/account')
+              ? location.pathname === '/account' && (href === '/account' ? !location.search.includes('section=purchases') : location.search.includes('section=purchases'))
+              : location.pathname.startsWith(href);
 
-          // Redirect to auth if not logged in and tapping Account
-          const actualHref = href === '/account' && !user ? '/auth' : href;
+          const actualHref = (href === '/account' || href.startsWith('/account?')) && !user ? '/auth' : href;
+
+          if (isCenter) {
+            return (
+              <NavLink
+                key={href}
+                to={actualHref}
+                onClick={hapticTap}
+                className="flex flex-col items-center justify-center flex-1 h-full relative select-none active:scale-95 transition-transform duration-150"
+                role="tab"
+                aria-selected={isActive}
+              >
+                <div className={cn(
+                  "relative -mt-4 flex items-center justify-center h-12 w-12 rounded-xl",
+                  "bg-muted/80 shadow-md",
+                  isActive && "bg-primary/15"
+                )}>
+                  <Icon className={cn("h-6 w-6", isActive ? "text-primary stroke-[2.5]" : "text-muted-foreground")} />
+                  {showBadge && cartCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                      {cartCount > 9 ? '9+' : cartCount}
+                    </span>
+                  )}
+                </div>
+                <span className={cn("text-[11px] leading-tight mt-0.5", isActive ? "text-primary font-semibold" : "text-muted-foreground font-medium")}>
+                  {label}
+                </span>
+                {isActive && (
+                  <span className="absolute bottom-1 w-4 h-0.5 rounded-full bg-primary" />
+                )}
+              </NavLink>
+            );
+          }
 
           return (
             <NavLink
@@ -48,31 +89,22 @@ export function MobileTabBar() {
               onClick={hapticTap}
               className={cn(
                 "flex flex-col items-center justify-center gap-0.5 flex-1 h-full relative",
-                "transition-colors duration-150 select-none",
-                "active:scale-95",
-                isActive
-                  ? "text-primary"
-                  : "text-muted-foreground"
+                "transition-colors duration-150 select-none active:scale-95"
               )}
               role="tab"
               aria-selected={isActive}
             >
-              <div className="relative">
-                <Icon
-                  className={cn("h-5 w-5", isActive && "stroke-[2.5]")}
-                />
-                {showBadge && cartCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
-                    {cartCount > 9 ? '9+' : cartCount}
-                  </span>
-                )}
+              <div className={cn(
+                "flex items-center justify-center h-8 w-8 rounded-full transition-colors duration-150",
+                isActive && "bg-primary/15"
+              )}>
+                <Icon className={cn("h-5 w-5", isActive ? "text-primary stroke-[2.5]" : "text-muted-foreground")} />
               </div>
-              <span className={cn("text-[10px] leading-tight", isActive ? "font-semibold" : "font-medium")}>
+              <span className={cn("text-[11px] leading-tight", isActive ? "text-primary font-semibold" : "text-muted-foreground font-medium")}>
                 {label}
               </span>
-              {/* Active indicator dot */}
               {isActive && (
-                <span className="absolute top-0.5 w-1 h-1 rounded-full bg-primary" />
+                <span className="absolute bottom-1 w-4 h-0.5 rounded-full bg-primary" />
               )}
             </NavLink>
           );
