@@ -35,11 +35,10 @@ const payoutMethods = [
 
 const earningsBreakdown = [
   { label: "Customer pays", value: "£10.00", type: "neutral" },
-  { label: "Stripe processing fee (1.5% + £0.20)", value: "-£0.35", type: "fee" },
-  { label: "Net after payment processing", value: "£9.65", type: "neutral" },
-  { label: "Platform commission (15% base / 10% Eclipse+)", value: "-£1.45 / -£0.97", type: "fee" },
-  { label: "Your earnings (base seller)", value: "£8.20", type: "earning" },
-  { label: "Your earnings (Eclipse+ seller)", value: "£8.69", type: "highlight" },
+  { label: "Platform commission (15%)", value: "-£1.50", type: "fee" },
+  { label: "Your earnings", value: "£8.50", type: "earning" },
+  { label: "Eclipse+ seller commission (10%)", value: "-£1.00", type: "fee" },
+  { label: "Your earnings (Eclipse+ seller)", value: "£9.00", type: "highlight" },
 ];
 
 const importantNotes = [
