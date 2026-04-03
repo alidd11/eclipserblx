@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Filter, Search, ChevronDown, Package, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Package, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductGridSkeleton } from '@/components/ui/ProductCardSkeleton';
+import { CategoryBar } from '@/components/shop/CategoryBar';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -177,7 +178,8 @@ export default function Products() {
           url={`https://eclipserblx.com/products${categorySlug ? `?category=${categorySlug}` : ''}`}
           itemCount={productsData?.totalCount ?? 0}
         />
-        <div className="container py-8 space-y-6">
+        <CategoryBar />
+        <div className="container py-6 space-y-4">
         <Card className="bg-card border-border">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center gap-2">
@@ -216,44 +218,7 @@ export default function Products() {
                 </SelectContent>
               </Select>
 
-              <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen}>
-                <CollapsibleTrigger className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors px-2.5 py-2 rounded-md bg-muted/30 hover:bg-muted/50 h-9">
-                  <Filter className="h-3.5 w-3.5 flex-shrink-0" />
-                  <span className="hidden sm:inline truncate max-w-[100px]">{activeCategory ? activeCategory.name : t('products.filter')}</span>
-                  <ChevronDown className={`h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
-                </CollapsibleTrigger>
-              </Collapsible>
             </div>
-
-            {categoriesOpen && (
-              <nav className="flex flex-wrap gap-2 pt-1">
-                <Link
-                  to="/products"
-                  onClick={() => setCategoriesOpen(false)}
-                  className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
-                    !categorySlug
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
-                  }`}
-                >
-                  {t('common.all')}
-                </Link>
-                {categories?.map((category) => (
-                  <Link
-                    key={category.id}
-                    to={`/products?category=${category.slug}`}
-                    onClick={() => setCategoriesOpen(false)}
-                    className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
-                      categorySlug === category.slug
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
-                    }`}
-                  >
-                    {category.name}
-                  </Link>
-                ))}
-              </nav>
-            )}
           </CardContent>
         </Card>
 

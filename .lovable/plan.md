@@ -1,115 +1,62 @@
 
+# Eclipse Competitive UX Overhaul — Implementation Plan
 
-# Eclipse v3.2 — Priority Implementation Plan
+## Priority 1: Product Card Overhaul
+**Goal:** Match/exceed ClearlyDev's card information density
 
-## What We're Building
+Changes to `ProductCard.tsx`:
+- Add **star rating** display (average_rating from reviews or product data)
+- Add **seller avatar + store name** below the product info
+- Add **category badge** overlay on the product image
+- Add **"Sale!" badge** for discounted items
+- Ensure all of this works on both grid and list views
+- Keep the existing hover overlay for desktop
 
-Three high-impact changes selected from the directive: **Homepage Conversion**, **Free Assets Page**, and **Search Ranking Overhaul**.
+## Priority 2: Sticky Category Bar on Shop Page
+**Goal:** 1-click category switching like ClearlyDev's top nav
 
----
+- Create a `CategoryBar` component with horizontal scrollable icons
+- Fetch categories from DB, display with icons
+- Sticky position below header on the products/shop page
+- Clicking a category filters products instantly
+- Works on mobile as horizontal scroll
 
-## 1. Homepage Conversion Redesign
+## Priority 3: Rethink Trust Stats
+**Goal:** Stop showing small numbers that hurt credibility
 
-**Current state:** Landing page has Hero → Promotions → Marketplace (stores/products toggle) → For You. Missing dedicated Trending, Free Assets, Featured Creators, Why Eclipse, and Trust Bar sections.
+- Replace the current stats bar (if showing raw order/product counts) with **qualitative trust signals**
+- Use phrases like "Trusted by Roblox Communities", "Verified Sellers", "Instant Digital Delivery", "Secure Payments"
+- Add recognizable trust icons (shield, lock, verified check)
+- Only show real numbers when they're impressive
 
-**Changes to `Landing.tsx`:**
-Restructure section order to match the directive's conversion funnel:
+## Priority 4: Product Page Reviews & Ratings
+**Goal:** Let buyers see what others think
 
-```
-Hero (keep existing, update copy)
-  → Trending Products (NEW section)
-  → Categories Grid (move up from inside MarketplaceSection)
-  → Free Assets Highlight (NEW — teaser row linking to /free)
-  → Featured Creators (NEW — top verified stores horizontal scroll)
-  → Why Eclipse (NEW — 3-4 value props grid)
-  → Trust Bar (NEW — stats: products sold, creators, secure payments)
-  → Final CTA (NEW — "Start Selling" / "Browse Marketplace")
-  → For You (keep)
-```
+- Need a `reviews` table (if not exists) with: user_id, product_id, rating (1-5), comment, created_at
+- Display reviews on the product detail page
+- Show aggregate star rating on product cards
+- Allow verified purchasers to leave reviews
+- RLS: anyone can read, only verified buyers can write
 
-**New components to create:**
-- `src/components/landing/TrendingProducts.tsx` — Fetches products ordered by `total_sales` (last 24h proxy via recent orders), horizontal scroll on mobile, grid on desktop
-- `src/components/landing/FreeAssetsTeaser.tsx` — Shows 4-6 free products (price = 0) with "View All Free Assets →" link to `/free`
-- `src/components/landing/FeaturedCreators.tsx` — Horizontal scroll of top verified/trusted stores
-- `src/components/landing/WhyEclipse.tsx` — 4-column grid: Discord Ecosystem, AI Security, Eclipse+ Savings, Seller Tools
-- `src/components/landing/TrustBar.tsx` — Stats row: total products, total creators, "Secure Payments"
-- `src/components/landing/FinalCTA.tsx` — Full-width CTA banner
-
-**Hero updates (`LandingHero.tsx`):**
-- Change headline to broader positioning: "The all-in-one marketplace for Roblox creators"
-- Keep existing CTA structure but ensure "Browse Marketplace" is primary
-
-**MarketplaceSection:** Keep as-is but move `CategoriesGrid` call up to Landing level for earlier visibility.
-
----
-
-## 2. Free Assets Page (`/free`)
-
-**New route:** `/free` → `src/pages/FreeAssets.tsx`
-
-**Features:**
-- Query products where `price = 0` and `is_active = true` from active, non-testing stores
-- Category filter chips (horizontal scroll)
-- Sort by: newest, most popular, rating
-- Infinite scroll product grid using existing `ProductCard` component
-- SEO meta via `usePageMeta`
-- Zero-commission messaging in a banner: "All free assets — no fees, no catch"
-
-**Route registration:** Add to `AppRoutes.tsx` as a lazy-loaded public route.
-
-**Cross-links:**
-- Add "Free Assets" to main navigation/header
-- Homepage `FreeAssetsTeaser` links here
-- Search filters get a "Free" toggle
+## Priority 5: General Polish
+- Ensure seller info (avatar + name) appears consistently across all product views
+- Clean up any "No image" placeholder cards in trending
+- Ensure mobile product cards are compact and info-dense
 
 ---
 
-## 3. Search Ranking Overhaul
+## Files to Create/Modify
 
-**Current state:** Search uses basic text matching with `pg_trgm` indexes, sorted by `total_sales` for trending. No weighted scoring.
+| File | Action |
+|------|--------|
+| `src/components/ui/ProductCard.tsx` | Major update — ratings, seller info, category badge |
+| `src/components/shop/CategoryBar.tsx` | New — sticky category navigation |
+| `src/pages/Products.tsx` | Modify — integrate CategoryBar |
+| `src/components/landing/TrustBar.tsx` | Modify — qualitative signals instead of raw numbers |
+| `src/components/product/ProductReviews.tsx` | New — reviews display + form |
+| DB migration | `reviews` table + RLS policies |
 
-**Implementation — database function:**
-
-Create a new RPC function `search_products_ranked` that implements the weighted score:
-
-```sql
-SCORE = (text_relevance * 0.35) + (sales_score * 0.20) + (conversion_score * 0.15) 
-      + (rating_score * 0.10) + (recency_score * 0.10) + (trending_score * 0.10)
-```
-
-- **text_relevance**: `similarity()` score from `pg_trgm` on name + description
-- **sales_score**: Normalized `total_sales` (0-1 scale vs max)
-- **conversion_score**: Derived from `total_sales / total_views` if view tracking exists, else fallback to sales
-- **rating_score**: `average_rating / 5.0`
-- **recency_score**: Decay function based on `created_at` (1.0 for today → 0 after 90 days)
-- **trending_score**: Sales in last 24h normalized
-
-**Database migration:** Create `search_products_ranked` as a SECURITY DEFINER function with parameters for query text, category filter, price range, free-only filter, and pagination.
-
-**Frontend changes (`SearchResults.tsx`):**
-- When sort = "relevance", call `search_products_ranked` RPC instead of raw query
-- Add "Free" filter toggle to search filters
-- Add "Verified" filter toggle
-
-**Edge function (`smart-search`):** Update to use the new RPC when available.
-
----
-
-## Technical Notes
-
-- All new sections use `LazySection` + `Suspense` + `SectionErrorBoundary` for performance
-- All new sections use `ScrollReveal` for entrance animations
-- Mobile-first: horizontal scroll carousels on mobile, grids on desktop
-- Skeleton loaders for every new section
-- No rebuilds of existing components — only additions and reordering
-
----
-
-## Estimated Scope
-
-| Area | Files Created | Files Modified |
-|------|--------------|----------------|
-| Homepage | 6 new components | Landing.tsx |
-| Free Assets | 1 page | AppRoutes.tsx, navigation |
-| Search Ranking | 1 DB migration | SearchResults.tsx, smart-search |
-
+## Approach
+- DB migration first (reviews table)
+- Then all frontend changes in parallel
+- No business logic changes — pure UX improvements

@@ -221,6 +221,11 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           
           {/* Badges */}
           <div className="absolute top-1.5 left-1.5 flex flex-col gap-1 z-[3]">
+            {hasMemberDiscount && (
+              <div className="px-1.5 py-0.5 text-[10px] font-medium bg-destructive text-destructive-foreground rounded shadow-sm">
+                Sale!
+              </div>
+            )}
             {showBestSellerBadge && (
               <div className="px-1.5 py-0.5 text-[10px] font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded shadow-sm">
                 Best Seller
@@ -236,6 +241,11 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 New
               </div>
             )}
+            {category && (
+              <div className="px-1.5 py-0.5 text-[10px] font-medium bg-black/60 text-white rounded backdrop-blur-sm">
+                {category}
+              </div>
+            )}
           </div>
           
           {/* Wishlist button */}
@@ -244,48 +254,46 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           </div>
         </div>
 
-        {/* Store strip */}
-        {storeName && (
-          <div className="h-7 flex items-center gap-1.5 px-2 xs:px-2.5 bg-muted/60 border-b border-border/50">
-            {storeLogo ? (
-              <img 
-                src={storeLogo} 
-                alt={storeName}
-                className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0"
-              />
-            ) : (
-              <div className="h-3.5 w-3.5 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
-                <Store className="h-2.5 w-2.5 text-muted-foreground" />
-              </div>
-            )}
-            <span 
-              className="text-[10px] text-muted-foreground font-medium truncate hover:text-foreground transition-colors cursor-pointer"
-              onClick={(e) => {
-                if (storeSlug) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  navigate(`/store/${storeSlug}`);
-                }
-              }}
-            >
-              {storeName}
+        {/* Store strip — always visible with rating */}
+        <div className="h-7 flex items-center gap-1.5 px-2 xs:px-2.5 bg-muted/60 border-b border-border/50">
+          {storeLogo ? (
+            <img 
+              src={storeLogo} 
+              alt={storeName || ''}
+              className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0"
+            />
+          ) : (
+            <div className="h-3.5 w-3.5 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
+              <Store className="h-2.5 w-2.5 text-muted-foreground" />
+            </div>
+          )}
+          <span 
+            className="text-[10px] text-muted-foreground font-medium truncate hover:text-foreground transition-colors cursor-pointer"
+            onClick={(e) => {
+              if (storeSlug) {
+                e.preventDefault();
+                e.stopPropagation();
+                navigate(`/store/${storeSlug}`);
+              }
+            }}
+          >
+            {storeName || 'Eclipse'}
+          </span>
+          {isVerified && (
+            <BadgeCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
+          )}
+          {isTrusted && (
+            <Shield className="h-3 w-3 text-amber-400 flex-shrink-0" />
+          )}
+          {typeof averageRating === 'number' && averageRating > 0 && (
+            <span className="flex items-center gap-0.5 ml-auto text-muted-foreground">
+              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+              <span className="text-[10px] font-medium">{averageRating.toFixed(1)}</span>
             </span>
-            {isVerified && (
-              <BadgeCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
-            )}
-            {isTrusted && (
-              <Shield className="h-3 w-3 text-amber-400 flex-shrink-0" />
-            )}
-            {typeof averageRating === 'number' && averageRating > 0 && (
-              <span className="flex items-center gap-0.5 ml-auto text-muted-foreground">
-                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                <span className="text-[10px] font-medium">{averageRating.toFixed(1)}</span>
-              </span>
-            )}
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Content with flag background */}
+        {/* Content */}
         <div className="relative p-2 xs:p-2.5 sm:p-3 flex flex-col flex-1 gap-1 xs:gap-1.5 overflow-hidden">
           {/* Flag background overlay (full width, fades out before the CTA) */}
           {(() => {
@@ -311,11 +319,6 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           })()}
           
           {/* Content layer */}
-          {category && (
-            <span className="text-[9px] xs:text-[10px] sm:text-xs font-medium text-primary uppercase tracking-wider truncate relative z-10">
-              {category}
-            </span>
-          )}
           
           <h3 className="font-display font-semibold text-[11px] xs:text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight flex-1">
             {name}
