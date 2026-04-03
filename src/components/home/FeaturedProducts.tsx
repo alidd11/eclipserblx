@@ -15,7 +15,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
   const minSwipeDistance = 50;
 
   const { data: products, isLoading } = useFeaturedProducts({
-    limit: 12,
+    limit: 5,
     maxPerStore: 3,
     queryKey: 'home-featured-scored',
   });
