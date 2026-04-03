@@ -84,7 +84,7 @@ export function usePromotedProduct(zone: string, categoryId?: string) {
       supabase.rpc('charge_promotion_impression', {
         p_promotion_id: data.promotionId,
         p_count: 1,
-      }).then(() => {}).catch?.(() => {});
+      }).then(() => {}, () => {});
     }
   }, [data?.promotionId]);
 
