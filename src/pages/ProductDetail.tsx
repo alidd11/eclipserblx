@@ -40,6 +40,7 @@ import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { RecentlyViewedProducts } from '@/components/product/RecentlyViewedProducts';
 import { FrequentlyBoughtTogether } from '@/components/product/FrequentlyBoughtTogether';
 import { PriceAlertButton } from '@/components/product/PriceAlertButton';
+import { SocialShareButtons } from '@/components/product/SocialShareButtons';
 
 export default function ProductDetail() {
   const { productNumber } = useParams<{ productNumber: string }>();
@@ -789,40 +790,26 @@ export default function ProductDetail() {
 
 
             {/* Share + Price Alert + Report */}
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex-1 text-muted-foreground hover:text-foreground"
-                onClick={async () => {
-                  const shareUrl = `https://eclipserblx.com/products/${(product as any).product_number || productNumber}`;
-                  if (navigator.share) {
-                    try {
-                      await navigator.share({ title: product.name, text: `Check out ${product.name} on Eclipse`, url: shareUrl });
-                    } catch {}
-                  } else {
-                    await navigator.clipboard.writeText(shareUrl);
-                    toast.success('Link copied!');
-                  }
-                }}
-              >
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
-              </Button>
-              <PriceAlertButton productId={product.id} currentPrice={product.price} />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex-1 text-muted-foreground hover:text-foreground"
-                onClick={() => setShowIPReportDialog(true)}
-              >
-                <Flag className="h-4 w-4 mr-2" />
-                Report IP Violation
-              </Button>
+            <div className="space-y-2">
+              <SocialShareButtons
+                url={`/products/${(product as any).product_number || productNumber}`}
+                title={product.name}
+                description={`Check out ${product.name} on Eclipse`}
+              />
+              <div className="flex gap-2">
+                <PriceAlertButton productId={product.id} currentPrice={product.price} />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex-1 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowIPReportDialog(true)}
+                >
+                  <Flag className="h-4 w-4 mr-2" />
+                  Report IP Violation
+                </Button>
+              </div>
             </div>
-            
           </div>
-        </div>
 
         {/* Reviews Section */}
         <div ref={reviewSectionRef} id="reviews" className="scroll-mt-8">

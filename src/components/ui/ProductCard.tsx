@@ -129,17 +129,30 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
     }
   }, [inCart, addItem, id, name, price, currentMedia, slug, categorySlug, categoryId, isResellable, storeEclipseEnabled, storeName]);
 
+  const hoverTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const handleMouseEnter = useCallback(() => {
     if (videoRef.current && isVideo) {
       videoRef.current.play().catch(() => {});
     }
-  }, [isVideo]);
+    // Cycle images on hover (desktop only)
+    if (mediaChain.length > 1 && !isVideo) {
+      hoverTimerRef.current = setInterval(() => {
+        setMediaIndex((prev) => (prev + 1) % mediaChain.length);
+      }, 1200);
+    }
+  }, [isVideo, mediaChain.length]);
 
   const handleMouseLeave = useCallback(() => {
     if (videoRef.current && isVideo) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
     }
+    if (hoverTimerRef.current) {
+      clearInterval(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+    setMediaIndex(0);
   }, [isVideo]);
 
   return (
