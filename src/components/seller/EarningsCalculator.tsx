@@ -19,27 +19,18 @@ export function EarningsCalculator({ commissionRate = 15 }: EarningsCalculatorPr
   const breakdown = useMemo(() => {
     const price = parseFloat(productPrice) || 0;
     
-    // Estimate Stripe fee: 1.5% + £0.20 for UK domestic cards
-    const stripeFeePercentage = 0.015;
-    const stripeFeeFixed = 0.20;
-    const stripeFee = (price * stripeFeePercentage) + stripeFeeFixed;
+    // Platform commission — flat percentage on sale price
+    // Platform absorbs all payment processing fees
+    const platformCommission = price * (commissionRate / 100);
     
-    // Net after Stripe
-    const netAfterStripe = Math.max(0, price - stripeFee);
-    
-    // Platform commission on net
-    const platformCommission = netAfterStripe * (commissionRate / 100);
-    
-    // Seller earnings
-    const sellerEarnings = Math.max(0, netAfterStripe - platformCommission);
+    // Seller earnings — always exactly (100% - commission%) of sale price
+    const sellerEarnings = Math.max(0, price - platformCommission);
     
     // Effective percentage
     const effectivePercentage = price > 0 ? (sellerEarnings / price) * 100 : 0;
     
     return {
       productPrice: price,
-      stripeFee,
-      netAfterStripe,
       platformCommission,
       sellerEarnings,
       effectivePercentage,
