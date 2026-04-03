@@ -16,11 +16,11 @@ export function TrendingProducts() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, slug, price, images, total_sales, stores!inner(is_active, name, slug, is_verified)')
+        .select('id, name, slug, price, images, download_count, stores!inner(is_active, name, slug, is_verified)')
         .eq('is_active', true)
         .eq('moderation_status', 'approved')
         .eq('stores.is_active', true)
-        .order('total_sales', { ascending: false })
+        .order('download_count', { ascending: false })
         .limit(8);
       if (error) throw error;
       return data;
