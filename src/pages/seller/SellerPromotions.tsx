@@ -46,8 +46,8 @@ export default function SellerPromotions() {
   }) || [];
 
   const activeCampaigns = filtered.filter(p => p.status === 'active');
-  const pendingCampaigns = filtered.filter(p => ['pending_auction', 'scheduled'].includes(p.status));
-  const pastCampaigns = filtered.filter(p => ['outbid', 'expired', 'cancelled', 'paused'].includes(p.status));
+  const pendingCampaigns = filtered.filter(p => ['scheduled', 'in_review'].includes(p.status));
+  const pastCampaigns = filtered.filter(p => ['expired', 'cancelled', 'paused'].includes(p.status));
 
   const totalSpent = filtered.reduce((s, p) => s + Number(p.total_spent || 0), 0);
   const totalImpressions = filtered.reduce((s, p) => s + (p.impressions || 0), 0);

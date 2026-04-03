@@ -51,8 +51,8 @@ export function CampaignRow({ campaign }: { campaign: Campaign }) {
     ? (campaign.clicks > 0 ? (Number(campaign.total_spent || 0) / campaign.clicks).toFixed(2) : '—')
     : (campaign.impressions > 0 ? ((Number(campaign.total_spent || 0) / campaign.impressions) * 1000).toFixed(2) : '—');
 
-  const config = statusConfig[campaign.status] || statusConfig.pending_auction;
-  const isToggleable = ['active', 'paused', 'pending_auction'].includes(campaign.status);
+  const config = statusConfig[campaign.status] || statusConfig.in_review;
+  const isToggleable = ['active', 'paused'].includes(campaign.status);
   const budgetPercent = campaign.total_budget > 0
     ? Math.min(100, (Number(campaign.total_spent || 0) / campaign.total_budget) * 100)
     : 0;
