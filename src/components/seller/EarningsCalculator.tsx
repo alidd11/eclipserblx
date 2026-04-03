@@ -19,27 +19,18 @@ export function EarningsCalculator({ commissionRate = 15 }: EarningsCalculatorPr
   const breakdown = useMemo(() => {
     const price = parseFloat(productPrice) || 0;
     
-    // Estimate Stripe fee: 1.5% + £0.20 for UK domestic cards
-    const stripeFeePercentage = 0.015;
-    const stripeFeeFixed = 0.20;
-    const stripeFee = (price * stripeFeePercentage) + stripeFeeFixed;
+    // Platform commission — flat percentage on sale price
+    // Platform absorbs all payment processing fees
+    const platformCommission = price * (commissionRate / 100);
     
-    // Net after Stripe
-    const netAfterStripe = Math.max(0, price - stripeFee);
-    
-    // Platform commission on net
-    const platformCommission = netAfterStripe * (commissionRate / 100);
-    
-    // Seller earnings
-    const sellerEarnings = Math.max(0, netAfterStripe - platformCommission);
+    // Seller earnings — always exactly (100% - commission%) of sale price
+    const sellerEarnings = Math.max(0, price - platformCommission);
     
     // Effective percentage
     const effectivePercentage = price > 0 ? (sellerEarnings / price) * 100 : 0;
     
     return {
       productPrice: price,
-      stripeFee,
-      netAfterStripe,
       platformCommission,
       sellerEarnings,
       effectivePercentage,
@@ -87,34 +78,20 @@ export function EarningsCalculator({ commissionRate = 15 }: EarningsCalculatorPr
             <span className="font-medium">{formatCurrency(breakdown.productPrice)}</span>
           </div>
 
-          {/* Stripe Fee */}
+          {/* Platform Commission */}
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground flex items-center gap-1">
-              Stripe processing fee
+              Platform commission ({commissionRate}%)
               <Tooltip>
                 <TooltipTrigger>
                   <Info className="h-3 w-3" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Stripe charges approx. 1.5% + £0.20 per UK transaction</p>
+                  <p>Flat {commissionRate}% fee — we absorb all payment processing costs</p>
                 </TooltipContent>
               </Tooltip>
             </span>
-            <span className="text-red-500">-{formatCurrency(breakdown.stripeFee)}</span>
-          </div>
-
-          {/* Net After Stripe */}
-          <div className="flex justify-between text-sm border-t border-border pt-2">
-            <span className="text-muted-foreground">Net after payment processing</span>
-            <span className="font-medium">{formatCurrency(breakdown.netAfterStripe)}</span>
-          </div>
-
-          {/* Platform Commission */}
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">
-              Platform commission ({commissionRate}%)
-            </span>
-            <span className="text-red-500">-{formatCurrency(breakdown.platformCommission)}</span>
+            <span className="text-destructive">-{formatCurrency(breakdown.platformCommission)}</span>
           </div>
 
           {/* Seller Earnings */}
@@ -135,11 +112,11 @@ export function EarningsCalculator({ commissionRate = 15 }: EarningsCalculatorPr
         <div className="text-xs text-muted-foreground bg-card border border-border rounded-lg p-3">
           <p className="font-medium mb-1">How it's calculated:</p>
           <code className="text-[10px] block">
-            Your Earnings = (Sale Price - Stripe Fee) × (1 - Commission Rate)
+            Your Earnings = Sale Price × (1 - {commissionRate}%)
           </code>
           <p className="mt-2">
-            Stripe fees are deducted first, then the platform commission is applied to the remaining amount.
-            This ensures transparent and fair earnings calculation.
+            Eclipse absorbs all payment processing fees (Stripe, PayPal, etc.).
+            You always earn exactly {100 - commissionRate}% of your listed price — simple and transparent.
           </p>
         </div>
       </CardContent>

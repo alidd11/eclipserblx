@@ -324,14 +324,14 @@ Deno.serve(async (req) => {
             // Use full product price so sellers earn the same regardless of Eclipse+ discounts
             // The platform absorbs the Eclipse+ discount
             const grossAmount = product.price;
-            // Allocate Stripe fee proportionally across all items
+            // Allocate Stripe fee proportionally (for record-keeping only)
             const proportionalStripeFee = sellerProductCount > 0 
               ? stripeProcessingFee / sellerProductCount 
               : 0;
-            const netBeforeCommission = grossAmount - proportionalStripeFee;
-            // Seller receives (100% - commission%) of net amount
-            const sellerEarnings = Math.max(0, netBeforeCommission * (1 - commissionRate / 100));
-            const platformFee = netBeforeCommission - sellerEarnings;
+            // Platform absorbs Stripe fees — seller earnings based on gross price
+            const netBeforeCommission = grossAmount;
+            const sellerEarnings = Math.max(0, grossAmount * (1 - commissionRate / 100));
+            const platformFee = grossAmount - sellerEarnings;
             
             logStep("Processing seller earnings (net-based)", { 
               productId: item.id, 

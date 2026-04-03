@@ -219,9 +219,10 @@ async function processSellerEarnings(
 
     const gross = product.price;
     const fee = count > 0 ? stripeProcessingFee / count : 0;
-    const netBefore = gross - fee;
-    const earnings = Math.max(0, netBefore * (1 - rate / 100));
-    const platformFee = netBefore - earnings;
+    // Platform absorbs Stripe fees — seller earnings based on gross price
+    const earnings = Math.max(0, gross * (1 - rate / 100));
+    const platformFee = gross - earnings;
+    const netBefore = gross; // For record-keeping; fees come out of platform cut
 
     // 3-day escrow hold
     const escrowHoldUntil = new Date();
