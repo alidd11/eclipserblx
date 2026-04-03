@@ -16,7 +16,7 @@ const sellingPoints = [
     icon: Percent,
     title: "Keep 85% of Every Sale",
     description: "Flat 15% commission on the gross price — we absorb all Stripe and payment processing fees. No hidden deductions.",
-    highlight: "90% with Eclipse+",
+    highlight: "Simple & predictable",
   },
   {
     icon: Lock,
