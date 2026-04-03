@@ -1,76 +1,96 @@
 
 
-# Seller Promotions Revamp — Roblox Ads Manager Style
+# Full Ad System Overhaul: Spend-Based CPC/CPM + Multi-Page Placements
 
-Redesign the seller promotion system (`/seller/promote`) to mirror the Roblox Ads Manager mental model, making it immediately familiar to Roblox creators.
+## Current State
+- Ads only appear on Homepage (hero banner, store spotlight)
+- Auction-based model with limited slots (weekly Monday resolution)
+- No ads on `/products`, search results, product detail, or category pages
+- No CPC/CPM billing -- just flat weekly bids
 
-## What Changes
+## New Model: Spend-Based (No Slot Limits)
 
-### 1. Rename & Restructure: "Promotions" → "Ad Manager"
-- Rename the page title from "Promotions" to "Ad Manager"
-- Rename "New Promotion" to "Create Campaign"
-- Update sidebar label from "Promote" to "Ad Manager"
+Instead of competing for limited slots, **every active campaign gets shown**. Visibility is proportional to budget -- higher spenders get more impressions. No auctions, no waiting for Monday.
 
-### 2. Campaign Creation Wizard (replaces dialog)
-Replace the small `CreatePromotionDialog` with a full-page stepped form matching Roblox's flow:
+### Pricing Options (seller chooses one per campaign)
+- **CPC (Cost Per Click)**: Seller sets a max CPC (e.g. £0.05). Charged per unique click. Budget depletes in real-time
+- **CPM (Cost Per 1000 Impressions)**: Seller sets a CPM rate (e.g. £1.00). Charged per 1000 impressions served
 
-**Step 1 — Product**: Select which product to promote + campaign name field
-**Step 2 — Goal**: Choose objective (Clicks / Impressions / Sales)
-**Step 3 — Audience**: Target by device type (Desktop/Mobile/All) and optionally by category/country
-**Step 4 — Budget & Schedule**: Daily or weekly budget, start date, duration picker, payment method (Eclipse Credits balance shown)
-**Step 5 — Creative**: Select which product image(s) to use as the ad thumbnail (up to 3)
-**Step 6 — Review & Publish**: Summary card with all selections, confirm button
+### How Visibility Works
+- All active campaigns with remaining budget are eligible to show
+- A weighted random selection picks which ad to display based on the campaign's bid amount relative to other active campaigns in the same placement
+- Higher CPC/CPM = more frequent display, but everyone gets some exposure
+- Campaign auto-pauses when daily budget or total budget is exhausted
 
-This replaces the current single-dialog approach with a guided multi-step experience.
+## Ad Placements (5 zones)
 
-### 3. Campaign Dashboard with Reporting Table
-Replace the current tab-based card list with a Roblox-style reporting view:
+1. **Homepage Hero** (existing) -- promoted product banner with `PromotedBadge`
+2. **Products Listing** (`/products`) -- 1 promoted card injected at position 3 in the grid, styled like a regular `ProductCard` but with a `PromotedBadge`
+3. **Search Results** (`/search`) -- 1 promoted card at position 2 in results
+4. **Product Detail Sidebar** (`/product/:slug`) -- "Sponsored" product recommendation card in the sidebar/below-the-fold area
+5. **Category Pages** -- 1 promoted card at top of filtered results when browsing a specific category
 
-- **Metric cards row**: Amount Spent, Impressions, Clicks, CTR (matches Roblox's layout)
-- **Campaign table**: Columns for Campaign Name, Status (with toggle), Spent, Impressions, Clicks, CPP (cost-per-click), CTR
-- **Status badges**: In Review, Active, Scheduled, Completed, Paused, Cancelled (expanded from current 4 statuses)
-- **Date range filter**: 7d / 30d / All time selector
-- Clicking a campaign row expands inline details (demographics, performance chart)
+All placements track impressions (via `increment_promotion_impression`) and clicks.
 
-### 4. Per-Campaign Demographics & Analytics
-When a seller clicks into a campaign, show:
+## Database Changes
 
-- **Device breakdown**: Desktop vs Mobile vs Tablet (donut chart, reusing `RevolutDonutChart`)
-- **Country breakdown**: Top countries by click origin (donut chart)
-- **Click trend**: Daily clicks over the campaign duration (line chart, reusing `RevolutLineChart`)
-- **Estimated revenue impact**: If the product had sales during the campaign period, show correlation
+Add/modify columns on `product_promotions`:
+- `pricing_model` (text, default 'cpc') -- 'cpc' or 'cpm'
+- `cpc_bid` (numeric, nullable) -- cost per click bid
+- `cpm_bid` (numeric, nullable) -- cost per 1000 impressions bid
+- `daily_budget_limit` (numeric, nullable) -- daily spend cap
+- `total_budget` (numeric, not null) -- total campaign budget
+- `placement_zones` (text[], default '{homepage}') -- which zones to show in
+- Remove reliance on `slot_type` for the new model (keep for backward compat)
 
-Data sources: `product_promotions` table for impressions/clicks, `page_visits` for country/device data filtered by product slug during campaign dates.
+New RPC function: `record_promotion_click` -- atomically increments clicks, calculates cost, deducts from budget, updates `total_spent`, auto-pauses if budget exhausted.
 
-### 5. Database Changes
-Add columns to `product_promotions`:
-- `campaign_name` (text, nullable) — user-friendly name
-- `goal` (text, default 'clicks') — clicks/impressions/sales
-- `target_devices` (text[], nullable) — device targeting
-- `target_countries` (text[], nullable) — country targeting
-- `daily_budget` (numeric, nullable) — alternative to weekly bid
-- `budget_type` (text, default 'weekly') — daily/weekly
-- `duration_days` (integer, default 7) — campaign duration
-- `creative_images` (text[], nullable) — selected thumbnail URLs
-- `total_spent` (numeric, default 0) — running spend tracker
+New RPC function: `charge_promotion_impression` -- called every 1000 impressions batch, deducts CPM cost from budget.
 
-### 6. Billing Section
-Add a simple "Billing" tab showing:
-- Credit transaction history for ad spend
-- Total spent this month / all time
-- Link to top-up credits
+New RPC function: `get_weighted_promotion` -- given a placement zone, returns a campaign ID selected by weighted random based on active bids.
 
-## Files Modified
-- `src/pages/seller/SellerPromotions.tsx` — full rewrite as "Ad Manager" with reporting table
-- `src/components/seller/CreatePromotionDialog.tsx` → rename to `CreateCampaignWizard.tsx` — multi-step form
-- `src/components/seller/PromotionCard.tsx` → `CampaignRow.tsx` — table row with expandable details
-- `src/components/seller/SellerSidebar.tsx` — rename "Promote" to "Ad Manager"
-- `src/pages/seller/SellerDashboard.tsx` — update quick-link label
-- New: `src/components/seller/CampaignAnalytics.tsx` — per-campaign demographics panel
-- Database migration: add new columns to `product_promotions`
+## Component Changes
 
-## Files NOT Modified
-- `src/pages/Account/MyAdvertisementsPage.tsx` — this is for Discord ads (separate system)
-- `src/pages/Account/AdAnalyticsPage.tsx` — Discord ad analytics (separate)
-- Admin advertisement analytics — separate system
+### New: `src/hooks/usePromotedProduct.ts`
+- Reusable hook: `usePromotedProduct(zone: string, categoryId?: string)`
+- Calls `get_weighted_promotion` RPC, returns product data
+- Tracks impression on mount via `increment_promotion_impression`
+- Handles click tracking (wraps product link to record click + charge CPC)
+
+### Modified: `src/pages/Products.tsx`
+- Import `usePromotedProduct('products_listing')`
+- Inject promoted ProductCard at grid position 3 with `PromotedBadge` overlay
+
+### Modified: `src/pages/SearchResults.tsx`
+- Import `usePromotedProduct('search_results')`
+- Inject promoted ProductCard at position 2
+
+### Modified: `src/pages/ProductDetail.tsx`
+- Import `usePromotedProduct('product_detail')`
+- Add "Sponsored" recommendation card in sidebar area
+
+### Modified: `src/components/marketplace/FeaturedProductCard.tsx`
+- Switch from auction-winner query to `usePromotedProduct('homepage_hero')`
+
+### Modified: `src/components/seller/CreateCampaignWizard.tsx`
+- Replace auction/bid step with CPC/CPM pricing selector
+- Add placement zone multi-select (checkboxes for each zone)
+- Add total budget field + daily cap
+- Remove `pending_auction` status -- campaigns go straight to `active` (or `in_review` if moderation needed)
+- Update insert to use new columns
+
+### Modified: `src/components/seller/CampaignRow.tsx`
+- Show pricing model badge (CPC/CPM)
+- Show real-time spend vs budget progress bar
+- Show cost-per-result metric
+
+### Modified: `src/pages/seller/SellerPromotions.tsx`
+- Update "How it works" section to explain spend-based model
+- Add CPC/CPM averages to metric cards
+
+## Files Summary
+- **New**: `src/hooks/usePromotedProduct.ts`
+- **Modified**: `CreateCampaignWizard.tsx`, `CampaignRow.tsx`, `SellerPromotions.tsx`, `Products.tsx`, `SearchResults.tsx`, `ProductDetail.tsx`, `FeaturedProductCard.tsx`
+- **Database**: Migration adding new columns + 3 RPC functions
+- **NOT modified**: Discord ads system, admin analytics, track-ad-click edge function
 
