@@ -846,7 +846,7 @@ function ApplicationSubmittedView() {
           { step: 'Application Received', desc: 'Your application is in our queue', done: true, icon: CheckCircle2 },
           { step: 'Under Review', desc: 'Our team reviews within 24-48 hours', done: false, icon: Clock },
           { step: 'Decision', desc: "You'll receive a notification", done: false, icon: Mail },
-          { step: 'Store Setup', desc: 'Customize your store and list products', done: false, icon: Store },
+          { step: 'Store Setup', desc: 'Customize your store, import products, and start listing', done: false, icon: Store },
         ].map((item, i) => (
           <div key={i} className="flex gap-3">
             <div className="flex flex-col items-center">
