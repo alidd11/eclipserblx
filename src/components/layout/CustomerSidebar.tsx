@@ -450,7 +450,15 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         <div className="border-b border-border px-3 py-3 space-y-2.5">
           {/* User info */}
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center shrink-0">
+            {profileAvatar ? (
+              <img
+                src={profileAvatar}
+                alt=""
+                className="h-9 w-9 rounded-full object-cover shrink-0"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }}
+              />
+            ) : null}
+            <div className={cn("h-9 w-9 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center shrink-0", profileAvatar && "hidden")}>
               <span className="text-sm font-bold text-primary-foreground">
                 {(user.user_metadata?.display_name || user.email || '?')[0].toUpperCase()}
               </span>
