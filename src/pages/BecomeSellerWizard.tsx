@@ -607,11 +607,6 @@ function StepConfirm({ formValues, setFormValues, verificationResults, settings,
       passed: verificationResults.account_age?.meets_requirement,
       icon: Clock,
     }] : []),
-    ...(settings.seller_require_group_membership ? [{
-      label: 'Eclipse Group Member',
-      passed: verificationResults.roblox_group?.in_group,
-      icon: Users,
-    }] : []),
     { label: 'Discord Server Valid', passed: verificationResults.discord_server?.valid, icon: Shield },
   ];
 
@@ -658,7 +653,6 @@ function StepConfirm({ formValues, setFormValues, verificationResults, settings,
 
       {verificationResults.identity_consistency && 
        verificationResults.identity_consistency.similarity_score >= 80 &&
-       verificationResults.roblox_group?.in_group &&
        verificationResults.discord_server?.valid &&
        verificationResults.email_verified && (
         <Alert className="bg-green-500/10 border-green-500/30">
@@ -686,6 +680,14 @@ function StepConfirm({ formValues, setFormValues, verificationResults, settings,
           </div>
         ))}
       </div>
+
+      {/* Group suggestion */}
+      {verificationResults.roblox_group && !verificationResults.roblox_group.in_group && (
+        <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-sm text-muted-foreground flex items-start gap-2">
+          <Users className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+          <span><strong className="text-foreground">Tip:</strong> Joining our Roblox group can boost your store's visibility and credibility, but it's not required.</span>
+        </div>
+      )}
 
       {/* Terms */}
       <div className="space-y-3 border-t pt-4">

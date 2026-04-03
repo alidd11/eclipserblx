@@ -352,10 +352,7 @@ export function useSellerVerification() {
       return false;
     }
 
-    // Group membership (if required)
-    if (settings.seller_require_group_membership && !roblox_group?.in_group) {
-      return false;
-    }
+    // Group membership is suggested but NOT required for approval
 
     // Badge ownership (if required)
     if (settings.seller_require_badge_ownership && !roblox_badges?.all_owned) {
