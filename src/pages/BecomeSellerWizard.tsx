@@ -65,6 +65,7 @@ export default function BecomeSellerWizard() {
   const { isSeller, hasPendingApplication, application, loading } = useSellerStatus();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(0);
+  const [wasAutoApproved, setWasAutoApproved] = useState(false);
 
   const [formValues, setFormValues, clearFormValues, isDirty] = useFormPersistence('seller-application', INITIAL_FORM);
 
