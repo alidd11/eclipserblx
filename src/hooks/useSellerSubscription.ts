@@ -1,0 +1,138 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from './useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useSellerStatus } from './useSellerStatus';
+import { openExternalUrl } from '@/lib/externalBrowser';
+
+export type SellerBillingPeriod = 'monthly' | 'annual';
+
+export interface SellerProLimits {
+  commissionRate: number;
+  maxFileSizeMb: number;
+  maxImages: number;
+  maxProducts: number | null;
+  maxStorePages: number;
+  monthlyAdCredit: number;
+  proBadge: boolean;
+  priorityReview: boolean;
+}
+
+const FREE_LIMITS: SellerProLimits = {
+  commissionRate: 15,
+  maxFileSizeMb: 200,
+  maxImages: 5,
+  maxProducts: 25,
+  maxStorePages: 1,
+  monthlyAdCredit: 0,
+  proBadge: false,
+  priorityReview: false,
+};
+
+const PRO_LIMITS: SellerProLimits = {
+  commissionRate: 10,
+  maxFileSizeMb: 500,
+  maxImages: 15,
+  maxProducts: null,
+  maxStorePages: 5,
+  monthlyAdCredit: 5,
+  proBadge: true,
+  priorityReview: true,
+};
+
+interface SellerSubscriptionState {
+  isPro: boolean;
+  subscriptionEnd: string | null;
+  status: string | null;
+  isLoading: boolean;
+}
+
+export function useSellerSubscription() {
+  const { user } = useAuth();
+  const { store } = useSellerStatus();
+  const [state, setState] = useState<SellerSubscriptionState>({
+    isPro: false,
+    subscriptionEnd: null,
+    status: null,
+    isLoading: true,
+  });
+
+  const fetchSubscription = useCallback(async () => {
+    if (!user) {
+      setState({ isPro: false, subscriptionEnd: null, status: null, isLoading: false });
+      return;
+    }
+
+    try {
+      const { data, error } = await (supabase as any)
+        .from('seller_subscriptions')
+        .select('status, current_period_end')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching seller subscription:', error);
+        setState(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
+
+      const isActive = data?.status === 'active';
+      setState({
+        isPro: isActive,
+        subscriptionEnd: data?.current_period_end || null,
+        status: data?.status || null,
+        isLoading: false,
+      });
+    } catch (err) {
+      console.error('Error fetching seller subscription:', err);
+      setState(prev => ({ ...prev, isLoading: false }));
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchSubscription();
+  }, [fetchSubscription]);
+
+  const subscribe = useCallback(async (billingPeriod: SellerBillingPeriod = 'monthly') => {
+    if (!user) throw new Error('Must be logged in');
+
+    const { data, error } = await supabase.functions.invoke('create-subscription', {
+      body: {
+        product_type: 'seller_pro',
+        billingPeriod,
+        store_id: store?.id,
+      },
+    });
+
+    if (error) throw error;
+    if (data?.url) {
+      openExternalUrl(data.url);
+    }
+    return data;
+  }, [user, store?.id]);
+
+  const openPortal = useCallback(async () => {
+    if (!user) throw new Error('Must be logged in');
+
+    const { data, error } = await supabase.functions.invoke('customer-portal', {});
+    if (error) throw error;
+    if (data?.url) {
+      openExternalUrl(data.url);
+    }
+    return data;
+  }, [user]);
+
+  const limits: SellerProLimits = state.isPro ? PRO_LIMITS : FREE_LIMITS;
+
+  return {
+    ...state,
+    limits,
+    subscribe,
+    openPortal,
+    refresh: fetchSubscription,
+    prices: {
+      monthly: 7.99,
+      annual: 69.99,
+      annualSavingsPercent: 27,
+    },
+  };
+}
