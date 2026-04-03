@@ -32,10 +32,9 @@ interface Campaign {
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   active: { label: 'Active', className: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
-  pending_auction: { label: 'In Review', className: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
+  in_review: { label: 'In Review', className: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
   scheduled: { label: 'Scheduled', className: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
   paused: { label: 'Paused', className: 'bg-muted text-muted-foreground border-border' },
-  outbid: { label: 'Outbid', className: 'bg-red-500/10 text-red-500 border-red-500/20' },
   expired: { label: 'Completed', className: 'bg-muted text-muted-foreground border-border' },
   cancelled: { label: 'Cancelled', className: 'bg-muted text-muted-foreground border-border' },
 };
