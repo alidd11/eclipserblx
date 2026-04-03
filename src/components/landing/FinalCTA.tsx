@@ -1,6 +1,6 @@
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Store } from 'lucide-react';
+import { Sparkles, Store } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 
 export function FinalCTA() {
@@ -9,22 +9,22 @@ export function FinalCTA() {
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-6 sm:p-8 text-center">
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight mb-2">
-            Ready to start?
+            Turn your creations into revenue
           </h2>
           <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
-            Join thousands of Roblox creators buying and selling on Eclipse.
+            Open a free store in minutes. Reach thousands of buyers with lower fees and instant payouts.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link to="/products">
+            <Link to="/sell">
               <Button size="sm" className="h-10 px-6 text-sm font-semibold">
-                Browse Marketplace
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <Store className="mr-2 h-4 w-4" />
+                Open Your Store
               </Button>
             </Link>
-            <Link to="/sell">
-              <Button size="sm" variant="outline" className="h-10 px-6 text-sm font-semibold">
-                <Store className="mr-2 h-4 w-4" />
-                Start Selling
+            <Link to="/eclipse-plus">
+              <Button size="sm" variant="outline" className="h-10 px-6 text-sm font-semibold text-amber-400 border-amber-500/30 hover:bg-amber-500/10">
+                <Sparkles className="mr-2 h-4 w-4" />
+                Explore Eclipse+
               </Button>
             </Link>
           </div>

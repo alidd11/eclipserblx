@@ -114,20 +114,11 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* Why Eclipse */}
+      {/* Why Eclipse + Trust Signals (merged) */}
       <LazySection minHeight="200px" rootMargin="200px">
         <SectionErrorBoundary section="why-eclipse" compact>
           <Suspense fallback={null}>
             <WhyEclipse />
-          </Suspense>
-        </SectionErrorBoundary>
-      </LazySection>
-
-      {/* Trust Bar */}
-      <LazySection minHeight="60px" rootMargin="200px">
-        <SectionErrorBoundary section="trust-bar" compact>
-          <Suspense fallback={null}>
-            <TrustBar />
           </Suspense>
         </SectionErrorBoundary>
       </LazySection>
