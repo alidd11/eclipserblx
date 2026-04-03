@@ -1,62 +1,38 @@
 
-# Eclipse Competitive UX Overhaul — Implementation Plan
+# Seller Onboarding Overhaul
 
-## Priority 1: Product Card Overhaul
-**Goal:** Match/exceed ClearlyDev's card information density
+## Phase 1: Reduce Friction (Step Consolidation)
+- **Merge Appearance + Categories** into a single "Store Setup" step
+- **Make Socials & Roblox optional** — sellers can skip and complete post-launch
+- Result: 7 steps → 5 steps (TOS → Store Setup → Payout → First Product → Launch)
+- Add **"Skip for now"** buttons on non-essential steps
 
-Changes to `ProductCard.tsx`:
-- Add **star rating** display (average_rating from reviews or product data)
-- Add **seller avatar + store name** below the product info
-- Add **category badge** overlay on the product image
-- Add **"Sale!" badge** for discounted items
-- Ensure all of this works on both grid and list views
-- Keep the existing hover overlay for desktop
+## Phase 2: Progress & Persistence
+- **Auto-save** each step to database so sellers can leave and resume
+- **Time estimates** on each step header ("~1 min")
+- **Progress bar** with step names visible at all times
 
-## Priority 2: Sticky Category Bar on Shop Page
-**Goal:** 1-click category switching like ClearlyDev's top nav
+## Phase 3: Conversion Boosters
+- **Store templates** — 3 pre-built themes (Minimal, Gaming, Professional) with preset colors/layouts selectable during Store Setup
+- **First product wizard** — Inline guided product upload as the final onboarding step with smart defaults and category suggestions
+- **Live mini-preview** — Small store preview card that updates in real-time as seller fills in details
 
-- Create a `CategoryBar` component with horizontal scrollable icons
-- Fetch categories from DB, display with icons
-- Sticky position below header on the products/shop page
-- Clicking a category filters products instantly
-- Works on mobile as horizontal scroll
-
-## Priority 3: Rethink Trust Stats
-**Goal:** Stop showing small numbers that hurt credibility
-
-- Replace the current stats bar (if showing raw order/product counts) with **qualitative trust signals**
-- Use phrases like "Trusted by Roblox Communities", "Verified Sellers", "Instant Digital Delivery", "Secure Payments"
-- Add recognizable trust icons (shield, lock, verified check)
-- Only show real numbers when they're impressive
-
-## Priority 4: Product Page Reviews & Ratings
-**Goal:** Let buyers see what others think
-
-- Need a `reviews` table (if not exists) with: user_id, product_id, rating (1-5), comment, created_at
-- Display reviews on the product detail page
-- Show aggregate star rating on product cards
-- Allow verified purchasers to leave reviews
-- RLS: anyone can read, only verified buyers can write
-
-## Priority 5: General Polish
-- Ensure seller info (avatar + name) appears consistently across all product views
-- Clean up any "No image" placeholder cards in trending
-- Ensure mobile product cards are compact and info-dense
-
----
+## Phase 4: Trust & Motivation
+- **Earnings calculator** — Interactive slider during Payout step: "10 sales × £5 = £42.50/mo earnings"
+- **Success stories** — Brief seller testimonials shown between steps as transition cards
+- **Post-onboarding Store Health score** — Dashboard widget showing 0-100% completion encouraging optional step completion
 
 ## Files to Create/Modify
+| Action | File |
+|--------|------|
+| Modify | `src/hooks/useSellerOnboarding.ts` — reduce to 5 steps, add auto-save |
+| Create | `src/components/seller/onboarding/StoreTemplates.tsx` |
+| Create | `src/components/seller/onboarding/EarningsCalculator.tsx` |
+| Create | `src/components/seller/onboarding/SellerSuccessStories.tsx` |
+| Create | `src/components/seller/onboarding/StoreHealthScore.tsx` |
+| Create | `src/components/seller/onboarding/LiveStorePreview.tsx` |
+| Modify | `src/components/seller/onboarding/` step components — consolidate |
+| Modify | Seller dashboard — add Store Health widget |
 
-| File | Action |
-|------|--------|
-| `src/components/ui/ProductCard.tsx` | Major update — ratings, seller info, category badge |
-| `src/components/shop/CategoryBar.tsx` | New — sticky category navigation |
-| `src/pages/Products.tsx` | Modify — integrate CategoryBar |
-| `src/components/landing/TrustBar.tsx` | Modify — qualitative signals instead of raw numbers |
-| `src/components/product/ProductReviews.tsx` | New — reviews display + form |
-| DB migration | `reviews` table + RLS policies |
-
-## Approach
-- DB migration first (reviews table)
-- Then all frontend changes in parallel
-- No business logic changes — pure UX improvements
+## No database migration needed
+All changes are UI/UX — existing tables (stores, seller_agreements, profiles) already support this.
