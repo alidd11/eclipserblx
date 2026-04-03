@@ -39,7 +39,7 @@ const sellingPoints = [
 ];
 
 const comparisonRows = [
-  { feature: "Seller Earnings", eclipse: "85–90% of gross", others: "70% or less" },
+  { feature: "Seller Earnings", eclipse: "85% of gross", others: "70% or less" },
   { feature: "Processing Fees", eclipse: "We absorb them", others: "Deducted from you" },
   { feature: "IP Ownership", eclipse: "100% yours", others: "Broad platform rights" },
   { feature: "Payouts", eclipse: "Stripe / PayPal / Bank", others: "Credits or limited" },
