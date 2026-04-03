@@ -19,7 +19,7 @@ import { DashboardCardSkeleton } from '@/components/seller/DashboardSkeletons';
 import { 
   Package, ShoppingCart, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone
 } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
 
 // Lazy-load below-fold heavy widgets
 const TopProductsLeaderboard = lazy(() => import('@/components/seller/TopProductsLeaderboard').then(m => ({ default: m.TopProductsLeaderboard })));
