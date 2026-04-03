@@ -352,6 +352,7 @@ export function AppRoutes() {
         <Route path="/advertise" element={<Advertise />} />
         <Route path="/credits" element={<Credits />} />
         <Route path="/sell" element={<Sell />} />
+        <Route path="/become-seller" element={<BecomeSellerWizard />} />
         <Route path="/account/advertisements" element={<MyAdvertisementsPage />} />
         <Route path="/account/ad-analytics" element={<AdAnalyticsPage />} />
         <Route path="/account/following" element={<FollowingPage />} />
