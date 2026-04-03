@@ -105,7 +105,7 @@ export function LandingHero() {
               className="text-xs font-medium text-amber-500/80 hover:text-amber-400 transition-colors flex items-center gap-1.5"
             >
               <Sparkles className="h-3.5 w-3.5" />
-              Eclipse+
+              <span className="relative">Eclipse+</span>
             </Link>
           </div>
 
