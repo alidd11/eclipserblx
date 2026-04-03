@@ -9778,6 +9778,7 @@ export type Database = {
           follower_count: number | null
           font_body: string | null
           font_heading: string | null
+          free_commission_until: string | null
           hero_cta_link: string | null
           hero_cta_text: string | null
           hero_subtitle: string | null
@@ -9853,6 +9854,7 @@ export type Database = {
           follower_count?: number | null
           font_body?: string | null
           font_heading?: string | null
+          free_commission_until?: string | null
           hero_cta_link?: string | null
           hero_cta_text?: string | null
           hero_subtitle?: string | null
@@ -9928,6 +9930,7 @@ export type Database = {
           follower_count?: number | null
           font_body?: string | null
           font_heading?: string | null
+          free_commission_until?: string | null
           hero_cta_link?: string | null
           hero_cta_text?: string | null
           hero_subtitle?: string | null
