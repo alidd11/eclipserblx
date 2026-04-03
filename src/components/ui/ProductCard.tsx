@@ -293,7 +293,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           )}
         </div>
 
-        {/* Content with flag background */}
+        {/* Content */}
         <div className="relative p-2 xs:p-2.5 sm:p-3 flex flex-col flex-1 gap-1 xs:gap-1.5 overflow-hidden">
           {/* Flag background overlay (full width, fades out before the CTA) */}
           {(() => {
@@ -319,11 +319,6 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           })()}
           
           {/* Content layer */}
-          {category && (
-            <span className="text-[9px] xs:text-[10px] sm:text-xs font-medium text-primary uppercase tracking-wider truncate relative z-10">
-              {category}
-            </span>
-          )}
           
           <h3 className="font-display font-semibold text-[11px] xs:text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight flex-1">
             {name}
