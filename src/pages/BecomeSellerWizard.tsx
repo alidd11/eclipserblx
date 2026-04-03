@@ -229,7 +229,7 @@ export default function BecomeSellerWizard() {
     return (
       <MainLayout>
         <ResponsiveContainer size="md" className="py-12 px-4">
-          <ApplicationSubmittedView />
+          {wasAutoApproved ? <AutoApprovedView /> : <ApplicationSubmittedView />}
         </ResponsiveContainer>
       </MainLayout>
     );
