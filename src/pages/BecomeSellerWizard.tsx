@@ -145,7 +145,7 @@ export default function BecomeSellerWizard() {
         throw new Error('Please provide a valid Discord server invite');
       }
 
-      const { error } = await supabase.from('store_applications').insert({
+      const { data, error } = await supabase.from('store_applications').insert({
         user_id: user.id,
         store_name: formValues.storeName.trim(),
         store_description: formValues.storeDescription.trim() || null,
@@ -155,13 +155,23 @@ export default function BecomeSellerWizard() {
         terms_accepted: formValues.termsAccepted,
         terms_accepted_at: new Date().toISOString(),
         verification_results: verificationResults as any,
-      });
+      }).select('status, auto_approved').single();
 
       if (error) throw error;
+      return data;
     },
-    onSuccess: () => {
-      toast.success('Application Submitted!');
+    onSuccess: (data) => {
+      const autoApproved = data?.auto_approved === true && data?.status === 'approved';
+      setWasAutoApproved(autoApproved);
+      
+      if (autoApproved) {
+        toast.success('Store Approved!', { description: 'Your identity was verified automatically.' });
+      } else {
+        toast.success('Application Submitted!');
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['seller-application'] });
+      queryClient.invalidateQueries({ queryKey: ['seller-status'] });
       clearFormValues();
       setCurrentStep(4); // Show success state
     },
