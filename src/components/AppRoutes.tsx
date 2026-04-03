@@ -57,6 +57,7 @@ const Advertise = lazyWithRetry(() => import("@/pages/Advertise"));
 const Credits = lazyWithRetry(() => import("@/pages/Credits"));
 const Sell = lazyWithRetry(() => import("@/pages/Sell"));
 const SearchResults = lazyWithRetry(() => import("@/pages/SearchResults"));
+const FreeAssets = lazyWithRetry(() => import("@/pages/FreeAssets"));
 const MyAdvertisementsPage = lazyWithRetry(() => import("@/pages/Account/MyAdvertisementsPage"));
 const AdAnalyticsPage = lazyWithRetry(() => import("@/pages/Account/AdAnalyticsPage"));
 const FollowingPage = lazyWithRetry(() => import("@/pages/Account/FollowingPage").then(m => ({ default: m.FollowingPage })));
