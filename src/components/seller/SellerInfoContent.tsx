@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { 
   ArrowRight,
   Lock,
@@ -11,9 +12,11 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
+  PoundSterling,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/hooks/useAuth";
 import { useSellerVerification } from "@/hooks/useSellerVerification";
 import { Link } from "react-router-dom";
@@ -47,12 +50,12 @@ const sellingPoints = [
 ];
 
 const comparisonRows = [
-  { feature: "Seller Earnings", eclipse: "85% of gross", others: "70% or less" },
+  { feature: "Seller Earnings", eclipse: "85% of gross", others: "70–90%" },
   { feature: "Processing Fees", eclipse: "We absorb them", others: "Deducted from you" },
   { feature: "IP Ownership", eclipse: "100% yours", others: "Broad platform rights" },
   { feature: "Payouts", eclipse: "Stripe / PayPal / Bank", others: "Credits or limited" },
   { feature: "Lock-in", eclipse: "None — sell anywhere", others: "Exclusive or restricted" },
-  { feature: "Security", eclipse: "AI scan + virus check", others: "Manual review" },
+  { feature: "Security", eclipse: "AI scan + virus check", others: "Basic or manual" },
 ];
 
 const steps = [
