@@ -607,11 +607,6 @@ function StepConfirm({ formValues, setFormValues, verificationResults, settings,
       passed: verificationResults.account_age?.meets_requirement,
       icon: Clock,
     }] : []),
-    ...(settings.seller_require_group_membership ? [{
-      label: 'Eclipse Group Member',
-      passed: verificationResults.roblox_group?.in_group,
-      icon: Users,
-    }] : []),
     { label: 'Discord Server Valid', passed: verificationResults.discord_server?.valid, icon: Shield },
   ];
 
