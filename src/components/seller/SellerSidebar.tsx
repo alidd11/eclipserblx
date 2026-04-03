@@ -75,7 +75,6 @@ const navGroups: NavGroup[] = [
       { title: 'Messages', icon: MessageCircle, href: '/seller/messages' },
       { title: 'Reviews', icon: Star, href: '/seller/reviews' },
       { title: 'Disputes', icon: RotateCcw, href: '/seller/refunds' },
-      { title: 'Customer Insights', icon: Heart, href: '/seller/customer-insights' },
       { title: 'Notifications', icon: Bell, href: '/seller/notifications' },
     ],
   },

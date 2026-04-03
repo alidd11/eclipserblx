@@ -117,7 +117,7 @@ export default function SellerDashboard() {
             <CardTitle className="text-base font-medium">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2">
               {quickActions.map((action) => (
                 <Link key={action.href} to={action.href}>
                   <div className="flex flex-col items-center gap-2 p-3.5 rounded-lg bg-muted/50 hover:bg-accent active:scale-[0.97] transition-all text-center group cursor-pointer">

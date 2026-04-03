@@ -82,20 +82,29 @@ export function SellerHeroBanner() {
           </Button>
         </div>
 
-        {/* Store link bar */}
+        {/* Share store button */}
         {storeUrl && (
-          <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border">
-            <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-xs font-mono text-muted-foreground truncate flex-1">{storeUrl}</span>
-            <Button variant="ghost" size="sm" onClick={copyStoreLink} className="h-7 px-2">
-              <Copy className="h-3.5 w-3.5" />
-            </Button>
-            <Button variant="ghost" size="sm" asChild className="h-7 px-2">
-              <a href={storeUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            </Button>
-          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="w-full sm:w-auto mt-3 sm:mt-0 h-8 text-xs gap-1.5">
+                <Share2 className="h-3.5 w-3.5" />
+                Share Store
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-3" align="start">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono text-muted-foreground truncate flex-1">{storeUrl}</span>
+                <Button variant="ghost" size="sm" onClick={copyStoreLink} className="h-7 px-2 shrink-0">
+                  <Copy className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="sm" asChild className="h-7 px-2 shrink-0">
+                  <a href={storeUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
         )}
 
         {/* Mobile add product button */}
