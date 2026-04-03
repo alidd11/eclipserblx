@@ -262,6 +262,10 @@ export default function BecomeSellerWizard() {
           <p className="text-muted-foreground text-sm">
             Join {sellerCount ? `${sellerCount}+` : 'our'} sellers on Eclipse marketplace
           </p>
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <Clock className="h-3 w-3" />
+            <span>Most sellers complete this in under 3 minutes</span>
+          </div>
           {isDirty && (
             <Badge variant="outline" className="text-xs">
               <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -269,6 +273,35 @@ export default function BecomeSellerWizard() {
             </Badge>
           )}
         </div>
+
+        {/* What to expect timeline */}
+        {currentStep === 0 && (
+          <div className="rounded-xl border border-border/50 bg-card/50 p-4">
+            <p className="text-xs font-semibold text-foreground mb-3">What to expect</p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Rocket className="h-3 w-3 text-primary" />
+                </div>
+                <span>Apply</span>
+              </div>
+              <ChevronRight className="h-3 w-3 text-muted-foreground/50" />
+              <div className="flex items-center gap-1.5">
+                <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Clock className="h-3 w-3 text-primary" />
+                </div>
+                <span>24h review</span>
+              </div>
+              <ChevronRight className="h-3 w-3 text-muted-foreground/50" />
+              <div className="flex items-center gap-1.5">
+                <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Sparkles className="h-3 w-3 text-primary" />
+                </div>
+                <span>Start earning</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Progress stepper */}
         <div className="space-y-3">

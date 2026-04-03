@@ -264,7 +264,8 @@ export function SellerInfoContent() {
       {/* Comparison */}
       <section className="py-12 md:py-16 px-5">
         <div className="max-w-md mx-auto">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground text-center mb-8">How we compare</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-foreground text-center mb-2">How we compare</h2>
+          <p className="text-center text-xs text-muted-foreground mb-8">Honest comparison — other platforms charge 10–30% but often deduct processing fees separately</p>
 
           <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
             <div className="grid grid-cols-[1fr,1fr,1fr] text-[11px] font-semibold border-b border-border/30 bg-muted/15">
@@ -287,6 +288,11 @@ export function SellerInfoContent() {
                   </div>
                 </div>
               ))}
+            </div>
+            <div className="px-5 py-3 border-t border-border/30 bg-muted/10">
+              <p className="text-[10px] text-muted-foreground text-center">
+                Eclipse's 15% is all-inclusive — we absorb Stripe fees so your take-home is always exactly 85%.
+              </p>
             </div>
           </div>
         </div>
