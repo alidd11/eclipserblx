@@ -173,63 +173,135 @@ function EligibilityChecker() {
   );
 }
 
-function InteractiveEarningsCalculator() {
-  const [salesPerMonth, setSalesPerMonth] = useState(15);
-  const [avgPrice, setAvgPrice] = useState(8);
+function CompetitiveEarningsCalculator() {
+  const [price, setPrice] = useState(10);
 
-  const grossRevenue = salesPerMonth * avgPrice;
-  const netEarnings = grossRevenue * 0.85;
+  // Eclipse: flat 15%, platform absorbs all processing fees
+  const eclipseEarnings = price * 0.85;
+
+  // Competitor model: 10% commission + seller pays Stripe fees (2.9% + £0.30)
+  const stripeFee = price > 0 ? (price * 0.029) + 0.30 : 0;
+  const competitorEarnings = Math.max(0, price - (price * 0.10) - stripeFee);
+
+  const eclipseAdvantage = eclipseEarnings - competitorEarnings;
+  const eclipseWins = eclipseAdvantage >= 0;
+
+  const formatGBP = (v: number) => `£${v.toFixed(2)}`;
 
   return (
-    <div className="rounded-2xl border border-border/50 bg-card p-5 space-y-5">
-      {/* Sales slider */}
-      <div className="space-y-2">
-        <div className="flex justify-between text-xs">
-          <span className="text-muted-foreground">Sales per month</span>
-          <span className="font-semibold text-foreground">{salesPerMonth}</span>
-        </div>
-        <Slider
-          value={[salesPerMonth]}
-          onValueChange={([v]) => setSalesPerMonth(v)}
-          min={1}
-          max={200}
-          step={1}
-        />
+    <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
+      {/* Header */}
+      <div className="px-5 py-4 border-b border-border/30 bg-muted/10">
+        <h3 className="text-sm font-semibold text-foreground">True Take-Home Calculator</h3>
+        <p className="text-[11px] text-muted-foreground mt-0.5">
+          See what you actually keep — not just the headline rate
+        </p>
       </div>
 
-      {/* Price slider */}
-      <div className="space-y-2">
+      {/* Slider */}
+      <div className="px-5 pt-5 pb-3 space-y-2">
         <div className="flex justify-between text-xs">
-          <span className="text-muted-foreground">Average price</span>
-          <span className="font-semibold text-foreground">£{avgPrice}</span>
+          <span className="text-muted-foreground">Product price</span>
+          <span className="font-bold text-foreground text-sm">£{price}</span>
         </div>
         <Slider
-          value={[avgPrice]}
-          onValueChange={([v]) => setAvgPrice(v)}
+          value={[price]}
+          onValueChange={([v]) => setPrice(v)}
           min={1}
           max={100}
           step={1}
         />
+        <div className="flex justify-between text-[10px] text-muted-foreground">
+          <span>£1</span>
+          <span>£100</span>
+        </div>
       </div>
 
-      {/* Result */}
-      <motion.div
-        key={`${salesPerMonth}-${avgPrice}`}
-        initial={{ opacity: 0, y: 4 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-xl bg-primary/5 border border-primary/20 p-5 text-center"
-      >
-        <p className="text-xs text-muted-foreground mb-1">Your estimated monthly earnings</p>
-        <div className="flex items-center justify-center gap-1">
-          <PoundSterling className="h-5 w-5 text-primary" />
-          <span className="text-3xl font-bold text-primary">
-            {netEarnings.toFixed(2)}
-          </span>
+      {/* Side-by-side comparison */}
+      <div className="px-5 pb-5">
+        <div className="grid grid-cols-2 gap-3">
+          {/* Eclipse column */}
+          <motion.div
+            key={`eclipse-${price}`}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl border-2 border-primary/30 bg-primary/5 p-4 text-center relative"
+          >
+            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
+              <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+                Eclipse
+              </span>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1 mb-1">You keep</p>
+            <p className="text-2xl font-bold text-primary">{formatGBP(eclipseEarnings)}</p>
+            <div className="mt-2 space-y-1 text-[10px] text-muted-foreground text-left">
+              <div className="flex justify-between">
+                <span>Commission (15%)</span>
+                <span className="text-destructive">−{formatGBP(price * 0.15)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Processing fees</span>
+                <span className="font-medium text-primary">£0.00</span>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Competitor column */}
+          <motion.div
+            key={`comp-${price}`}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="rounded-xl border border-border/50 bg-card p-4 text-center relative"
+          >
+            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
+              <span className="text-[9px] font-bold uppercase tracking-wider bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                Typical rival
+              </span>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1 mb-1">You keep</p>
+            <p className="text-2xl font-bold text-foreground">{formatGBP(competitorEarnings)}</p>
+            <div className="mt-2 space-y-1 text-[10px] text-muted-foreground text-left">
+              <div className="flex justify-between">
+                <span>Commission (10%)</span>
+                <span className="text-destructive">−{formatGBP(price * 0.10)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Stripe fees (you pay)</span>
+                <span className="text-destructive">−{formatGBP(stripeFee)}</span>
+              </div>
+            </div>
+          </motion.div>
         </div>
-        <p className="text-[11px] text-muted-foreground mt-2">
-          {salesPerMonth} sales × £{avgPrice} = £{grossRevenue.toFixed(2)} gross · You keep 85% (£{netEarnings.toFixed(2)})
+
+        {/* Verdict */}
+        <motion.div
+          key={`verdict-${price}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className={cn(
+            "mt-3 rounded-lg px-4 py-2.5 text-center text-xs font-medium",
+            eclipseWins
+              ? "bg-primary/10 text-primary"
+              : "bg-muted text-muted-foreground"
+          )}
+        >
+          {eclipseWins ? (
+            <>You earn <span className="font-bold">{formatGBP(eclipseAdvantage)} more</span> per sale on Eclipse</>
+          ) : (
+            <>At £{price}, the rival model saves you {formatGBP(Math.abs(eclipseAdvantage))} — but you lose fee predictability</>
+          )}
+        </motion.div>
+      </div>
+
+      {/* Footer context */}
+      <div className="px-5 py-3 border-t border-border/30 bg-muted/5">
+        <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
+          Based on UK Stripe fees (2.9% + 30p per transaction). On products under ~£15 — 
+          where most Roblox assets sell — Eclipse's all-inclusive model puts more money in your pocket.
         </p>
-      </motion.div>
+      </div>
     </div>
   );
 }
