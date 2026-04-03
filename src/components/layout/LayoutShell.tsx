@@ -107,13 +107,15 @@ function LayoutShellInner({
           {customHeader ? (
             customHeader(() => setMobileOpen(true))
           ) : (
-            <Header
-              showDesktopNav={false}
-              onMenuClick={() => setMobileOpen(true)}
-              className=""
-              {...headerProps}
-            />
-            <GlobalCategoryBar />
+            <>
+              <Header
+                showDesktopNav={false}
+                onMenuClick={() => setMobileOpen(true)}
+                className=""
+                {...headerProps}
+              />
+              <GlobalCategoryBar />
+            </>
           )}
           {showBreadcrumb && (
             <Suspense fallback={null}><UniversalBreadcrumb /></Suspense>
