@@ -78,11 +78,11 @@ export function LandingHero() {
           </p>
 
           <h1 id="hero-heading" className="font-display text-3xl lg:text-[2.5rem] font-bold leading-[1.1] tracking-tight mb-4 max-w-2xl">
-            {t('landing.headline')} {wordRotator} Experience.
+            The All-in-One Marketplace for {wordRotator} Creators.
           </h1>
 
           <p className="text-sm text-foreground/70 max-w-md mb-6 leading-relaxed">
-            {t('landing.description')}
+            Buy and sell premium scripts, models, UI kits and game assets. Lower fees, instant delivery, trusted by thousands of creators.
           </p>
 
           {/* CTA hierarchy */}
