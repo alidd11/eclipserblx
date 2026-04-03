@@ -5882,7 +5882,6 @@ export type Database = {
       }
       product_promotions: {
         Row: {
-          budget_type: string
           campaign_name: string | null
           category_id: string | null
           clicks: number
@@ -5890,20 +5889,16 @@ export type Database = {
           cpm_bid: number | null
           created_at: string
           creative_images: string[] | null
-          current_bid: number
-          daily_budget: number | null
           daily_budget_limit: number | null
           duration_days: number
           expires_at: string | null
           goal: string
           id: string
           impressions: number
-          max_bid: number
           paused_at: string | null
           placement_zones: string[]
           pricing_model: string
           product_id: string
-          slot_type: string
           started_at: string | null
           status: string
           store_id: string
@@ -5915,7 +5910,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          budget_type?: string
           campaign_name?: string | null
           category_id?: string | null
           clicks?: number
@@ -5923,20 +5917,16 @@ export type Database = {
           cpm_bid?: number | null
           created_at?: string
           creative_images?: string[] | null
-          current_bid?: number
-          daily_budget?: number | null
           daily_budget_limit?: number | null
           duration_days?: number
           expires_at?: string | null
           goal?: string
           id?: string
           impressions?: number
-          max_bid?: number
           paused_at?: string | null
           placement_zones?: string[]
           pricing_model?: string
           product_id: string
-          slot_type: string
           started_at?: string | null
           status?: string
           store_id: string
@@ -5948,7 +5938,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          budget_type?: string
           campaign_name?: string | null
           category_id?: string | null
           clicks?: number
@@ -5956,20 +5945,16 @@ export type Database = {
           cpm_bid?: number | null
           created_at?: string
           creative_images?: string[] | null
-          current_bid?: number
-          daily_budget?: number | null
           daily_budget_limit?: number | null
           duration_days?: number
           expires_at?: string | null
           goal?: string
           id?: string
           impressions?: number
-          max_bid?: number
           paused_at?: string | null
           placement_zones?: string[]
           pricing_model?: string
           product_id?: string
-          slot_type?: string
           started_at?: string | null
           status?: string
           store_id?: string
@@ -6368,44 +6353,6 @@ export type Database = {
             columns: ["promotion_id"]
             isOneToOne: false
             referencedRelation: "product_promotions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      promotion_auctions: {
-        Row: {
-          auction_date: string
-          category_id: string | null
-          created_at: string
-          id: string
-          slot_type: string
-          total_bids: number
-          winners: Json
-        }
-        Insert: {
-          auction_date: string
-          category_id?: string | null
-          created_at?: string
-          id?: string
-          slot_type: string
-          total_bids?: number
-          winners?: Json
-        }
-        Update: {
-          auction_date?: string
-          category_id?: string | null
-          created_at?: string
-          id?: string
-          slot_type?: string
-          total_bids?: number
-          winners?: Json
-        }
-        Relationships: [
-          {
-            foreignKeyName: "promotion_auctions_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
             referencedColumns: ["id"]
           },
         ]
