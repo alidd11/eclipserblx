@@ -1,453 +1,273 @@
 import { 
-  Shield, 
-  Percent, 
-  CreditCard, 
-  Palette, 
-  Users, 
-  Bot,
-  CheckCircle2,
   ArrowRight,
   Sparkles,
   Lock,
-  FileCheck,
   TrendingUp,
-  Bell,
-  Calendar,
-  MessageSquare,
-  Wallet
+  Shield,
+  Percent,
+  Wallet,
+  CheckCircle2,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ComparisonTable } from "./ComparisonTable";
-import { EclipseLogo } from "@/components/ui/EclipseLogo";
 
-const benefits = [
-  {
-    icon: Lock,
-    title: "You Own Your Work",
-    description: "Eclipse only receives a license to display and sell - you retain 100% intellectual property ownership. No platform claims on your creations.",
-  },
+const stats = [
+  { value: "90%", label: "Max Earnings" },
+  { value: "100%", label: "IP Ownership" },
+  { value: "3", label: "Payout Methods" },
+  { value: "24h", label: "Review Time" },
+];
+
+const sellingPoints = [
   {
     icon: Percent,
-    title: "Keep Up to 90% of Net Earnings",
-    description: "Base sellers keep 85%, Eclipse+ members keep 90%. Commission calculated AFTER Stripe fees for maximum transparency.",
+    title: "Industry-Leading Earnings",
+    description: "Keep up to 90% of net earnings. Commission is calculated after payment processing fees — not before.",
+    highlight: "85% base · 90% with Eclipse+",
+  },
+  {
+    icon: Lock,
+    title: "You Own Everything",
+    description: "We only get a license to display and sell. You retain full IP, sell on other platforms, and remove products anytime.",
+    highlight: "Zero lock-in",
   },
   {
     icon: Wallet,
-    title: "Flexible Payout Options",
-    description: "Choose how you get paid: Stripe Connect (direct to bank), PayPal, or manual bank transfer. Your earnings, your choice.",
+    title: "Get Paid Your Way",
+    description: "Stripe Connect direct to bank, PayPal, or manual bank transfer. Automatic payouts, no platform credits.",
+    highlight: "3 payout options",
   },
   {
-    icon: Palette,
-    title: "Customizable Storefront",
-    description: "5 unique themes, 7 accent colors, custom logo and banner. Make your store stand out from the competition.",
-  },
-  {
-    icon: Bell,
-    title: "Real-Time Notifications",
-    description: "Discord webhooks for sales, new reviews, and scheduled releases. Stay informed on your phone or desktop.",
-  },
-  {
-    icon: Bot,
-    title: "AI-Powered Security",
-    description: "Advanced Lua script analysis for backdoor detection plus virus scanning. Protect your reputation automatically.",
+    icon: Shield,
+    title: "Built-In Protection",
+    description: "AI-powered Lua script analysis, virus scanning on all uploads, and manual product moderation before going live.",
+    highlight: "Multi-layer security",
   },
 ];
 
-const additionalFeatures = [
-  {
-    icon: Calendar,
-    title: "Scheduled Releases",
-    description: "Set future release dates for your products. Build hype and launch when you're ready.",
-  },
-  {
-    icon: Users,
-    title: "Team Management",
-    description: "Invite team members with different roles (Admin, Editor, Viewer) to help manage your store.",
-  },
-  {
-    icon: MessageSquare,
-    title: "Discord Integration",
-    description: "Connect your Discord webhook to get instant notifications for orders, reviews, and product launches.",
-  },
-  {
-    icon: CreditCard,
-    title: "Direct Bank Payouts",
-    description: "Get paid directly to your bank account via Stripe Connect. No platform credits, no waiting.",
-  },
+const earningsBreakdown = [
+  { label: "Customer Pays", value: "£10.00", type: "neutral" as const },
+  { label: "Stripe Fee (1.5% + £0.20)", value: "-£0.35", type: "deduction" as const },
+  { label: "Net After Stripe", value: "£9.65", type: "neutral" as const },
+  { label: "Platform Commission (15%)", value: "-£1.45", type: "deduction" as const },
 ];
 
 const steps = [
-  {
-    number: "1",
-    title: "Create Your Account",
-    description: "Sign up for free on Eclipse with your email address.",
-  },
-  {
-    number: "2",
-    title: "Submit Application",
-    description: "Complete a brief seller application. Review takes 24-48 hours.",
-  },
-  {
-    number: "3",
-    title: "Connect Payouts",
-    description: "Link Stripe Connect, PayPal, or provide bank details for payouts.",
-  },
-  {
-    number: "4",
-    title: "Start Selling",
-    description: "List your products, customize your store, and start earning!",
-  },
+  { title: "Create Account", description: "Sign up free with email or Roblox" },
+  { title: "Apply", description: "Quick application, reviewed in 24-48h" },
+  { title: "Connect Payouts", description: "Link Stripe, PayPal, or bank details" },
+  { title: "Start Selling", description: "List products and start earning" },
 ];
 
-const ownershipPoints = [
-  "Eclipse only receives a license to display/sell - you retain full IP ownership",
-  "Sell your assets on multiple platforms simultaneously",
-  "Remove your products anytime with no strings attached",
-  "No perpetual rights claims on your creations",
-  "No derivative works claims by the platform",
-];
-
-const payoutOptions = [
-  {
-    method: "Stripe Connect",
-    description: "Direct to your bank account",
-    timing: "Automatic payouts",
-    recommended: true,
-  },
-  {
-    method: "PayPal",
-    description: "Automatic payout to your PayPal email",
-    timing: "Automatic payouts",
-    recommended: false,
-  },
-  {
-    method: "Bank Transfer",
-    description: "Manual transfer to your bank details",
-    timing: "Request anytime",
-    recommended: false,
-  },
+const comparisonRows = [
+  { feature: "Your Earnings", eclipse: "Up to 90%", others: "70% or less" },
+  { feature: "IP Ownership", eclipse: "100% yours", others: "Broad platform rights" },
+  { feature: "Payout Methods", eclipse: "Stripe / PayPal / Bank", others: "Limited or credits" },
+  { feature: "Platform Lock-in", eclipse: "None", others: "Exclusive or restricted" },
+  { feature: "Store Customization", eclipse: "5 themes + 7 colors", others: "Basic or none" },
+  { feature: "Security Scanning", eclipse: "AI + virus scan", others: "Manual review" },
 ];
 
 export function SellerInfoContent() {
   return (
-    <div className="space-y-12 print:space-y-8">
-      {/* Hero Section */}
-      <section className="text-center space-y-6 py-8 print:py-4">
-        <div className="flex justify-center">
-          <EclipseLogo size="lg" />
-        </div>
-        <div className="space-y-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-primary print:text-primary">
-            Sell Your Digital Products on Eclipse
+    <div className="space-y-0">
+      {/* Hero */}
+      <section className="relative py-16 md:py-24 text-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
+        <div className="relative max-w-3xl mx-auto px-4 space-y-6">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">
+            Sell on <span className="text-primary">Eclipse</span>
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            The transparent marketplace where you keep what you create. Fair fees, full ownership, flexible payouts.
+          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            The marketplace that respects creators. Fair fees, full ownership, instant payouts.
           </p>
-        </div>
-        <div className="flex flex-wrap justify-center gap-4 pt-4">
-          <Badge variant="outline" className="text-lg px-4 py-2 border-primary/50">
-            <Percent className="h-4 w-4 mr-2" />
-            Up to 90% Earnings
-          </Badge>
-          <Badge variant="outline" className="text-lg px-4 py-2 border-primary/50">
-            <Lock className="h-4 w-4 mr-2" />
-            100% Asset Ownership
-          </Badge>
-          <Badge variant="outline" className="text-lg px-4 py-2 border-primary/50">
-            <Wallet className="h-4 w-4 mr-2" />
-            3 Payout Options
-          </Badge>
-        </div>
-      </section>
-
-      {/* Why Eclipse Section */}
-      <section className="space-y-6">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-foreground">Why Sell on Eclipse?</h2>
-          <p className="text-muted-foreground mt-2">Everything you need to succeed as a digital creator</p>
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 print:grid-cols-2">
-          {benefits.map((benefit, index) => (
-            <Card key={index} className="border-border/50 bg-card/50 print:break-inside-avoid">
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <benefit.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg">{benefit.title}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm">{benefit.description}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      {/* Asset Ownership Section */}
-      <section className="space-y-6 print:break-before-page">
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-500 mb-4">
-            <Shield className="h-5 w-5" />
-            <span className="font-semibold">Our Promise</span>
+          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
+            <a 
+              href="/become-seller"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all active:scale-[0.97]"
+            >
+              Start Selling
+              <ArrowRight className="h-4 w-4" />
+            </a>
           </div>
-          <h2 className="text-3xl font-bold text-foreground">You Own Your Assets</h2>
-          <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-            Unlike other marketplaces that claim broad rights to your work, Eclipse respects your intellectual property
-          </p>
         </div>
-        <Card className="border-green-500/30 bg-green-500/5">
-          <CardContent className="pt-6">
-            <ul className="space-y-4">
-              {ownershipPoints.map((point, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-foreground">{point}</span>
-                </li>
+
+        {/* Stats bar */}
+        <div className="relative mt-12 max-w-2xl mx-auto px-4">
+          <div className="grid grid-cols-4 gap-1 rounded-2xl bg-card/80 backdrop-blur border border-border/50 p-4 md:p-6">
+            {stats.map((stat) => (
+              <div key={stat.label} className="text-center">
+                <p className="text-2xl md:text-3xl font-bold text-primary">{stat.value}</p>
+                <p className="text-[11px] md:text-xs text-muted-foreground mt-0.5">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Eclipse — 4 key points */}
+      <section className="py-16 md:py-20 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Why creators choose Eclipse</h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            {sellingPoints.map((point) => (
+              <div 
+                key={point.title} 
+                className="group p-6 rounded-2xl border border-border/50 bg-card/30 hover:bg-card/60 transition-colors"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="p-2.5 rounded-xl bg-primary/10 shrink-0">
+                    <point.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-foreground">{point.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{point.description}</p>
+                    <span className="inline-block text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                      {point.highlight}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Earnings Breakdown — clean and focused */}
+      <section className="py-16 md:py-20 px-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Transparent earnings</h2>
+            <p className="text-muted-foreground mt-2 text-sm">Know exactly what you'll earn on every sale</p>
+          </div>
+
+          <div className="rounded-2xl border border-border/50 bg-card/30 overflow-hidden">
+            <div className="p-5 border-b border-border/30 bg-muted/20">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Example: £10.00 Sale</span>
+              </div>
+            </div>
+            <div className="divide-y divide-border/30">
+              {earningsBreakdown.map((row) => (
+                <div key={row.label} className="flex justify-between items-center px-5 py-3.5">
+                  <span className="text-sm text-muted-foreground">{row.label}</span>
+                  <span className={`text-sm font-medium ${row.type === 'deduction' ? 'text-destructive' : 'text-foreground'}`}>
+                    {row.value}
+                  </span>
+                </div>
               ))}
-            </ul>
-          </CardContent>
-        </Card>
-      </section>
-
-      {/* Comparison Table Section */}
-      <section className="space-y-6 print:break-before-page print:break-inside-avoid">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-foreground print:text-2xl">How We Compare</h2>
-          <p className="text-muted-foreground mt-2 print:text-sm print:mt-1">See why Eclipse is the best choice for digital creators</p>
-        </div>
-        <Card className="border-border/50 overflow-hidden print:break-inside-avoid">
-          <CardContent className="p-0 md:p-6 print:p-2">
-            <ComparisonTable />
-          </CardContent>
-        </Card>
-      </section>
-
-      {/* Earnings Breakdown Section */}
-      <section className="space-y-6 print:break-before-page">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-foreground">Transparent Earnings</h2>
-          <p className="text-muted-foreground mt-2">Know exactly what you'll earn before you list</p>
-        </div>
-        <Card className="border-border/50">
-          <CardContent className="pt-6 space-y-6">
-            <div className="bg-muted/30 rounded-lg p-6 space-y-4">
-              <h3 className="font-semibold text-lg flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                Example: £10.00 Sale (UK Stripe Rates)
-              </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b border-border/50">
-                  <span className="text-muted-foreground">Customer Pays</span>
-                  <span className="font-semibold">£10.00</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-border/50">
-                  <span className="text-muted-foreground">Stripe Fee (1.5% + £0.20)</span>
-                  <span className="text-destructive">-£0.35</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-border/50">
-                  <span className="text-muted-foreground">Net After Stripe</span>
-                  <span className="font-semibold">£9.65</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-border/50">
-                  <span className="text-muted-foreground">Platform Commission (15%)</span>
-                  <span className="text-destructive">-£1.45</span>
-                </div>
-                <div className="flex justify-between items-center py-2 bg-primary/10 rounded-lg px-3">
-                  <span className="font-semibold text-primary">Your Earnings</span>
-                  <span className="font-bold text-xl text-primary">£8.20</span>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground text-center mt-2">
-                * UK domestic Stripe rates shown. International rates may vary slightly.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-lg border border-border/50 bg-card/50">
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="secondary">Base Seller</Badge>
-                </div>
-                <p className="text-2xl font-bold text-foreground">85%</p>
-                <p className="text-sm text-muted-foreground">of net earnings (after Stripe fees)</p>
-              </div>
-              <div className="p-4 rounded-lg border border-primary/50 bg-primary/5">
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500">
-                    <Sparkles className="h-3 w-3 mr-1" />
-                    Eclipse+ Member
-                  </Badge>
-                </div>
-                <p className="text-2xl font-bold text-primary">90%</p>
-                <p className="text-sm text-muted-foreground">of net earnings (10% commission)</p>
+              <div className="flex justify-between items-center px-5 py-4 bg-primary/5">
+                <span className="font-semibold text-primary">You Earn</span>
+                <span className="text-2xl font-bold text-primary">£8.20</span>
               </div>
             </div>
 
-            <div className="text-center p-4 bg-muted/30 rounded-lg">
-              <p className="text-sm text-muted-foreground">
-                <strong>Our Formula:</strong> Your Earnings = (Sale Price - Stripe Fee) × (1 - Commission Rate)
-              </p>
+            {/* Tiers */}
+            <div className="grid grid-cols-2 border-t border-border/30">
+              <div className="p-4 text-center border-r border-border/30">
+                <Badge variant="secondary" className="mb-2">Base Seller</Badge>
+                <p className="text-xl font-bold text-foreground">85%</p>
+                <p className="text-xs text-muted-foreground">of net earnings</p>
+              </div>
+              <div className="p-4 text-center bg-primary/5">
+                <Badge className="mb-2 bg-gradient-to-r from-amber-500 to-yellow-500 border-0">
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  Eclipse+
+                </Badge>
+                <p className="text-xl font-bold text-primary">90%</p>
+                <p className="text-xs text-muted-foreground">of net earnings</p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </section>
+          </div>
 
-      {/* Payout Options Section */}
-      <section className="space-y-6">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-foreground">Flexible Payout Options</h2>
-          <p className="text-muted-foreground mt-2">Choose how you want to receive your earnings</p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-4">
-          {payoutOptions.map((option, index) => (
-            <Card key={index} className={`border-border/50 ${option.recommended ? 'border-primary/50 bg-primary/5' : ''}`}>
-              <CardContent className="pt-6 text-center">
-                {option.recommended && (
-                  <Badge className="mb-3 bg-primary">Recommended</Badge>
-                )}
-                <h3 className="font-semibold text-lg mb-2">{option.method}</h3>
-                <p className="text-sm text-muted-foreground mb-2">{option.description}</p>
-                <p className="text-xs text-muted-foreground">{option.timing}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      {/* Additional Features Section */}
-      <section className="space-y-6">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-foreground">Powerful Seller Tools</h2>
-          <p className="text-muted-foreground mt-2">Everything you need to manage and grow your store</p>
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {additionalFeatures.map((feature, index) => (
-            <Card key={index} className="border-border/50">
-              <CardContent className="pt-6 text-center">
-                <feature.icon className="h-8 w-8 text-primary mx-auto mb-3" />
-                <h3 className="font-semibold mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">{feature.description}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      {/* Store Customization Section */}
-      <section className="space-y-6 print:break-before-page">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-foreground">Make Your Store Unique</h2>
-          <p className="text-muted-foreground mt-2">Stand out with full customization options</p>
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: "5 Themes", desc: "Default, Minimal, Bold, Gradient, Dark" },
-            { label: "7 Accent Colors", desc: "Match your brand identity" },
-            { label: "Custom Branding", desc: "Logo and banner uploads" },
-            { label: "Trusted Seller Badge", desc: "Earn verified status" },
-          ].map((item, index) => (
-            <Card key={index} className="border-border/50 text-center">
-              <CardContent className="pt-6">
-                <p className="font-bold text-lg text-primary">{item.label}</p>
-                <p className="text-sm text-muted-foreground">{item.desc}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      {/* Security Section */}
-      <section className="space-y-6">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-foreground">Security You Can Trust</h2>
-          <p className="text-muted-foreground mt-2">Multi-layer protection for you and your customers</p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-6">
-          <Card className="border-border/50">
-            <CardContent className="pt-6 text-center">
-              <Bot className="h-10 w-10 text-primary mx-auto mb-3" />
-              <h3 className="font-semibold mb-2">AI Script Analysis</h3>
-              <p className="text-sm text-muted-foreground">Advanced Lua backdoor detection protects your reputation</p>
-            </CardContent>
-          </Card>
-          <Card className="border-border/50">
-            <CardContent className="pt-6 text-center">
-              <FileCheck className="h-10 w-10 text-primary mx-auto mb-3" />
-              <h3 className="font-semibold mb-2">Virus Scanning</h3>
-              <p className="text-sm text-muted-foreground">All uploads scanned via Cloudmersive for malware</p>
-            </CardContent>
-          </Card>
-          <Card className="border-border/50">
-            <CardContent className="pt-6 text-center">
-              <Shield className="h-10 w-10 text-primary mx-auto mb-3" />
-              <h3 className="font-semibold mb-2">Product Moderation</h3>
-              <p className="text-sm text-muted-foreground">All products reviewed before going live</p>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Get Started Section */}
-      <section className="space-y-6 print:break-before-page">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-foreground">Get Started in 4 Simple Steps</h2>
-          <p className="text-muted-foreground mt-2">From signup to first sale in no time</p>
-        </div>
-        <div className="grid md:grid-cols-4 gap-4">
-          {steps.map((step, index) => (
-            <Card key={index} className="border-border/50 relative">
-              <CardContent className="pt-6 text-center">
-                <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold text-xl flex items-center justify-center mx-auto mb-4">
-                  {step.number}
-                </div>
-                <h3 className="font-semibold mb-2">{step.title}</h3>
-                <p className="text-sm text-muted-foreground">{step.description}</p>
-              </CardContent>
-              {index < steps.length - 1 && (
-                <ArrowRight className="hidden md:block absolute -right-5 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground z-10" />
-              )}
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="text-center py-8 space-y-6 print:hidden">
-        <div className="max-w-2xl mx-auto space-y-4">
-          <h2 className="text-3xl font-bold text-foreground">Ready to Start Selling?</h2>
-          <p className="text-muted-foreground">
-            Join Eclipse today and start earning from your digital creations. Our team reviews applications within 24-48 hours.
+          <p className="text-center text-xs text-muted-foreground mt-4">
+            UK Stripe rates shown. Formula: (Sale − Stripe Fee) × (1 − Commission)
           </p>
         </div>
-        <div className="flex flex-wrap justify-center gap-4">
-          <a 
-            href="/become-seller"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors"
-          >
-            Apply Now
-            <ArrowRight className="h-4 w-4" />
-          </a>
-          <a 
-            href="/support/chat" 
-            className="inline-flex items-center gap-2 px-6 py-3 border border-border text-foreground font-semibold rounded-lg hover:bg-muted transition-colors"
-          >
-            Chat with Us
-          </a>
+      </section>
+
+      {/* Comparison — simplified */}
+      <section className="py-16 md:py-20 px-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Eclipse vs. the rest</h2>
+          </div>
+
+          <div className="rounded-2xl border border-border/50 overflow-hidden">
+            <div className="divide-y divide-border/30">
+              {comparisonRows.map((row) => (
+                <div key={row.feature} className="grid grid-cols-3 text-sm">
+                  <div className="px-4 py-3.5 font-medium text-foreground bg-muted/20 flex items-center">
+                    {row.feature}
+                  </div>
+                  <div className="px-4 py-3.5 text-primary font-medium bg-primary/5 flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                    <span className="text-xs md:text-sm">{row.eclipse}</span>
+                  </div>
+                  <div className="px-4 py-3.5 text-muted-foreground flex items-center">
+                    <span className="text-xs md:text-sm">{row.others}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Column headers at bottom for context */}
+            <div className="grid grid-cols-3 border-t border-border/50 bg-muted/10 text-[11px] text-muted-foreground">
+              <div className="px-4 py-2"></div>
+              <div className="px-4 py-2 font-semibold text-primary">Eclipse</div>
+              <div className="px-4 py-2">Others</div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Footer for Print */}
-      <footer className="hidden print:block text-center py-8 border-t border-border">
-        <EclipseLogo size="sm" />
-        <p className="text-muted-foreground mt-4">
-          Eclipse Marketplace • eclipserblx.com
-        </p>
-        <p className="text-sm text-muted-foreground mt-2">
-          Questions? Join our Discord community or start a live chat.
-        </p>
-      </footer>
+      {/* Steps — horizontal timeline */}
+      <section className="py-16 md:py-20 px-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Get started in minutes</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {steps.map((step, i) => (
+              <div key={step.title} className="text-center space-y-3">
+                <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold text-lg flex items-center justify-center mx-auto">
+                  {i + 1}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm text-foreground">{step.title}</h3>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{step.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-16 md:py-20 px-4 print:hidden">
+        <div className="max-w-xl mx-auto text-center space-y-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground">Ready to start?</h2>
+          <p className="text-muted-foreground">
+            Applications are reviewed within 24-48 hours. Join hundreds of creators already selling on Eclipse.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-3">
+            <a 
+              href="/become-seller"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all active:scale-[0.97]"
+            >
+              Apply Now
+              <ArrowRight className="h-4 w-4" />
+            </a>
+            <a 
+              href="/support/chat" 
+              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 border border-border text-foreground font-semibold rounded-xl hover:bg-muted transition-colors"
+            >
+              Ask a Question
+            </a>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
