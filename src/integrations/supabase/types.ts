@@ -8724,6 +8724,7 @@ export type Database = {
       store_applications: {
         Row: {
           age_confirmed: boolean
+          auto_approved: boolean | null
           created_at: string | null
           discord_server_invite: string | null
           expected_products: string | null
@@ -8748,6 +8749,7 @@ export type Database = {
         }
         Insert: {
           age_confirmed?: boolean
+          auto_approved?: boolean | null
           created_at?: string | null
           discord_server_invite?: string | null
           expected_products?: string | null
@@ -8772,6 +8774,7 @@ export type Database = {
         }
         Update: {
           age_confirmed?: boolean
+          auto_approved?: boolean | null
           created_at?: string | null
           discord_server_invite?: string | null
           expected_products?: string | null
