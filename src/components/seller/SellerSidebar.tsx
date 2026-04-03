@@ -4,8 +4,8 @@ import {
   ChevronLeft, ChevronRight, ChevronDown, LucideIcon, DollarSign, 
   LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, Users,
   Tag, BarChart3, FileText, HelpCircle, MessageCircle, Star, Bot, Import,
-  Gamepad2, Layers, TrendingUp, Receipt, LineChart, Heart, Megaphone,
-  RotateCcw, Zap, PackagePlus, Globe, Inbox, Sparkles, Calculator, Crown
+  Gamepad2, Layers, TrendingUp, Receipt, LineChart, Megaphone,
+  RotateCcw, PackagePlus, Globe, Inbox, Sparkles, Calculator, Crown
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
