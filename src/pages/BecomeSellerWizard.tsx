@@ -318,6 +318,12 @@ export default function BecomeSellerWizard() {
             <Clock className="h-3 w-3" />
             <span>Most sellers complete this in under 3 minutes</span>
           </div>
+          {previousApplication && !isDirty && (
+            <Badge variant="outline" className="text-xs">
+              <Download className="h-3 w-3 mr-1" />
+              Pre-filled from your previous application
+            </Badge>
+          )}
           {isDirty && (
             <Badge variant="outline" className="text-xs">
               <CheckCircle2 className="h-3 w-3 mr-1" />
