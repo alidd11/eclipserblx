@@ -132,10 +132,22 @@ export function useSellerSubscription() {
     return data;
   }, [user]);
 
-  const limits: SellerProLimits = state.isPro ? PRO_LIMITS : FREE_LIMITS;
+  // Check if seller is in the free commission promo period
+  const inFreePromo = store?.free_commission_until 
+    ? new Date(store.free_commission_until) > new Date() 
+    : false;
+  const freePromoEndsAt = store?.free_commission_until || null;
+
+  const limits: SellerProLimits = state.isPro 
+    ? PRO_LIMITS 
+    : inFreePromo 
+      ? PROMO_LIMITS 
+      : FREE_LIMITS;
 
   return {
     ...state,
+    inFreePromo,
+    freePromoEndsAt,
     limits,
     subscribe,
     openPortal,
