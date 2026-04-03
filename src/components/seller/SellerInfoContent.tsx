@@ -49,14 +49,6 @@ const sellingPoints = [
   },
 ];
 
-const comparisonRows = [
-  { feature: "Seller Earnings", eclipse: "85% of gross", others: "70–90%" },
-  { feature: "Processing Fees", eclipse: "We absorb them", others: "Deducted from you" },
-  { feature: "IP Ownership", eclipse: "100% yours", others: "Broad platform rights" },
-  { feature: "Payouts", eclipse: "Stripe / PayPal / Bank", others: "Credits or limited" },
-  { feature: "Lock-in", eclipse: "None — sell anywhere", others: "Exclusive or restricted" },
-  { feature: "Security", eclipse: "AI scan + virus check", others: "Basic or manual" },
-];
 
 const steps = [
   { title: "Sign Up", description: "Create a free account with email or Roblox" },
