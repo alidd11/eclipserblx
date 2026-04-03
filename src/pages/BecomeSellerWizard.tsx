@@ -85,13 +85,32 @@ export default function BecomeSellerWizard() {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('discord_id, discord_username, roblox_user_id, roblox_username')
+        .select('discord_id, discord_username, roblox_user_id, roblox_username, display_name')
         .eq('user_id', user.id)
         .single();
       if (error) throw error;
       return data;
     },
     enabled: !!user?.id,
+  });
+
+  // Fetch previous rejected application to pre-fill form
+  const { data: previousApplication } = useQuery({
+    queryKey: ['previous-seller-application', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from('store_applications')
+        .select('store_name, store_description, product_category, discord_server_invite')
+        .eq('user_id', user.id)
+        .eq('status', 'rejected')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
   });
 
   // Seller count for social proof
