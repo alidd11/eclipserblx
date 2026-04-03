@@ -796,19 +796,18 @@ export default function ProductDetail() {
                 description={`Check out ${product.name} on Eclipse`}
               />
               <div className="flex gap-2">
-              <PriceAlertButton productId={product.id} currentPrice={product.price} />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex-1 text-muted-foreground hover:text-foreground"
-                onClick={() => setShowIPReportDialog(true)}
-              >
-                <Flag className="h-4 w-4 mr-2" />
-                Report IP Violation
-              </Button>
+                <PriceAlertButton productId={product.id} currentPrice={product.price} />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex-1 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowIPReportDialog(true)}
+                >
+                  <Flag className="h-4 w-4 mr-2" />
+                  Report IP Violation
+                </Button>
+              </div>
             </div>
-            
-          </div>
         </div>
 
         {/* Reviews Section */}
