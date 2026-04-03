@@ -3,20 +3,22 @@ import { supabase } from '@/integrations/supabase/client';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, ArrowRight } from 'lucide-react';
-import { useCurrency } from '@/hooks/useCurrency';
-import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
+import { ProductCard } from '@/components/ui/ProductCard';
+import { ProductCardSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 
 export function TrendingProducts() {
-  const { formatPrice } = useCurrency();
-
   const { data: products, isLoading } = useQuery({
     queryKey: ['trending-products-home'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, slug, price, images, download_count, stores!inner(is_active, name, slug, is_verified)')
+        .select(`
+          id, name, slug, price, images, download_count, created_at, category_id,
+          categories(name, slug),
+          stores!inner(is_active, name, slug, logo_url, is_verified, is_trusted, eclipse_plus_enabled)
+        `)
         .eq('is_active', true)
         .eq('moderation_status', 'approved')
         .eq('stores.is_active', true)
@@ -35,13 +37,9 @@ export function TrendingProducts() {
           <Skeleton className="h-5 w-5" />
           <Skeleton className="h-6 w-40" />
         </div>
-        <div className="flex gap-3 overflow-hidden lg:grid lg:grid-cols-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="min-w-[200px] lg:min-w-0">
-              <Skeleton className="aspect-[4/3] rounded-lg" />
-              <Skeleton className="h-4 w-3/4 mt-2" />
-              <Skeleton className="h-3 w-1/2 mt-1" />
-            </div>
+            <ProductCardSkeleton key={i} />
           ))}
         </div>
       </section>
@@ -65,32 +63,28 @@ export function TrendingProducts() {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {products.map((product, i) => {
-            const imageUrl = getFirstImageUrl(product.images);
+            const store = product.stores as any;
+            const category = product.categories as any;
             return (
               <ScrollReveal key={product.id} delay={i * 0.04} direction="up" distance={10} duration={0.25}>
-                <Link to={`/product/${product.slug}`} className="block group">
-                  <div className="aspect-[4/3] rounded-lg overflow-hidden bg-muted border border-border">
-                    {imageUrl ? (
-                      <img
-                        src={optimizeImageUrl(imageUrl, 400)}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">No image</div>
-                    )}
-                  </div>
-                  <h3 className="text-xs sm:text-sm font-medium mt-1.5 truncate group-hover:text-primary transition-colors">{product.name}</h3>
-                  <div className="flex items-center justify-between mt-0.5">
-                    <span className="text-xs font-semibold text-primary">
-                      {product.price === 0 ? 'Free' : formatPrice(product.price)}
-                    </span>
-                    {(product.download_count ?? 0) > 0 && (
-                      <span className="text-[10px] text-muted-foreground">{product.download_count} sold</span>
-                    )}
-                  </div>
-                </Link>
+                <ProductCard
+                  id={product.id}
+                  name={product.name}
+                  slug={product.slug}
+                  price={product.price}
+                  image={getFirstImageUrl(product.images)}
+                  images={product.images as string[]}
+                  category={category?.name}
+                  categorySlug={category?.slug}
+                  categoryId={product.category_id ?? undefined}
+                  storeName={store?.name}
+                  storeSlug={store?.slug}
+                  storeLogo={store?.logo_url}
+                  isVerified={store?.is_verified}
+                  isTrusted={store?.is_trusted}
+                  storeEclipseEnabled={store?.eclipse_plus_enabled}
+                  createdAt={product.created_at}
+                />
               </ScrollReveal>
             );
           })}
