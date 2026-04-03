@@ -144,16 +144,49 @@ export default function BecomeSellerWizard() {
     }
   };
 
-  // Auto-suggest store name from Discord server or username
+  // Auto-populate form from previous application or profile data
   useEffect(() => {
+    // Don't overwrite if user has already made edits (isDirty)
+    if (isDirty) return;
+
+    const updates: Partial<typeof INITIAL_FORM> = {};
+
+    // Store name: previous app → Discord server → Roblox username → display name
     if (!formValues.storeName) {
-      if (verificationResults.discord_server?.guild_name && verificationResults.discord_server?.valid) {
-        setFormValues({ storeName: verificationResults.discord_server.guild_name });
-      } else if (linkedAccounts?.roblox_username && !formValues.storeName) {
-        setFormValues({ storeName: `${linkedAccounts.roblox_username}'s Store` });
+      if (previousApplication?.store_name) {
+        updates.storeName = previousApplication.store_name;
+      } else if (verificationResults.discord_server?.guild_name && verificationResults.discord_server?.valid) {
+        updates.storeName = verificationResults.discord_server.guild_name;
+      } else if (linkedAccounts?.roblox_username) {
+        updates.storeName = `${linkedAccounts.roblox_username}'s Store`;
+      } else if (linkedAccounts?.display_name) {
+        updates.storeName = `${linkedAccounts.display_name}'s Store`;
       }
     }
-  }, [verificationResults.discord_server, linkedAccounts?.roblox_username]);
+
+    // Store description from previous app
+    if (!formValues.storeDescription && previousApplication?.store_description) {
+      updates.storeDescription = previousApplication.store_description;
+    }
+
+    // Product category from previous app
+    if (!formValues.productCategory && previousApplication?.product_category) {
+      updates.productCategory = previousApplication.product_category;
+    }
+
+    // Discord invite from previous app
+    if (!formValues.discordServerInvite && previousApplication?.discord_server_invite) {
+      updates.discordServerInvite = previousApplication.discord_server_invite;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      setFormValues(updates);
+      // Auto-validate discord invite if pre-filled
+      if (updates.discordServerInvite) {
+        validateDiscordInvite(updates.discordServerInvite);
+      }
+    }
+  }, [previousApplication, verificationResults.discord_server, linkedAccounts?.roblox_username, linkedAccounts?.display_name]);
 
   const submitApplication = useMutation({
     mutationFn: async () => {
