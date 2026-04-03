@@ -49,8 +49,8 @@ const importantNotes = [
   },
   {
     icon: Calculator,
-    title: "Commission Calculated on Net",
-    description: "Platform commission is calculated AFTER Stripe/payment processing fees are deducted, not on the gross sale amount. This means you keep more.",
+    title: "No Hidden Fees",
+    description: "Eclipse absorbs all payment processing fees (Stripe, PayPal, etc.). Your commission is a flat percentage of the sale price — what you see is what you get.",
   },
   {
     icon: Clock,
