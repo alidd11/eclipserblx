@@ -5882,11 +5882,17 @@ export type Database = {
       }
       product_promotions: {
         Row: {
+          budget_type: string
+          campaign_name: string | null
           category_id: string | null
           clicks: number
           created_at: string
+          creative_images: string[] | null
           current_bid: number
+          daily_budget: number | null
+          duration_days: number
           expires_at: string | null
+          goal: string
           id: string
           impressions: number
           max_bid: number
@@ -5896,15 +5902,24 @@ export type Database = {
           started_at: string | null
           status: string
           store_id: string
+          target_countries: string[] | null
+          target_devices: string[] | null
+          total_spent: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          budget_type?: string
+          campaign_name?: string | null
           category_id?: string | null
           clicks?: number
           created_at?: string
+          creative_images?: string[] | null
           current_bid?: number
+          daily_budget?: number | null
+          duration_days?: number
           expires_at?: string | null
+          goal?: string
           id?: string
           impressions?: number
           max_bid?: number
@@ -5914,15 +5929,24 @@ export type Database = {
           started_at?: string | null
           status?: string
           store_id: string
+          target_countries?: string[] | null
+          target_devices?: string[] | null
+          total_spent?: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          budget_type?: string
+          campaign_name?: string | null
           category_id?: string | null
           clicks?: number
           created_at?: string
+          creative_images?: string[] | null
           current_bid?: number
+          daily_budget?: number | null
+          duration_days?: number
           expires_at?: string | null
+          goal?: string
           id?: string
           impressions?: number
           max_bid?: number
@@ -5932,6 +5956,9 @@ export type Database = {
           started_at?: string | null
           status?: string
           store_id?: string
+          target_countries?: string[] | null
+          target_devices?: string[] | null
+          total_spent?: number
           updated_at?: string
           user_id?: string
         }

@@ -7,15 +7,21 @@ import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PromotionCard } from '@/components/seller/PromotionCard';
-import { CreatePromotionDialog } from '@/components/seller/CreatePromotionDialog';
-import { Megaphone, Plus, Coins, Eye, MousePointerClick, TrendingUp } from 'lucide-react';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { CampaignRow } from '@/components/seller/CampaignRow';
+import { CreateCampaignWizard } from '@/components/seller/CreateCampaignWizard';
+import { Megaphone, Plus, Coins, Eye, MousePointerClick, TrendingUp, ArrowLeft, Receipt } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { format, subDays } from 'date-fns';
+
+type DateRange = '7d' | '30d' | 'all';
 
 export default function SellerPromotions() {
   const { user } = useAuth();
   const { balance } = useCredits();
-  const [createOpen, setCreateOpen] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange>('30d');
 
   const { data: promotions, isLoading } = useQuery({
     queryKey: ['seller-promotions', user?.id],
@@ -32,131 +38,261 @@ export default function SellerPromotions() {
     enabled: !!user,
   });
 
-  const activePromotions = promotions?.filter(p => p.status === 'active') || [];
-  const pendingPromotions = promotions?.filter(p => p.status === 'pending_auction') || [];
-  const pastPromotions = promotions?.filter(p => ['outbid', 'expired', 'cancelled', 'paused'].includes(p.status)) || [];
+  // Filter by date range
+  const filtered = promotions?.filter(p => {
+    if (dateRange === 'all') return true;
+    const days = dateRange === '7d' ? 7 : 30;
+    return new Date(p.created_at) >= subDays(new Date(), days);
+  }) || [];
 
-  const totalImpressions = promotions?.reduce((s, p) => s + (p.impressions || 0), 0) || 0;
-  const totalClicks = promotions?.reduce((s, p) => s + (p.clicks || 0), 0) || 0;
+  const activeCampaigns = filtered.filter(p => p.status === 'active');
+  const pendingCampaigns = filtered.filter(p => ['pending_auction', 'scheduled'].includes(p.status));
+  const pastCampaigns = filtered.filter(p => ['outbid', 'expired', 'cancelled', 'paused'].includes(p.status));
+
+  const totalSpent = filtered.reduce((s, p) => s + Number(p.total_spent || 0), 0);
+  const totalImpressions = filtered.reduce((s, p) => s + (p.impressions || 0), 0);
+  const totalClicks = filtered.reduce((s, p) => s + (p.clicks || 0), 0);
   const avgCtr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(1) : '0.0';
+
+  // Credit transaction history (billing tab)
+  const { data: creditHistory } = useQuery({
+    queryKey: ['ad-credit-history', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from('credit_transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .ilike('description', '%promotion%')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) return [];
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  if (showCreate) {
+    return (
+      <SellerLayout>
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center gap-2 mb-5">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowCreate(false)}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <h1 className="text-lg font-bold">Create Campaign</h1>
+          </div>
+          <CreateCampaignWizard onClose={() => setShowCreate(false)} />
+        </div>
+      </SellerLayout>
+    );
+  }
 
   return (
     <SellerLayout>
-      <div className="max-w-4xl mx-auto space-y-5">
+      <div className="max-w-5xl mx-auto space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold flex items-center gap-2">
               <Megaphone className="h-5 w-5 text-primary" />
-              Promotions
+              Ad Manager
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Boost your products to premium marketplace positions
+              Create and manage advertising campaigns for your products
             </p>
           </div>
-          <Button onClick={() => setCreateOpen(true)} size="sm">
-            <Plus className="h-4 w-4 mr-1" /> New Promotion
+          <Button onClick={() => setShowCreate(true)} size="sm">
+            <Plus className="h-4 w-4 mr-1" /> Create Campaign
           </Button>
         </div>
 
-        {/* Stats strip */}
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardContent className="p-3 flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Megaphone className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-lg font-bold">{activePromotions.length}</p>
-                <p className="text-[10px] text-muted-foreground">Active</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardContent className="p-3 flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-muted">
-                <Eye className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div>
-                <p className="text-lg font-bold">{totalImpressions.toLocaleString()}</p>
-                <p className="text-[10px] text-muted-foreground">Impressions</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardContent className="p-3 flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-muted">
-                <MousePointerClick className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div>
-                <p className="text-lg font-bold">{totalClicks.toLocaleString()}</p>
-                <p className="text-[10px] text-muted-foreground">Clicks</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardContent className="p-3 flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-amber-500/10">
-                <Coins className="h-4 w-4 text-amber-500" />
-              </div>
-              <div>
-                <p className="text-lg font-bold">£{balance.toFixed(0)}</p>
-                <p className="text-[10px] text-muted-foreground">
-                  Credits{' '}
-                  <Link to="/credits" className="text-primary hover:underline">Top up</Link>
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Date range filter */}
+        <div className="flex items-center gap-1.5">
+          {(['7d', '30d', 'all'] as const).map(r => (
+            <button
+              key={r}
+              onClick={() => setDateRange(r)}
+              className={cn(
+                "px-3 py-1 rounded-full text-xs font-medium transition-all",
+                dateRange === r
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {r === '7d' ? '7 Days' : r === '30d' ? '30 Days' : 'All Time'}
+            </button>
+          ))}
         </div>
+
+        {/* Metric cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: 'Amount Spent', value: `£${totalSpent.toFixed(0)}`, icon: Coins, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+            { label: 'Impressions', value: totalImpressions.toLocaleString(), icon: Eye, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+            { label: 'Clicks', value: totalClicks.toLocaleString(), icon: MousePointerClick, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+            { label: 'CTR', value: `${avgCtr}%`, icon: TrendingUp, color: 'text-primary', bg: 'bg-primary/10' },
+          ].map(m => (
+            <Card key={m.label}>
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className={cn("p-2 rounded-lg", m.bg)}>
+                  <m.icon className={cn("h-4 w-4", m.color)} />
+                </div>
+                <div>
+                  <p className="text-lg font-bold">{m.value}</p>
+                  <p className="text-[10px] text-muted-foreground">{m.label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Tabs: Campaigns + Billing */}
+        <Tabs defaultValue="campaigns">
+          <TabsList>
+            <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+            <TabsTrigger value="billing">Billing</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="campaigns" className="mt-3">
+            <Tabs defaultValue="active">
+              <TabsList className="w-full">
+                <TabsTrigger value="active" className="flex-1">Active ({activeCampaigns.length})</TabsTrigger>
+                <TabsTrigger value="pending" className="flex-1">In Review ({pendingCampaigns.length})</TabsTrigger>
+                <TabsTrigger value="past" className="flex-1">Completed ({pastCampaigns.length})</TabsTrigger>
+              </TabsList>
+
+              {(['active', 'pending', 'past'] as const).map(tab => {
+                const campaigns = tab === 'active' ? activeCampaigns : tab === 'pending' ? pendingCampaigns : pastCampaigns;
+                return (
+                  <TabsContent key={tab} value={tab} className="mt-3">
+                    {campaigns.length === 0 ? (
+                      <Card>
+                        <CardContent className="py-10 text-center text-sm text-muted-foreground">
+                          {tab === 'active' ? 'No active campaigns. Create one to get started!' :
+                           tab === 'pending' ? 'No campaigns in review.' :
+                           'No completed campaigns yet.'}
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <Card>
+                        <div className="overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Campaign</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Spent</TableHead>
+                                <TableHead>Impr.</TableHead>
+                                <TableHead>Clicks</TableHead>
+                                <TableHead>CPC</TableHead>
+                                <TableHead>CTR</TableHead>
+                                <TableHead>On/Off</TableHead>
+                                <TableHead className="w-8"></TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {campaigns.map(c => (
+                                <CampaignRow key={c.id} campaign={c} />
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </Card>
+                    )}
+                  </TabsContent>
+                );
+              })}
+            </Tabs>
+          </TabsContent>
+
+          <TabsContent value="billing" className="mt-3 space-y-4">
+            {/* Balance card */}
+            <Card>
+              <CardContent className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-lg bg-amber-500/10">
+                    <Coins className="h-5 w-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold">£{balance.toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">Available Credits</p>
+                  </div>
+                </div>
+                <Button size="sm" asChild>
+                  <Link to="/credits">Top Up</Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Spend summary */}
+            <div className="grid grid-cols-2 gap-3">
+              <Card>
+                <CardContent className="p-4">
+                  <p className="text-xs text-muted-foreground">This Month</p>
+                  <p className="text-xl font-bold mt-1">
+                    £{filtered
+                      .filter(p => new Date(p.created_at).getMonth() === new Date().getMonth())
+                      .reduce((s, p) => s + Number(p.total_spent || 0), 0)
+                      .toFixed(0)}
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <p className="text-xs text-muted-foreground">All Time</p>
+                  <p className="text-xl font-bold mt-1">
+                    £{(promotions || []).reduce((s, p) => s + Number(p.total_spent || 0), 0).toFixed(0)}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Transaction history */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Receipt className="h-4 w-4 text-muted-foreground" />
+                  Ad Spend History
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {!creditHistory || creditHistory.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">No ad spend transactions yet.</p>
+                ) : (
+                  <div className="divide-y divide-border">
+                    {creditHistory.map((tx: any) => (
+                      <div key={tx.id} className="flex items-center justify-between px-4 py-2.5">
+                        <div>
+                          <p className="text-sm">{tx.description}</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {format(new Date(tx.created_at), 'MMM d, yyyy')}
+                          </p>
+                        </div>
+                        <span className="text-sm font-semibold text-destructive">
+                          -£{Math.abs(Number(tx.amount)).toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
         {/* How it works */}
         <Card className="border-primary/20 bg-primary/5">
           <CardContent className="p-4">
-            <h3 className="text-sm font-semibold mb-2">How Promotions Work</h3>
+            <h3 className="text-sm font-semibold mb-2">How Campaigns Work</h3>
             <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
-              <li>Choose a product and promotion slot (Featured or Category Spotlight)</li>
-              <li>Set a weekly bid in Eclipse Credits (minimum 5 credits)</li>
-              <li>Every Monday, the highest bidders win their slots — credits are deducted</li>
-              <li>Your product gets premium visibility and you earn analytics on performance</li>
+              <li>Create a campaign — choose your product, goal, audience, and budget</li>
+              <li>Your campaign enters the weekly auction. Highest bidders win premium slots</li>
+              <li>Credits are deducted when you win. Your product gets boosted visibility</li>
+              <li>Track performance with impressions, clicks, CTR, and demographics</li>
             </ol>
           </CardContent>
         </Card>
-
-        {/* Promotions list */}
-        <Tabs defaultValue="active">
-          <TabsList className="w-full">
-            <TabsTrigger value="active" className="flex-1">Active ({activePromotions.length})</TabsTrigger>
-            <TabsTrigger value="pending" className="flex-1">Pending ({pendingPromotions.length})</TabsTrigger>
-            <TabsTrigger value="past" className="flex-1">Past ({pastPromotions.length})</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="active" className="space-y-3 mt-3">
-            {activePromotions.length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No active promotions. Create one to get started!</CardContent></Card>
-            ) : (
-              activePromotions.map(p => <PromotionCard key={p.id} promotion={p} />)
-            )}
-          </TabsContent>
-
-          <TabsContent value="pending" className="space-y-3 mt-3">
-            {pendingPromotions.length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No pending bids.</CardContent></Card>
-            ) : (
-              pendingPromotions.map(p => <PromotionCard key={p.id} promotion={p} />)
-            )}
-          </TabsContent>
-
-          <TabsContent value="past" className="space-y-3 mt-3">
-            {pastPromotions.length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No past promotions.</CardContent></Card>
-            ) : (
-              pastPromotions.map(p => <PromotionCard key={p.id} promotion={p} />)
-            )}
-          </TabsContent>
-        </Tabs>
-
-        <CreatePromotionDialog open={createOpen} onOpenChange={setCreateOpen} />
       </div>
     </SellerLayout>
   );
