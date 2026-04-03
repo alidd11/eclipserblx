@@ -22,6 +22,7 @@ import { safeStorage } from '@/lib/safeStorage';
 import { hapticTap } from '@/lib/haptics';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { supabase } from '@/integrations/supabase/client';
+import { useCredits } from '@/hooks/useCredits';
 import { useSystemStatus } from '@/hooks/useSystemStatus';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
