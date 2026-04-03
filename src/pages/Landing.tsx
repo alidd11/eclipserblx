@@ -87,6 +87,15 @@ export default function Landing() {
       </LazySection>
 
 
+      {/* New This Week */}
+      <LazySection minHeight="200px" rootMargin="200px">
+        <SectionErrorBoundary section="new-this-week" compact>
+          <Suspense fallback={null}>
+            <NewThisWeek />
+          </Suspense>
+        </SectionErrorBoundary>
+      </LazySection>
+
       {/* Free Assets Teaser */}
       <LazySection minHeight="200px" rootMargin="200px">
         <SectionErrorBoundary section="free-assets" compact>
@@ -96,11 +105,29 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
+      {/* Top Sellers */}
+      <LazySection minHeight="150px" rootMargin="200px">
+        <SectionErrorBoundary section="top-sellers" compact>
+          <Suspense fallback={null}>
+            <TopSellers />
+          </Suspense>
+        </SectionErrorBoundary>
+      </LazySection>
+
       {/* Featured Creators */}
       <LazySection minHeight="150px" rootMargin="200px">
         <SectionErrorBoundary section="featured-creators" compact>
           <Suspense fallback={null}>
             <FeaturedCreators />
+          </Suspense>
+        </SectionErrorBoundary>
+      </LazySection>
+
+      {/* Recently Viewed */}
+      <LazySection minHeight="150px" rootMargin="200px">
+        <SectionErrorBoundary section="recently-viewed" compact>
+          <Suspense fallback={null}>
+            <RecentlyViewedSection />
           </Suspense>
         </SectionErrorBoundary>
       </LazySection>
