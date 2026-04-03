@@ -607,6 +607,15 @@ export default function ProductDetail() {
             {product.stores && (
               <StoreDetailsCard store={product.stores} className="w-full" />
             )}
+            
+            {/* Trust Signals */}
+            {product.stores && (
+              <StoreTrustSignals 
+                accentColor={product.stores.accent_color || 'hsl(var(--primary))'}
+                isVerified={product.stores.is_verified}
+                isTrusted={product.stores.is_trusted}
+              />
+            )}
           </div>
 
           {/* Details */}
