@@ -17,6 +17,17 @@ export interface SellerProLimits {
   priorityReview: boolean;
 }
 
+const PROMO_LIMITS: SellerProLimits = {
+  commissionRate: 0,
+  maxFileSizeMb: 200,
+  maxImages: 5,
+  maxProducts: 25,
+  maxStorePages: 1,
+  monthlyAdCredit: 0,
+  proBadge: false,
+  priorityReview: false,
+};
+
 const FREE_LIMITS: SellerProLimits = {
   commissionRate: 15,
   maxFileSizeMb: 200,
@@ -121,10 +132,22 @@ export function useSellerSubscription() {
     return data;
   }, [user]);
 
-  const limits: SellerProLimits = state.isPro ? PRO_LIMITS : FREE_LIMITS;
+  // Check if seller is in the free commission promo period
+  const inFreePromo = store?.free_commission_until 
+    ? new Date(store.free_commission_until) > new Date() 
+    : false;
+  const freePromoEndsAt = store?.free_commission_until || null;
+
+  const limits: SellerProLimits = state.isPro 
+    ? PRO_LIMITS 
+    : inFreePromo 
+      ? PROMO_LIMITS 
+      : FREE_LIMITS;
 
   return {
     ...state,
+    inFreePromo,
+    freePromoEndsAt,
     limits,
     subscribe,
     openPortal,

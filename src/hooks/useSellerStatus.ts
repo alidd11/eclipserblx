@@ -10,7 +10,7 @@ const SAFE_STORE_COLUMNS = `
   rejection_reason, total_sales, total_revenue, product_count, average_rating, 
   created_at, updated_at, theme, accent_color, bio,
   discord_url, twitter_url, youtube_url, tiktok_url, website_url, roblox_url,
-  custom_commission_rate, custom_rate_expires_at, custom_rate_set_by, custom_rate_set_at,
+  custom_commission_rate, custom_rate_expires_at, custom_rate_set_by, custom_rate_set_at, free_commission_until,
   hero_title, hero_subtitle, hero_cta_text, hero_cta_link, custom_css,
   font_heading, font_body, announcement_text, announcement_active,
   featured_product_ids, layout_style, show_reviews, show_social_proof,
@@ -95,6 +95,8 @@ export interface Store {
   roblox_gamepass_id?: string;
   roblox_gamepass_discount_enabled?: boolean;
   roblox_gamepass_discount_percent?: number;
+  // Free commission promo
+  free_commission_until?: string;
   // Scheduled banner
   banner_start_at?: string;
   banner_end_at?: string;

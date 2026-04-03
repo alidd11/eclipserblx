@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
+import { useSellerSubscription } from '@/hooks/useSellerSubscription';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useRealtimeOrders } from '@/hooks/useRealtimeOrders';
@@ -16,6 +17,7 @@ import { ProductHealthDonut } from '@/components/seller/ProductHealthDonut';
 import { RecentOrdersTable } from '@/components/seller/RecentOrdersTable';
 import { TosBanner, NonCompliantBanner, PendingReviewBanner } from '@/components/seller/banners';
 import { DashboardCardSkeleton } from '@/components/seller/DashboardSkeletons';
+import { Gift, Clock } from 'lucide-react';
 import { 
   Package, ShoppingCart, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone
 } from 'lucide-react';
@@ -30,6 +32,7 @@ const CURRENT_TOS_VERSION = "1.0";
 
 export default function SellerDashboard() {
   const { store } = useSellerStatus();
+  const { inFreePromo, freePromoEndsAt } = useSellerSubscription();
 
   // Real-time order notifications
   useRealtimeOrders();
@@ -102,6 +105,24 @@ export default function SellerDashboard() {
         <TosBanner isLoading={tosLoading} hasSigned={!!hasSignedTos} />
         <FileReviewConsentBanner />
         <NonCompliantBanner count={productStats?.nonCompliant || 0} />
+
+        {/* ── Free Commission Promo Banner ── */}
+        {inFreePromo && freePromoEndsAt && (
+          <Card className="border-green-500/30 bg-green-500/5">
+            <CardContent className="py-4 flex items-center gap-3">
+              <div className="p-2 rounded-full bg-green-500/10">
+                <Gift className="h-5 w-5 text-green-500" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-green-400">🎉 0% Commission — First 30 Days Free!</p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                  <Clock className="h-3 w-3" />
+                  Ends {new Date(freePromoEndsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} — keep 100% of every sale
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* ── Onboarding ── */}
         <SellerOnboardingWizard />
