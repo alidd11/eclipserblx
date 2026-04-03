@@ -284,12 +284,13 @@ export default function SellerPromotions() {
         {/* How it works */}
         <Card className="border-primary/20 bg-primary/5">
           <CardContent className="p-4">
-            <h3 className="text-sm font-semibold mb-2">How Campaigns Work</h3>
+            <h3 className="text-sm font-semibold mb-2">How Spend-Based Ads Work</h3>
             <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
-              <li>Create a campaign — choose your product, goal, audience, and budget</li>
-              <li>Your campaign enters the weekly auction. Highest bidders win premium slots</li>
-              <li>Credits are deducted when you win. Your product gets boosted visibility</li>
-              <li>Track performance with impressions, clicks, CTR, and demographics</li>
+              <li>Create a campaign — choose CPC (pay per click) or CPM (pay per 1,000 views)</li>
+              <li>Set your total budget and optional daily cap — no auctions, no waiting</li>
+              <li>Your ad goes live immediately across your selected placements</li>
+              <li>Higher bids = more visibility. Budget depletes in real-time as you get results</li>
+              <li>Campaign auto-pauses when budget is spent. Top up anytime to resume</li>
             </ol>
           </CardContent>
         </Card>
