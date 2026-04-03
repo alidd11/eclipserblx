@@ -124,16 +124,16 @@ export default function BecomeSellerWizard() {
     }
   };
 
-  // Auto-suggest store name from Discord server
+  // Auto-suggest store name from Discord server or username
   useEffect(() => {
-    if (
-      !formValues.storeName &&
-      verificationResults.discord_server?.guild_name &&
-      verificationResults.discord_server?.valid
-    ) {
-      setFormValues({ storeName: verificationResults.discord_server.guild_name });
+    if (!formValues.storeName) {
+      if (verificationResults.discord_server?.guild_name && verificationResults.discord_server?.valid) {
+        setFormValues({ storeName: verificationResults.discord_server.guild_name });
+      } else if (linkedAccounts?.roblox_username && !formValues.storeName) {
+        setFormValues({ storeName: `${linkedAccounts.roblox_username}'s Store` });
+      }
     }
-  }, [verificationResults.discord_server]);
+  }, [verificationResults.discord_server, linkedAccounts?.roblox_username]);
 
   const submitApplication = useMutation({
     mutationFn: async () => {
