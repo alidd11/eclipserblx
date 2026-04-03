@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { LandingHero } from '@/components/landing/LandingHero';
-import { MarketplaceSection } from '@/components/home/MarketplaceSection';
+
 
 const PromotionCarousel = lazy(() => import('@/components/home/PromotionCarousel').then(m => ({ default: m.PromotionCarousel })));
 const PWADiscordBanner = lazy(() => import('@/components/landing/PWADiscordBanner').then(m => ({ default: m.PWADiscordBanner })));
@@ -83,12 +83,6 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* Marketplace (categories + products) */}
-      <LazySection minHeight="600px" rootMargin="300px">
-        <SectionErrorBoundary section="marketplace">
-          <MarketplaceSection />
-        </SectionErrorBoundary>
-      </LazySection>
 
       {/* Free Assets Teaser */}
       <LazySection minHeight="200px" rootMargin="200px">
