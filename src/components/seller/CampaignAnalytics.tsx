@@ -24,10 +24,10 @@ export function CampaignAnalytics({ campaignId, productSlug, startedAt, expiresA
       if (!productSlug) return [];
       const { data, error } = await supabase
         .from('page_visits')
-        .select('visited_at, device_type, country')
+        .select('created_at, device_type, country')
         .eq('page_path', `/product/${productSlug}`)
-        .gte('visited_at', start.toISOString())
-        .lte('visited_at', end.toISOString())
+        .gte('created_at', start.toISOString())
+        .lte('created_at', end.toISOString())
         .limit(1000);
       if (error) throw error;
       return data || [];
