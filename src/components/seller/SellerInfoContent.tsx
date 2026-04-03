@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { 
   ArrowRight,
   Lock,
@@ -11,9 +12,11 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
+  PoundSterling,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/hooks/useAuth";
 import { useSellerVerification } from "@/hooks/useSellerVerification";
 import { Link } from "react-router-dom";
@@ -47,12 +50,12 @@ const sellingPoints = [
 ];
 
 const comparisonRows = [
-  { feature: "Seller Earnings", eclipse: "85% of gross", others: "70% or less" },
+  { feature: "Seller Earnings", eclipse: "85% of gross", others: "70–90%" },
   { feature: "Processing Fees", eclipse: "We absorb them", others: "Deducted from you" },
   { feature: "IP Ownership", eclipse: "100% yours", others: "Broad platform rights" },
   { feature: "Payouts", eclipse: "Stripe / PayPal / Bank", others: "Credits or limited" },
   { feature: "Lock-in", eclipse: "None — sell anywhere", others: "Exclusive or restricted" },
-  { feature: "Security", eclipse: "AI scan + virus check", others: "Manual review" },
+  { feature: "Security", eclipse: "AI scan + virus check", others: "Basic or manual" },
 ];
 
 const steps = [
@@ -170,6 +173,67 @@ function EligibilityChecker() {
   );
 }
 
+function InteractiveEarningsCalculator() {
+  const [salesPerMonth, setSalesPerMonth] = useState(15);
+  const [avgPrice, setAvgPrice] = useState(8);
+
+  const grossRevenue = salesPerMonth * avgPrice;
+  const netEarnings = grossRevenue * 0.85;
+
+  return (
+    <div className="rounded-2xl border border-border/50 bg-card p-5 space-y-5">
+      {/* Sales slider */}
+      <div className="space-y-2">
+        <div className="flex justify-between text-xs">
+          <span className="text-muted-foreground">Sales per month</span>
+          <span className="font-semibold text-foreground">{salesPerMonth}</span>
+        </div>
+        <Slider
+          value={[salesPerMonth]}
+          onValueChange={([v]) => setSalesPerMonth(v)}
+          min={1}
+          max={200}
+          step={1}
+        />
+      </div>
+
+      {/* Price slider */}
+      <div className="space-y-2">
+        <div className="flex justify-between text-xs">
+          <span className="text-muted-foreground">Average price</span>
+          <span className="font-semibold text-foreground">£{avgPrice}</span>
+        </div>
+        <Slider
+          value={[avgPrice]}
+          onValueChange={([v]) => setAvgPrice(v)}
+          min={1}
+          max={100}
+          step={1}
+        />
+      </div>
+
+      {/* Result */}
+      <motion.div
+        key={`${salesPerMonth}-${avgPrice}`}
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-xl bg-primary/5 border border-primary/20 p-5 text-center"
+      >
+        <p className="text-xs text-muted-foreground mb-1">Your estimated monthly earnings</p>
+        <div className="flex items-center justify-center gap-1">
+          <PoundSterling className="h-5 w-5 text-primary" />
+          <span className="text-3xl font-bold text-primary">
+            {netEarnings.toFixed(2)}
+          </span>
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-2">
+          {salesPerMonth} sales × £{avgPrice} = £{grossRevenue.toFixed(2)} gross · You keep 85% (£{netEarnings.toFixed(2)})
+        </p>
+      </motion.div>
+    </div>
+  );
+}
+
 export function SellerInfoContent() {
   return (
     <div>
@@ -248,50 +312,21 @@ export function SellerInfoContent() {
         </div>
       </section>
 
-      {/* Earnings */}
+      {/* Earnings Calculator */}
       <section className="py-12 md:py-16 px-5">
         <div className="max-w-md mx-auto">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground text-center mb-2">Transparent earnings</h2>
-          <p className="text-center text-xs text-muted-foreground mb-8">Simple flat commission — no surprise deductions</p>
+          <h2 className="text-xl md:text-2xl font-bold text-foreground text-center mb-2">See what you could earn</h2>
+          <p className="text-center text-xs text-muted-foreground mb-8">Drag the sliders — no surprise deductions, ever</p>
 
-          <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-border/30 flex items-center gap-2 bg-muted/15">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-foreground">Example: £10.00 Sale</span>
-            </div>
-            
-            <div className="divide-y divide-border/20">
-              <div className="flex justify-between items-center px-5 py-3">
-                <span className="text-sm text-muted-foreground">Sale Price</span>
-                <span className="text-sm font-medium text-foreground">£10.00</span>
-              </div>
-              <div className="flex justify-between items-center px-5 py-3">
-                <span className="text-sm text-muted-foreground">Stripe / Payment Fees</span>
-                <span className="text-sm font-medium text-green-500">£0.00 (we cover this)</span>
-              </div>
-              <div className="flex justify-between items-center px-5 py-3">
-                <span className="text-sm text-muted-foreground">Eclipse Commission (15%)</span>
-                <span className="text-sm font-medium text-destructive">−£1.50</span>
-              </div>
-              <div className="flex justify-between items-center px-5 py-4 bg-primary/5">
-                <span className="font-semibold text-primary text-sm">You Receive</span>
-                <span className="text-2xl font-bold text-primary">£8.50</span>
-              </div>
-            </div>
-
-            <div className="px-5 py-3.5 border-t border-border/30 text-center">
-              <p className="text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">85% yours</span> · Flat 15% commission · We cover payment fees
-              </p>
-            </div>
-          </div>
+          <InteractiveEarningsCalculator />
         </div>
       </section>
 
       {/* Comparison */}
       <section className="py-12 md:py-16 px-5">
         <div className="max-w-md mx-auto">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground text-center mb-8">How we compare</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-foreground text-center mb-2">How we compare</h2>
+          <p className="text-center text-xs text-muted-foreground mb-8">Honest comparison — other platforms charge 10–30% but often deduct processing fees separately</p>
 
           <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
             <div className="grid grid-cols-[1fr,1fr,1fr] text-[11px] font-semibold border-b border-border/30 bg-muted/15">
@@ -314,6 +349,11 @@ export function SellerInfoContent() {
                   </div>
                 </div>
               ))}
+            </div>
+            <div className="px-5 py-3 border-t border-border/30 bg-muted/10">
+              <p className="text-[10px] text-muted-foreground text-center">
+                Eclipse's 15% is all-inclusive — we absorb Stripe fees so your take-home is always exactly 85%.
+              </p>
             </div>
           </div>
         </div>

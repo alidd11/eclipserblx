@@ -1,7 +1,8 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ShoppingCart, Check, ChevronLeft, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck, Clock, Flag, Share2, Heart } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck, Clock, Flag, Share2, Heart, Shield } from 'lucide-react';
+import { StoreTrustSignals } from '@/components/store/StoreTrustSignals';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { Button } from '@/components/ui/button';
@@ -606,6 +607,15 @@ export default function ProductDetail() {
             {/* Store Details Card - below thumbnails */}
             {product.stores && (
               <StoreDetailsCard store={product.stores} className="w-full" />
+            )}
+            
+            {/* Trust Signals */}
+            {product.stores && (
+              <StoreTrustSignals 
+                accentColor={product.stores.accent_color || 'hsl(var(--primary))'}
+                isVerified={product.stores.is_verified}
+                isTrusted={product.stores.is_trusted}
+              />
             )}
           </div>
 

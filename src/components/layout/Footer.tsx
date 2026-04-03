@@ -47,6 +47,7 @@ export function Footer() {
         { href: '/support', label: t('footer.helpCenter') },
         { href: '/contact', label: 'Contact Us' },
         { href: '/faq', label: t('footer.faq') },
+        { href: '/status', label: 'System Status' },
         { href: '/jobs', label: t('nav.jobs') },
       ],
     },
