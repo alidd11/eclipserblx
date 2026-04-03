@@ -64,6 +64,22 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const { isStaff } = useAdminAuth();
   const { balance } = useCredits();
   const navigate = useNavigate();
+
+  // Fetch user avatar from profile
+  const { data: profileAvatar } = useQuery({
+    queryKey: ['sidebar-avatar', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      return data?.avatar_url || null;
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
+  });
   const location = useLocation();
   const { t } = useTranslation();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
