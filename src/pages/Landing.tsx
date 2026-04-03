@@ -4,7 +4,7 @@ import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { LandingHero } from '@/components/landing/LandingHero';
 
 
-const PromotionCarousel = lazy(() => import('@/components/home/PromotionCarousel').then(m => ({ default: m.PromotionCarousel })));
+
 const PWADiscordBanner = lazy(() => import('@/components/landing/PWADiscordBanner').then(m => ({ default: m.PWADiscordBanner })));
 const ActiveOffersCard = lazy(() => import('@/components/home/ActiveOffersCard').then(m => ({ default: m.ActiveOffersCard })));
 const ForYouSection = lazy(() => import('@/components/home/ForYouSection').then(m => ({ default: m.ForYouSection })));
