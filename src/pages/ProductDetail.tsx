@@ -40,6 +40,7 @@ import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { RecentlyViewedProducts } from '@/components/product/RecentlyViewedProducts';
 import { FrequentlyBoughtTogether } from '@/components/product/FrequentlyBoughtTogether';
 import { PriceAlertButton } from '@/components/product/PriceAlertButton';
+import { SocialShareButtons } from '@/components/product/SocialShareButtons';
 
 export default function ProductDetail() {
   const { productNumber } = useParams<{ productNumber: string }>();
