@@ -63,12 +63,12 @@ export function TrendingProducts() {
           </Link>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-4 lg:overflow-visible lg:pb-0">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {products.map((product, i) => {
             const imageUrl = getFirstImageUrl(product.images);
             return (
-              <ScrollReveal key={product.id} delay={i * 0.05} direction="up" distance={12} duration={0.3}>
-                <Link to={`/product/${product.slug}`} className="block min-w-[180px] lg:min-w-0 group">
+              <ScrollReveal key={product.id} delay={i * 0.04} direction="up" distance={10} duration={0.25}>
+                <Link to={`/product/${product.slug}`} className="block group">
                   <div className="aspect-[4/3] rounded-lg overflow-hidden bg-muted border border-border">
                     {imageUrl ? (
                       <img
@@ -81,13 +81,13 @@ export function TrendingProducts() {
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">No image</div>
                     )}
                   </div>
-                  <h3 className="text-sm font-medium mt-2 truncate group-hover:text-primary transition-colors">{product.name}</h3>
+                  <h3 className="text-xs sm:text-sm font-medium mt-1.5 truncate group-hover:text-primary transition-colors">{product.name}</h3>
                   <div className="flex items-center justify-between mt-0.5">
                     <span className="text-xs font-semibold text-primary">
                       {product.price === 0 ? 'Free' : formatPrice(product.price)}
                     </span>
                     {(product.download_count ?? 0) > 0 && (
-                      <span className="text-[10px] text-muted-foreground">{product.download_count} downloads</span>
+                      <span className="text-[10px] text-muted-foreground">{product.download_count} sold</span>
                     )}
                   </div>
                 </Link>
