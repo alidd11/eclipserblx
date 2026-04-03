@@ -5,7 +5,7 @@ import {
   User, LucideIcon, Home, TrendingUp, Store, Bell,
   Sparkles, Heart, LogOut, ChevronLeft, ChevronRight,
   MessageSquareText, Megaphone, FileQuestion, LayoutGrid, Shield,
-  Globe, PenTool
+  Globe, PenTool, Zap, Wallet, X, Plus
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { categoryIconMap, PackageIcon, BotIcon } from '@/components/icons/CategoryIcons';
