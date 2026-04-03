@@ -96,7 +96,7 @@ export default function SellerDashboard() {
     { title: 'Balance', href: '/seller/finance', icon: DollarSign, description: 'Payouts & earnings' },
     { title: 'Discounts', href: '/seller/discounts', icon: Tag, description: 'Create promos' },
     { title: 'Categories', href: '/seller/tabs', icon: LayoutGrid, description: 'Customize pages' },
-    { title: 'Promote', href: '/seller/promote', icon: Megaphone, description: 'Boost products' },
+    { title: 'Ad Manager', href: '/seller/promote', icon: Megaphone, description: 'Run campaigns' },
   ];
 
   return (
