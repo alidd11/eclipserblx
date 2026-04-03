@@ -83,12 +83,6 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* Marketplace (categories + products) */}
-      <LazySection minHeight="600px" rootMargin="300px">
-        <SectionErrorBoundary section="marketplace">
-          <MarketplaceSection />
-        </SectionErrorBoundary>
-      </LazySection>
 
       {/* Free Assets Teaser */}
       <LazySection minHeight="200px" rootMargin="200px">
