@@ -277,6 +277,10 @@ function ProductsGrid({
   productsPerPage
 }: ProductsGridProps) {
   const { t } = useTranslation();
+  const { promotedProduct, trackClick } = usePromotedProduct(
+    categorySlug ? 'category' : 'products_listing',
+    categorySlug ? undefined : undefined
+  );
   const totalProducts = totalCount;
   const totalPages = Math.ceil(totalProducts / productsPerPage);
 
