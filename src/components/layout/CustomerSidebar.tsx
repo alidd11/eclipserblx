@@ -64,6 +64,22 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const { isStaff } = useAdminAuth();
   const { balance } = useCredits();
   const navigate = useNavigate();
+
+  // Fetch user avatar from profile
+  const { data: profileAvatar } = useQuery({
+    queryKey: ['sidebar-avatar', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      return data?.avatar_url || null;
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
+  });
   const location = useLocation();
   const { t } = useTranslation();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
@@ -434,11 +450,19 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         <div className="border-b border-border px-3 py-3 space-y-2.5">
           {/* User info */}
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center shrink-0">
-              <span className="text-sm font-bold text-primary-foreground">
-                {(user.user_metadata?.display_name || user.email || '?')[0].toUpperCase()}
-              </span>
-            </div>
+            {profileAvatar ? (
+              <img
+                src={profileAvatar}
+                alt=""
+                className="h-9 w-9 rounded-full object-cover shrink-0 bg-muted"
+              />
+            ) : (
+              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center shrink-0">
+                <span className="text-sm font-bold text-primary-foreground">
+                  {(user.user_metadata?.display_name || user.email || '?')[0].toUpperCase()}
+                </span>
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold truncate">{user.user_metadata?.display_name || 'User'}</p>
               <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Free Plan</p>
