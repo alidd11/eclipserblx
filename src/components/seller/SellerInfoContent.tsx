@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { 
   ArrowRight,
   Lock,
@@ -7,8 +8,16 @@ import {
   Wallet,
   CheckCircle2,
   Zap,
+  CheckCircle,
+  XCircle,
+  Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { useSellerVerification } from "@/hooks/useSellerVerification";
+import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 const sellingPoints = [
   {
@@ -53,6 +62,114 @@ const steps = [
   { title: "Start Earning", description: "List your first product and go live" },
 ];
 
+function EligibilityChecker() {
+  const { user } = useAuth();
+  const [showResults, setShowResults] = useState(false);
+  const { verificationResults, userProfile } = useSellerVerification();
+
+  if (!user) {
+    return (
+      <div className="rounded-2xl border border-border/50 bg-card p-5 text-center space-y-3">
+        <h3 className="font-semibold text-sm text-foreground">Check if you qualify</h3>
+        <p className="text-xs text-muted-foreground">Sign in to instantly check your eligibility for auto-approval.</p>
+        <Button asChild size="sm" variant="outline">
+          <Link to="/auth">Sign In to Check</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  if (!showResults) {
+    return (
+      <div className="rounded-2xl border border-border/50 bg-card p-5 text-center space-y-3">
+        <h3 className="font-semibold text-sm text-foreground">Check if you qualify</h3>
+        <p className="text-xs text-muted-foreground">See if your application can be instantly approved.</p>
+        <Button size="sm" onClick={() => setShowResults(true)}>
+          Check Eligibility
+        </Button>
+      </div>
+    );
+  }
+
+  const checks = [
+    {
+      label: 'Email verified',
+      passed: verificationResults.email_verified,
+      required: true,
+    },
+    {
+      label: 'Discord linked',
+      passed: !!userProfile?.discord_username,
+      required: true,
+    },
+    {
+      label: 'Roblox linked',
+      passed: !!userProfile?.roblox_username,
+      required: true,
+    },
+    {
+      label: 'Identity match ≥ 80%',
+      passed: (verificationResults.identity_consistency?.similarity_score ?? 0) >= 80,
+      required: true,
+      detail: verificationResults.identity_consistency
+        ? `${verificationResults.identity_consistency.similarity_score}% match`
+        : 'Link both accounts first',
+    },
+  ];
+
+  const allPassed = checks.every(c => c.passed);
+  const passedCount = checks.filter(c => c.passed).length;
+
+  return (
+    <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
+      <div className="p-4 border-b border-border/30 bg-muted/15">
+        <h3 className="font-semibold text-sm text-foreground">Eligibility Check</h3>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {allPassed
+            ? 'You qualify for instant approval!'
+            : `${passedCount}/${checks.length} requirements met`}
+        </p>
+      </div>
+      <div className="divide-y divide-border/20">
+        {checks.map((check) => (
+          <div key={check.label} className="flex items-center justify-between px-4 py-2.5">
+            <div className="flex items-center gap-2">
+              {check.passed ? (
+                <CheckCircle className="h-3.5 w-3.5 text-green-500 shrink-0" />
+              ) : (
+                <XCircle className="h-3.5 w-3.5 text-destructive shrink-0" />
+              )}
+              <span className="text-xs text-foreground">{check.label}</span>
+            </div>
+            {check.detail && (
+              <span className="text-[10px] text-muted-foreground">{check.detail}</span>
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="p-4 border-t border-border/30">
+        {allPassed ? (
+          <Button asChild size="sm" className="w-full">
+            <Link to="/become-seller">
+              Apply Now — Instant Approval
+              <Zap className="h-3.5 w-3.5 ml-1" />
+            </Link>
+          </Button>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-[10px] text-muted-foreground text-center">
+              You can still apply — applications not meeting auto-approval criteria are reviewed manually within 24–48h.
+            </p>
+            <Button asChild size="sm" variant="outline" className="w-full">
+              <Link to="/become-seller">Apply Anyway</Link>
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function SellerInfoContent() {
   return (
     <div>
@@ -96,6 +213,13 @@ export function SellerInfoContent() {
         </div>
       </section>
 
+      {/* Eligibility Checker */}
+      <section className="px-5 -mt-4 mb-8">
+        <div className="max-w-md mx-auto">
+          <EligibilityChecker />
+        </div>
+      </section>
+
       {/* Why Eclipse */}
       <section className="py-12 md:py-16 px-5">
         <div className="max-w-3xl mx-auto">
@@ -124,7 +248,7 @@ export function SellerInfoContent() {
         </div>
       </section>
 
-      {/* Earnings — accurate flat commission */}
+      {/* Earnings */}
       <section className="py-12 md:py-16 px-5">
         <div className="max-w-md mx-auto">
           <h2 className="text-xl md:text-2xl font-bold text-foreground text-center mb-2">Transparent earnings</h2>
@@ -161,10 +285,6 @@ export function SellerInfoContent() {
               </p>
             </div>
           </div>
-
-          <p className="text-center text-[10px] text-muted-foreground mt-3">
-            Flat commission on gross sale price. We absorb all payment processing costs.
-          </p>
         </div>
       </section>
 
@@ -174,7 +294,6 @@ export function SellerInfoContent() {
           <h2 className="text-xl md:text-2xl font-bold text-foreground text-center mb-8">How we compare</h2>
 
           <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
-            {/* Header */}
             <div className="grid grid-cols-[1fr,1fr,1fr] text-[11px] font-semibold border-b border-border/30 bg-muted/15">
               <div className="px-4 py-2.5 text-muted-foreground"></div>
               <div className="px-3 py-2.5 text-primary text-center">Eclipse</div>
