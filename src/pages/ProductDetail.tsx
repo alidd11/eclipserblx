@@ -789,26 +789,13 @@ export default function ProductDetail() {
 
 
             {/* Share + Price Alert + Report */}
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex-1 text-muted-foreground hover:text-foreground"
-                onClick={async () => {
-                  const shareUrl = `https://eclipserblx.com/products/${(product as any).product_number || productNumber}`;
-                  if (navigator.share) {
-                    try {
-                      await navigator.share({ title: product.name, text: `Check out ${product.name} on Eclipse`, url: shareUrl });
-                    } catch {}
-                  } else {
-                    await navigator.clipboard.writeText(shareUrl);
-                    toast.success('Link copied!');
-                  }
-                }}
-              >
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
-              </Button>
+            <div className="space-y-2">
+              <SocialShareButtons
+                url={`/products/${(product as any).product_number || productNumber}`}
+                title={product.name}
+                description={`Check out ${product.name} on Eclipse`}
+              />
+              <div className="flex gap-2">
               <PriceAlertButton productId={product.id} currentPrice={product.price} />
               <Button
                 variant="ghost"
