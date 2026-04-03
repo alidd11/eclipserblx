@@ -181,6 +181,7 @@ export default function Products() {
         />
         <CategoryBar />
         <div className="container py-6 space-y-4">
+        <div className="flex gap-6">
         <Card className="bg-card border-border">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center gap-2">
