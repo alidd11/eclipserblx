@@ -205,11 +205,11 @@ export function StoreSidebar({
         { title: 'My Purchases', icon: Download, href: '/purchases' },
       ],
     }] : []),
-    ...(customLinkItems.length > 0 ? [{
+    ...(allPageItems.length > 0 ? [{
       id: 'pages',
       title: 'Pages',
       icon: FileText,
-      items: customLinkItems,
+      items: allPageItems,
     }] : []),
     {
       id: 'store',
