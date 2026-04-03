@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { ChevronDown, Eye, MousePointerClick } from 'lucide-react';
+import { ChevronDown, MousePointerClick, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CampaignAnalytics } from './CampaignAnalytics';
 import { TableRow, TableCell } from '@/components/ui/table';
@@ -21,10 +21,15 @@ interface Campaign {
   max_bid: number;
   current_bid: number;
   total_spent: number;
+  total_budget: number;
+  pricing_model: string;
+  cpc_bid: number | null;
+  cpm_bid: number | null;
   goal: string;
   started_at: string | null;
   expires_at: string | null;
   created_at: string;
+  placement_zones: string[] | null;
   products?: { name: string; images: string[] | null; slug: string } | null;
 }
 
@@ -46,16 +51,19 @@ export function CampaignRow({ campaign }: { campaign: Campaign }) {
     ? ((campaign.clicks / campaign.impressions) * 100).toFixed(1)
     : '0.0';
 
-  const cpp = campaign.clicks > 0
-    ? (Number(campaign.total_spent || 0) / campaign.clicks).toFixed(2)
-    : '—';
+  const costPerResult = campaign.pricing_model === 'cpc'
+    ? (campaign.clicks > 0 ? (Number(campaign.total_spent || 0) / campaign.clicks).toFixed(2) : '—')
+    : (campaign.impressions > 0 ? ((Number(campaign.total_spent || 0) / campaign.impressions) * 1000).toFixed(2) : '—');
 
   const config = statusConfig[campaign.status] || statusConfig.pending_auction;
   const isToggleable = ['active', 'paused', 'pending_auction'].includes(campaign.status);
+  const budgetPercent = campaign.total_budget > 0
+    ? Math.min(100, (Number(campaign.total_spent || 0) / campaign.total_budget) * 100)
+    : 0;
 
   const toggleStatus = useMutation({
     mutationFn: async () => {
-      const newStatus = campaign.status === 'paused' ? 'pending_auction' : 'paused';
+      const newStatus = campaign.status === 'paused' ? 'active' : 'paused';
       const updates: Record<string, unknown> = { status: newStatus, updated_at: new Date().toISOString() };
       if (newStatus === 'paused') updates.paused_at = new Date().toISOString();
       else updates.paused_at = null;
@@ -90,9 +98,18 @@ export function CampaignRow({ campaign }: { campaign: Campaign }) {
               <p className="text-sm font-medium truncate">
                 {campaign.campaign_name || campaign.products?.name || 'Untitled'}
               </p>
-              <p className="text-[10px] text-muted-foreground capitalize">
-                {campaign.slot_type.replace('_', ' ')} • {campaign.goal}
-              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <Badge variant="outline" className="text-[9px] px-1 py-0">
+                  {campaign.pricing_model === 'cpc' ? (
+                    <><MousePointerClick className="h-2 w-2 mr-0.5" />CPC</>
+                  ) : (
+                    <><Eye className="h-2 w-2 mr-0.5" />CPM</>
+                  )}
+                </Badge>
+                <span className="text-[10px] text-muted-foreground capitalize">
+                  {campaign.goal}
+                </span>
+              </div>
             </div>
           </div>
         </TableCell>
@@ -101,10 +118,25 @@ export function CampaignRow({ campaign }: { campaign: Campaign }) {
             {config.label}
           </Badge>
         </TableCell>
-        <TableCell className="text-sm">£{Number(campaign.total_spent || 0).toFixed(0)}</TableCell>
+        <TableCell>
+          <div className="space-y-1">
+            <p className="text-sm">£{Number(campaign.total_spent || 0).toFixed(0)}<span className="text-muted-foreground text-[10px]"> / £{campaign.total_budget}</span></p>
+            <div className="h-1 w-16 bg-muted rounded-full overflow-hidden">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all",
+                  budgetPercent >= 90 ? "bg-destructive" : budgetPercent >= 60 ? "bg-amber-500" : "bg-emerald-500"
+                )}
+                style={{ width: `${budgetPercent}%` }}
+              />
+            </div>
+          </div>
+        </TableCell>
         <TableCell className="text-sm">{campaign.impressions.toLocaleString()}</TableCell>
         <TableCell className="text-sm">{campaign.clicks.toLocaleString()}</TableCell>
-        <TableCell className="text-sm">{cpp}</TableCell>
+        <TableCell className="text-sm">
+          {costPerResult !== '—' ? `£${costPerResult}` : '—'}
+        </TableCell>
         <TableCell className="text-sm">{ctr}%</TableCell>
         <TableCell onClick={e => e.stopPropagation()}>
           {isToggleable && (

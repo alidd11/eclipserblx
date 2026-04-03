@@ -1,98 +1,18 @@
 import { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { ShieldCheck, Award, Crown, Package } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSubscription } from '@/hooks/useSubscription';
+import { usePromotedProduct } from '@/hooks/usePromotedProduct';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PromotedBadge } from '@/components/marketplace/PromotedBadge';
-import { cn } from '@/lib/utils';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
-
-interface FeaturedProduct {
-  id: string;
-  name: string;
-  slug: string;
-  price: number;
-  images: string[] | null;
-  description: string | null;
-  category_id: string | null;
-  is_resellable: boolean;
-  download_count: number;
-  categories: { name: string; slug: string } | null;
-  stores: {
-    name: string;
-    slug: string;
-    logo_url: string | null;
-    banner_url: string | null;
-    is_verified: boolean;
-    is_trusted: boolean;
-    eclipse_plus_discount_enabled: boolean;
-  } | null;
-}
 
 export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedProductCard(_props, ref) {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
-
-  // First check for a promoted product
-  const { data: promotedProduct } = useQuery({
-    queryKey: ['promoted-featured-product'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('product_promotions')
-        .select(`
-          id, product_id,
-          products!inner (
-            id, name, slug, product_number, price, images, description, category_id, is_resellable, download_count,
-            categories (name, slug),
-            stores!inner (name, slug, logo_url, banner_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
-          )
-        `)
-        .eq('slot_type', 'featured')
-        .eq('status', 'active')
-        .order('current_bid', { ascending: false })
-        .limit(1);
-
-      if (error) throw error;
-      if (!data?.[0]) return null;
-      
-      const promo = data[0] as any;
-      const store = promo.products?.stores;
-      // Filter out inactive/testing stores
-      if (!store || !store.is_active || store.is_testing) return null;
-      return { ...promo.products, _promoted: true } as FeaturedProduct & { _promoted?: boolean };
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: product, isLoading } = useQuery({
-    queryKey: ['featured-product-standalone'],
-    queryFn: async () => {
-      const now = new Date().toISOString();
-      const { data, error } = await supabase
-        .from('products')
-        .select(`
-          id, name, slug, product_number, price, images, description, category_id, is_resellable, download_count,
-          categories (name, slug),
-          stores!inner (name, slug, logo_url, banner_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
-        `)
-        .eq('is_active', true)
-        .eq('is_featured', true)
-        .eq('stores.is_active', true)
-        .eq('stores.is_testing', false)
-        .or(`release_at.is.null,release_at.lte.${now}`)
-        .order('download_count', { ascending: false })
-        .limit(1);
-
-      if (error) throw error;
-      return (data?.[0] as unknown as FeaturedProduct) ?? null;
-    },
-    staleTime: 5 * 60 * 1000,
-    enabled: !promotedProduct, // only fetch fallback if no promoted product
-  });
+  const { promotedProduct, isLoading, trackClick } = usePromotedProduct('homepage');
 
   if (isLoading) {
     return (
@@ -103,9 +23,8 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
     );
   }
 
-  // Use promoted product if available, otherwise fallback
-  const displayProduct = promotedProduct || product;
-  const isPromoted = !!(promotedProduct as any)?._promoted;
+  const displayProduct = promotedProduct?.product;
+  const isPromoted = !!promotedProduct;
 
   if (!displayProduct) return null;
 
@@ -117,7 +36,11 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
   return (
     <div className="space-y-2">
       <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Featured</span>
-      <Link to={`/products/${(displayProduct as any).product_number}`} className="group block">
+      <Link
+        to={`/products/${(displayProduct as any).product_number}`}
+        className="group block"
+        onClick={trackClick}
+      >
         <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
           {/* Product image */}
           <div className="aspect-[2.5/1] sm:aspect-[3/1] relative overflow-hidden bg-black/20">
@@ -150,19 +73,14 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
 
             {/* Content overlay */}
             <div className="absolute inset-0 flex flex-col justify-end p-3 sm:p-5">
-              {/* Category */}
               {displayProduct.categories?.name && (
                 <span className="text-[10px] font-medium uppercase tracking-wider text-white/50 mb-0.5">
                   {displayProduct.categories.name}
                 </span>
               )}
-
-              {/* Product name */}
               <h3 className="text-white font-display font-bold text-sm sm:text-lg line-clamp-1 leading-tight">
                 {displayProduct.name}
               </h3>
-
-              {/* Price row */}
               <div className="flex items-center gap-2 mt-1">
                 {hasMemberDiscount ? (
                   <>

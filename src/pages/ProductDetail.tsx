@@ -40,6 +40,8 @@ import { ReviewSchema } from '@/components/seo/ReviewSchema';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { RecentlyViewedProducts } from '@/components/product/RecentlyViewedProducts';
 import { FrequentlyBoughtTogether } from '@/components/product/FrequentlyBoughtTogether';
+import { usePromotedProduct } from '@/hooks/usePromotedProduct';
+import { PromotedProductCard } from '@/components/marketplace/PromotedProductCard';
 import { PriceAlertButton } from '@/components/product/PriceAlertButton';
 import { SocialShareButtons } from '@/components/product/SocialShareButtons';
 
@@ -1017,6 +1019,7 @@ export default function ProductDetail() {
           </Card>
         )}
         <FrequentlyBoughtTogether productId={product.id} categoryId={product.category_id} storeId={product.store_id} />
+        <SponsoredProductSection categoryId={product.category_id} />
         <RecentlyViewedProducts currentProductId={product.id} />
         </div>
       </PullToRefresh>
@@ -1029,5 +1032,23 @@ export default function ProductDetail() {
         productName={product.name}
       />
     </MainLayout>
+  );
+}
+
+function SponsoredProductSection({ categoryId }: { categoryId: string | null }) {
+  const { promotedProduct, trackClick } = usePromotedProduct('product_detail', categoryId || undefined);
+  
+  if (!promotedProduct?.product) return null;
+  
+  return (
+    <div className="space-y-3">
+      <h3 className="text-sm font-semibold text-muted-foreground">Sponsored</h3>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <PromotedProductCard
+          product={promotedProduct.product}
+          onClickTracked={trackClick}
+        />
+      </div>
+    </div>
   );
 }

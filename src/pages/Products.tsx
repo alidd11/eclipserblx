@@ -1,7 +1,9 @@
-import { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Package, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { usePromotedProduct } from '@/hooks/usePromotedProduct';
+import { PromotedProductCard } from '@/components/marketplace/PromotedProductCard';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductGridSkeleton } from '@/components/ui/ProductCardSkeleton';
@@ -275,6 +277,10 @@ function ProductsGrid({
   productsPerPage
 }: ProductsGridProps) {
   const { t } = useTranslation();
+  const { promotedProduct, trackClick } = usePromotedProduct(
+    categorySlug ? 'category' : 'products_listing',
+    categorySlug ? undefined : undefined
+  );
   const totalProducts = totalCount;
   const totalPages = Math.ceil(totalProducts / productsPerPage);
 
@@ -311,28 +317,38 @@ function ProductsGrid({
   return (
     <div className="space-y-6">
       <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
-        {(products || []).map((product) => (
-          <ProductCard
-            key={product.id}
-            id={product.id}
-            name={product.name}
-            slug={String((product as any).product_number)}
-            price={product.price}
-            image={product.images?.[0]}
-            images={product.images}
-            category={product.categories?.name}
-            categorySlug={product.categories?.slug}
-            categoryId={product.category_id}
-            isFeatured={product.is_featured}
-            createdAt={product.created_at}
-            isResellable={product.is_resellable}
-            storeName={product.stores?.name}
-            storeSlug={product.stores?.slug}
-            storeLogo={product.stores?.logo_url}
-            isVerified={product.stores?.is_verified}
-            isTrusted={product.stores?.is_trusted}
-            storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
-          />
+        {(products || []).map((product, index) => (
+          <React.Fragment key={product.id}>
+            {/* Inject promoted product at position 3 on first page */}
+            {index === 2 && currentPage === 1 && promotedProduct?.product && (
+              <PromotedProductCard
+                key="promoted"
+                product={promotedProduct.product}
+                onClickTracked={trackClick}
+              />
+            )}
+            <ProductCard
+              key={product.id}
+              id={product.id}
+              name={product.name}
+              slug={String((product as any).product_number)}
+              price={product.price}
+              image={product.images?.[0]}
+              images={product.images}
+              category={product.categories?.name}
+              categorySlug={product.categories?.slug}
+              categoryId={product.category_id}
+              isFeatured={product.is_featured}
+              createdAt={product.created_at}
+              isResellable={product.is_resellable}
+              storeName={product.stores?.name}
+              storeSlug={product.stores?.slug}
+              storeLogo={product.stores?.logo_url}
+              isVerified={product.stores?.is_verified}
+              isTrusted={product.stores?.is_trusted}
+              storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
+            />
+          </React.Fragment>
         ))}
       </div>
 
