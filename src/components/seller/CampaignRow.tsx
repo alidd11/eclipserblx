@@ -14,12 +14,9 @@ interface Campaign {
   id: string;
   campaign_name: string | null;
   product_id: string;
-  slot_type: string;
   status: string;
   impressions: number;
   clicks: number;
-  max_bid: number;
-  current_bid: number;
   total_spent: number;
   total_budget: number;
   pricing_model: string;
@@ -35,10 +32,9 @@ interface Campaign {
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   active: { label: 'Active', className: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
-  pending_auction: { label: 'In Review', className: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
+  in_review: { label: 'In Review', className: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
   scheduled: { label: 'Scheduled', className: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
   paused: { label: 'Paused', className: 'bg-muted text-muted-foreground border-border' },
-  outbid: { label: 'Outbid', className: 'bg-red-500/10 text-red-500 border-red-500/20' },
   expired: { label: 'Completed', className: 'bg-muted text-muted-foreground border-border' },
   cancelled: { label: 'Cancelled', className: 'bg-muted text-muted-foreground border-border' },
 };
@@ -55,8 +51,8 @@ export function CampaignRow({ campaign }: { campaign: Campaign }) {
     ? (campaign.clicks > 0 ? (Number(campaign.total_spent || 0) / campaign.clicks).toFixed(2) : '—')
     : (campaign.impressions > 0 ? ((Number(campaign.total_spent || 0) / campaign.impressions) * 1000).toFixed(2) : '—');
 
-  const config = statusConfig[campaign.status] || statusConfig.pending_auction;
-  const isToggleable = ['active', 'paused', 'pending_auction'].includes(campaign.status);
+  const config = statusConfig[campaign.status] || statusConfig.in_review;
+  const isToggleable = ['active', 'paused'].includes(campaign.status);
   const budgetPercent = campaign.total_budget > 0
     ? Math.min(100, (Number(campaign.total_spent || 0) / campaign.total_budget) * 100)
     : 0;
