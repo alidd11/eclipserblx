@@ -82,7 +82,7 @@ export function TrendingProducts() {
                   storeLogo={store?.logo_url}
                   isVerified={store?.is_verified}
                   isTrusted={store?.is_trusted}
-                  storeEclipseEnabled={store?.eclipse_plus_enabled}
+                  storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
                   createdAt={product.created_at}
                 />
               </ScrollReveal>
