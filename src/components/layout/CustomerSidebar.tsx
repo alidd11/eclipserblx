@@ -429,6 +429,69 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         )}
       </div>
 
+      {/* User Profile Card & CTA */}
+      {user && !isCollapsed && (
+        <div className="border-b border-border px-3 py-3 space-y-2.5">
+          {/* User info */}
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center shrink-0">
+              <span className="text-sm font-bold text-primary-foreground">
+                {(user.user_metadata?.display_name || user.email || '?')[0].toUpperCase()}
+              </span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold truncate">{user.user_metadata?.display_name || 'User'}</p>
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Free Plan</p>
+            </div>
+            {isMobileDrawer && (
+              <Button variant="ghost" size="icon" className="h-7 w-7 min-h-0 min-w-0" onClick={onNavigate}>
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
+          {/* Balance */}
+          <div className="rounded-lg bg-muted/60 px-3 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Wallet className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-sm font-semibold">£{balance.toFixed(2)}</span>
+            </div>
+            <Link to="/credits" onClick={handleNavClick} className="text-[11px] font-medium text-primary hover:underline flex items-center gap-0.5">
+              <Plus className="h-3 w-3" />
+              Add Funds
+            </Link>
+          </div>
+
+          {/* CTA Button */}
+          <Link
+            to={isSeller ? '/seller' : '/sell'}
+            onClick={handleNavClick}
+            className="flex items-center justify-center gap-2 w-full rounded-lg bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
+          >
+            <Zap className="h-4 w-4" />
+            {isSeller ? 'Seller Dashboard' : 'Start Selling'}
+          </Link>
+        </div>
+      )}
+
+      {/* Collapsed CTA */}
+      {user && isCollapsed && (
+        <div className="border-b border-border px-1.5 py-2 flex justify-center">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                to={isSeller ? '/seller' : '/sell'}
+                onClick={handleNavClick}
+                className="flex items-center justify-center h-8 w-8 rounded-lg bg-gradient-to-r from-primary to-purple-500 text-primary-foreground transition-all hover:opacity-90 active:scale-[0.95]"
+              >
+                <Zap className="h-4 w-4" />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="right">{isSeller ? 'Seller Dashboard' : 'Start Selling'}</TooltipContent>
+          </Tooltip>
+        </div>
+      )}
+
       {/* Navigation */}
       <nav className="flex-1 px-1.5 py-1.5 overflow-y-auto overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
         <div className="space-y-0.5">
