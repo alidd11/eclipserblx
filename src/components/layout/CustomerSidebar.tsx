@@ -593,19 +593,19 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       )}
 
       {/* Collapsed CTA */}
-      {user && isCollapsed && (
+      {user && isCollapsed && (isSeller || !isPremium) && (
         <div className="border-b border-border px-1.5 py-2 flex justify-center">
           <Tooltip>
             <TooltipTrigger asChild>
               <Link
-                to={isSeller ? '/seller' : '/sell'}
+                to={isSeller ? '/seller' : '/eclipse-plus'}
                 onClick={handleNavClick}
                 className="flex items-center justify-center h-8 w-8 rounded-lg bg-gradient-to-r from-primary to-purple-500 text-primary-foreground transition-all hover:opacity-90 active:scale-[0.95]"
               >
-                <Zap className="h-4 w-4" />
+                {isSeller ? <Zap className="h-4 w-4" /> : <Crown className="h-4 w-4" />}
               </Link>
             </TooltipTrigger>
-            <TooltipContent side="right">{isSeller ? 'Seller Dashboard' : 'Start Selling'}</TooltipContent>
+            <TooltipContent side="right">{isSeller ? 'Seller Dashboard' : 'Upgrade to Eclipse+'}</TooltipContent>
           </Tooltip>
         </div>
       )}
