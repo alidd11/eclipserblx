@@ -225,6 +225,23 @@ export default function AdminDashboard() {
 
 
 
+  // Live timezone clock component
+  function TimezoneClock() {
+    const [now, setNow] = useState(new Date());
+    useEffect(() => {
+      const id = setInterval(() => setNow(new Date()), 60_000);
+      return () => clearInterval(id);
+    }, []);
+    const fmt = (tz: string) => now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: tz });
+    return (
+      <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 text-[11px] text-muted-foreground">
+        <span className="whitespace-nowrap">🕐 {now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
+        <span className="whitespace-nowrap">🇬🇧 {fmt('Europe/London')}</span>
+        <span className="whitespace-nowrap">🇺🇸 {fmt('America/New_York')}</span>
+        <span className="whitespace-nowrap">🇺🇸 {fmt('America/Los_Angeles')}</span>
+      </div>
+    );
+  }
 
   const getTimeBasedGreeting = () => {
     const hour = new Date().getHours();
