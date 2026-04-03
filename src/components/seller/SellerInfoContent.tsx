@@ -156,20 +156,10 @@ export function SellerInfoContent() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 border-t border-border/30">
-              <div className="p-4 text-center border-r border-border/30">
-                <Badge variant="secondary" className="mb-1.5 text-[10px]">Base Seller</Badge>
-                <p className="text-lg font-bold text-foreground">85%</p>
-                <p className="text-[10px] text-muted-foreground">15% commission</p>
-              </div>
-              <div className="p-4 text-center bg-primary/[0.03]">
-                <Badge className="mb-1.5 text-[10px] bg-gradient-to-r from-amber-500 to-yellow-500 border-0">
-                  <Sparkles className="h-2.5 w-2.5 mr-0.5" />
-                  Eclipse+
-                </Badge>
-                <p className="text-lg font-bold text-primary">90%</p>
-                <p className="text-[10px] text-muted-foreground">10% commission</p>
-              </div>
+            <div className="px-5 py-3.5 border-t border-border/30 text-center">
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">85% yours</span> · Flat 15% commission · We cover payment fees
+              </p>
             </div>
           </div>
 
