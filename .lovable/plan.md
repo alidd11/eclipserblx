@@ -1,18 +1,15 @@
 
 # Eclipse Pro — Full Implementation
 
-## Overview
-Implement a seller-focused subscription called **Eclipse Pro** (£7.99/month, £69.99/year) giving sellers: reduced 10% commission, higher limits, monthly £5 ad credit, PRO badge, and priority perks. Completely separate from Eclipse+ (buyer subscription).
+## Stripe Products Created
+- Product: `prod_UGoAoaZBT4cQMQ`
+- Monthly price: `price_1TIGYOCjEHxHwNl933p6yUid` (£7.99/month)
+- Annual price: `price_1TIGYiCjEHxHwNl96sljbSjm` (£69.99/year)
 
-## Step 1: Create Stripe Products & Prices
+## Database Migration
 
-Create one Stripe product "Eclipse Pro" with two prices:
-- Monthly: £7.99/month (GBP, recurring monthly)
-- Annual: £69.99/year (GBP, recurring yearly)
+Create `seller_subscriptions` table and add `is_pro`, `pro_badge_enabled` columns to `stores`.
 
-## Step 2: Database Migration
-
-**New table: `seller_subscriptions`**
 ```sql
 CREATE TABLE public.seller_subscriptions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -20,7 +17,7 @@ CREATE TABLE public.seller_subscriptions (
   store_id UUID REFERENCES public.stores(id) ON DELETE SET NULL,
   stripe_subscription_id TEXT,
   stripe_customer_id TEXT,
-  status TEXT NOT NULL DEFAULT 'inactive', -- active, inactive, cancelled, past_due
+  status TEXT NOT NULL DEFAULT 'inactive',
   current_period_start TIMESTAMPTZ,
   current_period_end TIMESTAMPTZ,
   cancelled_at TIMESTAMPTZ,
@@ -29,89 +26,149 @@ CREATE TABLE public.seller_subscriptions (
   UNIQUE(user_id)
 );
 ALTER TABLE public.seller_subscriptions ENABLE ROW LEVEL SECURITY;
--- Users can read their own
 CREATE POLICY "Users can read own seller subscription" ON public.seller_subscriptions FOR SELECT TO authenticated USING (user_id = auth.uid());
+ALTER TABLE public.stores ADD COLUMN IF NOT EXISTS is_pro BOOLEAN DEFAULT false;
+ALTER TABLE public.stores ADD COLUMN IF NOT EXISTS pro_badge_enabled BOOLEAN DEFAULT true;
 ```
 
-**Add columns to `stores`:**
-```sql
-ALTER TABLE public.stores ADD COLUMN is_pro BOOLEAN DEFAULT false;
-ALTER TABLE public.stores ADD COLUMN pro_badge_enabled BOOLEAN DEFAULT true;
-```
+## New Files
 
-## Step 3: Edge Function — `create-subscription` Update
+### 1. `src/hooks/useSellerSubscription.ts`
+Hook that reads from `seller_subscriptions` table, returns `isPro`, `limits`, `subscribe(billingPeriod)`, `openPortal()`, pricing info. Limits object defines Free vs Pro values (commission 15% vs 10%, file size 200MB vs 500MB, images 5 vs 15, products 25 vs unlimited, store pages 1 vs 5, monthly ad credit £0 vs £5).
 
-Add a new `seller_pro` product type handler in the existing `create-subscription/index.ts`:
-- Uses the hardcoded Stripe price IDs from Step 1
-- Checks existing seller subscription to prevent duplicates
-- Sets metadata `{ type: 'seller_pro', user_id, store_id }`
-- Success URL: `/seller/pro?subscription=success`
-- Cancel URL: `/seller/pro?subscription=cancelled`
-
-## Step 4: Edge Function — `stripe-subscription-webhook` Update
-
-Add seller_pro handling in the webhook (similar to Global Guard / IP Shield pattern):
-- Detect via `subscription.metadata.type === 'seller_pro'`
-- On `customer.subscription.created/updated` with status `active`: upsert `seller_subscriptions` row, set `stores.is_pro = true`
-- On `customer.subscription.deleted` or status `cancelled`: update `seller_subscriptions.status = 'cancelled'`, set `stores.is_pro = false`
-- Grant monthly £5 ad credit on first activation (using existing `add_credits` function)
-
-## Step 5: Frontend Hook — `useSellerSubscription.ts`
-
-New hook at `src/hooks/useSellerSubscription.ts`:
-- Reads from `seller_subscriptions` table (fast DB path, no edge function)
-- Returns `{ isPro, subscriptionEnd, isLoading, subscribe(billingPeriod), limits }`
-- `subscribe()` calls `supabase.functions.invoke('create-subscription', { body: { product_type: 'seller_pro', billingPeriod } })`
-- Limits object returns dynamic values based on Pro status:
-
-| Benefit | Free | Pro |
-|---------|------|-----|
-| Commission | 15% | 10% |
-| Max file size | 200MB | 500MB |
-| Max images | 5 | 15 |
-| Product limit | 25 | Unlimited |
-| Store pages | 1 | 5 |
-| Monthly ad credit | — | £5 |
-| PRO badge | No | Yes |
-
-## Step 6: Seller Pro Page — `src/pages/seller/SellerProPage.tsx`
-
-New page at route `/seller/pro`:
+### 2. `src/pages/seller/SellerProPage.tsx`
+Full page at `/seller/pro` with:
+- Hero section with Eclipse Pro branding
+- Billing toggle (monthly £7.99 / annual £69.99)
 - Free vs Pro comparison table with check/cross indicators
-- Subscribe button (monthly/annual toggle) if not subscribed
-- Current status card with manage/cancel if subscribed
-- Pricing cards showing £7.99/mo or £69.99/yr (save ~27%)
+- Subscribe button or current status card if already subscribed
+- Manage subscription button linking to Stripe portal
 
-## Step 7: Sidebar & Route Integration
+## Modified Files
 
-**`SellerSidebar.tsx`**: Add "Eclipse Pro" nav item with Crown icon as a top-level item (below Store Builder)
+### 3. `src/components/AppRoutes.tsx`
+- Add lazy import: `const SellerProPage = lazyWithRetry(() => import("@/pages/seller/SellerProPage"));`
+- Add route: `<Route path="/seller/pro" element={<SellerProPage />} />`
 
-**`AppRoutes.tsx`**: Add route `<Route path="/seller/pro" element={<SellerProPage />} />`
+### 4. `src/components/seller/SellerSidebar.tsx`
+- Import `Crown` icon
+- Add `{ title: 'Eclipse Pro', icon: Crown, href: '/seller/pro' }` to `topLevelItems` array (after Store Builder)
 
-## Step 8: Commission Override
+### 5. `supabase/functions/create-subscription/index.ts`
+Add `getSellerProConfig` handler function:
+```typescript
+const SELLER_PRO_PRICES = {
+  monthly: "price_1TIGYOCjEHxHwNl933p6yUid",
+  annual: "price_1TIGYiCjEHxHwNl96sljbSjm",
+};
 
-Update the checkout/order processing edge functions to check `stores.is_pro`:
-- If `is_pro = true` and no `custom_commission_rate` set by admin, use 10% instead of default 15%
-- Admin `custom_commission_rate` always takes priority
+async function getSellerProConfig(supabase, user, body, returnOrigin) {
+  const billingPeriod = body.billingPeriod || 'monthly';
+  const storeId = body.store_id;
+  // Check existing active seller subscription
+  const { data: existing } = await supabase.from('seller_subscriptions')
+    .select('id').eq('user_id', user.id).eq('status', 'active').maybeSingle();
+  if (existing) throw new Error("You already have an active Eclipse Pro subscription.");
+  
+  const priceId = billingPeriod === 'annual' ? SELLER_PRO_PRICES.annual : SELLER_PRO_PRICES.monthly;
+  return {
+    priceId,
+    lineItems: [{ price: priceId, quantity: 1 }],
+    successUrl: `${returnOrigin}/seller/pro?subscription=success`,
+    cancelUrl: `${returnOrigin}/seller/pro?subscription=cancelled`,
+    metadata: { type: 'seller_pro', user_id: user.id, store_id: storeId || '' },
+    subscriptionMetadata: { type: 'seller_pro', user_id: user.id, store_id: storeId || '' },
+  };
+}
+```
+Add case to the switch statement: `case 'seller_pro': config = await getSellerProConfig(...); break;`
 
-## Step 9: Store PRO Badge
+### 6. `supabase/functions/stripe-subscription-webhook/index.ts`
+After the IP Shield handler block (~line 200), add seller_pro detection and handling:
+```typescript
+// Check if this is a seller_pro subscription
+const isSellerPro = subscription.metadata?.type === 'seller_pro';
 
-Update `StorePage.tsx` to show a "PRO" badge next to the store name when `stores.is_pro` is true and `pro_badge_enabled` is true.
+if (isSellerPro) {
+  await handleSellerProSubscription(supabaseAdmin, subscription, userId, customerId, event.type);
+  return new Response(JSON.stringify({ received: true }), { headers: { "Content-Type": "application/json" }, status: 200 });
+}
+```
 
-## Files Summary
+Add handler function:
+```typescript
+async function handleSellerProSubscription(supabase, subscription, userId, customerId, eventType) {
+  const isActive = subscription.status === 'active' || subscription.status === 'trialing';
+  const periodStart = subscription.current_period_start ? new Date(subscription.current_period_start * 1000).toISOString() : null;
+  const periodEnd = subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null;
+  const storeId = subscription.metadata?.store_id || null;
 
+  // Upsert seller_subscriptions
+  const { data: existing } = await supabase.from('seller_subscriptions')
+    .select('id').eq('user_id', userId).maybeSingle();
+
+  const subData = {
+    user_id: userId,
+    store_id: storeId || null,
+    stripe_subscription_id: subscription.id,
+    stripe_customer_id: customerId,
+    status: isActive ? 'active' : (subscription.status === 'canceled' ? 'cancelled' : subscription.status),
+    current_period_start: periodStart,
+    current_period_end: periodEnd,
+    cancelled_at: !isActive ? new Date().toISOString() : null,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (existing) {
+    await supabase.from('seller_subscriptions').update(subData).eq('id', existing.id);
+  } else {
+    await supabase.from('seller_subscriptions').insert({ ...subData, created_at: new Date().toISOString() });
+  }
+
+  // Update stores.is_pro flag
+  if (storeId) {
+    await supabase.from('stores').update({ is_pro: isActive }).eq('id', storeId);
+  } else {
+    // Find store by owner
+    const { data: store } = await supabase.from('stores').select('id').eq('owner_id', userId).maybeSingle();
+    if (store) await supabase.from('stores').update({ is_pro: isActive }).eq('id', store.id);
+  }
+
+  // Update commission rate: Pro gets 10%, free gets default 15%
+  // Only if no admin custom_commission_rate is set
+  const { data: store } = await supabase.from('stores')
+    .select('id, commission_rate, custom_commission_rate, custom_rate_expires_at')
+    .eq('owner_id', userId).maybeSingle();
+  
+  if (store) {
+    const hasActiveCustomRate = store.custom_commission_rate !== null && 
+      (!store.custom_rate_expires_at || new Date(store.custom_rate_expires_at) > new Date());
+    if (!hasActiveCustomRate) {
+      await supabase.from('stores').update({ commission_rate: isActive ? 10 : 15 }).eq('id', store.id);
+    }
+  }
+
+  // Grant £5 ad credit on activation
+  if (isActive && eventType.includes('created')) {
+    try {
+      await supabase.rpc('add_credits', {
+        p_user_id: userId, p_amount: 5, p_type: 'subscription_bonus',
+        p_description: 'Eclipse Pro monthly ad credit'
+      });
+    } catch (e) { console.log('Failed to grant ad credit:', e); }
+  }
+
+  logStep("Seller Pro subscription handled", { userId, status: isActive ? 'active' : 'inactive' });
+}
+```
+
+## Summary of Changes
 | Action | File |
 |--------|------|
 | New | `src/hooks/useSellerSubscription.ts` |
 | New | `src/pages/seller/SellerProPage.tsx` |
-| Modified | `src/components/seller/SellerSidebar.tsx` — add Pro nav item |
-| Modified | `src/components/AppRoutes.tsx` — add /seller/pro route |
-| Modified | `supabase/functions/create-subscription/index.ts` — add seller_pro handler |
-| Modified | `supabase/functions/stripe-subscription-webhook/index.ts` — handle seller_pro events |
-| DB migration | New `seller_subscriptions` table + `stores` columns |
-| Stripe | Create product + 2 prices |
-
-## Not Changed
-- Eclipse+ (buyer subscription) — completely separate
-- Discord ads system
-- Admin analytics
+| Modified | `src/components/AppRoutes.tsx` |
+| Modified | `src/components/seller/SellerSidebar.tsx` |
+| Modified | `supabase/functions/create-subscription/index.ts` |
+| Modified | `supabase/functions/stripe-subscription-webhook/index.ts` |
+| DB migration | `seller_subscriptions` table + `stores` columns |
