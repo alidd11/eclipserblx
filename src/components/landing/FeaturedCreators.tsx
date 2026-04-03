@@ -43,7 +43,6 @@ export function FeaturedCreators() {
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-primary" />
             <h2 className="text-lg font-bold tracking-tight">Featured Creators</h2>
           </div>
           <Link to="/stores" className="text-xs text-primary hover:underline flex items-center gap-1">
