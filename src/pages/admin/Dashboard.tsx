@@ -265,7 +265,6 @@ export default function AdminDashboard() {
                   {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
                 </h1>
                   <TimezoneClock />
-                </div>
               </div>
             </div>
           </CardContent>
