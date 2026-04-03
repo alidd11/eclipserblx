@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
+import { useSellerSubscription } from '@/hooks/useSellerSubscription';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useRealtimeOrders } from '@/hooks/useRealtimeOrders';
@@ -16,6 +17,7 @@ import { ProductHealthDonut } from '@/components/seller/ProductHealthDonut';
 import { RecentOrdersTable } from '@/components/seller/RecentOrdersTable';
 import { TosBanner, NonCompliantBanner, PendingReviewBanner } from '@/components/seller/banners';
 import { DashboardCardSkeleton } from '@/components/seller/DashboardSkeletons';
+import { Gift, Clock } from 'lucide-react';
 import { 
   Package, ShoppingCart, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone
 } from 'lucide-react';
