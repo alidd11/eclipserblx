@@ -170,7 +170,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       items: [
         { title: t('sidebar.home'), icon: Home, href: '/' },
         ...(isStaff ? [{ title: 'Admin Dashboard', icon: Shield, href: '/admin' }] : []),
-        ...(isSeller ? [{ title: t('sidebar.sellerDashboard'), icon: Store, href: '/seller' }] : []),
       ],
     },
     {
