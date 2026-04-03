@@ -142,7 +142,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
         return {};
       }
     }
-    return { catalog: true, inbox: true, marketing: false, finance: false, integrations: false, settings: false };
+    return { products: true, customers: true, marketing: false, finance: false, integrations: false, settings: false };
   });
 
   useEffect(() => {
