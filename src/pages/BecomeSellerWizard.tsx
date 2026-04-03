@@ -24,7 +24,8 @@ import { cn } from '@/lib/utils';
 import {
   Store, ArrowRight, ArrowLeft, CheckCircle2, Circle, Loader2,
   Shield, Users, Mail, ShoppingBag, UserCheck, Clock, XCircle,
-  Award, Sparkles, ExternalLink, Rocket, PartyPopper, ChevronRight
+  Award, Sparkles, ExternalLink, Rocket, PartyPopper, ChevronRight,
+  Download, Package
 } from 'lucide-react';
 
 const PRODUCT_CATEGORIES = [
