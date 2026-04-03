@@ -62,6 +62,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const { discordUrl } = useDiscordUrl();
   const { isSeller } = useSellerStatus();
   const { isStaff } = useAdminAuth();
+  const { balance } = useCredits();
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
