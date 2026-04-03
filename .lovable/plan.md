@@ -1,38 +1,39 @@
 
-# Seller Onboarding Overhaul
 
-## Phase 1: Reduce Friction (Step Consolidation)
-- **Merge Appearance + Categories** into a single "Store Setup" step
-- **Make Socials & Roblox optional** — sellers can skip and complete post-launch
-- Result: 7 steps → 5 steps (TOS → Store Setup → Payout → First Product → Launch)
-- Add **"Skip for now"** buttons on non-essential steps
+# Competitive Improvements (Excluding Live Stats)
 
-## Phase 2: Progress & Persistence
-- **Auto-save** each step to database so sellers can leave and resume
-- **Time estimates** on each step header ("~1 min")
-- **Progress bar** with step names visible at all times
+Implementing 4 enhancements based on the ClearlyDev analysis:
 
-## Phase 3: Conversion Boosters
-- **Store templates** — 3 pre-built themes (Minimal, Gaming, Professional) with preset colors/layouts selectable during Store Setup
-- **First product wizard** — Inline guided product upload as the final onboarding step with smart defaults and category suggestions
-- **Live mini-preview** — Small store preview card that updates in real-time as seller fills in details
+## 1. Earnings Calculator on /sell Page
+Add an interactive slider-based calculator to `SellerInfoContent.tsx` showing projected monthly earnings at 85% rate. Uses the existing `Slider` component with animated result display.
 
-## Phase 4: Trust & Motivation
-- **Earnings calculator** — Interactive slider during Payout step: "10 sales × £5 = £42.50/mo earnings"
-- **Success stories** — Brief seller testimonials shown between steps as transition cards
-- **Post-onboarding Store Health score** — Dashboard widget showing 0-100% completion encouraging optional step completion
+## 2. Honest Commission Comparison Table
+Update `comparisonRows` in `SellerInfoContent.tsx`:
+- Change "70% or less" to "70–90%" (acknowledging competitors like ClearlyDev at 90%)
+- Reframe advantage around fee absorption and simplicity rather than overstating the gap
 
-## Files to Create/Modify
-| Action | File |
-|--------|------|
-| Modify | `src/hooks/useSellerOnboarding.ts` — reduce to 5 steps, add auto-save |
-| Create | `src/components/seller/onboarding/StoreTemplates.tsx` |
-| Create | `src/components/seller/onboarding/EarningsCalculator.tsx` |
-| Create | `src/components/seller/onboarding/SellerSuccessStories.tsx` |
-| Create | `src/components/seller/onboarding/StoreHealthScore.tsx` |
-| Create | `src/components/seller/onboarding/LiveStorePreview.tsx` |
-| Modify | `src/components/seller/onboarding/` step components — consolidate |
-| Modify | Seller dashboard — add Store Health widget |
+## 3. Product Page Trust Badges
+Add a trust signals section to `ProductDetail.tsx` sidebar (below store card):
+- "Buyer Protection" -- 3-day refund guarantee
+- "Instant Delivery" -- Download immediately after purchase
+- "Verified Seller" badge (when store is verified/trusted)
+- "Secure Payment" -- Stripe-powered
 
-## No database migration needed
-All changes are UI/UX — existing tables (stores, seller_agreements, profiles) already support this.
+Will reuse the existing `StoreTrustSignals` component pattern.
+
+## 4. Seller Wizard UX Polish
+In `BecomeSellerWizard.tsx`:
+- Add a "Most sellers complete this in under 3 minutes" indicator at the top
+- Add a "What to expect" mini-timeline before the form (Apply → 24h Review → Start Earning)
+
+## 5. Footer Status & Support Links
+In `Footer.tsx`:
+- Add a "Status" link to the Support column
+- Reorganize support links to include Knowledge Base / Help Center distinction
+
+## Files Modified
+- `src/components/seller/SellerInfoContent.tsx` -- calculator + comparison fix
+- `src/pages/ProductDetail.tsx` -- trust badges in sidebar
+- `src/pages/BecomeSellerWizard.tsx` -- time estimate + expectations
+- `src/components/layout/Footer.tsx` -- status link
+
