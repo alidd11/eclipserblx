@@ -173,6 +173,67 @@ function EligibilityChecker() {
   );
 }
 
+function InteractiveEarningsCalculator() {
+  const [salesPerMonth, setSalesPerMonth] = useState(15);
+  const [avgPrice, setAvgPrice] = useState(8);
+
+  const grossRevenue = salesPerMonth * avgPrice;
+  const netEarnings = grossRevenue * 0.85;
+
+  return (
+    <div className="rounded-2xl border border-border/50 bg-card p-5 space-y-5">
+      {/* Sales slider */}
+      <div className="space-y-2">
+        <div className="flex justify-between text-xs">
+          <span className="text-muted-foreground">Sales per month</span>
+          <span className="font-semibold text-foreground">{salesPerMonth}</span>
+        </div>
+        <Slider
+          value={[salesPerMonth]}
+          onValueChange={([v]) => setSalesPerMonth(v)}
+          min={1}
+          max={200}
+          step={1}
+        />
+      </div>
+
+      {/* Price slider */}
+      <div className="space-y-2">
+        <div className="flex justify-between text-xs">
+          <span className="text-muted-foreground">Average price</span>
+          <span className="font-semibold text-foreground">£{avgPrice}</span>
+        </div>
+        <Slider
+          value={[avgPrice]}
+          onValueChange={([v]) => setAvgPrice(v)}
+          min={1}
+          max={100}
+          step={1}
+        />
+      </div>
+
+      {/* Result */}
+      <motion.div
+        key={`${salesPerMonth}-${avgPrice}`}
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-xl bg-primary/5 border border-primary/20 p-5 text-center"
+      >
+        <p className="text-xs text-muted-foreground mb-1">Your estimated monthly earnings</p>
+        <div className="flex items-center justify-center gap-1">
+          <PoundSterling className="h-5 w-5 text-primary" />
+          <span className="text-3xl font-bold text-primary">
+            {netEarnings.toFixed(2)}
+          </span>
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-2">
+          {salesPerMonth} sales × £{avgPrice} = £{grossRevenue.toFixed(2)} gross · You keep 85% (£{netEarnings.toFixed(2)})
+        </p>
+      </motion.div>
+    </div>
+  );
+}
+
 export function SellerInfoContent() {
   return (
     <div>
