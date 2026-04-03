@@ -1,25 +1,26 @@
 import { forwardRef, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { User, Package, LogOut, Settings, Shield, Download, Loader2, Trash2, Award, MessageSquare, Copy, Check, ShoppingBag, Pencil, X, Bell, CreditCard, Sparkles, HelpCircle, Store, Clock, ShoppingCart, MoreVertical } from 'lucide-react';
+import {
+  User, LogOut, Loader2, Pencil, X, Check, Clock,
+  Download, CreditCard, MessageSquare, Bell, Package,
+  ChevronRight, Link2, Palette, Mail, Volume2, Store,
+  Award, ShoppingBag, Gift, Sparkles, Trash2, Shield,
+  Copy, Hash,
+} from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useBadges } from '@/hooks/useBadges';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { supabase } from '@/integrations/supabase/client';
-import { ORDER_STATUSES } from '@/lib/constants';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { DeleteProfileDialog } from '@/components/auth/DeleteProfileDialog';
-
-
 import { AvatarUpload } from '@/components/account/AvatarUpload';
 import { LinkedAccountsCard } from '@/components/account/LinkedAccountsCard';
 import { EmailSubscriptionCard } from '@/components/account/EmailSubscriptionCard';
@@ -28,23 +29,86 @@ import { AffiliateCard } from '@/components/account/AffiliateCard';
 import { NotificationSettingsCard } from '@/components/account/NotificationSettingsCard';
 import { SoundCustomizationCard } from '@/components/account/SoundCustomizationCard';
 import { ThemeSettingsCard } from '@/components/account/ThemeSettingsCard';
-import { AccountStatsBar } from '@/components/account/AccountStatsBar';
-
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
 import { SavedCardsCard } from '@/components/account/SavedCardsCard';
 import { BecomeSellerCard } from '@/components/account/BecomeSellerCard';
 import { CreditsCard } from '@/components/account/CreditsCard';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
 import { usePageTracking } from '@/hooks/usePageTracking';
 
-// Unified IDs display component
-const UserIdsSection = ({ userId, customerId }: { 
-  userId: string; 
-  customerId: string | null;
-}) => {
+/* ─────────── Navigation Row ─────────── */
+function NavRow({ icon: Icon, label, to, badge, destructive }: {
+  icon: React.ElementType;
+  label: string;
+  to?: string;
+  badge?: string | number;
+  destructive?: boolean;
+}) {
+  const content = (
+    <div className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-colors ${
+      destructive
+        ? 'hover:bg-destructive/10 text-destructive'
+        : 'hover:bg-muted/60'
+    }`}>
+      <div className={`shrink-0 h-8 w-8 rounded-lg flex items-center justify-center ${
+        destructive ? 'bg-destructive/10' : 'bg-primary/10'
+      }`}>
+        <Icon className={`h-4 w-4 ${destructive ? 'text-destructive' : 'text-primary'}`} />
+      </div>
+      <span className="flex-1 text-sm font-medium">{label}</span>
+      {badge != null && (
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/15 text-primary">
+          {badge}
+        </span>
+      )}
+      {to && <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />}
+    </div>
+  );
+
+  if (to) {
+    return <Link to={to} className="block">{content}</Link>;
+  }
+  return content;
+}
+
+/* ─────────── Section Header ─────────── */
+function SectionHeader({ title }: { title: string }) {
+  return (
+    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground px-4 pt-5 pb-1.5">
+      {title}
+    </p>
+  );
+}
+
+/* ─────────── Expandable Section ─────────── */
+function ExpandableSection({ icon: Icon, label, children, defaultOpen }: {
+  icon: React.ElementType;
+  label: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen ?? false);
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <CollapsibleTrigger className="w-full">
+        <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-muted/60 transition-colors">
+          <div className="shrink-0 h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Icon className="h-4 w-4 text-primary" />
+          </div>
+          <span className="flex-1 text-sm font-medium text-left">{label}</span>
+          <ChevronRight className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${open ? 'rotate-90' : ''}`} />
+        </div>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="px-2 pb-2">
+        {children}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+/* ─────────── User IDs (collapsible) ─────────── */
+function UserIdsCollapsible({ userId, customerId }: { userId: string; customerId: string | null }) {
   const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
 
   const { data: affiliateApp } = useQuery({
@@ -82,135 +146,39 @@ const UserIdsSection = ({ userId, customerId }: {
     setTimeout(() => setCopiedStates(prev => ({ ...prev, [key]: false })), 2000);
   };
 
-  const hasAnyId = customerId || affiliateApp?.affiliate_id || store?.store_id;
-  if (!hasAnyId) return null;
-
   const idItems = [
-    customerId && { label: 'Customer', value: customerId, key: 'customer', icon: User },
-    affiliateApp?.affiliate_id && { label: 'Affiliate', value: affiliateApp.affiliate_id, key: 'affiliate', icon: Award },
-    store?.store_id && { label: 'Seller', value: store.store_id, key: 'seller', icon: Store },
-  ].filter(Boolean) as { label: string; value: string; key: string; icon: React.ElementType }[];
+    customerId && { label: 'Customer', value: customerId, key: 'customer' },
+    affiliateApp?.affiliate_id && { label: 'Affiliate', value: affiliateApp.affiliate_id, key: 'affiliate' },
+    store?.store_id && { label: 'Seller', value: store.store_id, key: 'seller' },
+  ].filter(Boolean) as { label: string; value: string; key: string }[];
+
+  if (idItems.length === 0) return null;
 
   return (
-    <div className="border-t border-border/50 px-4 sm:px-6 py-4 bg-muted/30">
-      <div className="grid gap-2.5">
-        {idItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <div 
-              key={item.key} 
-              className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-background/60 border border-border/40 hover:border-border/60 transition-colors"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="shrink-0 h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center">
-                  <Icon className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground block leading-none mb-0.5">
-                    {item.label} ID
-                  </span>
-                  <span className="text-xs font-mono text-foreground truncate block">{item.value}</span>
-                </div>
-              </div>
-              <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => copyToClipboard(item.value, item.key)}
-                      className="shrink-0 h-7 w-7 rounded-md bg-muted/80 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {copiedStates[item.key] ? (
-                        <Check className="h-3.5 w-3.5 text-green-500" />
-                      ) : (
-                        <Copy className="h-3.5 w-3.5" />
-                      )}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="left" className="text-xs">
-                    {copiedStates[item.key] ? 'Copied!' : 'Copy ID'}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+    <ExpandableSection icon={Hash} label="Your IDs">
+      <div className="space-y-2 pt-1">
+        {idItems.map((item) => (
+          <div key={item.key} className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg bg-muted/40 border border-border/40">
+            <div className="min-w-0">
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground block">{item.label} ID</span>
+              <span className="text-xs font-mono text-foreground truncate block">{item.value}</span>
             </div>
-          );
-        })}
+            <button
+              onClick={() => copyToClipboard(item.value, item.key)}
+              className="shrink-0 h-7 w-7 rounded-md bg-background hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {copiedStates[item.key] ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+            </button>
+          </div>
+        ))}
       </div>
-    </div>
+    </ExpandableSection>
   );
-};
+}
 
-// Status Badges Section (Eclipse+, Affiliate, Seller)
-const StatusBadgesSection = ({ 
-  userId, 
-  isSubscribed, 
-  userBadges, 
-  badges 
-}: { 
-  userId: string; 
-  isSubscribed: boolean;
-  userBadges: ReturnType<typeof useBadges>['userBadges'];
-  badges: ReturnType<typeof useBadges>['badges'];
-}) => {
-  const { data: affiliateApp } = useQuery({
-    queryKey: ['affiliate-status', userId],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('affiliate_applications')
-        .select('status, affiliate_id')
-        .eq('user_id', userId)
-        .eq('status', 'approved')
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!userId,
-    staleTime: 1000 * 60 * 10,
-  });
-
-  const { data: store } = useQuery({
-    queryKey: ['seller-status', userId],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('stores')
-        .select('id, name, store_id')
-        .eq('owner_id', userId)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!userId,
-    staleTime: 1000 * 60 * 10,
-  });
-
-  const hasAffiliate = !!affiliateApp?.affiliate_id;
-  const hasSeller = !!store?.id;
-  const hasAnyStatus = isSubscribed || hasAffiliate || hasSeller;
-
-  if (!hasAnyStatus) return null;
-
-  return (
-    <div className="border-t border-border/50 px-4 sm:px-6 py-3 bg-muted/30">
-      <div className="flex items-center justify-center gap-1.5 flex-wrap">
-        {isSubscribed && (
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/15 border border-primary/30">
-            <Sparkles className="h-3 w-3 text-primary" />
-            <span className="text-[10px] font-semibold text-primary">Eclipse+</span>
-          </div>
-        )}
-        {hasAffiliate && (
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30">
-            <Award className="h-3 w-3 text-amber-500" />
-            <span className="text-[10px] font-semibold text-amber-500">Affiliate</span>
-          </div>
-        )}
-        {hasSeller && (
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30">
-            <Store className="h-3 w-3 text-emerald-500" />
-            <span className="text-[10px] font-semibold text-emerald-500">Seller</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+/* ═══════════════════════════════════════════ */
+/*                  ACCOUNT PAGE               */
+/* ═══════════════════════════════════════════ */
 
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   usePageTracking({ pagePath: '/account' });
@@ -221,73 +189,16 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { hasAccess: hasMarketplaceAccess } = useMarketplaceAccess();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const location = useLocation();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [copiedId, setCopiedId] = useState(false);
   const [editingUsername, setEditingUsername] = useState(false);
   const [newUsername, setNewUsername] = useState('');
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [savingUsername, setSavingUsername] = useState(false);
-  
 
-  // Get initial tab from URL hash
-  const getInitialTab = () => {
-    const hash = location.hash.replace('#', '');
-    if (['profile', 'shopping', 'following', 'preferences', 'security'].includes(hash)) {
-      return hash;
-    }
-    return 'profile';
-  };
-
-  const [activeTab, setActiveTab] = useState(getInitialTab);
-
-  // Sync tab with URL hash
-  useEffect(() => {
-    const hash = location.hash.replace('#', '');
-    if (['profile', 'shopping', 'preferences', 'security'].includes(hash)) {
-      setActiveTab(hash);
-    }
-  }, [location.hash]);
-
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    window.history.replaceState(null, '', `#${value}`);
-  };
-
-  const copyCustomerId = async () => {
-    if (profile?.customer_id) {
-      await navigator.clipboard.writeText(profile.customer_id);
-      setCopiedId(true);
-      setTimeout(() => setCopiedId(false), 2000);
-    }
-  };
-
-
-  // Handle pending email subscription from signup
-  useEffect(() => {
-    const handlePendingSubscription = async () => {
-      const pending = sessionStorage.getItem('pendingEmailSubscription');
-      if (pending && user?.id && user?.email) {
-        sessionStorage.removeItem('pendingEmailSubscription');
-        try {
-          await supabase.from('email_subscriptions').insert({
-            user_id: user.id,
-            email: user.email,
-            subscribed_to_updates: true,
-            subscribed_to_discounts: true,
-            subscribed_to_newsletters: true,
-          });
-        } catch {
-          // Ignore if already exists
-        }
-      }
-    };
-    handlePendingSubscription();
-  }, [user?.id, user?.email]);
-
+  // ─── Profile query ───
   const fallbackDisplayName = useMemo(() => {
     if (!user) return '';
     const metaName = (user.user_metadata as any)?.display_name;
@@ -308,17 +219,15 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       return data;
     },
     enabled: !!user?.id,
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    staleTime: 1000 * 60 * 5,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
   });
 
-  // Fetch Discord avatar when user has a linked Discord account
   const { data: discordAvatar } = useQuery({
     queryKey: ['discord-avatar', profile?.discord_id],
     queryFn: async () => {
       if (!profile?.discord_id) return null;
-      // Check localStorage cache first
       const cacheKey = `discord-avatar-${profile.discord_id}`;
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
@@ -330,25 +239,17 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       const { data, error } = await supabase.functions.invoke('get-discord-avatar', {
         body: { discord_id: profile.discord_id },
       });
-      if (error) {
-        console.error('Failed to fetch Discord avatar:', error);
-        return null;
-      }
-      // Cache in localStorage for 30 minutes
+      if (error) return null;
       localStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() }));
       return data;
     },
     enabled: !!profile?.discord_id,
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: 1000 * 60 * 60,
   });
 
-
-  // Ensure a profile row exists (some older accounts may not have one).
+  // ─── Ensure profile exists ───
   useEffect(() => {
-    if (!user?.id || !user.email) return;
-    if (profileLoading) return;
-    if (profile) return;
-
+    if (!user?.id || !user.email || profileLoading || profile) return;
     const run = async () => {
       const usernameValue = fallbackDisplayName || user.email?.split('@')[0] || 'user';
       const { error } = await supabase.from('profiles').insert({
@@ -357,36 +258,46 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         display_name: fallbackDisplayName || null,
         username: usernameValue,
       });
-
-      if (!error) {
-        queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
-      }
+      if (!error) queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
     };
-
-    // Fire-and-forget; if RLS blocks this insert, we simply keep using the fallback name.
     void run();
   }, [user?.id, user?.email, profileLoading, profile, fallbackDisplayName, queryClient]);
 
-  // Real-time username availability check
+  // ─── Email subscription from signup ───
+  useEffect(() => {
+    const handlePendingSubscription = async () => {
+      const pending = sessionStorage.getItem('pendingEmailSubscription');
+      if (pending && user?.id && user?.email) {
+        sessionStorage.removeItem('pendingEmailSubscription');
+        try {
+          await supabase.from('email_subscriptions').insert({
+            user_id: user.id,
+            email: user.email,
+            subscribed_to_updates: true,
+            subscribed_to_discounts: true,
+            subscribed_to_newsletters: true,
+          });
+        } catch {}
+      }
+    };
+    handlePendingSubscription();
+  }, [user?.id, user?.email]);
+
+  // ─── Username editing ───
   useEffect(() => {
     const trimmed = newUsername.trim();
     if (!editingUsername || !trimmed || trimmed.length < 6 || trimmed.length > 20) {
       setUsernameAvailable(null);
       return;
     }
-
-    // If same as current, mark as available
-    if (newUsername.trim().toLowerCase() === profile?.display_name?.toLowerCase()) {
+    if (trimmed.toLowerCase() === profile?.display_name?.toLowerCase()) {
       setUsernameAvailable(true);
       return;
     }
-
-    const timeoutId = setTimeout(async () => {
+    const id = setTimeout(async () => {
       setCheckingUsername(true);
       try {
-        const { data: isAvailable } = await supabase.rpc('is_username_available', {
-          username: newUsername.trim()
-        });
+        const { data: isAvailable } = await supabase.rpc('is_username_available', { username: trimmed });
         setUsernameAvailable(isAvailable ?? false);
       } catch {
         setUsernameAvailable(null);
@@ -394,48 +305,28 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         setCheckingUsername(false);
       }
     }, 400);
-
-    return () => clearTimeout(timeoutId);
+    return () => clearTimeout(id);
   }, [newUsername, editingUsername, profile?.display_name]);
 
-  // Calculate cooldown for display name changes (30 days)
-  const displayNameCooldownDays = 30;
-  const displayNameCooldownMs = displayNameCooldownDays * 24 * 60 * 60 * 1000;
-  
-  const getDisplayNameCooldownInfo = () => {
+  const displayNameCooldownMs = 30 * 24 * 60 * 60 * 1000;
+  const getCooldownInfo = () => {
     if (!profile?.display_name_changed_at) return { onCooldown: false, remainingDays: 0 };
-    const lastChanged = new Date(profile.display_name_changed_at).getTime();
-    const cooldownEnds = lastChanged + displayNameCooldownMs;
-    const now = Date.now();
-    if (now >= cooldownEnds) return { onCooldown: false, remainingDays: 0 };
-    const remainingMs = cooldownEnds - now;
-    const remainingDays = Math.ceil(remainingMs / (24 * 60 * 60 * 1000));
-    return { onCooldown: true, remainingDays };
+    const cooldownEnds = new Date(profile.display_name_changed_at).getTime() + displayNameCooldownMs;
+    if (Date.now() >= cooldownEnds) return { onCooldown: false, remainingDays: 0 };
+    return { onCooldown: true, remainingDays: Math.ceil((cooldownEnds - Date.now()) / (24 * 60 * 60 * 1000)) };
   };
-  
-  const cooldownInfo = getDisplayNameCooldownInfo();
+  const cooldownInfo = getCooldownInfo();
 
   const handleSaveUsername = async () => {
     const trimmed = newUsername.trim();
-    if (!user || !trimmed || trimmed.length < 6 || trimmed.length > 20 || usernameAvailable === false) return;
-    
-    // Check cooldown
-    if (cooldownInfo.onCooldown) {
-      return;
-    }
-    
+    if (!user || !trimmed || trimmed.length < 6 || trimmed.length > 20 || usernameAvailable === false || cooldownInfo.onCooldown) return;
     setSavingUsername(true);
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ 
-          display_name: newUsername.trim(),
-          display_name_changed_at: new Date().toISOString()
-        })
+        .update({ display_name: trimmed, display_name_changed_at: new Date().toISOString() })
         .eq('user_id', user.id);
-      
       if (error) throw error;
-      
       queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
       setEditingUsername(false);
       setNewUsername('');
@@ -452,92 +343,40 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     setUsernameAvailable(null);
   };
 
-
+  // ─── Data queries ───
   const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: ['user-orders', user?.id, user?.email],
     queryFn: async () => {
       if (!user?.id && !user?.email) return [];
-      
       let { data, error } = await supabase
         .from('orders')
-        .select(`
-          *,
-          order_items (
-            id,
-            product_name,
-            price,
-            product_id,
-            product:products (
-              id,
-              name,
-              images,
-              asset_file_url
-            )
-          )
-        `)
-        .eq('user_id', user.id)
+        .select('id, status, total, created_at, discount_amount')
+        .eq('user_id', user!.id)
         .order('created_at', { ascending: false });
-      
       if (error) throw error;
-      
-      if (user?.email) {
-        const { data: emailOrders, error: emailError } = await supabase
-          .from('orders')
-          .select(`
-            *,
-            order_items (
-              id,
-              product_name,
-              price,
-              product_id,
-              product:products (
-                id,
-                name,
-                images,
-                asset_file_url
-              )
-            )
-          `)
-          .eq('customer_email', user.email)
-          .is('user_id', null)
-          .order('created_at', { ascending: false });
-        
-        if (!emailError && emailOrders) {
-          const allOrders = [...(data || []), ...emailOrders];
-          const uniqueOrders = allOrders.filter((order, index, self) =>
-            index === self.findIndex((o) => o.id === order.id)
-          );
-          return uniqueOrders;
-        }
-      }
-      
       return data || [];
     },
     enabled: !!(user?.id || user?.email),
   });
 
-  // Wallet balance for quick link count
   const { data: walletData } = useQuery({
     queryKey: ['wallet-balance-quick', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('credit_balances')
         .select('balance')
         .eq('user_id', user!.id)
         .maybeSingle();
-      if (error) return { balance: 0 };
       return { balance: Number(data?.balance ?? 0) };
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 2,
   });
 
-  // Unread notifications count
   const { data: unreadCount } = useQuery({
     queryKey: ['unread-notifications-count', user?.id],
     queryFn: async () => {
-      const { count, error } = await (supabase
-        .from('notifications') as any)
+      const { count, error } = await (supabase.from('notifications') as any)
         .select('id', { count: 'exact', head: true })
         .eq('user_id', user!.id)
         .eq('is_read', false);
@@ -548,13 +387,14 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     staleTime: 1000 * 30,
   });
 
-  // Compute account stats
   const totalSpent = useMemo(() => {
     if (!orders) return 0;
     return orders
       .filter((o: any) => o.status === 'paid' || o.status === 'completed')
       .reduce((sum: number, o: any) => sum + Number(o.total || 0), 0);
   }, [orders]);
+
+  const completedOrders = orders?.filter((o: any) => o.status === 'paid' || o.status === 'completed').length ?? 0;
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
@@ -564,7 +404,37 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     navigate('/');
   };
 
-  // Wait for auth to finish initializing before showing sign-in prompt
+  // ─── Status badges ───
+  const { data: affiliateStatus } = useQuery({
+    queryKey: ['affiliate-status', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('affiliate_applications')
+        .select('affiliate_id')
+        .eq('user_id', user!.id)
+        .eq('status', 'approved')
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const { data: sellerStore } = useQuery({
+    queryKey: ['seller-status', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('stores')
+        .select('id, store_id')
+        .eq('owner_id', user!.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 10,
+  });
+
+  // ─── Loading / auth guards ───
   if (authLoading) {
     return (
       <MainLayout>
@@ -589,30 +459,14 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     );
   }
 
-  const getStatusBadge = (status: string) => {
-    const config = ORDER_STATUSES[status as keyof typeof ORDER_STATUSES];
-    const colorMap: Record<string, string> = {
-      success: 'bg-green-500/10 text-green-500 border-green-500/30',
-      warning: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30',
-      destructive: 'bg-red-500/10 text-red-500 border-red-500/30',
-      primary: 'bg-primary/10 text-primary border-primary/30',
-      muted: 'bg-muted text-muted-foreground',
-    };
-    return (
-      <Badge variant="outline" className={colorMap[config?.color] || colorMap.muted}>
-        {config?.label || status}
-      </Badge>
-    );
-  };
-
   return (
     <MainLayout>
-      <div className="container py-8 space-y-6 max-w-4xl ml-auto mr-4 sm:mr-8 lg:mr-auto">
-        {/* My Profile Card */}
+      <div className="container py-6 space-y-4 max-w-lg mx-auto">
+
+        {/* ═══ Profile Header ═══ */}
         <Card className="bg-card border-border overflow-hidden">
           <CardContent className="p-0">
-            {/* Profile Header */}
-            <div className="p-4 sm:p-6 flex flex-col items-center text-center gap-3 relative">
+            <div className="p-5 flex flex-col items-center text-center gap-2 relative">
               <AvatarUpload
                 userId={user.id}
                 currentAvatarUrl={profile?.avatar_url || null}
@@ -621,7 +475,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 onAvatarChange={() => queryClient.invalidateQueries({ queryKey: ['profile', user.id] })}
                 compact
               />
-              
+
+              {/* Name */}
               <div className="w-full max-w-xs">
                 {editingUsername ? (
                   <div className="flex items-center justify-center gap-2">
@@ -646,21 +501,12 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                         </div>
                       )}
                     </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0 shrink-0"
-                      onClick={handleSaveUsername}
-                      disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}
-                    >
+                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0 shrink-0" onClick={handleSaveUsername}
+                      disabled={savingUsername || !newUsername.trim() || usernameAvailable === false || newUsername.trim().length < 2}>
                       {savingUsername ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0 shrink-0"
-                      onClick={() => { setEditingUsername(false); setNewUsername(''); }}
-                    >
+                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0 shrink-0"
+                      onClick={() => { setEditingUsername(false); setNewUsername(''); }}>
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
@@ -670,45 +516,55 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                       {profile?.display_name || fallbackDisplayName || 'User'}
                     </h1>
                     {!cooldownInfo.onCooldown ? (
-                      <button
-                        onClick={startEditingUsername}
-                        className="text-muted-foreground hover:text-foreground transition-colors p-0.5 shrink-0"
-                      >
+                      <button onClick={startEditingUsername} className="text-muted-foreground hover:text-foreground transition-colors p-0.5 shrink-0">
                         <Pencil className="h-3 w-3" />
                       </button>
                     ) : (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="text-muted-foreground/60 p-0.5 cursor-help shrink-0">
-                              <Clock className="h-3 w-3" />
-                            </span>
+                            <span className="text-muted-foreground/60 p-0.5 cursor-help shrink-0"><Clock className="h-3 w-3" /></span>
                           </TooltipTrigger>
-                          <TooltipContent>
-                            <p>You can change your name in {cooldownInfo.remainingDays}d</p>
-                          </TooltipContent>
+                          <TooltipContent><p>You can change your name in {cooldownInfo.remainingDays}d</p></TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     )}
                   </div>
                 )}
-
                 <p className="text-sm text-muted-foreground mt-0.5">@{profile?.username || fallbackDisplayName}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Member since {new Date(user.created_at).toLocaleDateString()}
                 </p>
               </div>
 
-              <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+              {/* Status Badges */}
+              <div className="flex items-center gap-1.5 flex-wrap justify-center mt-1">
+                {isSubscribed && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/15 border border-primary/30">
+                    <Sparkles className="h-3 w-3 text-primary" />
+                    <span className="text-[10px] font-semibold text-primary">Eclipse+</span>
+                  </div>
+                )}
+                {affiliateStatus?.affiliate_id && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-amber-500/15 border border-amber-500/30">
+                    <Award className="h-3 w-3 text-amber-500" />
+                    <span className="text-[10px] font-semibold text-amber-500">Affiliate</span>
+                  </div>
+                )}
+                {sellerStore?.id && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30">
+                    <Store className="h-3 w-3 text-emerald-500" />
+                    <span className="text-[10px] font-semibold text-emerald-500">Seller</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Sign Out */}
+              <div className="absolute top-4 right-4">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9"
-                        onClick={() => setShowSignOutDialog(true)}
-                      >
+                      <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setShowSignOutDialog(true)}>
                         <LogOut className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
@@ -718,44 +574,23 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               </div>
             </div>
 
-            {/* IDs Section */}
-            <UserIdsSection 
-              userId={user.id} 
-              customerId={profile?.customer_id || null}
-            />
-
-            {/* Badges Row (earned + status like Eclipse+) */}
-            <StatusBadgesSection userId={user.id} isSubscribed={isSubscribed} userBadges={userBadges} badges={badges} />
-
-            {/* Quick Stats Bar */}
+            {/* Quick Stats Row */}
             <div className="grid grid-cols-4 border-t border-border divide-x divide-border">
-              <Link
-                to="/purchases"
-                className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors"
-              >
+              <Link to="/purchases" className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors">
                 <Download className="h-4 w-4 text-primary mb-1" />
-                <span className="text-xs font-bold">{orders?.length ?? '–'}</span>
+                <span className="text-xs font-bold">{completedOrders}</span>
                 <span className="text-[10px] text-muted-foreground">Purchases</span>
               </Link>
-              <Link
-                to="/credits"
-                className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors"
-              >
+              <Link to="/credits" className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors">
                 <CreditCard className="h-4 w-4 text-primary mb-1" />
                 <span className="text-xs font-bold">£{walletData?.balance != null ? Number(walletData.balance).toFixed(2) : '–'}</span>
                 <span className="text-[10px] text-muted-foreground">Wallet</span>
               </Link>
-              <Link
-                to="/chat-history"
-                className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors"
-              >
+              <Link to="/chat-history" className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors">
                 <MessageSquare className="h-4 w-4 text-primary mb-1" />
                 <span className="text-[10px] text-muted-foreground">Support</span>
               </Link>
-              <Link
-                to="/notifications"
-                className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors relative"
-              >
+              <Link to="/notifications" className="flex flex-col items-center justify-center py-3 hover:bg-muted/50 transition-colors relative">
                 <Bell className="h-4 w-4 text-primary mb-1" />
                 {(unreadCount ?? 0) > 0 && (
                   <span className="absolute top-2 right-1/4 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
@@ -768,238 +603,111 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
           </CardContent>
         </Card>
 
-        {/* Eclipse+ Subscription Card */}
+        {/* ═══ Shopping ═══ */}
+        <Card className="bg-card border-border overflow-hidden">
+          <CardContent className="p-1">
+            <SectionHeader title="Shopping" />
+            <NavRow icon={Download} label="My Purchases" to="/purchases" />
+            <NavRow icon={ShoppingBag} label="Order History" to="/purchases" badge={orders?.length || undefined} />
+            <NavRow icon={CreditCard} label="Wallet & Credits" to="/credits" badge={walletData?.balance ? `£${Number(walletData.balance).toFixed(2)}` : undefined} />
+          </CardContent>
+        </Card>
 
-        {/* Account Stats */}
-        <AccountStatsBar
-          totalOrders={orders?.filter((o: any) => o.status === 'paid' || o.status === 'completed').length ?? 0}
-          totalSpent={totalSpent}
-          memberSince={user.created_at}
-          isLoading={ordersLoading}
-        />
-
-        {/* Tabbed Content */}
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList className="w-full grid grid-cols-4 h-auto p-1">
-            <TabsTrigger value="profile" className="flex items-center gap-2 py-2.5">
-              <User className="h-4 w-4" />
-              <span className="hidden sm:inline">Profile</span>
-            </TabsTrigger>
-            <TabsTrigger value="shopping" className="flex items-center gap-2 py-2.5">
-              <ShoppingBag className="h-4 w-4" />
-              <span className="hidden sm:inline">Shopping</span>
-            </TabsTrigger>
-            <TabsTrigger value="preferences" className="flex items-center gap-2 py-2.5">
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Preferences</span>
-            </TabsTrigger>
-            <TabsTrigger value="security" className="flex items-center gap-2 py-2.5">
-              <CreditCard className="h-4 w-4" />
-              <span className="hidden sm:inline">Security</span>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Profile Tab */}
-          <TabsContent value="profile" className="space-y-6">
-
-            {/* Linked Accounts */}
-            <LinkedAccountsCard
-              userId={user.id}
-              discordId={profile?.discord_id || null}
-              discordUsername={profile?.discord_username || null}
-              robloxUserId={profile?.roblox_user_id || null}
-              robloxUsername={profile?.roblox_username || null}
-              hasEclipsePlus={isSubscribed}
-              accountsLocked={(profile as any)?.accounts_locked}
-              onUpdate={() => {
-                queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
-                queryClient.invalidateQueries({ queryKey: ['user-profile-linked-accounts', user.id] });
-                queryClient.invalidateQueries({ queryKey: ['discord-avatar'] });
-              }}
-            />
-
-
-            {/* Eclipse+ Subscription */}
-            <SubscriptionCard />
-
-
-            {/* Grid for referral/affiliate cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {hasMarketplaceAccess && <BecomeSellerCard />}
-              <ReferralCard />
-              <AffiliateCard />
-              <CreditsCard />
-            </div>
-          </TabsContent>
-
-          {/* Shopping Tab */}
-          <TabsContent value="shopping" className="space-y-6">
-            {/* My Purchases */}
-            <MyPurchasesCard />
-
-            {/* Order History */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ShoppingBag className="h-5 w-5" />
-                  Order History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {ordersLoading ? (
-                  <div className="text-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground mt-2">Loading orders...</p>
-                  </div>
-                ) : !orders || orders.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>You haven't made any orders yet.</p>
-                    <Button asChild className="mt-4" variant="outline">
-                      <Link to="/products">Start Shopping</Link>
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {orders.map((order) => (
-                      <div key={order.id} className="p-4 rounded-lg bg-muted/50 space-y-4">
-                        {/* Order Header */}
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <p className="font-mono text-sm font-medium">
-                                Order #{order.id.slice(0, 8).toUpperCase()}
-                              </p>
-                              {getStatusBadge(order.status)}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(order.created_at).toLocaleDateString('en-GB', {
-                                day: 'numeric',
-                                month: 'long',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </p>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <p className="font-bold text-lg">£{Number(order.total).toFixed(2)}</p>
-                            {order.discount_amount > 0 && (
-                              <p className="text-xs text-primary">
-                                Saved £{Number(order.discount_amount).toFixed(2)}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Order Items */}
-                        <div className="border-t border-border pt-3 space-y-2">
-                          {order.order_items?.map((item: any) => {
-                            const hasAsset = !!item.product?.asset_file_url;
-                            const isPaid = order.status === 'paid' || order.status === 'completed';
-                            
-                            return (
-                              <div 
-                                key={item.id}
-                                className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/70 transition-colors"
-                              >
-                                {/* Product Image */}
-                                <div className="w-12 h-12 rounded-md overflow-hidden bg-muted shrink-0">
-                                  {item.product?.images?.[0] ? (
-                                    <img 
-                                      src={item.product.images[0]} 
-                                      alt={item.product_name}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                      <Package className="h-5 w-5 text-muted-foreground" />
-                                    </div>
-                                  )}
-                                </div>
-                                
-                                {/* Product Info */}
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-sm truncate">{item.product_name}</p>
-                                  <p className="text-xs text-muted-foreground">£{Number(item.price).toFixed(2)}</p>
-                                </div>
-                                
-                                {/* Download Button */}
-                                {isPaid && hasAsset && (
-                                  <Button
-                                    asChild
-                                    size="sm"
-                                    variant="outline"
-                                    className="shrink-0"
-                                  >
-                                    <Link to="/purchases">
-                                      <Download className="h-3.5 w-3.5 mr-1.5" />
-                                      Download
-                                    </Link>
-                                  </Button>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                        
-                        {/* Payment Info */}
-                        <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
-                          <span>
-                            Payment: {order.payment_method ? order.payment_method.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) : 'Card'}
-                          </span>
-                          <span>{order.order_items?.length || 0} item(s)</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Preferences Tab */}
-          <TabsContent value="preferences">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Theme Settings */}
-              <ThemeSettingsCard />
-
-              {/* Email Subscriptions */}
-              <EmailSubscriptionCard />
-
-              {/* Notification Settings */}
-              <NotificationSettingsCard />
-
-              {/* Sound Customization */}
-              <SoundCustomizationCard />
-            </div>
-          </TabsContent>
-
-          {/* Security Tab */}
-          <TabsContent value="security">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-              {/* Saved Payment Methods */}
+        {/* ═══ Account ═══ */}
+        <Card className="bg-card border-border overflow-hidden">
+          <CardContent className="p-1">
+            <SectionHeader title="Account" />
+            <ExpandableSection icon={Link2} label="Linked Accounts">
+              <LinkedAccountsCard
+                userId={user.id}
+                discordId={profile?.discord_id || null}
+                discordUsername={profile?.discord_username || null}
+                robloxUserId={profile?.roblox_user_id || null}
+                robloxUsername={profile?.roblox_username || null}
+                hasEclipsePlus={isSubscribed}
+                accountsLocked={(profile as any)?.accounts_locked}
+                onUpdate={() => {
+                  queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+                  queryClient.invalidateQueries({ queryKey: ['user-profile-linked-accounts', user.id] });
+                  queryClient.invalidateQueries({ queryKey: ['discord-avatar'] });
+                }}
+              />
+            </ExpandableSection>
+            <ExpandableSection icon={Shield} label="Saved Payment Methods">
               <SavedCardsCard />
-            </div>
-          </TabsContent>
-        </Tabs>
+            </ExpandableSection>
+            <ExpandableSection icon={Sparkles} label="Eclipse+ Subscription">
+              <SubscriptionCard />
+            </ExpandableSection>
+          </CardContent>
+        </Card>
 
-        {/* Sign Out Confirmation Dialog */}
+        {/* ═══ Preferences ═══ */}
+        <Card className="bg-card border-border overflow-hidden">
+          <CardContent className="p-1">
+            <SectionHeader title="Preferences" />
+            <ExpandableSection icon={Palette} label="Theme">
+              <ThemeSettingsCard />
+            </ExpandableSection>
+            <ExpandableSection icon={Bell} label="Notifications">
+              <NotificationSettingsCard />
+            </ExpandableSection>
+            <ExpandableSection icon={Mail} label="Email Preferences">
+              <EmailSubscriptionCard />
+            </ExpandableSection>
+            <ExpandableSection icon={Volume2} label="Sound Effects">
+              <SoundCustomizationCard />
+            </ExpandableSection>
+          </CardContent>
+        </Card>
+
+        {/* ═══ More ═══ */}
+        <Card className="bg-card border-border overflow-hidden">
+          <CardContent className="p-1">
+            <SectionHeader title="More" />
+            {hasMarketplaceAccess && (
+              <ExpandableSection icon={Store} label="Become a Seller">
+                <BecomeSellerCard />
+              </ExpandableSection>
+            )}
+            <ExpandableSection icon={Gift} label="Referrals">
+              <ReferralCard />
+            </ExpandableSection>
+            <ExpandableSection icon={Award} label="Affiliate Program">
+              <AffiliateCard />
+            </ExpandableSection>
+            <ExpandableSection icon={CreditCard} label="Credits & Rewards">
+              <CreditsCard />
+            </ExpandableSection>
+            <UserIdsCollapsible userId={user.id} customerId={profile?.customer_id || null} />
+          </CardContent>
+        </Card>
+
+        {/* ═══ Danger Zone ═══ */}
+        <Card className="bg-card border-border overflow-hidden">
+          <CardContent className="p-1">
+            <button onClick={() => setShowDeleteDialog(true)} className="w-full">
+              <NavRow icon={Trash2} label="Delete Account" destructive />
+            </button>
+          </CardContent>
+        </Card>
+
+        {/* App Version */}
+        <p className="text-center text-[10px] text-muted-foreground/60 pb-4">Eclipse v2.0</p>
+
+        {/* Dialogs */}
         <SignOutConfirmDialog
           open={showSignOutDialog}
           onOpenChange={setShowSignOutDialog}
           onConfirm={handleSignOut}
           isLoading={isSigningOut}
         />
-
-        {/* Delete Profile Dialog */}
         <DeleteProfileDialog
           open={showDeleteDialog}
           onOpenChange={setShowDeleteDialog}
           userEmail={user.email || ''}
           onDeleted={() => navigate('/')}
         />
-
       </div>
     </MainLayout>
   );
