@@ -11,6 +11,7 @@ export interface OnboardingStep {
   completed: boolean;
   href: string;
   required: boolean;
+  estimatedMinutes?: number;
 }
 
 export interface OnboardingData {
@@ -69,15 +70,54 @@ export function useSellerOnboarding() {
     staleTime: 2 * 60 * 1000,
   });
 
+  // Consolidated 5 steps: TOS → Store Setup (appearance+categories) → Payout → First Product → Extras (optional)
   const steps: OnboardingStep[] = data
     ? [
-        { id: 'tos', title: 'Terms of Service', description: 'Review and accept the seller agreement', completed: data.tosSigned, href: '/seller/documents/terms', required: true },
-        { id: 'appearance', title: 'Store Appearance', description: 'Upload a logo and banner', completed: data.hasAppearance, href: '/seller/settings/appearance', required: true },
-        { id: 'categories', title: 'Categories', description: 'Choose your product categories', completed: data.categoriesEnabled, href: '/seller/categories', required: true },
-        { id: 'payments', title: 'Payout Method', description: 'Choose how you want to get paid', completed: data.hasPayoutMethod, href: '/seller/settings/payments', required: true },
-        { id: 'roblox', title: 'Roblox Link', description: 'Link your Roblox creator store', completed: data.hasRobloxLink, href: '/seller/roblox', required: false },
-        { id: 'socials', title: 'Social Links', description: 'Connect your community channels', completed: data.hasSocials, href: '/seller/settings/profile', required: false },
-        { id: 'products', title: 'First Product', description: 'Create your first listing', completed: data.hasProducts, href: '/seller/products/new', required: true },
+        {
+          id: 'tos',
+          title: 'Terms of Service',
+          description: 'Review and accept the seller agreement',
+          completed: data.tosSigned,
+          href: '/seller/documents/terms',
+          required: true,
+          estimatedMinutes: 2,
+        },
+        {
+          id: 'store-setup',
+          title: 'Store Setup',
+          description: 'Brand your store with a logo, banner, and categories',
+          completed: data.hasAppearance && data.categoriesEnabled,
+          href: '/seller/settings/appearance',
+          required: true,
+          estimatedMinutes: 3,
+        },
+        {
+          id: 'payments',
+          title: 'Payout Method',
+          description: 'Choose how you want to get paid',
+          completed: data.hasPayoutMethod,
+          href: '/seller/settings/payments',
+          required: true,
+          estimatedMinutes: 2,
+        },
+        {
+          id: 'products',
+          title: 'First Product',
+          description: 'Create your first listing and start selling',
+          completed: data.hasProducts,
+          href: '/seller/products/new',
+          required: true,
+          estimatedMinutes: 3,
+        },
+        {
+          id: 'extras',
+          title: 'Extras',
+          description: 'Link Roblox profile & social channels (optional)',
+          completed: data.hasSocials || data.hasRobloxLink,
+          href: '/seller/settings/profile',
+          required: false,
+          estimatedMinutes: 1,
+        },
       ]
     : [];
 
@@ -89,6 +129,25 @@ export function useSellerOnboarding() {
   const progress = steps.length > 0 ? Math.round((completedCount / steps.length) * 100) : 0;
   const nextStep = steps.find((s) => !s.completed);
 
+  const remainingMinutes = steps
+    .filter((s) => !s.completed)
+    .reduce((sum, s) => sum + (s.estimatedMinutes || 1), 0);
+
+  // Store health score (0-100) for post-onboarding dashboard
+  const healthScore = data
+    ? Math.round(
+        ([
+          data.tosSigned,
+          data.hasAppearance,
+          data.categoriesEnabled,
+          data.hasPayoutMethod,
+          data.hasProducts,
+          data.hasSocials,
+          data.hasRobloxLink,
+        ].filter(Boolean).length / 7) * 100
+      )
+    : 0;
+
   return {
     steps,
     data,
@@ -99,6 +158,8 @@ export function useSellerOnboarding() {
     allComplete,
     allRequiredComplete,
     nextStep,
+    remainingMinutes,
+    healthScore,
     isOnboardingNeeded: !isLoading && data !== null && !allRequiredComplete,
   };
 }
