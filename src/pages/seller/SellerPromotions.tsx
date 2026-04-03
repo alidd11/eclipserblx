@@ -63,7 +63,7 @@ export default function SellerPromotions() {
         .from('credit_transactions')
         .select('*')
         .eq('user_id', user.id)
-        .ilike('description', '%promotion%')
+        .or('description.ilike.%Ad click%,description.ilike.%Ad CPM%,description.ilike.%promotion%')
         .order('created_at', { ascending: false })
         .limit(50);
       if (error) return [];
