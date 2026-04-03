@@ -1,0 +1,91 @@
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { PrefetchLink as Link } from '@/components/PrefetchLink';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Gift, ArrowRight } from 'lucide-react';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
+import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { Button } from '@/components/ui/button';
+
+export function FreeAssetsTeaser() {
+  const { data: products, isLoading } = useQuery({
+    queryKey: ['free-assets-teaser'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, slug, images, download_count, stores!inner(is_active)')
+        .eq('is_active', true)
+        .eq('moderation_status', 'approved')
+        .eq('stores.is_active', true)
+        .eq('price', 0)
+        .order('download_count', { ascending: false })
+        .limit(6);
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+
+  if (isLoading) {
+    return (
+      <section className="px-4 sm:px-6 lg:px-8 py-6">
+        <Skeleton className="h-6 w-36 mb-4" />
+        <div className="flex gap-3 overflow-hidden">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="min-w-[140px] aspect-square rounded-lg" />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (!products?.length) return null;
+
+  return (
+    <section className="px-4 sm:px-6 lg:px-8 py-6">
+      <ScrollReveal direction="up" distance={16} duration={0.35}>
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Gift className="h-4 w-4 text-primary" />
+              <h2 className="text-lg font-bold tracking-tight">Free Assets</h2>
+              <span className="text-[10px] uppercase tracking-wider text-primary/70 font-semibold bg-primary/10 px-1.5 py-0.5 rounded">
+                No fees
+              </span>
+            </div>
+            <Link to="/free">
+              <Button variant="ghost" size="sm" className="text-xs text-primary">
+                View All <ArrowRight className="ml-1 h-3 w-3" />
+              </Button>
+            </Link>
+          </div>
+
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-6 lg:overflow-visible lg:pb-0">
+            {products.map((product) => {
+              const imageUrl = getFirstImageUrl(product.images);
+              return (
+                <Link key={product.id} to={`/product/${product.slug}`} className="block min-w-[120px] lg:min-w-0 group">
+                  <div className="aspect-square rounded-lg overflow-hidden bg-muted border border-border">
+                    {imageUrl ? (
+                      <img
+                        src={optimizeImageUrl(imageUrl, 300)}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">No image</div>
+                    )}
+                  </div>
+                  <p className="text-xs font-medium mt-1.5 truncate group-hover:text-primary transition-colors">{product.name}</p>
+                  <p className="text-[10px] text-green-500 font-semibold">Free</p>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </ScrollReveal>
+    </section>
+  );
+}
