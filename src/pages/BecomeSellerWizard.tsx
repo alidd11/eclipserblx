@@ -24,7 +24,8 @@ import { cn } from '@/lib/utils';
 import {
   Store, ArrowRight, ArrowLeft, CheckCircle2, Circle, Loader2,
   Shield, Users, Mail, ShoppingBag, UserCheck, Clock, XCircle,
-  Award, Sparkles, ExternalLink, Rocket, PartyPopper, ChevronRight
+  Award, Sparkles, ExternalLink, Rocket, PartyPopper, ChevronRight,
+  Download, Package
 } from 'lucide-react';
 
 const PRODUCT_CATEGORIES = [
@@ -753,8 +754,15 @@ function AutoApprovedView() {
       action: { label: 'Customize', href: '/seller/setup' },
     },
     { 
+      step: 'Import Existing Products', 
+      desc: 'Already selling on ClearlyDev, BuiltByBit, or Payhip? Import your catalog instantly', 
+      done: false, 
+      icon: Download,
+      action: { label: 'Import Products', href: '/seller/import' },
+    },
+    { 
       step: 'List Your First Product', 
-      desc: 'Upload your first asset and start earning immediately', 
+      desc: 'Or create a new product from scratch and start earning', 
       done: false, 
       icon: Rocket,
       action: { label: 'Add Product', href: '/seller/products/new' },
@@ -838,7 +846,7 @@ function ApplicationSubmittedView() {
           { step: 'Application Received', desc: 'Your application is in our queue', done: true, icon: CheckCircle2 },
           { step: 'Under Review', desc: 'Our team reviews within 24-48 hours', done: false, icon: Clock },
           { step: 'Decision', desc: "You'll receive a notification", done: false, icon: Mail },
-          { step: 'Store Setup', desc: 'Customize your store and list products', done: false, icon: Store },
+          { step: 'Store Setup', desc: 'Customize your store, import products, and start listing', done: false, icon: Store },
         ].map((item, i) => (
           <div key={i} className="flex gap-3">
             <div className="flex flex-col items-center">
