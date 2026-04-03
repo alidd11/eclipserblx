@@ -14,12 +14,9 @@ interface Campaign {
   id: string;
   campaign_name: string | null;
   product_id: string;
-  slot_type: string;
   status: string;
   impressions: number;
   clicks: number;
-  max_bid: number;
-  current_bid: number;
   total_spent: number;
   total_budget: number;
   pricing_model: string;
