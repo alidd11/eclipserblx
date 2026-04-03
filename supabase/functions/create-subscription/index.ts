@@ -188,8 +188,8 @@ async function getSellerProConfig(
   return {
     priceId,
     lineItems: [{ price: priceId, quantity: 1 }],
-    successUrl: \`\${returnOrigin}/seller/pro?subscription=success\`,
-    cancelUrl: \`\${returnOrigin}/seller/pro?subscription=cancelled\`,
+    successUrl: `${returnOrigin}/seller/pro?subscription=success`,
+    cancelUrl: `${returnOrigin}/seller/pro?subscription=cancelled`,
     metadata: meta,
     subscriptionMetadata: meta,
   };
