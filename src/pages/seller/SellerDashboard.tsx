@@ -17,7 +17,7 @@ import { RecentOrdersTable } from '@/components/seller/RecentOrdersTable';
 import { TosBanner, NonCompliantBanner, PendingReviewBanner } from '@/components/seller/banners';
 import { DashboardCardSkeleton } from '@/components/seller/DashboardSkeletons';
 import { 
-  Package, ShoppingCart, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone, ChevronDown
+  Package, ShoppingCart, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
