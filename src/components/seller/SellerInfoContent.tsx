@@ -1,6 +1,5 @@
 import { 
   ArrowRight,
-  Sparkles,
   Lock,
   TrendingUp,
   Shield,
