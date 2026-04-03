@@ -1,34 +1,28 @@
 
 
-# Sidebar User Card & CTA (BoostEXA-inspired)
+# Mobile Tab Bar Redesign (BoostEXA-inspired)
 
-Add a user profile card and prominent CTA button to the Eclipse sidebar, positioned between the branded header and the navigation groups.
+Redesign the bottom navigation to match the BoostEXA style with Eclipse theming: rounded icon backgrounds for active state, a raised/elevated center Cart button, 5 tabs, and an underline indicator.
 
-## What's Being Added
+## Changes
 
-**User card** (below header, above nav):
-- User avatar (first letter fallback, purple gradient background)
-- Display name + plan label ("Eclipse+" or "FREE PLAN")
-- Balance card showing wallet balance with "Add Funds" link → `/credits`
-- Close/dismiss button on mobile drawer
+### Tab Structure (5 tabs instead of 4)
+1. **Home** (Home icon)
+2. **Browse** (Compass icon) → `/products`
+3. **Cart** (ShoppingCart icon) → raised/elevated center button
+4. **Orders** (Package icon) → `/account?section=purchases`
+5. **Hub** (Grid3X3 icon) → `/account`
 
-**CTA button** (below user card):
-- Large purple gradient "Start Selling" button (for non-sellers) or "Seller Dashboard" (for sellers)
-- Lightning bolt icon, matches the BoostEXA "New Order" style
-- Links to `/sell` or `/seller` based on seller status
+### Visual Style
+- **Active state**: Icon wrapped in a rounded `bg-primary/15` pill with purple text + bold underline bar beneath the label
+- **Cart center button**: Raised above the bar with a larger rounded-xl background (`bg-muted/80`), slightly bigger icon, floating above other tabs
+- **Icons**: Larger (`h-6 w-6`), with active icons using `stroke-[2.5]`
+- **Bar**: Taller (`h-16`), subtle top border, `bg-card/95 backdrop-blur-md`
+- **Labels**: `text-[11px]`, active = primary color + semibold
 
-**Collapsed state**: Card hides entirely; CTA becomes a small icon-only button with tooltip.
+### Cart Badge
+- Stays as-is but positioned on the raised button
 
-## Technical Details
-
-### File: `src/components/layout/CustomerSidebar.tsx`
-- Import `useCredits` for balance, `useAuth` for user info, `Zap` icon
-- Add a `SidebarUserCard` section between the header `div` and the `<nav>` element
-- User card renders conditionally when `user` is present and sidebar is expanded
-- Balance displays with `£` prefix, "Add Funds" links to `/credits`
-- CTA button uses `bg-gradient-to-r from-primary to-purple-500` styling
-- On mobile drawer, show an `X` close button in the card header
-
-### File: `src/components/layout/sidebar/SidebarFooter.tsx`
-- No changes needed -- sign out stays in footer
+## File Modified
+- `src/components/layout/MobileTabBar.tsx` -- full rewrite with new 5-tab layout, raised center cart, active pill backgrounds, underline indicators
 
