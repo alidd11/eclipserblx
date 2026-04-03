@@ -45,7 +45,7 @@ export function CampaignAnalytics({ campaignId, productSlug, startedAt, expiresA
     deviceMap[dev] = (deviceMap[dev] || 0) + 1;
     const country = v.country || 'Unknown';
     countryMap[country] = (countryMap[country] || 0) + 1;
-    const day = format(parseISO(v.visited_at), 'MMM d');
+    const day = format(parseISO(v.created_at), 'MMM d');
     dailyMap[day] = (dailyMap[day] || 0) + 1;
   });
 
