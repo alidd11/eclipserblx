@@ -423,17 +423,10 @@ export function SellerInfoContent() {
         </div>
         <div className="flex flex-wrap justify-center gap-4">
           <a 
-            href="/auth?redirect=%2Faccount"
+            href="/become-seller"
             className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors"
           >
-            Sign In & Apply
-            <ArrowRight className="h-4 w-4" />
-          </a>
-          <a 
-            href="/auth?tab=signup&redirect=%2Faccount"
-            className="inline-flex items-center gap-2 px-6 py-3 border border-primary text-primary font-semibold rounded-lg hover:bg-primary/10 transition-colors"
-          >
-            Create Account
+            Apply Now
             <ArrowRight className="h-4 w-4" />
           </a>
           <a 
