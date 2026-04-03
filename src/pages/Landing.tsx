@@ -9,6 +9,15 @@ const PWADiscordBanner = lazy(() => import('@/components/landing/PWADiscordBanne
 const ActiveOffersCard = lazy(() => import('@/components/home/ActiveOffersCard').then(m => ({ default: m.ActiveOffersCard })));
 const ForYouSection = lazy(() => import('@/components/home/ForYouSection').then(m => ({ default: m.ForYouSection })));
 const AbandonedCartBanner = lazy(() => import('@/components/marketplace/AbandonedCartBanner').then(m => ({ default: m.AbandonedCartBanner })));
+
+// New v3.2 landing sections
+const TrendingProducts = lazy(() => import('@/components/landing/TrendingProducts').then(m => ({ default: m.TrendingProducts })));
+const FreeAssetsTeaser = lazy(() => import('@/components/landing/FreeAssetsTeaser').then(m => ({ default: m.FreeAssetsTeaser })));
+const FeaturedCreators = lazy(() => import('@/components/landing/FeaturedCreators').then(m => ({ default: m.FeaturedCreators })));
+const WhyEclipse = lazy(() => import('@/components/landing/WhyEclipse').then(m => ({ default: m.WhyEclipse })));
+const TrustBar = lazy(() => import('@/components/landing/TrustBar').then(m => ({ default: m.TrustBar })));
+const FinalCTA = lazy(() => import('@/components/landing/FinalCTA').then(m => ({ default: m.FinalCTA })));
+
 import { OrganizationSchema, WebsiteSearchSchema, SiteNavigationSchema } from '@/components/seo/StructuredData';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
@@ -29,10 +38,12 @@ export default function Landing() {
       <WebsiteSearchSchema />
       <SiteNavigationSchema />
 
+      {/* Hero */}
       <SectionErrorBoundary section="hero" compact>
         <LandingHero />
       </SectionErrorBoundary>
 
+      {/* Promotions + Banners */}
       <SectionErrorBoundary section="promotions" compact>
         <ScrollReveal direction="up" distance={20} duration={0.4}>
           <div className="px-4 sm:px-6 lg:px-8 -mt-10 relative z-20 space-y-3">
@@ -63,12 +74,68 @@ export default function Landing() {
         </div>
       </Suspense>
 
+      {/* Trending Products */}
+      <LazySection minHeight="200px" rootMargin="300px">
+        <SectionErrorBoundary section="trending" compact>
+          <Suspense fallback={null}>
+            <TrendingProducts />
+          </Suspense>
+        </SectionErrorBoundary>
+      </LazySection>
+
+      {/* Marketplace (categories + products) */}
       <LazySection minHeight="600px" rootMargin="300px">
         <SectionErrorBoundary section="marketplace">
           <MarketplaceSection />
         </SectionErrorBoundary>
       </LazySection>
 
+      {/* Free Assets Teaser */}
+      <LazySection minHeight="200px" rootMargin="200px">
+        <SectionErrorBoundary section="free-assets" compact>
+          <Suspense fallback={null}>
+            <FreeAssetsTeaser />
+          </Suspense>
+        </SectionErrorBoundary>
+      </LazySection>
+
+      {/* Featured Creators */}
+      <LazySection minHeight="150px" rootMargin="200px">
+        <SectionErrorBoundary section="featured-creators" compact>
+          <Suspense fallback={null}>
+            <FeaturedCreators />
+          </Suspense>
+        </SectionErrorBoundary>
+      </LazySection>
+
+      {/* Why Eclipse */}
+      <LazySection minHeight="200px" rootMargin="200px">
+        <SectionErrorBoundary section="why-eclipse" compact>
+          <Suspense fallback={null}>
+            <WhyEclipse />
+          </Suspense>
+        </SectionErrorBoundary>
+      </LazySection>
+
+      {/* Trust Bar */}
+      <LazySection minHeight="60px" rootMargin="200px">
+        <SectionErrorBoundary section="trust-bar" compact>
+          <Suspense fallback={null}>
+            <TrustBar />
+          </Suspense>
+        </SectionErrorBoundary>
+      </LazySection>
+
+      {/* Final CTA */}
+      <LazySection minHeight="150px" rootMargin="200px">
+        <SectionErrorBoundary section="final-cta" compact>
+          <Suspense fallback={null}>
+            <FinalCTA />
+          </Suspense>
+        </SectionErrorBoundary>
+      </LazySection>
+
+      {/* For You */}
       <LazySection minHeight="200px" rootMargin="200px">
         <SectionErrorBoundary section="for-you" compact>
           <Suspense fallback={null}>

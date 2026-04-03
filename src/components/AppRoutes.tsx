@@ -57,6 +57,7 @@ const Advertise = lazyWithRetry(() => import("@/pages/Advertise"));
 const Credits = lazyWithRetry(() => import("@/pages/Credits"));
 const Sell = lazyWithRetry(() => import("@/pages/Sell"));
 const SearchResults = lazyWithRetry(() => import("@/pages/SearchResults"));
+const FreeAssets = lazyWithRetry(() => import("@/pages/FreeAssets"));
 const MyAdvertisementsPage = lazyWithRetry(() => import("@/pages/Account/MyAdvertisementsPage"));
 const AdAnalyticsPage = lazyWithRetry(() => import("@/pages/Account/AdAnalyticsPage"));
 const FollowingPage = lazyWithRetry(() => import("@/pages/Account/FollowingPage").then(m => ({ default: m.FollowingPage })));
@@ -316,6 +317,7 @@ export function AppRoutes() {
         <Route path="/orders" element={<MyPurchases />} />
         <Route path="/products" element={<Products />} />
         <Route path="/search" element={<SearchResults />} />
+        <Route path="/free" element={<FreeAssets />} />
         <Route path="/featured" element={<Featured />} />
         <Route path="/categories" element={<Categories />} />
         
