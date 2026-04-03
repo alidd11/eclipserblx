@@ -251,43 +251,13 @@ export function SellerInfoContent() {
         </div>
       </section>
 
-      {/* Earnings */}
+      {/* Earnings Calculator */}
       <section className="py-12 md:py-16 px-5">
         <div className="max-w-md mx-auto">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground text-center mb-2">Transparent earnings</h2>
-          <p className="text-center text-xs text-muted-foreground mb-8">Simple flat commission — no surprise deductions</p>
+          <h2 className="text-xl md:text-2xl font-bold text-foreground text-center mb-2">See what you could earn</h2>
+          <p className="text-center text-xs text-muted-foreground mb-8">Drag the sliders — no surprise deductions, ever</p>
 
-          <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-border/30 flex items-center gap-2 bg-muted/15">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-foreground">Example: £10.00 Sale</span>
-            </div>
-            
-            <div className="divide-y divide-border/20">
-              <div className="flex justify-between items-center px-5 py-3">
-                <span className="text-sm text-muted-foreground">Sale Price</span>
-                <span className="text-sm font-medium text-foreground">£10.00</span>
-              </div>
-              <div className="flex justify-between items-center px-5 py-3">
-                <span className="text-sm text-muted-foreground">Stripe / Payment Fees</span>
-                <span className="text-sm font-medium text-green-500">£0.00 (we cover this)</span>
-              </div>
-              <div className="flex justify-between items-center px-5 py-3">
-                <span className="text-sm text-muted-foreground">Eclipse Commission (15%)</span>
-                <span className="text-sm font-medium text-destructive">−£1.50</span>
-              </div>
-              <div className="flex justify-between items-center px-5 py-4 bg-primary/5">
-                <span className="font-semibold text-primary text-sm">You Receive</span>
-                <span className="text-2xl font-bold text-primary">£8.50</span>
-              </div>
-            </div>
-
-            <div className="px-5 py-3.5 border-t border-border/30 text-center">
-              <p className="text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">85% yours</span> · Flat 15% commission · We cover payment fees
-              </p>
-            </div>
-          </div>
+          <InteractiveEarningsCalculator />
         </div>
       </section>
 
