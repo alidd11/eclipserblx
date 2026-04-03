@@ -1,4 +1,5 @@
 import { ReactNode, useState, lazy, Suspense } from 'react';
+import { GlobalCategoryBar } from '@/components/shop/GlobalCategoryBar';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Header } from '@/components/layout/Header';
 // Lazy-load below-fold Footer to reduce initial bundle
@@ -106,12 +107,15 @@ function LayoutShellInner({
           {customHeader ? (
             customHeader(() => setMobileOpen(true))
           ) : (
-            <Header
-              showDesktopNav={false}
-              onMenuClick={() => setMobileOpen(true)}
-              className=""
-              {...headerProps}
-            />
+            <>
+              <Header
+                showDesktopNav={false}
+                onMenuClick={() => setMobileOpen(true)}
+                className=""
+                {...headerProps}
+              />
+              <GlobalCategoryBar />
+            </>
           )}
           {showBreadcrumb && (
             <Suspense fallback={null}><UniversalBreadcrumb /></Suspense>
