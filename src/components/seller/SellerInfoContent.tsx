@@ -7,123 +7,114 @@ import {
   Percent,
   Wallet,
   CheckCircle2,
+  Zap,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-
-const stats = [
-  { value: "90%", label: "Max Earnings" },
-  { value: "100%", label: "IP Ownership" },
-  { value: "3", label: "Payout Methods" },
-  { value: "24h", label: "Review Time" },
-];
 
 const sellingPoints = [
   {
     icon: Percent,
-    title: "Industry-Leading Earnings",
-    description: "Keep up to 90% of net earnings. Commission is calculated after payment processing fees — not before.",
-    highlight: "85% base · 90% with Eclipse+",
+    title: "Keep 85% of Every Sale",
+    description: "Flat 15% commission on the gross price — we absorb all Stripe and payment processing fees. No hidden deductions.",
+    highlight: "90% with Eclipse+",
   },
   {
     icon: Lock,
-    title: "You Own Everything",
-    description: "We only get a license to display and sell. You retain full IP, sell on other platforms, and remove products anytime.",
-    highlight: "Zero lock-in",
+    title: "100% IP Ownership",
+    description: "You retain full intellectual property rights. Sell on other platforms, remove products anytime — zero lock-in.",
+    highlight: "Your work, your rules",
   },
   {
     icon: Wallet,
-    title: "Get Paid Your Way",
-    description: "Stripe Connect direct to bank, PayPal, or manual bank transfer. Automatic payouts, no platform credits.",
-    highlight: "3 payout options",
+    title: "3 Payout Options",
+    description: "Stripe Connect (direct to bank), PayPal, or manual bank transfer. Automatic payouts on your schedule.",
+    highlight: "No platform credits",
   },
   {
     icon: Shield,
-    title: "Built-In Protection",
-    description: "AI-powered Lua script analysis, virus scanning on all uploads, and manual product moderation before going live.",
-    highlight: "Multi-layer security",
+    title: "Multi-Layer Security",
+    description: "AI Lua script analysis for backdoor detection, virus scanning on every upload, and manual moderation before listing.",
+    highlight: "Automated protection",
   },
 ];
 
-const earningsBreakdown = [
-  { label: "Customer Pays", value: "£10.00", type: "neutral" as const },
-  { label: "Stripe Fee (1.5% + £0.20)", value: "-£0.35", type: "deduction" as const },
-  { label: "Net After Stripe", value: "£9.65", type: "neutral" as const },
-  { label: "Platform Commission (15%)", value: "-£1.45", type: "deduction" as const },
+const comparisonRows = [
+  { feature: "Seller Earnings", eclipse: "85–90% of gross", others: "70% or less" },
+  { feature: "Processing Fees", eclipse: "We absorb them", others: "Deducted from you" },
+  { feature: "IP Ownership", eclipse: "100% yours", others: "Broad platform rights" },
+  { feature: "Payouts", eclipse: "Stripe / PayPal / Bank", others: "Credits or limited" },
+  { feature: "Lock-in", eclipse: "None — sell anywhere", others: "Exclusive or restricted" },
+  { feature: "Security", eclipse: "AI scan + virus check", others: "Manual review" },
 ];
 
 const steps = [
-  { title: "Create Account", description: "Sign up free with email or Roblox" },
-  { title: "Apply", description: "Quick application, reviewed in 24-48h" },
-  { title: "Connect Payouts", description: "Link Stripe, PayPal, or bank details" },
-  { title: "Start Selling", description: "List products and start earning" },
-];
-
-const comparisonRows = [
-  { feature: "Your Earnings", eclipse: "Up to 90%", others: "70% or less" },
-  { feature: "IP Ownership", eclipse: "100% yours", others: "Broad platform rights" },
-  { feature: "Payout Methods", eclipse: "Stripe / PayPal / Bank", others: "Limited or credits" },
-  { feature: "Platform Lock-in", eclipse: "None", others: "Exclusive or restricted" },
-  { feature: "Store Customization", eclipse: "5 themes + 7 colors", others: "Basic or none" },
-  { feature: "Security Scanning", eclipse: "AI + virus scan", others: "Manual review" },
+  { title: "Sign Up", description: "Create a free account with email or Roblox" },
+  { title: "Apply", description: "Quick application — reviewed within 24–48 hours" },
+  { title: "Set Up Payouts", description: "Connect Stripe, PayPal, or bank details" },
+  { title: "Start Earning", description: "List your first product and go live" },
 ];
 
 export function SellerInfoContent() {
   return (
-    <div className="space-y-0">
+    <div>
       {/* Hero */}
-      <section className="relative py-16 md:py-24 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
-        <div className="relative max-w-3xl mx-auto px-4 space-y-6">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">
-            Sell on <span className="text-primary">Eclipse</span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            The marketplace that respects creators. Fair fees, full ownership, instant payouts.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
-            <a 
-              href="/become-seller"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all active:scale-[0.97]"
-            >
-              Start Selling
-              <ArrowRight className="h-4 w-4" />
-            </a>
+      <section className="relative pt-12 pb-16 md:pt-20 md:pb-24 text-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.04] via-transparent to-transparent pointer-events-none" />
+        <div className="relative max-w-2xl mx-auto px-5 space-y-5">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+            <Zap className="h-3 w-3" />
+            Now accepting seller applications
           </div>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground leading-[1.1]">
+            Sell on Eclipse
+          </h1>
+          <p className="text-base md:text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
+            The creator-first marketplace. Keep 85% of every sale — we cover the payment fees.
+          </p>
+          <a 
+            href="/become-seller"
+            className="inline-flex items-center justify-center gap-2 px-7 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all active:scale-[0.97] text-sm"
+          >
+            Start Selling
+            <ArrowRight className="h-4 w-4" />
+          </a>
         </div>
 
-        {/* Stats bar */}
-        <div className="relative mt-12 max-w-2xl mx-auto px-4">
-          <div className="grid grid-cols-4 gap-1 rounded-2xl bg-card/80 backdrop-blur border border-border/50 p-4 md:p-6">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="text-2xl md:text-3xl font-bold text-primary">{stat.value}</p>
-                <p className="text-[11px] md:text-xs text-muted-foreground mt-0.5">{stat.label}</p>
+        {/* Key numbers */}
+        <div className="relative mt-10 max-w-md mx-auto px-5">
+          <div className="grid grid-cols-3 rounded-2xl bg-card border border-border/50 divide-x divide-border/50">
+            {[
+              { value: "85%", sub: "You keep" },
+              { value: "0%", sub: "Processing fees" },
+              { value: "24h", sub: "Review time" },
+            ].map((s) => (
+              <div key={s.sub} className="py-4 text-center">
+                <p className="text-xl md:text-2xl font-bold text-primary">{s.value}</p>
+                <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5">{s.sub}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Why Eclipse — 4 key points */}
-      <section className="py-16 md:py-20 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Why creators choose Eclipse</h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-6">
+      {/* Why Eclipse */}
+      <section className="py-12 md:py-16 px-5">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground text-center mb-8">Why creators choose Eclipse</h2>
+          <div className="grid sm:grid-cols-2 gap-4">
             {sellingPoints.map((point) => (
               <div 
                 key={point.title} 
-                className="group p-6 rounded-2xl border border-border/50 bg-card/30 hover:bg-card/60 transition-colors"
+                className="p-5 rounded-2xl border border-border/40 bg-card/40 hover:border-border/70 transition-colors"
               >
-                <div className="flex items-start gap-4">
-                  <div className="p-2.5 rounded-xl bg-primary/10 shrink-0">
-                    <point.icon className="h-5 w-5 text-primary" />
+                <div className="flex items-start gap-3.5">
+                  <div className="p-2 rounded-xl bg-primary/10 shrink-0 mt-0.5">
+                    <point.icon className="h-4 w-4 text-primary" />
                   </div>
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-foreground">{point.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{point.description}</p>
-                    <span className="inline-block text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                  <div className="space-y-1.5 min-w-0">
+                    <h3 className="font-semibold text-sm text-foreground">{point.title}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{point.description}</p>
+                    <span className="inline-block text-[11px] font-medium text-primary bg-primary/8 px-2 py-0.5 rounded-full">
                       {point.highlight}
                     </span>
                   </div>
@@ -134,109 +125,105 @@ export function SellerInfoContent() {
         </div>
       </section>
 
-      {/* Earnings Breakdown — clean and focused */}
-      <section className="py-16 md:py-20 px-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Transparent earnings</h2>
-            <p className="text-muted-foreground mt-2 text-sm">Know exactly what you'll earn on every sale</p>
-          </div>
+      {/* Earnings — accurate flat commission */}
+      <section className="py-12 md:py-16 px-5">
+        <div className="max-w-md mx-auto">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground text-center mb-2">Transparent earnings</h2>
+          <p className="text-center text-xs text-muted-foreground mb-8">Simple flat commission — no surprise deductions</p>
 
-          <div className="rounded-2xl border border-border/50 bg-card/30 overflow-hidden">
-            <div className="p-5 border-b border-border/30 bg-muted/20">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">Example: £10.00 Sale</span>
-              </div>
+          <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-border/30 flex items-center gap-2 bg-muted/15">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-foreground">Example: £10.00 Sale</span>
             </div>
-            <div className="divide-y divide-border/30">
-              {earningsBreakdown.map((row) => (
-                <div key={row.label} className="flex justify-between items-center px-5 py-3.5">
-                  <span className="text-sm text-muted-foreground">{row.label}</span>
-                  <span className={`text-sm font-medium ${row.type === 'deduction' ? 'text-destructive' : 'text-foreground'}`}>
-                    {row.value}
-                  </span>
-                </div>
-              ))}
+            
+            <div className="divide-y divide-border/20">
+              <div className="flex justify-between items-center px-5 py-3">
+                <span className="text-sm text-muted-foreground">Sale Price</span>
+                <span className="text-sm font-medium text-foreground">£10.00</span>
+              </div>
+              <div className="flex justify-between items-center px-5 py-3">
+                <span className="text-sm text-muted-foreground">Stripe / Payment Fees</span>
+                <span className="text-sm font-medium text-green-500">£0.00 (we cover this)</span>
+              </div>
+              <div className="flex justify-between items-center px-5 py-3">
+                <span className="text-sm text-muted-foreground">Eclipse Commission (15%)</span>
+                <span className="text-sm font-medium text-destructive">−£1.50</span>
+              </div>
               <div className="flex justify-between items-center px-5 py-4 bg-primary/5">
-                <span className="font-semibold text-primary">You Earn</span>
-                <span className="text-2xl font-bold text-primary">£8.20</span>
+                <span className="font-semibold text-primary text-sm">You Receive</span>
+                <span className="text-2xl font-bold text-primary">£8.50</span>
               </div>
             </div>
 
-            {/* Tiers */}
             <div className="grid grid-cols-2 border-t border-border/30">
               <div className="p-4 text-center border-r border-border/30">
-                <Badge variant="secondary" className="mb-2">Base Seller</Badge>
-                <p className="text-xl font-bold text-foreground">85%</p>
-                <p className="text-xs text-muted-foreground">of net earnings</p>
+                <Badge variant="secondary" className="mb-1.5 text-[10px]">Base Seller</Badge>
+                <p className="text-lg font-bold text-foreground">85%</p>
+                <p className="text-[10px] text-muted-foreground">15% commission</p>
               </div>
-              <div className="p-4 text-center bg-primary/5">
-                <Badge className="mb-2 bg-gradient-to-r from-amber-500 to-yellow-500 border-0">
-                  <Sparkles className="h-3 w-3 mr-1" />
+              <div className="p-4 text-center bg-primary/[0.03]">
+                <Badge className="mb-1.5 text-[10px] bg-gradient-to-r from-amber-500 to-yellow-500 border-0">
+                  <Sparkles className="h-2.5 w-2.5 mr-0.5" />
                   Eclipse+
                 </Badge>
-                <p className="text-xl font-bold text-primary">90%</p>
-                <p className="text-xs text-muted-foreground">of net earnings</p>
+                <p className="text-lg font-bold text-primary">90%</p>
+                <p className="text-[10px] text-muted-foreground">10% commission</p>
               </div>
             </div>
           </div>
 
-          <p className="text-center text-xs text-muted-foreground mt-4">
-            UK Stripe rates shown. Formula: (Sale − Stripe Fee) × (1 − Commission)
+          <p className="text-center text-[10px] text-muted-foreground mt-3">
+            Flat commission on gross sale price. We absorb all payment processing costs.
           </p>
         </div>
       </section>
 
-      {/* Comparison — simplified */}
-      <section className="py-16 md:py-20 px-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Eclipse vs. the rest</h2>
-          </div>
+      {/* Comparison */}
+      <section className="py-12 md:py-16 px-5">
+        <div className="max-w-md mx-auto">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground text-center mb-8">How we compare</h2>
 
-          <div className="rounded-2xl border border-border/50 overflow-hidden">
-            <div className="divide-y divide-border/30">
+          <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
+            {/* Header */}
+            <div className="grid grid-cols-[1fr,1fr,1fr] text-[11px] font-semibold border-b border-border/30 bg-muted/15">
+              <div className="px-4 py-2.5 text-muted-foreground"></div>
+              <div className="px-3 py-2.5 text-primary text-center">Eclipse</div>
+              <div className="px-3 py-2.5 text-muted-foreground text-center">Others</div>
+            </div>
+            <div className="divide-y divide-border/20">
               {comparisonRows.map((row) => (
-                <div key={row.feature} className="grid grid-cols-3 text-sm">
-                  <div className="px-4 py-3.5 font-medium text-foreground bg-muted/20 flex items-center">
+                <div key={row.feature} className="grid grid-cols-[1fr,1fr,1fr] text-xs">
+                  <div className="px-4 py-3 font-medium text-foreground flex items-center">
                     {row.feature}
                   </div>
-                  <div className="px-4 py-3.5 text-primary font-medium bg-primary/5 flex items-center gap-1.5">
-                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                    <span className="text-xs md:text-sm">{row.eclipse}</span>
+                  <div className="px-3 py-3 text-primary font-medium flex items-center justify-center gap-1">
+                    <CheckCircle2 className="h-3 w-3 shrink-0" />
+                    <span>{row.eclipse}</span>
                   </div>
-                  <div className="px-4 py-3.5 text-muted-foreground flex items-center">
-                    <span className="text-xs md:text-sm">{row.others}</span>
+                  <div className="px-3 py-3 text-muted-foreground flex items-center justify-center text-center">
+                    {row.others}
                   </div>
                 </div>
               ))}
-            </div>
-            {/* Column headers at bottom for context */}
-            <div className="grid grid-cols-3 border-t border-border/50 bg-muted/10 text-[11px] text-muted-foreground">
-              <div className="px-4 py-2"></div>
-              <div className="px-4 py-2 font-semibold text-primary">Eclipse</div>
-              <div className="px-4 py-2">Others</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Steps — horizontal timeline */}
-      <section className="py-16 md:py-20 px-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Get started in minutes</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Steps */}
+      <section className="py-12 md:py-16 px-5">
+        <div className="max-w-lg mx-auto">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground text-center mb-8">Get started in minutes</h2>
+          <div className="space-y-3">
             {steps.map((step, i) => (
-              <div key={step.title} className="text-center space-y-3">
-                <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold text-lg flex items-center justify-center mx-auto">
+              <div key={step.title} className="flex items-start gap-4 p-4 rounded-xl border border-border/40 bg-card/40">
+                <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center shrink-0">
                   {i + 1}
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm text-foreground">{step.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{step.description}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{step.description}</p>
                 </div>
               </div>
             ))}
@@ -244,24 +231,24 @@ export function SellerInfoContent() {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-16 md:py-20 px-4 print:hidden">
-        <div className="max-w-xl mx-auto text-center space-y-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">Ready to start?</h2>
-          <p className="text-muted-foreground">
-            Applications are reviewed within 24-48 hours. Join hundreds of creators already selling on Eclipse.
+      {/* CTA */}
+      <section className="py-12 md:py-20 px-5 print:hidden">
+        <div className="max-w-md mx-auto text-center space-y-5">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground">Ready to start earning?</h2>
+          <p className="text-sm text-muted-foreground">
+            Applications reviewed within 24–48 hours.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3">
             <a 
               href="/become-seller"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all active:scale-[0.97]"
+              className="inline-flex items-center justify-center gap-2 px-7 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all active:scale-[0.97] text-sm"
             >
               Apply Now
               <ArrowRight className="h-4 w-4" />
             </a>
             <a 
               href="/support/chat" 
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 border border-border text-foreground font-semibold rounded-xl hover:bg-muted transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-7 py-3 border border-border text-foreground font-semibold rounded-xl hover:bg-muted/50 transition-colors text-sm"
             >
               Ask a Question
             </a>
