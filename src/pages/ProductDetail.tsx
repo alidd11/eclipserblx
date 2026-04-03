@@ -809,7 +809,7 @@ export default function ProductDetail() {
                 </Button>
               </div>
             </div>
-        </div>
+          </div>
 
         {/* Reviews Section */}
         <div ref={reviewSectionRef} id="reviews" className="scroll-mt-8">
