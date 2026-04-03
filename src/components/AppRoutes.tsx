@@ -218,6 +218,7 @@ const SellerTaxSummary = lazyWithRetry(() => import("@/pages/seller/SellerTaxSum
 const SellerSettingsDomain = lazyWithRetry(() => import("@/pages/seller/SellerSettingsDomain"));
 const SellerStorePages = lazyWithRetry(() => import("@/pages/seller/SellerStorePages"));
 const SellerStoreBuilder = lazyWithRetry(() => import("@/pages/seller/SellerStoreBuilder"));
+const SellerProPage = lazyWithRetry(() => import("@/pages/seller/SellerProPage"));
 const SellerFinanceHub = lazyWithRetry(() => import("@/pages/seller/SellerFinanceHub"));
 const SellerCustomerInsights = lazyWithRetry(() => import("@/pages/seller/SellerCustomerInsights"));
 const SellerCampaigns = lazyWithRetry(() => import("@/pages/seller/SellerCampaigns"));
@@ -413,6 +414,7 @@ export function AppRoutes() {
         <Route path="/seller/import" element={<SellerImport />} />
         <Route path="/seller/promote" element={<SellerPromotions />} />
         <Route path="/seller/store-pages" element={<SellerStorePages />} />
+        <Route path="/seller/pro" element={<SellerProPage />} />
         <Route path="/seller/customer-insights" element={<SellerCustomerInsights />} />
         <Route path="/seller/campaigns" element={<SellerCampaigns />} />
         <Route path="/seller/goals" element={<SellerGoals />} />

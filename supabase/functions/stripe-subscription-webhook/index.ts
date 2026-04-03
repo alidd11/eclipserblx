@@ -13,6 +13,85 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[STRIPE-SUBSCRIPTION-WEBHOOK] ${step}${detailsStr}`);
 };
 
+
+async function handleSellerProSubscription(
+  supabase: any, subscription: any, userId: string, customerId: string, eventType: string
+) {
+  const isActive = subscription.status === 'active' || subscription.status === 'trialing';
+  const periodStart = subscription.current_period_start
+    ? new Date(subscription.current_period_start * 1000).toISOString() : null;
+  const periodEnd = subscription.current_period_end
+    ? new Date(subscription.current_period_end * 1000).toISOString() : null;
+  const storeId = subscription.metadata?.store_id || null;
+
+  const subData: Record<string, unknown> = {
+    user_id: userId,
+    store_id: storeId || null,
+    stripe_subscription_id: subscription.id,
+    stripe_customer_id: customerId,
+    status: isActive ? 'active' : (subscription.status === 'canceled' ? 'cancelled' : subscription.status),
+    current_period_start: periodStart,
+    current_period_end: periodEnd,
+    cancelled_at: !isActive ? new Date().toISOString() : null,
+    updated_at: new Date().toISOString(),
+  };
+
+  // Upsert seller_subscriptions
+  const { data: existing } = await supabase
+    .from('seller_subscriptions')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase.from('seller_subscriptions').update(subData).eq('id', existing.id);
+  } else {
+    await supabase.from('seller_subscriptions').insert({ ...subData, created_at: new Date().toISOString() });
+  }
+
+  // Update stores.is_pro flag
+  let targetStoreId = storeId;
+  if (!targetStoreId) {
+    const { data: store } = await supabase.from('stores').select('id').eq('owner_id', userId).maybeSingle();
+    if (store) targetStoreId = store.id;
+  }
+  if (targetStoreId) {
+    await supabase.from('stores').update({ is_pro: isActive }).eq('id', targetStoreId);
+  }
+
+  // Update commission rate (Pro = 10%, Free = 15%) unless admin custom rate is active
+  const { data: store } = await supabase
+    .from('stores')
+    .select('id, commission_rate, custom_commission_rate, custom_rate_expires_at')
+    .eq('owner_id', userId)
+    .maybeSingle();
+
+  if (store) {
+    const hasActiveCustomRate = store.custom_commission_rate !== null &&
+      (!store.custom_rate_expires_at || new Date(store.custom_rate_expires_at) > new Date());
+    if (!hasActiveCustomRate) {
+      await supabase.from('stores').update({ commission_rate: isActive ? 10 : 15 }).eq('id', store.id);
+    }
+  }
+
+  // Grant ad credit on first activation
+  if (isActive && eventType.includes('created')) {
+    try {
+      await supabase.rpc('add_credits', {
+        p_user_id: userId,
+        p_amount: 5,
+        p_type: 'subscription_bonus',
+        p_description: 'Eclipse Pro monthly ad credit',
+      });
+      logStep("Granted Eclipse Pro ad credit", { userId });
+    } catch (e) {
+      logStep("Failed to grant Eclipse Pro ad credit", { error: String(e) });
+    }
+  }
+
+  logStep("Seller Pro subscription handled", { userId, status: isActive ? 'active' : 'inactive' });
+}
+
 serve(async (req) => {
   // Rate limiting
   const clientIp = getClientIp(req);
@@ -193,6 +272,16 @@ serve(async (req) => {
       // Handle IP Shield subscriptions
       if (isIpShield) {
         await handleIpShieldSubscription(supabaseAdmin, subscription, userId, customerEmail, event.type, ipShieldItem!, IP_SHIELD_TIER_MAP);
+        return new Response(JSON.stringify({ received: true }), {
+          headers: { "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+
+      // Check if this is a Seller Pro subscription
+      const isSellerPro = subscription.metadata?.type === 'seller_pro';
+      if (isSellerPro) {
+        await handleSellerProSubscription(supabaseAdmin, subscription, userId, customerId, event.type);
         return new Response(JSON.stringify({ received: true }), {
           headers: { "Content-Type": "application/json" },
           status: 200,

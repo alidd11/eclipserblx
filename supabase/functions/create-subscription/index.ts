@@ -160,6 +160,41 @@ async function getIPShieldConfig(
   };
 }
 
+
+const SELLER_PRO_PRICES: Record<string, string> = {
+  monthly: "price_1TIGYOCjEHxHwNl933p6yUid",
+  annual: "price_1TIGYiCjEHxHwNl96sljbSjm",
+};
+
+async function getSellerProConfig(
+  supabase: any, user: any, body: any, returnOrigin: string
+): Promise<CheckoutConfig> {
+  const billingPeriod = body.billingPeriod || 'monthly';
+  const storeId = body.store_id || '';
+
+  if (!['monthly', 'annual'].includes(billingPeriod)) throw new Error("Invalid billing period");
+
+  // Check existing active seller subscription
+  const { data: existing } = await supabase
+    .from('seller_subscriptions')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .maybeSingle();
+  if (existing) throw new Error("You already have an active Eclipse Pro subscription.");
+
+  const priceId = billingPeriod === 'annual' ? SELLER_PRO_PRICES.annual : SELLER_PRO_PRICES.monthly;
+  const meta = { type: 'seller_pro', user_id: user.id, store_id: storeId };
+  return {
+    priceId,
+    lineItems: [{ price: priceId, quantity: 1 }],
+    successUrl: `${returnOrigin}/seller/pro?subscription=success`,
+    cancelUrl: `${returnOrigin}/seller/pro?subscription=cancelled`,
+    metadata: meta,
+    subscriptionMetadata: meta,
+  };
+}
+
 // ─── Main handler ───
 
 Deno.serve(async (req) => {
@@ -226,6 +261,9 @@ Deno.serve(async (req) => {
         break;
       case 'global_guard':
         config = await getGlobalGuardConfig(supabaseClient, user, body, returnOrigin);
+        break;
+      case 'seller_pro':
+        config = await getSellerProConfig(supabaseClient, user, body, returnOrigin);
         break;
       case 'ip_shield':
         config = await getIPShieldConfig(supabaseClient, user, body, returnOrigin, stripe, customerId);

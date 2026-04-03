@@ -5,7 +5,7 @@ import {
   LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, Users,
   Tag, BarChart3, FileText, HelpCircle, MessageCircle, Star, Bot, Import,
   Gamepad2, Layers, TrendingUp, Receipt, LineChart, Heart, Megaphone,
-  RotateCcw, Zap, PackagePlus, Globe, Inbox, Sparkles, Calculator
+  RotateCcw, Zap, PackagePlus, Globe, Inbox, Sparkles, Calculator, Crown
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -39,6 +39,7 @@ const topLevelItems: NavItem[] = [
   { title: 'Orders', icon: ShoppingCart, href: '/seller/orders' },
   { title: 'Analytics', icon: BarChart3, href: '/seller/analytics' },
   { title: 'Store Builder', icon: Sparkles, href: '/seller/store-builder' },
+  { title: 'Eclipse Pro', icon: Crown, href: '/seller/pro' },
 ];
 
 const navGroups: NavGroup[] = [
