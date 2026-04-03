@@ -346,7 +346,7 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
             <span>
               You need £{quotaBreakdown.paidCost.toFixed(2)} in credits but only have £{quotaBreakdown.creditBalance.toFixed(2)}.
             </span>
-            <Link to="/wallet" className="text-xs font-medium underline underline-offset-2 ml-2 shrink-0">
+            <Link to="/credits" className="text-xs font-medium underline underline-offset-2 ml-2 shrink-0">
               Add Credits
             </Link>
           </AlertDescription>

@@ -1106,7 +1106,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                       >
                         {t('auth.agreeToTerms')}{' '}
                         <Link 
-                          to="/terms-of-service" 
+                          to="/terms" 
                           target="_blank"
                           className="text-primary hover:underline"
                           onClick={(e) => e.stopPropagation()}
@@ -1115,7 +1115,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
                         </Link>{' '}
                         {t('auth.and')}{' '}
                         <Link 
-                          to="/privacy-policy" 
+                          to="/privacy" 
                           target="_blank"
                           className="text-primary hover:underline"
                           onClick={(e) => e.stopPropagation()}
