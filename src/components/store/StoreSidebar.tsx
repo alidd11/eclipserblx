@@ -140,6 +140,28 @@ export function StoreSidebar({
     staleTime: 5 * 60 * 1000,
   });
 
+  // Fetch published store pages
+  const { data: storePages = [] } = useQuery({
+    queryKey: ['store-pages-public', storeSlug],
+    queryFn: async () => {
+      const { data: storeData } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('slug', storeSlug)
+        .single();
+      if (!storeData) return [];
+      const { data, error } = await supabase
+        .from('store_pages')
+        .select('id, title, slug')
+        .eq('store_id', storeData.id)
+        .eq('is_published', true)
+        .order('display_order', { ascending: true });
+      if (error) return [];
+      return data || [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Navigation groups matching CustomerSidebar structure
   // On custom domains, hide Marketplace link, My Account, and Legal groups
   const customLinkItems: NavItem[] = customNavLinks.map((link: any) => ({
@@ -148,6 +170,18 @@ export function StoreSidebar({
     href: link.url || undefined,
     external: link.link_type === 'external',
   }));
+
+  // Build page items from published store pages, deduplicating against custom nav links
+  const customLinkUrls = new Set(customNavLinks.map((l: any) => l.url));
+  const pageItems: NavItem[] = storePages
+    .filter((page: any) => !customLinkUrls.has(`/store/${storeSlug}/page/${page.slug}`))
+    .map((page: any) => ({
+      title: page.title,
+      icon: FileText,
+      href: `/store/${storeSlug}/page/${page.slug}`,
+    }));
+
+  const allPageItems = [...customLinkItems, ...pageItems];
 
   const navGroups: NavGroup[] = [
     {
