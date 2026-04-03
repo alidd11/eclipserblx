@@ -645,8 +645,29 @@ function StepConfirm({ formValues, setFormValues, verificationResults, settings,
               <span>{verificationResults.discord_server.guild_name}</span>
             </div>
           )}
+          {verificationResults.identity_consistency && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Identity Match</span>
+              <Badge variant={verificationResults.identity_consistency.similarity_score >= 80 ? 'default' : 'secondary'} className="text-xs">
+                {verificationResults.identity_consistency.similarity_score}%
+              </Badge>
+            </div>
+          )}
         </div>
       </div>
+
+      {verificationResults.identity_consistency && 
+       verificationResults.identity_consistency.similarity_score >= 80 &&
+       verificationResults.roblox_group?.in_group &&
+       verificationResults.discord_server?.valid &&
+       verificationResults.email_verified && (
+        <Alert className="bg-green-500/10 border-green-500/30">
+          <Sparkles className="h-4 w-4 text-green-500" />
+          <AlertDescription className="text-sm">
+            <strong>Instant approval eligible!</strong> Your identity match qualifies you for automatic approval.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Verification checks */}
       <div className="space-y-2">
