@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Package, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { usePromotedProduct } from '@/hooks/usePromotedProduct';
+import { PromotedProductCard } from '@/components/marketplace/PromotedProductCard';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductGridSkeleton } from '@/components/ui/ProductCardSkeleton';
