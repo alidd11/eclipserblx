@@ -41,7 +41,7 @@ export default function FreeAssets() {
       let query = supabase
         .from('products')
         .select(`
-          id, name, slug, price, images, description, created_at, total_sales, download_count,
+          id, name, slug, price, images, description, created_at, download_count,
           category_id, categories(name, slug),
           store_id, stores!inner(name, slug, logo_url, is_verified, is_trusted, is_active, eclipse_plus_enabled)
         `)

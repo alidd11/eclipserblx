@@ -86,8 +86,8 @@ export function TrendingProducts() {
                     <span className="text-xs font-semibold text-primary">
                       {product.price === 0 ? 'Free' : formatPrice(product.price)}
                     </span>
-                    {(product.total_sales ?? 0) > 0 && (
-                      <span className="text-[10px] text-muted-foreground">{product.total_sales} sales</span>
+                    {(product.download_count ?? 0) > 0 && (
+                      <span className="text-[10px] text-muted-foreground">{product.download_count} downloads</span>
                     )}
                   </div>
                 </Link>

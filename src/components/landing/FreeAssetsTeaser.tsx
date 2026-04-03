@@ -79,7 +79,7 @@ export function FreeAssetsTeaser() {
                     )}
                   </div>
                   <p className="text-xs font-medium mt-1.5 truncate group-hover:text-primary transition-colors">{product.name}</p>
-                  <p className="text-[10px] text-green-500 font-semibold">Free</p>
+                  <p className="text-[10px] text-primary font-semibold">Free</p>
                 </Link>
               );
             })}

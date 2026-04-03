@@ -47,7 +47,7 @@ export function TrustBar() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-green-500" />
+            <ShieldCheck className="h-4 w-4 text-primary" />
             <div>
               <p className="text-sm font-bold">Secure</p>
               <p className="text-[10px] text-muted-foreground">Payments</p>
