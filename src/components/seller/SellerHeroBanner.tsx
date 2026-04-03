@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Link } from 'react-router-dom';
-import { CheckCircle, Copy, ExternalLink, Plus, Users } from 'lucide-react';
+import { CheckCircle, Copy, ExternalLink, Plus, Users, Share2 } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
 
 function getTimeBasedGreeting(): string {
