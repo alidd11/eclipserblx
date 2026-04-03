@@ -95,9 +95,11 @@ export function usePromotedProduct(zone: string, categoryId?: string) {
 
   const trackClick = async () => {
     if (!data?.promotionId) return;
-    await supabase.rpc('record_promotion_click', {
-      p_promotion_id: data.promotionId,
-    }).catch(() => {});
+    try {
+      await supabase.rpc('record_promotion_click', {
+        p_promotion_id: data.promotionId,
+      });
+    } catch {};
   };
 
   return {
