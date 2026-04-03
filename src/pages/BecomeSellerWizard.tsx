@@ -681,6 +681,14 @@ function StepConfirm({ formValues, setFormValues, verificationResults, settings,
         ))}
       </div>
 
+      {/* Group suggestion */}
+      {verificationResults.roblox_group && !verificationResults.roblox_group.in_group && (
+        <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-sm text-muted-foreground flex items-start gap-2">
+          <Users className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+          <span><strong className="text-foreground">Tip:</strong> Joining our Roblox group can boost your store's visibility and credibility, but it's not required.</span>
+        </div>
+      )}
+
       {/* Terms */}
       <div className="space-y-3 border-t pt-4">
         <div className="flex items-start gap-3">
