@@ -4,7 +4,7 @@ import { SystemAlerts } from '@/components/admin/dashboard/SystemAlerts';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-import { motion } from 'framer-motion';
+
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
@@ -225,6 +225,23 @@ export default function AdminDashboard() {
 
 
 
+  // Live timezone clock component
+  function TimezoneClock() {
+    const [now, setNow] = useState(new Date());
+    useEffect(() => {
+      const id = setInterval(() => setNow(new Date()), 60_000);
+      return () => clearInterval(id);
+    }, []);
+    const fmt = (tz: string) => now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: tz });
+    return (
+      <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 text-[11px] text-muted-foreground">
+        <span className="whitespace-nowrap">🕐 {now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
+        <span className="whitespace-nowrap">🇬🇧 {fmt('Europe/London')}</span>
+        <span className="whitespace-nowrap">🇺🇸 {fmt('America/New_York')}</span>
+        <span className="whitespace-nowrap">🇺🇸 {fmt('America/Los_Angeles')}</span>
+      </div>
+    );
+  }
 
   const getTimeBasedGreeting = () => {
     const hour = new Date().getHours();
@@ -264,12 +281,7 @@ export default function AdminDashboard() {
                 <h1 className="text-lg sm:text-xl font-bold leading-tight">
                   {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
                 </h1>
-                <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 text-[11px] text-muted-foreground">
-                  <span className="whitespace-nowrap">🕐 {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
-                  <span className="whitespace-nowrap">🇬🇧 {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/London' })}</span>
-                  <span className="whitespace-nowrap">🇺🇸 {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/New_York' })}</span>
-                  <span className="whitespace-nowrap">🇺🇸 {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Los_Angeles' })}</span>
-                </div>
+                  <TimezoneClock />
               </div>
             </div>
           </CardContent>
@@ -377,11 +389,8 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 sm:gap-2">
               {quickLinks.map((link) => (
                 <Link key={link.href} to={link.href}>
-                  <motion.div
-                    whileHover={{ y: -2, scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                    className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3.5 rounded-lg bg-muted/50 hover:bg-accent transition-colors text-center group cursor-pointer"
+                  <div
+                    className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3.5 rounded-lg bg-muted/50 hover:bg-accent hover:-translate-y-0.5 active:scale-[0.97] transition-all text-center group cursor-pointer"
                   >
                     <div className="p-1.5 sm:p-2.5 rounded-xl bg-card border border-border group-hover:border-primary/30 transition-colors">
                       <link.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -390,7 +399,7 @@ export default function AdminDashboard() {
                       <span className="text-[10px] sm:text-xs font-medium block leading-tight">{link.title}</span>
                       <span className="text-[10px] text-muted-foreground hidden sm:block">{link.description}</span>
                     </div>
-                  </motion.div>
+                  </div>
                 </Link>
               ))}
             </div>
@@ -407,11 +416,8 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1.5 sm:gap-2">
                 {roleLinks.map((link) => (
                   <Link key={link.href} to={link.href}>
-                    <motion.div
-                      whileHover={{ y: -2, scale: 1.02 }}
-                      whileTap={{ scale: 0.97 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                      className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3.5 rounded-lg bg-muted/50 hover:bg-accent transition-colors text-center group cursor-pointer"
+                    <div
+                      className="flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3.5 rounded-lg bg-muted/50 hover:bg-accent hover:-translate-y-0.5 active:scale-[0.97] transition-all text-center group cursor-pointer"
                     >
                       <div className="p-1.5 sm:p-2.5 rounded-xl bg-card border border-border group-hover:border-primary/30 transition-colors">
                         <link.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -420,7 +426,7 @@ export default function AdminDashboard() {
                         <span className="text-[10px] sm:text-xs font-medium block leading-tight">{link.title}</span>
                         <span className="text-[10px] text-muted-foreground hidden sm:block">{link.description}</span>
                       </div>
-                    </motion.div>
+                    </div>
                   </Link>
                 ))}
               </div>

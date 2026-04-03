@@ -17,18 +17,14 @@ import { RecentOrdersTable } from '@/components/seller/RecentOrdersTable';
 import { TosBanner, NonCompliantBanner, PendingReviewBanner } from '@/components/seller/banners';
 import { DashboardCardSkeleton } from '@/components/seller/DashboardSkeletons';
 import { 
-  Package, ShoppingCart, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone, ChevronDown
+  Package, ShoppingCart, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone
 } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
 
 // Lazy-load below-fold heavy widgets
 const TopProductsLeaderboard = lazy(() => import('@/components/seller/TopProductsLeaderboard').then(m => ({ default: m.TopProductsLeaderboard })));
 const NotificationCenter = lazy(() => import('@/components/seller/NotificationCenter').then(m => ({ default: m.NotificationCenter })));
 const StoreHealthScore = lazy(() => import('@/components/seller/StoreHealthScore').then(m => ({ default: m.StoreHealthScore })));
-const CustomerDemographics = lazy(() => import('@/components/seller/CustomerDemographics').then(m => ({ default: m.CustomerDemographics })));
-const PayoutTimeline = lazy(() => import('@/components/seller/PayoutTimeline').then(m => ({ default: m.PayoutTimeline })));
-const SalesVelocityInsights = lazy(() => import('@/components/seller/SalesVelocityInsights').then(m => ({ default: m.SalesVelocityInsights })));
-const ProductPerformanceComparison = lazy(() => import('@/components/seller/ProductPerformanceComparison').then(m => ({ default: m.ProductPerformanceComparison })));
 
 const CURRENT_TOS_VERSION = "1.0";
 
@@ -121,7 +117,7 @@ export default function SellerDashboard() {
             <CardTitle className="text-base font-medium">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2">
               {quickActions.map((action) => (
                 <Link key={action.href} to={action.href}>
                   <div className="flex flex-col items-center gap-2 p-3.5 rounded-lg bg-muted/50 hover:bg-accent active:scale-[0.97] transition-all text-center group cursor-pointer">
@@ -150,46 +146,20 @@ export default function SellerDashboard() {
         {/* ── Recent Orders Table ── */}
         <RecentOrdersTable />
 
-        {/* ── Top Products + Velocity + Activity ── */}
+        {/* ── Top Products + Notifications ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <Suspense fallback={<DashboardCardSkeleton />}>
             <TopProductsLeaderboard />
-          </Suspense>
-          <Suspense fallback={<DashboardCardSkeleton />}>
-            <SalesVelocityInsights />
           </Suspense>
           <Suspense fallback={<DashboardCardSkeleton />}>
             <NotificationCenter />
           </Suspense>
         </div>
 
-        {/* ── Store Health + Demographics + Payout ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <Suspense fallback={<DashboardCardSkeleton />}>
-            <StoreHealthScore />
-          </Suspense>
-          <Suspense fallback={<DashboardCardSkeleton />}>
-            <CustomerDemographics />
-          </Suspense>
-          <Suspense fallback={<DashboardCardSkeleton />}>
-            <PayoutTimeline />
-          </Suspense>
-        </div>
-
-        {/* ── Product Comparison (collapsible) ── */}
-        <Collapsible>
-          <Card>
-            <CollapsibleTrigger className="flex items-center justify-between w-full p-4">
-              <span className="text-base font-medium">Product Comparison</span>
-              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <Suspense fallback={<DashboardCardSkeleton />}>
-                <ProductPerformanceComparison />
-              </Suspense>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
+        {/* ── Store Health ── */}
+        <Suspense fallback={<DashboardCardSkeleton />}>
+          <StoreHealthScore />
+        </Suspense>
 
         {/* ── Pending Review Banner ── */}
         <PendingReviewBanner count={productStats?.pending || 0} />

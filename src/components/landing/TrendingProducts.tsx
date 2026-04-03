@@ -62,30 +62,29 @@ export function TrendingProducts() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {products.map((product, i) => {
+          {products.map((product) => {
             const store = product.stores as any;
             const category = product.categories as any;
             return (
-              <ScrollReveal key={product.id} delay={i * 0.04} direction="up" distance={10} duration={0.25}>
-                <ProductCard
-                  id={product.id}
-                  name={product.name}
-                  slug={product.slug}
-                  price={product.price}
-                  image={getFirstImageUrl(product.images)}
-                  images={product.images as string[]}
-                  category={category?.name}
-                  categorySlug={category?.slug}
-                  categoryId={product.category_id ?? undefined}
-                  storeName={store?.name}
-                  storeSlug={store?.slug}
-                  storeLogo={store?.logo_url}
-                  isVerified={store?.is_verified}
-                  isTrusted={store?.is_trusted}
-                  storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
-                  createdAt={product.created_at}
-                />
-              </ScrollReveal>
+              <ProductCard
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                slug={product.slug}
+                price={product.price}
+                image={getFirstImageUrl(product.images)}
+                images={product.images as string[]}
+                category={category?.name}
+                categorySlug={category?.slug}
+                categoryId={product.category_id ?? undefined}
+                storeName={store?.name}
+                storeSlug={store?.slug}
+                storeLogo={store?.logo_url}
+                isVerified={store?.is_verified}
+                isTrusted={store?.is_trusted}
+                storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
+                createdAt={product.created_at}
+              />
             );
           })}
         </div>

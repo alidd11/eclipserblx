@@ -15,9 +15,7 @@ const TrendingProducts = lazy(() => import('@/components/landing/TrendingProduct
 const NewThisWeek = lazy(() => import('@/components/landing/NewThisWeek').then(m => ({ default: m.NewThisWeek })));
 const FreeAssetsTeaser = lazy(() => import('@/components/landing/FreeAssetsTeaser').then(m => ({ default: m.FreeAssetsTeaser })));
 const TopSellers = lazy(() => import('@/components/landing/TopSellers').then(m => ({ default: m.TopSellers })));
-const FeaturedCreators = lazy(() => import('@/components/landing/FeaturedCreators').then(m => ({ default: m.FeaturedCreators })));
 const WhyEclipse = lazy(() => import('@/components/landing/WhyEclipse').then(m => ({ default: m.WhyEclipse })));
-const TrustBar = lazy(() => import('@/components/landing/TrustBar').then(m => ({ default: m.TrustBar })));
 const FinalCTA = lazy(() => import('@/components/landing/FinalCTA').then(m => ({ default: m.FinalCTA })));
 const RecentlyViewedSection = lazy(() => import('@/components/landing/RecentlyViewedSection').then(m => ({ default: m.RecentlyViewedSection })));
 
@@ -98,20 +96,11 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* Top Sellers */}
+      {/* Top Creators (merged Top Sellers + Featured Creators) */}
       <LazySection minHeight="150px" rootMargin="200px">
-        <SectionErrorBoundary section="top-sellers" compact>
+        <SectionErrorBoundary section="top-creators" compact>
           <Suspense fallback={null}>
             <TopSellers />
-          </Suspense>
-        </SectionErrorBoundary>
-      </LazySection>
-
-      {/* Featured Creators */}
-      <LazySection minHeight="150px" rootMargin="200px">
-        <SectionErrorBoundary section="featured-creators" compact>
-          <Suspense fallback={null}>
-            <FeaturedCreators />
           </Suspense>
         </SectionErrorBoundary>
       </LazySection>
@@ -125,20 +114,11 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* Why Eclipse */}
+      {/* Why Eclipse + Trust Signals (merged) */}
       <LazySection minHeight="200px" rootMargin="200px">
         <SectionErrorBoundary section="why-eclipse" compact>
           <Suspense fallback={null}>
             <WhyEclipse />
-          </Suspense>
-        </SectionErrorBoundary>
-      </LazySection>
-
-      {/* Trust Bar */}
-      <LazySection minHeight="60px" rootMargin="200px">
-        <SectionErrorBoundary section="trust-bar" compact>
-          <Suspense fallback={null}>
-            <TrustBar />
           </Suspense>
         </SectionErrorBoundary>
       </LazySection>

@@ -4,8 +4,8 @@ import {
   ChevronLeft, ChevronRight, ChevronDown, LucideIcon, DollarSign, 
   LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, Users,
   Tag, BarChart3, FileText, HelpCircle, MessageCircle, Star, Bot, Import,
-  Gamepad2, Layers, TrendingUp, Receipt, LineChart, Heart, Megaphone,
-  RotateCcw, Zap, PackagePlus, Globe, Inbox, Sparkles, Calculator, Crown
+  Gamepad2, Layers, TrendingUp, Receipt, LineChart, Megaphone,
+  RotateCcw, PackagePlus, Globe, Inbox, Sparkles, Calculator, Crown
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -51,7 +51,6 @@ const navGroups: NavGroup[] = [
       { title: 'Products', icon: Package, href: '/seller/products' },
       { title: 'Categories', icon: LayoutGrid, href: '/seller/categories' },
       { title: 'Store Sections', icon: Layers, href: '/seller/tabs' },
-      { title: 'Custom Sections', icon: LayoutGrid, href: '/seller/custom-sections' },
       { title: 'Pages', icon: FileText, href: '/seller/store-pages' },
       { title: 'Import', icon: Import, href: '/seller/import' },
     ],
@@ -63,7 +62,6 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Ad Manager', icon: Sparkles, href: '/seller/promote' },
       { title: 'Discount Codes', icon: Tag, href: '/seller/discounts' },
-      { title: 'Flash Sales', icon: Zap, href: '/seller/flash-sales' },
       { title: 'Campaigns', icon: Megaphone, href: '/seller/campaigns' },
       { title: 'Bundle Deals', icon: PackagePlus, href: '/seller/bundles' },
       { title: 'Announcements', icon: Bell, href: '/seller/announcements' },
@@ -77,7 +75,6 @@ const navGroups: NavGroup[] = [
       { title: 'Messages', icon: MessageCircle, href: '/seller/messages' },
       { title: 'Reviews', icon: Star, href: '/seller/reviews' },
       { title: 'Disputes', icon: RotateCcw, href: '/seller/refunds' },
-      { title: 'Customer Insights', icon: Heart, href: '/seller/customer-insights' },
       { title: 'Notifications', icon: Bell, href: '/seller/notifications' },
     ],
   },
