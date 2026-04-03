@@ -151,8 +151,8 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
       onMouseLeave={handleMouseLeave}
     >
       <div className={cn(
-        "overflow-hidden h-full flex flex-col rounded-lg border border-border bg-card transition-colors duration-200",
-        "hover:border-primary/40",
+        "overflow-hidden h-full flex flex-col rounded-lg border border-border bg-card transition-all duration-200",
+        "hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5",
         isFeatured && "border-primary/30"
       )}>
         {/* Image/Video */}
@@ -195,10 +195,32 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
               className="absolute inset-0 w-full h-full object-cover pointer-events-none z-[1]"
             />
           )}
-          
+
+          {/* Hover overlay with quick info — desktop only */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none hidden lg:flex flex-col justify-end p-2.5 z-[2]">
+            <div className="flex items-center gap-2 text-white/90">
+              {typeof averageRating === 'number' && averageRating > 0 && (
+                <span className="flex items-center gap-0.5 text-[10px] font-medium">
+                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  {averageRating.toFixed(1)}
+                </span>
+              )}
+              {isVerified && (
+                <span className="flex items-center gap-0.5 text-[10px] font-medium">
+                  <BadgeCheck className="h-3 w-3 text-primary" />
+                  Verified
+                </span>
+              )}
+              {category && (
+                <span className="text-[10px] font-medium text-white/70 ml-auto truncate max-w-[100px]">
+                  {category}
+                </span>
+              )}
+            </div>
+          </div>
           
           {/* Badges */}
-          <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
+          <div className="absolute top-1.5 left-1.5 flex flex-col gap-1 z-[3]">
             {showBestSellerBadge && (
               <div className="px-1.5 py-0.5 text-[10px] font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded shadow-sm">
                 Best Seller
@@ -217,7 +239,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           </div>
           
           {/* Wishlist button */}
-          <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-[3]">
             <WishlistButton productId={id} variant="icon" />
           </div>
         </div>
