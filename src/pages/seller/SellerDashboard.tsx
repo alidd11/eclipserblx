@@ -146,46 +146,20 @@ export default function SellerDashboard() {
         {/* ── Recent Orders Table ── */}
         <RecentOrdersTable />
 
-        {/* ── Top Products + Velocity + Activity ── */}
+        {/* ── Top Products + Notifications ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <Suspense fallback={<DashboardCardSkeleton />}>
             <TopProductsLeaderboard />
-          </Suspense>
-          <Suspense fallback={<DashboardCardSkeleton />}>
-            <SalesVelocityInsights />
           </Suspense>
           <Suspense fallback={<DashboardCardSkeleton />}>
             <NotificationCenter />
           </Suspense>
         </div>
 
-        {/* ── Store Health + Demographics + Payout ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <Suspense fallback={<DashboardCardSkeleton />}>
-            <StoreHealthScore />
-          </Suspense>
-          <Suspense fallback={<DashboardCardSkeleton />}>
-            <CustomerDemographics />
-          </Suspense>
-          <Suspense fallback={<DashboardCardSkeleton />}>
-            <PayoutTimeline />
-          </Suspense>
-        </div>
-
-        {/* ── Product Comparison (collapsible) ── */}
-        <Collapsible>
-          <Card>
-            <CollapsibleTrigger className="flex items-center justify-between w-full p-4">
-              <span className="text-base font-medium">Product Comparison</span>
-              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <Suspense fallback={<DashboardCardSkeleton />}>
-                <ProductPerformanceComparison />
-              </Suspense>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
+        {/* ── Store Health ── */}
+        <Suspense fallback={<DashboardCardSkeleton />}>
+          <StoreHealthScore />
+        </Suspense>
 
         {/* ── Pending Review Banner ── */}
         <PendingReviewBanner count={productStats?.pending || 0} />
