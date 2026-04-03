@@ -112,6 +112,7 @@ function LayoutShellInner({
               className=""
               {...headerProps}
             />
+            <GlobalCategoryBar />
           )}
           {showBreadcrumb && (
             <Suspense fallback={null}><UniversalBreadcrumb /></Suspense>
