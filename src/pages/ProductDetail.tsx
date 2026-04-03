@@ -969,6 +969,7 @@ export default function ProductDetail() {
             </CardContent>
           </Card>
         </div>
+        </div>
 
         {relatedProducts && relatedProducts.length > 0 && (
           <Card className="bg-card border-border">
