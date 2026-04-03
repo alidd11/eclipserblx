@@ -487,27 +487,57 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         )}
       </div>
 
-      {/* User Profile Card & CTA */}
       {user && !isCollapsed && (
         <div className="border-b border-border px-3 py-3 space-y-2.5">
           {/* User info */}
           <div className="flex items-center gap-2.5">
-            {profileAvatar ? (
-              <img
-                src={profileAvatar}
-                alt=""
-                className="h-9 w-9 rounded-full object-cover shrink-0 bg-muted"
-              />
-            ) : (
-              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center shrink-0">
-                <span className="text-sm font-bold text-primary-foreground">
-                  {(user.user_metadata?.display_name || user.email || '?')[0].toUpperCase()}
-                </span>
+            {/* Avatar with online dot + premium ring */}
+            <div className="relative shrink-0">
+              <div className={cn(
+                "rounded-full",
+                isPremium && "p-[2px] bg-gradient-to-br from-primary to-purple-500"
+              )}>
+                {profileAvatar ? (
+                  <img
+                    src={profileAvatar}
+                    alt=""
+                    className={cn(
+                      "h-9 w-9 rounded-full object-cover bg-muted",
+                      isPremium && "border-2 border-background"
+                    )}
+                  />
+                ) : (
+                  <div className={cn(
+                    "h-9 w-9 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center",
+                    isPremium && "border-2 border-background"
+                  )}>
+                    <span className="text-sm font-bold text-primary-foreground">
+                      {(user.user_metadata?.display_name || user.email || '?')[0].toUpperCase()}
+                    </span>
+                  </div>
+                )}
               </div>
-            )}
+              {/* Online status dot */}
+              <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-sidebar" />
+            </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold truncate">{user.user_metadata?.display_name || 'User'}</p>
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Free Plan</p>
+              {profileUsername && (
+                <p className="text-[11px] text-muted-foreground truncate">@{profileUsername}</p>
+              )}
+              {isPremium ? (
+                <div className="flex items-center gap-1 mt-0.5">
+                  <Crown className="h-3 w-3 text-primary" />
+                  <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Eclipse+</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Free Plan</span>
+                  <Link to="/eclipse-plus" onClick={handleNavClick} className="text-[10px] font-semibold text-primary hover:underline">
+                    Upgrade
+                  </Link>
+                </div>
+              )}
             </div>
             {isMobileDrawer && (
               <Button variant="ghost" size="icon" className="h-7 w-7 min-h-0 min-w-0" onClick={onNavigate}>
@@ -528,15 +558,38 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             </Link>
           </div>
 
+          {/* Quick Stats Row */}
+          <div className="flex items-center gap-3 px-1">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <ShoppingBag className="h-3.5 w-3.5" />
+              <span className="text-xs font-medium">{quickStats?.orders ?? 0}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <Heart className="h-3.5 w-3.5" />
+              <span className="text-xs font-medium">{quickStats?.wishlist ?? 0}</span>
+            </div>
+          </div>
+
           {/* CTA Button */}
-          <Link
-            to={isSeller ? '/seller' : '/sell'}
-            onClick={handleNavClick}
-            className="flex items-center justify-center gap-2 w-full rounded-lg bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-          >
-            <Zap className="h-4 w-4" />
-            {isSeller ? 'Seller Dashboard' : 'Start Selling'}
-          </Link>
+          {!isPremium ? (
+            <Link
+              to="/eclipse-plus"
+              onClick={handleNavClick}
+              className="flex items-center justify-center gap-2 w-full rounded-lg bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
+            >
+              <Crown className="h-4 w-4" />
+              Upgrade to Eclipse+
+            </Link>
+          ) : (
+            <Link
+              to={isSeller ? '/seller' : '/sell'}
+              onClick={handleNavClick}
+              className="flex items-center justify-center gap-2 w-full rounded-lg bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
+            >
+              <Zap className="h-4 w-4" />
+              {isSeller ? 'Seller Dashboard' : 'Start Selling'}
+            </Link>
+          )}
         </div>
       )}
 
