@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Wallet } from 'lucide-react';
-import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,6 +8,8 @@ import { useCredits } from '@/hooks/useCredits';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { toast } from 'sonner';
+import { AccountPageLayout } from '@/components/account/AccountPageLayout';
+import { MainLayout } from '@/components/layout/MainLayout';
 
 // Wallet components
 import { WalletBalanceCard } from '@/components/wallet/WalletBalanceCard';
@@ -27,19 +28,12 @@ export default function Credits() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
-  // Embedded payment modal state
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [creditAmount, setCreditAmount] = useState(0);
   
   const { 
-    balance, 
-    totalPurchased, 
-    totalGifted, 
-    totalSpent,
-    eclipsePlusBonusClaimed,
-    transactions, 
-    isLoading, 
-    fetchBalance 
+    balance, totalPurchased, totalGifted, totalSpent,
+    eclipsePlusBonusClaimed, transactions, isLoading, fetchBalance 
   } = useCredits();
 
   const wasSuccess = searchParams.get('success') === 'true';
@@ -72,7 +66,6 @@ export default function Credits() {
     toast.error(error);
   };
 
-  // Not logged in state
   if (!user) {
     return (
       <MainLayout>
@@ -95,56 +88,35 @@ export default function Credits() {
   }
 
   return (
-    <MainLayout>
-      <div
-        className="px-4 sm:px-6 py-6 mx-auto w-full max-w-2xl space-y-6 box-border"
-        style={{ 
-          paddingRight: 'max(1rem, calc(env(safe-area-inset-right) + 1rem))',
-          maxWidth: 'min(42rem, 100vw - 2rem)'
-        }}
-      >
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-muted">
-            <Wallet className="h-5 w-5 text-foreground" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">Wallet</h1>
-            <p className="text-sm text-muted-foreground">Manage your store credits</p>
-          </div>
-        </div>
+    <AccountPageLayout
+      title="Wallet"
+      description="Manage your store credits"
+      icon={Wallet}
+    >
+      <WalletBalanceCard
+        balance={balance}
+        totalPurchased={totalPurchased}
+        totalGifted={totalGifted}
+        totalSpent={totalSpent}
+        isLoading={isLoading}
+      />
 
-        {/* Balance Card - Always visible */}
-        <WalletBalanceCard
-          balance={balance}
-          totalPurchased={totalPurchased}
-          totalGifted={totalGifted}
-          totalSpent={totalSpent}
+      <EclipsePlusBanner show={!eclipsePlusBonusClaimed} />
+
+      <div className="grid md:grid-cols-2 gap-6">
+        <AddCreditsCard
+          onPurchase={handlePurchaseCredits}
+          isLoggedIn={!!user}
+          onLoginRedirect={() => navigate('/auth?redirect=/credits')}
+        />
+        <TransactionHistoryCard
+          transactions={transactions}
           isLoading={isLoading}
         />
-
-        {/* Eclipse+ Banner */}
-        <EclipsePlusBanner show={!eclipsePlusBonusClaimed} />
-
-        {/* Two column layout for Add Credits & History */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <AddCreditsCard
-            onPurchase={handlePurchaseCredits}
-            isLoggedIn={!!user}
-            onLoginRedirect={() => navigate('/auth?redirect=/credits')}
-          />
-          
-          <TransactionHistoryCard
-            transactions={transactions}
-            isLoading={isLoading}
-          />
-        </div>
-
-        {/* Developer Payments - only shows if user has payments */}
-        <MyPaymentsCard />
       </div>
 
-      {/* Embedded Payment Modal */}
+      <MyPaymentsCard />
+
       <EmbeddedPaymentModal
         open={paymentModalOpen}
         onOpenChange={setPaymentModalOpen}
@@ -153,6 +125,6 @@ export default function Credits() {
         onSuccess={handlePaymentSuccess}
         onError={handlePaymentError}
       />
-    </MainLayout>
+    </AccountPageLayout>
   );
 }
