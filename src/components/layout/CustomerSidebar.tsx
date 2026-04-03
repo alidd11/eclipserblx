@@ -65,21 +65,63 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const { balance } = useCredits();
   const navigate = useNavigate();
 
-  // Fetch user avatar from profile
-  const { data: profileAvatar } = useQuery({
-    queryKey: ['sidebar-avatar', user?.id],
+  // Fetch user profile data (avatar + username)
+  const { data: profileData } = useQuery({
+    queryKey: ['sidebar-profile', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
       const { data } = await supabase
         .from('profiles')
-        .select('avatar_url')
+        .select('avatar_url, username')
         .eq('user_id', user.id)
         .maybeSingle();
-      return data?.avatar_url || null;
+      return data || null;
     },
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000,
   });
+
+  // Fetch subscription status
+  const { data: subscriptionData } = useQuery({
+    queryKey: ['sidebar-subscription', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('status, current_period_end')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .maybeSingle();
+      if (data && data.current_period_end && new Date(data.current_period_end) > new Date()) {
+        return { isActive: true };
+      }
+      return { isActive: false };
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Fetch quick stats (orders + wishlist count)
+  const { data: quickStats } = useQuery({
+    queryKey: ['sidebar-stats', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return { orders: 0, wishlist: 0 };
+      const [ordersRes, wishlistRes] = await Promise.all([
+        supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('wishlist').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+      ]);
+      return {
+        orders: ordersRes.count || 0,
+        wishlist: wishlistRes.count || 0,
+      };
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const profileAvatar = profileData?.avatar_url || null;
+  const profileUsername = profileData?.username || null;
+  const isPremium = subscriptionData?.isActive || false;
   const location = useLocation();
   const { t } = useTranslation();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
