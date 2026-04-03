@@ -130,10 +130,10 @@ export function LandingHero() {
         <div className="lg:hidden w-full flex flex-col items-center">
           <div className="text-center max-w-md">
             <h1 className="font-display text-2xl sm:text-3xl font-bold leading-[1.15] tracking-tight mb-3">
-              {t('landing.headline')} {wordRotator} Experience.
+              The All-in-One Marketplace for {wordRotator} Creators.
             </h1>
             <p className="text-sm text-foreground/70 mx-auto mb-5 leading-relaxed">
-              {t('landing.description')}
+              Buy and sell premium scripts, models, UI kits and game assets. Lower fees, instant delivery.
             </p>
 
             <div className="space-y-2.5 mb-5">
