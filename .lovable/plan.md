@@ -1,66 +1,115 @@
 
 
-# Smart Hashtag System for Twitter/X Auto-Posting
+# Eclipse v3.2 — Priority Implementation Plan
 
-## Summary
-Build a Twitter/X auto-posting system with a smart hashtag engine that tracks usage, rotates hashtags, and maximises discoverability while keeping posts clean and on-brand.
+## What We're Building
 
-## What gets built
+Three high-impact changes selected from the directive: **Homepage Conversion**, **Free Assets Page**, and **Search Ranking Overhaul**.
 
-### 1. Database — `twitter_hashtags` + `twitter_posts` tables
+---
 
-**`twitter_hashtags`** — the hashtag pool:
-- `id`, `tag` (e.g. `#RobloxDev`), `category` (niche / audience / content), `usage_count`, `last_used_at`, `is_active`
-- Pre-seeded with the niche and audience hashtags from your list
+## 1. Homepage Conversion Redesign
 
-**`twitter_posts`** — log of every tweet sent:
-- `id`, `content`, `hashtags_used` (text array), `posted_at`, `tweet_id` (from X API), `post_type` (product_drop / store_showcase / announcement / scheduled), `status`
+**Current state:** Landing page has Hero → Promotions → Marketplace (stores/products toggle) → For You. Missing dedicated Trending, Free Assets, Featured Creators, Why Eclipse, and Trust Bar sections.
 
-### 2. Edge function — `post-twitter-update`
+**Changes to `Landing.tsx`:**
+Restructure section order to match the directive's conversion funnel:
 
-- Accepts a post type + content payload (title, description, link, optional image)
-- **Smart hashtag selection algorithm:**
-  1. Always pick 2–5 hashtags
-  2. Pull from pool filtered by `is_active = true`
-  3. Score each tag: lower `usage_count` + older `last_used_at` = higher priority
-  4. Mix categories: at least 1 niche + 1 audience + 1 content-specific (dynamically generated from the tweet topic)
-  5. Reject any combo used in the last 5 posts
-  6. Append hashtags at the end of the tweet text, separated by spaces
-- Posts via X API v2 (`https://api.x.com/2/tweets`) using OAuth 1.0a
-- Updates `usage_count` and `last_used_at` on used hashtags
-- Logs the post to `twitter_posts`
+```
+Hero (keep existing, update copy)
+  → Trending Products (NEW section)
+  → Categories Grid (move up from inside MarketplaceSection)
+  → Free Assets Highlight (NEW — teaser row linking to /free)
+  → Featured Creators (NEW — top verified stores horizontal scroll)
+  → Why Eclipse (NEW — 3-4 value props grid)
+  → Trust Bar (NEW — stats: products sold, creators, secure payments)
+  → Final CTA (NEW — "Start Selling" / "Browse Marketplace")
+  → For You (keep)
+```
 
-### 3. Admin UI — `/admin/twitter-posts`
+**New components to create:**
+- `src/components/landing/TrendingProducts.tsx` — Fetches products ordered by `total_sales` (last 24h proxy via recent orders), horizontal scroll on mobile, grid on desktop
+- `src/components/landing/FreeAssetsTeaser.tsx` — Shows 4-6 free products (price = 0) with "View All Free Assets →" link to `/free`
+- `src/components/landing/FeaturedCreators.tsx` — Horizontal scroll of top verified/trusted stores
+- `src/components/landing/WhyEclipse.tsx` — 4-column grid: Discord Ecosystem, AI Security, Eclipse+ Savings, Seller Tools
+- `src/components/landing/TrustBar.tsx` — Stats row: total products, total creators, "Secure Payments"
+- `src/components/landing/FinalCTA.tsx` — Full-width CTA banner
 
-- **Compose tab**: write a tweet, preview with auto-selected hashtags, override if needed, send immediately
-- **Hashtag pool tab**: view/add/deactivate hashtags, see usage stats, last used dates
-- **Post history tab**: see all sent tweets with status and hashtags used
-- **Auto-post toggles**: opt-in triggers for automatic tweets on:
-  - New product approved
-  - New verified store
-  - Platform announcements
+**Hero updates (`LandingHero.tsx`):**
+- Change headline to broader positioning: "The all-in-one marketplace for Roblox creators"
+- Keep existing CTA structure but ensure "Browse Marketplace" is primary
 
-### 4. Secrets required
+**MarketplaceSection:** Keep as-is but move `CategoriesGrid` call up to Landing level for earlier visibility.
 
-Four Twitter/X API credentials need to be added:
-- `TWITTER_CONSUMER_KEY`
-- `TWITTER_CONSUMER_SECRET`
-- `TWITTER_ACCESS_TOKEN`
-- `TWITTER_ACCESS_TOKEN_SECRET`
+---
 
-These will be requested via the secrets tool before implementation.
+## 2. Free Assets Page (`/free`)
 
-### 5. Integration hooks
+**New route:** `/free` → `src/pages/FreeAssets.tsx`
 
-- `notify-product-approved` edge function → optionally triggers `post-twitter-update` with product info
-- `post-store-showcase` → optionally triggers a tweet for new verified stores
-- `send-community-announcement` → optionally triggers a tweet mirroring the Discord announcement
+**Features:**
+- Query products where `price = 0` and `is_active = true` from active, non-testing stores
+- Category filter chips (horizontal scroll)
+- Sort by: newest, most popular, rating
+- Infinite scroll product grid using existing `ProductCard` component
+- SEO meta via `usePageMeta`
+- Zero-commission messaging in a banner: "All free assets — no fees, no catch"
 
-## Technical details
+**Route registration:** Add to `AppRoutes.tsx` as a lazy-loaded public route.
 
-- OAuth 1.0a signature generation in Deno (using `crypto.subtle.importKey` for HMAC-SHA1)
-- No POST body params in OAuth signature base string (X API requirement)
-- Tweet character limit: 280 chars total including hashtags — the function trims content to fit
-- RLS: admin-only access on both tables via `has_role(auth.uid(), 'admin')`
-- No realtime needed
+**Cross-links:**
+- Add "Free Assets" to main navigation/header
+- Homepage `FreeAssetsTeaser` links here
+- Search filters get a "Free" toggle
+
+---
+
+## 3. Search Ranking Overhaul
+
+**Current state:** Search uses basic text matching with `pg_trgm` indexes, sorted by `total_sales` for trending. No weighted scoring.
+
+**Implementation — database function:**
+
+Create a new RPC function `search_products_ranked` that implements the weighted score:
+
+```sql
+SCORE = (text_relevance * 0.35) + (sales_score * 0.20) + (conversion_score * 0.15) 
+      + (rating_score * 0.10) + (recency_score * 0.10) + (trending_score * 0.10)
+```
+
+- **text_relevance**: `similarity()` score from `pg_trgm` on name + description
+- **sales_score**: Normalized `total_sales` (0-1 scale vs max)
+- **conversion_score**: Derived from `total_sales / total_views` if view tracking exists, else fallback to sales
+- **rating_score**: `average_rating / 5.0`
+- **recency_score**: Decay function based on `created_at` (1.0 for today → 0 after 90 days)
+- **trending_score**: Sales in last 24h normalized
+
+**Database migration:** Create `search_products_ranked` as a SECURITY DEFINER function with parameters for query text, category filter, price range, free-only filter, and pagination.
+
+**Frontend changes (`SearchResults.tsx`):**
+- When sort = "relevance", call `search_products_ranked` RPC instead of raw query
+- Add "Free" filter toggle to search filters
+- Add "Verified" filter toggle
+
+**Edge function (`smart-search`):** Update to use the new RPC when available.
+
+---
+
+## Technical Notes
+
+- All new sections use `LazySection` + `Suspense` + `SectionErrorBoundary` for performance
+- All new sections use `ScrollReveal` for entrance animations
+- Mobile-first: horizontal scroll carousels on mobile, grids on desktop
+- Skeleton loaders for every new section
+- No rebuilds of existing components — only additions and reordering
+
+---
+
+## Estimated Scope
+
+| Area | Files Created | Files Modified |
+|------|--------------|----------------|
+| Homepage | 6 new components | Landing.tsx |
+| Free Assets | 1 page | AppRoutes.tsx, navigation |
+| Search Ranking | 1 DB migration | SearchResults.tsx, smart-search |
 
