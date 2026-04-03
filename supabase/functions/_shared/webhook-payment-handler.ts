@@ -199,7 +199,7 @@ async function processSellerEarnings(
   for (const item of sellerItems) {
     const { data: product } = await supabase
       .from("products")
-      .select("is_seller_product, store_id, price, stores(owner_id, commission_rate, custom_commission_rate, custom_rate_expires_at, name)")
+      .select("is_seller_product, store_id, price, stores(owner_id, commission_rate, custom_commission_rate, custom_rate_expires_at, free_commission_until, name)")
       .eq("id", item.id).single();
 
     if (!product?.store_id) continue;
@@ -208,8 +208,10 @@ async function processSellerEarnings(
     const sellerId = store?.owner_id;
     if (!sellerId) continue;
 
+    // Determine commission rate: free promo > custom rate > store default
+    const inFreePromo = store?.free_commission_until && new Date(store.free_commission_until) > new Date();
     const hasCustom = store?.custom_commission_rate != null && (!store?.custom_rate_expires_at || new Date(store.custom_rate_expires_at) > new Date());
-    const rate = hasCustom ? store.custom_commission_rate : (store?.commission_rate ?? 15);
+    const rate = inFreePromo ? 0 : (hasCustom ? store.custom_commission_rate : (store?.commission_rate ?? 15));
 
     const { data: orderItem } = await supabase.from("order_items").select("id").eq("order_id", orderId).eq("product_id", item.id).limit(1).maybeSingle();
     const orderItemId = orderItem?.id || null;

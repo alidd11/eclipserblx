@@ -17,6 +17,17 @@ export interface SellerProLimits {
   priorityReview: boolean;
 }
 
+const PROMO_LIMITS: SellerProLimits = {
+  commissionRate: 0,
+  maxFileSizeMb: 200,
+  maxImages: 5,
+  maxProducts: 25,
+  maxStorePages: 1,
+  monthlyAdCredit: 0,
+  proBadge: false,
+  priorityReview: false,
+};
+
 const FREE_LIMITS: SellerProLimits = {
   commissionRate: 15,
   maxFileSizeMb: 200,

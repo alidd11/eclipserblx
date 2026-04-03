@@ -95,6 +95,8 @@ export interface Store {
   roblox_gamepass_id?: string;
   roblox_gamepass_discount_enabled?: boolean;
   roblox_gamepass_discount_percent?: number;
+  // Free commission promo
+  free_commission_until?: string;
   // Scheduled banner
   banner_start_at?: string;
   banner_end_at?: string;
