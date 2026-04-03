@@ -317,6 +317,7 @@ export function AppRoutes() {
         <Route path="/orders" element={<MyPurchases />} />
         <Route path="/products" element={<Products />} />
         <Route path="/search" element={<SearchResults />} />
+        <Route path="/free" element={<FreeAssets />} />
         <Route path="/featured" element={<Featured />} />
         <Route path="/categories" element={<Categories />} />
         
