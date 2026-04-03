@@ -124,16 +124,16 @@ export default function BecomeSellerWizard() {
     }
   };
 
-  // Auto-suggest store name from Discord server
+  // Auto-suggest store name from Discord server or username
   useEffect(() => {
-    if (
-      !formValues.storeName &&
-      verificationResults.discord_server?.guild_name &&
-      verificationResults.discord_server?.valid
-    ) {
-      setFormValues({ storeName: verificationResults.discord_server.guild_name });
+    if (!formValues.storeName) {
+      if (verificationResults.discord_server?.guild_name && verificationResults.discord_server?.valid) {
+        setFormValues({ storeName: verificationResults.discord_server.guild_name });
+      } else if (linkedAccounts?.roblox_username && !formValues.storeName) {
+        setFormValues({ storeName: `${linkedAccounts.roblox_username}'s Store` });
+      }
     }
-  }, [verificationResults.discord_server]);
+  }, [verificationResults.discord_server, linkedAccounts?.roblox_username]);
 
   const submitApplication = useMutation({
     mutationFn: async () => {
@@ -723,6 +723,44 @@ function StepConfirm({ formValues, setFormValues, verificationResults, settings,
 /* ─── State Views ─── */
 
 function AutoApprovedView() {
+  const setupSteps = [
+    { 
+      step: 'Identity Verified', 
+      desc: 'Discord & Roblox accounts matched', 
+      done: true, 
+      icon: CheckCircle2,
+      action: null,
+    },
+    { 
+      step: 'Store Created', 
+      desc: 'Your store is live and ready', 
+      done: true, 
+      icon: Store,
+      action: null,
+    },
+    { 
+      step: 'Connect Payouts', 
+      desc: 'Set up Stripe, PayPal, or bank transfer to receive earnings', 
+      done: false, 
+      icon: Award,
+      action: { label: 'Set Up Payouts', href: '/seller/setup' },
+    },
+    { 
+      step: 'Customize Your Store', 
+      desc: 'Add your logo, banner, choose a theme, and set accent colors', 
+      done: false, 
+      icon: Sparkles,
+      action: { label: 'Customize', href: '/seller/setup' },
+    },
+    { 
+      step: 'List Your First Product', 
+      desc: 'Upload your first asset and start earning immediately', 
+      done: false, 
+      icon: Rocket,
+      action: { label: 'Add Product', href: '/seller/products/new' },
+    },
+  ];
+
   return (
     <div className="text-center space-y-8 py-8">
       <div className="space-y-4">
@@ -731,18 +769,13 @@ function AutoApprovedView() {
         </div>
         <h1 className="text-2xl font-bold">You're Approved! 🎉</h1>
         <p className="text-muted-foreground max-w-md mx-auto">
-          Your identity was verified automatically through your linked accounts. Your store is ready to set up!
+          Your identity was verified automatically. Complete these steps to start selling:
         </p>
       </div>
 
-      {/* What's next */}
-      <div className="max-w-sm mx-auto space-y-0">
-        {[
-          { step: 'Identity Verified', desc: 'Discord & Roblox accounts matched', done: true, icon: CheckCircle2 },
-          { step: 'Store Created', desc: 'Your store is live and ready', done: true, icon: Store },
-          { step: 'Customize Your Store', desc: 'Add logo, banner, and categories', done: false, icon: Sparkles },
-          { step: 'List Your First Product', desc: 'Start earning immediately', done: false, icon: Rocket },
-        ].map((item, i) => (
+      {/* Guided setup checklist */}
+      <div className="max-w-sm mx-auto space-y-0 text-left">
+        {setupSteps.map((item, i) => (
           <div key={i} className="flex gap-3">
             <div className="flex flex-col items-center">
               <div className={cn(
@@ -751,13 +784,21 @@ function AutoApprovedView() {
               )}>
                 <item.icon className={cn('h-4 w-4', item.done ? 'text-green-500' : 'text-muted-foreground')} />
               </div>
-              {i < 3 && <div className="w-px h-8 bg-border" />}
+              {i < setupSteps.length - 1 && <div className="w-px h-full min-h-[2rem] bg-border" />}
             </div>
-            <div className="pb-8 text-left">
+            <div className="pb-5">
               <p className={cn('text-sm font-medium', item.done && 'text-green-600 dark:text-green-400')}>
                 {item.step}
               </p>
-              <p className="text-xs text-muted-foreground">{item.desc}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+              {item.action && (
+                <Button asChild size="sm" variant="outline" className="mt-2 h-7 text-xs">
+                  <Link to={item.action.href}>
+                    {item.action.label}
+                    <ChevronRight className="h-3 w-3 ml-0.5" />
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
         ))}
@@ -766,7 +807,7 @@ function AutoApprovedView() {
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Button asChild>
           <Link to="/seller/setup">
-            Set Up Your Store
+            Complete Store Setup
             <ArrowRight className="h-4 w-4 ml-1" />
           </Link>
         </Button>
