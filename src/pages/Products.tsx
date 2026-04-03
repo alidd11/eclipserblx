@@ -348,7 +348,7 @@ function ProductsGrid({
               isTrusted={product.stores?.is_trusted}
               storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
             />
-          </>
+          </React.Fragment>
         ))}
       </div>
 
