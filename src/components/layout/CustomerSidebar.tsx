@@ -1,9 +1,9 @@
-import { useState, useEffect, forwardRef } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
-  HelpCircle, Mail, Activity, ChevronDown, ShoppingCart, 
-  User, LucideIcon, Home, TrendingUp, Store, Bell, FolderOpen,
-  Sparkles, Download, Heart, Wallet, LogOut, ChevronLeft, ChevronRight,
+  HelpCircle, ChevronDown, ShoppingCart, 
+  User, LucideIcon, Home, TrendingUp, Store, Bell,
+  Sparkles, Heart, LogOut, ChevronLeft, ChevronRight,
   MessageSquareText, Megaphone, FileQuestion, LayoutGrid, Shield,
   Globe, PenTool
 } from 'lucide-react';
@@ -13,6 +13,7 @@ import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { EclipseLogo } from '@/components/ui/EclipseLogo';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
@@ -27,7 +28,6 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useTranslation } from 'react-i18next';
 import { useNotifications } from '@/hooks/useNotifications';
 
-// Extracted sidebar sub-components
 import { DiscordIcon, RobloxIcon } from './sidebar/SidebarBrandIcons';
 import { ICON_SIZE, ICON_SIZE_SMALL, ICON_STROKE_ACTIVE, ICON_STROKE_DEFAULT, SIDEBAR_STORAGE_KEY } from './sidebar/sidebarConstants';
 import { SidebarFooter } from './sidebar/SidebarFooter';
@@ -48,7 +48,6 @@ interface NavGroup {
   items: NavItem[];
 }
 
-
 interface CustomerSidebarProps {
   collapsed: boolean;
   onToggle: () => void;
@@ -60,16 +59,15 @@ interface CustomerSidebarProps {
 export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer = false, className }: CustomerSidebarProps) {
   const { user, signOut } = useAuth();
   const { discordUrl } = useDiscordUrl();
-  
   const { isSeller } = useSellerStatus();
   const { isStaff } = useAdminAuth();
-  
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const systemStatus = useSystemStatus();
+
   // Fetch parent categories for Resources section
   const { data: parentCategories } = useQuery({
     queryKey: ['sidebar-categories'],
@@ -84,31 +82,26 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     staleTime: 5 * 60 * 1000,
   });
 
-  // Check if user is an approved affiliate
-  const { data: isApprovedAffiliate } = useQuery({
-    queryKey: ['sidebar-affiliate-status', user?.id],
-    queryFn: async () => {
-      if (!user) return false;
-      const { data } = await supabase
-        .from('affiliate_applications')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('status', 'approved')
-        .limit(1);
-      return (data?.length ?? 0) > 0;
-    },
-    enabled: !!user,
-    staleTime: 5 * 60 * 1000,
-  });
-
-
-  // Use the shared notification hook — eliminates duplicate realtime channel + DB query
   const { unreadCount: unreadNotifications } = useNotifications();
-
-  // Use collapsed from props unless in mobile drawer mode
   const isCollapsed = isMobileDrawer ? false : collapsed;
 
-  // Navigation groups - organized by user intent
+  // Build flat resource items from categories
+  const resourceItems: NavItem[] = [
+    // Roblox categories listed directly (flat)
+    ...(parentCategories?.filter(cat => cat.slug !== 'bots').map((cat) => {
+      const CatIcon = categoryIconMap[cat.slug] || PackageIcon;
+      return {
+        title: cat.name,
+        icon: CatIcon as unknown as LucideIcon,
+        href: `/products?category=${cat.slug}`,
+      };
+    }) ?? []),
+    // Discord Bots
+    { title: 'Discord Bots', icon: BotIcon as unknown as LucideIcon, href: '/products?category=bots' },
+    // Templates
+    { title: 'Templates', icon: PenTool, href: '/store/blueprint' },
+  ];
+
   const navGroups: NavGroup[] = [
     {
       id: 'quick-access',
@@ -126,14 +119,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       icon: User,
       items: [
         { title: t('sidebar.profile'), icon: User, href: '/account' },
-        { title: t('sidebar.cart'), icon: ShoppingCart, href: '/cart' },
-        { title: t('sidebar.wishlist'), icon: Heart, href: '/wishlist' },
-        { title: t('sidebar.purchases'), icon: Download, href: '/purchases' },
-        { title: t('sidebar.wallet'), icon: Wallet, href: '/credits' },
         { title: t('sidebar.notifications'), icon: Bell, href: '/messages', showNotificationDot: true },
-        { title: t('sidebar.following'), icon: Heart, href: '/account/following' },
-        ...(isSeller ? [{ title: t('sidebar.storeMessages'), icon: MessageSquareText, href: '/store-messages' }] : []),
-        ...(isApprovedAffiliate ? [{ title: t('sidebar.affiliate'), icon: TrendingUp, href: '/affiliate' }] : []),
+        { title: t('sidebar.cart'), icon: ShoppingCart, href: '/cart' },
       ],
     },
     {
@@ -141,29 +128,28 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       title: t('sidebar.explore', 'Explore'),
       icon: Sparkles,
       items: [
+        { title: t('sidebar.allProducts'), icon: Grid3X3, href: '/products' },
         { title: t('sidebar.allStores'), icon: Store, href: '/stores' },
         { title: t('sidebar.viewAllCategories', 'All Categories'), icon: Grid3X3, href: '/categories' },
-        { title: t('sidebar.allProducts'), icon: Grid3X3, href: '/products' },
         { title: t('sidebar.featured'), icon: Star, href: '/featured' },
         { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
-        
-        { title: t('sidebar.advertise'), icon: Megaphone, href: '/advertise' },
       ],
     },
     {
       id: 'resources',
       title: t('sidebar.resources', 'Resources'),
       icon: LayoutGrid,
-      items: [],
+      items: resourceItems,
     },
     {
       id: 'community',
       title: t('sidebar.support'),
       icon: HelpCircle,
       items: [
-        { title: t('sidebar.myTickets'), icon: MessageSquareText, href: '/support/tickets' },
         { title: t('sidebar.helpCenter'), icon: HelpCircle, href: '/support' },
+        { title: t('sidebar.myTickets'), icon: MessageSquareText, href: '/support/tickets' },
         { title: t('sidebar.faq'), icon: FileQuestion, href: '/faq' },
+        { title: t('sidebar.advertise'), icon: Megaphone, href: '/advertise' },
         { title: t('sidebar.jobs'), icon: Briefcase, href: '/jobs' },
         { title: t('sidebar.discord'), icon: DiscordIcon as unknown as LucideIcon, href: discordUrl, external: true },
       ],
@@ -174,16 +160,11 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const stored = safeStorage.getItem(SIDEBAR_STORAGE_KEY);
     if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch {
-        return {};
-      }
+      try { return JSON.parse(stored); } catch { return {}; }
     }
     return navGroups.reduce((acc, group) => ({ ...acc, [group.id]: true }), {});
   });
 
-  // Persist open groups
   useEffect(() => {
     safeStorage.setItem(SIDEBAR_STORAGE_KEY, JSON.stringify(openGroups));
   }, [openGroups]);
@@ -192,7 +173,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   useEffect(() => {
     const currentPath = location.pathname;
     navGroups.forEach(group => {
-      const hasActiveItem = group.items.some(item => 
+      const hasActiveItem = group.items.some(item =>
         !item.external && (item.href === currentPath || (item.href === '/' && currentPath === '/'))
       );
       if (hasActiveItem && !openGroups[group.id]) {
@@ -200,7 +181,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       }
     });
   }, [location.pathname]);
-
 
   const statusConfig = {
     online: { color: 'text-green-500', bg: 'bg-green-500' },
@@ -229,7 +209,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
 
   const renderNavItem = (item: NavItem) => {
     const isActive = !item.external && (
-      location.pathname === item.href || 
+      location.pathname === item.href ||
       (item.href === '/' && location.pathname === '/') ||
       (item.href.includes('?') && location.pathname + location.search === item.href)
     );
@@ -238,11 +218,9 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       <>
         <div className="relative shrink-0">
           <item.icon className={cn(
-            ICON_SIZE,
-            "transition-colors",
+            ICON_SIZE, "transition-colors",
             isActive ? ICON_STROKE_ACTIVE : ICON_STROKE_DEFAULT
           )} />
-          {/* Red notification dot */}
           {item.showNotificationDot && unreadNotifications > 0 && (
             <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500" />
           )}
@@ -253,7 +231,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         {!isCollapsed && item.showStatusDot && (
           <Circle className={cn('h-2.5 w-2.5 fill-current shrink-0', statusConfig[systemStatus].color)} />
         )}
-        {/* Show unread count badge for notifications */}
         {!isCollapsed && item.showNotificationDot && unreadNotifications > 0 && (
           <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1.5">
             {unreadNotifications > 99 ? '99+' : unreadNotifications}
@@ -263,8 +240,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     );
 
     const linkClassName = cn(
-      "text-[13px] font-medium select-none",
-      "transition-colors duration-100",
+      "text-[13px] font-medium select-none transition-colors duration-100",
       isCollapsed
         ? "flex w-full max-w-full items-center justify-center py-1.5 rounded-md overflow-hidden"
         : "flex w-full max-w-full min-w-0 flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3 rounded-md overflow-hidden",
@@ -273,19 +249,12 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         : "text-foreground/80 hover:text-foreground hover:bg-muted/50"
     );
 
-    // External link (Discord)
     if (item.external) {
       if (isCollapsed) {
         return (
           <Tooltip key={item.title}>
             <TooltipTrigger asChild>
-              <a
-                href={item.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleNavClick}
-                className={linkClassName}
-              >
+              <a href={item.href} target="_blank" rel="noopener noreferrer" onClick={handleNavClick} className={linkClassName}>
                 {LinkContent}
               </a>
             </TooltipTrigger>
@@ -294,29 +263,15 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         );
       }
       return (
-        <a
-          key={item.title}
-          href={item.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={handleNavClick}
-          className={linkClassName}
-        >
+        <a key={item.title} href={item.href} target="_blank" rel="noopener noreferrer" onClick={handleNavClick} className={linkClassName}>
           {LinkContent}
         </a>
       );
     }
 
-    // Internal link
     if (!isCollapsed) {
       return (
-        <NavLink
-          key={item.href}
-          to={item.href}
-          end={item.href === '/'}
-          onClick={handleNavClick}
-          className={linkClassName}
-        >
+        <NavLink key={item.href} to={item.href} end={item.href === '/'} onClick={handleNavClick} className={linkClassName}>
           {LinkContent}
         </NavLink>
       );
@@ -325,11 +280,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     return (
       <Tooltip key={item.href}>
         <TooltipTrigger asChild>
-          <Link
-            to={item.href}
-            onClick={handleNavClick}
-            className={linkClassName}
-          >
+          <Link to={item.href} onClick={handleNavClick} className={linkClassName}>
             {LinkContent}
           </Link>
         </TooltipTrigger>
@@ -340,24 +291,20 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
 
   const renderGroup = (group: NavGroup) => {
     const isOpen = openGroups[group.id] ?? true;
-    const hasActiveItem = group.items.some(item => 
+    const hasActiveItem = group.items.some(item =>
       !item.external && (
-        location.pathname === item.href || 
+        location.pathname === item.href ||
         (item.href === '/' && location.pathname === '/') ||
         (item.href.includes('?') && location.pathname + location.search === item.href)
       )
     );
 
-    // Single-item groups render directly (skip for resources which has nested content)
-    if (group.items.length === 1 && group.id !== 'resources') {
-      return (
-        <div key={group.id} className="mb-1">
-          {renderNavItem(group.items[0])}
-        </div>
-      );
+    // Single-item groups render directly
+    if (group.items.length === 1) {
+      return <div key={group.id} className="mb-1">{renderNavItem(group.items[0])}</div>;
     }
 
-    // QUICK-ACCESS group: always expanded, non-collapsible, no header
+    // Quick-access: always expanded, no header
     if (group.id === 'quick-access') {
       return (
         <div key={group.id} className="mb-1 space-y-0.5">
@@ -377,58 +324,34 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                   "w-full flex items-center justify-center py-2.5 rounded-lg select-none",
                   "transition-all duration-100 active:scale-[0.97] active:opacity-90",
                   "focus:outline-none focus-visible:outline-none",
-                  hasActiveItem
-                    ? "bg-muted text-foreground"
-                    : "text-foreground/80 hover:text-foreground hover:bg-muted"
+                  hasActiveItem ? "bg-muted text-foreground" : "text-foreground/80 hover:text-foreground hover:bg-muted"
                 )}
                 onClick={() => toggleGroup(group.id)}
               >
-                <group.icon className={cn(
-                  ICON_SIZE,
-                  "transition-colors",
-                  hasActiveItem ? ICON_STROKE_ACTIVE : ICON_STROKE_DEFAULT
-                )} />
+                <group.icon className={cn(ICON_SIZE, "transition-colors", hasActiveItem ? ICON_STROKE_ACTIVE : ICON_STROKE_DEFAULT)} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="right" className="p-0">
               <div className="py-2">
-                <div className="px-3 pb-1 text-xs font-semibold text-muted-foreground">
-                  {group.title}
-                </div>
+                <div className="px-3 pb-1 text-xs font-semibold text-muted-foreground">{group.title}</div>
                 {group.items.map(item => {
                   if (item.external) {
                     return (
-                      <a
-                        key={item.title}
-                        href={item.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={handleNavClick}
-                        className="flex items-center gap-2 px-3 py-1.5 text-sm transition-colors hover:bg-muted"
-                      >
+                      <a key={item.title} href={item.href} target="_blank" rel="noopener noreferrer" onClick={handleNavClick}
+                        className="flex items-center gap-2 px-3 py-1.5 text-sm transition-colors hover:bg-muted">
                         <item.icon className={cn(ICON_SIZE_SMALL, ICON_STROKE_DEFAULT)} />
                         {item.title}
                       </a>
                     );
                   }
                   return (
-                    <NavLink
-                      key={item.href}
-                      to={item.href}
-                      end={item.href === '/'}
-                      onClick={handleNavClick}
+                    <NavLink key={item.href} to={item.href} end={item.href === '/'} onClick={handleNavClick}
                       className={({ isActive }) => cn(
                         "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
-                        isActive
-                          ? "bg-muted text-foreground"
-                          : "hover:bg-muted"
-                      )}
-                    >
+                        isActive ? "bg-muted text-foreground" : "hover:bg-muted"
+                      )}>
                       <item.icon className={cn(ICON_SIZE_SMALL, ICON_STROKE_DEFAULT)} />
                       {item.title}
-                      {item.showStatusDot && (
-                        <Circle className={cn('h-2 w-2 fill-current ml-auto', statusConfig[systemStatus].color)} />
-                      )}
                     </NavLink>
                   );
                 })}
@@ -439,23 +362,15 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       );
     }
 
-    // Expanded: collapsible group
+    // Expanded: collapsible group (flat — no nested collapsibles)
     return (
-      <Collapsible
-        key={group.id}
-        open={isOpen}
-        onOpenChange={() => toggleGroup(group.id)}
-        className="mb-1"
-      >
+      <Collapsible key={group.id} open={isOpen} onOpenChange={() => toggleGroup(group.id)} className="mb-1">
         <CollapsibleTrigger asChild>
           <button
             className={cn(
               "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold select-none uppercase tracking-wider",
-              "transition-colors duration-100",
-              "focus:outline-none focus-visible:outline-none",
-              hasActiveItem
-                ? "text-foreground"
-                : "text-foreground/80 hover:text-foreground"
+              "transition-colors duration-100 focus:outline-none focus-visible:outline-none",
+              hasActiveItem ? "text-foreground" : "text-foreground/80 hover:text-foreground"
             )}
           >
             <span className="flex-1 text-left truncate">{group.title}</span>
@@ -467,142 +382,47 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-px pt-px">
           {group.items.map(renderNavItem)}
-          {/* Nested Roblox sub-section inside Resources */}
-          {group.id === 'resources' && !isCollapsed && parentCategories && parentCategories.length > 0 && (
-            <Collapsible
-              open={openGroups['roblox'] ?? false}
-              onOpenChange={() => toggleGroup('roblox')}
-              className="mt-0.5"
-            >
-              <CollapsibleTrigger asChild>
-                <button
-                  className={cn(
-                    "w-full flex items-center gap-2.5 px-2.5 py-1.5 ml-3 rounded-md text-[13px] font-medium select-none",
-                    "transition-colors duration-100",
-                    "focus:outline-none focus-visible:outline-none",
-                    "text-foreground/80 hover:text-foreground hover:bg-muted/50"
-                  )}
-                >
-                  <RobloxIcon className={cn(ICON_SIZE)} />
-                  <span className="flex-1 text-left truncate">Roblox</span>
-                  <ChevronDown className={cn(
-                    ICON_SIZE_SMALL, "shrink-0 transition-transform duration-200",
-                    (openGroups['roblox'] ?? false) ? "rotate-0" : "-rotate-90"
-                  )} />
-                </button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-px pt-px">
-                {parentCategories.filter(cat => cat.slug !== 'bots').map((cat) => {
-                  const CatIcon = categoryIconMap[cat.slug] || PackageIcon;
-                  return renderNavItem({
-                    title: cat.name,
-                    icon: CatIcon as unknown as LucideIcon,
-                    href: `/products?category=${cat.slug}`,
-                  });
-                })}
-              </CollapsibleContent>
-            </Collapsible>
-          )}
-          {/* Nested Discord sub-section inside Resources */}
-          {group.id === 'resources' && !isCollapsed && (
-            <Collapsible
-              open={openGroups['discord'] ?? false}
-              onOpenChange={() => toggleGroup('discord')}
-              className="mt-0.5"
-            >
-              <CollapsibleTrigger asChild>
-                <button
-                  className={cn(
-                    "w-full flex items-center gap-2.5 px-2.5 py-1.5 ml-3 rounded-md text-[13px] font-medium select-none",
-                    "transition-colors duration-100",
-                    "focus:outline-none focus-visible:outline-none",
-                    "text-foreground/80 hover:text-foreground hover:bg-muted/50"
-                  )}
-                >
-                  <DiscordIcon className={cn(ICON_SIZE)} />
-                  <span className="flex-1 text-left truncate">Discord</span>
-                  <ChevronDown className={cn(
-                    ICON_SIZE_SMALL, "shrink-0 transition-transform duration-200",
-                    (openGroups['discord'] ?? false) ? "rotate-0" : "-rotate-90"
-                  )} />
-                </button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-px pt-px">
-                {renderNavItem({
-                  title: 'Discord Bots',
-                  icon: BotIcon as unknown as LucideIcon,
-                  href: '/products?category=bots',
-                })}
-              </CollapsibleContent>
-            </Collapsible>
-          )}
-          {/* Nested Templates sub-section inside Resources */}
-          {group.id === 'resources' && !isCollapsed && (
-            <Collapsible
-              open={openGroups['templates'] ?? false}
-              onOpenChange={() => toggleGroup('templates')}
-              className="mt-0.5"
-            >
-              <CollapsibleTrigger asChild>
-                <button
-                  className={cn(
-                    "w-full flex items-center gap-2.5 px-2.5 py-1.5 ml-3 rounded-md text-[13px] font-medium select-none",
-                    "transition-colors duration-100",
-                    "focus:outline-none focus-visible:outline-none",
-                    "text-foreground/80 hover:text-foreground hover:bg-muted/50"
-                  )}
-                >
-                  <PenTool className={cn(ICON_SIZE)} />
-                  <span className="flex-1 text-left truncate">Templates</span>
-                  <ChevronDown className={cn(
-                    ICON_SIZE_SMALL, "shrink-0 transition-transform duration-200",
-                    (openGroups['templates'] ?? false) ? "rotate-0" : "-rotate-90"
-                  )} />
-                </button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-px pt-px">
-                {renderNavItem({
-                  title: 'Roblox Templates',
-                  icon: Globe as unknown as LucideIcon,
-                  href: '/store/blueprint',
-                })}
-              </CollapsibleContent>
-            </Collapsible>
-          )}
         </CollapsibleContent>
       </Collapsible>
     );
   };
-
 
   return (
     <aside
       aria-label="Main navigation"
       className={cn(
         "bg-sidebar text-sidebar-foreground flex flex-col transition-all duration-200 shrink-0 overflow-x-hidden",
-        isMobileDrawer 
-          ? "h-full w-full border-0" 
+        isMobileDrawer
+          ? "h-full w-full border-0"
           : "h-[100dvh] sticky top-0 border-r border-border",
         !isMobileDrawer && (isCollapsed ? "w-12" : "w-52"),
         className
       )}
       data-gesture-exempt="true"
     >
-      {/* Header */}
-      <div className="px-3 py-2 border-b border-border">
+      {/* Branded Header */}
+      <div className={cn(
+        "border-b border-border flex items-center shrink-0",
+        isCollapsed ? "px-1.5 py-2.5 justify-center" : "px-3 py-2.5 gap-2.5"
+      )}>
+        <EclipseLogo size="sm" />
         {!isCollapsed && (
-          <h1 className="font-display font-bold text-sm text-foreground truncate tracking-wide">
-            ECLIPSE
-          </h1>
+          <span className="font-display font-bold text-sm text-foreground tracking-wide flex-1">Eclipse</span>
         )}
-        {isCollapsed && (
+        {!isMobileDrawer && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center justify-center">
-                <span className="font-display font-bold text-sm text-foreground">E</span>
-              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 min-h-0 min-w-0 text-muted-foreground hover:text-foreground"
+                onClick={onToggle}
+                haptic
+              >
+                {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+              </Button>
             </TooltipTrigger>
-            <TooltipContent side="right">Eclipse</TooltipContent>
+            <TooltipContent side="right">{isCollapsed ? 'Expand' : 'Collapse'}</TooltipContent>
           </Tooltip>
         )}
       </div>
@@ -610,22 +430,19 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       {/* Navigation */}
       <nav className="flex-1 px-1.5 py-1.5 overflow-y-auto overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
         <div className="space-y-0.5">
-          {navGroups.map((group) => (
-            <div key={group.id}>
-              {renderGroup(group)}
-            </div>
+          {navGroups.map(group => (
+            <div key={group.id}>{renderGroup(group)}</div>
           ))}
         </div>
       </nav>
 
-      {/* Footer Links */}
+      {/* Footer */}
       {user && (
         <SidebarFooter
           isCollapsed={isCollapsed}
           onSignOut={() => setShowSignOutDialog(true)}
         />
       )}
-
 
       <SignOutConfirmDialog
         open={showSignOutDialog}
