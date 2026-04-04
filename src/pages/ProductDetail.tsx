@@ -622,7 +622,9 @@ export default function ProductDetail() {
 
           {/* Details */}
           <div className="space-y-6">
-            <Card className="bg-card border-border">
+                <Card className="bg-card border-border/50 overflow-hidden relative">
+              {/* Subtle top accent line */}
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
               <CardContent className="pt-6 space-y-6">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 flex-wrap">
