@@ -34,6 +34,12 @@ export function NewThisWeek() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const imageUrls = useMemo(() =>
+    (products || []).slice(0, 4).map(p => getFirstImageUrl(p.images)).filter(Boolean),
+    [products]
+  );
+  usePreloadImages(imageUrls);
+
   if (isLoading) {
     return (
       <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
@@ -46,12 +52,6 @@ export function NewThisWeek() {
       </section>
     );
   }
-
-  const imageUrls = useMemo(() =>
-    (products || []).slice(0, 4).map(p => getFirstImageUrl(p.images)).filter(Boolean),
-    [products]
-  );
-  usePreloadImages(imageUrls);
 
   if (!products?.length) return null;
 
