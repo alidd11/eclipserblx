@@ -762,6 +762,7 @@ export default function ProductDetail() {
                 <div className="flex flex-col gap-3">
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Button
+                      ref={ctaButtonRef as React.RefObject<HTMLButtonElement>}
                       size="lg"
                       className={cn(
                         "flex-1 h-12 text-base font-semibold",
