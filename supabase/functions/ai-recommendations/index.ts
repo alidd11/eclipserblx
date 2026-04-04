@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
       if (product) {
         const { data: similar } = await supabase
           .from("products")
-          .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_trusted, is_active)")
+          .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_active)")
           .eq("category_id", product.category_id)
           .neq("id", productId)
           .eq("is_active", true)
