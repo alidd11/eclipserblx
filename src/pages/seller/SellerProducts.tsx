@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
+import { useSellerSubscription } from '@/hooks/useSellerSubscription';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { applyProductWatermark } from '@/lib/watermark';
