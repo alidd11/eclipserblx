@@ -632,9 +632,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             <ExpandableSection icon={Shield} label="Saved Payment Methods">
               <SavedCardsCard />
             </ExpandableSection>
-            <ExpandableSection icon={Sparkles} label="Eclipse+ Subscription">
-              <SubscriptionCard />
-            </ExpandableSection>
           </CardContent>
         </Card>
 
