@@ -19,7 +19,6 @@ interface HeroProduct {
     slug: string;
     logo_url: string | null;
     is_verified: boolean;
-    is_trusted: boolean;
   } | null;
 }
 
@@ -89,9 +88,6 @@ function CompactProductCard({ product, index }: { product: HeroProduct; index: n
             </span>
             {product.stores?.is_verified && (
               <BadgeCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
-            )}
-            {product.stores?.is_trusted && (
-              <Shield className="h-3 w-3 text-amber-400 flex-shrink-0" />
             )}
           </div>
 

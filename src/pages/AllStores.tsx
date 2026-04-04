@@ -26,7 +26,6 @@ interface StoreData {
   banner_url: string | null;
   accent_color: string | null;
   is_verified: boolean;
-  is_trusted: boolean;
   follower_count: number | null;
   average_rating: number | null;
   product_count: number | null;
@@ -39,7 +38,6 @@ type SortOption = 'popular' | 'newest' | 'rating' | 'products' | 'name';
 
 function scoreStore(store: StoreData): number {
   return (
-    (store.is_trusted ? 100 : 0) +
     (store.is_verified ? 50 : 0) +
     (store.follower_count || 0) * 0.1 +
     (store.average_rating || 0) * 12 +
@@ -130,14 +128,9 @@ function SpotlightCard({ store }: { store: StoreData }) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
         <div className="absolute top-3 right-3 flex items-center gap-1.5">
-          {store.is_trusted && (
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500 text-white text-[11px] font-semibold">
-              <Award className="h-3.5 w-3.5" />Trusted
-            </span>
-          )}
-          {store.is_verified && !store.is_trusted && (
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500 text-white text-[11px] font-semibold">
-              <ShieldCheck className="h-3.5 w-3.5" />Verified
+          {store.is_verified && (
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500 text-white text-[11px] font-semibold" title="This seller has completed our identity and business verification process">
+              <ShieldCheck className="h-3.5 w-3.5" />Verified Seller
             </span>
           )}
         </div>
@@ -199,8 +192,7 @@ function StoreCard({ store }: { store: StoreData }) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
         <div className="absolute top-2 right-2 flex items-center gap-1">
-          {store.is_trusted && <Award className="h-3.5 w-3.5 text-amber-400" />}
-          {store.is_verified && !store.is_trusted && <ShieldCheck className="h-3.5 w-3.5 text-blue-400" />}
+          {store.is_verified && <ShieldCheck className="h-3.5 w-3.5 text-blue-400" />}
         </div>
         <div className="absolute bottom-2 left-2.5 right-2.5 flex items-end gap-2">
           <div className="w-9 h-9 rounded-lg bg-card border border-card overflow-hidden shadow-sm flex-shrink-0">
@@ -254,7 +246,7 @@ function StoreSkeleton({ large }: { large?: boolean }) {
 // ---------- Page ----------
 
 export default function AllStores() {
-  usePageMeta({ title: 'All Stores', description: 'Discover verified stores on Eclipse marketplace. Find trusted sellers of Roblox scripts, vehicles, maps and game assets.', canonicalPath: '/stores' });
+  usePageMeta({ title: 'All Stores', description: 'Discover verified stores on Eclipse marketplace. Find verified sellers of Roblox scripts, vehicles, maps and game assets.', canonicalPath: '/stores' });
   const { data: stores, isLoading } = useAllStores();
   const { data: categories } = useStoreCategories();
   const [search, setSearch] = useState('');

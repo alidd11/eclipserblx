@@ -43,7 +43,7 @@ export default function FreeAssets() {
         .select(`
           id, name, slug, price, images, description, created_at, download_count,
           category_id, categories(name, slug),
-          store_id, stores!inner(name, slug, logo_url, is_verified, is_trusted, is_active, eclipse_plus_discount_enabled)
+          store_id, stores!inner(name, slug, logo_url, is_verified, is_active, eclipse_plus_discount_enabled)
         `)
         .eq('is_active', true)
         .eq('moderation_status', 'approved')
@@ -152,7 +152,6 @@ export default function FreeAssets() {
                   storeSlug={store?.slug}
                   storeLogo={store?.logo_url}
                   isVerified={store?.is_verified}
-                  isTrusted={store?.is_trusted}
                   storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
                   createdAt={product.created_at}
                 />

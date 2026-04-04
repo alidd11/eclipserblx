@@ -148,8 +148,8 @@ const faqSections: FAQSection[] = [
         a: "Contact support to request store closure. Your existing buyers will retain access to purchased products. Any pending balance will be paid out before closure.",
       },
       {
-        q: "How do I earn Trusted Seller status?",
-        a: "Trusted Seller status is awarded based on consistent product quality, positive reviews, reliable delivery, and adherence to community guidelines. It's reviewed periodically by our team.",
+        q: "How do I earn Verified Seller status?",
+        a: "Verified Seller status is granted automatically when you complete our identity and business verification process through Stripe Connect. Once your details are submitted and confirmed, your store will display the Verified Seller badge.",
       },
       {
         q: "What if I need to take a break from selling?",

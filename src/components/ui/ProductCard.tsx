@@ -30,7 +30,6 @@ interface ProductCardProps {
   storeSlug?: string;
   storeLogo?: string | null;
   isVerified?: boolean;
-  isTrusted?: boolean;
   isResellable?: boolean;
   showBestSellerBadge?: boolean;
   showNewBadge?: boolean;
@@ -40,7 +39,7 @@ interface ProductCardProps {
   minPrice?: number;
 }
 
-export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isTrusted, isResellable, showBestSellerBadge, showNewBadge, averageRating, storeEclipseEnabled, isPayWhatYouWant, minPrice }, ref) {
+export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isResellable, showBestSellerBadge, showNewBadge, averageRating, storeEclipseEnabled, isPayWhatYouWant, minPrice }, ref) {
   const { addItem, isInCart } = useCart();
   const { isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const { formatPrice } = useCurrency();
@@ -256,10 +255,9 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             {storeName || 'Eclipse'}
           </span>
           {isVerified && (
-            <BadgeCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
-          )}
-          {isTrusted && (
-            <Shield className="h-3 w-3 text-amber-400 flex-shrink-0" />
+            <span title="This seller has completed our identity and business verification process">
+              <BadgeCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
+            </span>
           )}
           {typeof averageRating === 'number' && averageRating > 0 && (
             <span className="flex items-center gap-0.5 ml-auto text-muted-foreground">

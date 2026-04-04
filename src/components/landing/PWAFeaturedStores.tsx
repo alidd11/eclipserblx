@@ -18,7 +18,6 @@ interface FeaturedStore {
   banner_url: string | null;
   accent_color: string | null;
   is_verified: boolean;
-  is_trusted: boolean;
   follower_count: number | null;
   average_rating: number | null;
   product_count: number | null;
@@ -36,7 +35,7 @@ function usePromotedSpotlightStore() {
           store_id,
           stores!product_promotions_store_id_fkey (
             id, name, slug, description, logo_url, banner_url, accent_color,
-            is_verified, is_trusted, follower_count, average_rating, product_count,
+            is_verified, follower_count, average_rating, product_count,
             status, is_active, is_testing
           )
         `)
@@ -60,7 +59,6 @@ function usePromotedSpotlightStore() {
         banner_url: s.banner_url,
         accent_color: s.accent_color,
         is_verified: s.is_verified,
-        is_trusted: s.is_trusted,
         follower_count: s.follower_count,
         average_rating: s.average_rating,
         product_count: s.product_count,
@@ -124,14 +122,9 @@ function SpotlightStoreCard({ store }: { store: FeaturedStore }) {
 
         {/* Badges top-right */}
         <div className="absolute top-3 right-3 flex items-center gap-1.5">
-          {store.is_trusted && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-semibold shadow">
-              <Award className="h-3 w-3" />{t('landing.trusted')}
-            </span>
-          )}
-          {store.is_verified && !store.is_trusted && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500 text-white text-[10px] font-semibold shadow">
-              <ShieldCheck className="h-3 w-3" />{t('landing.verified')}
+          {store.is_verified && (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500 text-white text-[10px] font-semibold shadow" title="This seller has completed our identity and business verification process">
+              <ShieldCheck className="h-3 w-3" />{t('landing.verified')} Seller
             </span>
           )}
         </div>
@@ -198,8 +191,7 @@ function CompactStoreCard({ store }: { store: FeaturedStore }) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
         {/* Badges */}
         <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
-          {store.is_trusted && <Award className="h-3 w-3 text-amber-400" />}
-          {store.is_verified && !store.is_trusted && <ShieldCheck className="h-3 w-3 text-blue-400" />}
+          {store.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400" />}
         </div>
         {/* Logo + name overlaid */}
         <div className="absolute bottom-1.5 left-2 right-2 flex items-end gap-2">

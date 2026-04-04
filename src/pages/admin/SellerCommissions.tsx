@@ -20,7 +20,6 @@ interface StoreWithCommission {
   custom_commission_rate: number | null;
   custom_rate_expires_at: string | null;
   is_active: boolean;
-  is_trusted: boolean;
   is_verified: boolean;
   eclipse_plus_discount_enabled: boolean | null;
   created_at: string;
@@ -45,7 +44,7 @@ export default function SellerCommissions() {
         .from('stores')
         .select(`
           id, name, slug, owner_id, commission_rate, custom_commission_rate, 
-          custom_rate_expires_at, is_active, is_trusted, is_verified, eclipse_plus_discount_enabled, created_at,
+          custom_rate_expires_at, is_active, is_verified, eclipse_plus_discount_enabled, created_at,
           profiles:owner_id (display_name, username)
         `)
         .order('name');
@@ -218,12 +217,6 @@ export default function SellerCommissions() {
                         {/* Store name and badges */}
                         <div className="flex flex-wrap items-center gap-2 mb-1">
                           <span className="font-semibold truncate">{store.name}</span>
-                          {store.is_trusted && (
-                            <Badge className="gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-xs shrink-0">
-                              <Shield className="h-3 w-3" />
-                              Trusted
-                            </Badge>
-                          )}
                           {store.is_verified && (
                             <Badge variant="outline" className="text-xs shrink-0">
                               Verified

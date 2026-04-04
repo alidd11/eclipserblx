@@ -3,13 +3,11 @@ import { Shield, Zap, BadgeCheck, RefreshCw } from 'lucide-react';
 interface StoreTrustSignalsProps {
   accentColor: string;
   isVerified?: boolean;
-  isTrusted?: boolean;
 }
 
 export function StoreTrustSignals({ 
   accentColor, 
   isVerified = false,
-  isTrusted = false 
 }: StoreTrustSignalsProps) {
   const signals = [
     {
@@ -22,10 +20,10 @@ export function StoreTrustSignals({
       title: 'Instant Delivery',
       description: 'Download immediately',
     },
-    ...(isVerified || isTrusted ? [{
+    ...(isVerified ? [{
       icon: BadgeCheck,
-      title: isTrusted ? 'Trusted Seller' : 'Verified Seller',
-      description: isTrusted ? 'Proven track record' : 'Identity confirmed',
+      title: 'Verified Seller',
+      description: 'Identity and business verified',
     }] : []),
     {
       icon: RefreshCw,

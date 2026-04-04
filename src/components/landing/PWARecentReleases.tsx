@@ -58,7 +58,6 @@ const SpotlightCard = memo(function SpotlightCard({ product }: { product: Scored
           )}
           <span className="text-[10px] text-muted-foreground font-medium truncate">{product.stores?.name}</span>
           {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
-          {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
         </div>
       </div>
     </Link>
@@ -96,7 +95,6 @@ const GridCard = memo(function GridCard({ product }: { product: ScoredProduct })
           )}
           <span className="text-[9px] text-muted-foreground font-medium truncate">{product.stores?.name}</span>
           {product.stores?.is_verified && <ShieldCheck className="h-2.5 w-2.5 text-blue-400 flex-shrink-0" />}
-          {product.stores?.is_trusted && <Award className="h-2.5 w-2.5 text-amber-400 flex-shrink-0" />}
         </div>
         <div className="p-2.5">
           {product.categories?.name && (

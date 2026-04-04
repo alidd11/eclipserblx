@@ -593,26 +593,17 @@ export default function StorePage() {
               </div>
             )}
 
-            {/* Verified/Trusted Badges - Above Stats */}
-            {(store.is_verified || (store as any).is_trusted) && (
+            {/* Verified Seller Badge - Above Stats */}
+            {store.is_verified && (
               <div className="flex items-center justify-center gap-2 flex-wrap mb-3">
-                {store.is_verified && (
-                  <Badge 
-                    className="gap-1 shadow-md"
-                    style={{ backgroundColor: accentColor, color: 'white' }}
-                  >
-                    <CheckCircle className="h-3 w-3" />
-                    Verified
-                  </Badge>
-                )}
-                {(store as any).is_trusted && (
-                  <Badge 
-                    className="gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 shadow-md"
-                  >
-                    <CheckCircle className="h-3 w-3" />
-                    Trusted Seller
-                  </Badge>
-                )}
+                <Badge 
+                  className="gap-1 shadow-md"
+                  style={{ backgroundColor: accentColor, color: 'white' }}
+                  title="This seller has completed our identity and business verification process"
+                >
+                  <CheckCircle className="h-3 w-3" />
+                  Verified Seller
+                </Badge>
               </div>
             )}
 
@@ -937,7 +928,6 @@ export default function StorePage() {
                         <StoreTrustSignals 
                           accentColor={accentColor}
                           isVerified={store.is_verified}
-                          isTrusted={(store as any).is_trusted}
                         />
                       </div>
                     );

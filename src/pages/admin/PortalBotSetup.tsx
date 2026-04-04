@@ -1467,7 +1467,7 @@ export async function handleShowcaseModal(interaction, serverContext) {
 
   const { data: store } = await supabase
     .from('stores')
-    .select('id, name, slug, description, logo_url, banner_url, average_rating, total_sales, product_count, follower_count, discord_url, website_url, twitter_url, youtube_url, tiktok_url, roblox_url, is_verified, is_trusted')
+    .select('id, name, slug, description, logo_url, banner_url, average_rating, total_sales, product_count, follower_count, discord_url, website_url, twitter_url, youtube_url, tiktok_url, roblox_url, is_verified')
     .eq('owner_id', profile.user_id).eq('is_active', true).is('deleted_at', null).maybeSingle();
 
   if (!store) return ephemeralReply(interaction, [{ color: 0xef4444, description: "You don't have an active store on Eclipse." }]);
@@ -1492,8 +1492,7 @@ async function handleStoreShowcase(interaction, store, branding, customMessage) 
   if (desc.length > 300) desc = desc.substring(0, 297) + '...';
 
   const badges = [];
-  if (store.is_trusted) badges.push('\\u2B50 Trusted');
-  if (store.is_verified) badges.push('\\u2705 Verified');
+  if (store.is_verified) badges.push('\\u2705 Verified Seller');
   const links = [\`\\uD83C\\uDF10 [Visit Store](\${storeUrl})\`];
   if (store.discord_url) links.push(\`\\uD83D\\uDCAC [Discord](\${store.discord_url})\`);
   if (store.website_url) links.push(\`\\uD83D\\uDD17 [Website](\${store.website_url})\`);

@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
       if (followedStoreIds.length > 0) {
         const { data: followedProducts } = await supabase
           .from("products")
-          .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_trusted, is_active)")
+          .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_active)")
           .in("store_id", followedStoreIds)
           .eq("is_active", true)
           .eq("moderation_status", "approved")
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
         if (categoryIds.length > 0) {
           const { data: similarProducts } = await supabase
             .from("products")
-            .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_trusted, is_active)")
+            .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_active)")
             .in("category_id", categoryIds)
             .not("id", "in", `(${viewedIds.join(",")})`)
             .eq("is_active", true)
@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
       if (product) {
         const { data: similar } = await supabase
           .from("products")
-          .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_trusted, is_active)")
+          .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_active)")
           .eq("category_id", product.category_id)
           .neq("id", productId)
           .eq("is_active", true)
@@ -148,7 +148,7 @@ Deno.serve(async (req) => {
       
       const { data: popular } = await supabase
         .from("products")
-        .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_trusted, is_active)")
+        .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_active)")
         .eq("is_active", true)
         .eq("moderation_status", "approved")
         .order("download_count", { ascending: false })

@@ -20,7 +20,7 @@ export const PUBLIC_STORE_COLUMNS = `
   hero_title, hero_subtitle, hero_cta_text, hero_cta_link, custom_css,
   font_heading, font_body, announcement_text, announcement_active,
   featured_product_ids, layout_style, show_reviews, show_social_proof,
-  follower_count, about_content, is_trusted, is_testing,
+  follower_count, about_content, is_testing,
   roblox_group_id, roblox_group_discount_enabled, roblox_group_discount_percent,
   roblox_group_min_rank, roblox_premium_discount_enabled, roblox_premium_discount_percent,
   roblox_gamepass_id, roblox_gamepass_discount_enabled, roblox_gamepass_discount_percent,
@@ -32,7 +32,7 @@ export const PUBLIC_STORE_COLUMNS = `
 // Minimal columns for store listings (marketplace, search results)
 export const STORE_LISTING_COLUMNS = `
   id, name, slug, description, logo_url, banner_url, accent_color,
-  is_verified, is_trusted, follower_count, is_testing, average_rating,
+  is_verified, follower_count, is_testing, average_rating,
   product_count, eclipse_plus_discount_enabled
 `;
 

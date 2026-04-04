@@ -2107,7 +2107,7 @@ async function handleShowcaseCommand(
       // Check if user owns a store
       const { data: store } = await supabase
         .from("stores")
-        .select("id, name, slug, description, logo_url, banner_url, average_rating, total_sales, product_count, follower_count, discord_url, website_url, twitter_url, youtube_url, tiktok_url, roblox_url, is_verified, is_trusted")
+        .select("id, name, slug, description, logo_url, banner_url, average_rating, total_sales, product_count, follower_count, discord_url, website_url, twitter_url, youtube_url, tiktok_url, roblox_url, is_verified")
         .eq("owner_id", profile.user_id)
         .eq("is_active", true)
         .is("deleted_at", null)
@@ -2167,8 +2167,7 @@ async function handleStoreShowcase(supabase: any, store: any, branding: any, cus
 
   // Build badges
   const badges: string[] = [];
-  if (store.is_trusted) badges.push("⭐ Trusted");
-  if (store.is_verified) badges.push("✅ Verified");
+  if (store.is_verified) badges.push("✅ Verified Seller");
 
   // Build links
   const links: string[] = [`🌐 [Visit Store](${storeUrl})`];
@@ -2334,7 +2333,7 @@ async function handleRandomShowcase(supabase: any, branding: any) {
     .from("products")
     .select(`
       id, name, slug, product_number, price, images, description,
-      stores!inner (name, slug, logo_url, is_verified, is_trusted)
+      stores!inner (name, slug, logo_url, is_verified)
     `)
     .eq("is_active", true)
     .eq("is_featured", true)
@@ -2352,8 +2351,7 @@ async function handleRandomShowcase(supabase: any, branding: any) {
   const storeUrl = `https://eclipserblx.com/stores/${store.slug}`;
 
   const badges: string[] = [];
-  if (store.is_trusted) badges.push("⭐ Trusted");
-  if (store.is_verified) badges.push("✅ Verified");
+  if (store.is_verified) badges.push("✅ Verified Seller");
   const badgeText = badges.length > 0 ? badges.join(" • ") : "";
 
   let description = product.description || "A premium product from the Eclipse marketplace.";

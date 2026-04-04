@@ -14,7 +14,7 @@ const SAFE_STORE_COLUMNS = `
   hero_title, hero_subtitle, hero_cta_text, hero_cta_link, custom_css,
   font_heading, font_body, announcement_text, announcement_active,
   featured_product_ids, layout_style, show_reviews, show_social_proof,
-  follower_count, about_content, is_trusted, payout_method, pwyw_enabled,
+  follower_count, about_content, payout_method, pwyw_enabled,
   eclipse_plus_discount_enabled, is_testing,
   roblox_group_id, roblox_group_discount_enabled, roblox_group_discount_percent,
   roblox_group_min_rank, roblox_premium_discount_enabled, roblox_premium_discount_percent,
@@ -84,7 +84,6 @@ export interface Store {
   // Followers
   follower_count?: number;
   about_content?: string;
-  is_trusted?: boolean;
   // Roblox integrations
   roblox_group_id?: string;
   roblox_group_discount_enabled?: boolean;

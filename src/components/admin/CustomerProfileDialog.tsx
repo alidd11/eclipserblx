@@ -411,9 +411,6 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium">{sellerStore.name}</span>
-                        {sellerStore.is_trusted && (
-                          <Badge className="bg-purple-500 text-xs">Trusted</Badge>
-                        )}
                         {sellerStore.is_verified && (
                           <Badge variant="secondary" className="text-xs">Verified</Badge>
                         )}

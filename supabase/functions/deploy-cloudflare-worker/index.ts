@@ -51,7 +51,7 @@ async function fetchInitialData(path) {
   try {
     var headers = { "apikey": ANON_KEY, "Authorization": "Bearer " + ANON_KEY, "Accept": "application/json" };
     if (path === "/" || path === "/products" || path === "/featured") {
-      var res = await fetch(SUPABASE_REST + "/products?select=id,name,slug,product_number,price,images,average_rating,category_id,is_resellable,categories(name),stores(name,logo_url,is_verified,is_trusted,eclipse_plus_discount_enabled)&is_active=eq.true&order=created_at.desc&limit=12", { headers: headers });
+      var res = await fetch(SUPABASE_REST + "/products?select=id,name,slug,product_number,price,images,average_rating,category_id,is_resellable,categories(name),stores(name,logo_url,is_verified,eclipse_plus_discount_enabled)&is_active=eq.true&order=created_at.desc&limit=12", { headers: headers });
       if (!res.ok) { await res.text(); return null; }
       var products = await res.json();
       return { products: products, route: path, ts: Date.now() };
