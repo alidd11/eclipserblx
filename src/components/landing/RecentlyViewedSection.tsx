@@ -13,7 +13,7 @@ export function RecentlyViewedSection() {
   const items = recentlyViewed.slice(0, 8);
 
   return (
-    <section className="px-4 sm:px-6 lg:px-8 py-6">
+    <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">

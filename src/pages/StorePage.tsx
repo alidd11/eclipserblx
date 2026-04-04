@@ -899,9 +899,19 @@ export default function StorePage() {
                             <CardContent className="py-12 text-center">
                               <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                               <h3 className="text-lg font-medium mb-2">No Products Yet</h3>
-                              <p className="text-muted-foreground">
-                                This store hasn't listed any products yet. Check back soon!
+                              <p className="text-muted-foreground mb-4">
+                                This store hasn't listed any products yet.
                               </p>
+                              <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+                                <FollowButton 
+                                  storeId={store.id} 
+                                  accentColor={accentColor}
+                                  size="sm"
+                                />
+                                <Button variant="outline" size="sm" asChild>
+                                  <Link to="/stores">Browse Similar Stores</Link>
+                                </Button>
+                              </div>
                             </CardContent>
                           </Card>
                         )}

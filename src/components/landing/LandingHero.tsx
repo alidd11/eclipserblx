@@ -160,7 +160,7 @@ export function LandingHero() {
                 <button
                   key={tag.label}
                   onClick={() => handleTagClick(tag)}
-                  className="text-[11px] px-1.5 py-0.5 rounded bg-muted/50 hover:bg-muted text-foreground/70 hover:text-foreground transition-colors flex-shrink-0"
+                  className="text-[11px] px-2.5 py-1 min-h-[28px] rounded bg-muted/50 hover:bg-muted text-foreground/70 hover:text-foreground transition-colors flex-shrink-0"
                 >
                   {tag.label}
                 </button>
