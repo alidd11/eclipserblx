@@ -131,7 +131,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
         isFeatured && "border-primary/30"
       )}>
         {/* Image/Video */}
-        <div className="relative aspect-[4/3] bg-black/20 overflow-hidden flex-shrink-0">
+        <div className="relative aspect-[4/3] bg-muted/30 overflow-hidden flex-shrink-0">
           {showMedia ? (
             isVideo ? (
               <BackgroundVideo
