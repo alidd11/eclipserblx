@@ -619,6 +619,13 @@ export default function StorePage() {
                 </div>
               )}
             </div>
+            {/* Social proof - join date */}
+            {store.created_at && (
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Selling since {new Date(store.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                {(store.total_sales || 0) > 0 && ` · ${store.total_sales} sales`}
+              </p>
+            )}
           </div>
         </div>
       </div>
