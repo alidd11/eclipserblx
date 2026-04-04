@@ -827,6 +827,9 @@ export default function StaffProfile() {
           </CardContent>
         </Card>
 
+        {/* Effective Permissions Viewer */}
+        <EffectivePermissions userId={userId!} />
+
         {/* Staff Documents Section */}
         <StaffDocuments
           staffUserId={userId!}
