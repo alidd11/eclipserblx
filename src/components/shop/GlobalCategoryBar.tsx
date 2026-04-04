@@ -67,10 +67,10 @@ export function GlobalCategoryBar() {
                 key={cat.id}
                 to={`/products?category=${cat.slug}`}
                 className={cn(
-                  "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-colors flex-shrink-0",
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0",
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 )}
               >
                 <Icon className="h-3 w-3" />
