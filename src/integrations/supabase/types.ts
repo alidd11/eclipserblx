@@ -2228,6 +2228,7 @@ export type Database = {
           hierarchy_level: number
           icon: string
           id: string
+          is_default: boolean
           is_status_role: boolean
           is_system: boolean
           name: string
@@ -2241,6 +2242,7 @@ export type Database = {
           hierarchy_level?: number
           icon?: string
           id?: string
+          is_default?: boolean
           is_status_role?: boolean
           is_system?: boolean
           name: string
@@ -2254,6 +2256,7 @@ export type Database = {
           hierarchy_level?: number
           icon?: string
           id?: string
+          is_default?: boolean
           is_status_role?: boolean
           is_system?: boolean
           name?: string
@@ -11253,6 +11256,18 @@ export type Database = {
       calculate_level_from_xp: { Args: { xp: number }; Returns: number }
       can_assign_role: {
         Args: { _assigner_id: string; _target_role: string }
+        Returns: boolean
+      }
+      can_create_role: {
+        Args: {
+          _creator_id: string
+          _new_hierarchy_level: number
+          _new_permission_ids?: string[]
+        }
+        Returns: boolean
+      }
+      can_manage_specific_role: {
+        Args: { _target_role: string; _user_id: string }
         Returns: boolean
       }
       can_manage_user_roles: {
