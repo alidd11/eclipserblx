@@ -246,7 +246,7 @@ function StoreSkeleton({ large }: { large?: boolean }) {
 // ---------- Page ----------
 
 export default function AllStores() {
-  usePageMeta({ title: 'All Stores', description: 'Discover verified stores on Eclipse marketplace. Find trusted sellers of Roblox scripts, vehicles, maps and game assets.', canonicalPath: '/stores' });
+  usePageMeta({ title: 'All Stores', description: 'Discover verified stores on Eclipse marketplace. Find verified sellers of Roblox scripts, vehicles, maps and game assets.', canonicalPath: '/stores' });
   const { data: stores, isLoading } = useAllStores();
   const { data: categories } = useStoreCategories();
   const [search, setSearch] = useState('');

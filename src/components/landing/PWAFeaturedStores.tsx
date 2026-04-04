@@ -191,8 +191,7 @@ function CompactStoreCard({ store }: { store: FeaturedStore }) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
         {/* Badges */}
         <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
-          {store.is_trusted && <Award className="h-3 w-3 text-amber-400" />}
-          {store.is_verified && !store.is_trusted && <ShieldCheck className="h-3 w-3 text-blue-400" />}
+          {store.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400" />}
         </div>
         {/* Logo + name overlaid */}
         <div className="absolute bottom-1.5 left-2 right-2 flex items-end gap-2">
