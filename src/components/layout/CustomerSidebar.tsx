@@ -546,10 +546,12 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
           </div>
 
           {/* Balance */}
-          <div className="rounded-lg bg-muted/60 px-3 py-2 flex items-center justify-between">
+          <div className="rounded-xl bg-muted/50 border border-border/40 px-3 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Wallet className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-sm font-semibold">£{balance.toFixed(2)}</span>
+              <div className="p-1 rounded-md bg-primary/10">
+                <Wallet className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <span className="text-sm font-bold">£{balance.toFixed(2)}</span>
             </div>
             <Link to="/credits" onClick={handleNavClick} className="text-[11px] font-medium text-primary hover:underline flex items-center gap-0.5">
               <Plus className="h-3 w-3" />
