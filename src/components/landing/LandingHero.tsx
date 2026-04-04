@@ -70,14 +70,14 @@ export function LandingHero() {
     <section aria-labelledby="hero-heading" className="relative overflow-hidden" style={{ minHeight: '340px' }}>
       <HeroBanner />
 
-      <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-10 relative z-10">
+      <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-16 relative z-10">
         {/* Desktop: centered layout */}
         <div className="hidden lg:flex lg:flex-col lg:items-center lg:text-center">
           <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary mb-3 drop-shadow-sm">
             Roblox & Discord Marketplace
           </p>
 
-          <h1 id="hero-heading" className="font-display text-3xl lg:text-[2.75rem] font-bold leading-[1.08] tracking-tight mb-4 max-w-2xl drop-shadow-md">
+          <h1 id="hero-heading" className="font-display text-3xl lg:text-5xl font-bold leading-[1.08] tracking-tight mb-4 max-w-3xl drop-shadow-md">
             The All-in-One Marketplace for {wordRotator} Creators.
           </h1>
 

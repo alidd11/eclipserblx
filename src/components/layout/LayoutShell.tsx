@@ -124,11 +124,13 @@ function LayoutShellInner({
             className={mainClassName ?? "flex-1 md:overflow-y-auto overflow-x-clip max-w-full min-w-0"}
             style={mainStyle ?? { paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
-            {contentClassName ? (
-              <div className={contentClassName}>{children}</div>
-            ) : (
-              children
-            )}
+            <div className="max-w-[1400px] mx-auto w-full">
+              {contentClassName ? (
+                <div className={contentClassName}>{children}</div>
+              ) : (
+                children
+              )}
+            </div>
             {showFooter && (
               <Suspense fallback={null}><Footer /></Suspense>
             )}

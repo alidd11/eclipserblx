@@ -56,7 +56,7 @@ export function NewThisWeek() {
   if (!products?.length) return null;
 
   return (
-    <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
@@ -74,7 +74,7 @@ export function NewThisWeek() {
         </div>
 
         {/* Mobile: horizontal scroll strip / Desktop: grid */}
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-4 lg:overflow-visible lg:pb-0">
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 lg:gap-4 lg:overflow-visible lg:pb-0">
           {products.map((product, index) => {
             const store = product.stores as any;
             const category = product.categories as any;

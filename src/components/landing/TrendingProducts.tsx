@@ -57,7 +57,7 @@ export function TrendingProducts() {
   if (!products?.length) return null;
 
   return (
-    <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
@@ -104,7 +104,7 @@ export function TrendingProducts() {
         </div>
 
         {/* Desktop: normal grid */}
-        <div className="hidden sm:grid grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="hidden sm:grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
           {products.map((product) => {
             const store = product.stores as any;
             const category = product.categories as any;

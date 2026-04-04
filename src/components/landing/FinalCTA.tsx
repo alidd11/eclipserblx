@@ -1,11 +1,11 @@
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Store } from 'lucide-react';
+import { Store } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 
 export function FinalCTA() {
   return (
-    <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-6 sm:p-8 text-center">
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight mb-2">
@@ -19,12 +19,6 @@ export function FinalCTA() {
               <Button size="sm" className="h-10 px-6 text-sm font-semibold">
                 <Store className="mr-2 h-4 w-4" />
                 Open Your Store
-              </Button>
-            </Link>
-            <Link to="/eclipse-plus">
-              <Button size="sm" variant="outline" className="h-10 px-6 text-sm font-semibold text-amber-400 border-amber-500/30 hover:bg-amber-500/10">
-                <Sparkles className="mr-2 h-4 w-4" />
-                Explore Eclipse+
               </Button>
             </Link>
           </div>

@@ -62,7 +62,7 @@ export function RecentReleases() {
   if (!products?.length) return null;
 
   return (
-    <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
@@ -87,12 +87,12 @@ export function RecentReleases() {
           </div>
         </div>
 
-        <div ref={scrollRef} className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
+        <div ref={scrollRef} className="flex gap-3 lg:gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory lg:grid lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 lg:overflow-visible lg:pb-0">
           {products.map((product, index) => {
             const store = product.stores as any;
             const category = product.categories as any;
             return (
-              <div key={product.id} className="min-w-[200px] max-w-[240px] flex-shrink-0 snap-start sm:min-w-[220px] sm:max-w-[260px]">
+              <div key={product.id} className="min-w-[200px] max-w-[240px] flex-shrink-0 snap-start sm:min-w-[220px] sm:max-w-[260px] lg:min-w-0 lg:max-w-none">
                 <ProductCard
                   id={product.id}
                   name={product.name}
