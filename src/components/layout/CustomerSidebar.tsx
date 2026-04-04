@@ -423,13 +423,13 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
 
     // Expanded: collapsible group (flat — no nested collapsibles)
     return (
-      <Collapsible key={group.id} open={isOpen} onOpenChange={() => toggleGroup(group.id)} className="mb-1">
+      <Collapsible key={group.id} open={isOpen} onOpenChange={() => toggleGroup(group.id)} className="mb-1.5">
         <CollapsibleTrigger asChild>
           <button
             className={cn(
-              "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold select-none uppercase tracking-wider",
-              "transition-colors duration-100 focus:outline-none focus-visible:outline-none",
-              hasActiveItem ? "text-foreground" : "text-foreground/80 hover:text-foreground"
+              "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[11px] font-semibold select-none uppercase tracking-wider",
+              "transition-colors duration-100 focus:outline-none focus-visible:outline-none active:scale-[0.98]",
+              hasActiveItem ? "text-foreground" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <span className="flex-1 text-left truncate">{group.title}</span>
@@ -439,7 +439,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             )} />
           </button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="space-y-px pt-px">
+        <CollapsibleContent className="space-y-0.5 pt-0.5">
           {group.items.map(renderNavItem)}
         </CollapsibleContent>
       </Collapsible>
