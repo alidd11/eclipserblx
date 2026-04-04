@@ -41,7 +41,7 @@ interface ProductCardProps {
   priority?: boolean;
 }
 
-export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isResellable, showBestSellerBadge, showNewBadge, averageRating, storeEclipseEnabled, isPayWhatYouWant, minPrice }, ref) {
+export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isResellable, showBestSellerBadge, showNewBadge, averageRating, storeEclipseEnabled, isPayWhatYouWant, minPrice, priority = false }, ref) {
   const { addItem, isInCart } = useCart();
   const { isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const { formatPrice } = useCurrency();
