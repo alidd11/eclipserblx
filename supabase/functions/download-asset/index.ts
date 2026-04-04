@@ -131,7 +131,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { productId, orderItemId } = await req.json();
+    const { productId, orderItemId, fileIndex } = await req.json();
+    const requestedFileIndex = typeof fileIndex === 'number' ? fileIndex : 0;
     const clientIp = getClientIp(req);
     const userAgent = req.headers.get("user-agent") || "unknown";
 
