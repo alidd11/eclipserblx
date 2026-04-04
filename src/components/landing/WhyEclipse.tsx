@@ -35,7 +35,7 @@ export function WhyEclipse() {
   return (
     <section className="px-4 sm:px-6 lg:px-8 py-8">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
-        <h2 className="text-lg font-bold tracking-tight text-center mb-6">Why Eclipse?</h2>
+        <h2 className="text-lg font-bold tracking-tight text-center mb-6 uppercase">Why Eclipse?</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
           {VALUE_PROPS.map((prop, i) => (
             <div key={prop.title} className="rounded-lg border border-border bg-card p-4 text-center h-full">

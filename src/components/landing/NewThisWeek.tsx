@@ -53,7 +53,7 @@ export function NewThisWeek() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-emerald-500" />
-            <h2 className="text-lg font-bold tracking-tight">New This Week</h2>
+            <h2 className="text-lg font-bold tracking-tight uppercase">New This Week</h2>
             <span className="text-[10px] uppercase tracking-wider text-emerald-500/80 font-semibold bg-emerald-500/10 px-1.5 py-0.5 rounded">
               Fresh
             </span>
