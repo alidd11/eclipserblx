@@ -146,8 +146,9 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
               <img
                 src={currentMedia!}
                 alt={name}
-                loading="lazy"
-                decoding="async"
+                loading={priority ? 'eager' : 'lazy'}
+                decoding={priority ? 'sync' : 'async'}
+                fetchPriority={priority ? 'high' : undefined}
                 onError={handleMediaError}
                 onLoad={(e) => {
                   const img = e.currentTarget;
