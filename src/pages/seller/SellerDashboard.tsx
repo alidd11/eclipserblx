@@ -168,9 +168,9 @@ export default function SellerDashboard() {
         <RevenueSummaryStats />
 
         {/* ── Command Center ── */}
-        <div className="rounded-xl border border-border/50 bg-card p-4">
-          <h2 className="text-sm font-semibold mb-4">Command Center</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="rounded-xl border border-border/50 bg-card p-3">
+          <h2 className="text-xs font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Command Center</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {renderActionGroup('Create', createActions)}
             {renderActionGroup('Manage', manageActions)}
             {renderActionGroup('Grow', growActions)}
