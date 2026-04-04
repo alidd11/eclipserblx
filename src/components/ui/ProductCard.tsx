@@ -206,8 +206,8 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             )}
           </div>
           
-          {/* Wishlist button */}
-          <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-[3]">
+          {/* Wishlist button — always visible on mobile, hover on desktop */}
+          <div className="absolute top-1.5 right-1.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-[3]">
             <WishlistButton productId={id} variant="icon" />
           </div>
         </div>
