@@ -86,7 +86,10 @@ function LayoutShellInner({
       </a>
 
       <div className={wrapperClassName ?? "min-h-[100dvh] flex w-full overflow-x-clip relative max-w-full min-w-0"}>
-        {/* Desktop Sidebar — hidden; navigation handled by header + category bar */}
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block flex-shrink-0">
+          {desktopSidebar}
+        </div>
 
         {/* Mobile Sidebar Drawer */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
