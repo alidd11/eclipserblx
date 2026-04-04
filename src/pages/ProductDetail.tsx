@@ -470,7 +470,7 @@ export default function ProductDetail() {
         />
       )}
       <PullToRefresh onRefresh={handleRefresh}>
-        <div className="container py-8 space-y-8">
+        <div className="container py-4 sm:py-8 space-y-6">
         
         {/* Admin Preview Banner for Scheduled Products */}
         {isStaff && isScheduledProduct && (
