@@ -225,7 +225,7 @@ export default function MyPurchases() {
             id, status, created_at, total, payment_method,
             order_items (
               id, product_name, price, product_id,
-              product:products (id, name, slug, images, asset_file_url, category_id)
+              product:products (id, name, slug, images, asset_file_url, additional_asset_files, category_id)
             )
           `)
           .eq('customer_email', user.email)
