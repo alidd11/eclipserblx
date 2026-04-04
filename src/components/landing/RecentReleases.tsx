@@ -6,8 +6,9 @@ import { Clock, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
+import { usePreloadImages } from '@/hooks/usePreloadImages';
 
 export function RecentReleases() {
   const scrollRef = useRef<HTMLDivElement>(null);
