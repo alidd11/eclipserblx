@@ -48,7 +48,7 @@ export default function HelpCenterSellers() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
       />
 
-      <div className="px-4 sm:px-6 lg:px-[5%] py-12">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <Link to="/help-center" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
           <ChevronLeft className="h-4 w-4" />
           Back to Help Center

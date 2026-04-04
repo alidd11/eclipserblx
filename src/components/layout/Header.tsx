@@ -108,7 +108,7 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
           className
         )}
       >
-        <nav className="px-4 sm:px-6 lg:px-[5%] pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))]" aria-label="Main navigation">
+        <nav className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))]" aria-label="Main navigation">
         {/* Mobile header row */}
         <div className="flex md:hidden h-14 items-center gap-1.5">
           {/* Left section: Menu + Logo (fixed width) */}
@@ -146,8 +146,6 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
 
           {/* Right section: Icons (flush right, tighter spacing) */}
           <div className="flex items-center shrink-0 ml-auto gap-0.5">
-            <CurrencySelector compact />
-            <LanguageSwitcher compact />
             <NotificationBell />
             <Link to="/cart" aria-label={t('nav.shoppingCart')} className="hidden md:inline-flex">
               <Button variant="ghost" size="icon" className="relative h-9 w-9 min-h-[44px] min-w-[44px] text-muted-foreground hover:text-foreground" aria-label={t('nav.shoppingCart')}>

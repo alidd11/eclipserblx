@@ -64,7 +64,7 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border mt-auto min-h-[366px]" role="contentinfo" aria-label="Site footer">
-      <div className="px-4 sm:px-6 lg:px-[5%] py-10">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* 3-column link grid */}
         <div className="grid grid-cols-2 xs:grid-cols-3 gap-6 xs:gap-12 mb-10">
           {columns.map((col) => (

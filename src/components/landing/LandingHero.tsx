@@ -67,10 +67,10 @@ export function LandingHero() {
   );
 
   return (
-    <section aria-labelledby="hero-heading" className="relative overflow-hidden" style={{ minHeight: '400px' }}>
+    <section aria-labelledby="hero-heading" className="relative overflow-hidden">
       <HeroBanner />
 
-      <div className="px-4 sm:px-6 lg:px-[5%] py-8 sm:py-10 lg:py-20 relative z-10">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 relative z-10">
         {/* Desktop: centered layout */}
         <div className="hidden lg:flex lg:flex-col lg:items-center lg:text-center">
           <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary mb-3 drop-shadow-sm">

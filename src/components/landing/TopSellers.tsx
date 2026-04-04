@@ -24,7 +24,7 @@ export function TopSellers() {
 
   if (isLoading) {
     return (
-      <section className="px-4 sm:px-6 lg:px-[5%] py-4 sm:py-6">
+      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <Skeleton className="h-6 w-44 mb-4" />
         <div className="flex gap-2 overflow-hidden">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -38,7 +38,7 @@ export function TopSellers() {
   if (!stores?.length) return null;
 
   return (
-    <section className="px-4 sm:px-6 lg:px-[5%] py-4 sm:py-6 lg:py-8">
+    <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2.5">
