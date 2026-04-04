@@ -255,10 +255,9 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             {storeName || 'Eclipse'}
           </span>
           {isVerified && (
-            <BadgeCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
-          )}
-          {isTrusted && (
-            <Shield className="h-3 w-3 text-amber-400 flex-shrink-0" />
+            <span title="This seller has completed our identity and business verification process">
+              <BadgeCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
+            </span>
           )}
           {typeof averageRating === 'number' && averageRating > 0 && (
             <span className="flex items-center gap-0.5 ml-auto text-muted-foreground">

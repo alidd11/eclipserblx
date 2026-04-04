@@ -32,7 +32,7 @@ export const PUBLIC_STORE_COLUMNS = `
 // Minimal columns for store listings (marketplace, search results)
 export const STORE_LISTING_COLUMNS = `
   id, name, slug, description, logo_url, banner_url, accent_color,
-  is_verified, is_trusted, follower_count, is_testing, average_rating,
+  is_verified, follower_count, is_testing, average_rating,
   product_count, eclipse_plus_discount_enabled
 `;
 
