@@ -726,7 +726,7 @@ export default function ProductDetail() {
                             {formatPrice(Number(product.price))}
                           </p>
                           <div className="flex items-center gap-3 flex-wrap">
-                            <span className="text-4xl font-bold flex items-center gap-2 text-amber-400">
+                            <span className="text-3xl font-bold flex items-center gap-2 text-amber-400">
                               <Sparkles className="h-6 w-6" />
                               {formatPrice(memberPrice)}
                             </span>
