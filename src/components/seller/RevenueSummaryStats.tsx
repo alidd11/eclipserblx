@@ -1,7 +1,6 @@
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card } from '@/components/ui/card';
 import { PercentChange } from '@/components/shared/dashboard';
 import { DollarSign, TrendingUp, ShoppingCart, Wallet, BarChart3 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -66,63 +65,73 @@ export function RevenueSummaryStats() {
       return { todayRevenue, thisMonthRevenue, lastMonthRevenue, thisMonthOrders, lastMonthOrders, totalRevenue, availableBalance, avgOrderValue };
     },
     enabled: !!store?.id,
-    staleTime: 2 * 60 * 1000, // 2 min cache
+    staleTime: 2 * 60 * 1000,
   });
 
   const { formatPrice: fmt } = useCurrency();
 
   const items = [
-    { label: "Today's Revenue", value: fmt(stats?.todayRevenue || 0), icon: DollarSign, accent: 'text-primary bg-primary/10' },
-    { label: 'This Month', value: fmt(stats?.thisMonthRevenue || 0), icon: TrendingUp, showChange: true, accent: 'text-blue-500 bg-blue-500/10' },
-    { label: 'Orders', value: stats?.thisMonthOrders || 0, icon: ShoppingCart, showOrderChange: true, accent: 'text-orange-500 bg-orange-500/10' },
-    { label: 'Avg. Order', value: fmt(stats?.avgOrderValue || 0), icon: BarChart3, accent: 'text-purple-500 bg-purple-500/10' },
-    { label: 'Balance', value: fmt(stats?.availableBalance || 0), icon: Wallet, highlight: true, accent: 'text-green-500 bg-green-500/10' },
+    { label: "Today's Revenue", value: fmt(stats?.todayRevenue || 0), icon: DollarSign, color: 'from-primary/20 to-primary/5', iconColor: 'text-primary' },
+    { label: 'This Month', value: fmt(stats?.thisMonthRevenue || 0), icon: TrendingUp, showChange: true, color: 'from-blue-500/20 to-blue-500/5', iconColor: 'text-blue-500' },
+    { label: 'Orders', value: stats?.thisMonthOrders || 0, icon: ShoppingCart, showOrderChange: true, color: 'from-orange-500/20 to-orange-500/5', iconColor: 'text-orange-500' },
+    { label: 'Avg. Order', value: fmt(stats?.avgOrderValue || 0), icon: BarChart3, color: 'from-purple-500/20 to-purple-500/5', iconColor: 'text-purple-500' },
+    { label: 'Balance', value: fmt(stats?.availableBalance || 0), icon: Wallet, highlight: true, color: 'from-green-500/20 to-green-500/5', iconColor: 'text-green-500' },
   ];
 
   if (isLoading) {
     return (
-      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-5 md:overflow-visible">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Card key={i} className="p-4 min-w-[150px] flex-shrink-0 md:min-w-0 space-y-2">
-            <Skeleton className="h-3 w-20" />
-            <Skeleton className="h-7 w-16" />
-            <Skeleton className="h-3 w-24" />
-          </Card>
+          <div key={i} className="rounded-xl border border-border/50 bg-card p-4 space-y-3">
+            <Skeleton className="h-8 w-8 rounded-lg" />
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-6 w-20" />
+          </div>
         ))}
       </div>
     );
   }
 
   return (
-    <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-5 md:overflow-visible md:snap-none">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
       {items.map((item) => (
-        <Card key={item.label} className="p-4 min-w-[150px] flex-shrink-0 snap-start md:min-w-0 group hover:border-primary/20 transition-colors">
-          <div className="flex items-center gap-2 mb-2">
-            <div className={cn('p-1.5 rounded-lg', item.accent)}>
-              <item.icon className="h-3.5 w-3.5" />
+        <div
+          key={item.label}
+          className={cn(
+            'group relative rounded-xl border border-border/50 bg-card p-4 transition-all duration-200',
+            'hover:border-border hover:shadow-sm',
+            'overflow-hidden'
+          )}
+        >
+          {/* Subtle gradient bg */}
+          <div className={cn('absolute inset-0 bg-gradient-to-br opacity-40 rounded-xl', item.color)} />
+
+          <div className="relative">
+            <div className={cn('h-8 w-8 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center mb-3 border border-border/30')}>
+              <item.icon className={cn('h-4 w-4', item.iconColor)} />
             </div>
-            <p className="text-xs text-muted-foreground font-medium">{item.label}</p>
+            <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-1">{item.label}</p>
+            <p className={cn('text-lg sm:text-xl font-bold tracking-tight', item.highlight && 'text-green-500')}>
+              {item.value}
+            </p>
+            {item.showChange && stats && (
+              <PercentChange
+                current={stats.thisMonthRevenue}
+                previous={stats.lastMonthRevenue}
+                label="vs last month"
+                className="mt-1.5"
+              />
+            )}
+            {item.showOrderChange && stats && stats.lastMonthOrders > 0 && (
+              <PercentChange
+                current={stats.thisMonthOrders}
+                previous={stats.lastMonthOrders}
+                label="vs last month"
+                className="mt-1.5"
+              />
+            )}
           </div>
-          <p className={cn('text-xl font-bold tracking-tight', item.highlight && 'text-green-500')}>
-            {item.value}
-          </p>
-          {item.showChange && stats && (
-            <PercentChange
-              current={stats.thisMonthRevenue}
-              previous={stats.lastMonthRevenue}
-              label="vs last month"
-              className="mt-1"
-            />
-          )}
-          {item.showOrderChange && stats && stats.lastMonthOrders > 0 && (
-            <PercentChange
-              current={stats.thisMonthOrders}
-              previous={stats.lastMonthOrders}
-              label="vs last month"
-              className="mt-1"
-            />
-          )}
-        </Card>
+        </div>
       ))}
     </div>
   );

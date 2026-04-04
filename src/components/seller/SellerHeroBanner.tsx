@@ -1,10 +1,9 @@
 import { useSellerStatus } from '@/hooks/useSellerStatus';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Link } from 'react-router-dom';
-import { CheckCircle, Copy, ExternalLink, Plus, Users, Share2 } from 'lucide-react';
+import { CheckCircle, Copy, ExternalLink, Plus, Users, Share2, Eye } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
 
@@ -13,6 +12,10 @@ function getTimeBasedGreeting(): string {
   if (hour < 12) return 'Good morning';
   if (hour < 18) return 'Good afternoon';
   return 'Good evening';
+}
+
+function formatDate(): string {
+  return new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
 export function SellerHeroBanner() {
@@ -28,93 +31,98 @@ export function SellerHeroBanner() {
   };
 
   return (
-    <Card className="overflow-hidden border-border bg-card">
-      {/* Banner area with store branding */}
-      <div className="relative h-28 sm:h-32 bg-gradient-to-br from-muted via-muted/80 to-card overflow-hidden">
+    <div className="relative rounded-xl border border-border/50 bg-card overflow-hidden">
+      {/* Banner bg with gradient overlay */}
+      <div className="relative h-24 sm:h-28 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent overflow-hidden">
         {store?.banner_url && (
           <img
             src={store.banner_url}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover opacity-40"
+            className="absolute inset-0 w-full h-full object-cover opacity-30"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-transparent" />
       </div>
 
-      <CardContent className="relative -mt-10 px-4 sm:px-6 pb-5">
-        {/* Avatar + Name row */}
-        <div className="flex items-end gap-4 mb-3">
-          <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-4 border-card shadow-lg">
+      {/* Content */}
+      <div className="relative -mt-8 px-4 sm:px-5 pb-4">
+        <div className="flex items-end gap-3 sm:gap-4">
+          <Avatar className="h-14 w-14 sm:h-16 sm:w-16 border-[3px] border-card shadow-lg ring-1 ring-border/20">
             <AvatarImage src={store?.logo_url || ''} alt={store?.name} />
-            <AvatarFallback className="bg-muted text-2xl font-bold">
+            <AvatarFallback className="bg-primary/10 text-xl font-bold text-primary">
               {store?.name?.charAt(0) || 'S'}
             </AvatarFallback>
           </Avatar>
 
-          <div className="flex-1 min-w-0 pb-1">
+          <div className="flex-1 min-w-0 pb-0.5">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-bold truncate whitespace-nowrap">
+              <h1 className="text-lg sm:text-xl font-bold truncate">
                 {getTimeBasedGreeting()}, {store?.name || 'Seller'}
               </h1>
               {store?.is_verified && (
-                <Badge variant="default" className="gap-1 shrink-0">
+                <Badge variant="default" className="gap-1 shrink-0 text-[10px] h-5">
                   <CheckCircle className="h-3 w-3" />
                   Verified
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-muted-foreground truncate flex items-center gap-1.5">
-              Here's how your store is performing
+            <p className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
+              <span>{formatDate()}</span>
               {(store?.follower_count ?? 0) > 0 && (
-                <span className="inline-flex items-center gap-1 text-xs">
-                  <Users className="h-3 w-3" />
-                  {store.follower_count} followers
-                </span>
+                <>
+                  <span className="text-border">·</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Users className="h-3 w-3" />
+                    {store.follower_count} followers
+                  </span>
+                </>
               )}
             </p>
           </div>
-
-          <Button asChild size="sm" className="shrink-0 hidden sm:flex">
-            <Link to="/seller/products/new">
-              <Plus className="h-4 w-4 mr-1.5" />
-              Add Product
-            </Link>
-          </Button>
         </div>
 
-        {/* Share store button */}
-        {storeUrl && (
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="w-full sm:w-auto mt-3 sm:mt-0 h-8 text-xs gap-1.5">
-                <Share2 className="h-3.5 w-3.5" />
-                Share Store
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 p-3" align="start">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono text-muted-foreground truncate flex-1">{storeUrl}</span>
-                <Button variant="ghost" size="sm" onClick={copyStoreLink} className="h-7 px-2 shrink-0">
-                  <Copy className="h-3.5 w-3.5" />
-                </Button>
-                <Button variant="ghost" size="sm" asChild className="h-7 px-2 shrink-0">
-                  <a href={storeUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </a>
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        )}
+        {/* Action row */}
+        <div className="flex items-center gap-2 mt-3">
+          <Button asChild size="sm" className="h-8 text-xs gap-1.5">
+            <Link to="/seller/products/new">
+              <Plus className="h-3.5 w-3.5" />
+              New Product
+            </Link>
+          </Button>
 
-        {/* Mobile add product button */}
-        <Button asChild size="sm" className="w-full mt-3 sm:hidden">
-          <Link to="/seller/products/new">
-            <Plus className="h-4 w-4 mr-1.5" />
-            Add Product
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
+          {storeUrl && (
+            <>
+              <Button asChild variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                <Link to={`/store/${store?.slug}`}>
+                  <Eye className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">View Store</span>
+                </Link>
+              </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                    <Share2 className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Share</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72 p-3" align="start">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono text-muted-foreground truncate flex-1">{storeUrl}</span>
+                    <Button variant="ghost" size="sm" onClick={copyStoreLink} className="h-7 px-2 shrink-0">
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="sm" asChild className="h-7 px-2 shrink-0">
+                      <a href={storeUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

@@ -17,7 +17,7 @@ import { ProductHealthDonut } from '@/components/seller/ProductHealthDonut';
 import { RecentOrdersTable } from '@/components/seller/RecentOrdersTable';
 import { TosBanner, NonCompliantBanner, PendingReviewBanner } from '@/components/seller/banners';
 import { DashboardCardSkeleton } from '@/components/seller/DashboardSkeletons';
-import { Gift, Clock } from 'lucide-react';
+import { Gift, Clock, Plus, Sparkles } from 'lucide-react';
 import { 
   Package, ShoppingCart, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone
 } from 'lucide-react';
@@ -88,15 +88,53 @@ export default function SellerDashboard() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const quickActions = [
-    { title: 'Analytics', href: '/seller/analytics', icon: BarChart3, description: 'View store metrics' },
+  const createActions = [
+    { title: 'New Product', href: '/seller/products/new', icon: Plus, description: 'Upload a listing', primary: true },
+    { title: 'Store Builder', href: '/seller/store-builder', icon: Sparkles, description: 'Customize look' },
+  ];
+
+  const manageActions = [
     { title: 'Products', href: '/seller/products', icon: Package, description: 'Manage listings' },
     { title: 'Orders', href: '/seller/orders', icon: ShoppingCart, description: 'View sales' },
-    { title: 'Balance', href: '/seller/finance', icon: DollarSign, description: 'Payouts & earnings' },
-    { title: 'Discounts', href: '/seller/discounts', icon: Tag, description: 'Create promos' },
-    { title: 'Categories', href: '/seller/tabs', icon: LayoutGrid, description: 'Customize pages' },
-    { title: 'Ad Manager', href: '/seller/promote', icon: Megaphone, description: 'Run campaigns' },
+    { title: 'Balance', href: '/seller/finance', icon: DollarSign, description: 'Earnings & payouts' },
   ];
+
+  const growActions = [
+    { title: 'Analytics', href: '/seller/analytics', icon: BarChart3, description: 'Store metrics' },
+    { title: 'Discounts', href: '/seller/discounts', icon: Tag, description: 'Create promos' },
+    { title: 'Campaigns', href: '/seller/promote', icon: Megaphone, description: 'Run ads' },
+  ];
+
+  const renderActionGroup = (label: string, actions: typeof createActions) => (
+    <div>
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">{label}</p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {actions.map((action) => (
+          <Link key={action.href} to={action.href}>
+            <div className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all text-center group cursor-pointer active:scale-[0.97] ${
+              'primary' in action && action.primary
+                ? 'bg-primary/10 border border-primary/20 hover:bg-primary/15 hover:border-primary/30'
+                : 'bg-muted/40 hover:bg-muted/70 border border-transparent hover:border-border/50'
+            }`}>
+              <div className={`p-2 rounded-lg transition-colors ${
+                'primary' in action && action.primary
+                  ? 'bg-primary/15 group-hover:bg-primary/20'
+                  : 'bg-card border border-border/50 group-hover:border-primary/20'
+              }`}>
+                <action.icon className={`h-4 w-4 transition-colors ${
+                  'primary' in action && action.primary
+                    ? 'text-primary'
+                    : 'text-muted-foreground group-hover:text-primary'
+                }`} />
+              </div>
+              <span className="text-xs font-medium leading-tight">{action.title}</span>
+              <span className="text-[10px] text-muted-foreground leading-tight hidden sm:block">{action.description}</span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <SellerLayout>
@@ -108,20 +146,18 @@ export default function SellerDashboard() {
 
         {/* ── Free Commission Promo Banner ── */}
         {inFreePromo && freePromoEndsAt && (
-          <Card className="border-green-500/30 bg-green-500/5">
-            <CardContent className="py-4 flex items-center gap-3">
-              <div className="p-2 rounded-full bg-green-500/10">
-                <Gift className="h-5 w-5 text-green-500" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-green-400">🎉 0% Commission — First 30 Days Free!</p>
-                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                  <Clock className="h-3 w-3" />
-                  Ends {new Date(freePromoEndsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} — keep 100% of every sale
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-3 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-green-500/10 shrink-0">
+              <Gift className="h-4 w-4 text-green-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-green-400">🎉 0% Commission — First 30 Days Free!</p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                <Clock className="h-3 w-3" />
+                Ends {new Date(freePromoEndsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} — keep 100% of every sale
+              </p>
+            </div>
+          </div>
         )}
 
         {/* ── Onboarding ── */}
@@ -132,29 +168,15 @@ export default function SellerDashboard() {
         {/* ── Revenue Summary Stats ── */}
         <RevenueSummaryStats />
 
-        {/* ── Quick Actions Grid ── */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-              {quickActions.map((action) => (
-                <Link key={action.href} to={action.href}>
-                  <div className="flex flex-col items-center gap-2 p-3.5 rounded-lg bg-muted/50 hover:bg-accent active:scale-[0.97] transition-all text-center group cursor-pointer">
-                    <div className="p-2.5 rounded-xl bg-card border border-border group-hover:border-primary/30 transition-colors">
-                      <action.icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                    <div>
-                      <span className="text-xs font-medium block">{action.title}</span>
-                      <span className="text-[10px] text-muted-foreground hidden sm:block">{action.description}</span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {/* ── Command Center ── */}
+        <div className="rounded-xl border border-border/50 bg-card p-4">
+          <h2 className="text-sm font-semibold mb-4">Command Center</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {renderActionGroup('Create', createActions)}
+            {renderActionGroup('Manage', manageActions)}
+            {renderActionGroup('Grow', growActions)}
+          </div>
+        </div>
 
         {/* ── Revenue Chart + Product Health ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
