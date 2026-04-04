@@ -421,7 +421,8 @@ Deno.serve(async (req) => {
     console.log(`Download token created: user=${user.id}, product=${productId}, ip=${clientIp}, token=${downloadToken.slice(0, 8)}...`);
 
     const sanitizedName = product.name.replace(/[^a-zA-Z0-9-_ ]/g, '').trim();
-    const fileName = fileExtension ? `${sanitizedName}${fileExtension}` : sanitizedName;
+    const fileSuffix = requestedFileIndex > 0 ? `-file${requestedFileIndex + 1}` : '';
+    const fileName = fileExtension ? `${sanitizedName}${fileSuffix}${fileExtension}` : `${sanitizedName}${fileSuffix}`;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const downloadUrl = `${supabaseUrl}/functions/v1/download-asset?token=${downloadToken}`;
