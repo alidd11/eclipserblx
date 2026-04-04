@@ -133,7 +133,7 @@ export function MyPurchasesCard() {
   });
 
   const hasDownloadableProducts = useMemo(() => {
-    return purchasedProducts?.some(p => p.asset_file_url) ?? false;
+    return purchasedProducts?.some(p => p.asset_file_url || (p.additional_asset_files && p.additional_asset_files.length > 0)) ?? false;
   }, [purchasedProducts]);
 
   if (isLoading) {
