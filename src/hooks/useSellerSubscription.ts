@@ -10,6 +10,7 @@ export interface SellerProLimits {
   commissionRate: number;
   maxFileSizeMb: number;
   maxImages: number;
+  maxProductFiles: number;
   maxProducts: number | null;
   maxStorePages: number;
   monthlyAdCredit: number;
