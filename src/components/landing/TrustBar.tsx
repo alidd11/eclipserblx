@@ -10,7 +10,7 @@ const trustSignals = [
 
 export function TrustBar() {
   return (
-    <section className="px-4 sm:px-6 lg:px-8 py-4">
+    <section className="px-4 sm:px-6 lg:px-[5%] py-4">
       <ScrollReveal direction="up" distance={12} duration={0.3}>
         <div className="flex items-center justify-center gap-4 sm:gap-8 flex-wrap">
           {trustSignals.map((signal) => (

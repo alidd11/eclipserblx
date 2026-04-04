@@ -70,7 +70,7 @@ export function LandingHero() {
     <section aria-labelledby="hero-heading" className="relative overflow-hidden" style={{ minHeight: '400px' }}>
       <HeroBanner />
 
-      <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-20 relative z-10">
+      <div className="px-4 sm:px-6 lg:px-[5%] py-8 sm:py-10 lg:py-20 relative z-10">
         {/* Desktop: centered layout */}
         <div className="hidden lg:flex lg:flex-col lg:items-center lg:text-center">
           <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary mb-3 drop-shadow-sm">

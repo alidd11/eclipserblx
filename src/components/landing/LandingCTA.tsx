@@ -7,7 +7,7 @@ export function LandingCTA() {
   const { t } = useTranslation();
 
   return (
-    <section className="px-4 sm:px-6 lg:px-8 py-4">
+    <section className="px-4 sm:px-6 lg:px-[5%] py-4">
       <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3">
         <p className="text-sm font-medium text-foreground hidden sm:block">
           {t('landing.readyToStart')}
