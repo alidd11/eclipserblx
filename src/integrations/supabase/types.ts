@@ -6127,6 +6127,7 @@ export type Database = {
           robux_enabled: boolean | null
           robux_price: number | null
           robux_product_id: string | null
+          search_vector: unknown
           seller_price: number | null
           slug: string
           store_id: string | null
@@ -6168,6 +6169,7 @@ export type Database = {
           robux_enabled?: boolean | null
           robux_price?: number | null
           robux_product_id?: string | null
+          search_vector?: unknown
           seller_price?: number | null
           slug: string
           store_id?: string | null
@@ -6209,6 +6211,7 @@ export type Database = {
           robux_enabled?: boolean | null
           robux_price?: number | null
           robux_product_id?: string | null
+          search_vector?: unknown
           seller_price?: number | null
           slug?: string
           store_id?: string | null
@@ -10825,6 +10828,14 @@ export type Database = {
           },
         ]
       }
+      popular_searches: {
+        Row: {
+          last_searched: string | null
+          search_count: number | null
+          term: string | null
+        }
+        Relationships: []
+      }
       products_public: {
         Row: {
           category_id: string | null
@@ -11496,6 +11507,35 @@ export type Database = {
           total_sales: number
         }[]
       }
+      search_products_v2: {
+        Args: {
+          category_filter?: string
+          free_only?: boolean
+          max_price?: number
+          min_price?: number
+          page_offset?: number
+          page_size?: number
+          search_query?: string
+          sort_by?: string
+        }
+        Returns: {
+          category_name: string
+          category_slug: string
+          created_at: string
+          description: string
+          download_count: number
+          id: string
+          images: string[]
+          name: string
+          price: number
+          rank_score: number
+          slug: string
+          store_name: string
+          store_slug: string
+          store_verified: boolean
+          total_sales: number
+        }[]
+      }
       seller_has_products_in_order: {
         Args: { _order_id: string; _user_id: string }
         Returns: boolean
@@ -11517,6 +11557,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      suggest_correction: { Args: { search_query: string }; Returns: string }
       update_seller_trust_score: {
         Args: {
           p_is_blocked: boolean

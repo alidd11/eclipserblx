@@ -5,12 +5,14 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductGridSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { SearchCategoryFilters } from '@/components/search/SearchCategoryFilters';
+import { SearchFilters } from '@/components/search/SearchFilters';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useSmartSearch } from '@/hooks/useSmartSearch';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
+import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { usePageMeta } from '@/hooks/usePageMeta';
@@ -32,6 +34,13 @@ interface ProductResult {
   stores: { name: string; is_active: boolean } | null;
   average_rating?: number;
   review_count?: number;
+  // From RPC
+  category_name?: string;
+  category_slug?: string;
+  store_name?: string;
+  store_slug?: string;
+  store_verified?: boolean;
+  rank_score?: number;
 }
 
 export default function SearchResults() {
@@ -39,8 +48,19 @@ export default function SearchResults() {
   const [urlQuery, setUrlQuery] = useURLState('q', '');
   const [categorySlug, setCategorySlug] = useURLState('category', '');
   const [sortBy, setSortBy] = useURLState('sort', 'relevance');
+  const [minPriceUrl, setMinPriceUrl] = useURLState('min_price', '');
+  const [maxPriceUrl, setMaxPriceUrl] = useURLState('max_price', '');
+  const [freeOnlyUrl, setFreeOnlyUrl] = useURLState('free', '');
+
   const [query, setQuery] = useState(urlQuery);
+  const [minPrice, setMinPrice] = useState(minPriceUrl);
+  const [maxPrice, setMaxPrice] = useState(maxPriceUrl);
+  const [freeOnly, setFreeOnly] = useState(freeOnlyUrl === 'true');
+
   const debouncedQuery = useDebounce(query, 300);
+  const debouncedMinPrice = useDebounce(minPrice, 500);
+  const debouncedMaxPrice = useDebounce(maxPrice, 500);
+
   const [products, setProducts] = useState<ProductResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -50,46 +70,31 @@ export default function SearchResults() {
   const { addSearch } = useRecentSearches();
   const { search: smartSearch, isSearching, results: smartResults } = useSmartSearch();
   const [useAI, setUseAI] = useState(false);
+  const { correction } = useSearchSuggestions(debouncedQuery);
 
-  // Sync debounced query to URL
-  useEffect(() => {
-    setUrlQuery(debouncedQuery);
-  }, [debouncedQuery, setUrlQuery]);
+  // Sync to URL
+  useEffect(() => { setUrlQuery(debouncedQuery); }, [debouncedQuery, setUrlQuery]);
+  useEffect(() => { setMinPriceUrl(debouncedMinPrice); }, [debouncedMinPrice, setMinPriceUrl]);
+  useEffect(() => { setMaxPriceUrl(debouncedMaxPrice); }, [debouncedMaxPrice, setMaxPriceUrl]);
+  useEffect(() => { setFreeOnlyUrl(freeOnly ? 'true' : ''); }, [freeOnly, setFreeOnlyUrl]);
+
+  const activeFilterCount = [minPrice, maxPrice, freeOnly ? 'yes' : ''].filter(Boolean).length;
 
   usePageMeta({
     title: urlQuery ? `Search: ${urlQuery}` : 'Search Products',
     description: 'Search for premium Roblox assets, scripts, bots and more on Eclipse marketplace.',
     canonicalPath: '/search',
   });
-  
 
-  const buildQuery = useCallback((offset: number) => {
-    let q = supabase
-      .from('products')
-      .select('id, name, slug, product_number, price, images, description, is_featured, categories (name, slug), stores!inner (name, is_active)', { count: 'exact' })
-      .eq('is_active', true)
-      .eq('stores.is_active', true);
+  const sortMapping: Record<string, string> = {
+    'relevance': 'relevance',
+    'newest': 'newest',
+    'price-low': 'price_asc',
+    'price-high': 'price_desc',
+    'popularity': 'popular',
+  };
 
-    if (debouncedQuery.length >= 2) {
-      q = q.or(`name.ilike.%${debouncedQuery}%,description.ilike.%${debouncedQuery}%`);
-    }
-
-    if (categorySlug) {
-      q = q.eq('categories.slug', categorySlug);
-    }
-
-    switch (sortBy) {
-      case 'newest': q = q.order('created_at', { ascending: false }); break;
-      case 'price-low': q = q.order('price', { ascending: true }); break;
-      case 'price-high': q = q.order('price', { ascending: false }); break;
-      case 'popularity': q = q.order('total_sales', { ascending: false }); break;
-      default: q = q.order('is_featured', { ascending: false }).order('total_sales', { ascending: false });
-    }
-
-    return q.range(offset, offset + PAGE_SIZE - 1);
-  }, [debouncedQuery, sortBy, categorySlug]);
-
-  // Initial fetch
+  // Initial fetch using search_products_v2 RPC
   useEffect(() => {
     if (useAI) return;
     if (debouncedQuery.length < 2 && !categorySlug) {
@@ -104,12 +109,27 @@ export default function SearchResults() {
       setIsLoading(true);
       pageRef.current = 0;
       try {
-        const { data, error, count } = await buildQuery(0);
+        const { data, error } = await supabase.rpc('search_products_v2', {
+          search_query: debouncedQuery || '',
+          category_filter: categorySlug || null,
+          min_price: debouncedMinPrice ? parseFloat(debouncedMinPrice) : null,
+          max_price: debouncedMaxPrice ? parseFloat(debouncedMaxPrice) : null,
+          free_only: freeOnly,
+          sort_by: sortMapping[sortBy] || 'relevance',
+          page_size: PAGE_SIZE,
+          page_offset: 0,
+        });
+
         if (!error && data) {
-          const results = data as unknown as ProductResult[];
+          const results = (data as any[]).map(r => ({
+            ...r,
+            is_featured: false,
+            categories: r.category_name ? { name: r.category_name, slug: r.category_slug || '' } : null,
+            stores: r.store_name ? { name: r.store_name, is_active: true } : null,
+          }));
           setProducts(results);
-          setTotalCount(count || results.length);
-          setHasMore(results.length === PAGE_SIZE && (count || 0) > PAGE_SIZE);
+          setTotalCount(results.length);
+          setHasMore(results.length === PAGE_SIZE);
         }
       } catch {
         console.error('Search error');
@@ -119,7 +139,7 @@ export default function SearchResults() {
     };
 
     fetchInitial();
-  }, [debouncedQuery, sortBy, categorySlug, useAI]);
+  }, [debouncedQuery, sortBy, categorySlug, useAI, debouncedMinPrice, debouncedMaxPrice, freeOnly]);
 
   // Load more
   const loadMore = useCallback(async () => {
@@ -127,19 +147,34 @@ export default function SearchResults() {
     const nextOffset = (pageRef.current + 1) * PAGE_SIZE;
     setIsLoadingMore(true);
     try {
-      const { data, error, count } = await buildQuery(nextOffset);
+      const { data, error } = await supabase.rpc('search_products_v2', {
+        search_query: debouncedQuery || '',
+        category_filter: categorySlug || null,
+        min_price: debouncedMinPrice ? parseFloat(debouncedMinPrice) : null,
+        max_price: debouncedMaxPrice ? parseFloat(debouncedMaxPrice) : null,
+        free_only: freeOnly,
+        sort_by: sortMapping[sortBy] || 'relevance',
+        page_size: PAGE_SIZE,
+        page_offset: nextOffset,
+      });
+
       if (!error && data) {
-        const results = data as unknown as ProductResult[];
+        const results = (data as any[]).map(r => ({
+          ...r,
+          is_featured: false,
+          categories: r.category_name ? { name: r.category_name, slug: r.category_slug || '' } : null,
+          stores: r.store_name ? { name: r.store_name, is_active: true } : null,
+        }));
         pageRef.current += 1;
         setProducts(prev => [...prev, ...results]);
-        setHasMore(results.length === PAGE_SIZE && nextOffset + results.length < (count || 0));
+        setHasMore(results.length === PAGE_SIZE);
       }
     } catch {
       console.error('Load more error');
     } finally {
       setIsLoadingMore(false);
     }
-  }, [buildQuery, isLoadingMore, useAI]);
+  }, [debouncedQuery, sortBy, categorySlug, isLoadingMore, useAI, debouncedMinPrice, debouncedMaxPrice, freeOnly]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: loadMore,
@@ -158,6 +193,17 @@ export default function SearchResults() {
     setCategorySlug(slug || '');
     setUseAI(false);
   }, [setCategorySlug]);
+
+  const handleCorrectionClick = useCallback((corrected: string) => {
+    setQuery(corrected);
+    setUseAI(false);
+  }, []);
+
+  const handleResetFilters = useCallback(() => {
+    setMinPrice('');
+    setMaxPrice('');
+    setFreeOnly(false);
+  }, []);
 
   const displayProducts = useAI && smartResults.length > 0
     ? smartResults.map(r => ({ ...r, is_featured: false, categories: r.categories ? { ...r.categories, slug: '' } : null, stores: null, average_rating: undefined, review_count: undefined }))
@@ -189,6 +235,16 @@ export default function SearchResults() {
                 </button>
               )}
             </div>
+            <SearchFilters
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+              freeOnly={freeOnly}
+              onMinPriceChange={setMinPrice}
+              onMaxPriceChange={setMaxPrice}
+              onFreeOnlyChange={setFreeOnly}
+              onReset={handleResetFilters}
+              activeFilterCount={activeFilterCount}
+            />
             <Button
               variant={useAI ? "default" : "outline"}
               size="sm"
@@ -197,9 +253,23 @@ export default function SearchResults() {
               className="gap-1.5 shrink-0"
             >
               {isSearching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-              AI Search
+              AI
             </Button>
           </div>
+
+          {/* "Did you mean?" */}
+          {correction && showResults && displayProducts.length === 0 && !displayLoading && (
+            <div className="text-sm text-muted-foreground">
+              Did you mean{' '}
+              <button
+                onClick={() => handleCorrectionClick(correction)}
+                className="text-primary font-medium hover:underline"
+              >
+                "{correction}"
+              </button>
+              ?
+            </div>
+          )}
 
           {/* Category Filters */}
           <SearchCategoryFilters selected={categorySlug} onSelect={handleCategorySelect} />
@@ -211,8 +281,8 @@ export default function SearchResults() {
                 'Searching...'
               ) : showResults ? (
                 <>
-                  <span className="font-medium text-foreground">{totalCount}</span>
-                  {' '}result{totalCount !== 1 ? 's' : ''}
+                  <span className="font-medium text-foreground">{useAI ? displayProducts.length : totalCount}</span>
+                  {' '}result{(useAI ? displayProducts.length : totalCount) !== 1 ? 's' : ''}
                   {debouncedQuery.length >= 2 && <> for "{debouncedQuery}"</>}
                   {categorySlug && <span className="text-primary ml-1">in {categorySlug}</span>}
                   {useAI && <span className="text-primary ml-1">(AI enhanced)</span>}
@@ -248,16 +318,15 @@ export default function SearchResults() {
                   key={product.id}
                   id={product.id}
                   name={product.name}
-                  slug={String((product as any).product_number)}
+                  slug={String((product as any).product_number || product.slug)}
                   price={product.price}
                   images={product.images}
-                  category={product.categories?.name}
+                  category={(product as any).categories?.name || (product as any).category_name}
                   isFeatured={(product as any).is_featured}
-                  storeName={(product as any).stores?.name}
+                  storeName={(product as any).stores?.name || (product as any).store_name}
                 />
               ))}
             </div>
-            {/* Infinite scroll sentinel */}
             <div ref={sentinelRef} className="h-1" />
             {isLoadingMore && (
               <div className="flex justify-center py-6">
