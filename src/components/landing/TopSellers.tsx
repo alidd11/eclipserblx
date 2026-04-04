@@ -100,7 +100,7 @@ export function TopSellers() {
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1">
-                      <p className="text-xs font-semibold truncate group-hover:text-primary transition-colors">{store.name}</p>
+                      <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">{store.name}</p>
                       {store.is_verified && <BadgeCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
                       {store.is_trusted && <Shield className="h-3 w-3 text-amber-400 flex-shrink-0" />}
                     </div>
