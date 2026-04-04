@@ -236,14 +236,23 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (!product.asset_file_url) {
+    // Determine which file to serve based on fileIndex
+    const additionalFiles: string[] = (product as any).additional_asset_files || [];
+    let assetUrl: string | null = null;
+
+    if (requestedFileIndex === 0) {
+      assetUrl = product.asset_file_url;
+    } else if (requestedFileIndex > 0 && requestedFileIndex <= additionalFiles.length) {
+      assetUrl = additionalFiles[requestedFileIndex - 1];
+    }
+
+    if (!assetUrl) {
       return new Response(
-        JSON.stringify({ error: "Download not available for this product" }),
+        JSON.stringify({ error: "Download not available for this file" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const assetUrl = product.asset_file_url;
     const fileExtension = assetUrl.includes('.') ? assetUrl.substring(assetUrl.lastIndexOf('.')) : '';
     const isLuaFile = fileExtension.toLowerCase() === '.lua';
 
