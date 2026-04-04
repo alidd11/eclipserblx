@@ -192,8 +192,7 @@ function StoreCard({ store }: { store: StoreData }) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
         <div className="absolute top-2 right-2 flex items-center gap-1">
-          {store.is_trusted && <Award className="h-3.5 w-3.5 text-amber-400" />}
-          {store.is_verified && !store.is_trusted && <ShieldCheck className="h-3.5 w-3.5 text-blue-400" />}
+          {store.is_verified && <ShieldCheck className="h-3.5 w-3.5 text-blue-400" />}
         </div>
         <div className="absolute bottom-2 left-2.5 right-2.5 flex items-end gap-2">
           <div className="w-9 h-9 rounded-lg bg-card border border-card overflow-hidden shadow-sm flex-shrink-0">
