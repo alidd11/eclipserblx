@@ -1,79 +1,51 @@
 
-# Customer Experience Full Overhaul — Gaming Marketplace
 
-Transform the entire customer-facing experience into a bold, immersive gaming marketplace inspired by Roblox Creator Store and Steam.
+# Instant Product Image Loading
 
----
+## Problem
+Product images currently load lazily with `loading="lazy"` and `decoding="async"`, meaning they only start downloading when scrolled into view. Combined with no preloading or caching strategy, users see placeholder shimmer states before images appear.
 
-## 1. Homepage — Immersive Landing
+## Strategy
 
-- **Hero section**: Add a subtle animated gradient background with deeper contrast, bolder typography, and a glowing CTA button
-- **Section headers**: Replace plain text with bold uppercase tracking, accent underlines, and optional glow effects
-- **Product cards**: Add a subtle border glow on hover, improved badge styling with sharper contrast
-- **Trending/New sections**: Add section numbering or ranking badges for trending items
+A multi-layered approach to make images appear as close to instantly as possible:
 
-**Files**: `Index.tsx`, `ProductCard.tsx`, section components
+### 1. Eager Loading for Above-the-Fold Products
+ProductCard currently uses `loading="lazy"` for all cards. The first ~4-8 visible products (above the fold) should use `loading="eager"` and `fetchPriority="high"` instead. Add an optional `priority` prop to ProductCard.
 
-## 2. Product Detail Page — Steam-style Immersion
+**File**: `src/components/ui/ProductCard.tsx`
 
-- **Image gallery**: Larger, more cinematic presentation with dark overlay gradients
-- **Trust badges**: Redesign with gaming-style iconography — shield icons, checkmarks with subtle glow
-- **Price area**: Bold pricing with a prominent "Add to Cart" CTA, sale prices with strikethrough styling
-- **Reviews section**: Star ratings with filled/empty star visuals, reviewer badges
+### 2. Preload First Product Images via Link Headers
+Inject `<link rel="preload" as="image">` tags into the document head for the first batch of product images returned by the homepage queries. This tells the browser to start fetching images immediately, even before the component renders.
 
-**Files**: `ProductPage.tsx`, trust components
+**File**: New `src/hooks/usePreloadImages.ts` + integrate into landing sections
 
-## 3. Account Dashboard — Player Profile Feel
+### 3. IntersectionObserver-Based Prefetching
+For products just below the fold, use an IntersectionObserver with a large `rootMargin` (e.g. 400px) to start loading images before they scroll into view. Create a lightweight prefetch utility that creates an `Image()` object to warm the browser cache.
 
-- **Profile header**: Gaming-style profile card with level/stats display, Eclipse+ badge prominence
-- **Order history**: Timeline-style with status pills matching seller dashboard style
-- **Wallet section**: Balance card with gradient styling, transaction history with icons
-- **Wishlist**: Grid view with quick-add-to-cart actions
+**File**: New `src/hooks/useImagePrefetch.ts`
 
-**Files**: Account page components
+### 4. Browser Cache Headers (Service Worker / CDN)
+The images are served from Supabase storage which already has cache headers. Add a small in-memory cache map in the app to track which URLs have been loaded, preventing re-render flicker when navigating back.
 
-## 4. Cart & Checkout — Streamlined Conversion
+**File**: `src/utils/imageCache.ts`
 
-- **Cart page**: Cleaner item cards with product thumbnails, quantity controls, and savings highlights
-- **Checkout**: Maintain existing embedded Stripe flow but polish the surrounding UI
-- **Order confirmation**: Add celebration animation and clear next-steps
+### 5. Landing Section Integration
+Update `TrendingProducts`, `NewThisWeek`, `RecentReleases`, and `OnSaleProducts` to pass `priority={true}` for the first row of visible cards and preload their image URLs on data fetch.
 
-**Files**: Cart/checkout components
+**Files**: `src/components/landing/TrendingProducts.tsx`, `NewThisWeek.tsx`, `RecentReleases.tsx`, `OnSaleProducts.tsx`
 
-## 5. Navigation & Global Polish
+### 6. Remove Unnecessary Transition Delay
+The `OptimizedImage` component has a 300ms opacity transition that delays perceived load. For priority images, skip the fade-in entirely.
 
-- **Category bar**: Sharper pill styling with active state glow
-- **Customer sidebar**: Gaming-themed with status indicators, quick-stat badges
-- **Search results**: Better card layout with relevance indicators
-- **Mobile bottom tab bar**: Polish icons and add subtle active state animations
-- **Empty states**: Gaming-themed illustrations and CTAs across all pages
-
-**Files**: Layout components, navigation components
-
-## 6. Design Token Updates
-
-- Enhance CSS variables for deeper contrast, add gaming-specific tokens:
-  - `--glow-primary` for accent glows
-  - Sharper card borders and hover states
-  - Bolder gradient combinations
-
-**Files**: `index.css`, `tailwind.config.ts`
+**File**: `src/components/ui/OptimizedImage.tsx`
 
 ---
 
 ## Technical Details
 
-- All frontend-only changes (React + Tailwind)
-- No database migrations needed
-- Uses existing framer-motion for animations
-- Mobile-first responsive approach preserved
-- Maintains all existing business logic and data fetching
+- **usePreloadImages hook**: Takes an array of URLs, injects `<link rel="preload">` into `<head>` on mount, cleans up on unmount. Limited to first 6 URLs to avoid bandwidth waste.
+- **ProductCard priority prop**: When `priority={true}`, sets `loading="eager"`, `decoding="sync"`, `fetchPriority="high"`, and removes lazy intersection observer logic.
+- **Image prefetch utility**: `prefetchImage(url)` creates `new Image().src = url` to warm browser cache. Called via IntersectionObserver 400px before viewport entry.
+- No new dependencies required. Pure browser APIs.
+- No database changes needed.
 
-## Priority Order
-
-1. Design tokens + global polish (foundation)
-2. Homepage sections
-3. Product cards + detail page
-4. Account dashboard
-5. Cart & checkout polish
-6. Navigation refinements
