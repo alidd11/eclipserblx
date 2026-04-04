@@ -48,6 +48,12 @@ export function TrendingProducts() {
     );
   }
 
+  const imageUrls = useMemo(() => 
+    (products || []).slice(0, 8).map(p => getFirstImageUrl(p.images)).filter(Boolean),
+    [products]
+  );
+  usePreloadImages(imageUrls);
+
   if (!products?.length) return null;
 
   return (
