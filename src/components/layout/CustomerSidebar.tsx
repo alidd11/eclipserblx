@@ -301,11 +301,11 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     const linkClassName = cn(
       "text-[13px] font-medium select-none transition-colors duration-100",
       isCollapsed
-        ? "flex w-full max-w-full items-center justify-center py-1.5 rounded-md overflow-hidden"
-        : "flex w-full max-w-full min-w-0 flex-row flex-nowrap items-center gap-2.5 px-2.5 py-1.5 ml-3 rounded-md overflow-hidden",
+        ? "flex w-full max-w-full items-center justify-center py-2 rounded-lg overflow-hidden"
+        : "flex w-full max-w-full min-w-0 flex-row flex-nowrap items-center gap-3 px-3 py-2.5 ml-2 rounded-lg overflow-hidden active:scale-[0.98] active:opacity-80",
       isActive
-        ? "border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none pl-[calc(0.625rem-2px)]"
-        : "text-foreground/80 hover:text-foreground hover:bg-muted/50"
+        ? "border-l-[3px] border-primary bg-primary/10 text-foreground !rounded-l-none pl-[calc(0.75rem-3px)]"
+        : "text-foreground/70 hover:text-foreground hover:bg-muted/50"
     );
 
     if (item.external) {
