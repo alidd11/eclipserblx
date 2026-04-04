@@ -144,21 +144,6 @@ export function LandingHero() {
               </Link>
             </div>
 
-            <div className="flex items-center justify-center gap-1.5 overflow-hidden" role="navigation" aria-label="Trending searches">
-              <span className="text-[11px] text-foreground/60 flex items-center gap-1 flex-shrink-0">
-                <Search className="h-3 w-3" aria-hidden="true" />
-                Trending
-              </span>
-              {TRENDING_TAGS.map((tag) => (
-                <button
-                  key={tag.label}
-                  onClick={() => handleTagClick(tag)}
-                  className="text-[11px] px-2.5 py-1 min-h-[28px] rounded bg-muted/50 hover:bg-muted text-foreground/70 hover:text-foreground transition-colors flex-shrink-0"
-                >
-                  {tag.label}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       </div>
