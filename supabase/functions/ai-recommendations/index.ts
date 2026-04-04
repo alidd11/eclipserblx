@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
         if (categoryIds.length > 0) {
           const { data: similarProducts } = await supabase
             .from("products")
-            .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_trusted, is_active)")
+            .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_active)")
             .in("category_id", categoryIds)
             .not("id", "in", `(${viewedIds.join(",")})`)
             .eq("is_active", true)
