@@ -43,6 +43,7 @@ import { FrequentlyBoughtTogether } from '@/components/product/FrequentlyBoughtT
 import { usePromotedProduct } from '@/hooks/usePromotedProduct';
 import { PromotedProductCard } from '@/components/marketplace/PromotedProductCard';
 import { PriceAlertButton } from '@/components/product/PriceAlertButton';
+import { SocialShareButtons } from '@/components/product/SocialShareButtons';
 import { StickyBuyBar } from '@/components/product/StickyBuyBar';
 
 export default function ProductDetail() {
