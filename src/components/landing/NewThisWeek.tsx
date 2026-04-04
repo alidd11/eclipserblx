@@ -47,6 +47,12 @@ export function NewThisWeek() {
     );
   }
 
+  const imageUrls = useMemo(() =>
+    (products || []).slice(0, 4).map(p => getFirstImageUrl(p.images)).filter(Boolean),
+    [products]
+  );
+  usePreloadImages(imageUrls);
+
   if (!products?.length) return null;
 
   return (
