@@ -493,7 +493,7 @@ export default function ProductDetail() {
           {/* Images */}
           <div className="space-y-3 min-w-0">
             <div 
-              className="aspect-[4/3] gaming-card overflow-hidden select-none relative bg-black/20 cursor-zoom-in group w-full touch-pan-y"
+              className="aspect-[4/3] rounded-xl overflow-hidden select-none relative bg-black/20 cursor-zoom-in group w-full touch-pan-y border border-border/30"
               onContextMenu={(e) => e.preventDefault()}
               onClick={() => {
                 const currentImg = images[selectedImage];
