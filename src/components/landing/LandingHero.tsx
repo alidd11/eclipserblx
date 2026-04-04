@@ -100,13 +100,6 @@ export function LandingHero() {
               <Store className="h-3.5 w-3.5" />
               Start selling
             </Link>
-            <Link
-              to="/eclipse-plus"
-              className="text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1.5"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              <span className="relative">Eclipse+</span>
-            </Link>
           </div>
 
           {/* Search tags */}
