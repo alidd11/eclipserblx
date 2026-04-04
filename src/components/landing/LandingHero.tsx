@@ -89,6 +89,8 @@ export function LandingHero() {
           <div className="flex items-center gap-6 mb-8">
             <Link to="/products">
               <Button size="lg" className="h-12 px-8 text-sm font-semibold uppercase tracking-wide shadow-[0_0_24px_hsl(var(--primary)/0.35)] hover:shadow-[0_0_40px_hsl(var(--primary)/0.5)] transition-shadow">
+                Browse Marketplace
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
             <Link
