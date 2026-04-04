@@ -27,7 +27,7 @@ function MainLayoutContent({ children, showFooter = true, showBreadcrumb = true 
           isMobileDrawer
         />
       )}
-      headerProps={{ mobileFixed: true }}
+      headerProps={{ mobileFixed: true, showDesktopNav: true }}
       showFooter={showFooter}
       showBreadcrumb={showBreadcrumb}
       mainStyle={{ paddingBottom: 'calc(var(--chat-safe-bottom, env(safe-area-inset-bottom)) + var(--tab-bar-height, 0px))' }}
