@@ -28,6 +28,9 @@ export function GlobalCategoryBar() {
   const activeCategory = searchParams.get('category');
   const isShopPage = location.pathname === '/products';
 
+  // Hide on products page — it has its own CategoryBar
+  if (isShopPage) return null;
+
   const { data: categories } = useQuery({
     queryKey: ['global-categories-bar'],
     queryFn: async () => {
