@@ -35,7 +35,7 @@ function usePromotedSpotlightStore() {
           store_id,
           stores!product_promotions_store_id_fkey (
             id, name, slug, description, logo_url, banner_url, accent_color,
-            is_verified, is_trusted, follower_count, average_rating, product_count,
+            is_verified, follower_count, average_rating, product_count,
             status, is_active, is_testing
           )
         `)
