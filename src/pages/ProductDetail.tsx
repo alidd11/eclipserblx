@@ -44,6 +44,7 @@ import { usePromotedProduct } from '@/hooks/usePromotedProduct';
 import { PromotedProductCard } from '@/components/marketplace/PromotedProductCard';
 import { PriceAlertButton } from '@/components/product/PriceAlertButton';
 import { SocialShareButtons } from '@/components/product/SocialShareButtons';
+import { StickyBuyBar } from '@/components/product/StickyBuyBar';
 
 export default function ProductDetail() {
   const { productNumber } = useParams<{ productNumber: string }>();
@@ -72,6 +73,7 @@ export default function ProductDetail() {
   const isMobile = useIsMobile();
   const videoRef = useRef<HTMLVideoElement>(null);
   const reviewSectionRef = useRef<HTMLDivElement>(null);
+  const ctaButtonRef = useRef<HTMLButtonElement>(null);
 
   // Hide swipe hint after first interaction or after 3 seconds
   useEffect(() => {
@@ -760,6 +762,7 @@ export default function ProductDetail() {
                 <div className="flex flex-col gap-3">
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Button
+                      ref={ctaButtonRef as React.RefObject<HTMLButtonElement>}
                       size="lg"
                       className={cn(
                         "flex-1 h-12 text-base font-semibold",
@@ -1025,6 +1028,17 @@ export default function ProductDetail() {
         <RecentlyViewedProducts currentProductId={product.id} />
         </div>
       </PullToRefresh>
+
+      {/* Mobile sticky buy bar */}
+      {product && (
+        <StickyBuyBar
+          productName={product.name}
+          formattedPrice={formatPrice(Number(product.price))}
+          inCart={inCart}
+          onAddToCart={handleAddToCart}
+          ctaRef={ctaButtonRef}
+        />
+      )}
 
       {/* IP Violation Report Dialog */}
       <ReportIPViolationDialog
