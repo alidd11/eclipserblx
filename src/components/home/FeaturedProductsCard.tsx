@@ -14,43 +14,6 @@ import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Region flag images
-import ukFlag from '@/assets/regions/uk-flag.jpg';
-import usFlag from '@/assets/regions/us-flag.jpg';
-import euFlag from '@/assets/regions/eu-flag.jpg';
-import beFlag from '@/assets/regions/be-flag.png';
-
-// Helper to get region flag from category name and/or product name
-const getRegionFlag = (category?: string, productName?: string): { src: string; name: string } | null => {
-  const categoryLower = category?.toLowerCase() || '';
-  const nameLower = productName?.toLowerCase() || '';
-  
-  // Check for specific products first
-  if (nameLower.includes('ypres') || nameLower.includes('belgium')) {
-    return { src: beFlag, name: 'Belgium' };
-  }
-  
-  // Buildings category defaults to UK
-  if (categoryLower === 'buildings' || categoryLower.includes('buildings')) {
-    return { src: ukFlag, name: 'UK' };
-  }
-  
-  // Bundle Deals default to UK
-  if (categoryLower === 'bundle deals' || categoryLower.includes('bundle')) {
-    return { src: ukFlag, name: 'UK' };
-  }
-  
-  // Standard region checks
-  if (categoryLower.startsWith('uk ') || categoryLower.includes(' uk')) {
-    return { src: ukFlag, name: 'UK' };
-  } else if (categoryLower.startsWith('us ') || categoryLower.includes(' us')) {
-    return { src: usFlag, name: 'US' };
-  } else if (categoryLower.startsWith('eu ') || categoryLower.includes(' eu')) {
-    return { src: euFlag, name: 'EU' };
-  }
-  
-  return null;
-};
 
 const ITEMS_PER_PAGE_DESKTOP = 3;
 const ITEMS_PER_PAGE_MOBILE = 2;
