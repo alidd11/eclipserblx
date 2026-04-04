@@ -73,15 +73,15 @@ export function LandingHero() {
       <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-10 relative z-10">
         {/* Desktop: centered layout */}
         <div className="hidden lg:flex lg:flex-col lg:items-center lg:text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/80 mb-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary mb-3 drop-shadow-sm">
             Roblox & Discord Marketplace
           </p>
 
-          <h1 id="hero-heading" className="font-display text-3xl lg:text-[2.5rem] font-bold leading-[1.1] tracking-tight mb-4 max-w-2xl">
+          <h1 id="hero-heading" className="font-display text-3xl lg:text-[2.75rem] font-bold leading-[1.08] tracking-tight mb-4 max-w-2xl drop-shadow-md">
             The All-in-One Marketplace for {wordRotator} Creators.
           </h1>
 
-          <p className="text-sm text-foreground/70 max-w-md mb-6 leading-relaxed">
+          <p className="text-sm text-foreground/60 max-w-md mb-6 leading-relaxed">
             Buy and sell premium scripts, models, UI kits and game assets. Lower fees, instant delivery, trusted by thousands of creators.
           </p>
 
