@@ -146,8 +146,6 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
 
           {/* Right section: Icons (flush right, tighter spacing) */}
           <div className="flex items-center shrink-0 ml-auto gap-0.5">
-            <CurrencySelector compact />
-            <LanguageSwitcher compact />
             <NotificationBell />
             <Link to="/cart" aria-label={t('nav.shoppingCart')} className="hidden md:inline-flex">
               <Button variant="ghost" size="icon" className="relative h-9 w-9 min-h-[44px] min-w-[44px] text-muted-foreground hover:text-foreground" aria-label={t('nav.shoppingCart')}>

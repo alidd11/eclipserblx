@@ -3,15 +3,14 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { LandingHero } from '@/components/landing/LandingHero';
 
-
+// Eager-load above-the-fold sections (no lazy)
+import { TrendingProducts } from '@/components/landing/TrendingProducts';
 
 const PWADiscordBanner = lazy(() => import('@/components/landing/PWADiscordBanner').then(m => ({ default: m.PWADiscordBanner })));
 const ActiveOffersCard = lazy(() => import('@/components/home/ActiveOffersCard').then(m => ({ default: m.ActiveOffersCard })));
 const ForYouSection = lazy(() => import('@/components/home/ForYouSection').then(m => ({ default: m.ForYouSection })));
 const AbandonedCartBanner = lazy(() => import('@/components/marketplace/AbandonedCartBanner').then(m => ({ default: m.AbandonedCartBanner })));
 
-// New v3.2 landing sections
-const TrendingProducts = lazy(() => import('@/components/landing/TrendingProducts').then(m => ({ default: m.TrendingProducts })));
 const NewThisWeek = lazy(() => import('@/components/landing/NewThisWeek').then(m => ({ default: m.NewThisWeek })));
 const RecentReleases = lazy(() => import('@/components/landing/RecentReleases').then(m => ({ default: m.RecentReleases })));
 const OnSaleProducts = lazy(() => import('@/components/landing/OnSaleProducts').then(m => ({ default: m.OnSaleProducts })));
@@ -25,7 +24,6 @@ const RecentlyViewedSection = lazy(() => import('@/components/landing/RecentlyVi
 import { OrganizationSchema, WebsiteSearchSchema, SiteNavigationSchema } from '@/components/seo/StructuredData';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
-import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { LazySection } from '@/components/ui/LazySection';
 
 export default function Landing() {
@@ -42,12 +40,17 @@ export default function Landing() {
       <WebsiteSearchSchema />
       <SiteNavigationSchema />
 
-      {/* Hero */}
+      {/* Trending Products — immediate visibility, above the fold */}
+      <SectionErrorBoundary section="trending" compact>
+        <TrendingProducts />
+      </SectionErrorBoundary>
+
+      {/* Hero — reduced, below first products */}
       <SectionErrorBoundary section="hero" compact>
         <LandingHero />
       </SectionErrorBoundary>
 
-      {/* Promotions + Banners — only take space when content renders */}
+      {/* Promotions */}
       <SectionErrorBoundary section="promotions" compact>
         <Suspense fallback={null}>
           <ActiveOffersCard />
@@ -67,16 +70,7 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* Trending Products */}
-      <LazySection minHeight="200px" rootMargin="300px">
-        <SectionErrorBoundary section="trending" compact>
-          <Suspense fallback={null}>
-            <TrendingProducts />
-          </Suspense>
-        </SectionErrorBoundary>
-      </LazySection>
-
-      {/* Recent Releases — horizontal carousel */}
+      {/* Recent Releases */}
       <LazySection minHeight="200px" rootMargin="300px">
         <SectionErrorBoundary section="recent-releases" compact>
           <Suspense fallback={null}>
@@ -103,7 +97,6 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-
       {/* Free Assets Teaser */}
       <LazySection minHeight="200px" rootMargin="200px">
         <SectionErrorBoundary section="free-assets" compact>
@@ -112,7 +105,6 @@ export default function Landing() {
           </Suspense>
         </SectionErrorBoundary>
       </LazySection>
-
 
       {/* Recently Viewed */}
       <LazySection minHeight="150px" rootMargin="200px">
@@ -123,7 +115,7 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* Why Eclipse + Trust Signals (merged) */}
+      {/* Why Eclipse */}
       <LazySection minHeight="200px" rootMargin="200px">
         <SectionErrorBoundary section="why-eclipse" compact>
           <Suspense fallback={null}>
