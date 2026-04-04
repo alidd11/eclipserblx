@@ -63,7 +63,7 @@ export function NewThisWeek() {
             <div className="p-1.5 rounded-lg bg-emerald-500/10">
               <Sparkles className="h-4 w-4 text-emerald-500" />
             </div>
-            <h2 className="text-base sm:text-lg font-bold tracking-tight uppercase">New This Week</h2>
+            <h2 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight uppercase">New This Week</h2>
             <span className="text-[10px] uppercase tracking-wider text-emerald-500/80 font-semibold bg-emerald-500/10 px-1.5 py-0.5 rounded">
               Fresh
             </span>

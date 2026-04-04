@@ -69,7 +69,7 @@ export function RecentReleases() {
             <div className="p-1.5 rounded-lg bg-blue-500/10">
               <Clock className="h-4 w-4 text-blue-400" />
             </div>
-            <h2 className="text-base sm:text-lg font-bold tracking-tight uppercase">Recent Releases</h2>
+            <h2 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight uppercase">Recent Releases</h2>
             <span className="text-[10px] text-muted-foreground font-medium bg-muted/60 px-1.5 py-0.5 rounded">{products.length} items</span>
           </div>
           <div className="flex items-center gap-2">
