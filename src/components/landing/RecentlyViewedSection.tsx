@@ -18,7 +18,7 @@ export function RecentlyViewedSection() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-lg font-bold tracking-tight">Recently Viewed</h2>
+            <h2 className="text-lg font-bold tracking-tight uppercase">Recently Viewed</h2>
           </div>
         </div>
 

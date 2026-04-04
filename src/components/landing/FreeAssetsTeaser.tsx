@@ -48,7 +48,7 @@ export function FreeAssetsTeaser() {
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold tracking-tight">Free Assets</h2>
+              <h2 className="text-lg font-bold tracking-tight uppercase">Free Assets</h2>
               <span className="text-[10px] uppercase tracking-wider text-primary/70 font-semibold bg-primary/10 px-1.5 py-0.5 rounded">
                 No fees
               </span>

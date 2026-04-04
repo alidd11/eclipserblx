@@ -61,7 +61,7 @@ export function TrendingProducts() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
           {products.map((product) => {
             const store = product.stores as any;
             const category = product.categories as any;
