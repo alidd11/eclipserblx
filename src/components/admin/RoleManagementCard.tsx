@@ -115,6 +115,23 @@ export function RoleManagementCard() {
     },
   });
 
+  const toggleDefaultMutation = useMutation({
+    mutationFn: async ({ roleId, isDefault }: { roleId: string; isDefault: boolean }) => {
+      const { error } = await supabase
+        .from('custom_roles')
+        .update({ is_default: isDefault })
+        .eq('id', roleId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['custom-roles'] });
+      toast.success('Default role setting updated');
+    },
+    onError: (error) => {
+      toast.error('Failed to update: ' + error.message);
+    },
+  });
+
   // Check if current user can manage a specific role
   const canManageRole = (role: CustomRole) => {
     // Can only manage roles at or below your hierarchy level
