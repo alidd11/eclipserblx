@@ -911,7 +911,7 @@ function AutoApprovedView() {
           </Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to="/seller">Go to Dashboard</Link>
+          <a href="/seller" target="_blank" rel="noopener noreferrer">Go to Dashboard</a>
         </Button>
       </div>
     </div>
