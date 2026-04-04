@@ -120,8 +120,8 @@ export function LandingHero() {
         </div>
 
         {/* Mobile: centered layout */}
-        <div className="lg:hidden w-full flex flex-col items-center">
-          <div className="text-center max-w-md">
+        <div className="lg:hidden w-full flex flex-col items-center px-4">
+          <div className="text-center w-full max-w-sm">
             <h1 className="font-display text-2xl sm:text-3xl font-bold leading-[1.15] tracking-tight mb-3">
               The All-in-One Marketplace for {wordRotator} Creators.
             </h1>
