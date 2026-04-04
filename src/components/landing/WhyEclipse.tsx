@@ -4,7 +4,7 @@ import { MessageSquare, ShieldCheck, Sparkles, BarChart3, Zap, BadgeCheck, Credi
 const BADGES = [
   { icon: MessageSquare, label: 'Discord Ecosystem' },
   { icon: ShieldCheck, label: 'AI-Powered Security' },
-  { icon: Sparkles, label: 'Eclipse+ Savings' },
+  { icon: Sparkles, label: 'Best Prices' },
   { icon: BarChart3, label: 'Seller Tools' },
   { icon: BadgeCheck, label: 'Verified Sellers' },
   { icon: Zap, label: 'Instant Delivery' },
