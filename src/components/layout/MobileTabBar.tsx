@@ -17,7 +17,7 @@ const TAB_ITEMS: TabItem[] = [
   { icon: Home, label: 'Home', href: '/' },
   { icon: Compass, label: 'Browse', href: '/products' },
   { icon: ShoppingCart, label: 'Cart', href: '/cart', isCenter: true, showBadge: true },
-  { icon: Package, label: 'Orders', href: '/account?section=purchases' },
+  { icon: Package, label: 'Orders', href: '/orders' },
   { icon: Grid3X3, label: 'Hub', href: '/account' },
 ];
 
@@ -43,9 +43,7 @@ export function MobileTabBar() {
         {TAB_ITEMS.map(({ icon: Icon, label, href, isCenter, showBadge }) => {
           const isActive = href === '/'
             ? location.pathname === '/'
-            : href.startsWith('/account')
-              ? location.pathname === '/account' && (href === '/account' ? !location.search.includes('section=purchases') : location.search.includes('section=purchases'))
-              : location.pathname.startsWith(href);
+            : location.pathname.startsWith(href);
 
           const actualHref = (href === '/account' || href.startsWith('/account?')) && !user ? '/auth' : href;
 
