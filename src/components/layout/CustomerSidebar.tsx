@@ -591,13 +591,15 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         <div className="border-b border-border px-1.5 py-2 flex justify-center">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Link
-                to="/seller"
+              <a
+                href="/seller"
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={handleNavClick}
                 className="flex items-center justify-center h-8 w-8 rounded-lg bg-gradient-to-r from-primary to-purple-500 text-primary-foreground transition-all hover:opacity-90 active:scale-[0.95]"
               >
                 <Zap className="h-4 w-4" />
-              </Link>
+              </a>
             </TooltipTrigger>
             <TooltipContent side="right">Seller Dashboard</TooltipContent>
           </Tooltip>

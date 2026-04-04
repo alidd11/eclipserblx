@@ -117,10 +117,10 @@ export function BecomeSellerCard() {
           </div>
 
           <Button asChild className="w-full">
-            <Link to="/seller">
+            <a href="/seller" target="_blank" rel="noopener noreferrer">
               <ExternalLink className="h-4 w-4 mr-2" />
               Go to Seller Dashboard
-            </Link>
+            </a>
           </Button>
         </CardContent>
       </Card>

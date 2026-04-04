@@ -1001,7 +1001,7 @@ function SuccessRedirect({ type }: { type: string }) {
       <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto" />
       <h1 className="text-2xl font-bold">You're already a seller!</h1>
       <Button asChild>
-        <Link to="/seller">Go to Seller Dashboard</Link>
+        <a href="/seller" target="_blank" rel="noopener noreferrer">Go to Seller Dashboard</a>
       </Button>
     </div>
   );
