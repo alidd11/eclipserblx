@@ -3,7 +3,7 @@ const heroBgMobile = '/hero-bg-mobile.webp';
 
 export function HeroBanner() {
   return (
-    <div className="absolute inset-x-0 top-0 h-[420px] sm:h-[480px] overflow-hidden">
+    <div className="absolute inset-x-0 top-0 h-full overflow-hidden">
       {/* Use <picture> with srcSet for proper responsive loading */}
       <picture>
         <source media="(min-width: 768px)" srcSet={heroBgDesktop} type="image/webp" />
