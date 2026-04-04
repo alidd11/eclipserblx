@@ -286,20 +286,16 @@ export default function StaffProfile() {
     },
   });
 
-  // Get available roles (ones not already assigned and within hierarchy)
+  // Get available roles (ones not already assigned, within hierarchy, and user has manage_role permission)
   const availableRoles = () => {
     const existing = roles.map(r => r.role as string);
     return customRoles.filter(r => {
-      // Exclude roles the user already has
       if (existing.includes(r.name)) return false;
-      
-      // Only show roles at or below current user's hierarchy level
       if ((currentUserHierarchy ?? 0) < r.hierarchy_level) return false;
       
-      // Special case: Only primary admin can assign admin role
-      if (r.name === 'admin' && !isPrimaryAdmin) return false;
-      
-      return true;
+      // Check scoped permission: admin can assign any, others need manage_role:X
+      if (isPrimaryAdmin) return true;
+      return userPermissions.includes(`manage_role:${r.name}`);
     });
   };
   
