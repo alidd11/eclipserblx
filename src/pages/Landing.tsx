@@ -70,6 +70,15 @@ export default function Landing() {
         </div>
       </Suspense>
 
+      {/* Top Creators */}
+      <LazySection minHeight="150px" rootMargin="200px">
+        <SectionErrorBoundary section="top-creators" compact>
+          <Suspense fallback={null}>
+            <TopSellers />
+          </Suspense>
+        </SectionErrorBoundary>
+      </LazySection>
+
       {/* Trending Products */}
       <LazySection minHeight="200px" rootMargin="300px">
         <SectionErrorBoundary section="trending" compact>
@@ -78,7 +87,6 @@ export default function Landing() {
           </Suspense>
         </SectionErrorBoundary>
       </LazySection>
-
 
       {/* Recent Releases — horizontal carousel */}
       <LazySection minHeight="200px" rootMargin="300px">
@@ -116,14 +124,6 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* Top Creators (merged Top Sellers + Featured Creators) */}
-      <LazySection minHeight="150px" rootMargin="200px">
-        <SectionErrorBoundary section="top-creators" compact>
-          <Suspense fallback={null}>
-            <TopSellers />
-          </Suspense>
-        </SectionErrorBoundary>
-      </LazySection>
 
       {/* Recently Viewed */}
       <LazySection minHeight="150px" rootMargin="200px">
