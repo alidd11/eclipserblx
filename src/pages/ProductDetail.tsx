@@ -717,7 +717,7 @@ export default function ProductDetail() {
                   ) : (
                     <>
                       {!isEligible ? (
-                        <span className="text-4xl font-bold">
+                        <span className="text-3xl font-bold">
                           {formatPrice(Number(product.price))}
                         </span>
                       ) : (
