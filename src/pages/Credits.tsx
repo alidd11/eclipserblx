@@ -15,7 +15,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { WalletBalanceCard } from '@/components/wallet/WalletBalanceCard';
 import { AddCreditsCard } from '@/components/wallet/AddCreditsCard';
 import { TransactionHistoryCard } from '@/components/wallet/TransactionHistoryCard';
-import { EclipsePlusBanner } from '@/components/wallet/EclipsePlusBanner';
+
 import { MyPaymentsCard } from '@/components/wallet/MyPaymentsCard';
 
 // Embedded payment
