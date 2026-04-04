@@ -317,19 +317,15 @@ export default function StaffProfile() {
     };
   };
 
-  // Check if current user can remove a specific role
+  // Check if current user can remove a specific role (scoped permission check)
   const canRemoveRole = (role: string) => {
-    // Primary admin can remove any role
     if (isPrimaryAdmin) return true;
     
-    // Admin role can only be removed by primary admin
-    if (role === 'admin') return false;
-    
-    // Get the target role's hierarchy level from custom_roles
     const targetLevel = customRoles.find(r => r.name === role)?.hierarchy_level ?? 999;
+    if ((currentUserHierarchy ?? 0) < targetLevel) return false;
     
-    // Can only remove roles at or below current user's hierarchy level
-    return (currentUserHierarchy ?? 0) >= targetLevel;
+    // Must have manage_role:X permission
+    return userPermissions.includes(`manage_role:${role}`);
   };
 
   // Add role mutation
