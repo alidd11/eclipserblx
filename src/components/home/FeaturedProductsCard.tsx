@@ -311,28 +311,6 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
 
       {/* Content with flag background */}
       <div className="relative p-3 overflow-hidden">
-        {/* Flag background overlay (full width, fades at bottom) */}
-        {(() => {
-          const regionFlag = getRegionFlag(product.categories?.name, product.name);
-          if (!regionFlag) return null;
-          return (
-            <div
-              className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center"
-              style={{
-                WebkitMaskImage:
-                  'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
-                maskImage:
-                  'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
-              }}
-            >
-              <img
-                src={regionFlag.src}
-                alt=""
-                className="w-full h-[95%] opacity-[0.08] object-cover"
-              />
-            </div>
-          );
-        })()}
         
         <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider truncate mb-0.5 relative z-10">
           {product.categories?.name || 'Product'}

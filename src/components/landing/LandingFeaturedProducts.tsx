@@ -68,12 +68,6 @@ const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct; fe
           </div>
 
           <div className="p-3 relative overflow-hidden">
-            {regionFlag && (
-              <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <img src={regionFlag.src} alt="" className="absolute inset-0 w-full h-full opacity-[0.06] object-cover" />
-              </div>
-            )}
-            
             <h3 className={`font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-1.5 relative z-10 ${featured ? 'text-base' : 'text-sm'}`}>
               {product.name}
             </h3>
