@@ -686,7 +686,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         </Card>
 
         {/* App Version */}
-        <p className="text-center text-[10px] text-muted-foreground/60 pb-4">Eclipse v2.0</p>
+        <p className="text-center text-[10px] text-muted-foreground/60 pb-4">Eclipse v3.0</p>
 
         {/* Dialogs */}
         <SignOutConfirmDialog
