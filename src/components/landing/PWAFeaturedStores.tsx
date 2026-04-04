@@ -59,7 +59,6 @@ function usePromotedSpotlightStore() {
         banner_url: s.banner_url,
         accent_color: s.accent_color,
         is_verified: s.is_verified,
-        is_trusted: s.is_trusted,
         follower_count: s.follower_count,
         average_rating: s.average_rating,
         product_count: s.product_count,
