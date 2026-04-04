@@ -224,13 +224,13 @@ export function MyPurchasesCard() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 shrink-0">
-                  {product.asset_file_url && (
+                  {(product.asset_file_url || (product.additional_asset_files && product.additional_asset_files.length > 0)) && (
                     <Button
                       asChild
                       size="icon"
                       variant="ghost"
                       className="h-8 w-8"
-                      title="Download"
+                      title={`Download (${1 + (product.additional_asset_files?.length || 0)} file${(product.additional_asset_files?.length || 0) > 0 ? 's' : ''})`}
                     >
                       <Link to="/downloads">
                         <Download className="h-4 w-4" />
