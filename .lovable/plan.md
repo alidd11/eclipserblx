@@ -1,53 +1,57 @@
 
 
-# Fix Desktop Layout & Clean Up Eclipse+ Remnants
+# Fix Desktop Layout — Professional Full-Width Design
 
-## Problems Identified
+## Problems
 
-1. **Eclipse+ remnants still present** — The hero CTA still links to `/eclipse-plus`, the Header nav still includes an Eclipse+ link, and the hero text says "Eclipse+". These need removing since Eclipse+ was deleted.
+1. **No max-width container** — On 1920px screens, content stretches edge-to-edge with only 32px padding (`lg:px-8`). Product grids at 4 columns become absurdly wide (~450px per card). Headers and text span the full viewport. This looks amateur on large monitors.
 
-2. **Desktop layout uses sidebar + narrow content** — The `LayoutShell` renders a `CustomerSidebar` on desktop (`hidden md:flex`), pushing main content into a smaller column. On the reference screenshots, the site is full-width with the header spanning the entire viewport. The sidebar is appropriate for mobile drawer but on desktop it constrains the homepage.
+2. **Product grids too sparse** — Only 4 columns (`lg:grid-cols-4`) on desktop. At 1440px+ this wastes space. Should scale to 5-6 columns on XL screens.
 
-3. **Header missing key desktop elements** — The desktop header row exists but `showDesktopNav` is set to `false` in LayoutShell, hiding the text nav links. The search bar, currency selector, and Discord button are present but get squeezed next to the sidebar.
+3. **Hero not designed for desktop** — Centered text block with no visual weight. On a wide monitor it looks like a tiny paragraph floating in space.
 
-4. **Category bar container is narrow** — `GlobalCategoryBar` uses `<div className="container">` which constrains width. On the reference screenshots it spans full width.
+4. **Eclipse+ remnants still present** — `FinalCTA.tsx` still links to `/eclipse-plus` with "Explore Eclipse+" button. `WhyEclipse.tsx` still mentions "Eclipse+ Savings".
 
-5. **Product grid columns** — Desktop grid uses `lg:grid-cols-4` which matches the reference. This is fine.
+5. **No desktop content max-width** — Professional sites (Steam, Roblox Creator Hub, BuiltByBit) all use a max-width container (typically 1400-1600px) centered on screen.
 
 ---
 
 ## Plan
 
-### 1. Remove remaining Eclipse+ references
-- **LandingHero.tsx**: Remove the Eclipse+ CTA link (lines 103-109)
-- **Header.tsx**: Remove the `/eclipse-plus` nav link from `navLinkDefs` (line 28)
+### 1. Add a global desktop max-width container
+Wrap the main content area in LayoutShell with a centered `max-w-[1400px] mx-auto` container on desktop. This gives breathing room on ultra-wide monitors while keeping content readable.
 
-### 2. Fix desktop layout — hide sidebar on homepage
-The homepage should be full-width on desktop (no sidebar), matching the reference screenshots. The sidebar should only appear as a mobile drawer.
+**File**: `src/components/layout/LayoutShell.tsx`
 
-- **MainLayout.tsx**: Hide the desktop sidebar on the landing page. Two approaches:
-  - Option A: Add a prop `hideDesktopSidebar` to LayoutShell and pass it from MainLayout when on the homepage
-  - Option B (simpler): Change the desktop sidebar from `hidden md:flex` to always hidden, since the header + category bar provides all navigation on desktop
+### 2. Scale product grids for larger screens
+Add `xl:grid-cols-5 2xl:grid-cols-6` breakpoints to all product grid sections so cards scale properly on wider monitors.
 
-Since the reference screenshots show NO sidebar on desktop for any page, we'll hide the desktop sidebar entirely and rely on the header nav + category bar for desktop navigation.
+**Files**: `TrendingProducts.tsx`, `NewThisWeek.tsx`, `OnSaleProducts.tsx`, `RecentReleases.tsx`, `FreeAssetsTeaser.tsx`
 
-- **LayoutShell.tsx**: Change `<div className="hidden md:flex">` to `<div className="hidden">` (or remove desktop sidebar rendering entirely)
-- **Header.tsx**: Set `showDesktopNav` back to working state — the desktop header already has search, Discord, cart, account icons. Ensure it spans full width.
+### 3. Improve desktop hero
+Make the hero more impactful on desktop:
+- Increase heading size from `lg:text-[2.75rem]` to `lg:text-5xl`
+- Widen the max-width constraint on text
+- Add more vertical padding on desktop
 
-### 3. Fix header to match reference
-The desktop header should show:
-- Logo (left)
-- Full-width search bar (center)
-- Currency selector, Discord button, notifications, cart, account (right)
+**File**: `src/components/landing/LandingHero.tsx`
 
-This is already implemented in the `hidden md:flex` block — just needs the sidebar gone so it spans full width.
+### 4. Fix header desktop layout
+Add `max-w-[1400px] mx-auto` to the header nav so it aligns with the content container below.
 
-### 4. Fix GlobalCategoryBar width
-- Remove `container` constraint so it spans the full content area
-- Ensure pills scroll horizontally like in the reference
+**File**: `src/components/layout/Header.tsx`
 
-### 5. Ensure all landing sections render full-width on desktop
-- Sections use `px-4 sm:px-6 lg:px-8` which is fine for full-width layout once the sidebar is removed
+### 5. Align category bar with content
+Same `max-w-[1400px] mx-auto` treatment for the category bar.
+
+**File**: `src/components/shop/GlobalCategoryBar.tsx`
+
+### 6. Remove final Eclipse+ remnants
+- **FinalCTA.tsx**: Remove the "Explore Eclipse+" button
+- **WhyEclipse.tsx**: Replace "Eclipse+ Savings" with a different badge (e.g. "Best Prices")
+
+### 7. Polish desktop spacing
+Increase section padding on large screens — `lg:py-8` instead of `sm:py-6` — to give sections more breathing room on desktop.
 
 ---
 
@@ -55,14 +59,21 @@ This is already implemented in the `hidden md:flex` block — just needs the sid
 
 | File | Change |
 |------|--------|
-| `src/components/landing/LandingHero.tsx` | Remove Eclipse+ CTA link |
-| `src/components/layout/Header.tsx` | Remove Eclipse+ from navLinkDefs |
-| `src/components/layout/LayoutShell.tsx` | Hide desktop sidebar rendering |
-| `src/components/shop/GlobalCategoryBar.tsx` | Remove `container` class constraint if needed |
+| `LayoutShell.tsx` | Add max-width container to main content |
+| `Header.tsx` | Add max-width to desktop nav |
+| `GlobalCategoryBar.tsx` | Add max-width alignment |
+| `LandingHero.tsx` | Scale up hero for desktop |
+| `TrendingProducts.tsx` | Add xl/2xl grid columns |
+| `NewThisWeek.tsx` | Add xl/2xl grid columns |
+| `OnSaleProducts.tsx` | Add xl/2xl grid columns |
+| `RecentReleases.tsx` | Add xl/2xl grid columns |
+| `FreeAssetsTeaser.tsx` | Already has 6 cols, add alignment |
+| `FinalCTA.tsx` | Remove Eclipse+ button |
+| `WhyEclipse.tsx` | Replace Eclipse+ badge |
 
 ## Technical Notes
-- No database changes needed
+- ~11 files modified
+- No database changes
 - No new dependencies
-- 4 files modified
-- The mobile drawer sidebar remains fully functional
+- Consistent `max-w-[1400px] mx-auto` pattern across header, category bar, and main content
 
