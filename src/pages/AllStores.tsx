@@ -128,14 +128,9 @@ function SpotlightCard({ store }: { store: StoreData }) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
         <div className="absolute top-3 right-3 flex items-center gap-1.5">
-          {store.is_trusted && (
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500 text-white text-[11px] font-semibold">
-              <Award className="h-3.5 w-3.5" />Trusted
-            </span>
-          )}
-          {store.is_verified && !store.is_trusted && (
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500 text-white text-[11px] font-semibold">
-              <ShieldCheck className="h-3.5 w-3.5" />Verified
+          {store.is_verified && (
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500 text-white text-[11px] font-semibold" title="This seller has completed our identity and business verification process">
+              <ShieldCheck className="h-3.5 w-3.5" />Verified Seller
             </span>
           )}
         </div>
