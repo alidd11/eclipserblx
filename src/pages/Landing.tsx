@@ -13,6 +13,8 @@ const AbandonedCartBanner = lazy(() => import('@/components/marketplace/Abandone
 // New v3.2 landing sections
 const TrendingProducts = lazy(() => import('@/components/landing/TrendingProducts').then(m => ({ default: m.TrendingProducts })));
 const NewThisWeek = lazy(() => import('@/components/landing/NewThisWeek').then(m => ({ default: m.NewThisWeek })));
+const RecentReleases = lazy(() => import('@/components/landing/RecentReleases').then(m => ({ default: m.RecentReleases })));
+const OnSaleProducts = lazy(() => import('@/components/landing/OnSaleProducts').then(m => ({ default: m.OnSaleProducts })));
 const FreeAssetsTeaser = lazy(() => import('@/components/landing/FreeAssetsTeaser').then(m => ({ default: m.FreeAssetsTeaser })));
 const TopSellers = lazy(() => import('@/components/landing/TopSellers').then(m => ({ default: m.TopSellers })));
 const WhyEclipse = lazy(() => import('@/components/landing/WhyEclipse').then(m => ({ default: m.WhyEclipse })));
