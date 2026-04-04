@@ -345,7 +345,6 @@ function ProductsGrid({
               storeSlug={product.stores?.slug}
               storeLogo={product.stores?.logo_url}
               isVerified={product.stores?.is_verified}
-              isTrusted={product.stores?.is_trusted}
               storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
             />
           </React.Fragment>

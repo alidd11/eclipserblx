@@ -928,7 +928,6 @@ export default function StorePage() {
                         <StoreTrustSignals 
                           accentColor={accentColor}
                           isVerified={store.is_verified}
-                          isTrusted={(store as any).is_trusted}
                         />
                       </div>
                     );
