@@ -122,14 +122,9 @@ function SpotlightStoreCard({ store }: { store: FeaturedStore }) {
 
         {/* Badges top-right */}
         <div className="absolute top-3 right-3 flex items-center gap-1.5">
-          {store.is_trusted && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-semibold shadow">
-              <Award className="h-3 w-3" />{t('landing.trusted')}
-            </span>
-          )}
-          {store.is_verified && !store.is_trusted && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500 text-white text-[10px] font-semibold shadow">
-              <ShieldCheck className="h-3 w-3" />{t('landing.verified')}
+          {store.is_verified && (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500 text-white text-[10px] font-semibold shadow" title="This seller has completed our identity and business verification process">
+              <ShieldCheck className="h-3 w-3" />{t('landing.verified')} Seller
             </span>
           )}
         </div>
