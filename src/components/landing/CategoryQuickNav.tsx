@@ -6,7 +6,6 @@ import {
 import { cn } from '@/lib/utils';
 
 const CATEGORIES = [
-  { label: 'All', slug: '', icon: Gift },
   { label: 'Scripts', slug: 'scripts-systems', icon: FileCode },
   { label: 'Maps', slug: 'maps', icon: Map },
   { label: 'Vehicles', slug: 'civilian-vehicles', icon: Car },
