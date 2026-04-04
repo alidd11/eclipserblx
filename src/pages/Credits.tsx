@@ -101,7 +101,7 @@ export default function Credits() {
         isLoading={isLoading}
       />
 
-      <EclipsePlusBanner show={!eclipsePlusBonusClaimed} />
+      
 
       <div className="grid md:grid-cols-2 gap-6">
         <AddCreditsCard
