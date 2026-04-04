@@ -1,104 +1,86 @@
 
 
-# Enterprise-Level Search Improvements
-
-The current search system is functional but has gaps that real marketplaces like BuiltByBit, Gumroad, and Shopify don't have. Here's what to add, ordered by impact.
+# Homepage and Store Page Improvements
 
 ---
 
-## 1. Full-Text Search with PostgreSQL `tsvector` (Biggest Win)
+## HOMEPAGE IMPROVEMENTS
 
-Currently, search uses `ilike` pattern matching which is slow, can't rank by relevance, and misses partial/plural matches ("script" won't match "scripting").
+### 1. Reduce Section Padding and Tighten Vertical Rhythm
+Every section uses `py-6` or `py-8`, creating excessive whitespace on mobile. Reduce to `py-4` on most sections and `py-6` on desktop. This alone removes ~100px of dead space on a single scroll.
 
-**Change**: Create a generated `search_vector` column on the `products` table using `tsvector`, with a GIN index. Replace all `ilike` queries with `websearch_to_tsquery` for proper full-text search with ranking.
+**Files**: `TrendingProducts.tsx`, `NewThisWeek.tsx`, `FreeAssetsTeaser.tsx`, `TopSellers.tsx`, `RecentlyViewedSection.tsx`, `WhyEclipse.tsx`, `FinalCTA.tsx`
 
-- Handles typo-tolerant matching via trigram similarity (already have `pg_trgm`)
-- Supports stemming ("scripts" matches "scripting")
-- Native relevance scoring via `ts_rank_cd`
-- Create a database function `search_products_v2` that combines tsvector ranking with trigram fallback
+### 2. Add Product Count Badges to Section Headers
+Show how many items exist (e.g. "TRENDING NOW · 8 items") so users know the scope at a glance. Small muted count next to each header.
 
-## 2. Search Suggestions / Autocomplete
+**Files**: `TrendingProducts.tsx`, `NewThisWeek.tsx`, `FreeAssetsTeaser.tsx`
 
-Users currently see nothing until they type 2+ characters. Enterprise search shows instant suggestions.
+### 3. Horizontal Scroll for "New This Week" on Mobile
+Currently a 2-col grid that pushes content far down. Switch to a horizontal scroll strip on mobile (like Free Assets already does), keeping the grid on desktop. Saves significant scroll depth.
 
-**Change**: Create a `popular_searches` materialized view from `search_logs`, refreshed hourly. Add a lightweight edge function or direct query that returns top matching suggestions as the user types (after 1 character). Show these as typeahead pills in the command palette below the input.
+**File**: `NewThisWeek.tsx`
 
-## 3. Filters Panel on Search Results Page
+### 4. Improve "Top Creators" Card Density on Mobile
+Currently 2-col grid with small avatars. On mobile, switch to a horizontal scroll of compact avatar+name chips (pill-shaped) so all 8 creators are visible without scrolling past. More visual, less vertical space.
 
-The search page only has category chips and a sort dropdown. Enterprise search has a proper filter sidebar/sheet.
+**File**: `TopSellers.tsx`
 
-**Change**: Add a collapsible filter panel (sheet on mobile) with:
-- Price range slider (min/max)
-- Rating filter (4+ stars, 3+ stars)
-- Free only toggle
-- Store/seller filter (top stores as checkboxes)
-- "Has reviews" toggle
+### 5. Simplify "Why Eclipse" Section
+The 2x2 grid of value props + trust strip takes a lot of space for static marketing copy. Merge into a single horizontal scrolling strip of icon+label badges (like trust signals). Cuts the section height by 60%.
 
-These filters get encoded as URL params for shareable/bookmarkable search URLs.
+**File**: `WhyEclipse.tsx`
 
-## 4. "Did You Mean?" Spell Correction
+### 6. Make Hero Trending Tags More Tappable
+Tags are tiny (`text-[11px]`, `px-1.5 py-0.5`). Increase touch target to `px-2.5 py-1` and use `min-h-[28px]` for accessibility compliance (44px recommended, 28px minimum).
 
-When a search returns 0 results, suggest corrected queries using trigram similarity against known product names and popular search terms.
+**File**: `LandingHero.tsx`
 
-**Change**: Create an RPC `suggest_correction(query text)` that uses `similarity()` from `pg_trgm` to find the closest matching product name or popular search term. Display "Did you mean: X?" above empty results.
+---
 
-## 5. Search Analytics Dashboard (Seller-Facing)
+## STORE PAGE IMPROVEMENTS
 
-Track what buyers search for so sellers can optimize listings.
+### 7. Sticky Store Header on Scroll
+When users scroll past the banner, the store name and action buttons disappear. Add a compact sticky header (logo + name + Follow/Message) that appears on scroll-down, similar to how social profiles work.
 
-**Change**: The `search_logs` table already exists. Add a "Search Trends" widget to the seller analytics page showing:
-- Top search terms that led to their products
-- Search terms with 0 results (opportunity gaps)
-- Conversion rate from search to purchase
+**File**: `StorePage.tsx` — new `StoreFloatingHeader` component
+
+### 8. Show Product Count Per Category Tab in Sidebar
+The Browse section lists tabs with no indication of how many products each contains. Fetch and display counts next to each tab name (already done for "All Products").
+
+**File**: `StoreSidebar.tsx` — pass product counts per tab, or compute from products data
+
+### 9. Improve Empty Store State
+The current empty state is a plain card with an icon. Add a more engaging layout: suggest the buyer follow the store for notifications, or link to similar stores.
+
+**File**: `StorePage.tsx` — enhance the "No Products Yet" card
+
+### 10. Store Products Grid — Show All Instead of Paginating by 4
+On mobile, only 4 products show per page with swipe pagination. This is unusual for a marketplace — users expect to scroll through products. Increase to 12 products per page on mobile (or use infinite scroll). Desktop stays at 8 per page.
+
+**File**: `StorePage.tsx` — change `PRODUCTS_PER_PAGE_MOBILE` from 4 to 12
+
+### 11. Add Social Proof to Store Header
+Show the store's join date ("Selling since Jan 2025") and total sales count as subtle text under the stats row. Builds trust without extra UI weight.
+
+**File**: `StorePage.tsx` — add created_at formatted date to the stats row
 
 ---
 
 ## Technical Details
 
-### Database Migration
-```sql
--- Add tsvector column with GIN index
-ALTER TABLE products ADD COLUMN search_vector tsvector
-  GENERATED ALWAYS AS (
-    setweight(to_tsvector('english', coalesce(name, '')), 'A') ||
-    setweight(to_tsvector('english', coalesce(description, '')), 'B')
-  ) STORED;
+| File | Changes |
+|------|---------|
+| `src/components/landing/TrendingProducts.tsx` | Reduce py-6 to py-4, add item count |
+| `src/components/landing/NewThisWeek.tsx` | Horizontal scroll on mobile, reduce padding |
+| `src/components/landing/TopSellers.tsx` | Horizontal scroll chips on mobile |
+| `src/components/landing/WhyEclipse.tsx` | Merge into single strip |
+| `src/components/landing/FreeAssetsTeaser.tsx` | Reduce padding |
+| `src/components/landing/RecentlyViewedSection.tsx` | Reduce padding |
+| `src/components/landing/FinalCTA.tsx` | Reduce padding |
+| `src/components/landing/LandingHero.tsx` | Larger tag touch targets |
+| `src/pages/StorePage.tsx` | Sticky header, increase mobile products per page, join date, better empty state |
+| `src/components/store/StoreSidebar.tsx` | Product counts per tab |
 
-CREATE INDEX idx_products_search_vector ON products USING GIN (search_vector);
-
--- Search RPC with ranking + trigram fallback
-CREATE FUNCTION search_products_v2(search_query text, ...)
-  RETURNS TABLE(...) AS $$ ... $$;
-
--- Popular searches materialized view
-CREATE MATERIALIZED VIEW popular_searches AS
-  SELECT lower(trim(query)) as term, count(*) as search_count
-  FROM search_logs
-  WHERE created_at > now() - interval '30 days'
-  GROUP BY lower(trim(query))
-  HAVING count(*) >= 3
-  ORDER BY count(*) DESC
-  LIMIT 200;
-
--- Spell correction function
-CREATE FUNCTION suggest_correction(query text)
-  RETURNS text AS $$ ... $$;
-```
-
-### Files to Change
-| File | Change |
-|------|--------|
-| New migration | tsvector column, GIN index, search RPC, materialized view, correction function |
-| `src/pages/SearchResults.tsx` | Use new RPC, add filters panel, "did you mean?" UI |
-| `src/components/search/SearchCommandPalette.tsx` | Add autocomplete suggestions from popular_searches |
-| `src/components/search/SearchFilters.tsx` | New component: price range, rating, free toggle |
-| `src/hooks/useSearchSuggestions.ts` | New hook: fetch autocomplete suggestions |
-| `supabase/functions/smart-search/index.ts` | Use new RPC instead of raw ilike queries |
-
-### Priority Order
-1. Full-text search with tsvector (performance + relevance)
-2. Filters panel (immediate UX win)
-3. Autocomplete suggestions (polish)
-4. Spell correction (polish)
-5. Search analytics (seller value-add)
+No database changes required. All changes are UI/UX refinements.
 
