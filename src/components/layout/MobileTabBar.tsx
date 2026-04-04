@@ -43,9 +43,7 @@ export function MobileTabBar() {
         {TAB_ITEMS.map(({ icon: Icon, label, href, isCenter, showBadge }) => {
           const isActive = href === '/'
             ? location.pathname === '/'
-            : href.startsWith('/account')
-              ? location.pathname === '/account' && (href === '/account' ? !location.search.includes('section=purchases') : location.search.includes('section=purchases'))
-              : location.pathname.startsWith(href);
+            : location.pathname.startsWith(href);
 
           const actualHref = (href === '/account' || href.startsWith('/account?')) && !user ? '/auth' : href;
 
