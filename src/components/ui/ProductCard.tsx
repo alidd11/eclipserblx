@@ -255,67 +255,35 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           
           {/* Content layer */}
           
-          <h3 className="font-display font-semibold text-[11px] xs:text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight flex-1">
+          <h3 className="font-display font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug flex-1">
             {name}
           </h3>
 
-          {/* Price section - show both prices only if eligible for discount */}
-          <div className="flex flex-col gap-0.5 mt-auto pt-1">
+          {/* Price section */}
+          <div className="flex items-center gap-1.5 mt-auto pt-1">
             {isPayWhatYouWant ? (
-              <>
-                <span className="text-xs xs:text-sm font-bold whitespace-nowrap leading-none text-emerald-500">
-                  {minPrice === 0 ? 'Free+' : `From ${formatPrice(minPrice || 0)}`}
-                </span>
-                <span className="text-[9px] xs:text-[10px] text-muted-foreground leading-none">
-                  Pay what you want
-                </span>
-              </>
+              <span className="text-xs sm:text-sm font-bold whitespace-nowrap leading-none text-emerald-500">
+                {minPrice === 0 ? 'Free+' : `From ${formatPrice(minPrice || 0)}`}
+              </span>
             ) : hasMemberDiscount ? (
               <>
-                <span className="text-[9px] xs:text-[10px] text-muted-foreground leading-none line-through">
+                <span className="text-[10px] text-muted-foreground leading-none line-through">
                   {formatPrice(price)}
                 </span>
-                <div className="flex items-center gap-1">
-                  <span className="text-xs xs:text-sm font-bold whitespace-nowrap leading-none text-amber-400">
-                    {formatPrice(memberPrice)}
-                  </span>
-                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[7px] xs:text-[8px] font-medium leading-none bg-amber-500/20 text-amber-400">
-                    <Sparkles className="h-1.5 w-1.5 xs:h-2 xs:w-2 flex-shrink-0" />
-                    {discountPercent}%
-                  </span>
-                </div>
+                <span className="text-xs sm:text-sm font-bold whitespace-nowrap leading-none text-amber-400">
+                  {formatPrice(memberPrice)}
+                </span>
+                <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-medium leading-none bg-amber-500/20 text-amber-400">
+                  <Sparkles className="h-2 w-2 flex-shrink-0" />
+                  {discountPercent}%
+                </span>
               </>
             ) : (
-              <span className="text-xs xs:text-sm font-bold whitespace-nowrap leading-none text-foreground">
+              <span className="text-xs sm:text-sm font-bold whitespace-nowrap leading-none text-foreground">
                 {formatPrice(price)}
               </span>
             )}
           </div>
-
-          {/* Add to cart button - separate row */}
-          <Button
-            size="sm"
-            variant={inCart ? "secondary" : "default"}
-            className={cn(
-              "h-7 xs:h-8 w-full text-[10px] xs:text-xs mt-1.5 xs:mt-2 touch-target",
-              !inCart && "gradient-button border-0"
-            )}
-            onClick={handleAddToCart}
-          >
-            {inCart ? (
-              <>
-                <Check className="h-3 w-3 xs:h-3.5 xs:w-3.5 mr-1" />
-                <span className="hidden xs:inline">Added to Cart</span>
-                <span className="xs:hidden">Added</span>
-              </>
-            ) : (
-              <>
-                <ShoppingCart className="h-3 w-3 xs:h-3.5 xs:w-3.5 mr-1" />
-                <span className="hidden xs:inline">Add to Cart</span>
-                <span className="xs:hidden">Add</span>
-              </>
-            )}
-          </Button>
         </div>
       </div>
     </Link>

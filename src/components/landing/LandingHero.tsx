@@ -1,26 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
-import { ArrowRight, Store, Sparkles, Search } from 'lucide-react';
+import { ArrowRight, Store, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HeroBanner } from './HeroBanner';
-import { useTranslation } from 'react-i18next';
 
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Lazy-load framer-motion only when animations are needed (desktop + no reduced motion)
 const MotionWordRotator = lazy(() => import('./MotionWordRotator'));
-
-const TRENDING_TAGS = [
-  { label: 'scripts', type: 'category' as const, target: 'scripts-systems' },
-  { label: 'maps', type: 'category' as const, target: 'maps' },
-  { label: 'ui', type: 'category' as const, target: 'roblox-ui' },
-  { label: 'vehicles', type: 'search' as const, target: 'vehicles' },
-  { label: 'weapons', type: 'search' as const, target: 'weapons' },
-  { label: 'admin', type: 'search' as const, target: 'admin' },
-  { label: 'tools', type: 'search' as const, target: 'tools' },
-];
 
 function StaticWord({ word }: { word: string }) {
   return <span className="absolute left-0">{word}</span>;
@@ -28,11 +16,8 @@ function StaticWord({ word }: { word: string }) {
 
 export function LandingHero() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
-  
   const reducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
-
   const skipAnimation = reducedMotion || isMobile;
 
   const rotatingWords = ['Roblox', 'Discord'];
@@ -44,14 +29,6 @@ export function LandingHero() {
     }, 4000);
     return () => clearInterval(interval);
   }, [rotatingWords.length]);
-
-  const handleTagClick = (tag: typeof TRENDING_TAGS[number]) => {
-    if (tag.type === 'category') {
-      navigate(`/products?category=${tag.target}`);
-    } else {
-      navigate(`/search?q=${encodeURIComponent(tag.target)}`);
-    }
-  };
 
   const wordRotator = (
     <span className="text-primary relative inline-flex overflow-hidden" style={{ height: '1.2em' }}>
@@ -70,80 +47,71 @@ export function LandingHero() {
     <section aria-labelledby="hero-heading" className="relative overflow-hidden">
       <HeroBanner />
 
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 relative z-10">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-10 relative z-10">
         {/* Desktop: centered layout */}
         <div className="hidden lg:flex lg:flex-col lg:items-center lg:text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary mb-3 drop-shadow-sm">
-            Roblox & Discord Marketplace
-          </p>
-
-          <h1 id="hero-heading" className="font-display text-3xl lg:text-6xl font-bold leading-[1.05] tracking-tight mb-5 max-w-3xl drop-shadow-md">
-            The All-in-One Marketplace for {wordRotator} Creators.
+          <h1 id="hero-heading" className="font-display text-3xl lg:text-5xl font-bold leading-[1.08] tracking-tight mb-4 max-w-2xl drop-shadow-md">
+            The Marketplace for {wordRotator} Creators
           </h1>
 
-          <p className="text-sm lg:text-base text-foreground/60 max-w-lg mb-8 leading-relaxed">
-            Buy and sell premium scripts, models, UI kits and game assets. Lower fees, instant delivery, trusted by thousands of creators.
+          <p className="text-sm text-foreground/60 max-w-md mb-6 leading-relaxed">
+            Premium scripts, models, UI kits and game assets. Lower fees, instant delivery.
           </p>
 
-          {/* CTA hierarchy */}
-          <div className="flex items-center gap-6 mb-8">
+          {/* Search bar */}
+          <button
+            onClick={() => navigate('/search')}
+            className="w-full max-w-md flex items-center gap-2.5 px-4 py-2.5 rounded-lg border border-border/60 bg-muted/30 hover:bg-muted/50 hover:border-border transition-all mb-6"
+          >
+            <Search className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Search scripts, maps, bots...</span>
+          </button>
+
+          <div className="flex items-center gap-4">
             <Link to="/products">
-              <Button size="lg" className="h-12 px-8 text-sm font-semibold uppercase tracking-wide shadow-[0_0_24px_hsl(var(--primary)/0.35)] hover:shadow-[0_0_40px_hsl(var(--primary)/0.5)] transition-shadow">
+              <Button size="lg" className="h-11 px-7 text-sm font-semibold shadow-[0_0_24px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_36px_hsl(var(--primary)/0.45)] transition-shadow">
                 Browse Marketplace
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
             <Link
               to="/sell"
-              className="text-xs font-medium text-foreground/70 hover:text-foreground transition-colors flex items-center gap-1.5"
+              className="text-xs font-medium text-foreground/60 hover:text-foreground transition-colors flex items-center gap-1.5"
             >
               <Store className="h-3.5 w-3.5" />
               Start selling
             </Link>
           </div>
-
-          {/* Search tags */}
-          <div className="flex items-center gap-1.5 flex-wrap justify-center" role="navigation" aria-label="Trending searches">
-            <span className="text-[10px] text-foreground/60 mr-1">
-              Trending:
-            </span>
-            {TRENDING_TAGS.map((tag) => (
-              <button
-                key={tag.label}
-                onClick={() => handleTagClick(tag)}
-                className="text-[11px] px-2.5 py-1 rounded-md border border-border/50 text-foreground/70 hover:text-foreground hover:border-border hover:bg-muted/40 transition-all"
-              >
-                {tag.label}
-              </button>
-            ))}
-          </div>
         </div>
 
-        {/* Mobile: centered layout */}
-        <div className="lg:hidden w-full flex flex-col items-center px-4">
-          <div className="text-center w-full max-w-sm">
-            <h1 className="font-display text-2xl sm:text-3xl font-bold leading-[1.15] tracking-tight mb-3">
-              The All-in-One Marketplace for {wordRotator} Creators.
-            </h1>
-            <p className="text-sm text-foreground/70 mx-auto mb-5 leading-relaxed">
-              Buy and sell premium scripts, models, UI kits and game assets. Lower fees, instant delivery.
-            </p>
+        {/* Mobile: compact layout */}
+        <div className="lg:hidden w-full flex flex-col items-center px-2">
+          <h1 className="font-display text-xl sm:text-2xl font-bold leading-[1.15] tracking-tight mb-3 text-center">
+            The Marketplace for {wordRotator} Creators
+          </h1>
 
-            <div className="space-y-2.5 mb-5">
-              <Link to="/products" className="block">
-                <Button size="sm" className="w-full h-11 text-sm font-semibold uppercase tracking-wide shadow-[0_0_20px_hsl(var(--primary)/0.3)]">
-                  Browse Marketplace
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link to="/sell" className="block">
-                <Button size="sm" variant="outline" className="w-full h-10 text-sm font-semibold uppercase tracking-wide">
-                  <Store className="mr-2 h-4 w-4" />
-                  Open a Store
-                </Button>
-              </Link>
-            </div>
+          {/* Search bar — primary discovery */}
+          <button
+            onClick={() => navigate('/search')}
+            className="w-full max-w-sm flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border border-border/60 bg-muted/30 hover:bg-muted/50 transition-all mb-3"
+          >
+            <Search className="h-4 w-4 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Search scripts, maps, bots...</span>
+          </button>
 
+          <div className="flex items-center gap-2.5 w-full max-w-sm">
+            <Link to="/products" className="flex-1">
+              <Button size="sm" className="w-full h-9 text-xs font-semibold shadow-[0_0_16px_hsl(var(--primary)/0.25)]">
+                Browse
+                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              </Button>
+            </Link>
+            <Link to="/sell" className="flex-1">
+              <Button size="sm" variant="outline" className="w-full h-9 text-xs font-semibold">
+                <Store className="mr-1.5 h-3.5 w-3.5" />
+                Sell
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
