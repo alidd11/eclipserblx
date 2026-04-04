@@ -107,28 +107,27 @@ export default function SellerDashboard() {
 
   const renderActionGroup = (label: string, actions: typeof createActions) => (
     <div>
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">{label}</p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 px-1">{label}</p>
+      <div className="grid grid-cols-3 gap-1.5">
         {actions.map((action) => (
           <Link key={action.href} to={action.href}>
-            <div className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all text-center group cursor-pointer active:scale-[0.97] ${
+            <div className={`flex flex-col items-center gap-1 p-2.5 rounded-lg transition-all text-center group cursor-pointer active:scale-[0.97] ${
               'primary' in action && action.primary
-                ? 'bg-primary/10 border border-primary/20 hover:bg-primary/15 hover:border-primary/30'
-                : 'bg-muted/40 hover:bg-muted/70 border border-transparent hover:border-border/50'
+                ? 'bg-primary/10 border border-primary/20 hover:bg-primary/15'
+                : 'bg-muted/40 hover:bg-muted/60 border border-transparent hover:border-border/40'
             }`}>
-              <div className={`p-2 rounded-lg transition-colors ${
+              <div className={`p-1.5 rounded-md transition-colors ${
                 'primary' in action && action.primary
-                  ? 'bg-primary/15 group-hover:bg-primary/20'
-                  : 'bg-card border border-border/50 group-hover:border-primary/20'
+                  ? 'bg-primary/15'
+                  : 'bg-card border border-border/40'
               }`}>
-                <action.icon className={`h-4 w-4 transition-colors ${
+                <action.icon className={`h-3.5 w-3.5 transition-colors ${
                   'primary' in action && action.primary
                     ? 'text-primary'
                     : 'text-muted-foreground group-hover:text-primary'
                 }`} />
               </div>
-              <span className="text-xs font-medium leading-tight">{action.title}</span>
-              <span className="text-[10px] text-muted-foreground leading-tight hidden sm:block">{action.description}</span>
+              <span className="text-[11px] font-medium leading-tight">{action.title}</span>
             </div>
           </Link>
         ))}
