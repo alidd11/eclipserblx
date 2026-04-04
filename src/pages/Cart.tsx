@@ -40,9 +40,10 @@ export default function Cart() {
       <MainLayout>
         
           <div className="container py-16 max-w-lg mx-auto">
-            <Card className="bg-card border-border text-center">
+            <Card className="bg-card border-border/50 text-center overflow-hidden relative">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
               <CardContent className="pt-12 pb-8 space-y-6">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted mx-auto">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-muted/80 border border-border/50 mx-auto">
                   <ShoppingBag className="h-10 w-10 text-muted-foreground" />
                 </div>
                 <div>
@@ -51,7 +52,7 @@ export default function Cart() {
                     {t('cart.cartEmptyDesc')}
                   </p>
                 </div>
-                <Button asChild className="gradient-button border-0">
+                <Button asChild className="gradient-button border-0 shadow-[0_0_20px_hsl(var(--primary)/0.3)]">
                   <Link to="/products">{t('common.browseProducts')}</Link>
                 </Button>
               </CardContent>
