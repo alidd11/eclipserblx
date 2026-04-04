@@ -56,7 +56,7 @@ export function GlobalCategoryBar() {
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
             )}
           >
-            <Layers className="h-3 w-3" />
+            <Layers className="h-3.5 w-3.5" />
             All
           </Link>
           {categories.map((cat) => {
