@@ -489,9 +489,9 @@ export default function ProductDetail() {
         )}
 
 
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 max-w-full">
+        <div className="grid lg:grid-cols-2 gap-5 lg:gap-10 max-w-full">
           {/* Images */}
-          <div className="space-y-4 min-w-0">
+          <div className="space-y-3 min-w-0">
             <div 
               className="aspect-[4/3] gaming-card overflow-hidden select-none relative bg-black/20 cursor-zoom-in group w-full touch-pan-y"
               onContextMenu={(e) => e.preventDefault()}
