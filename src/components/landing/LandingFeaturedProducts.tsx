@@ -16,7 +16,6 @@ const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct; fe
   function ProductCard({ product, featured = false }, ref) {
     const { formatPrice } = useCurrency();
     const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
-    const regionFlag = getRegionFlag(product.name);
     
     const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
     const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
