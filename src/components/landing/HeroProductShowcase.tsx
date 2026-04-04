@@ -19,7 +19,6 @@ interface HeroProduct {
     slug: string;
     logo_url: string | null;
     is_verified: boolean;
-    is_trusted: boolean;
   } | null;
 }
 
