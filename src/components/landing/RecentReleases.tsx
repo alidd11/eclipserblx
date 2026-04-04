@@ -92,7 +92,7 @@ export function RecentReleases() {
             const store = product.stores as any;
             const category = product.categories as any;
             return (
-              <div key={product.id} className="min-w-[200px] max-w-[240px] flex-shrink-0 snap-start sm:min-w-[220px] sm:max-w-[260px] lg:min-w-0 lg:max-w-none">
+              <div key={product.id} className="w-[48%] min-w-[160px] flex-shrink-0 snap-start sm:w-[44%] sm:min-w-[200px] lg:w-auto lg:min-w-0">
                 <ProductCard
                   id={product.id}
                   name={product.name}
