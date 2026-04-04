@@ -141,7 +141,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
                 <Menu className="h-5 w-5" />
               </Button>
               <EclipseLogo size="sm" />
-              <span className="font-display font-bold text-sm">Creator Hub</span>
+              <span className="font-display font-bold text-sm">Seller Dashboard</span>
             </div>
             <div className="flex items-center gap-1">
               {isStandalone && (
