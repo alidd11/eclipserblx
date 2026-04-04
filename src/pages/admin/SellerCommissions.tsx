@@ -217,12 +217,6 @@ export default function SellerCommissions() {
                         {/* Store name and badges */}
                         <div className="flex flex-wrap items-center gap-2 mb-1">
                           <span className="font-semibold truncate">{store.name}</span>
-                          {store.is_trusted && (
-                            <Badge className="gap-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-xs shrink-0">
-                              <Shield className="h-3 w-3" />
-                              Trusted
-                            </Badge>
-                          )}
                           {store.is_verified && (
                             <Badge variant="outline" className="text-xs shrink-0">
                               Verified
