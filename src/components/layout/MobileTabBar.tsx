@@ -34,7 +34,7 @@ export function MobileTabBar() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-[60] md:hidden bg-background/80 backdrop-blur-lg border-t border-border/50"
+      className="fixed bottom-0 left-0 right-0 z-[60] md:hidden"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       role="tablist"
       aria-label="Main navigation"
