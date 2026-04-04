@@ -572,14 +572,16 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
 
           {/* CTA Button */}
           {isSeller ? (
-            <Link
-              to="/seller"
+            <a
+              href="/seller"
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={handleNavClick}
               className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98] shadow-[0_0_16px_hsl(var(--primary)/0.25)]"
             >
               <Zap className="h-4 w-4" />
               Creator Hub
-            </Link>
+            </a>
           ) : null}
         </div>
       )}
