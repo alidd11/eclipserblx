@@ -546,10 +546,12 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
           </div>
 
           {/* Balance */}
-          <div className="rounded-lg bg-muted/60 px-3 py-2 flex items-center justify-between">
+          <div className="rounded-xl bg-muted/50 border border-border/40 px-3 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Wallet className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-sm font-semibold">£{balance.toFixed(2)}</span>
+              <div className="p-1 rounded-md bg-primary/10">
+                <Wallet className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <span className="text-sm font-bold">£{balance.toFixed(2)}</span>
             </div>
             <Link to="/credits" onClick={handleNavClick} className="text-[11px] font-medium text-primary hover:underline flex items-center gap-0.5">
               <Plus className="h-3 w-3" />
@@ -584,16 +586,16 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             <Link
               to="/seller"
               onClick={handleNavClick}
-              className="flex items-center justify-center gap-2 w-full rounded-lg bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
+              className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98] shadow-[0_0_16px_hsl(var(--primary)/0.25)]"
             >
               <Zap className="h-4 w-4" />
-              Seller Dashboard
+              Creator Hub
             </Link>
           ) : !isPremium ? (
             <Link
               to="/eclipse-plus"
               onClick={handleNavClick}
-              className="flex items-center justify-center gap-2 w-full rounded-lg bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
+              className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98] shadow-[0_0_16px_hsl(var(--primary)/0.25)]"
             >
               <Crown className="h-4 w-4" />
               Upgrade to Eclipse+

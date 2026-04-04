@@ -18,8 +18,8 @@ export function HeroBanner() {
         />
       </picture>
 
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-background/55" />
+      {/* Dark overlay — deeper for gaming feel */}
+      <div className="absolute inset-0 bg-background/65" />
 
       {/* Left text-protection gradient */}
       <div className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-background/70 to-transparent" />

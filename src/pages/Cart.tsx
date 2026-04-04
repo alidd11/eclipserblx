@@ -40,9 +40,10 @@ export default function Cart() {
       <MainLayout>
         
           <div className="container py-16 max-w-lg mx-auto">
-            <Card className="bg-card border-border text-center">
+            <Card className="bg-card border-border/50 text-center overflow-hidden relative">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
               <CardContent className="pt-12 pb-8 space-y-6">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted mx-auto">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-muted/80 border border-border/50 mx-auto">
                   <ShoppingBag className="h-10 w-10 text-muted-foreground" />
                 </div>
                 <div>
@@ -51,7 +52,7 @@ export default function Cart() {
                     {t('cart.cartEmptyDesc')}
                   </p>
                 </div>
-                <Button asChild className="gradient-button border-0">
+                <Button asChild className="gradient-button border-0 shadow-[0_0_20px_hsl(var(--primary)/0.3)]">
                   <Link to="/products">{t('common.browseProducts')}</Link>
                 </Button>
               </CardContent>
@@ -66,7 +67,7 @@ export default function Cart() {
       <div className="container py-8 space-y-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl md:text-4xl font-display font-bold">{t('cart.yourCart')}</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold">{t('cart.yourCart')}</h1>
             <LoyaltyBadge />
           </div>
           <Button variant="ghost" size="sm" onClick={clearCart} className="text-destructive hover:text-destructive">
@@ -183,7 +184,7 @@ export default function Cart() {
                 </div>
               </div>
 
-              <Button asChild className="w-full h-12 gradient-button border-0">
+              <Button asChild className="w-full h-12 gradient-button border-0 shadow-[0_0_20px_hsl(var(--primary)/0.25)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.35)] transition-shadow">
                 <Link to="/checkout">
                   {t('cart.proceedToCheckout')}
                   <ArrowRight className="ml-2 h-4 w-4" />

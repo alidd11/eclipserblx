@@ -67,28 +67,28 @@ export function LandingHero() {
   );
 
   return (
-    <section aria-labelledby="hero-heading" className="relative overflow-hidden" style={{ minHeight: '320px' }}>
+    <section aria-labelledby="hero-heading" className="relative overflow-hidden" style={{ minHeight: '340px' }}>
       <HeroBanner />
 
       <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-10 relative z-10">
         {/* Desktop: centered layout */}
         <div className="hidden lg:flex lg:flex-col lg:items-center lg:text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/80 mb-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary mb-3 drop-shadow-sm">
             Roblox & Discord Marketplace
           </p>
 
-          <h1 id="hero-heading" className="font-display text-3xl lg:text-[2.5rem] font-bold leading-[1.1] tracking-tight mb-4 max-w-2xl">
+          <h1 id="hero-heading" className="font-display text-3xl lg:text-[2.75rem] font-bold leading-[1.08] tracking-tight mb-4 max-w-2xl drop-shadow-md">
             The All-in-One Marketplace for {wordRotator} Creators.
           </h1>
 
-          <p className="text-sm text-foreground/70 max-w-md mb-6 leading-relaxed">
+          <p className="text-sm text-foreground/60 max-w-md mb-6 leading-relaxed">
             Buy and sell premium scripts, models, UI kits and game assets. Lower fees, instant delivery, trusted by thousands of creators.
           </p>
 
           {/* CTA hierarchy */}
           <div className="flex items-center gap-6 mb-6">
             <Link to="/products">
-              <Button size="sm" className="h-9 px-5 text-xs font-semibold uppercase tracking-wide">
+              <Button size="sm" className="h-10 px-6 text-xs font-semibold uppercase tracking-wide shadow-[0_0_20px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.4)] transition-shadow">
                 Browse Marketplace
                 <ArrowRight className="ml-2 h-3.5 w-3.5" />
               </Button>
@@ -138,7 +138,7 @@ export function LandingHero() {
 
             <div className="space-y-2.5 mb-5">
               <Link to="/products" className="block">
-                <Button size="sm" className="w-full h-10 text-sm font-semibold uppercase tracking-wide">
+                <Button size="sm" className="w-full h-11 text-sm font-semibold uppercase tracking-wide shadow-[0_0_20px_hsl(var(--primary)/0.3)]">
                   Browse Marketplace
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>

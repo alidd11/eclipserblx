@@ -105,9 +105,11 @@ export function OnSaleProducts() {
     <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Tag className="h-4 w-4 text-red-400" />
-            <h2 className="text-lg font-bold tracking-tight uppercase">On Sale Products</h2>
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-red-500/10">
+              <Tag className="h-4 w-4 text-red-400" />
+            </div>
+            <h2 className="text-base sm:text-lg font-bold tracking-tight uppercase">On Sale</h2>
             <span className="text-[10px] uppercase tracking-wider text-red-400/80 font-semibold bg-red-500/10 px-1.5 py-0.5 rounded">
               Sale!
             </span>

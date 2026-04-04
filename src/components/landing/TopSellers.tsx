@@ -41,9 +41,11 @@ export function TopSellers() {
     <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Trophy className="h-4 w-4 text-amber-500" />
-            <h2 className="text-lg font-bold tracking-tight uppercase">Top Creators</h2>
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-amber-500/10">
+              <Trophy className="h-4 w-4 text-amber-500" />
+            </div>
+            <h2 className="text-base sm:text-lg font-bold tracking-tight uppercase">Top Creators</h2>
           </div>
           <Link to="/stores" className="text-xs text-primary hover:underline flex items-center gap-1">
             All stores <ArrowRight className="h-3 w-3" />

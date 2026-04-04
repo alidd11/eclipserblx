@@ -12,8 +12,8 @@ export function StoreTrustSignals({
   const signals = [
     {
       icon: Shield,
-      title: 'Secure Payments',
-      description: 'Protected by Stripe',
+      title: 'Buyer Protection',
+      description: '3-day refund guarantee',
     },
     {
       icon: Zap,
@@ -23,7 +23,7 @@ export function StoreTrustSignals({
     ...(isVerified ? [{
       icon: BadgeCheck,
       title: 'Verified Seller',
-      description: 'Identity and business verified',
+      description: 'Identity verified',
     }] : []),
     {
       icon: RefreshCw,
@@ -33,25 +33,31 @@ export function StoreTrustSignals({
   ];
 
   return (
-    <div className="w-full py-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+    <div className="w-full py-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
         {signals.map((signal) => (
           <div
             key={signal.title}
-            className="flex flex-col items-center text-center p-4 rounded-lg border bg-card transition-colors"
-            style={{ borderColor: `${accentColor}20` }}
+            className="group flex flex-col items-center text-center p-3.5 rounded-xl border border-border/50 bg-card hover:border-border transition-all duration-200 overflow-hidden relative"
           >
+            {/* Subtle gradient bg */}
             <div 
-              className="p-3 rounded-full mb-3"
-              style={{ backgroundColor: `${accentColor}15` }}
-            >
-              <signal.icon 
-                className="h-5 w-5"
-                style={{ color: accentColor }}
-              />
+              className="absolute inset-0 opacity-[0.06] rounded-xl"
+              style={{ background: `radial-gradient(circle at 50% 0%, ${accentColor}, transparent 70%)` }}
+            />
+            <div className="relative">
+              <div 
+                className="p-2.5 rounded-lg mb-2.5 border border-border/30"
+                style={{ backgroundColor: `${accentColor}10` }}
+              >
+                <signal.icon 
+                  className="h-4 w-4"
+                  style={{ color: accentColor }}
+                />
+              </div>
+              <h4 className="font-semibold text-xs mb-0.5">{signal.title}</h4>
+              <p className="text-[10px] text-muted-foreground leading-tight">{signal.description}</p>
             </div>
-            <h4 className="font-semibold text-sm mb-1">{signal.title}</h4>
-            <p className="text-xs text-muted-foreground">{signal.description}</p>
           </div>
         ))}
       </div>
