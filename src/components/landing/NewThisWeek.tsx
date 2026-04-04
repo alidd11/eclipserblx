@@ -75,7 +75,7 @@ export function NewThisWeek() {
 
         {/* Mobile: horizontal scroll strip / Desktop: grid */}
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-4 lg:overflow-visible lg:pb-0">
-          {products.map((product) => {
+          {products.map((product, index) => {
             const store = product.stores as any;
             const category = product.categories as any;
             return (
