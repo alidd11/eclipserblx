@@ -116,14 +116,6 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* Eclipse+ Tiers */}
-      <LazySection minHeight="150px" rootMargin="200px">
-        <SectionErrorBoundary section="eclipse-tiers" compact>
-          <Suspense fallback={null}>
-            <EclipsePlusTiers />
-          </Suspense>
-        </SectionErrorBoundary>
-      </LazySection>
 
       {/* Free Assets Teaser */}
       <LazySection minHeight="200px" rootMargin="200px">

@@ -345,7 +345,7 @@ export function AppRoutes() {
         <Route path="/bot-installation" element={<BotInstallation />} />
         <Route path="/bot-dashboard" element={<BotDashboard />} />
         <Route path="/notifications" element={<NotificationPreferences />} />
-        <Route path="/eclipse-plus" element={<EclipsePlus />} />
+        
         <Route path="/marketplace" element={<Products />} />
         <Route path="/stores" element={<AllStores />} />
         <Route path="/affiliate" element={<Affiliate />} />

@@ -191,7 +191,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: t('sidebar.allStores'), icon: Store, href: '/stores' },
         { title: t('sidebar.viewAllCategories', 'All Categories'), icon: Grid3X3, href: '/categories' },
         { title: t('sidebar.featured'), icon: Star, href: '/featured' },
-        { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
+        
       ],
     },
     {
