@@ -1,28 +1,27 @@
-## Homepage Improvements — Roblox Creator Hub Direction
 
-### 1. Compact Mobile Hero
-The hero takes up ~60% of the screen before any products appear. Reduce it to a tight, punchy banner:
-- Shorter heading, smaller padding
-- Inline the two CTAs side-by-side instead of stacked
-- Remove the subtitle paragraph on mobile (keep on desktop)
+## Eclipse v3.0 — Site-Wide Enterprise Polish
 
-### 2. Add Category Quick-Nav Bar
-Insert a horizontal scrollable category pill bar between the hero and trending products (like Roblox Creator Hub's top tabs):
-- Icons + labels for: Scripts, Maps, UI Kits, Vehicles, Models, Bots, Free
-- Tappable pills that navigate to `/products?category=...`
-- Sticky-scroll feel, matte dark background
+### Phase 1: Auth Pages
+- **Compact mobile layout** — reduce padding, side-by-side social buttons
+- **Roblox Creator Hub aesthetic** — matte card backgrounds, subtle borders, branded header
+- **Better input styling** — larger touch targets, clearer focus states
+- **Streamlined flow** — cleaner mode transitions between login/signup/forgot
 
-### 3. Add Search Bar to Mobile Hero
-Replace the subtitle with a prominent search input that links to `/search`:
-- Placeholder: "Search scripts, maps, bots..."
-- Tap opens the search page
-- Gives immediate discovery without needing nav
+### Phase 2: Account & Settings
+- **Cleaner profile header** — better avatar presentation, display name prominence
+- **Card grouping** — group related settings into collapsible sections
+- **Native feel** — tap-scale on nav rows, smoother transitions
+- **Remove visual clutter** — simplify icon usage, reduce color noise
 
-### 4. Product Card Polish
-- Remove the "Add to Cart" button from cards (it clutters small cards — let the product page handle that)
-- Make the store strip cleaner (remove redundant rating display in hover overlay since it's in the strip)
-- Slightly larger card text for readability
+### Phase 3: Product Detail Page
+- **Image gallery polish** — better thumbnail strip, smoother swipe on mobile
+- **Cleaner buy section** — prominent price, cleaner CTA button, trust signals
+- **Better mobile layout** — stack sections logically, reduce excessive spacing
+- **Typography hierarchy** — clearer title/price/description separation
 
-### 5. Section Order Tidy-up
-Reorder: Hero → Categories → Trending → Recent Releases → On Sale → Free Assets → Top Sellers → For You → Final CTA
-(Remove WhyEclipse and NewThisWeek which overlap with other sections)
+### Phase 4: Seller Dashboard
+- **Compact Command Center** — tighter grid, better icon/label balance
+- **Revenue section polish** — cleaner chart container, better stat cards
+- **Mobile-first refinement** — ensure all cards stack cleanly on 440px viewport
+
+Each phase focuses on visual consistency with the Roblox Creator Hub direction established on the homepage, without changing business logic or data flows.
