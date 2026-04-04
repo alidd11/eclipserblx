@@ -912,7 +912,7 @@ export default function Advertise() {
   // Show subscription tiers for non-subscribers
   return (
     <MainLayout>
-      <div className="px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="px-4 sm:px-6 lg:px-[5%] py-8 space-y-8">
         {/* Hero Section */}
         <div className="text-center space-y-4">
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">

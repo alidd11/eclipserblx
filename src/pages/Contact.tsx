@@ -168,7 +168,7 @@ export default function Contact() {
 
   return (
     <MainLayout>
-      <div className="px-4 sm:px-6 lg:px-8 py-12">
+      <div className="px-4 sm:px-6 lg:px-[5%] py-12">
         <PageHeader
           title="Contact Us"
           description="Have a question or need help? We're here for you. Choose your preferred way to get in touch."
