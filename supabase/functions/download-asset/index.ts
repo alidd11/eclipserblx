@@ -225,7 +225,7 @@ Deno.serve(async (req) => {
     // Get product asset URL
     const { data: product, error: productError } = await supabaseAdmin
       .from('products')
-      .select('id, name, asset_file_url, download_count')
+      .select('id, name, asset_file_url, additional_asset_files, download_count')
       .eq('id', productId)
       .single();
 
