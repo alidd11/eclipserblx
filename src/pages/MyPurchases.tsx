@@ -507,6 +507,8 @@ export default function MyPurchases() {
                   {paginatedProducts.map((item) => {
                     const isDownloading = downloading === item.id;
                     const hasAsset = !!item.product?.asset_file_url;
+                    const additionalFiles = (item.product as any)?.additional_asset_files || [];
+                    const totalFiles = (hasAsset ? 1 : 0) + additionalFiles.length;
                     const isBot = isBotProduct(item);
                     const botCode = isBot ? getBotCode(item.id) : null;
 
