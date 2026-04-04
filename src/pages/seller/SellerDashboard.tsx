@@ -189,7 +189,7 @@ export default function SellerDashboard() {
         <RecentOrdersTable />
 
         {/* ── Top Products + Notifications ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Suspense fallback={<DashboardCardSkeleton />}>
             <TopProductsLeaderboard />
           </Suspense>
