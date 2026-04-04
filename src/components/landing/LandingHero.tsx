@@ -86,7 +86,7 @@ export function LandingHero() {
           </p>
 
           {/* CTA hierarchy */}
-          <div className="flex items-center gap-6 mb-6">
+          <div className="flex items-center gap-6 mb-8">
             <Link to="/products">
               <Button size="sm" className="h-10 px-6 text-xs font-semibold uppercase tracking-wide shadow-[0_0_20px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.4)] transition-shadow">
                 Browse Marketplace
