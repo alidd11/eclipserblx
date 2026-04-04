@@ -37,7 +37,7 @@ export function TrendingProducts() {
           <Skeleton className="h-5 w-5" />
           <Skeleton className="h-6 w-40" />
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 lg:grid-cols-4 gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <ProductCardSkeleton key={i} />
           ))}
