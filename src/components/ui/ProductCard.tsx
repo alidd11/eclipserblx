@@ -30,7 +30,6 @@ interface ProductCardProps {
   storeSlug?: string;
   storeLogo?: string | null;
   isVerified?: boolean;
-  isTrusted?: boolean;
   isResellable?: boolean;
   showBestSellerBadge?: boolean;
   showNewBadge?: boolean;
