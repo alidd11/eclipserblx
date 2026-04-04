@@ -48,7 +48,7 @@ const Status = lazyWithRetry(() => import("@/pages/Status"));
 const BotInstallation = lazyWithRetry(() => import("@/pages/BotInstallation"));
 const BotDashboard = lazyWithRetry(() => import("@/pages/BotDashboard"));
 const NotificationPreferences = lazyWithRetry(() => import("@/pages/NotificationPreferences"));
-const EclipsePlus = lazyWithRetry(() => import("@/pages/EclipsePlus"));
+
 
 const LiveChat = lazyWithRetry(() => import("@/pages/LiveChat"));
 const Affiliate = lazyWithRetry(() => import("@/pages/Affiliate"));
