@@ -616,7 +616,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
 
           {/* Forgot Password - Email Entry */}
           {mode === 'forgot' ? (
-            <form onSubmit={handleForgotPassword} className="gaming-card p-6 space-y-6">
+            <form onSubmit={handleForgotPassword} className="rounded-xl border border-border bg-card p-5 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">{t('auth.email')}</Label>
                 <Input
