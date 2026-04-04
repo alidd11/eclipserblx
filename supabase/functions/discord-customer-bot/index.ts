@@ -2351,8 +2351,7 @@ async function handleRandomShowcase(supabase: any, branding: any) {
   const storeUrl = `https://eclipserblx.com/stores/${store.slug}`;
 
   const badges: string[] = [];
-  if (store.is_trusted) badges.push("⭐ Trusted");
-  if (store.is_verified) badges.push("✅ Verified");
+  if (store.is_verified) badges.push("✅ Verified Seller");
   const badgeText = badges.length > 0 ? badges.join(" • ") : "";
 
   let description = product.description || "A premium product from the Eclipse marketplace.";

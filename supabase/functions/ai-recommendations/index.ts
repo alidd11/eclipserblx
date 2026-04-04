@@ -148,7 +148,7 @@ Deno.serve(async (req) => {
       
       const { data: popular } = await supabase
         .from("products")
-        .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_trusted, is_active)")
+        .select("id, name, slug, price, images, store_id, categories(name), stores(name, slug, logo_url, is_verified, is_active)")
         .eq("is_active", true)
         .eq("moderation_status", "approved")
         .order("download_count", { ascending: false })
