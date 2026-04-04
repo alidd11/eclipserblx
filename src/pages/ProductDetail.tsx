@@ -72,6 +72,7 @@ export default function ProductDetail() {
   const isMobile = useIsMobile();
   const videoRef = useRef<HTMLVideoElement>(null);
   const reviewSectionRef = useRef<HTMLDivElement>(null);
+  const ctaButtonRef = useRef<HTMLButtonElement>(null);
 
   // Hide swipe hint after first interaction or after 3 seconds
   useEffect(() => {
