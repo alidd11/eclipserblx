@@ -1,27 +1,28 @@
-## Eclipse Roblox-Style Permission System Upgrade
+## Homepage Improvements — Roblox Creator Hub Direction
 
-### Phase 1: Scoped Role Management
-- Add `manage_role:{role_name}` permissions to the `permissions` table for each existing custom role
-- Update the Staff Profile role assignment UI to check scoped permissions (not just hierarchy)
-- Staff can only assign/remove roles they have explicit `manage_role:X` permission for (unless admin)
+### 1. Compact Mobile Hero
+The hero takes up ~60% of the screen before any products appear. Reduce it to a tight, punchy banner:
+- Shorter heading, smaller padding
+- Inline the two CTAs side-by-side instead of stacked
+- Remove the subtitle paragraph on mobile (keep on desktop)
 
-### Phase 2: Bounded Role Creation
-- Add database validation function `can_create_role()` that ensures:
-  - New role's hierarchy_level ≤ creator's max hierarchy
-  - New role's permissions are a subset of the creator's own permissions
-- Update Role Permissions page to enforce these constraints in the UI
+### 2. Add Category Quick-Nav Bar
+Insert a horizontal scrollable category pill bar between the hero and trending products (like Roblox Creator Hub's top tabs):
+- Icons + labels for: Scripts, Maps, UI Kits, Vehicles, Models, Bots, Free
+- Tappable pills that navigate to `/products?category=...`
+- Sticky-scroll feel, matte dark background
 
-### Phase 3: Default Member Role
-- Add `is_default` boolean column to `custom_roles` table
-- Create trigger to auto-assign default role(s) to new users on signup
-- Add UI toggle on Role Permissions page to mark a role as default
+### 3. Add Search Bar to Mobile Hero
+Replace the subtitle with a prominent search input that links to `/search`:
+- Placeholder: "Search scripts, maps, bots..."
+- Tap opens the search page
+- Gives immediate discovery without needing nav
 
-### Phase 4: Permission Stacking UI
-- Build an "Effective Permissions" viewer component
-- Shows the merged/union of all permissions from all assigned roles
-- Display on Staff Profile page so admins can see what a user can actually do
+### 4. Product Card Polish
+- Remove the "Add to Cart" button from cards (it clutters small cards — let the product page handle that)
+- Make the store strip cleaner (remove redundant rating display in hover overlay since it's in the strip)
+- Slightly larger card text for readability
 
-### Phase 5: Database Functions & Security
-- Create `can_create_role()` security definer function
-- Update RLS policies to use scoped permission checks where applicable
-- Add audit logging for role creation and permission changes
+### 5. Section Order Tidy-up
+Reorder: Hero → Categories → Trending → Recent Releases → On Sale → Free Assets → Top Sellers → For You → Final CTA
+(Remove WhyEclipse and NewThisWeek which overlap with other sections)
