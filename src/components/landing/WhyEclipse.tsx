@@ -14,7 +14,7 @@ const BADGES = [
 
 export function WhyEclipse() {
   return (
-    <section className="px-4 sm:px-6 lg:px-[5%] py-4 sm:py-6 lg:py-8">
+    <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <h2 className="text-sm font-bold tracking-tight text-center mb-3 uppercase text-muted-foreground">Why Eclipse?</h2>
         <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-hide justify-start lg:justify-center lg:flex-wrap lg:overflow-visible lg:pb-0">

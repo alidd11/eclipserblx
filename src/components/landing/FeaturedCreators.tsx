@@ -25,7 +25,7 @@ export function FeaturedCreators() {
 
   if (isLoading) {
     return (
-      <section className="px-4 sm:px-6 lg:px-[5%] py-6">
+      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Skeleton className="h-6 w-44 mb-4" />
         <div className="flex gap-3 overflow-hidden">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -39,7 +39,7 @@ export function FeaturedCreators() {
   if (!stores?.length) return null;
 
   return (
-    <section className="px-4 sm:px-6 lg:px-[5%] py-6">
+    <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">

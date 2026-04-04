@@ -114,7 +114,7 @@ export function ReviewsShowcase() {
   if (isLoading) {
     return (
       <section className="py-6 sm:py-8">
-        <div className="px-4 sm:px-6 lg:px-[5%]">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-4">
             <Skeleton className="h-5 w-48 mb-2" />
             <Skeleton className="h-4 w-72" />
@@ -135,7 +135,7 @@ export function ReviewsShowcase() {
 
   return (
     <section className="py-6 sm:py-8">
-      <div className="px-4 sm:px-6 lg:px-[5%]">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-4">
           <h2 className="text-lg font-semibold">
             What Our Customers Say

@@ -118,7 +118,7 @@ export function LandingFeaturedProducts() {
 
   return (
     <section className="py-10 sm:py-14">
-      <div className="px-4 sm:px-6 lg:px-[5%]">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex items-end justify-between gap-4 mb-6">
           <div>
