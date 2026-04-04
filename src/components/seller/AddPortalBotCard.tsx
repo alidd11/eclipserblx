@@ -68,7 +68,10 @@ export function AddPortalBotCard() {
 
       if (error) throw error;
       if (data?.url) {
-        window.open(data.url, '_blank');
+        // Use window.location instead of window.open to avoid popup blockers
+        window.location.href = data.url;
+      } else {
+        toast.error('No invite URL returned');
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to generate invite link');
