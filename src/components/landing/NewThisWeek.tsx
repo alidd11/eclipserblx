@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ProductCard } from '@/components/ui/ProductCard';
@@ -6,6 +7,7 @@ import { Sparkles, ArrowRight } from 'lucide-react';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
+import { usePreloadImages } from '@/hooks/usePreloadImages';
 
 export function NewThisWeek() {
   const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -31,6 +33,12 @@ export function NewThisWeek() {
     },
     staleTime: 5 * 60 * 1000,
   });
+
+  const imageUrls = useMemo(() =>
+    (products || []).slice(0, 4).map(p => getFirstImageUrl(p.images)).filter(Boolean),
+    [products]
+  );
+  usePreloadImages(imageUrls);
 
   if (isLoading) {
     return (
@@ -67,7 +75,7 @@ export function NewThisWeek() {
 
         {/* Mobile: horizontal scroll strip / Desktop: grid */}
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-4 lg:overflow-visible lg:pb-0">
-          {products.map((product) => {
+          {products.map((product, index) => {
             const store = product.stores as any;
             const category = product.categories as any;
             return (
@@ -89,6 +97,7 @@ export function NewThisWeek() {
                   storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
                   createdAt={product.created_at}
                   showNewBadge
+                  priority={index < 4}
                 />
               </div>
             );

@@ -7,6 +7,8 @@ import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductCardSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { usePreloadImages } from '@/hooks/usePreloadImages';
+import { useMemo } from 'react';
 
 export function TrendingProducts() {
   const { data: products, isLoading } = useQuery({
@@ -29,6 +31,12 @@ export function TrendingProducts() {
     },
     staleTime: 5 * 60 * 1000,
   });
+
+  const imageUrls = useMemo(() => 
+    (products || []).slice(0, 8).map(p => getFirstImageUrl(p.images)).filter(Boolean),
+    [products]
+  );
+  usePreloadImages(imageUrls);
 
   if (isLoading) {
     return (
@@ -88,6 +96,7 @@ export function TrendingProducts() {
                   isVerified={store?.is_verified}
                   storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
                   createdAt={product.created_at}
+                  priority
                 />
               );
             })}
@@ -117,6 +126,7 @@ export function TrendingProducts() {
                 isVerified={store?.is_verified}
                 storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
                 createdAt={product.created_at}
+                priority
               />
             );
           })}

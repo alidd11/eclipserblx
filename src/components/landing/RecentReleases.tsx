@@ -6,8 +6,9 @@ import { Clock, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
+import { usePreloadImages } from '@/hooks/usePreloadImages';
 
 export function RecentReleases() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -38,6 +39,12 @@ export function RecentReleases() {
     const amount = scrollRef.current.clientWidth * 0.7;
     scrollRef.current.scrollBy({ left: dir === 'left' ? -amount : amount, behavior: 'smooth' });
   };
+
+  const imageUrls = useMemo(() =>
+    (products || []).slice(0, 4).map(p => getFirstImageUrl(p.images)).filter(Boolean),
+    [products]
+  );
+  usePreloadImages(imageUrls);
 
   if (isLoading) {
     return (
@@ -81,7 +88,7 @@ export function RecentReleases() {
         </div>
 
         <div ref={scrollRef} className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
-          {products.map((product) => {
+          {products.map((product, index) => {
             const store = product.stores as any;
             const category = product.categories as any;
             return (
@@ -103,6 +110,7 @@ export function RecentReleases() {
                   storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
                   createdAt={product.created_at}
                   showNewBadge
+                  priority={index < 4}
                 />
               </div>
             );

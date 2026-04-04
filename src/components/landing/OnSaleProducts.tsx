@@ -6,8 +6,9 @@ import { Tag, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
+import { usePreloadImages } from '@/hooks/usePreloadImages';
 
 interface FlashSaleProduct {
   id: string;
@@ -86,6 +87,12 @@ export function OnSaleProducts() {
     scrollRef.current.scrollBy({ left: dir === 'left' ? -amount : amount, behavior: 'smooth' });
   };
 
+  const imageUrls = useMemo(() =>
+    (saleProducts || []).slice(0, 4).map(p => getFirstImageUrl(p.images)).filter(Boolean),
+    [saleProducts]
+  );
+  usePreloadImages(imageUrls);
+
   if (isLoading) {
     return (
       <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
@@ -130,7 +137,7 @@ export function OnSaleProducts() {
         </div>
 
         <div ref={scrollRef} className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
-          {saleProducts.map((product) => {
+          {saleProducts.map((product, index) => {
             const store = product.stores as any;
             const category = product.categories as any;
             return (
@@ -156,6 +163,7 @@ export function OnSaleProducts() {
                   isVerified={store?.is_verified}
                   storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
                   createdAt={product.created_at}
+                  priority={index < 4}
                 />
               </div>
             );
