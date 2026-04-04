@@ -174,28 +174,8 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             />
           )}
 
-          {/* Hover overlay with quick info — desktop only */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none hidden lg:flex flex-col justify-end p-2.5 z-[2]">
-            <div className="flex items-center gap-2 text-white/90">
-              {typeof averageRating === 'number' && averageRating > 0 && (
-                <span className="flex items-center gap-0.5 text-[10px] font-medium">
-                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  {averageRating.toFixed(1)}
-                </span>
-              )}
-              {isVerified && (
-                <span className="flex items-center gap-0.5 text-[10px] font-medium">
-                  <BadgeCheck className="h-3 w-3 text-primary" />
-                  Verified
-                </span>
-              )}
-              {category && (
-                <span className="text-[10px] font-medium text-white/70 ml-auto truncate max-w-[100px]">
-                  {category}
-                </span>
-              )}
-            </div>
-          </div>
+          {/* Hover overlay — desktop only */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none hidden lg:block z-[2]" />
           
           {/* Badges — single row */}
           <div className="absolute top-1.5 left-1.5 flex items-center gap-1 flex-wrap z-[3]">
