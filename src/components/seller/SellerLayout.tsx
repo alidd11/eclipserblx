@@ -1,17 +1,20 @@
-import { ReactNode, useLayoutEffect } from 'react';
+import { ReactNode, useState, useEffect, useLayoutEffect } from 'react';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, Link } from 'react-router-dom';
 import { SellerSidebar } from './SellerSidebar';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useSellerOnboarding } from '@/hooks/useSellerOnboarding';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Menu, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LayoutShell } from '@/components/layout/LayoutShell';
 import { useIOSChatKeyboard } from '@/hooks/useIOSChatKeyboard';
+import { EclipseLogo } from '@/components/ui/EclipseLogo';
+import { Button } from '@/components/ui/button';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 interface SellerLayoutProps {
   children: ReactNode;
@@ -28,6 +31,16 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   // Detect chat/messaging pages for iOS keyboard handling
   const isChatPage = location.pathname === '/seller/messages' || location.pathname === '/seller/support';
 
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Check if running as PWA
+  useEffect(() => {
+    const standalone = window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+    setIsStandalone(standalone);
+  }, []);
+
   // iOS PWA keyboard handling
   useIOSChatKeyboard(isChatPage);
 
@@ -43,24 +56,37 @@ export function SellerLayout({ children }: SellerLayoutProps) {
       body: { backgroundColor: body.style.backgroundColor, overflow: body.style.overflow, overflowX: body.style.overflowX },
     };
 
-    const chatBg = 'hsl(var(--card))';
-    html.style.backgroundColor = chatBg;
-    body.style.backgroundColor = chatBg;
+    const chatBg = getComputedStyle(document.documentElement)
+      .getPropertyValue('--card').trim();
+    const chatBgColor = chatBg ? `hsl(${chatBg})` : '';
+    html.style.backgroundColor = chatBgColor;
+    body.style.backgroundColor = chatBgColor;
     html.style.overflow = 'hidden';
     html.style.overflowX = 'hidden';
     body.style.overflow = 'hidden';
     body.style.overflowX = 'hidden';
 
     return () => {
-      const themeBg = 'hsl(var(--background))';
-      html.style.backgroundColor = prev.html.backgroundColor || themeBg;
+      const themeBg = getComputedStyle(document.documentElement)
+        .getPropertyValue('--background').trim();
+      const themeBgColor = themeBg ? `hsl(${themeBg})` : '';
+      html.style.backgroundColor = prev.html.backgroundColor || themeBgColor;
       html.style.overflow = prev.html.overflow;
       html.style.overflowX = prev.html.overflowX;
-      body.style.backgroundColor = prev.body.backgroundColor || themeBg;
+      body.style.backgroundColor = prev.body.backgroundColor || themeBgColor;
       body.style.overflow = prev.body.overflow;
       body.style.overflowX = prev.body.overflowX;
     };
   }, [isChatPage]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    if ('caches' in window) {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map(name => caches.delete(name)));
+    }
+    window.location.reload();
+  };
 
   // Wait for ALL async sources before making any access decisions
   const loading = authLoading || sellerLoading || flagLoading || roleLoading || onboardingLoading;
@@ -90,30 +116,73 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   }
 
   return (
-    <LayoutShell
-      desktopSidebar={
-        <SellerSidebar collapsed={false} onToggle={() => {}} className="hidden md:flex" />
-      }
-      mobileSidebar={(onClose) => (
-        <SellerSidebar
-          collapsed={false}
-          onToggle={onClose}
-          onNavigate={onClose}
-          isMobileDrawer
-        />
-      )}
-      headerProps={{ hideBrandName: true }}
-      wrapperClassName={cn(
-        'flex w-full bg-background overflow-x-hidden relative',
-        isChatPage ? 'flex-col overflow-hidden bg-card' : 'min-h-[100dvh]'
-      )}
-      mainClassName={cn(
-        'flex-1 overflow-x-hidden',
-        isChatPage ? 'overflow-y-hidden' : 'overflow-y-auto'
-      )}
-      contentClassName="p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
-    >
-      <PageTransition>{children}</PageTransition>
-    </LayoutShell>
+    <TooltipProvider delayDuration={0}>
+      <LayoutShell
+        desktopSidebar={
+          <SellerSidebar collapsed={false} onToggle={() => {}} className="hidden md:flex" />
+        }
+        mobileSidebar={(onClose) => (
+          <SellerSidebar
+            collapsed={false}
+            onToggle={onClose}
+            onNavigate={onClose}
+            isMobileDrawer
+          />
+        )}
+        customHeader={(onMenuClick) => (
+          <header className="fixed top-0 left-0 right-0 z-40 border-b border-border bg-card px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0 md:hidden"
+                onClick={onMenuClick}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              <EclipseLogo size="sm" />
+              <span className="font-display font-bold text-sm">Creator Hub</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {isStandalone && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                >
+                  <RefreshCw className={cn("h-5 w-5", isRefreshing && "animate-spin")} />
+                </Button>
+              )}
+            </div>
+          </header>
+        )}
+        showBreadcrumb={false}
+        showFooter={false}
+        showFABs={false}
+        wrapperClassName={cn(
+          'flex w-full bg-background overflow-x-hidden relative max-w-full min-w-0',
+          isChatPage ? 'flex-col md:flex-row overflow-hidden bg-card h-[100dvh]' : 'min-h-[100dvh]'
+        )}
+        innerClassName={isChatPage ? 'flex-1 flex flex-col min-w-0 min-h-0' : undefined}
+        mainStyle={isChatPage ? { paddingBottom: 0 } : undefined}
+        mainClassName={cn(
+          'flex-1 overflow-x-hidden max-w-full min-w-0',
+          isChatPage ? 'overflow-y-hidden flex flex-col' : 'md:overflow-y-auto'
+        )}
+        contentClassName={cn(
+          isChatPage
+            ? 'flex-1 flex flex-col min-h-0 p-0'
+            : 'p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
+        )}
+      >
+        {/* Spacer for the fixed custom header */}
+        <div className="h-[calc(env(safe-area-inset-top)+3rem)]" />
+        <PageTransition className={isChatPage ? 'flex-1 flex flex-col min-h-0 overflow-hidden' : undefined}>
+          {children}
+        </PageTransition>
+      </LayoutShell>
+    </TooltipProvider>
   );
 }
