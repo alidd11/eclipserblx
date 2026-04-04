@@ -892,7 +892,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
             </form>
           ) : (
             /* Login/Signup Form */
-            <form onSubmit={handleSubmit} className="gaming-card p-6 space-y-6">
+            <form onSubmit={handleSubmit} className="rounded-xl border border-border bg-card p-5 space-y-4">
               {mode === 'signup' && (
                 <div className="space-y-2">
                   <Label htmlFor="displayName">{t('auth.username')}</Label>
