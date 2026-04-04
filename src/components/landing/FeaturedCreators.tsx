@@ -12,9 +12,9 @@ export function FeaturedCreators() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('stores')
-        .select('id, name, slug, logo_url, banner_url, accent_color, is_verified, is_trusted, follower_count')
+        .select('id, name, slug, logo_url, banner_url, accent_color, is_verified, follower_count')
         .eq('is_active', true)
-        .or('is_verified.eq.true,is_trusted.eq.true')
+        .eq('is_verified', true)
         .order('follower_count', { ascending: false })
         .limit(8);
       if (error) throw error;
