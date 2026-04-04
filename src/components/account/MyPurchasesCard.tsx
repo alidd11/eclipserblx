@@ -15,6 +15,7 @@ interface PurchasedProduct {
   slug: string;
   category_name: string | null;
   asset_file_url: string | null;
+  additional_asset_files: string[] | null;
   order_item_id: string;
   purchased_at: string;
 }
