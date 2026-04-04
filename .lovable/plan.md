@@ -1,51 +1,68 @@
 
 
-# Instant Product Image Loading
+# Fix Desktop Layout & Clean Up Eclipse+ Remnants
 
-## Problem
-Product images currently load lazily with `loading="lazy"` and `decoding="async"`, meaning they only start downloading when scrolled into view. Combined with no preloading or caching strategy, users see placeholder shimmer states before images appear.
+## Problems Identified
 
-## Strategy
+1. **Eclipse+ remnants still present** — The hero CTA still links to `/eclipse-plus`, the Header nav still includes an Eclipse+ link, and the hero text says "Eclipse+". These need removing since Eclipse+ was deleted.
 
-A multi-layered approach to make images appear as close to instantly as possible:
+2. **Desktop layout uses sidebar + narrow content** — The `LayoutShell` renders a `CustomerSidebar` on desktop (`hidden md:flex`), pushing main content into a smaller column. On the reference screenshots, the site is full-width with the header spanning the entire viewport. The sidebar is appropriate for mobile drawer but on desktop it constrains the homepage.
 
-### 1. Eager Loading for Above-the-Fold Products
-ProductCard currently uses `loading="lazy"` for all cards. The first ~4-8 visible products (above the fold) should use `loading="eager"` and `fetchPriority="high"` instead. Add an optional `priority` prop to ProductCard.
+3. **Header missing key desktop elements** — The desktop header row exists but `showDesktopNav` is set to `false` in LayoutShell, hiding the text nav links. The search bar, currency selector, and Discord button are present but get squeezed next to the sidebar.
 
-**File**: `src/components/ui/ProductCard.tsx`
+4. **Category bar container is narrow** — `GlobalCategoryBar` uses `<div className="container">` which constrains width. On the reference screenshots it spans full width.
 
-### 2. Preload First Product Images via Link Headers
-Inject `<link rel="preload" as="image">` tags into the document head for the first batch of product images returned by the homepage queries. This tells the browser to start fetching images immediately, even before the component renders.
-
-**File**: New `src/hooks/usePreloadImages.ts` + integrate into landing sections
-
-### 3. IntersectionObserver-Based Prefetching
-For products just below the fold, use an IntersectionObserver with a large `rootMargin` (e.g. 400px) to start loading images before they scroll into view. Create a lightweight prefetch utility that creates an `Image()` object to warm the browser cache.
-
-**File**: New `src/hooks/useImagePrefetch.ts`
-
-### 4. Browser Cache Headers (Service Worker / CDN)
-The images are served from Supabase storage which already has cache headers. Add a small in-memory cache map in the app to track which URLs have been loaded, preventing re-render flicker when navigating back.
-
-**File**: `src/utils/imageCache.ts`
-
-### 5. Landing Section Integration
-Update `TrendingProducts`, `NewThisWeek`, `RecentReleases`, and `OnSaleProducts` to pass `priority={true}` for the first row of visible cards and preload their image URLs on data fetch.
-
-**Files**: `src/components/landing/TrendingProducts.tsx`, `NewThisWeek.tsx`, `RecentReleases.tsx`, `OnSaleProducts.tsx`
-
-### 6. Remove Unnecessary Transition Delay
-The `OptimizedImage` component has a 300ms opacity transition that delays perceived load. For priority images, skip the fade-in entirely.
-
-**File**: `src/components/ui/OptimizedImage.tsx`
+5. **Product grid columns** — Desktop grid uses `lg:grid-cols-4` which matches the reference. This is fine.
 
 ---
 
-## Technical Details
+## Plan
 
-- **usePreloadImages hook**: Takes an array of URLs, injects `<link rel="preload">` into `<head>` on mount, cleans up on unmount. Limited to first 6 URLs to avoid bandwidth waste.
-- **ProductCard priority prop**: When `priority={true}`, sets `loading="eager"`, `decoding="sync"`, `fetchPriority="high"`, and removes lazy intersection observer logic.
-- **Image prefetch utility**: `prefetchImage(url)` creates `new Image().src = url` to warm browser cache. Called via IntersectionObserver 400px before viewport entry.
-- No new dependencies required. Pure browser APIs.
-- No database changes needed.
+### 1. Remove remaining Eclipse+ references
+- **LandingHero.tsx**: Remove the Eclipse+ CTA link (lines 103-109)
+- **Header.tsx**: Remove the `/eclipse-plus` nav link from `navLinkDefs` (line 28)
+
+### 2. Fix desktop layout — hide sidebar on homepage
+The homepage should be full-width on desktop (no sidebar), matching the reference screenshots. The sidebar should only appear as a mobile drawer.
+
+- **MainLayout.tsx**: Hide the desktop sidebar on the landing page. Two approaches:
+  - Option A: Add a prop `hideDesktopSidebar` to LayoutShell and pass it from MainLayout when on the homepage
+  - Option B (simpler): Change the desktop sidebar from `hidden md:flex` to always hidden, since the header + category bar provides all navigation on desktop
+
+Since the reference screenshots show NO sidebar on desktop for any page, we'll hide the desktop sidebar entirely and rely on the header nav + category bar for desktop navigation.
+
+- **LayoutShell.tsx**: Change `<div className="hidden md:flex">` to `<div className="hidden">` (or remove desktop sidebar rendering entirely)
+- **Header.tsx**: Set `showDesktopNav` back to working state — the desktop header already has search, Discord, cart, account icons. Ensure it spans full width.
+
+### 3. Fix header to match reference
+The desktop header should show:
+- Logo (left)
+- Full-width search bar (center)
+- Currency selector, Discord button, notifications, cart, account (right)
+
+This is already implemented in the `hidden md:flex` block — just needs the sidebar gone so it spans full width.
+
+### 4. Fix GlobalCategoryBar width
+- Remove `container` constraint so it spans the full content area
+- Ensure pills scroll horizontally like in the reference
+
+### 5. Ensure all landing sections render full-width on desktop
+- Sections use `px-4 sm:px-6 lg:px-8` which is fine for full-width layout once the sidebar is removed
+
+---
+
+## Files to Modify
+
+| File | Change |
+|------|--------|
+| `src/components/landing/LandingHero.tsx` | Remove Eclipse+ CTA link |
+| `src/components/layout/Header.tsx` | Remove Eclipse+ from navLinkDefs |
+| `src/components/layout/LayoutShell.tsx` | Hide desktop sidebar rendering |
+| `src/components/shop/GlobalCategoryBar.tsx` | Remove `container` class constraint if needed |
+
+## Technical Notes
+- No database changes needed
+- No new dependencies
+- 4 files modified
+- The mobile drawer sidebar remains fully functional
 
