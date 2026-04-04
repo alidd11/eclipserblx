@@ -461,8 +461,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     >
       {/* Branded Header */}
       <div className={cn(
-        "border-b border-border flex items-center shrink-0",
-        isCollapsed ? "px-1.5 py-2.5 justify-center" : "px-3 py-2.5 gap-2.5"
+        "border-b border-border/50 flex items-center shrink-0",
+        isCollapsed ? "px-1.5 py-3 justify-center" : "px-4 py-3.5 gap-2.5"
       )}>
         <EclipseLogo size="sm" />
         {!isCollapsed && (
