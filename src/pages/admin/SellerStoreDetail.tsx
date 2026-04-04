@@ -169,24 +169,7 @@ export default function SellerStoreDetail() {
     },
   });
 
-  // Toggle trusted mutation
-  const toggleTrustedMutation = useMutation({
-    mutationFn: async (isTrusted: boolean) => {
-      const { error } = await supabase
-        .from('stores')
-        .update({ is_trusted: isTrusted })
-        .eq('id', storeId);
-      
-      if (error) throw error;
-    },
-    onSuccess: (_, isTrusted) => {
-      queryClient.invalidateQueries({ queryKey: ['seller-store-detail', storeId] });
-      toast.success(isTrusted ? 'Trusted Seller badge granted' : 'Trusted Seller badge removed');
-    },
-    onError: (error) => {
-      toast.error('Failed to update: ' + error.message);
-    },
-  });
+  // (Trusted seller toggle removed)
 
   // Toggle active mutation
   const toggleActiveMutation = useMutation({
