@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { VideoThumbnail } from '@/components/ui/VideoThumbnail';
 import { ImageZoomModal } from '@/components/ui/ImageZoomModal';
-import { FreeProductClaim } from '@/components/subscription/FreeProductClaim';
+
 import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { VerifiedPurchaseBadge } from '@/components/reviews/VerifiedPurchaseBadge';
