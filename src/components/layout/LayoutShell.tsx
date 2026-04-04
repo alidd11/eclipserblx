@@ -102,7 +102,7 @@ function LayoutShellInner({
         </Sheet>
 
         {/* Main Content */}
-      <div className={innerClassName ?? "flex-1 flex flex-col min-w-0 md:h-[100dvh]"}>
+      <div className={innerClassName ?? "flex-1 flex flex-col min-w-0"}>
           {customHeader ? (
             customHeader(() => setMobileOpen(true))
           ) : (
@@ -121,7 +121,7 @@ function LayoutShellInner({
           )}
           <main
             id="main-content"
-            className={mainClassName ?? "flex-1 md:overflow-y-auto overflow-x-clip max-w-full min-w-0"}
+            className={mainClassName ?? "flex-1 overflow-x-clip max-w-full min-w-0"}
             style={mainStyle ?? { paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
             <div className="max-w-[1400px] mx-auto w-full">
