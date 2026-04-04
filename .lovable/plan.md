@@ -1,86 +1,111 @@
 
 
-# Homepage and Store Page Improvements
+# Elevate Seller Experience to Roblox Enterprise Level
+
+This plan transforms the seller dashboard from a basic management tool into a professional, polished experience comparable to Roblox's Creator Hub and Enterprise dashboards.
 
 ---
 
-## HOMEPAGE IMPROVEMENTS
+## Overview
 
-### 1. Reduce Section Padding and Tighten Vertical Rhythm
-Every section uses `py-6` or `py-8`, creating excessive whitespace on mobile. Reduce to `py-4` on most sections and `py-6` on desktop. This alone removes ~100px of dead space on a single scroll.
-
-**Files**: `TrendingProducts.tsx`, `NewThisWeek.tsx`, `FreeAssetsTeaser.tsx`, `TopSellers.tsx`, `RecentlyViewedSection.tsx`, `WhyEclipse.tsx`, `FinalCTA.tsx`
-
-### 2. Add Product Count Badges to Section Headers
-Show how many items exist (e.g. "TRENDING NOW · 8 items") so users know the scope at a glance. Small muted count next to each header.
-
-**Files**: `TrendingProducts.tsx`, `NewThisWeek.tsx`, `FreeAssetsTeaser.tsx`
-
-### 3. Horizontal Scroll for "New This Week" on Mobile
-Currently a 2-col grid that pushes content far down. Switch to a horizontal scroll strip on mobile (like Free Assets already does), keeping the grid on desktop. Saves significant scroll depth.
-
-**File**: `NewThisWeek.tsx`
-
-### 4. Improve "Top Creators" Card Density on Mobile
-Currently 2-col grid with small avatars. On mobile, switch to a horizontal scroll of compact avatar+name chips (pill-shaped) so all 8 creators are visible without scrolling past. More visual, less vertical space.
-
-**File**: `TopSellers.tsx`
-
-### 5. Simplify "Why Eclipse" Section
-The 2x2 grid of value props + trust strip takes a lot of space for static marketing copy. Merge into a single horizontal scrolling strip of icon+label badges (like trust signals). Cuts the section height by 60%.
-
-**File**: `WhyEclipse.tsx`
-
-### 6. Make Hero Trending Tags More Tappable
-Tags are tiny (`text-[11px]`, `px-1.5 py-0.5`). Increase touch target to `px-2.5 py-1` and use `min-h-[28px]` for accessibility compliance (44px recommended, 28px minimum).
-
-**File**: `LandingHero.tsx`
+The current seller dashboard is functional but feels like a startup MVP. To reach enterprise level, we need: a refined visual hierarchy, Roblox-native terminology and branding, smarter data presentation, and workflow streamlining. The changes are purely UI/UX — no database migrations needed.
 
 ---
 
-## STORE PAGE IMPROVEMENTS
+## 1. Dashboard Hero Redesign — "Creator Hub" Feel
 
-### 7. Sticky Store Header on Scroll
-When users scroll past the banner, the store name and action buttons disappear. Add a compact sticky header (logo + name + Follow/Message) that appears on scroll-down, similar to how social profiles work.
+Replace the current flat banner + stat cards with a single cohesive welcome section inspired by Roblox Creator Hub.
 
-**File**: `StorePage.tsx` — new `StoreFloatingHeader` component
+- **Greeting bar**: "Welcome back, {store_name}" with today's date, store health score pill, and a "Go Live" / "View Store" CTA
+- **Stat cards**: Redesign the 5 revenue stat cards into a single unified row with glass-morphism styling, subtle gradient borders, and animated counters
+- **Real-time pulse indicator**: Add a green dot next to "Orders" showing live order stream is active
 
-### 8. Show Product Count Per Category Tab in Sidebar
-The Browse section lists tabs with no indication of how many products each contains. Fetch and display counts next to each tab name (already done for "All Products").
+**Files**: `SellerDashboard.tsx`, `RevenueSummaryStats.tsx`
 
-**File**: `StoreSidebar.tsx` — pass product counts per tab, or compute from products data
+## 2. Quick Actions → Command Center Grid
 
-### 9. Improve Empty Store State
-The current empty state is a plain card with an icon. Add a more engaging layout: suggest the buyer follow the store for notifications, or link to similar stores.
+Upgrade the plain icon grid into a Roblox-style command center with:
 
-**File**: `StorePage.tsx` — enhance the "No Products Yet" card
+- Larger touch targets with subtle hover animations
+- Live badge counts (e.g., "3 pending" on Orders, "2 new" on Messages)
+- Group headers: "Create", "Manage", "Grow"
+- Primary action spotlight: "Upload Product" as a larger, highlighted card
 
-### 10. Store Products Grid — Show All Instead of Paginating by 4
-On mobile, only 4 products show per page with swipe pagination. This is unusual for a marketplace — users expect to scroll through products. Increase to 12 products per page on mobile (or use infinite scroll). Desktop stays at 8 per page.
+**File**: `SellerDashboard.tsx`
 
-**File**: `StorePage.tsx` — change `PRODUCTS_PER_PAGE_MOBILE` from 4 to 12
+## 3. Sidebar Polish — Creator Hub Navigation
 
-### 11. Add Social Proof to Store Header
-Show the store's join date ("Selling since Jan 2025") and total sales count as subtle text under the stats row. Builds trust without extra UI weight.
+- Add a "Creator Hub" label at the top instead of "Seller Dashboard"
+- Add status indicators next to key items (green dot for connected integrations, amber for pending setup)
+- Add a "What's New" changelog link at the bottom with an unread dot
+- Improve group header typography with slightly bolder weight and more spacing
 
-**File**: `StorePage.tsx` — add created_at formatted date to the stats row
+**File**: `SellerSidebar.tsx`
+
+## 4. Product Management — Enterprise Table UX
+
+- Add inline quick-edit for price and status directly in the table row
+- Add product thumbnail previews in the table
+- Add bulk action toolbar that appears when items are selected (already partially exists, enhance it)
+- Add "Quick Upload" floating action button on mobile
+- Status pills: use Roblox-style colored dots (green=live, amber=pending, red=rejected) instead of text badges
+
+**File**: `SellerProducts.tsx`
+
+## 5. Analytics — Roblox Creator Analytics Parity
+
+- Add a "Key Insights" summary at the top: "Your best day was X", "Traffic is up Y% this week"
+- Add conversion funnel visualization: Views → Clicks → Purchases
+- Add a "Compare Periods" toggle (this week vs last week overlay on charts)
+
+**File**: `SellerAnalytics.tsx`
+
+## 6. Orders Page — Real-time Activity Feed
+
+- Add a real-time activity feed sidebar showing "User X just purchased Y" with timestamps
+- Add order status timeline (Paid → Processing → Delivered) with visual progress
+- Improve the stats cards to match the dashboard's unified style
+
+**File**: `SellerOrders.tsx`
+
+## 7. Onboarding — Roblox-style Progress Cards
+
+- Redesign the setup wizard steps as horizontal progress cards with completion animations
+- Add estimated time remaining per step
+- Add a "Skip Tour" option that marks non-essential steps as skipped
+
+**File**: `SellerSetup.tsx`
+
+## 8. Global Polish
+
+- **Page headers**: Standardize all seller pages with consistent header pattern — title, subtitle, and optional action button aligned right
+- **Empty states**: Replace plain text empty states with illustrated placeholders and CTAs
+- **Loading states**: Use consistent skeleton patterns across all seller pages
+- **Micro-interactions**: Add subtle scale/fade transitions on card hovers and tab switches
+
+**Files**: Multiple seller page files
 
 ---
 
 ## Technical Details
 
-| File | Changes |
-|------|---------|
-| `src/components/landing/TrendingProducts.tsx` | Reduce py-6 to py-4, add item count |
-| `src/components/landing/NewThisWeek.tsx` | Horizontal scroll on mobile, reduce padding |
-| `src/components/landing/TopSellers.tsx` | Horizontal scroll chips on mobile |
-| `src/components/landing/WhyEclipse.tsx` | Merge into single strip |
-| `src/components/landing/FreeAssetsTeaser.tsx` | Reduce padding |
-| `src/components/landing/RecentlyViewedSection.tsx` | Reduce padding |
-| `src/components/landing/FinalCTA.tsx` | Reduce padding |
-| `src/components/landing/LandingHero.tsx` | Larger tag touch targets |
-| `src/pages/StorePage.tsx` | Sticky header, increase mobile products per page, join date, better empty state |
-| `src/components/store/StoreSidebar.tsx` | Product counts per tab |
+- All changes are frontend-only (React components, Tailwind CSS)
+- No database migrations required
+- No new dependencies — uses existing framer-motion, lucide-react, and Tailwind
+- Approximately 8-10 files modified
+- Maintains existing data fetching patterns and hooks
+- Mobile-first responsive approach preserved
 
-No database changes required. All changes are UI/UX refinements.
+---
+
+## Priority Order
+
+1. Dashboard Hero + Stats redesign (highest visual impact)
+2. Quick Actions command center
+3. Sidebar polish
+4. Product table improvements
+5. Analytics insights
+6. Orders activity feed
+7. Onboarding redesign
+8. Global polish pass
 
