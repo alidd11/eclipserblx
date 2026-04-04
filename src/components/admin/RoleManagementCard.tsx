@@ -37,6 +37,7 @@ interface CustomRole {
   is_system: boolean;
   is_status_role: boolean;
   created_at: string;
+  is_default: boolean;
 }
 
 export function RoleManagementCard() {
