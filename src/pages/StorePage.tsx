@@ -88,7 +88,7 @@ const getThemeStyles = (theme: string, accentColor: string) => {
   }
 };
 
-const PRODUCTS_PER_PAGE_MOBILE = 4;
+const PRODUCTS_PER_PAGE_MOBILE = 12;
 const PRODUCTS_PER_PAGE_DESKTOP = 8;
 
 export default function StorePage() {
