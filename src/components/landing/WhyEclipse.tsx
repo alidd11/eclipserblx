@@ -19,7 +19,7 @@ export function WhyEclipse() {
         <h2 className="text-sm font-bold tracking-tight text-center mb-3 uppercase text-muted-foreground">Why Eclipse?</h2>
         <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-hide justify-start lg:justify-center lg:flex-wrap lg:overflow-visible lg:pb-0">
           {BADGES.map((badge) => (
-            <div key={badge.label} className="flex items-center gap-1.5 flex-shrink-0 rounded-full border border-border bg-card px-3 py-1.5">
+            <div key={badge.label} className="flex items-center gap-1.5 flex-shrink-0 rounded-full border border-border bg-card px-3 py-1.5 lg:px-4 lg:py-2 hover:border-primary/30 hover:bg-primary/5 transition-all">
               <badge.icon className="h-3.5 w-3.5 text-primary flex-shrink-0" />
               <span className="text-xs font-medium text-foreground whitespace-nowrap">{badge.label}</span>
             </div>
