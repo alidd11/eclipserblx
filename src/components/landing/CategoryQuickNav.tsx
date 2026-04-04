@@ -1,7 +1,7 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Package, Map, FileCode, Car, Plane, Building2, Shirt, 
-  Layout, Bot, Globe, Gift
+  Layout, Bot, Globe
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
