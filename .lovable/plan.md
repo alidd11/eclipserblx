@@ -1,51 +1,27 @@
+## Eclipse Roblox-Style Permission System Upgrade
 
-# Visually Improve the Existing Homepage
+### Phase 1: Scoped Role Management
+- Add `manage_role:{role_name}` permissions to the `permissions` table for each existing custom role
+- Update the Staff Profile role assignment UI to check scoped permissions (not just hierarchy)
+- Staff can only assign/remove roles they have explicit `manage_role:X` permission for (unless admin)
 
-Based on the current desktop screenshot and comparing with ClearlyDev's polished look, here are targeted visual improvements:
+### Phase 2: Bounded Role Creation
+- Add database validation function `can_create_role()` that ensures:
+  - New role's hierarchy_level ≤ creator's max hierarchy
+  - New role's permissions are a subset of the creator's own permissions
+- Update Role Permissions page to enforce these constraints in the UI
 
-## 1. Hero Section Polish
-- **Larger, bolder heading** on desktop — currently `text-5xl`, bump to `text-6xl` with tighter tracking
-- **More generous vertical padding** — the hero feels compact, give it `lg:py-20` to fill the viewport better
-- **Subtler subtitle** — increase max-width so the description text doesn't wrap as tightly
-- **Stronger CTA glow** — enhance the Browse Marketplace button shadow
+### Phase 3: Default Member Role
+- Add `is_default` boolean column to `custom_roles` table
+- Create trigger to auto-assign default role(s) to new users on signup
+- Add UI toggle on Role Permissions page to mark a role as default
 
-## 2. Discord Community Banner
-- Add a subtle gradient border or glow effect to the Discord CTA card so it pops more
-- Make the "JOIN →" button more prominent (primary variant instead of text link)
+### Phase 4: Permission Stacking UI
+- Build an "Effective Permissions" viewer component
+- Shows the merged/union of all permissions from all assigned roles
+- Display on Staff Profile page so admins can see what a user can actually do
 
-## 3. Top Creators Section
-- Add subtle hover cards with elevation on hover
-- Show store logos larger with a soft border ring
-
-## 4. Section Headers
-- Make section titles larger on desktop (`lg:text-xl`)
-- Add a subtle divider line or left border accent to section headers for visual hierarchy
-
-## 5. Trending Tags
-- Give the trending tag pills slightly more contrast — currently they blend into the background
-- Add hover elevation/shadow effect
-
-## 6. Category Bar Polish
-- Increase pill size on desktop (`lg:text-sm lg:px-4 lg:py-2`)
-- Add active indicator bar (bottom border) instead of just background color change
-
-## 7. Footer Alignment
-- Ensure footer content respects the same `max-w-[1400px]` container
-
----
-
-## Files to Modify
-| File | Change |
-|------|--------|
-| `LandingHero.tsx` | Larger heading, more padding, stronger CTA |
-| `GlobalCategoryBar.tsx` | Larger pills on desktop, active indicator |
-| `DiscordCTA.tsx` | More prominent design |
-| `TopSellers.tsx` | Better hover effects, larger logos |
-| `WhyEclipse.tsx` | Bigger badge pills on desktop |
-| `Footer.tsx` | Max-width container |
-
-## Technical Notes
-- No database changes
-- No new dependencies
-- Pure CSS/Tailwind visual refinements
-- ~6 files modified
+### Phase 5: Database Functions & Security
+- Create `can_create_role()` security definer function
+- Update RLS policies to use scoped permission checks where applicable
+- Add audit logging for role creation and permission changes

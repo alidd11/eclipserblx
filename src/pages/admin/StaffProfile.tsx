@@ -43,6 +43,7 @@ import {
   X
 } from 'lucide-react';
 import { StaffDocuments } from '@/components/admin/StaffDocuments';
+import { EffectivePermissions } from '@/components/admin/EffectivePermissions';
 import { format } from 'date-fns';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useAuth } from '@/hooks/useAuth';
@@ -235,6 +236,29 @@ export default function StaffProfile() {
 
   const isPrimaryAdmin = isAdmin;
 
+  // Fetch current user's scoped role management permissions
+  const { data: userPermissions = [] } = useQuery({
+    queryKey: ['user-manage-role-perms', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
+      if (error) throw error;
+      const roles = data.map(r => r.role);
+      if (!roles.length) return [];
+      
+      const { data: perms, error: permErr } = await supabase
+        .from('role_permissions')
+        .select('permission_id, permissions!inner(name)')
+        .in('role', roles);
+      if (permErr) throw permErr;
+      return (perms || []).map((rp: any) => rp.permissions?.name).filter(Boolean);
+    },
+    enabled: !!user?.id,
+  });
+
   // Fetch current user's max hierarchy level (uses custom_roles table now)
   const { data: currentUserHierarchy } = useQuery({
     queryKey: ['current-user-hierarchy', user?.id],
@@ -262,20 +286,16 @@ export default function StaffProfile() {
     },
   });
 
-  // Get available roles (ones not already assigned and within hierarchy)
+  // Get available roles (ones not already assigned, within hierarchy, and user has manage_role permission)
   const availableRoles = () => {
     const existing = roles.map(r => r.role as string);
     return customRoles.filter(r => {
-      // Exclude roles the user already has
       if (existing.includes(r.name)) return false;
-      
-      // Only show roles at or below current user's hierarchy level
       if ((currentUserHierarchy ?? 0) < r.hierarchy_level) return false;
       
-      // Special case: Only primary admin can assign admin role
-      if (r.name === 'admin' && !isPrimaryAdmin) return false;
-      
-      return true;
+      // Check scoped permission: admin can assign any, others need manage_role:X
+      if (isPrimaryAdmin) return true;
+      return userPermissions.includes(`manage_role:${r.name}`);
     });
   };
   
@@ -297,19 +317,15 @@ export default function StaffProfile() {
     };
   };
 
-  // Check if current user can remove a specific role
+  // Check if current user can remove a specific role (scoped permission check)
   const canRemoveRole = (role: string) => {
-    // Primary admin can remove any role
     if (isPrimaryAdmin) return true;
     
-    // Admin role can only be removed by primary admin
-    if (role === 'admin') return false;
-    
-    // Get the target role's hierarchy level from custom_roles
     const targetLevel = customRoles.find(r => r.name === role)?.hierarchy_level ?? 999;
+    if ((currentUserHierarchy ?? 0) < targetLevel) return false;
     
-    // Can only remove roles at or below current user's hierarchy level
-    return (currentUserHierarchy ?? 0) >= targetLevel;
+    // Must have manage_role:X permission
+    return userPermissions.includes(`manage_role:${role}`);
   };
 
   // Add role mutation
@@ -810,6 +826,9 @@ export default function StaffProfile() {
             )}
           </CardContent>
         </Card>
+
+        {/* Effective Permissions Viewer */}
+        <EffectivePermissions userId={userId!} />
 
         {/* Staff Documents Section */}
         <StaffDocuments

@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Lock, Shield, Users, Package, MessageCircle, BarChart3, FileText, Star, Crown, Zap, Eye } from 'lucide-react';
@@ -36,6 +37,7 @@ interface CustomRole {
   is_system: boolean;
   is_status_role: boolean;
   created_at: string;
+  is_default: boolean;
 }
 
 export function RoleManagementCard() {
@@ -110,6 +112,23 @@ export function RoleManagementCard() {
     },
     onError: (error) => {
       toast.error('Failed to delete role: ' + error.message);
+    },
+  });
+
+  const toggleDefaultMutation = useMutation({
+    mutationFn: async ({ roleId, isDefault }: { roleId: string; isDefault: boolean }) => {
+      const { error } = await supabase
+        .from('custom_roles')
+        .update({ is_default: isDefault })
+        .eq('id', roleId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['custom-roles'] });
+      toast.success('Default role setting updated');
+    },
+    onError: (error) => {
+      toast.error('Failed to update: ' + error.message);
     },
   });
 
@@ -219,6 +238,29 @@ export function RoleManagementCard() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
+                      {/* Default role toggle */}
+                      {isAdmin && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center gap-1.5 mr-2">
+                                <span className="text-[10px] text-muted-foreground">Default</span>
+                                <Switch
+                                  checked={role.is_default}
+                                  onCheckedChange={(checked) => 
+                                    toggleDefaultMutation.mutate({ roleId: role.id, isDefault: checked })
+                                  }
+                                  disabled={toggleDefaultMutation.isPending}
+                                  className="scale-75"
+                                />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{role.is_default ? 'This role is auto-assigned to new users' : 'Toggle to auto-assign to new users'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
