@@ -87,6 +87,12 @@ export function OnSaleProducts() {
     scrollRef.current.scrollBy({ left: dir === 'left' ? -amount : amount, behavior: 'smooth' });
   };
 
+  const imageUrls = useMemo(() =>
+    (saleProducts || []).slice(0, 4).map(p => getFirstImageUrl(p.images)).filter(Boolean),
+    [saleProducts]
+  );
+  usePreloadImages(imageUrls);
+
   if (isLoading) {
     return (
       <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
