@@ -138,7 +138,7 @@ export function LandingHero() {
 
             <div className="space-y-2.5 mb-5">
               <Link to="/products" className="block">
-                <Button size="sm" className="w-full h-10 text-sm font-semibold uppercase tracking-wide">
+                <Button size="sm" className="w-full h-11 text-sm font-semibold uppercase tracking-wide shadow-[0_0_20px_hsl(var(--primary)/0.3)]">
                   Browse Marketplace
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
