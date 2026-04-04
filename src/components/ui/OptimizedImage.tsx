@@ -107,9 +107,11 @@ export const OptimizedImage = memo(function OptimizedImage({
           decoding="async"
           onLoad={handleLoad}
           onError={handleError}
-          className={cn(
-            'w-full h-full transition-opacity duration-300',
-            !isLoaded && blur && 'opacity-0',
+            className={cn(
+              'w-full h-full',
+              priority ? 'opacity-100' : 'transition-opacity duration-300',
+              !isLoaded && blur && !priority && 'opacity-0',
+              isLoaded && 'opacity-100',
             isLoaded && 'opacity-100',
             objectFit === 'contain' && 'object-contain',
             objectFit === 'cover' && 'object-cover',

@@ -97,6 +97,7 @@ export function NewThisWeek() {
                   storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
                   createdAt={product.created_at}
                   showNewBadge
+                  priority={index < 4}
                 />
               </div>
             );

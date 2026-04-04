@@ -126,6 +126,7 @@ export function TrendingProducts() {
                 isVerified={store?.is_verified}
                 storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
                 createdAt={product.created_at}
+                priority
               />
             );
           })}
