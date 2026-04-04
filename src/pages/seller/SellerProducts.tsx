@@ -93,6 +93,7 @@ interface ProductForm {
   is_active: boolean;
   images: string[];
   asset_file_url: string;
+  additional_asset_files: string[];
   schedule_enabled: boolean;
   release_at: string;
   is_pay_what_you_want: boolean;
@@ -107,6 +108,7 @@ const INITIAL_FORM: ProductForm = {
   is_active: true,
   images: [],
   asset_file_url: '',
+  additional_asset_files: [],
   schedule_enabled: false,
   release_at: '',
   is_pay_what_you_want: false,
