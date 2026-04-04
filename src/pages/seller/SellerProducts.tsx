@@ -520,12 +520,27 @@ export default function SellerProducts() {
   const getModerationBadge = (status: string | null) => {
     switch (status) {
       case 'approved':
-        return <Badge variant="default" className="gap-1 bg-green-600"><CheckCircle className="h-3 w-3" /> Approved</Badge>;
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-500">
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+            Live
+          </span>
+        );
       case 'rejected':
-        return <Badge variant="destructive" className="gap-1"><XCircle className="h-3 w-3" /> Rejected</Badge>;
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-destructive">
+            <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
+            Rejected
+          </span>
+        );
       case 'pending':
       default:
-        return <Badge variant="secondary" className="gap-1"><Clock className="h-3 w-3" /> Pending</Badge>;
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-yellow-500">
+            <span className="h-1.5 w-1.5 rounded-full bg-yellow-500" />
+            Pending
+          </span>
+        );
     }
   };
 
