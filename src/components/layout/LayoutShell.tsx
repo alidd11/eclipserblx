@@ -102,7 +102,7 @@ function LayoutShellInner({
         </Sheet>
 
         {/* Main Content */}
-      <div className={innerClassName ?? "flex-1 flex flex-col min-w-0 md:h-[100dvh]"}>
+      <div className={innerClassName ?? "flex-1 flex flex-col min-w-0"}>
           {customHeader ? (
             customHeader(() => setMobileOpen(true))
           ) : (
