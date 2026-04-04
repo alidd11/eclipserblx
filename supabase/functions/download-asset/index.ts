@@ -427,6 +427,8 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const downloadUrl = `${supabaseUrl}/functions/v1/download-asset?token=${downloadToken}`;
 
+    const totalFiles = (product.asset_file_url ? 1 : 0) + additionalFiles.length;
+
     return new Response(
       JSON.stringify({ 
         downloadUrl,
@@ -435,6 +437,8 @@ Deno.serve(async (req) => {
         fileSize,
         expiresAt: expiresAt.toISOString(),
         oneTimeUse: true,
+        fileIndex: requestedFileIndex,
+        totalFiles,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
