@@ -8,21 +8,7 @@ import { useFeaturedProducts, ScoredProduct } from '@/hooks/useFeaturedProducts'
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
-import ukFlag from '@/assets/regions/uk-flag.jpg';
-import usFlag from '@/assets/regions/us-flag.jpg';
-import euFlag from '@/assets/regions/eu-flag.jpg';
-import beFlag from '@/assets/regions/be-flag.png';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
-
-const getRegionFlag = (productName?: string): { src: string; name: string } | null => {
-  const nameLower = productName?.toLowerCase() || '';
-  if (nameLower.includes('ypres') || nameLower.includes('belgium')) return { src: beFlag, name: 'Belgium' };
-  if (nameLower.includes('land rover') || nameLower.includes('landrover')) return { src: ukFlag, name: 'UK' };
-  if (nameLower.startsWith('uk ') || nameLower.includes(' uk ')) return { src: ukFlag, name: 'UK' };
-  if (nameLower.startsWith('us ') || nameLower.includes(' us ')) return { src: usFlag, name: 'US' };
-  if (nameLower.startsWith('eu ') || nameLower.includes(' eu ')) return { src: euFlag, name: 'EU' };
-  return null;
-};
 
 type FeaturedProduct = ScoredProduct;
 
@@ -30,7 +16,6 @@ const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct; fe
   function ProductCard({ product, featured = false }, ref) {
     const { formatPrice } = useCurrency();
     const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
-    const regionFlag = getRegionFlag(product.name);
     
     const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
     const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
@@ -83,12 +68,6 @@ const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct; fe
           </div>
 
           <div className="p-3 relative overflow-hidden">
-            {regionFlag && (
-              <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <img src={regionFlag.src} alt="" className="absolute inset-0 w-full h-full opacity-[0.06] object-cover" />
-              </div>
-            )}
-            
             <h3 className={`font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-1.5 relative z-10 ${featured ? 'text-base' : 'text-sm'}`}>
               {product.name}
             </h3>
