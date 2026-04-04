@@ -16,7 +16,7 @@ const CATEGORIES = [
   { label: 'Uniforms', slug: 'uniforms', icon: Shirt },
   { label: 'Aircraft', slug: 'aircraft', icon: Plane },
   { label: 'Bundles', slug: 'bundle-deals', icon: Package },
-  { label: 'Templates', slug: 'website-templates', icon: Globe },
+  
 ];
 
 export function CategoryQuickNav() {
