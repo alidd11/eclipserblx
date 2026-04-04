@@ -650,7 +650,7 @@ export default function ProductDetail() {
                       </Badge>
                     )}
                   </div>
-                  <h1 className="text-3xl md:text-4xl font-display font-bold">{getTranslatedName(product.name)}</h1>
+                  <h1 className="text-2xl md:text-3xl font-display font-bold">{getTranslatedName(product.name)}</h1>
                 </div>
 
                 <div className="space-y-2">
