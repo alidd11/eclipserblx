@@ -613,20 +613,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         </div>
       </nav>
 
-      {/* Footer */}
-      {user && (
-        <SidebarFooter
-          isCollapsed={isCollapsed}
-          onSignOut={() => setShowSignOutDialog(true)}
-        />
-      )}
-
-      <SignOutConfirmDialog
-        open={showSignOutDialog}
-        onOpenChange={setShowSignOutDialog}
-        onConfirm={handleSignOut}
-        isLoading={isSigningOut}
-      />
     </aside>
   );
 }
