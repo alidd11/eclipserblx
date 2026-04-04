@@ -45,7 +45,7 @@ export function TopSellers() {
             <div className="p-1.5 rounded-lg bg-amber-500/10">
               <Trophy className="h-4 w-4 text-amber-500" />
             </div>
-            <h2 className="text-base sm:text-lg font-bold tracking-tight uppercase">Top Creators</h2>
+            <h2 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight uppercase">Top Creators</h2>
           </div>
           <Link to="/stores" className="text-xs text-primary hover:underline flex items-center gap-1">
             All stores <ArrowRight className="h-3 w-3" />
