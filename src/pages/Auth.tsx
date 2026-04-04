@@ -765,7 +765,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
             </form>
           ) : mode === 'reset' ? (
             /* Reset Password Form (legacy - for magic link flow if needed) */
-            <form onSubmit={handleResetPassword} className="gaming-card p-6 space-y-6">
+            <form onSubmit={handleResetPassword} className="rounded-xl border border-border bg-card p-5 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="password">{t('auth.newPassword')}</Label>
                 <div className="relative">
