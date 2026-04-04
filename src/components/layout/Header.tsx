@@ -108,7 +108,7 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
           className
         )}
       >
-        <nav className="px-4 sm:px-6 lg:px-[5%] pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))]" aria-label="Main navigation">
+        <nav className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))]" aria-label="Main navigation">
         {/* Mobile header row */}
         <div className="flex md:hidden h-14 items-center gap-1.5">
           {/* Left section: Menu + Logo (fixed width) */}
