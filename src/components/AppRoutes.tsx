@@ -48,7 +48,7 @@ const Status = lazyWithRetry(() => import("@/pages/Status"));
 const BotInstallation = lazyWithRetry(() => import("@/pages/BotInstallation"));
 const BotDashboard = lazyWithRetry(() => import("@/pages/BotDashboard"));
 const NotificationPreferences = lazyWithRetry(() => import("@/pages/NotificationPreferences"));
-const EclipsePlus = lazyWithRetry(() => import("@/pages/EclipsePlus"));
+
 
 const LiveChat = lazyWithRetry(() => import("@/pages/LiveChat"));
 const Affiliate = lazyWithRetry(() => import("@/pages/Affiliate"));
@@ -345,7 +345,7 @@ export function AppRoutes() {
         <Route path="/bot-installation" element={<BotInstallation />} />
         <Route path="/bot-dashboard" element={<BotDashboard />} />
         <Route path="/notifications" element={<NotificationPreferences />} />
-        <Route path="/eclipse-plus" element={<EclipsePlus />} />
+        
         <Route path="/marketplace" element={<Products />} />
         <Route path="/stores" element={<AllStores />} />
         <Route path="/affiliate" element={<Affiliate />} />

@@ -360,26 +360,6 @@ export default function Checkout() {
               </p>
             </div>
 
-            {!isSubscribed && potentialSavings > 0 && (
-              <Link 
-                to="/eclipse-plus" 
-                className="block p-4 rounded-lg bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 hover:border-amber-500/40 transition-colors"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-full bg-amber-500/20">
-                    <Sparkles className="h-4 w-4 text-amber-400" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-amber-400">
-                      {t('checkout.couldSave', { amount: formatPrice(potentialSavings) })}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {t('checkout.getUpTo')}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            )}
           </div>
 
           {/* Discount & Payment */}

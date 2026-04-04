@@ -1,5 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+// Eclipse+ has been removed. Stub exports to prevent import errors.
 
 export type SubscriptionTier = 'basic' | 'pro' | 'premium';
 export type BillingPeriod = 'monthly' | 'annual';
@@ -21,33 +20,13 @@ export interface TierData {
 }
 
 export function useSubscriptionTiers() {
-  return useQuery({
-    queryKey: ['subscription-tiers'],
-    queryFn: async (): Promise<TierData[]> => {
-      const { data, error } = await supabase
-        .from('subscription_tiers')
-        .select('id, tier, name, description, discount_percentage, free_products_per_month, monthly_price_gbp, annual_price_gbp, stripe_monthly_price_id, stripe_annual_price_id, features, display_order, is_active')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
-      
-      if (error) throw error;
-      
-      return (data || []).map(tier => ({
-        ...tier,
-        features: Array.isArray(tier.features) ? tier.features as string[] : [],
-      }));
-    },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-  });
+  return { data: [] as TierData[], isLoading: false, error: null };
 }
 
-export function calculateAnnualSavings(monthlyPrice: number, annualPrice: number): number {
-  const yearlyAtMonthlyRate = monthlyPrice * 12;
-  return yearlyAtMonthlyRate - annualPrice;
+export function calculateAnnualSavings(_monthly: number, _annual: number): number {
+  return 0;
 }
 
-export function calculateAnnualSavingsPercent(monthlyPrice: number, annualPrice: number): number {
-  const yearlyAtMonthlyRate = monthlyPrice * 12;
-  if (yearlyAtMonthlyRate === 0) return 0;
-  return Math.round(((yearlyAtMonthlyRate - annualPrice) / yearlyAtMonthlyRate) * 100);
+export function calculateAnnualSavingsPercent(_monthly: number, _annual: number): number {
+  return 0;
 }

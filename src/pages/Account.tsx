@@ -16,7 +16,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useBadges } from '@/hooks/useBadges';
-import { useSubscription } from '@/hooks/useSubscription';
+
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { supabase } from '@/integrations/supabase/client';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
@@ -33,7 +33,7 @@ import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
 import { SavedCardsCard } from '@/components/account/SavedCardsCard';
 import { BecomeSellerCard } from '@/components/account/BecomeSellerCard';
 import { CreditsCard } from '@/components/account/CreditsCard';
-import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
+
 import { usePageTracking } from '@/hooks/usePageTracking';
 
 /* ─────────── Navigation Row ─────────── */
@@ -185,7 +185,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, session, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
   const { badges, userBadges } = useBadges();
-  const { isSubscribed } = useSubscription();
+  
   const { hasAccess: hasMarketplaceAccess } = useMarketplaceAccess();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -539,12 +539,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
               {/* Status Badges */}
               <div className="flex items-center gap-1.5 flex-wrap justify-center mt-1">
-                {isSubscribed && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/15 border border-primary/30">
-                    <Sparkles className="h-3 w-3 text-primary" />
-                    <span className="text-[10px] font-semibold text-primary">Eclipse+</span>
-                  </div>
-                )}
+
+
                 {affiliateStatus?.affiliate_id && (
                   <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-amber-500/15 border border-amber-500/30">
                     <Award className="h-3 w-3 text-amber-500" />
@@ -624,7 +620,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 discordUsername={profile?.discord_username || null}
                 robloxUserId={profile?.roblox_user_id || null}
                 robloxUsername={profile?.roblox_username || null}
-                hasEclipsePlus={isSubscribed}
+                hasEclipsePlus={false}
                 accountsLocked={(profile as any)?.accounts_locked}
                 onUpdate={() => {
                   queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
@@ -635,9 +631,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             </ExpandableSection>
             <ExpandableSection icon={Shield} label="Saved Payment Methods">
               <SavedCardsCard />
-            </ExpandableSection>
-            <ExpandableSection icon={Sparkles} label="Eclipse+ Subscription">
-              <SubscriptionCard />
             </ExpandableSection>
           </CardContent>
         </Card>

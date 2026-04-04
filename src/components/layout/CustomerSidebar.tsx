@@ -191,7 +191,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: t('sidebar.allStores'), icon: Store, href: '/stores' },
         { title: t('sidebar.viewAllCategories', 'All Categories'), icon: Grid3X3, href: '/categories' },
         { title: t('sidebar.featured'), icon: Star, href: '/featured' },
-        { title: 'Eclipse+', icon: Circle, href: '/eclipse-plus' },
+        
       ],
     },
     {
@@ -524,19 +524,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               {profileUsername && (
                 <p className="text-[11px] text-muted-foreground truncate">@{profileUsername}</p>
               )}
-              {isPremium ? (
-                <div className="flex items-center gap-1 mt-0.5">
-                  <Crown className="h-3 w-3 text-primary" />
-                  <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Eclipse+</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Free Plan</span>
-                  <Link to="/eclipse-plus" onClick={handleNavClick} className="text-[10px] font-semibold text-primary hover:underline">
-                    Upgrade
-                  </Link>
-                </div>
-              )}
+
+
             </div>
             {isMobileDrawer && (
               <Button variant="ghost" size="icon" className="h-7 w-7 min-h-0 min-w-0" onClick={onNavigate}>
@@ -591,33 +580,24 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               <Zap className="h-4 w-4" />
               Creator Hub
             </Link>
-          ) : !isPremium ? (
-            <Link
-              to="/eclipse-plus"
-              onClick={handleNavClick}
-              className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98] shadow-[0_0_16px_hsl(var(--primary)/0.25)]"
-            >
-              <Crown className="h-4 w-4" />
-              Upgrade to Eclipse+
-            </Link>
           ) : null}
         </div>
       )}
 
       {/* Collapsed CTA */}
-      {user && isCollapsed && (isSeller || !isPremium) && (
+      {user && isCollapsed && isSeller && (
         <div className="border-b border-border px-1.5 py-2 flex justify-center">
           <Tooltip>
             <TooltipTrigger asChild>
               <Link
-                to={isSeller ? '/seller' : '/eclipse-plus'}
+                to="/seller"
                 onClick={handleNavClick}
                 className="flex items-center justify-center h-8 w-8 rounded-lg bg-gradient-to-r from-primary to-purple-500 text-primary-foreground transition-all hover:opacity-90 active:scale-[0.95]"
               >
-                {isSeller ? <Zap className="h-4 w-4" /> : <Crown className="h-4 w-4" />}
+                <Zap className="h-4 w-4" />
               </Link>
             </TooltipTrigger>
-            <TooltipContent side="right">{isSeller ? 'Seller Dashboard' : 'Upgrade to Eclipse+'}</TooltipContent>
+            <TooltipContent side="right">Seller Dashboard</TooltipContent>
           </Tooltip>
         </div>
       )}

@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { VideoThumbnail } from '@/components/ui/VideoThumbnail';
 import { ImageZoomModal } from '@/components/ui/ImageZoomModal';
-import { FreeProductClaim } from '@/components/subscription/FreeProductClaim';
+
 import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { VerifiedPurchaseBadge } from '@/components/reviews/VerifiedPurchaseBadge';
@@ -745,16 +745,6 @@ export default function ProductDetail() {
                   />
                 )}
 
-                {/* Free Claim for Eclipse+ Members */}
-                {canClaimThisProduct && (
-                  <FreeProductClaim 
-                    productId={product.id} 
-                    productName={product.name} 
-                    categoryId={product.category_id}
-                    isResellable={product.is_resellable}
-                    eclipseFreeEligible={product.eclipse_free_eligible}
-                  />
-                )}
 
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row gap-4">
