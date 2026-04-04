@@ -67,7 +67,7 @@ export default function Cart() {
       <div className="container py-8 space-y-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl md:text-4xl font-display font-bold">{t('cart.yourCart')}</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold">{t('cart.yourCart')}</h1>
             <LoyaltyBadge />
           </div>
           <Button variant="ghost" size="sm" onClick={clearCart} className="text-destructive hover:text-destructive">
