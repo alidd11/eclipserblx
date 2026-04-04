@@ -67,7 +67,7 @@ export function LandingHero() {
   );
 
   return (
-    <section aria-labelledby="hero-heading" className="relative overflow-hidden" style={{ minHeight: '340px' }}>
+    <section aria-labelledby="hero-heading" className="relative overflow-hidden" style={{ minHeight: '400px' }}>
       <HeroBanner />
 
       <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-16 relative z-10">
