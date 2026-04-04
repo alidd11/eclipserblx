@@ -586,16 +586,16 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             <Link
               to="/seller"
               onClick={handleNavClick}
-              className="flex items-center justify-center gap-2 w-full rounded-lg bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
+              className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98] shadow-[0_0_16px_hsl(var(--primary)/0.25)]"
             >
               <Zap className="h-4 w-4" />
-              Seller Dashboard
+              Creator Hub
             </Link>
           ) : !isPremium ? (
             <Link
               to="/eclipse-plus"
               onClick={handleNavClick}
-              className="flex items-center justify-center gap-2 w-full rounded-lg bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
+              className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98] shadow-[0_0_16px_hsl(var(--primary)/0.25)]"
             >
               <Crown className="h-4 w-4" />
               Upgrade to Eclipse+
