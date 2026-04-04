@@ -32,6 +32,12 @@ export function TrendingProducts() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const imageUrls = useMemo(() => 
+    (products || []).slice(0, 8).map(p => getFirstImageUrl(p.images)).filter(Boolean),
+    [products]
+  );
+  usePreloadImages(imageUrls);
+
   if (isLoading) {
     return (
       <section className="px-4 sm:px-6 lg:px-8 py-6">
@@ -47,12 +53,6 @@ export function TrendingProducts() {
       </section>
     );
   }
-
-  const imageUrls = useMemo(() => 
-    (products || []).slice(0, 8).map(p => getFirstImageUrl(p.images)).filter(Boolean),
-    [products]
-  );
-  usePreloadImages(imageUrls);
 
   if (!products?.length) return null;
 
