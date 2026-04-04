@@ -48,109 +48,18 @@ const FREE_GAMES_PING_ROLE_ID = '1482480973726744660';
 // Popular game presets with verified working RSS/JSON feed URLs
 const POPULAR_GAMES = [
   {
-    name: 'CS2',
-    emoji: '💣',
-    feed_url: 'https://blog.counter-strike.net/index.php/feed/',
-    feed_type: 'rss',
-    description: 'Counter-Strike 2 blog and updates',
-    icon_url: 'https://cdn.cloudflare.steamstatic.com/apps/csgo/images/csgo_react/global/logo_cs_sm.png',
-    embed_color: 0xFFCC00,
-  },
-  {
-    name: 'GTA / Rockstar Games',
-    emoji: '🚗',
-    feed_url: 'https://rockstarintel.com/feed/',
-    feed_type: 'rss',
-    description: 'GTA, RDR2 and Rockstar news via RockstarINTEL',
-    icon_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Rockstar_Games_Logo.svg/1200px-Rockstar_Games_Logo.svg.png',
-    embed_color: 0xFFFF00,
-  },
-  {
-    name: 'Fortnite',
-    emoji: '🔫',
-    feed_url: 'https://fortnite-api.com/v2/news?language=en',
-    feed_type: 'json',
-    description: 'Fortnite official in-game news and updates',
-    icon_url: 'https://fortnite-api.com/assets/branding/icon.png',
-    embed_color: 0x2B7FFF,
-  },
-  {
     name: 'Roblox (Dev Updates)',
-    emoji: '🟩',
+    emoji: '\uD83D\uDFE9',
     feed_url: 'https://devforum.roblox.com/c/updates/announcements.rss',
     feed_type: 'rss',
     description: 'Roblox DevForum — Studio betas, API updates, engine changelogs',
     icon_url: 'https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/optimized/4X/3/4/e/34e3a04d95f8ed0e8f94a95f0e62c5be8a5c4c2c_2_180x180.png',
     embed_color: 0x00BB00,
   },
-  {
-    name: 'EA Games (All)',
-    emoji: '🎮',
-    feed_url: 'https://news.ea.com/rss/pressrelease.aspx',
-    feed_type: 'rss',
-    description: 'EA press releases — Apex, FIFA, Battlefield and more',
-    icon_url: 'https://media.contentapi.ea.com/content/dam/ea/ea-global-assets/ea-com-logos/ea_logo_2020_white.png',
-    embed_color: 0x0000FF,
-  },
-  {
-    name: 'GitHub Blog',
-    emoji: '🐙',
-    feed_url: 'https://github.blog/feed/',
-    feed_type: 'rss',
-    description: 'Developer tools, Copilot, and GitHub platform updates',
-    icon_url: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
-    embed_color: 0x1A1E2A,
-  },
-  {
-    name: 'Unity Blog',
-    emoji: '🎯',
-    feed_url: 'https://blog.unity.com/feed',
-    feed_type: 'rss',
-    description: 'Unity engine updates, tutorials and game dev news',
-    icon_url: 'https://unity.com/favicon.ico',
-    embed_color: 0x222222,
-  },
 ];
 
-// Free Game Alert presets — from reputable storefronts and publishers
-const FREE_GAME_FEEDS = [
-  {
-    name: 'Epic Games Store',
-    emoji: '🏪',
-    feed_url: 'https://store.epicgames.com/en-US/free-games',
-    feed_type: 'epic_free',
-    description: 'Weekly free games from the Epic Games Store',
-    icon_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Epic_Games_logo.svg/1200px-Epic_Games_logo.svg.png',
-    embed_color: 0x2A2A2A,
-  },
-  {
-    name: 'Steam Free Promotions',
-    emoji: '🎮',
-    feed_url: 'https://store.steampowered.com/feeds/news/app/593110',
-    feed_type: 'rss',
-    description: 'Steam official news including free weekend and free-to-keep promotions',
-    icon_url: 'https://store.steampowered.com/favicon.ico',
-    embed_color: 0x1B2838,
-  },
-  {
-    name: 'GOG Free Games',
-    emoji: '🎁',
-    feed_url: 'https://www.gog.com/en/feed',
-    feed_type: 'rss',
-    description: 'GOG.com giveaways and DRM-free game deals',
-    icon_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/GOG.com_logo.svg/1200px-GOG.com_logo.svg.png',
-    embed_color: 0x86328A,
-  },
-  {
-    name: 'Humble Bundle',
-    emoji: '📦',
-    feed_url: 'https://blog.humblebundle.com/feed/',
-    feed_type: 'rss',
-    description: 'Humble Bundle free games, bundles, and charity giveaways',
-    icon_url: 'https://humblebundle-a.akamaihd.net/static/hashed/47e474980e03bb6c0709e0b1a27f17a02a336e3e.png',
-    embed_color: 0xCC2929,
-  },
-];
+// Free Game Alert presets
+const FREE_GAME_FEEDS: typeof POPULAR_GAMES = [];
 
 export default function GameNewsFeeds() {
   const queryClient = useQueryClient();
