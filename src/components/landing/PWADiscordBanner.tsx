@@ -26,7 +26,7 @@ export function PWADiscordBanner() {
       href={discordUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group block border border-border bg-card hover:border-[#5865F2]/40 transition-all duration-300 rounded-lg overflow-hidden shadow-sm h-full"
+      className="group block border border-[#5865F2]/20 bg-card hover:border-[#5865F2]/50 transition-all duration-300 rounded-lg overflow-hidden shadow-sm hover:shadow-[0_0_20px_rgba(88,101,242,0.15)] h-full"
     >
       <div className="px-5 py-5 bg-gradient-to-r from-[#5865F2]/10 to-transparent h-full flex flex-col justify-center gap-4">
         {/* Header */}
