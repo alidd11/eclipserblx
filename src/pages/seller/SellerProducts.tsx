@@ -1056,19 +1056,33 @@ export default function SellerProducts() {
                 </Button>
               </div>
 
-              {/* Downloadable File */}
+              {/* Downloadable Files */}
               <div className="space-y-2">
-                <Label>Downloadable File <span className="text-destructive">*</span></Label>
+                <Label>
+                  Downloadable Files <span className="text-destructive">*</span>
+                  <span className="text-xs text-muted-foreground ml-2">
+                    ({(form.asset_file_url ? 1 : 0) + form.additional_asset_files.length}/{limits.maxProductFiles})
+                  </span>
+                </Label>
                 <input
                   type="file"
                   ref={fileInputRef}
                   onChange={handleAssetUpload}
                   className="hidden"
                 />
+                <input
+                  type="file"
+                  ref={additionalFileInputRef}
+                  onChange={handleAdditionalFileUpload}
+                  className="hidden"
+                />
+
+                {/* Main file */}
                 {form.asset_file_url ? (
                   <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/50">
                     <FileCheck className="h-5 w-5 text-green-500" />
                     <span className="flex-1 text-sm truncate">{form.asset_file_url.split('/').pop()}</span>
+                    <Badge variant="secondary" className="text-xs">Main</Badge>
                     <Button
                       type="button"
                       variant="ghost"
@@ -1095,13 +1109,58 @@ export default function SellerProducts() {
                     ) : (
                       <>
                         <Upload className="h-4 w-4 mr-2" />
-                        Upload File
+                        Upload Main File
                       </>
                     )}
                   </Button>
                 )}
+
+                {/* Additional files */}
+                {form.additional_asset_files.map((file, index) => (
+                  <div key={index} className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/50">
+                    <FileCheck className="h-5 w-5 text-green-500" />
+                    <span className="flex-1 text-sm truncate">{file.split('/').pop()}</span>
+                    <Badge variant="outline" className="text-xs">Extra</Badge>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeAdditionalFile(index)}
+                      className="h-8 w-8"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+
+                {/* Add more files button */}
+                {form.asset_file_url && (form.asset_file_url ? 1 : 0) + form.additional_asset_files.length < limits.maxProductFiles && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => additionalFileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="w-full"
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Add Another File
+                      </>
+                    )}
+                  </Button>
+                )}
+
                 <p className="text-xs text-muted-foreground">
-                  Upload the file customers will download after purchase
+                  {limits.maxProductFiles === 1 
+                    ? 'Upload the file customers will download. Upgrade to Pro for up to 3 files per product.'
+                    : `Upload up to ${limits.maxProductFiles} files per product.`
+                  }
                 </p>
               </div>
 
