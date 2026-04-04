@@ -44,9 +44,9 @@ export function GlobalCategoryBar() {
   if (!categories?.length) return null;
 
   return (
-    <div className="bg-muted/30 border-b border-border">
+    <div className="border-b border-border/30">
       <div className="container">
-        <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide py-1.5 -mx-1 px-1">
+        <nav className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-2 -mx-1 px-1">
           <Link
             to="/products"
             className={cn(
