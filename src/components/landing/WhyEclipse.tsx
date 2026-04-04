@@ -21,7 +21,7 @@ export function WhyEclipse() {
           {BADGES.map((badge) => (
             <div key={badge.label} className="flex items-center gap-1.5 flex-shrink-0 rounded-full border border-border bg-card px-3 py-1.5 lg:px-4 lg:py-2 hover:border-primary/30 hover:bg-primary/5 transition-all">
               <badge.icon className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-              <span className="text-xs font-medium text-foreground whitespace-nowrap">{badge.label}</span>
+              <span className="text-xs lg:text-sm font-medium text-foreground whitespace-nowrap">{badge.label}</span>
             </div>
           ))}
         </div>

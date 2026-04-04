@@ -104,7 +104,7 @@ export function TopSellers() {
                       {store.is_verified && <BadgeCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
                       {store.is_trusted && <Shield className="h-3 w-3 text-amber-400 flex-shrink-0" />}
                     </div>
-                    <span className="text-[10px] text-muted-foreground">{store.follower_count ?? 0} followers</span>
+                    <span className="text-xs text-muted-foreground">{store.follower_count ?? 0} followers</span>
                   </div>
                 </div>
               </div>

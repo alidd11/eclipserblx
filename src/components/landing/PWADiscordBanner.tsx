@@ -66,9 +66,9 @@ export function PWADiscordBanner() {
             </div>
           </div>
 
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#5865F2] group-hover:underline shrink-0">
+          <Button size="sm" variant="outline" className="text-[10px] font-semibold uppercase tracking-wider text-[#5865F2] border-[#5865F2]/30 hover:bg-[#5865F2]/10 shrink-0 h-7 px-3">
             Join →
-          </span>
+          </Button>
         </div>
       </div>
     </a>
