@@ -830,7 +830,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
             </form>
           ) : mode === 'verify' ? (
             /* OTP Verification Form */
-            <form onSubmit={handleVerifyOtp} className="gaming-card p-6 space-y-6">
+            <form onSubmit={handleVerifyOtp} className="rounded-xl border border-border bg-card p-5 space-y-4">
               <div className="flex justify-center">
                 <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
                   <Mail className="h-8 w-8 text-primary" />
