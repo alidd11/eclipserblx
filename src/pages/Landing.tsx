@@ -80,6 +80,24 @@ export default function Landing() {
       </LazySection>
 
 
+      {/* Recent Releases — horizontal carousel */}
+      <LazySection minHeight="200px" rootMargin="300px">
+        <SectionErrorBoundary section="recent-releases" compact>
+          <Suspense fallback={null}>
+            <RecentReleases />
+          </Suspense>
+        </SectionErrorBoundary>
+      </LazySection>
+
+      {/* On Sale Products */}
+      <LazySection minHeight="200px" rootMargin="200px">
+        <SectionErrorBoundary section="on-sale" compact>
+          <Suspense fallback={null}>
+            <OnSaleProducts />
+          </Suspense>
+        </SectionErrorBoundary>
+      </LazySection>
+
       {/* New This Week */}
       <LazySection minHeight="200px" rootMargin="200px">
         <SectionErrorBoundary section="new-this-week" compact>
