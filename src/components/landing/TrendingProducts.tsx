@@ -104,7 +104,7 @@ export function TrendingProducts() {
         </div>
 
         {/* Desktop: normal grid */}
-        <div className="hidden sm:grid grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="hidden sm:grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
           {products.map((product) => {
             const store = product.stores as any;
             const category = product.categories as any;
