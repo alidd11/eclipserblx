@@ -594,26 +594,24 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
 
   return (
     <div ref={ref} className="min-h-screen bg-background overflow-y-auto">
-      {/* Clean background - no color washes */}
-
-      <div className="min-h-screen flex items-center justify-center p-4 pt-[max(2rem,env(safe-area-inset-top))] pb-8 sm:py-12 relative">
-        <div className="w-full max-w-md space-y-6">
+      <div className="min-h-screen flex items-center justify-center p-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-6 sm:py-10 relative">
+        <div className="w-full max-w-[420px] space-y-4">
           {/* Back Link */}
           <Link
             to="/"
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
             {t('common.backToStore')}
           </Link>
 
           {/* Header */}
-          <div className="text-center">
-            <div className="inline-flex h-12 w-12 rounded-lg gradient-button items-center justify-center mb-4">
-              <span className="text-white font-display font-bold text-lg">UK</span>
+          <div className="text-center space-y-1.5">
+            <div className="inline-flex h-10 w-10 rounded-xl bg-primary/10 items-center justify-center mb-2">
+              <span className="text-primary font-display font-bold text-sm">E</span>
             </div>
-            <h1 className="font-display text-2xl font-bold">{getTitle()}</h1>
-            <p className="text-muted-foreground mt-2">{getDescription()}</p>
+            <h1 className="font-display text-xl font-bold">{getTitle()}</h1>
+            <p className="text-muted-foreground text-sm">{getDescription()}</p>
           </div>
 
           {/* Forgot Password - Email Entry */}
