@@ -1,12 +1,11 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Package, Map, FileCode, Car, Plane, Building2, Shirt, 
-  Layout, Bot, Globe, Gift
+  Layout, Bot, Globe
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const CATEGORIES = [
-  { label: 'All', slug: '', icon: Gift },
   { label: 'Scripts', slug: 'scripts-systems', icon: FileCode },
   { label: 'Maps', slug: 'maps', icon: Map },
   { label: 'Vehicles', slug: 'civilian-vehicles', icon: Car },
