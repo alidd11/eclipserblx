@@ -461,10 +461,10 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
   return (
     <MainLayout>
-      <div className="container py-6 space-y-4 max-w-lg mx-auto">
+      <div className="container py-4 space-y-3 max-w-lg mx-auto">
 
         {/* ═══ Profile Header ═══ */}
-        <Card className="bg-card border-border overflow-hidden">
+        <Card className="rounded-xl border-border bg-card overflow-hidden">
           <CardContent className="p-0">
             <div className="p-5 flex flex-col items-center text-center gap-2 relative">
               <AvatarUpload
@@ -686,7 +686,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         </Card>
 
         {/* App Version */}
-        <p className="text-center text-[10px] text-muted-foreground/60 pb-4">Eclipse v2.0</p>
+        <p className="text-center text-[10px] text-muted-foreground/60 pb-4">Eclipse v3.0</p>
 
         {/* Dialogs */}
         <SignOutConfirmDialog

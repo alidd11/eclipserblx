@@ -470,7 +470,7 @@ export default function ProductDetail() {
         />
       )}
       <PullToRefresh onRefresh={handleRefresh}>
-        <div className="container py-8 space-y-8">
+        <div className="container py-4 sm:py-8 space-y-6">
         
         {/* Admin Preview Banner for Scheduled Products */}
         {isStaff && isScheduledProduct && (
@@ -489,11 +489,11 @@ export default function ProductDetail() {
         )}
 
 
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 max-w-full">
+        <div className="grid lg:grid-cols-2 gap-5 lg:gap-10 max-w-full">
           {/* Images */}
-          <div className="space-y-4 min-w-0">
+          <div className="space-y-3 min-w-0">
             <div 
-              className="aspect-[4/3] gaming-card overflow-hidden select-none relative bg-black/20 cursor-zoom-in group w-full touch-pan-y"
+              className="aspect-[4/3] rounded-xl overflow-hidden select-none relative bg-black/20 cursor-zoom-in group w-full touch-pan-y border border-border/30"
               onContextMenu={(e) => e.preventDefault()}
               onClick={() => {
                 const currentImg = images[selectedImage];
@@ -632,11 +632,11 @@ export default function ProductDetail() {
           </div>
 
           {/* Details */}
-          <div className="space-y-6">
-                <Card className="bg-card border-border/50 overflow-hidden relative">
+          <div className="space-y-4">
+                <Card className="rounded-xl border-border/50 bg-card overflow-hidden relative">
               {/* Subtle top accent line */}
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-              <CardContent className="pt-6 space-y-6">
+              <CardContent className="pt-5 space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     {product.categories && (
@@ -650,7 +650,7 @@ export default function ProductDetail() {
                       </Badge>
                     )}
                   </div>
-                  <h1 className="text-3xl md:text-4xl font-display font-bold">{getTranslatedName(product.name)}</h1>
+                  <h1 className="text-2xl md:text-3xl font-display font-bold">{getTranslatedName(product.name)}</h1>
                 </div>
 
                 <div className="space-y-2">
@@ -717,7 +717,7 @@ export default function ProductDetail() {
                   ) : (
                     <>
                       {!isEligible ? (
-                        <span className="text-4xl font-bold">
+                        <span className="text-3xl font-bold">
                           {formatPrice(Number(product.price))}
                         </span>
                       ) : (
@@ -726,7 +726,7 @@ export default function ProductDetail() {
                             {formatPrice(Number(product.price))}
                           </p>
                           <div className="flex items-center gap-3 flex-wrap">
-                            <span className="text-4xl font-bold flex items-center gap-2 text-amber-400">
+                            <span className="text-3xl font-bold flex items-center gap-2 text-amber-400">
                               <Sparkles className="h-6 w-6" />
                               {formatPrice(memberPrice)}
                             </span>
@@ -757,12 +757,12 @@ export default function ProductDetail() {
                 )}
 
 
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <Button
                       size="lg"
                       className={cn(
-                        "flex-1 h-14 text-lg",
+                        "flex-1 h-12 text-base font-semibold",
                         !inCart && "gradient-button border-0"
                       )}
                       variant={inCart ? "secondary" : "default"}
