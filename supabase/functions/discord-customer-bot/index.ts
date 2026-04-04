@@ -2333,7 +2333,7 @@ async function handleRandomShowcase(supabase: any, branding: any) {
     .from("products")
     .select(`
       id, name, slug, product_number, price, images, description,
-      stores!inner (name, slug, logo_url, is_verified, is_trusted)
+      stores!inner (name, slug, logo_url, is_verified)
     `)
     .eq("is_active", true)
     .eq("is_featured", true)
