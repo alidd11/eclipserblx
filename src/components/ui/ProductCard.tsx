@@ -126,9 +126,9 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
       onMouseLeave={handleMouseLeave}
     >
       <div className={cn(
-        "overflow-hidden h-full flex flex-col rounded-lg border border-border bg-card transition-all duration-200",
-        "hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5",
-        isFeatured && "border-primary/30"
+        "overflow-hidden h-full flex flex-col rounded-lg border border-border/60 bg-card transition-all duration-300",
+        "hover:border-primary/50 hover:shadow-[0_0_20px_hsl(var(--primary)/0.15)]",
+        isFeatured && "border-primary/30 shadow-[0_0_12px_hsl(var(--primary)/0.1)]"
       )}>
         {/* Image/Video */}
         <div className="relative aspect-[4/3] bg-muted/30 overflow-hidden flex-shrink-0">
