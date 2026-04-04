@@ -574,8 +574,19 @@ export default function MyPurchases() {
                                 />
                               ) : isBot ? (
                                 <Badge variant="secondary" className="text-xs">Loading...</Badge>
+                              ) : totalFiles > 1 ? (
+                                <div className="flex flex-wrap gap-1.5">
+                                  <Button onClick={() => handleDownload(item, 0)} disabled={!hasAsset || isDownloading} className="gradient-button border-0" size="sm">
+                                    {isDownloading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{downloadProgress?.progress || 0}%</> : <><Download className="h-4 w-4 mr-2" />Main File</>}
+                                  </Button>
+                                  {additionalFiles.map((_: string, idx: number) => (
+                                    <Button key={idx} onClick={() => handleDownload(item, idx + 1)} disabled={isDownloading} variant="outline" size="sm">
+                                      <FileDown className="h-4 w-4 mr-1" />File {idx + 2}
+                                    </Button>
+                                  ))}
+                                </div>
                               ) : (
-                                <Button onClick={() => handleDownload(item)} disabled={!hasAsset || isDownloading} className="gradient-button border-0" size="sm">
+                                <Button onClick={() => handleDownload(item, 0)} disabled={!hasAsset || isDownloading} className="gradient-button border-0" size="sm">
                                   {isDownloading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{downloadProgress?.progress || 0}%</> : !hasAsset ? <><Package className="h-4 w-4 mr-2" />No file</> : <><Download className="h-4 w-4 mr-2" />Download</>}
                                 </Button>
                               )}
