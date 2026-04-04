@@ -10557,6 +10557,44 @@ export type Database = {
           },
         ]
       }
+      user_category_affinity: {
+        Row: {
+          affinity_score: number
+          category_id: string
+          created_at: string
+          id: string
+          interaction_count: number
+          last_interaction_at: string
+          user_id: string
+        }
+        Insert: {
+          affinity_score?: number
+          category_id: string
+          created_at?: string
+          id?: string
+          interaction_count?: number
+          last_interaction_at?: string
+          user_id: string
+        }
+        Update: {
+          affinity_score?: number
+          category_id?: string
+          created_at?: string
+          id?: string
+          interaction_count?: number
+          last_interaction_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_category_affinity_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_ip_logs: {
         Row: {
           action: string
@@ -11561,6 +11599,10 @@ export type Database = {
         Returns: boolean
       }
       suggest_correction: { Args: { search_query: string }; Returns: string }
+      update_category_affinity: {
+        Args: { p_category_id: string; p_user_id: string; p_weight?: number }
+        Returns: undefined
+      }
       update_seller_trust_score: {
         Args: {
           p_is_blocked: boolean
