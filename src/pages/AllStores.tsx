@@ -26,7 +26,6 @@ interface StoreData {
   banner_url: string | null;
   accent_color: string | null;
   is_verified: boolean;
-  is_trusted: boolean;
   follower_count: number | null;
   average_rating: number | null;
   product_count: number | null;
