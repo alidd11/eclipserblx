@@ -1,111 +1,79 @@
 
+# Customer Experience Full Overhaul — Gaming Marketplace
 
-# Elevate Seller Experience to Roblox Enterprise Level
-
-This plan transforms the seller dashboard from a basic management tool into a professional, polished experience comparable to Roblox's Creator Hub and Enterprise dashboards.
-
----
-
-## Overview
-
-The current seller dashboard is functional but feels like a startup MVP. To reach enterprise level, we need: a refined visual hierarchy, Roblox-native terminology and branding, smarter data presentation, and workflow streamlining. The changes are purely UI/UX — no database migrations needed.
+Transform the entire customer-facing experience into a bold, immersive gaming marketplace inspired by Roblox Creator Store and Steam.
 
 ---
 
-## 1. Dashboard Hero Redesign — "Creator Hub" Feel
+## 1. Homepage — Immersive Landing
 
-Replace the current flat banner + stat cards with a single cohesive welcome section inspired by Roblox Creator Hub.
+- **Hero section**: Add a subtle animated gradient background with deeper contrast, bolder typography, and a glowing CTA button
+- **Section headers**: Replace plain text with bold uppercase tracking, accent underlines, and optional glow effects
+- **Product cards**: Add a subtle border glow on hover, improved badge styling with sharper contrast
+- **Trending/New sections**: Add section numbering or ranking badges for trending items
 
-- **Greeting bar**: "Welcome back, {store_name}" with today's date, store health score pill, and a "Go Live" / "View Store" CTA
-- **Stat cards**: Redesign the 5 revenue stat cards into a single unified row with glass-morphism styling, subtle gradient borders, and animated counters
-- **Real-time pulse indicator**: Add a green dot next to "Orders" showing live order stream is active
+**Files**: `Index.tsx`, `ProductCard.tsx`, section components
 
-**Files**: `SellerDashboard.tsx`, `RevenueSummaryStats.tsx`
+## 2. Product Detail Page — Steam-style Immersion
 
-## 2. Quick Actions → Command Center Grid
+- **Image gallery**: Larger, more cinematic presentation with dark overlay gradients
+- **Trust badges**: Redesign with gaming-style iconography — shield icons, checkmarks with subtle glow
+- **Price area**: Bold pricing with a prominent "Add to Cart" CTA, sale prices with strikethrough styling
+- **Reviews section**: Star ratings with filled/empty star visuals, reviewer badges
 
-Upgrade the plain icon grid into a Roblox-style command center with:
+**Files**: `ProductPage.tsx`, trust components
 
-- Larger touch targets with subtle hover animations
-- Live badge counts (e.g., "3 pending" on Orders, "2 new" on Messages)
-- Group headers: "Create", "Manage", "Grow"
-- Primary action spotlight: "Upload Product" as a larger, highlighted card
+## 3. Account Dashboard — Player Profile Feel
 
-**File**: `SellerDashboard.tsx`
+- **Profile header**: Gaming-style profile card with level/stats display, Eclipse+ badge prominence
+- **Order history**: Timeline-style with status pills matching seller dashboard style
+- **Wallet section**: Balance card with gradient styling, transaction history with icons
+- **Wishlist**: Grid view with quick-add-to-cart actions
 
-## 3. Sidebar Polish — Creator Hub Navigation
+**Files**: Account page components
 
-- Add a "Creator Hub" label at the top instead of "Seller Dashboard"
-- Add status indicators next to key items (green dot for connected integrations, amber for pending setup)
-- Add a "What's New" changelog link at the bottom with an unread dot
-- Improve group header typography with slightly bolder weight and more spacing
+## 4. Cart & Checkout — Streamlined Conversion
 
-**File**: `SellerSidebar.tsx`
+- **Cart page**: Cleaner item cards with product thumbnails, quantity controls, and savings highlights
+- **Checkout**: Maintain existing embedded Stripe flow but polish the surrounding UI
+- **Order confirmation**: Add celebration animation and clear next-steps
 
-## 4. Product Management — Enterprise Table UX
+**Files**: Cart/checkout components
 
-- Add inline quick-edit for price and status directly in the table row
-- Add product thumbnail previews in the table
-- Add bulk action toolbar that appears when items are selected (already partially exists, enhance it)
-- Add "Quick Upload" floating action button on mobile
-- Status pills: use Roblox-style colored dots (green=live, amber=pending, red=rejected) instead of text badges
+## 5. Navigation & Global Polish
 
-**File**: `SellerProducts.tsx`
+- **Category bar**: Sharper pill styling with active state glow
+- **Customer sidebar**: Gaming-themed with status indicators, quick-stat badges
+- **Search results**: Better card layout with relevance indicators
+- **Mobile bottom tab bar**: Polish icons and add subtle active state animations
+- **Empty states**: Gaming-themed illustrations and CTAs across all pages
 
-## 5. Analytics — Roblox Creator Analytics Parity
+**Files**: Layout components, navigation components
 
-- Add a "Key Insights" summary at the top: "Your best day was X", "Traffic is up Y% this week"
-- Add conversion funnel visualization: Views → Clicks → Purchases
-- Add a "Compare Periods" toggle (this week vs last week overlay on charts)
+## 6. Design Token Updates
 
-**File**: `SellerAnalytics.tsx`
+- Enhance CSS variables for deeper contrast, add gaming-specific tokens:
+  - `--glow-primary` for accent glows
+  - Sharper card borders and hover states
+  - Bolder gradient combinations
 
-## 6. Orders Page — Real-time Activity Feed
-
-- Add a real-time activity feed sidebar showing "User X just purchased Y" with timestamps
-- Add order status timeline (Paid → Processing → Delivered) with visual progress
-- Improve the stats cards to match the dashboard's unified style
-
-**File**: `SellerOrders.tsx`
-
-## 7. Onboarding — Roblox-style Progress Cards
-
-- Redesign the setup wizard steps as horizontal progress cards with completion animations
-- Add estimated time remaining per step
-- Add a "Skip Tour" option that marks non-essential steps as skipped
-
-**File**: `SellerSetup.tsx`
-
-## 8. Global Polish
-
-- **Page headers**: Standardize all seller pages with consistent header pattern — title, subtitle, and optional action button aligned right
-- **Empty states**: Replace plain text empty states with illustrated placeholders and CTAs
-- **Loading states**: Use consistent skeleton patterns across all seller pages
-- **Micro-interactions**: Add subtle scale/fade transitions on card hovers and tab switches
-
-**Files**: Multiple seller page files
+**Files**: `index.css`, `tailwind.config.ts`
 
 ---
 
 ## Technical Details
 
-- All changes are frontend-only (React components, Tailwind CSS)
-- No database migrations required
-- No new dependencies — uses existing framer-motion, lucide-react, and Tailwind
-- Approximately 8-10 files modified
-- Maintains existing data fetching patterns and hooks
+- All frontend-only changes (React + Tailwind)
+- No database migrations needed
+- Uses existing framer-motion for animations
 - Mobile-first responsive approach preserved
-
----
+- Maintains all existing business logic and data fetching
 
 ## Priority Order
 
-1. Dashboard Hero + Stats redesign (highest visual impact)
-2. Quick Actions command center
-3. Sidebar polish
-4. Product table improvements
-5. Analytics insights
-6. Orders activity feed
-7. Onboarding redesign
-8. Global polish pass
-
+1. Design tokens + global polish (foundation)
+2. Homepage sections
+3. Product cards + detail page
+4. Account dashboard
+5. Cart & checkout polish
+6. Navigation refinements
