@@ -300,7 +300,7 @@ export default function Categories() {
         { name: 'Categories', url: 'https://eclipserblx.com/categories' },
       ]} />
       <PullToRefresh onRefresh={handleRefresh}>
-      <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      <div className="px-4 sm:px-6 lg:px-[5%] py-4 sm:py-6">
         <PageHeader
           title="Browse Categories"
           description="Explore our full catalogue of assets, scripts, vehicles, and more."
