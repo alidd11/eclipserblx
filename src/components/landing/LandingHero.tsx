@@ -81,7 +81,7 @@ export function LandingHero() {
             The All-in-One Marketplace for {wordRotator} Creators.
           </h1>
 
-          <p className="text-sm text-foreground/60 max-w-md mb-6 leading-relaxed">
+          <p className="text-sm lg:text-base text-foreground/60 max-w-lg mb-8 leading-relaxed">
             Buy and sell premium scripts, models, UI kits and game assets. Lower fees, instant delivery, trusted by thousands of creators.
           </p>
 
