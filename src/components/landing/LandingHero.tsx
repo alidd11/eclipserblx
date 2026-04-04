@@ -67,30 +67,30 @@ export function LandingHero() {
   );
 
   return (
-    <section aria-labelledby="hero-heading" className="relative overflow-hidden" style={{ minHeight: '340px' }}>
+    <section aria-labelledby="hero-heading" className="relative overflow-hidden" style={{ minHeight: '400px' }}>
       <HeroBanner />
 
-      <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-16 relative z-10">
+      <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-20 relative z-10">
         {/* Desktop: centered layout */}
         <div className="hidden lg:flex lg:flex-col lg:items-center lg:text-center">
           <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary mb-3 drop-shadow-sm">
             Roblox & Discord Marketplace
           </p>
 
-          <h1 id="hero-heading" className="font-display text-3xl lg:text-5xl font-bold leading-[1.08] tracking-tight mb-4 max-w-3xl drop-shadow-md">
+          <h1 id="hero-heading" className="font-display text-3xl lg:text-6xl font-bold leading-[1.05] tracking-tight mb-5 max-w-3xl drop-shadow-md">
             The All-in-One Marketplace for {wordRotator} Creators.
           </h1>
 
-          <p className="text-sm text-foreground/60 max-w-md mb-6 leading-relaxed">
+          <p className="text-sm lg:text-base text-foreground/60 max-w-lg mb-8 leading-relaxed">
             Buy and sell premium scripts, models, UI kits and game assets. Lower fees, instant delivery, trusted by thousands of creators.
           </p>
 
           {/* CTA hierarchy */}
-          <div className="flex items-center gap-6 mb-6">
+          <div className="flex items-center gap-6 mb-8">
             <Link to="/products">
-              <Button size="sm" className="h-10 px-6 text-xs font-semibold uppercase tracking-wide shadow-[0_0_20px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.4)] transition-shadow">
+              <Button size="lg" className="h-12 px-8 text-sm font-semibold uppercase tracking-wide shadow-[0_0_24px_hsl(var(--primary)/0.35)] hover:shadow-[0_0_40px_hsl(var(--primary)/0.5)] transition-shadow">
                 Browse Marketplace
-                <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
             <Link
@@ -111,7 +111,7 @@ export function LandingHero() {
               <button
                 key={tag.label}
                 onClick={() => handleTagClick(tag)}
-                className="text-[11px] px-2 py-0.5 rounded-sm border border-border/50 text-foreground/70 hover:text-foreground hover:border-border transition-colors"
+                className="text-[11px] px-2.5 py-1 rounded-md border border-border/50 text-foreground/70 hover:text-foreground hover:border-border hover:bg-muted/40 transition-all"
               >
                 {tag.label}
               </button>

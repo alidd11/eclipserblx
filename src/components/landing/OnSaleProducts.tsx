@@ -116,7 +116,7 @@ export function OnSaleProducts() {
             <div className="p-1.5 rounded-lg bg-red-500/10">
               <Tag className="h-4 w-4 text-red-400" />
             </div>
-            <h2 className="text-base sm:text-lg font-bold tracking-tight uppercase">On Sale</h2>
+            <h2 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight uppercase">On Sale</h2>
             <span className="text-[10px] uppercase tracking-wider text-red-400/80 font-semibold bg-red-500/10 px-1.5 py-0.5 rounded">
               Sale!
             </span>

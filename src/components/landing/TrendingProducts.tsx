@@ -64,7 +64,7 @@ export function TrendingProducts() {
             <div className="p-1.5 rounded-lg bg-primary/10">
               <TrendingUp className="h-4 w-4 text-primary" />
             </div>
-            <h2 className="text-base sm:text-lg font-bold tracking-tight uppercase">Trending Now</h2>
+            <h2 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight uppercase">Trending Now</h2>
             <span className="text-[10px] text-muted-foreground font-medium bg-muted/60 px-1.5 py-0.5 rounded">{products.length} items</span>
           </div>
           <Link to="/products?sort=popular" className="text-xs text-primary hover:underline flex items-center gap-1">
