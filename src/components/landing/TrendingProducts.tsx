@@ -7,6 +7,8 @@ import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductCardSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { usePreloadImages } from '@/hooks/usePreloadImages';
+import { useMemo } from 'react';
 
 export function TrendingProducts() {
   const { data: products, isLoading } = useQuery({
