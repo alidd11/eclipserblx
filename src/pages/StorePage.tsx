@@ -416,6 +416,19 @@ export default function StorePage() {
       averageRating={store.average_rating}
       bio={bio}
     >
+      <StoreFloatingHeader
+        storeName={store.name}
+        logoUrl={store.logo_url}
+        storeId={store.id}
+        accentColor={accentColor}
+        onMessage={() => {
+          if (!user) {
+            navigate('/auth?redirect=' + encodeURIComponent(`/store/${storeSlug}`));
+            return;
+          }
+          navigate(`/store-messages?store=${store.id}`);
+        }}
+      />
       {/* Store Banner - with scheduling */}
       {(() => {
         const now = new Date();
