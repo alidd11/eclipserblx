@@ -77,7 +77,7 @@ export function LandingHero() {
             Roblox & Discord Marketplace
           </p>
 
-          <h1 id="hero-heading" className="font-display text-3xl lg:text-5xl font-bold leading-[1.08] tracking-tight mb-4 max-w-3xl drop-shadow-md">
+          <h1 id="hero-heading" className="font-display text-3xl lg:text-6xl font-bold leading-[1.05] tracking-tight mb-5 max-w-3xl drop-shadow-md">
             The All-in-One Marketplace for {wordRotator} Creators.
           </h1>
 
