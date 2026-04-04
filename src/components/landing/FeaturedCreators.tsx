@@ -69,7 +69,6 @@ export function FeaturedCreators() {
                       <div className="flex items-center gap-1">
                         <p className="text-sm font-semibold truncate">{store.name}</p>
                         {store.is_verified && <ShieldCheck className="h-3 w-3 text-primary flex-shrink-0" />}
-                        {store.is_trusted && <Award className="h-3 w-3 text-primary/70 flex-shrink-0" />}
                       </div>
                       <p className="text-[10px] text-muted-foreground">
                         {store.follower_count ?? 0} followers

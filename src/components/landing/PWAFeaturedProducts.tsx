@@ -56,9 +56,6 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
             {product.stores?.is_verified && (
               <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
             )}
-            {product.stores?.is_trusted && (
-              <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />
-            )}
           </div>
         </div>
       </div>

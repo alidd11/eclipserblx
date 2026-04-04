@@ -830,20 +830,6 @@ export default function SellerStoreDetail() {
               
               <Separator />
               
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Trusted Seller</p>
-                  <p className="text-sm text-muted-foreground">Manually granted by administrators for proven sellers</p>
-                </div>
-                <Switch
-                  checked={store.is_trusted}
-                  onCheckedChange={(checked) => toggleTrustedMutation.mutate(checked)}
-                  disabled={toggleTrustedMutation.isPending}
-                />
-              </div>
-              
-              <Separator />
-              
               {/* Deactivate button - for non-admin stores when active */}
               {!isAdminManagedStore && store.is_active && (
                 <div className="pt-2">

@@ -84,7 +84,6 @@ export interface Store {
   // Followers
   follower_count?: number;
   about_content?: string;
-  is_trusted?: boolean;
   // Roblox integrations
   roblox_group_id?: string;
   roblox_group_discount_enabled?: boolean;

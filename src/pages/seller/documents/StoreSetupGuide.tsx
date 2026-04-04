@@ -183,14 +183,14 @@ export default function StoreSetupGuide() {
                   <Star className="h-6 w-6 text-amber-500" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg mb-2">Earn Trusted Seller Status</h3>
+                  <h3 className="font-bold text-lg mb-2">Earn Verified Seller Status</h3>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Trusted sellers receive a verified badge, priority listing placement, and increased buyer confidence. Earn this status through consistent quality, positive reviews, and reliable delivery.
+                    Complete the Stripe Connect verification process to earn your Verified Seller badge. This confirms your identity and business details, giving buyers confidence in your store.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline" className="text-xs">Verified Badge</Badge>
-                    <Badge variant="outline" className="text-xs">Priority Placement</Badge>
-                    <Badge variant="outline" className="text-xs">Buyer Trust</Badge>
+                    <Badge variant="outline" className="text-xs">Buyer Confidence</Badge>
+                    <Badge variant="outline" className="text-xs">Identity Confirmed</Badge>
                   </div>
                 </div>
               </div>
