@@ -47,23 +47,15 @@ export default function Landing() {
         <LandingHero />
       </SectionErrorBoundary>
 
-      {/* Promotions + Banners */}
+      {/* Promotions + Banners — only take space when content renders */}
       <SectionErrorBoundary section="promotions" compact>
-        <ScrollReveal direction="up" distance={20} duration={0.4}>
-          <div className="px-4 sm:px-6 lg:px-8 -mt-4 relative z-20 space-y-3">
-            <ScrollReveal delay={0.18} direction="up" distance={12} duration={0.3}>
-              <Suspense fallback={null}>
-                <ActiveOffersCard />
-              </Suspense>
-            </ScrollReveal>
-          </div>
-        </ScrollReveal>
+        <Suspense fallback={null}>
+          <ActiveOffersCard />
+        </Suspense>
       </SectionErrorBoundary>
 
       <Suspense fallback={null}>
-        <div className="px-4 sm:px-6 lg:px-8 mt-3">
-          <AbandonedCartBanner />
-        </div>
+        <AbandonedCartBanner />
       </Suspense>
 
       {/* Top Creators */}
