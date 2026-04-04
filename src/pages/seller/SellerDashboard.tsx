@@ -137,7 +137,7 @@ export default function SellerDashboard() {
 
   return (
     <SellerLayout>
-      <div className="space-y-5">
+      <div className="space-y-4">
         {/* ── Banners ── */}
         <TosBanner isLoading={tosLoading} hasSigned={!!hasSignedTos} />
         <FileReviewConsentBanner />
