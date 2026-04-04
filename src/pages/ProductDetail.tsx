@@ -123,7 +123,7 @@ export default function ProductDetail() {
   const { getTranslatedName, getTranslatedDescription } = useProductTranslation(product?.id);
   const { addProduct: addToRecentlyViewed } = useRecentlyViewed();
 
-  // Track recently viewed product
+  // Track recently viewed product + category affinity
   useEffect(() => {
     if (product) {
       addToRecentlyViewed({
@@ -133,6 +133,17 @@ export default function ProductDetail() {
         image: product.images?.[0],
         price: product.price,
       });
+
+      // Update category affinity for personalised ranking (fire-and-forget)
+      if (user?.id && product.category_id) {
+        supabase.rpc('update_category_affinity', {
+          p_user_id: user.id,
+          p_category_id: product.category_id,
+          p_weight: 1.0,
+        }).then(({ error }) => {
+          if (error) console.debug('Affinity update skipped:', error.message);
+        });
+      }
     }
   }, [product?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
