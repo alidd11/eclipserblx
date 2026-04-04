@@ -293,7 +293,7 @@ export default function MyPurchases() {
   const allSelectableSelected = selectableItems.length > 0 && selectableItems.every(item => selectedItems.has(item.id));
   const hasActiveFilters = searchQuery || statusFilter || dateRange.from || dateRange.to;
 
-  const handleDownload = async (item: OrderItem & { orderId: string }) => {
+  const handleDownload = async (item: OrderItem & { orderId: string }, fileIndex: number = 0) => {
     if (!item.product_id || !session?.access_token) {
       showErrorNotification('Error', 'Unable to download');
       return;
@@ -303,7 +303,7 @@ export default function MyPurchases() {
 
     try {
       const { data, error } = await supabase.functions.invoke('download-asset', {
-        body: { productId: item.product_id, orderItemId: item.id },
+        body: { productId: item.product_id, orderItemId: item.id, fileIndex },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
 
