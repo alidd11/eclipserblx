@@ -43,6 +43,7 @@ import {
   X
 } from 'lucide-react';
 import { StaffDocuments } from '@/components/admin/StaffDocuments';
+import { EffectivePermissions } from '@/components/admin/EffectivePermissions';
 import { format } from 'date-fns';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useAuth } from '@/hooks/useAuth';
