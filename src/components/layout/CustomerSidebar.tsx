@@ -487,9 +487,9 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       </div>
 
       {user && !isCollapsed && (
-        <div className="border-b border-border px-3 py-3 space-y-2.5">
+        <div className="border-b border-border/50 px-4 py-4 space-y-3">
           {/* User info */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             {/* Avatar with online dot + premium ring */}
             <div className="relative shrink-0">
               <div className={cn(
@@ -501,14 +501,14 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                     src={profileAvatar}
                     alt=""
                     className={cn(
-                      "h-9 w-9 rounded-full object-cover bg-muted",
-                      isPremium && "border-2 border-background"
+                      "h-10 w-10 rounded-full object-cover bg-muted",
+                      isPremium && "border-2 border-sidebar"
                     )}
                   />
                 ) : (
                   <div className={cn(
-                    "h-9 w-9 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center",
-                    isPremium && "border-2 border-background"
+                    "h-10 w-10 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center",
+                    isPremium && "border-2 border-sidebar"
                   )}>
                     <span className="text-sm font-bold text-primary-foreground">
                       {(user.user_metadata?.display_name || user.email || '?')[0].toUpperCase()}
@@ -520,52 +520,50 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-sidebar" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold truncate">{user.user_metadata?.display_name || 'User'}</p>
+              <p className="text-sm font-semibold truncate leading-tight">{user.user_metadata?.display_name || 'User'}</p>
               {profileUsername && (
-                <p className="text-[11px] text-muted-foreground truncate">@{profileUsername}</p>
+                <p className="text-[11px] text-muted-foreground truncate leading-tight mt-0.5">@{profileUsername}</p>
               )}
-
-
             </div>
             {isMobileDrawer && (
-              <Button variant="ghost" size="icon" className="h-7 w-7 min-h-0 min-w-0" onClick={onNavigate}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 min-h-0 min-w-0 rounded-full bg-muted/60 hover:bg-muted" onClick={onNavigate}>
                 <X className="h-4 w-4" />
               </Button>
             )}
           </div>
 
           {/* Balance */}
-          <div className="rounded-xl bg-muted/50 border border-border/40 px-3 py-2.5 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="p-1 rounded-md bg-primary/10">
+          <div className="rounded-xl bg-muted/40 px-3.5 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 rounded-lg bg-primary/10">
                 <Wallet className="h-3.5 w-3.5 text-primary" />
               </div>
               <span className="text-sm font-bold">£{balance.toFixed(2)}</span>
             </div>
-            <Link to="/credits" onClick={handleNavClick} className="text-[11px] font-medium text-primary hover:underline flex items-center gap-0.5">
+            <Link to="/credits" onClick={handleNavClick} className="text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-0.5">
               <Plus className="h-3 w-3" />
               Add Funds
             </Link>
           </div>
 
           {/* Quick Stats Row */}
-          <div className="flex items-center gap-2 px-1">
+          <div className="flex items-center gap-1.5">
             <Link
               to="/orders"
               onClick={handleNavClick}
-              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-md px-2 py-1 hover:bg-muted/60 active:scale-[0.97]"
+              className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-lg px-2 py-2 bg-muted/30 hover:bg-muted/60 active:scale-[0.97]"
             >
               <ShoppingBag className="h-3.5 w-3.5" />
-              <span className="text-xs font-medium">{quickStats?.orders ?? 0}</span>
+              <span className="text-xs font-semibold">{quickStats?.orders ?? 0}</span>
               <span className="text-[10px] text-muted-foreground/70">Orders</span>
             </Link>
             <Link
               to="/wishlist"
               onClick={handleNavClick}
-              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-md px-2 py-1 hover:bg-muted/60 active:scale-[0.97]"
+              className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-lg px-2 py-2 bg-muted/30 hover:bg-muted/60 active:scale-[0.97]"
             >
               <Heart className="h-3.5 w-3.5" />
-              <span className="text-xs font-medium">{quickStats?.wishlist ?? 0}</span>
+              <span className="text-xs font-semibold">{quickStats?.wishlist ?? 0}</span>
               <span className="text-[10px] text-muted-foreground/70">Wishlist</span>
             </Link>
           </div>
@@ -577,7 +575,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleNavClick}
-              className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98] shadow-[0_0_16px_hsl(var(--primary)/0.25)]"
+              className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-3 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98] shadow-[0_0_16px_hsl(var(--primary)/0.25)]"
             >
               <Zap className="h-4 w-4" />
               Creator Hub
