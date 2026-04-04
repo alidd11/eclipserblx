@@ -84,6 +84,7 @@ export function MyPurchasesCard() {
                 slug,
                 images,
                 asset_file_url,
+                additional_asset_files,
                 category:categories (name)
               )
             )
