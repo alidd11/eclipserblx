@@ -364,7 +364,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
               <h1 className="font-display font-bold text-sm text-foreground truncate">
                 {store?.name || 'My Store'}
               </h1>
-              <p className="text-[11px] text-foreground/70 leading-none mt-0.5">Seller Dashboard</p>
+              <p className="text-[10px] text-primary/70 font-semibold uppercase tracking-wider leading-none mt-1">Creator Hub</p>
             </div>
             {isMobileDrawer ? (
               <Button

@@ -42,42 +42,29 @@ export default function SellerOrders() {
     <SellerLayout>
       <div>
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">Orders & Transactions</h1>
-          <p className="text-muted-foreground">Track your sales, orders, and transaction history</p>
+          <h1 className="text-2xl font-display font-bold">Orders & Transactions</h1>
+          <p className="text-sm text-muted-foreground">Track your sales, orders, and transaction history</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="flex gap-3 overflow-x-auto pb-2 mb-6 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible">
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
-              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.totalSales || 0}</div>
-              <p className="text-xs text-muted-foreground">Completed orders</p>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{formatCurrency(stats?.totalRevenue || 0)}</div>
-              <p className="text-xs text-muted-foreground">After platform fees</p>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{formatCurrency(stats?.pendingAmount || 0)}</div>
-              <p className="text-xs text-muted-foreground">Awaiting clearance</p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          {[
+            { label: 'Total Sales', value: stats?.totalSales || 0, icon: ShoppingCart, sub: 'Completed orders', color: 'from-primary/20 to-primary/5', iconColor: 'text-primary' },
+            { label: 'Revenue', value: formatCurrency(stats?.totalRevenue || 0), icon: DollarSign, sub: 'After fees', color: 'from-green-500/20 to-green-500/5', iconColor: 'text-green-500' },
+            { label: 'Pending', value: formatCurrency(stats?.pendingAmount || 0), icon: TrendingUp, sub: 'Awaiting clearance', color: 'from-yellow-500/20 to-yellow-500/5', iconColor: 'text-yellow-500' },
+          ].map(stat => (
+            <div key={stat.label} className="relative rounded-xl border border-border/50 bg-card p-4 overflow-hidden">
+              <div className={`absolute inset-0 bg-gradient-to-br opacity-40 rounded-xl ${stat.color}`} />
+              <div className="relative">
+                <div className="h-8 w-8 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center mb-2 border border-border/30">
+                  <stat.icon className={`h-4 w-4 ${stat.iconColor}`} />
+                </div>
+                <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-1">{stat.label}</p>
+                <p className="text-lg font-bold tracking-tight">{stat.value}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{stat.sub}</p>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Tabbed Content */}

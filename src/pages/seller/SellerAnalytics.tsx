@@ -244,8 +244,8 @@ export default function SellerAnalytics() {
       <div>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Analytics</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-display font-bold">Analytics</h1>
+            <p className="text-sm text-muted-foreground">
               Track your store's performance and customer behavior
             </p>
           </div>
@@ -271,56 +271,25 @@ export default function SellerAnalytics() {
         ) : processedData ? (
           <div className="space-y-6">
             {/* Stats Overview */}
-            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-5 md:overflow-visible">
-              <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
-                <CardContent className="pt-4">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <Eye className="h-4 w-4" />
-                    <span className="text-sm">Store Views</span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {[
+                { label: 'Store Views', value: processedData.totals.storeViews, icon: Eye, color: 'from-primary/20 to-primary/5', iconColor: 'text-primary' },
+                { label: 'Product Views', value: processedData.totals.productViews, icon: MousePointer, color: 'from-blue-500/20 to-blue-500/5', iconColor: 'text-blue-500' },
+                { label: 'Add to Carts', value: processedData.totals.addToCarts, icon: ShoppingCart, color: 'from-orange-500/20 to-orange-500/5', iconColor: 'text-orange-500' },
+                { label: 'Purchases', value: processedData.totals.purchases, icon: CreditCard, color: 'from-green-500/20 to-green-500/5', iconColor: 'text-green-500' },
+                { label: 'Conversion', value: `${processedData.conversionRate}%`, icon: TrendingUp, color: 'from-purple-500/20 to-purple-500/5', iconColor: 'text-purple-500' },
+              ].map(stat => (
+                <div key={stat.label} className="relative rounded-xl border border-border/50 bg-card p-4 overflow-hidden">
+                  <div className={`absolute inset-0 bg-gradient-to-br opacity-40 rounded-xl ${stat.color}`} />
+                  <div className="relative">
+                    <div className="h-8 w-8 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center mb-2 border border-border/30">
+                      <stat.icon className={`h-4 w-4 ${stat.iconColor}`} />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-1">{stat.label}</p>
+                    <p className="text-lg font-bold tracking-tight">{typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}</p>
                   </div>
-                  <p className="text-2xl font-bold">{processedData.totals.storeViews.toLocaleString()}</p>
-                </CardContent>
-              </Card>
-
-              <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
-                <CardContent className="pt-4">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <MousePointer className="h-4 w-4" />
-                    <span className="text-sm">Product Views</span>
-                  </div>
-                  <p className="text-2xl font-bold">{processedData.totals.productViews.toLocaleString()}</p>
-                </CardContent>
-              </Card>
-
-              <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
-                <CardContent className="pt-4">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <ShoppingCart className="h-4 w-4" />
-                    <span className="text-sm">Add to Carts</span>
-                  </div>
-                  <p className="text-2xl font-bold">{processedData.totals.addToCarts.toLocaleString()}</p>
-                </CardContent>
-              </Card>
-
-              <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
-                <CardContent className="pt-4">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <CreditCard className="h-4 w-4" />
-                    <span className="text-sm">Purchases</span>
-                  </div>
-                  <p className="text-2xl font-bold">{processedData.totals.purchases.toLocaleString()}</p>
-                </CardContent>
-              </Card>
-
-              <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
-                <CardContent className="pt-4">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <TrendingUp className="h-4 w-4" />
-                    <span className="text-sm">Conversion</span>
-                  </div>
-                  <p className="text-2xl font-bold">{processedData.conversionRate}%</p>
-                </CardContent>
-              </Card>
+                </div>
+              ))}
             </div>
 
             {/* Charts */}
