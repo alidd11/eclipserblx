@@ -38,7 +38,6 @@ type SortOption = 'popular' | 'newest' | 'rating' | 'products' | 'name';
 
 function scoreStore(store: StoreData): number {
   return (
-    (store.is_trusted ? 100 : 0) +
     (store.is_verified ? 50 : 0) +
     (store.follower_count || 0) * 0.1 +
     (store.average_rating || 0) * 12 +
