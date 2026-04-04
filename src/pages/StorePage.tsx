@@ -13,6 +13,7 @@ import { FollowButton } from '@/components/store/FollowButton';
 import { StoreRecommendations } from '@/components/store/StoreRecommendations';
 import { StoreReviews } from '@/components/store/StoreReviews';
 import { StoreCustomSections } from '@/components/store/StoreCustomSections';
+import { StoreFloatingHeader } from '@/components/store/StoreFloatingHeader';
 
 import { StoreTrustSignals } from '@/components/store/StoreTrustSignals';
 import { StoreBestSellers } from '@/components/store/StoreBestSellers';
