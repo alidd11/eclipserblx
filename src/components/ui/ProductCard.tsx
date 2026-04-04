@@ -194,30 +194,30 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             </div>
           </div>
           
-          {/* Badges */}
-          <div className="absolute top-1.5 left-1.5 flex flex-col gap-1 z-[3]">
+          {/* Badges — single row */}
+          <div className="absolute top-1.5 left-1.5 flex items-center gap-1 flex-wrap z-[3]">
             {hasMemberDiscount && (
-              <div className="px-1.5 py-0.5 text-[10px] font-medium bg-destructive text-destructive-foreground rounded shadow-sm">
-                Sale!
+              <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-destructive text-destructive-foreground rounded shadow-sm">
+                Sale
               </div>
             )}
             {showBestSellerBadge && (
-              <div className="px-1.5 py-0.5 text-[10px] font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded shadow-sm">
+              <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded shadow-sm">
                 Best Seller
               </div>
             )}
             {isFeatured && !showBestSellerBadge && (
-              <div className="px-1.5 py-0.5 text-[10px] font-medium bg-primary text-primary-foreground rounded">
+              <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-primary text-primary-foreground rounded">
                 Featured
               </div>
             )}
             {isNew && !isFeatured && !showBestSellerBadge && (
-              <div className="px-1.5 py-0.5 text-[10px] font-medium bg-emerald-500 text-white rounded">
+              <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-emerald-500 text-white rounded">
                 New
               </div>
             )}
             {category && (
-              <div className="px-1.5 py-0.5 text-[10px] font-medium bg-black/60 text-white rounded backdrop-blur-sm">
+              <div className="px-1.5 py-0.5 text-[9px] font-medium bg-black/60 text-white rounded backdrop-blur-sm">
                 {category}
               </div>
             )}
