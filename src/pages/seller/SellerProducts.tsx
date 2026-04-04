@@ -542,8 +542,8 @@ export default function SellerProducts() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold">My Products</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-display font-bold">Products</h1>
+            <p className="text-sm text-muted-foreground">
               Manage your store's product catalog
             </p>
           </div>
