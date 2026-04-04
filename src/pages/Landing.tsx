@@ -40,14 +40,14 @@ export default function Landing() {
       <WebsiteSearchSchema />
       <SiteNavigationSchema />
 
-      {/* Trending Products — immediate visibility, above the fold */}
-      <SectionErrorBoundary section="trending" compact>
-        <TrendingProducts />
-      </SectionErrorBoundary>
-
-      {/* Hero — reduced, below first products */}
+      {/* Hero — top of page */}
       <SectionErrorBoundary section="hero" compact>
         <LandingHero />
+      </SectionErrorBoundary>
+
+      {/* Trending Products */}
+      <SectionErrorBoundary section="trending" compact>
+        <TrendingProducts />
       </SectionErrorBoundary>
 
       {/* Promotions */}
