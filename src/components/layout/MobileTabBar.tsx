@@ -17,7 +17,7 @@ const TAB_ITEMS: TabItem[] = [
   { icon: Home, label: 'Home', href: '/' },
   { icon: Compass, label: 'Browse', href: '/products' },
   { icon: ShoppingCart, label: 'Cart', href: '/cart', isCenter: true, showBadge: true },
-  { icon: Package, label: 'Orders', href: '/account?section=purchases' },
+  { icon: Package, label: 'Orders', href: '/orders' },
   { icon: Grid3X3, label: 'Hub', href: '/account' },
 ];
 

@@ -57,7 +57,9 @@ export function TopSellers() {
                 <div className="flex items-center gap-3">
                   <div className="relative h-10 w-10 rounded-full overflow-hidden bg-muted border border-border flex-shrink-0">
                     {i < 3 && (
-                      <div className="absolute -top-0.5 -right-0.5 z-10 h-4 w-4 rounded-full bg-amber-500 flex items-center justify-center text-[8px] font-bold text-white shadow-sm">
+                      <div className={`absolute -top-1 -right-1 z-10 h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-md ${
+                        i === 0 ? 'bg-amber-500' : i === 1 ? 'bg-gray-400' : 'bg-amber-700'
+                      }`}>
                         {i + 1}
                       </div>
                     )}
