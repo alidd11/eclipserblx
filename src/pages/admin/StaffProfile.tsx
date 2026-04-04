@@ -236,6 +236,29 @@ export default function StaffProfile() {
 
   const isPrimaryAdmin = isAdmin;
 
+  // Fetch current user's scoped role management permissions
+  const { data: userPermissions = [] } = useQuery({
+    queryKey: ['user-manage-role-perms', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
+      if (error) throw error;
+      const roles = data.map(r => r.role);
+      if (!roles.length) return [];
+      
+      const { data: perms, error: permErr } = await supabase
+        .from('role_permissions')
+        .select('permission_id, permissions!inner(name)')
+        .in('role', roles);
+      if (permErr) throw permErr;
+      return (perms || []).map((rp: any) => rp.permissions?.name).filter(Boolean);
+    },
+    enabled: !!user?.id,
+  });
+
   // Fetch current user's max hierarchy level (uses custom_roles table now)
   const { data: currentUserHierarchy } = useQuery({
     queryKey: ['current-user-hierarchy', user?.id],
