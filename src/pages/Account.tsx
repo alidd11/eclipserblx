@@ -461,7 +461,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
   return (
     <MainLayout>
-      <div className="container py-6 space-y-4 max-w-lg mx-auto">
+      <div className="container py-4 space-y-3 max-w-lg mx-auto">
 
         {/* ═══ Profile Header ═══ */}
         <Card className="bg-card border-border overflow-hidden">
