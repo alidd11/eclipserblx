@@ -8,21 +8,7 @@ import { useFeaturedProducts, ScoredProduct } from '@/hooks/useFeaturedProducts'
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
-import ukFlag from '@/assets/regions/uk-flag.jpg';
-import usFlag from '@/assets/regions/us-flag.jpg';
-import euFlag from '@/assets/regions/eu-flag.jpg';
-import beFlag from '@/assets/regions/be-flag.png';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
-
-const getRegionFlag = (productName?: string): { src: string; name: string } | null => {
-  const nameLower = productName?.toLowerCase() || '';
-  if (nameLower.includes('ypres') || nameLower.includes('belgium')) return { src: beFlag, name: 'Belgium' };
-  if (nameLower.includes('land rover') || nameLower.includes('landrover')) return { src: ukFlag, name: 'UK' };
-  if (nameLower.startsWith('uk ') || nameLower.includes(' uk ')) return { src: ukFlag, name: 'UK' };
-  if (nameLower.startsWith('us ') || nameLower.includes(' us ')) return { src: usFlag, name: 'US' };
-  if (nameLower.startsWith('eu ') || nameLower.includes(' eu ')) return { src: euFlag, name: 'EU' };
-  return null;
-};
 
 type FeaturedProduct = ScoredProduct;
 
