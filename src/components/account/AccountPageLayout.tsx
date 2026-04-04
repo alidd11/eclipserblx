@@ -38,12 +38,12 @@ export function AccountPageLayout({
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             {Icon && (
-              <div className="shrink-0 h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+              <div className="shrink-0 h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
                 <Icon className="h-4.5 w-4.5 text-primary" />
               </div>
             )}
             <div className="min-w-0">
-              <h1 className="text-xl font-bold truncate">{title}</h1>
+              <h1 className="text-xl font-display font-bold truncate">{title}</h1>
               {description && (
                 <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
               )}
