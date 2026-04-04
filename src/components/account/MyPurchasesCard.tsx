@@ -15,6 +15,7 @@ interface PurchasedProduct {
   slug: string;
   category_name: string | null;
   asset_file_url: string | null;
+  additional_asset_files: string[] | null;
   order_item_id: string;
   purchased_at: string;
 }
@@ -46,6 +47,7 @@ export function MyPurchasesCard() {
               slug,
               images,
               asset_file_url,
+              additional_asset_files,
               category:categories (name)
             )
           )
@@ -82,6 +84,7 @@ export function MyPurchasesCard() {
                 slug,
                 images,
                 asset_file_url,
+                additional_asset_files,
                 category:categories (name)
               )
             )
@@ -117,6 +120,7 @@ export function MyPurchasesCard() {
           slug: product?.slug || item.product_id,
           category_name: product?.category?.name || null,
           asset_file_url: product?.asset_file_url || null,
+          additional_asset_files: product?.additional_asset_files || null,
           order_item_id: item.id,
           purchased_at: item.order_created_at,
         });
@@ -129,7 +133,7 @@ export function MyPurchasesCard() {
   });
 
   const hasDownloadableProducts = useMemo(() => {
-    return purchasedProducts?.some(p => p.asset_file_url) ?? false;
+    return purchasedProducts?.some(p => p.asset_file_url || (p.additional_asset_files && p.additional_asset_files.length > 0)) ?? false;
   }, [purchasedProducts]);
 
   if (isLoading) {
@@ -220,13 +224,13 @@ export function MyPurchasesCard() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 shrink-0">
-                  {product.asset_file_url && (
+                  {(product.asset_file_url || (product.additional_asset_files && product.additional_asset_files.length > 0)) && (
                     <Button
                       asChild
                       size="icon"
                       variant="ghost"
                       className="h-8 w-8"
-                      title="Download"
+                      title={`Download (${1 + (product.additional_asset_files?.length || 0)} file${(product.additional_asset_files?.length || 0) > 0 ? 's' : ''})`}
                     >
                       <Link to="/downloads">
                         <Download className="h-4 w-4" />
