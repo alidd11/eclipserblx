@@ -25,7 +25,7 @@ const navLinkDefs = [
   { href: '/featured', labelKey: 'nav.featured', icon: Sparkles },
   { href: '/products', labelKey: 'nav.products', icon: Package },
   { href: '/categories', labelKey: 'nav.categories', icon: Grid3X3 },
-  { href: '/eclipse-plus', labelKey: 'nav.eclipsePlus', icon: Circle },
+  
   { href: '/jobs', labelKey: 'nav.jobs', icon: Briefcase },
 ];
 const legalLinkDefs = [
