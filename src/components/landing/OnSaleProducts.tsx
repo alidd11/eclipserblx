@@ -109,7 +109,7 @@ export function OnSaleProducts() {
   if (!saleProducts?.length) return null;
 
   return (
-    <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
