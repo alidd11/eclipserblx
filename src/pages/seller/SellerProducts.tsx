@@ -357,6 +357,7 @@ export default function SellerProducts() {
       is_active: product.is_active ?? true,
       images: product.images || [],
       asset_file_url: product.asset_file_url || '',
+      additional_asset_files: (product as any).additional_asset_files || [],
       schedule_enabled: hasSchedule,
       release_at: formatDateTimeForInput(product.release_at),
       is_pay_what_you_want: product.is_pay_what_you_want ?? false,
