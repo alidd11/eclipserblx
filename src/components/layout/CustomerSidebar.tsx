@@ -558,15 +558,25 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
           </div>
 
           {/* Quick Stats Row */}
-          <div className="flex items-center gap-3 px-1">
-            <div className="flex items-center gap-1.5 text-muted-foreground">
+          <div className="flex items-center gap-2 px-1">
+            <Link
+              to="/orders"
+              onClick={handleNavClick}
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-md px-2 py-1 hover:bg-muted/60 active:scale-[0.97]"
+            >
               <ShoppingBag className="h-3.5 w-3.5" />
               <span className="text-xs font-medium">{quickStats?.orders ?? 0}</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <span className="text-[10px] text-muted-foreground/70">Orders</span>
+            </Link>
+            <Link
+              to="/wishlist"
+              onClick={handleNavClick}
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-md px-2 py-1 hover:bg-muted/60 active:scale-[0.97]"
+            >
               <Heart className="h-3.5 w-3.5" />
               <span className="text-xs font-medium">{quickStats?.wishlist ?? 0}</span>
-            </div>
+              <span className="text-[10px] text-muted-foreground/70">Wishlist</span>
+            </Link>
           </div>
 
           {/* CTA Button */}
