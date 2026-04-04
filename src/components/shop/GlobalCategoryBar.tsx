@@ -50,7 +50,7 @@ export function GlobalCategoryBar() {
           <Link
             to="/products"
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0",
+              "flex items-center gap-1.5 px-3 py-1.5 lg:px-4 lg:py-2 rounded-md text-xs lg:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0",
               isShopPage && !activeCategory
                 ? "bg-primary/15 text-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
