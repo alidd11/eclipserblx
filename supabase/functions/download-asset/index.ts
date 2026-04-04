@@ -375,7 +375,7 @@ Deno.serve(async (req) => {
     // === STANDARD (non-Lua) DOWNLOAD FLOW ===
     const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
       .from('product-assets')
-      .createSignedUrl(product.asset_file_url, 300);
+      .createSignedUrl(assetUrl, 300);
 
     if (signedUrlError || !signedUrlData?.signedUrl) {
       console.error("Error creating signed URL:", signedUrlError);
