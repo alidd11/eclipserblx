@@ -185,7 +185,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const { user, session, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
   const { badges, userBadges } = useBadges();
-  const { isSubscribed } = useSubscription();
+  
   const { hasAccess: hasMarketplaceAccess } = useMarketplaceAccess();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
