@@ -230,6 +230,7 @@ export default function SellerProducts() {
         category_id: data.category_id || null,
         images: data.images || [],
         asset_file_url: data.asset_file_url || null,
+        additional_asset_files: data.additional_asset_files || [],
         store_id: store!.id,
         is_seller_product: true,
         is_active: data.is_active !== undefined ? data.is_active : false,
