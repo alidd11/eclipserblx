@@ -24,11 +24,11 @@ export function TopSellers() {
 
   if (isLoading) {
     return (
-      <section className="px-4 sm:px-6 lg:px-8 py-6">
+      <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <Skeleton className="h-6 w-44 mb-4" />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 rounded-lg" />
+        <div className="flex gap-2 overflow-hidden">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-32 rounded-full" />
           ))}
         </div>
       </section>
@@ -38,9 +38,9 @@ export function TopSellers() {
   if (!stores?.length) return null;
 
   return (
-    <section className="px-4 sm:px-6 lg:px-8 py-6">
+    <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Trophy className="h-4 w-4 text-amber-500" />
             <h2 className="text-lg font-bold tracking-tight uppercase">Top Creators</h2>
@@ -50,10 +50,35 @@ export function TopSellers() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3">
+        {/* Mobile: horizontal scroll of compact pills / Desktop: grid */}
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-4 lg:gap-3 lg:overflow-visible lg:pb-0">
           {stores.map((store, i) => (
-            <Link key={store.id} to={`/store/${store.slug}`} className="block group">
-              <div className="rounded-lg border border-border bg-card p-3 hover:border-primary/40 transition-colors">
+            <Link key={store.id} to={`/store/${store.slug}`} className="block group flex-shrink-0 lg:flex-shrink">
+              {/* Mobile: compact pill */}
+              <div className="lg:hidden flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 hover:border-primary/40 transition-colors">
+                <div className="relative h-7 w-7 rounded-full overflow-hidden bg-muted border border-border flex-shrink-0">
+                  {i < 3 && (
+                    <div className={`absolute -top-0.5 -right-0.5 z-10 h-4 w-4 rounded-full flex items-center justify-center text-[8px] font-bold text-white shadow-sm ${
+                      i === 0 ? 'bg-amber-500' : i === 1 ? 'bg-gray-400' : 'bg-amber-700'
+                    }`}>
+                      {i + 1}
+                    </div>
+                  )}
+                  {store.logo_url ? (
+                    <img src={optimizeImageUrl(store.logo_url, 56)} alt={store.name} className="w-full h-full object-cover" loading="lazy" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-[10px] font-bold">
+                      {store.name.charAt(0)}
+                    </div>
+                  )}
+                </div>
+                <span className="text-xs font-semibold truncate max-w-[80px] group-hover:text-primary transition-colors">{store.name}</span>
+                {store.is_verified && <BadgeCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
+                {store.is_trusted && <Shield className="h-3 w-3 text-amber-400 flex-shrink-0" />}
+              </div>
+
+              {/* Desktop: card layout */}
+              <div className="hidden lg:block rounded-lg border border-border bg-card p-3 hover:border-primary/40 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="relative h-10 w-10 rounded-full overflow-hidden bg-muted border border-border flex-shrink-0">
                     {i < 3 && (

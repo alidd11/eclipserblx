@@ -34,11 +34,11 @@ export function NewThisWeek() {
 
   if (isLoading) {
     return (
-      <section className="px-4 sm:px-6 lg:px-8 py-6">
+      <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <Skeleton className="h-6 w-40 mb-4" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="flex gap-3 overflow-hidden lg:grid lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="aspect-[4/3] rounded-lg" />
+            <Skeleton key={i} className="min-w-[160px] lg:min-w-0 aspect-[4/3] rounded-lg" />
           ))}
         </div>
       </section>
@@ -48,7 +48,7 @@ export function NewThisWeek() {
   if (!products?.length) return null;
 
   return (
-    <section className="px-4 sm:px-6 lg:px-8 py-6">
+    <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -57,37 +57,40 @@ export function NewThisWeek() {
             <span className="text-[10px] uppercase tracking-wider text-emerald-500/80 font-semibold bg-emerald-500/10 px-1.5 py-0.5 rounded">
               Fresh
             </span>
+            <span className="text-[10px] text-muted-foreground font-medium">· {products.length} items</span>
           </div>
           <Link to="/products?sort=newest" className="text-xs text-primary hover:underline flex items-center gap-1">
             View all <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        {/* Mobile: horizontal scroll strip / Desktop: grid */}
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-4 lg:overflow-visible lg:pb-0">
           {products.map((product) => {
             const store = product.stores as any;
             const category = product.categories as any;
             return (
-              <ProductCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                slug={String((product as any).product_number)}
-                price={product.price}
-                image={getFirstImageUrl(product.images)}
-                images={product.images as string[]}
-                category={category?.name}
-                categorySlug={category?.slug}
-                categoryId={product.category_id ?? undefined}
-                storeName={store?.name}
-                storeSlug={store?.slug}
-                storeLogo={store?.logo_url}
-                isVerified={store?.is_verified}
-                isTrusted={store?.is_trusted}
-                storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
-                createdAt={product.created_at}
-                showNewBadge
-              />
+              <div key={product.id} className="min-w-[160px] lg:min-w-0">
+                <ProductCard
+                  id={product.id}
+                  name={product.name}
+                  slug={String((product as any).product_number)}
+                  price={product.price}
+                  image={getFirstImageUrl(product.images)}
+                  images={product.images as string[]}
+                  category={category?.name}
+                  categorySlug={category?.slug}
+                  categoryId={product.category_id ?? undefined}
+                  storeName={store?.name}
+                  storeSlug={store?.slug}
+                  storeLogo={store?.logo_url}
+                  isVerified={store?.is_verified}
+                  isTrusted={store?.is_trusted}
+                  storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
+                  createdAt={product.created_at}
+                  showNewBadge
+                />
+              </div>
             );
           })}
         </div>

@@ -13,6 +13,7 @@ import { FollowButton } from '@/components/store/FollowButton';
 import { StoreRecommendations } from '@/components/store/StoreRecommendations';
 import { StoreReviews } from '@/components/store/StoreReviews';
 import { StoreCustomSections } from '@/components/store/StoreCustomSections';
+import { StoreFloatingHeader } from '@/components/store/StoreFloatingHeader';
 
 import { StoreTrustSignals } from '@/components/store/StoreTrustSignals';
 import { StoreBestSellers } from '@/components/store/StoreBestSellers';
@@ -88,7 +89,7 @@ const getThemeStyles = (theme: string, accentColor: string) => {
   }
 };
 
-const PRODUCTS_PER_PAGE_MOBILE = 4;
+const PRODUCTS_PER_PAGE_MOBILE = 12;
 const PRODUCTS_PER_PAGE_DESKTOP = 8;
 
 export default function StorePage() {
@@ -415,6 +416,19 @@ export default function StorePage() {
       averageRating={store.average_rating}
       bio={bio}
     >
+      <StoreFloatingHeader
+        storeName={store.name}
+        logoUrl={store.logo_url}
+        storeId={store.id}
+        accentColor={accentColor}
+        onMessage={() => {
+          if (!user) {
+            navigate('/auth?redirect=' + encodeURIComponent(`/store/${storeSlug}`));
+            return;
+          }
+          navigate(`/store-messages?store=${store.id}`);
+        }}
+      />
       {/* Store Banner - with scheduling */}
       {(() => {
         const now = new Date();
@@ -619,6 +633,13 @@ export default function StorePage() {
                 </div>
               )}
             </div>
+            {/* Social proof - join date */}
+            {store.created_at && (
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Selling since {new Date(store.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                {(store.total_sales || 0) > 0 && ` · ${store.total_sales} sales`}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -892,9 +913,19 @@ export default function StorePage() {
                             <CardContent className="py-12 text-center">
                               <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                               <h3 className="text-lg font-medium mb-2">No Products Yet</h3>
-                              <p className="text-muted-foreground">
-                                This store hasn't listed any products yet. Check back soon!
+                              <p className="text-muted-foreground mb-4">
+                                This store hasn't listed any products yet.
                               </p>
+                              <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+                                <FollowButton 
+                                  storeId={store.id} 
+                                  accentColor={accentColor}
+                                  size="sm"
+                                />
+                                <Button variant="outline" size="sm" asChild>
+                                  <Link to="/stores">Browse Similar Stores</Link>
+                                </Button>
+                              </div>
                             </CardContent>
                           </Card>
                         )}

@@ -49,12 +49,13 @@ export function TrendingProducts() {
   if (!products?.length) return null;
 
   return (
-    <section className="px-4 sm:px-6 lg:px-8 py-6">
+    <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-primary" />
             <h2 className="text-lg font-bold tracking-tight uppercase">Trending Now</h2>
+            <span className="text-[10px] text-muted-foreground font-medium">· {products.length} items</span>
           </div>
           <Link to="/products?sort=popular" className="text-xs text-primary hover:underline flex items-center gap-1">
             View all <ArrowRight className="h-3 w-3" />

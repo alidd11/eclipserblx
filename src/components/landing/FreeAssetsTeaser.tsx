@@ -43,7 +43,7 @@ export function FreeAssetsTeaser() {
   if (!products?.length) return null;
 
   return (
-    <section className="px-4 sm:px-6 lg:px-8 py-6">
+    <section className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
