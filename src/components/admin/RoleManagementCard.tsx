@@ -238,6 +238,29 @@ export function RoleManagementCard() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
+                      {/* Default role toggle */}
+                      {isAdmin && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center gap-1.5 mr-2">
+                                <span className="text-[10px] text-muted-foreground">Default</span>
+                                <Switch
+                                  checked={role.is_default}
+                                  onCheckedChange={(checked) => 
+                                    toggleDefaultMutation.mutate({ roleId: role.id, isDefault: checked })
+                                  }
+                                  disabled={toggleDefaultMutation.isPending}
+                                  className="scale-75"
+                                />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{role.is_default ? 'This role is auto-assigned to new users' : 'Toggle to auto-assign to new users'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
