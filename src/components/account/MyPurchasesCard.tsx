@@ -120,6 +120,7 @@ export function MyPurchasesCard() {
           slug: product?.slug || item.product_id,
           category_name: product?.category?.name || null,
           asset_file_url: product?.asset_file_url || null,
+          additional_asset_files: product?.additional_asset_files || null,
           order_item_id: item.id,
           purchased_at: item.order_created_at,
         });
