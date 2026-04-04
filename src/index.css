@@ -641,7 +641,7 @@
     -webkit-user-select: none;
     -webkit-touch-callout: none;
     user-select: none;
-    overscroll-behavior-x: none;
+    overscroll-behavior: none;
     background-color: hsl(var(--background));
     padding-bottom: 0;
     box-sizing: border-box;
