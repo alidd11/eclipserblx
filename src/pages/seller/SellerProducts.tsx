@@ -507,6 +507,57 @@ export default function SellerProducts() {
     setForm(prev => ({ ...prev, asset_file_url: '' }));
   };
 
+  // Handle additional file upload
+  const handleAdditionalFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const totalFiles = (form.asset_file_url ? 1 : 0) + form.additional_asset_files.length + 1;
+    if (totalFiles > limits.maxProductFiles) {
+      toast.error(`Your plan allows ${limits.maxProductFiles} file(s) per product. Upgrade to Pro for more.`);
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      toast.info('Scanning file for threats...', { id: 'additional-scan' });
+      const scanResult = await performSecurityScan(file, { skipNsfwCheck: true });
+      if (!scanResult.isAllowed) {
+        toast.dismiss('additional-scan');
+        toast.error(scanResult.reason || 'File blocked by security scan');
+        return;
+      }
+      toast.dismiss('additional-scan');
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${store?.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-assets')
+        .upload(fileName, file);
+      if (uploadError) throw uploadError;
+
+      setForm(prev => ({
+        ...prev,
+        additional_asset_files: [...prev.additional_asset_files, fileName],
+      }));
+      toast.success('Additional file uploaded successfully');
+    } catch (error: any) {
+      toast.error('Failed to upload file: ' + error.message);
+    } finally {
+      setIsUploading(false);
+      if (additionalFileInputRef.current) additionalFileInputRef.current.value = '';
+    }
+  };
+
+  // Remove additional file
+  const removeAdditionalFile = (index: number) => {
+    setForm(prev => ({
+      ...prev,
+      additional_asset_files: prev.additional_asset_files.filter((_, i) => i !== index),
+    }));
+  };
+
   // Handle form submit
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
