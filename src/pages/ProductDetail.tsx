@@ -745,16 +745,6 @@ export default function ProductDetail() {
                   />
                 )}
 
-                {/* Free Claim for Eclipse+ Members */}
-                {canClaimThisProduct && (
-                  <FreeProductClaim 
-                    productId={product.id} 
-                    productName={product.name} 
-                    categoryId={product.category_id}
-                    isResellable={product.is_resellable}
-                    eclipseFreeEligible={product.eclipse_free_eligible}
-                  />
-                )}
 
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row gap-4">
