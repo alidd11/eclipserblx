@@ -2167,8 +2167,7 @@ async function handleStoreShowcase(supabase: any, store: any, branding: any, cus
 
   // Build badges
   const badges: string[] = [];
-  if (store.is_trusted) badges.push("⭐ Trusted");
-  if (store.is_verified) badges.push("✅ Verified");
+  if (store.is_verified) badges.push("✅ Verified Seller");
 
   // Build links
   const links: string[] = [`🌐 [Visit Store](${storeUrl})`];
