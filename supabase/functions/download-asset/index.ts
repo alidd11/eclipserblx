@@ -131,7 +131,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { productId, orderItemId } = await req.json();
+    const { productId, orderItemId, fileIndex } = await req.json();
+    const requestedFileIndex = typeof fileIndex === 'number' ? fileIndex : 0;
     const clientIp = getClientIp(req);
     const userAgent = req.headers.get("user-agent") || "unknown";
 
@@ -224,7 +225,7 @@ Deno.serve(async (req) => {
     // Get product asset URL
     const { data: product, error: productError } = await supabaseAdmin
       .from('products')
-      .select('id, name, asset_file_url, download_count')
+      .select('id, name, asset_file_url, additional_asset_files, download_count')
       .eq('id', productId)
       .single();
 
@@ -235,14 +236,23 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (!product.asset_file_url) {
+    // Determine which file to serve based on fileIndex
+    const additionalFiles: string[] = (product as any).additional_asset_files || [];
+    let assetUrl: string | null = null;
+
+    if (requestedFileIndex === 0) {
+      assetUrl = product.asset_file_url;
+    } else if (requestedFileIndex > 0 && requestedFileIndex <= additionalFiles.length) {
+      assetUrl = additionalFiles[requestedFileIndex - 1];
+    }
+
+    if (!assetUrl) {
       return new Response(
-        JSON.stringify({ error: "Download not available for this product" }),
+        JSON.stringify({ error: "Download not available for this file" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const assetUrl = product.asset_file_url;
     const fileExtension = assetUrl.includes('.') ? assetUrl.substring(assetUrl.lastIndexOf('.')) : '';
     const isLuaFile = fileExtension.toLowerCase() === '.lua';
 
@@ -365,7 +375,7 @@ Deno.serve(async (req) => {
     // === STANDARD (non-Lua) DOWNLOAD FLOW ===
     const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
       .from('product-assets')
-      .createSignedUrl(product.asset_file_url, 300);
+      .createSignedUrl(assetUrl, 300);
 
     if (signedUrlError || !signedUrlData?.signedUrl) {
       console.error("Error creating signed URL:", signedUrlError);
@@ -411,10 +421,13 @@ Deno.serve(async (req) => {
     console.log(`Download token created: user=${user.id}, product=${productId}, ip=${clientIp}, token=${downloadToken.slice(0, 8)}...`);
 
     const sanitizedName = product.name.replace(/[^a-zA-Z0-9-_ ]/g, '').trim();
-    const fileName = fileExtension ? `${sanitizedName}${fileExtension}` : sanitizedName;
+    const fileSuffix = requestedFileIndex > 0 ? `-file${requestedFileIndex + 1}` : '';
+    const fileName = fileExtension ? `${sanitizedName}${fileSuffix}${fileExtension}` : `${sanitizedName}${fileSuffix}`;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const downloadUrl = `${supabaseUrl}/functions/v1/download-asset?token=${downloadToken}`;
+
+    const totalFiles = (product.asset_file_url ? 1 : 0) + additionalFiles.length;
 
     return new Response(
       JSON.stringify({ 
@@ -424,6 +437,8 @@ Deno.serve(async (req) => {
         fileSize,
         expiresAt: expiresAt.toISOString(),
         oneTimeUse: true,
+        fileIndex: requestedFileIndex,
+        totalFiles,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

@@ -72,6 +72,7 @@ interface OrderItem {
     slug: string;
     images: string[] | null;
     asset_file_url: string | null;
+    additional_asset_files: string[] | null;
     category_id: string | null;
   } | null;
 }
@@ -209,7 +210,7 @@ export default function MyPurchases() {
           id, status, created_at, total, payment_method,
           order_items (
             id, product_name, price, product_id,
-            product:products (id, name, slug, images, asset_file_url, category_id)
+            product:products (id, name, slug, images, asset_file_url, additional_asset_files, category_id)
           )
         `)
         .eq('user_id', user.id)
@@ -224,7 +225,7 @@ export default function MyPurchases() {
             id, status, created_at, total, payment_method,
             order_items (
               id, product_name, price, product_id,
-              product:products (id, name, slug, images, asset_file_url, category_id)
+              product:products (id, name, slug, images, asset_file_url, additional_asset_files, category_id)
             )
           `)
           .eq('customer_email', user.email)
@@ -292,7 +293,7 @@ export default function MyPurchases() {
   const allSelectableSelected = selectableItems.length > 0 && selectableItems.every(item => selectedItems.has(item.id));
   const hasActiveFilters = searchQuery || statusFilter || dateRange.from || dateRange.to;
 
-  const handleDownload = async (item: OrderItem & { orderId: string }) => {
+  const handleDownload = async (item: OrderItem & { orderId: string }, fileIndex: number = 0) => {
     if (!item.product_id || !session?.access_token) {
       showErrorNotification('Error', 'Unable to download');
       return;
@@ -302,7 +303,7 @@ export default function MyPurchases() {
 
     try {
       const { data, error } = await supabase.functions.invoke('download-asset', {
-        body: { productId: item.product_id, orderItemId: item.id },
+        body: { productId: item.product_id, orderItemId: item.id, fileIndex },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
 
@@ -506,6 +507,8 @@ export default function MyPurchases() {
                   {paginatedProducts.map((item) => {
                     const isDownloading = downloading === item.id;
                     const hasAsset = !!item.product?.asset_file_url;
+                    const additionalFiles = (item.product as any)?.additional_asset_files || [];
+                    const totalFiles = (hasAsset ? 1 : 0) + additionalFiles.length;
                     const isBot = isBotProduct(item);
                     const botCode = isBot ? getBotCode(item.id) : null;
 
@@ -571,8 +574,19 @@ export default function MyPurchases() {
                                 />
                               ) : isBot ? (
                                 <Badge variant="secondary" className="text-xs">Loading...</Badge>
+                              ) : totalFiles > 1 ? (
+                                <div className="flex flex-wrap gap-1.5">
+                                  <Button onClick={() => handleDownload(item, 0)} disabled={!hasAsset || isDownloading} className="gradient-button border-0" size="sm">
+                                    {isDownloading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{downloadProgress?.progress || 0}%</> : <><Download className="h-4 w-4 mr-2" />Main File</>}
+                                  </Button>
+                                  {additionalFiles.map((_: string, idx: number) => (
+                                    <Button key={idx} onClick={() => handleDownload(item, idx + 1)} disabled={isDownloading} variant="outline" size="sm">
+                                      <FileDown className="h-4 w-4 mr-1" />File {idx + 2}
+                                    </Button>
+                                  ))}
+                                </div>
                               ) : (
-                                <Button onClick={() => handleDownload(item)} disabled={!hasAsset || isDownloading} className="gradient-button border-0" size="sm">
+                                <Button onClick={() => handleDownload(item, 0)} disabled={!hasAsset || isDownloading} className="gradient-button border-0" size="sm">
                                   {isDownloading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{downloadProgress?.progress || 0}%</> : !hasAsset ? <><Package className="h-4 w-4 mr-2" />No file</> : <><Download className="h-4 w-4 mr-2" />Download</>}
                                 </Button>
                               )}
