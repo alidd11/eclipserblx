@@ -6092,6 +6092,7 @@ export type Database = {
       }
       products: {
         Row: {
+          additional_asset_files: string[] | null
           asset_file_url: string | null
           category_id: string | null
           created_at: string
@@ -6134,6 +6135,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          additional_asset_files?: string[] | null
           asset_file_url?: string | null
           category_id?: string | null
           created_at?: string
@@ -6176,6 +6178,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          additional_asset_files?: string[] | null
           asset_file_url?: string | null
           category_id?: string | null
           created_at?: string

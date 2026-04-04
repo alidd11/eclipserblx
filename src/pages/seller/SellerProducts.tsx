@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
+import { useSellerSubscription } from '@/hooks/useSellerSubscription';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { applyProductWatermark } from '@/lib/watermark';
@@ -92,6 +93,7 @@ interface ProductForm {
   is_active: boolean;
   images: string[];
   asset_file_url: string;
+  additional_asset_files: string[];
   schedule_enabled: boolean;
   release_at: string;
   is_pay_what_you_want: boolean;
@@ -106,6 +108,7 @@ const INITIAL_FORM: ProductForm = {
   is_active: true,
   images: [],
   asset_file_url: '',
+  additional_asset_files: [],
   schedule_enabled: false,
   release_at: '',
   is_pay_what_you_want: false,
@@ -116,6 +119,7 @@ const PRODUCTS_PER_PAGE = 20;
 export default function SellerProducts() {
   const queryClient = useQueryClient();
   const { store } = useSellerStatus();
+  const { limits } = useSellerSubscription();
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -128,6 +132,7 @@ export default function SellerProducts() {
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const additionalFileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Debounce search to avoid excessive queries
@@ -226,6 +231,7 @@ export default function SellerProducts() {
         category_id: data.category_id || null,
         images: data.images || [],
         asset_file_url: data.asset_file_url || null,
+        additional_asset_files: data.additional_asset_files || [],
         store_id: store!.id,
         is_seller_product: true,
         is_active: data.is_active !== undefined ? data.is_active : false,
@@ -353,6 +359,7 @@ export default function SellerProducts() {
       is_active: product.is_active ?? true,
       images: product.images || [],
       asset_file_url: product.asset_file_url || '',
+      additional_asset_files: (product as any).additional_asset_files || [],
       schedule_enabled: hasSchedule,
       release_at: formatDateTimeForInput(product.release_at),
       is_pay_what_you_want: product.is_pay_what_you_want ?? false,
@@ -498,6 +505,57 @@ export default function SellerProducts() {
   // Remove asset file
   const removeAssetFile = () => {
     setForm(prev => ({ ...prev, asset_file_url: '' }));
+  };
+
+  // Handle additional file upload
+  const handleAdditionalFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const totalFiles = (form.asset_file_url ? 1 : 0) + form.additional_asset_files.length + 1;
+    if (totalFiles > limits.maxProductFiles) {
+      toast.error(`Your plan allows ${limits.maxProductFiles} file(s) per product. Upgrade to Pro for more.`);
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      toast.info('Scanning file for threats...', { id: 'additional-scan' });
+      const scanResult = await performSecurityScan(file, { skipNsfwCheck: true });
+      if (!scanResult.isAllowed) {
+        toast.dismiss('additional-scan');
+        toast.error(scanResult.reason || 'File blocked by security scan');
+        return;
+      }
+      toast.dismiss('additional-scan');
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${store?.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-assets')
+        .upload(fileName, file);
+      if (uploadError) throw uploadError;
+
+      setForm(prev => ({
+        ...prev,
+        additional_asset_files: [...prev.additional_asset_files, fileName],
+      }));
+      toast.success('Additional file uploaded successfully');
+    } catch (error: any) {
+      toast.error('Failed to upload file: ' + error.message);
+    } finally {
+      setIsUploading(false);
+      if (additionalFileInputRef.current) additionalFileInputRef.current.value = '';
+    }
+  };
+
+  // Remove additional file
+  const removeAdditionalFile = (index: number) => {
+    setForm(prev => ({
+      ...prev,
+      additional_asset_files: prev.additional_asset_files.filter((_, i) => i !== index),
+    }));
   };
 
   // Handle form submit
@@ -998,19 +1056,33 @@ export default function SellerProducts() {
                 </Button>
               </div>
 
-              {/* Downloadable File */}
+              {/* Downloadable Files */}
               <div className="space-y-2">
-                <Label>Downloadable File <span className="text-destructive">*</span></Label>
+                <Label>
+                  Downloadable Files <span className="text-destructive">*</span>
+                  <span className="text-xs text-muted-foreground ml-2">
+                    ({(form.asset_file_url ? 1 : 0) + form.additional_asset_files.length}/{limits.maxProductFiles})
+                  </span>
+                </Label>
                 <input
                   type="file"
                   ref={fileInputRef}
                   onChange={handleAssetUpload}
                   className="hidden"
                 />
+                <input
+                  type="file"
+                  ref={additionalFileInputRef}
+                  onChange={handleAdditionalFileUpload}
+                  className="hidden"
+                />
+
+                {/* Main file */}
                 {form.asset_file_url ? (
                   <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/50">
                     <FileCheck className="h-5 w-5 text-green-500" />
                     <span className="flex-1 text-sm truncate">{form.asset_file_url.split('/').pop()}</span>
+                    <Badge variant="secondary" className="text-xs">Main</Badge>
                     <Button
                       type="button"
                       variant="ghost"
@@ -1037,13 +1109,58 @@ export default function SellerProducts() {
                     ) : (
                       <>
                         <Upload className="h-4 w-4 mr-2" />
-                        Upload File
+                        Upload Main File
                       </>
                     )}
                   </Button>
                 )}
+
+                {/* Additional files */}
+                {form.additional_asset_files.map((file, index) => (
+                  <div key={index} className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/50">
+                    <FileCheck className="h-5 w-5 text-green-500" />
+                    <span className="flex-1 text-sm truncate">{file.split('/').pop()}</span>
+                    <Badge variant="outline" className="text-xs">Extra</Badge>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeAdditionalFile(index)}
+                      className="h-8 w-8"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+
+                {/* Add more files button */}
+                {form.asset_file_url && (form.asset_file_url ? 1 : 0) + form.additional_asset_files.length < limits.maxProductFiles && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => additionalFileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="w-full"
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Add Another File
+                      </>
+                    )}
+                  </Button>
+                )}
+
                 <p className="text-xs text-muted-foreground">
-                  Upload the file customers will download after purchase
+                  {limits.maxProductFiles === 1 
+                    ? 'Upload the file customers will download. Upgrade to Pro for up to 3 files per product.'
+                    : `Upload up to ${limits.maxProductFiles} files per product.`
+                  }
                 </p>
               </div>
 
