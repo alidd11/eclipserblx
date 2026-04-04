@@ -82,7 +82,7 @@ export function TopSellers() {
               {/* Desktop: card layout */}
               <div className="hidden lg:block rounded-lg border border-border bg-card p-4 hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all duration-200">
                 <div className="flex items-center gap-3">
-                  <div className="relative h-10 w-10 rounded-full overflow-hidden bg-muted border border-border flex-shrink-0">
+                  <div className="relative h-12 w-12 rounded-full overflow-hidden bg-muted border-2 border-border flex-shrink-0">
                     {i < 3 && (
                       <div className={`absolute -top-1 -right-1 z-10 h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-md ${
                         i === 0 ? 'bg-amber-500' : i === 1 ? 'bg-gray-400' : 'bg-amber-700'
