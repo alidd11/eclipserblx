@@ -524,19 +524,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               {profileUsername && (
                 <p className="text-[11px] text-muted-foreground truncate">@{profileUsername}</p>
               )}
-              {isPremium ? (
-                <div className="flex items-center gap-1 mt-0.5">
-                  <Crown className="h-3 w-3 text-primary" />
-                  <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Eclipse+</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Free Plan</span>
-                  <Link to="/eclipse-plus" onClick={handleNavClick} className="text-[10px] font-semibold text-primary hover:underline">
-                    Upgrade
-                  </Link>
-                </div>
-              )}
+
+
             </div>
             {isMobileDrawer && (
               <Button variant="ghost" size="icon" className="h-7 w-7 min-h-0 min-w-0" onClick={onNavigate}>
