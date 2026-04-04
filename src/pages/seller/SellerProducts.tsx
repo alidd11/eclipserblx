@@ -119,6 +119,7 @@ const PRODUCTS_PER_PAGE = 20;
 export default function SellerProducts() {
   const queryClient = useQueryClient();
   const { store } = useSellerStatus();
+  const { limits } = useSellerSubscription();
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
