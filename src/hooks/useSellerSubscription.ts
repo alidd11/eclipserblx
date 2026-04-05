@@ -16,6 +16,13 @@ export interface SellerProLimits {
   monthlyAdCredit: number;
   proBadge: boolean;
   priorityReview: boolean;
+  storeThemes: 'default' | 'all';
+  maxNavLinks: number;
+  announcementBar: boolean;
+  analyticsRetentionDays: number;
+  analyticsExport: boolean;
+  maxActiveDiscounts: number | null;
+  scheduledBanner: boolean;
 }
 
 const PROMO_LIMITS: SellerProLimits = {
