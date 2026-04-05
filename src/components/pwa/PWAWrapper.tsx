@@ -27,6 +27,34 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
   // Dynamic theme color for PWA
   useThemeColor();
 
+  useEffect(() => {
+    const root = document.documentElement;
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+
+    const syncBottomSafeArea = () => {
+      const isStandalone = mediaQuery.matches || (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+      root.style.setProperty('--bottom-safe-area', isStandalone ? 'env(safe-area-inset-bottom)' : '0px');
+    };
+
+    syncBottomSafeArea();
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', syncBottomSafeArea);
+
+      return () => {
+        mediaQuery.removeEventListener('change', syncBottomSafeArea);
+        root.style.removeProperty('--bottom-safe-area');
+      };
+    }
+
+    mediaQuery.addListener(syncBottomSafeArea);
+
+    return () => {
+      mediaQuery.removeListener(syncBottomSafeArea);
+      root.style.removeProperty('--bottom-safe-area');
+    };
+  }, []);
+
   // Show recovery toast when connection is restored
   useEffect(() => {
     const justRecovered = prevStatus === 'offline' && systemStatus === 'online';

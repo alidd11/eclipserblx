@@ -32,11 +32,11 @@ export function StickyBuyBar({ productName, formattedPrice, inCart, onAddToCart,
   return (
     <div
       className={cn(
-        "fixed bottom-14 left-0 right-0 z-[55] md:hidden",
+        "fixed left-0 right-0 z-[55] md:hidden",
         "bg-background border-t border-border px-4 py-2",
         "animate-in slide-in-from-bottom-2 duration-200"
       )}
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      style={{ bottom: 'var(--tab-bar-height, 0px)', paddingBottom: 'var(--bottom-safe-area, 0px)' }}
     >
       <div className="flex items-center gap-3 max-w-[1400px] mx-auto">
         <div className="flex-1 min-w-0">

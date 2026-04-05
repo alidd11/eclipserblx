@@ -125,7 +125,7 @@ function LayoutShellInner({
           <main
             id="main-content"
             className={mainClassName ?? "flex-1 overflow-x-clip max-w-full min-w-0"}
-            style={mainStyle ?? { paddingBottom: 'env(safe-area-inset-bottom)' }}
+            style={mainStyle ?? { paddingBottom: 'var(--bottom-safe-area, 0px)' }}
           >
             <div className="w-full">
               {contentClassName ? (

@@ -1,5 +1,4 @@
 import { Share2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 interface SocialShareButtonsProps {
@@ -11,6 +10,7 @@ interface SocialShareButtonsProps {
 export function SocialShareButtons({ url, title, description }: SocialShareButtonsProps) {
   const fullUrl = url.startsWith('http') ? url : `https://eclipserblx.com${url}`;
   const text = description ? `${title} — ${description}` : title;
+  const actionButtonClass = "flex h-14 w-full items-center justify-center rounded-2xl border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground";
 
   const shareLinks = [
     {
@@ -50,7 +50,7 @@ export function SocialShareButtons({ url, title, description }: SocialShareButto
   };
 
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="grid grid-cols-3 gap-2">
       {shareLinks.map((link) => (
         link.href ? (
           <a
@@ -58,8 +58,9 @@ export function SocialShareButtons({ url, title, description }: SocialShareButto
             href={link.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="h-8 w-8 rounded-md border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+            className={actionButtonClass}
             title={`Share on ${link.name}`}
+            aria-label={`Share on ${link.name}`}
           >
             {link.icon}
           </a>
@@ -67,8 +68,9 @@ export function SocialShareButtons({ url, title, description }: SocialShareButto
           <button
             key={link.name}
             onClick={handleCopyForDiscord}
-            className="h-8 w-8 rounded-md border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+            className={actionButtonClass}
             title="Copy for Discord"
+            aria-label="Copy for Discord"
           >
             {link.icon}
           </button>
@@ -76,8 +78,9 @@ export function SocialShareButtons({ url, title, description }: SocialShareButto
       ))}
       <button
         onClick={handleNativeShare}
-        className="h-8 w-8 rounded-md border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+        className={actionButtonClass}
         title="Share"
+        aria-label="Share"
       >
         <Share2 className="h-4 w-4" />
       </button>
