@@ -585,11 +585,9 @@
     min-height: -webkit-fill-available;
     position: relative;
     isolation: isolate;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-    user-select: none;
     overscroll-behavior: none;
     background-color: hsl(var(--background));
+    padding-bottom: 0;
     padding-bottom: 0;
     box-sizing: border-box;
     transition: background-color 0.3s ease, color 0.3s ease;
