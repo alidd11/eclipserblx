@@ -487,8 +487,8 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       </div>
 
       {user && !isCollapsed && (
-        <div className="border-b border-border/50 px-4 py-4 space-y-3">
-          {/* User info */}
+        <div className="border-b border-border/50 px-4 py-3 space-y-2">
+          {/* User info + inline balance */}
           <div className="flex items-center gap-3">
             {/* Avatar with online dot + premium ring */}
             <div className="relative shrink-0">
@@ -501,13 +501,13 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                     src={profileAvatar}
                     alt=""
                     className={cn(
-                      "h-10 w-10 rounded-full object-cover bg-muted",
+                      "h-11 w-11 rounded-full object-cover bg-muted",
                       isPremium && "border-2 border-sidebar"
                     )}
                   />
                 ) : (
                   <div className={cn(
-                    "h-10 w-10 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center",
+                    "h-11 w-11 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center",
                     isPremium && "border-2 border-sidebar"
                   )}>
                     <span className="text-sm font-bold text-primary-foreground">
@@ -516,7 +516,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                   </div>
                 )}
               </div>
-              {/* Online status dot */}
               <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-sidebar" />
             </div>
             <div className="min-w-0 flex-1">
@@ -524,6 +523,15 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               {profileUsername && (
                 <p className="text-[11px] text-muted-foreground truncate leading-tight mt-0.5">@{profileUsername}</p>
               )}
+              <div className="flex items-center gap-1.5 mt-1">
+                <Wallet className="h-3 w-3 text-primary" />
+                <span className="text-xs font-bold">£{balance.toFixed(2)}</span>
+                <span className="text-muted-foreground/50">·</span>
+                <Link to="/credits" onClick={handleNavClick} className="text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-0.5">
+                  <Plus className="h-2.5 w-2.5" />
+                  Add
+                </Link>
+              </div>
             </div>
             {isMobileDrawer && (
               <Button variant="ghost" size="icon" className="h-8 w-8 min-h-0 min-w-0 rounded-full bg-muted/60 hover:bg-muted" onClick={onNavigate}>
@@ -532,39 +540,23 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             )}
           </div>
 
-          {/* Balance */}
-          <div className="rounded-xl bg-muted/40 px-3.5 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-1.5 rounded-lg bg-primary/10">
-                <Wallet className="h-3.5 w-3.5 text-primary" />
-              </div>
-              <span className="text-sm font-bold">£{balance.toFixed(2)}</span>
-            </div>
-            <Link to="/credits" onClick={handleNavClick} className="text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-0.5">
-              <Plus className="h-3 w-3" />
-              Add Funds
-            </Link>
-          </div>
-
-          {/* Quick Stats Row */}
-          <div className="flex items-center gap-1.5">
+          {/* Quick Stats Pills */}
+          <div className="flex items-center gap-2">
             <Link
               to="/orders"
               onClick={handleNavClick}
-              className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-lg px-2 py-2 bg-muted/30 hover:bg-muted/60 active:scale-[0.97]"
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-full px-3 py-1.5 border border-border/60 hover:border-border hover:bg-muted/40 active:scale-[0.97]"
             >
               <ShoppingBag className="h-3.5 w-3.5" />
               <span className="text-xs font-semibold">{quickStats?.orders ?? 0}</span>
-              <span className="text-[10px] text-muted-foreground/70">Orders</span>
             </Link>
             <Link
               to="/wishlist"
               onClick={handleNavClick}
-              className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-lg px-2 py-2 bg-muted/30 hover:bg-muted/60 active:scale-[0.97]"
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-full px-3 py-1.5 border border-border/60 hover:border-border hover:bg-muted/40 active:scale-[0.97]"
             >
               <Heart className="h-3.5 w-3.5" />
               <span className="text-xs font-semibold">{quickStats?.wishlist ?? 0}</span>
-              <span className="text-[10px] text-muted-foreground/70">Wishlist</span>
             </Link>
           </div>
 
@@ -575,7 +567,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleNavClick}
-              className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-3 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98] shadow-[0_0_16px_hsl(var(--primary)/0.25)]"
+              className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98] shadow-[0_0_16px_hsl(var(--primary)/0.25)]"
             >
               <Zap className="h-4 w-4" />
               Seller Dashboard
