@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 import { Badge } from '@/components/ui/badge';
@@ -292,28 +291,28 @@ export function LinkedAccountsCard({
 
   if (isProcessingOAuth || isProcessingRobloxOAuth) {
     return (
-      <Card className="border-border bg-card">
-        <CardContent className="flex items-center justify-center py-12">
+      <div className="border border-border rounded-xl overflow-hidden">
+        <div className="flex items-center justify-center py-12">
           <div className="text-center space-y-3">
             <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" />
             <p className="text-sm text-muted-foreground">
               Linking your {isProcessingRobloxOAuth ? 'Roblox' : 'Discord'} account...
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="border-border bg-card">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="px-6 py-4 bg-muted/30 border-b border-border">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
           <Link2 className="h-4 w-4" />
           Linked Accounts
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </h3>
+      </div>
+      <div className="p-6 space-y-4">
         {/* Discord Section */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -450,7 +449,7 @@ export function LinkedAccountsCard({
             Accounts locked after becoming a seller. Contact staff to request changes.
           </p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Package } from 'lucide-react';
 
@@ -11,8 +10,8 @@ export function NonCompliantBanner({ count }: NonCompliantBannerProps) {
   if (count <= 0) return null;
 
   return (
-    <Card className="border-destructive/50 bg-destructive/5">
-      <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-4 py-4">
+    <div className="border border-destructive/50 rounded-xl overflow-hidden">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 px-6 py-4 bg-destructive/5">
         <div className="flex items-center gap-3 flex-1">
           <div className="p-2 rounded-lg bg-destructive/10">
             <AlertTriangle className="h-5 w-5 text-destructive" />
@@ -32,7 +31,7 @@ export function NonCompliantBanner({ count }: NonCompliantBannerProps) {
             Fix Products
           </Link>
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

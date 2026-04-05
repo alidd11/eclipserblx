@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Music, Play, Volume2 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -39,17 +38,17 @@ export function SoundCustomizationCard() {
   };
 
   return (
-    <Card className="border-border bg-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Music className="h-5 w-5" />
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="px-6 py-4 bg-muted/30 border-b border-border">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Music className="h-4 w-4" />
           Sound Customization
-        </CardTitle>
-        <CardDescription>
+        </h3>
+        <p className="text-xs text-muted-foreground mt-1">
           Choose different sounds for each notification type
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </p>
+      </div>
+      <div className="p-6 space-y-6">
         {/* Volume Slider */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -110,7 +109,7 @@ export function SoundCustomizationCard() {
             </div>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

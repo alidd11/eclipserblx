@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Grid3X3, ChevronRight } from 'lucide-react';
 import { categoryIconMap, PackageIcon } from '@/components/icons/CategoryIcons';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -13,7 +12,6 @@ interface Category {
   icon: string | null;
   product_count: number;
 }
-
 
 export function CategoriesGridCard() {
   const { data: categories, isLoading } = useQuery({
@@ -26,7 +24,6 @@ export function CategoriesGridCard() {
       
       if (error) throw error;
       
-      // Get product counts for each category - only marketplace products (with store_id)
       const now = new Date().toISOString();
       const categoriesWithCounts = await Promise.all(
         (data || []).map(async (category) => {
@@ -35,7 +32,7 @@ export function CategoriesGridCard() {
             .select('id', { count: 'exact', head: true })
             .eq('category_id', category.id)
             .eq('is_active', true)
-            .not('store_id', 'is', null) // Only marketplace products
+            .not('store_id', 'is', null)
             .or(`release_at.is.null,release_at.lte.${now}`);
           
           return {
@@ -51,25 +48,21 @@ export function CategoriesGridCard() {
   });
 
   return (
-    <Card className="overflow-hidden border-border bg-card">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center justify-between text-lg">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20">
-              <Grid3X3 className="h-4 w-4 text-violet-500" />
-            </div>
-            Categories
-          </div>
-          <Link 
-            to="/categories?source=marketplace" 
-            className="text-sm font-normal text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
-          >
-            View all
-            <ChevronRight className="h-3.5 w-3.5" />
-          </Link>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="px-6 py-4 bg-muted/30 border-b border-border flex items-center justify-between">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Grid3X3 className="h-4 w-4 text-primary" />
+          Categories
+        </h3>
+        <Link 
+          to="/categories?source=marketplace" 
+          className="text-xs font-normal text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+        >
+          View all
+          <ChevronRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+      <div className="p-6">
         {isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -102,7 +95,7 @@ export function CategoriesGridCard() {
             No categories available
           </p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -1,5 +1,4 @@
 import { Coins, ArrowRight } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -7,17 +6,17 @@ export function CreditsCard() {
   const navigate = useNavigate();
 
   return (
-    <Card className="border-border bg-muted/30">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Coins className="h-5 w-5 text-primary" />
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="px-6 py-4 bg-muted/30 border-b border-border">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Coins className="h-4 w-4 text-primary" />
           Eclipse Credits
-        </CardTitle>
-        <CardDescription>
+        </h3>
+        <p className="text-xs text-muted-foreground mt-1">
           Save on fees by paying with credits
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </p>
+      </div>
+      <div className="p-6 space-y-4">
         <div className="space-y-3">
           <div className="flex items-start gap-3">
             <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
@@ -53,7 +52,7 @@ export function CreditsCard() {
           Top Up Credits
           <ArrowRight className="h-4 w-4 ml-auto" />
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

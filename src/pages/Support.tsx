@@ -1,7 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SITE_NAME } from '@/lib/constants';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
@@ -100,8 +99,8 @@ export default function Support() {
         {/* Quick Links */}
         <div className="grid md:grid-cols-3 gap-4 mb-12">
           {quickLinks.map((link, index) => (
-            <Card key={index} className="bg-card border-border hover:border-primary/50 transition-colors">
-              <CardContent className="p-6">
+            <div key={index} className="border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors">
+              <div className="p-6">
                 {link.action === 'chat' ? (
                   <button
                     onClick={() => {
@@ -152,8 +151,8 @@ export default function Support() {
                     </div>
                   </Link>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
 
@@ -162,19 +161,19 @@ export default function Support() {
           <h2 className="text-2xl font-display font-bold mb-6">Help Topics</h2>
           <div className="grid md:grid-cols-2 gap-6">
             {supportCategories.map((category, index) => (
-              <Card key={index} className="bg-card border-border">
-                <CardHeader>
+              <div key={index} className="border border-border rounded-xl overflow-hidden">
+                <div className="px-6 py-4 bg-muted/30 border-b border-border">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-primary/10">
                       <category.icon className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg">{category.title}</CardTitle>
-                      <CardDescription>{category.description}</CardDescription>
+                      <h3 className="text-sm font-semibold">{category.title}</h3>
+                      <p className="text-xs text-muted-foreground">{category.description}</p>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent>
+                </div>
+                <div className="p-6">
                   <ul className="space-y-2">
                     {category.articles.map((article, articleIndex) => {
                       const isRecoverLink = article === 'Recover a missing order';
@@ -191,8 +190,8 @@ export default function Support() {
                       );
                     })}
                   </ul>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </div>

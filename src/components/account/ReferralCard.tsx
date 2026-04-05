@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Copy, Check, Users, Gift, Share2, Loader2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,7 +22,6 @@ export function ReferralCard() {
         .single();
       if (error) throw error;
       
-      // If no referral code exists, generate one
       if (!data?.referral_code) {
         const newCode = await generateReferralCode();
         if (newCode) {
@@ -40,10 +38,8 @@ export function ReferralCard() {
     enabled: !!user?.id,
   });
 
-  // Generate a unique referral code
   const generateReferralCode = async (): Promise<string | null> => {
     const code = crypto.randomUUID().substring(0, 8).toUpperCase();
-    // Check if code exists
     const { data: existing } = await supabase
       .from('profiles')
       .select('referral_code')
@@ -51,7 +47,7 @@ export function ReferralCard() {
       .maybeSingle();
     
     if (existing) {
-      return generateReferralCode(); // Retry with new code
+      return generateReferralCode();
     }
     return code;
   };
@@ -124,23 +120,23 @@ export function ReferralCard() {
 
   if (!referralCode) {
     return (
-      <Card className="border-border bg-card">
-        <CardContent className="py-8 flex items-center justify-center">
+      <div className="border border-border rounded-xl overflow-hidden">
+        <div className="py-8 flex items-center justify-center">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="border-border bg-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Gift className="h-5 w-5 text-primary" />
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="px-6 py-4 bg-muted/30 border-b border-border">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Gift className="h-4 w-4 text-primary" />
           Refer a Friend
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </h3>
+      </div>
+      <div className="p-6 space-y-6">
         {/* Referral Stats */}
         <div className="grid grid-cols-3 gap-3">
           <div className="text-center p-3 rounded-lg bg-muted/30 border border-border/50">
@@ -175,7 +171,7 @@ export function ReferralCard() {
         </div>
 
         {/* Share Button */}
-        <Button onClick={shareReferral} className="w-full gradient-button border-0">
+        <Button onClick={shareReferral} className="w-full">
           <Share2 className="h-4 w-4 mr-2" />
           Share Referral Link
         </Button>
@@ -185,15 +181,15 @@ export function ReferralCard() {
           <p className="text-sm font-medium">How it works:</p>
           <ol className="text-xs text-muted-foreground space-y-1">
             <li className="flex items-start gap-2">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs">1</span>
+              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">1</span>
               Share your referral link with friends
             </li>
             <li className="flex items-start gap-2">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs">2</span>
+              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">2</span>
               They sign up and make their first purchase
             </li>
             <li className="flex items-start gap-2">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs">3</span>
+              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">3</span>
               You both get 10% off your next order!
             </li>
           </ol>
@@ -228,7 +224,7 @@ export function ReferralCard() {
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

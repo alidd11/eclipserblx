@@ -1,5 +1,4 @@
 import { Store, Upload, DollarSign, ChevronDown } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 
 const steps = [
   {
@@ -21,14 +20,14 @@ const steps = [
 
 export function HowItWorksCard() {
   return (
-    <Card className="bg-card border-border overflow-hidden">
-      <CardContent className="p-6">
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="p-6">
         <h3 className="font-semibold text-lg mb-4 text-center">How It Works</h3>
         
         <div className="flex flex-col items-center space-y-2">
           {steps.map((step, index) => (
             <div key={step.title} className="w-full">
-              <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
+              <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
                 <div className="p-2 rounded-lg bg-primary/10">
                   <step.icon className="h-5 w-5 text-primary" />
                 </div>
@@ -49,7 +48,7 @@ export function HowItWorksCard() {
             </div>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Bell, BellOff, Loader2, Smartphone, Volume2, VolumeX } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useBackgroundPush } from '@/hooks/useBackgroundPush';
@@ -75,22 +74,20 @@ export function NotificationSettingsCard() {
   };
 
   const supportsHaptic = 'vibrate' in navigator;
-
-  // Show iOS-specific message if not installed as PWA
   const showIOSInstallMessage = isiOSDevice && !isPWAMode;
 
   return (
-    <Card className="border-border bg-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Bell className="h-5 w-5" />
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="px-6 py-4 bg-muted/30 border-b border-border">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Bell className="h-4 w-4" />
           Notification Settings
-        </CardTitle>
-        <CardDescription>
+        </h3>
+        <p className="text-xs text-muted-foreground mt-1">
           Manage how you receive notifications
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </p>
+      </div>
+      <div className="p-6 space-y-6">
         {/* Push Notifications */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
@@ -170,7 +167,7 @@ export function NotificationSettingsCard() {
             />
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

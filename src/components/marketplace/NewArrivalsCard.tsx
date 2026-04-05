@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Sparkles, ChevronRight, Clock, BadgeCheck, Shield } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
@@ -49,23 +48,20 @@ export function NewArrivalsCard() {
         .limit(10);
       
       if (error) throw error;
-      // Only include products with active stores
       const filtered = (data || []).filter(p => p.stores?.is_active === true);
       return filtered.slice(0, 5) as unknown as NewProduct[];
     },
   });
 
   return (
-    <Card className="overflow-hidden border-border bg-card">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500/20 to-teal-500/20">
-            <Sparkles className="h-4 w-4 text-emerald-500" />
-          </div>
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="px-6 py-4 bg-muted/30 border-b border-border">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-emerald-500" />
           New Arrivals
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
+        </h3>
+      </div>
+      <div className="p-6 space-y-3">
         {isLoading ? (
           Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex items-center gap-3">
@@ -143,7 +139,7 @@ export function NewArrivalsCard() {
             No products available yet
           </p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

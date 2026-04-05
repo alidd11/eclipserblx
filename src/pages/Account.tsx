@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/hooks/useAuth';
@@ -464,8 +464,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       <div className="container py-4 space-y-3 max-w-lg mx-auto">
 
         {/* ═══ Profile Header ═══ */}
-        <Card className="rounded-xl border-border bg-card overflow-hidden">
-          <CardContent className="p-0">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="p-0">
             <div className="p-5 flex flex-col items-center text-center gap-2 relative">
               <AvatarUpload
                 userId={user.id}
@@ -596,23 +596,23 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 <span className="text-[10px] text-muted-foreground">Alerts</span>
               </Link>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* ═══ Shopping ═══ */}
-        <Card className="bg-card border-border overflow-hidden">
-          <CardContent className="p-1">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="p-1">
             <SectionHeader title="Shopping" />
             <NavRow icon={Download} label="My Purchases" to="/purchases" />
             <NavRow icon={ShoppingBag} label="Order History" to="/purchases" badge={orders?.length || undefined} />
             <NavRow icon={Heart} label="Wishlist" to="/wishlist" />
             <NavRow icon={CreditCard} label="Wallet & Credits" to="/credits" badge={walletData?.balance ? `£${Number(walletData.balance).toFixed(2)}` : undefined} />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* ═══ Account ═══ */}
-        <Card className="bg-card border-border overflow-hidden">
-          <CardContent className="p-1">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="p-1">
             <SectionHeader title="Account" />
             <ExpandableSection icon={Link2} label="Linked Accounts">
               <LinkedAccountsCard
@@ -633,12 +633,12 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             <ExpandableSection icon={Shield} label="Saved Payment Methods">
               <SavedCardsCard />
             </ExpandableSection>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* ═══ Preferences ═══ */}
-        <Card className="bg-card border-border overflow-hidden">
-          <CardContent className="p-1">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="p-1">
             <SectionHeader title="Preferences" />
             <ExpandableSection icon={Bell} label="Notifications">
               <NotificationSettingsCard />
@@ -649,12 +649,12 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             <ExpandableSection icon={Volume2} label="Sound Effects">
               <SoundCustomizationCard />
             </ExpandableSection>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* ═══ More ═══ */}
-        <Card className="bg-card border-border overflow-hidden">
-          <CardContent className="p-1">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="p-1">
             <SectionHeader title="More" />
             {hasMarketplaceAccess && (
               <ExpandableSection icon={Store} label="Become a Seller">
@@ -671,17 +671,17 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               <CreditsCard />
             </ExpandableSection>
             <UserIdsCollapsible userId={user.id} customerId={profile?.customer_id || null} />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* ═══ Danger Zone ═══ */}
-        <Card className="bg-card border-border overflow-hidden">
-          <CardContent className="p-1">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="p-1">
             <button onClick={() => setShowDeleteDialog(true)} className="w-full">
               <NavRow icon={Trash2} label="Delete Account" destructive />
             </button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* App Version */}
         <p className="text-center text-[10px] text-muted-foreground/60 pb-4">Eclipse v3.0</p>

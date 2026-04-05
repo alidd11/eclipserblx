@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Mail, Send, Loader2, MessageCircle, ChevronDown, ChevronUp, Clock } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -81,7 +80,6 @@ export function MyMessagesCard() {
           table: 'contact_message_replies',
         },
         async (payload) => {
-          // Check if this reply is for one of the user's messages
           const { data: msg } = await supabase
             .from('contact_messages')
             .select('email')
@@ -89,10 +87,7 @@ export function MyMessagesCard() {
             .single();
           
           if (msg?.email === user.email && payload.new.sender_type === 'staff') {
-            // Staff replied - show notification
             showSuccessNotification('New Reply!', 'Staff has responded to your message');
-            
-            // Refresh data
             queryClient.invalidateQueries({ queryKey: ['my-contact-messages'] });
             queryClient.invalidateQueries({ queryKey: ['message-replies', payload.new.contact_message_id] });
           }
@@ -110,7 +105,6 @@ export function MyMessagesCard() {
     mutationFn: async ({ messageId, content }: { messageId: string; content: string }) => {
       if (!user?.id) throw new Error('Not authenticated');
       
-      // Insert the reply
       const { error: replyError } = await supabase
         .from('contact_message_replies')
         .insert({
@@ -123,7 +117,6 @@ export function MyMessagesCard() {
       
       if (replyError) throw replyError;
 
-      // Update message status back to pending
       const { error: updateError } = await supabase
         .from('contact_messages')
         .update({ status: 'pending' })
@@ -166,14 +159,14 @@ export function MyMessagesCard() {
   if (!user) return null;
 
   return (
-    <Card className="bg-card border-border">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Mail className="h-5 w-5" />
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="px-6 py-4 bg-muted/30 border-b border-border">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Mail className="h-4 w-4" />
           My Messages
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+        </h3>
+      </div>
+      <div className="p-6">
         {isLoading ? (
           <div className="text-center py-8">
             <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
@@ -189,7 +182,6 @@ export function MyMessagesCard() {
           <div className="space-y-3">
             {messages.map((msg) => (
               <div key={msg.id} className="rounded-lg border bg-muted/30 overflow-hidden">
-                {/* Message Header - Clickable */}
                 <button
                   onClick={() => setExpandedMessage(expandedMessage === msg.id ? null : msg.id)}
                   className="w-full p-4 text-left hover:bg-muted/50 transition-colors"
@@ -213,16 +205,13 @@ export function MyMessagesCard() {
                   </div>
                 </button>
 
-                {/* Expanded Content */}
                 {expandedMessage === msg.id && (
                   <div className="border-t p-4 space-y-4">
-                    {/* Original Message */}
                     <div className="p-3 rounded-lg bg-muted/50">
                       <p className="text-xs text-muted-foreground mb-1">Your original message:</p>
                       <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
                     </div>
 
-                    {/* Conversation Thread */}
                     {repliesLoading ? (
                       <div className="flex items-center justify-center py-4">
                         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -253,7 +242,6 @@ export function MyMessagesCard() {
                       </div>
                     ) : null}
 
-                    {/* Reply Form */}
                     <div className="space-y-2 pt-2">
                       <Textarea
                         placeholder="Type your reply..."
@@ -282,7 +270,7 @@ export function MyMessagesCard() {
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
