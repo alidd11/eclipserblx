@@ -367,6 +367,7 @@ export function AppRoutes() {
         <Route path="/seller/products/new" element={<SellerProductEditor />} />
         <Route path="/seller/products/:productId/edit" element={<SellerProductEditor />} />
         <Route path="/seller/orders" element={<SellerOrders />} />
+        <Route path="/seller/security" element={<SellerLeakReports />} />
         <Route path="/seller/finance" element={<SellerFinanceHub />} />
         <Route path="/seller/balance" element={<Navigate to="/seller/finance?tab=overview" replace />} />
         <Route path="/seller/revenue" element={<Navigate to="/seller/finance?tab=revenue" replace />} />
