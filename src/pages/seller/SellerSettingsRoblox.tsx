@@ -404,8 +404,8 @@ export default function SellerSettingsRoblox() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* How to Find IDs */}
           <Card className="border-muted">
