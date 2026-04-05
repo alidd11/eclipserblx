@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Package, Search, Sparkles, Loader2,
+  Package, Search, Loader2,
   Clock, X, TrendingUp, ArrowRight, ArrowLeft, Store, ChevronRight
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
