@@ -25,7 +25,7 @@ export function StoreTrustSignals({
               className="h-3.5 w-3.5 flex-shrink-0"
               style={{ color: accentColor }}
             />
-            <span className="text-[11px] text-foreground/50 font-medium whitespace-nowrap">
+            <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
               {signal.label}
             </span>
             {i < signals.length - 1 && (
