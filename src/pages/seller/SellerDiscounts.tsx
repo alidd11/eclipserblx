@@ -406,9 +406,7 @@ export default function SellerDiscounts() {
               </div>
             ))
           ) : (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Tag className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <div className="border border-border rounded-xl py-12 text-center">
                 <h3 className="text-lg font-medium mb-2">No Discount Codes</h3>
                 <p className="text-muted-foreground mb-4">
                   Create your first discount code to boost sales
