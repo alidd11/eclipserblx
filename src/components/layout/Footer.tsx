@@ -65,20 +65,20 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border/40 mt-auto" role="contentinfo" aria-label="Site footer">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
-        {/* 3-column link grid */}
-        <div className="grid grid-cols-2 xs:grid-cols-3 gap-6 xs:gap-12 mb-10">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Compact inline link grid */}
+        <div className="grid grid-cols-3 gap-4 sm:gap-8 mb-6">
           {columns.map((col) => (
-            <div key={col.heading} className="flex flex-col gap-3">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-foreground/40" id={`footer-${col.heading.toLowerCase()}`}>
+            <div key={col.heading} className="flex flex-col gap-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-foreground/40 mb-0.5" id={`footer-${col.heading.toLowerCase()}`}>
                 {col.heading}
               </p>
-              <nav className="flex flex-col gap-2.5" aria-labelledby={`footer-${col.heading.toLowerCase()}`}>
+              <nav className="flex flex-col gap-1" aria-labelledby={`footer-${col.heading.toLowerCase()}`}>
                 {col.links.map((link) => (
                   <Link
                     key={link.href}
                     to={link.href}
-                    className="text-[13px] text-foreground/55 hover:text-foreground transition-colors"
+                    className="text-[12px] text-foreground/50 hover:text-foreground transition-colors leading-snug"
                   >
                     {link.label}
                   </Link>
