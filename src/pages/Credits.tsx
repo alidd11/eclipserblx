@@ -69,8 +69,8 @@ export default function Credits() {
     return (
       <MainLayout>
         <div className="container py-8 max-w-lg">
-          <Card className="text-center py-10">
-            <CardContent>
+          <div className="border border-border rounded-xl overflow-hidden text-center py-10">
+            <div className="p-6">
               <Wallet className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <h2 className="text-xl font-semibold mb-2">Sign in to view your wallet</h2>
               <p className="text-muted-foreground mb-4 text-sm">
@@ -79,8 +79,8 @@ export default function Credits() {
               <Button onClick={() => navigate('/auth?redirect=/credits')}>
                 Sign In
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </MainLayout>
     );
