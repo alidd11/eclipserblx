@@ -386,20 +386,20 @@ export default function EmailTemplates() {
             ))}
           </TabsList>
 
-          <Card className="mt-4">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden mt-4">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">
                 {templates.find(t => t.id === activeTab)?.label} Preview
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </h3>
+            </div>
+            <div className="p-4">
               <ScrollArea className="h-[600px] w-full rounded-lg border">
                 <div className="min-w-[320px]">
                   {renderTemplate()}
                 </div>
               </ScrollArea>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </Tabs>
       </div>
     </AdminLayout>

@@ -621,18 +621,17 @@ function ConsentRecordsTab({ search, onSearchChange }: { search: string; onSearc
   });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5" />
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="px-4 py-3 border-b border-border bg-muted/30">
+        <h3 className="font-semibold text-sm flex items-center gap-2">
+          <Users className="h-4 w-4 text-muted-foreground" />
           Consent Records
-        </CardTitle>
-        <CardDescription>
+        </h3>
+        <p className="text-xs text-muted-foreground mt-0.5">
           Live proof-of-consent log from the database (GDPR Art. 7 — Conditions for consent).
-          Each record captures the visitor's consent decision with timestamp and version.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </p>
+      </div>
+      <div className="p-4 space-y-4">
         <Input
           placeholder="Search by visitor ID or action..."
           value={search}
@@ -696,7 +695,7 @@ function ConsentRecordsTab({ search, onSearchChange }: { search: string; onSearc
             </Table>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
