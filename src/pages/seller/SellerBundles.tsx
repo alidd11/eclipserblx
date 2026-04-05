@@ -179,15 +179,13 @@ export default function SellerBundles() {
           </Button>
         </div>
 
-        <Card className="mb-6 bg-blue-500/5 border-blue-500/20">
-          <CardContent className="flex items-start gap-3 py-4">
-            <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-muted-foreground">
-              Bundles let customers buy multiple products together at a reduced price. 
-              Select at least 2 products and set a bundle price below the combined total.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3 flex items-start gap-3 mb-6">
+          <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-muted-foreground">
+            Bundles let customers buy multiple products together at a reduced price. 
+            Select at least 2 products and set a bundle price below the combined total.
+          </p>
+        </div>
 
         <div className="space-y-3">
           {isLoading ? (
