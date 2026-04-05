@@ -42,12 +42,9 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [useAI, setUseAI] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [isClosing, setIsClosing] = useState(false);
   const { searches: recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
-
-  const { search: smartSearch, isSearching: isSmartSearching, results: smartResults } = useSmartSearch();
 
   // Auto-focus input on open
   useEffect(() => {
