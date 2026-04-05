@@ -242,10 +242,12 @@ export default function SellerSettingsDomain() {
               Manage your store's subdomain, custom domains, and DNS configuration.
             </p>
           </div>
-          <Button onClick={() => setWizardOpen(true)} size="sm" className="shrink-0">
-            <Plus className="w-4 h-4 mr-1.5" />
-            Add Domain
-          </Button>
+          {isPro && (
+            <Button onClick={() => setWizardOpen(true)} size="sm" className="shrink-0">
+              <Plus className="w-4 h-4 mr-1.5" />
+              Add Domain
+            </Button>
+          )}
         </div>
 
         {/* Stats Bar */}
