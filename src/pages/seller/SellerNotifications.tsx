@@ -169,7 +169,7 @@ export default function SellerNotifications() {
               return (
                 <div
                   key={n.id}
-                  interactive
+                  role="button"
                   className={cn(
                     'transition-all',
                     isUnread && 'border-primary/30 bg-primary/5'

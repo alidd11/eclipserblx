@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FileText, Users, Scale, ExternalLink, CheckCircle2, Clock, Filter, Bell, BellDot, Package, Wallet, Palette, MessageSquare, Shield, HelpCircle } from "lucide-react";
 import { SellerLayout } from "@/components/seller/SellerLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSellerStatus } from "@/hooks/useSellerStatus";

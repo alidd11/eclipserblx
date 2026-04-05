@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MoreHorizontal, Trash2, SmilePlus, Reply } from 'lucide-react';
+import { MoreHorizontal, Trash2, SmilePlus, Reply, MessageSquare, Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -35,8 +35,9 @@ interface ChatMessageActionsProps {
   onRemoveReaction: (reactionId: string) => void;
   onDelete: (messageId: string) => void;
   onReply?: (messageId: string) => void;
+  onThread?: () => void;
+  onPin?: () => void;
   isOwnBubble?: boolean;
-  // PWA-specific props for tap-to-open behavior
   isPWA?: boolean;
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -52,6 +53,8 @@ export function ChatMessageActions({
   onRemoveReaction,
   onDelete,
   onReply,
+  onThread,
+  onPin,
   isOwnBubble = false,
   isPWA = false,
   isOpen,
@@ -155,6 +158,28 @@ export function ChatMessageActions({
             >
               <Reply className="h-4 w-4 mr-2" />
               Reply
+            </DropdownMenuItem>
+          )}
+
+          {/* Thread option */}
+          {onThread && (
+            <DropdownMenuItem
+              onClick={() => { hapticTap(); onThread(); }}
+              className="cursor-pointer"
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Reply in Thread
+            </DropdownMenuItem>
+          )}
+
+          {/* Pin option */}
+          {onPin && (
+            <DropdownMenuItem
+              onClick={() => { hapticTap(); onPin(); }}
+              className="cursor-pointer"
+            >
+              <Pin className="h-4 w-4 mr-2" />
+              Pin Message
             </DropdownMenuItem>
           )}
 

@@ -119,31 +119,50 @@ export type Database = {
         Row: {
           attachment_url: string | null
           created_at: string
+          edited_at: string | null
           id: string
+          is_pinned: boolean
           message: string
+          pinned_by: string | null
           reply_to_id: string | null
+          thread_parent_id: string | null
           user_id: string
         }
         Insert: {
           attachment_url?: string | null
           created_at?: string
+          edited_at?: string | null
           id?: string
+          is_pinned?: boolean
           message: string
+          pinned_by?: string | null
           reply_to_id?: string | null
+          thread_parent_id?: string | null
           user_id: string
         }
         Update: {
           attachment_url?: string | null
           created_at?: string
+          edited_at?: string | null
           id?: string
+          is_pinned?: boolean
           message?: string
+          pinned_by?: string | null
           reply_to_id?: string | null
+          thread_parent_id?: string | null
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "admin_chat_messages_reply_to_id_fkey"
             columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "admin_chat_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_chat_messages_thread_parent_id_fkey"
+            columns: ["thread_parent_id"]
             isOneToOne: false
             referencedRelation: "admin_chat_messages"
             referencedColumns: ["id"]
@@ -1955,6 +1974,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      chat_read_receipts: {
+        Row: {
+          channel: string
+          id: string
+          last_read_at: string
+          last_read_message_id: string | null
+          user_id: string
+        }
+        Insert: {
+          channel: string
+          id?: string
+          last_read_at?: string
+          last_read_message_id?: string | null
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          id?: string
+          last_read_at?: string
+          last_read_message_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       consent_records: {
         Row: {
@@ -8417,31 +8460,50 @@ export type Database = {
         Row: {
           attachment_url: string | null
           created_at: string
+          edited_at: string | null
           id: string
+          is_pinned: boolean
           message: string
+          pinned_by: string | null
           reply_to_id: string | null
+          thread_parent_id: string | null
           user_id: string
         }
         Insert: {
           attachment_url?: string | null
           created_at?: string
+          edited_at?: string | null
           id?: string
+          is_pinned?: boolean
           message: string
+          pinned_by?: string | null
           reply_to_id?: string | null
+          thread_parent_id?: string | null
           user_id: string
         }
         Update: {
           attachment_url?: string | null
           created_at?: string
+          edited_at?: string | null
           id?: string
+          is_pinned?: boolean
           message?: string
+          pinned_by?: string | null
           reply_to_id?: string | null
+          thread_parent_id?: string | null
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "staff_chat_messages_reply_to_id_fkey"
             columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "staff_chat_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_chat_messages_thread_parent_id_fkey"
+            columns: ["thread_parent_id"]
             isOneToOne: false
             referencedRelation: "staff_chat_messages"
             referencedColumns: ["id"]

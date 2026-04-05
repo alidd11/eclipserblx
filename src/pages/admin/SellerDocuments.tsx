@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { FileText, Plus, Upload, ExternalLink, Trash2, Filter, Link as LinkIcon, Eye, EyeOff, Bell, Scale, ChevronDown, ChevronUp } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
