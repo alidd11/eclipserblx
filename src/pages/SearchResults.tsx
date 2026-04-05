@@ -93,7 +93,6 @@ export default function SearchResults() {
 
   // Initial fetch using search_products_v2 RPC
   useEffect(() => {
-    if (useAI) return;
     if (debouncedQuery.length < 2 && !categorySlug) {
       setProducts([]);
       setTotalCount(0);
