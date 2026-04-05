@@ -153,8 +153,8 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
     return () => clearTimeout(debounce);
   }, [searchQuery, open, useAI, categoryFilter]);
 
-  const displayProducts = useAI && smartResults.length > 0 ? smartResults : products;
-  const displayLoading = useAI ? isSmartSearching : isLoading;
+  const displayProducts = products;
+  const displayLoading = isLoading;
   const hasQuery = searchQuery.length >= 2;
 
   const highlightMatch = useCallback((text: string, query: string) => {
