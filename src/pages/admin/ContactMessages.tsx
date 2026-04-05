@@ -376,8 +376,7 @@ export default function ContactMessages() {
         </div>
 
         {/* Filters + Messages Combined */}
-        <Card>
-          {/* Compact Filters */}
+        <div className="border border-border rounded-xl overflow-hidden">
           <div className="p-3 md:p-4 border-b border-border">
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
