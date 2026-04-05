@@ -1,5 +1,5 @@
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import { ChevronRight, Home, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ChevronRight, Home } from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,15 +8,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { useStoreDomain } from '@/hooks/useStoreDomain';
 import { cn } from '@/lib/utils';
-import { hapticTap } from '@/lib/haptics';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 // Route configuration for breadcrumb labels
 const routeLabels: Record<string, string> = {
@@ -30,7 +23,6 @@ const routeLabels: Record<string, string> = {
   purchases: 'Purchases',
   wishlist: 'Wishlist',
   messages: 'Notifications',
-  
   jobs: 'Jobs',
   support: 'Help Center',
   contact: 'Contact',
@@ -48,8 +40,6 @@ const routeLabels: Record<string, string> = {
   store: 'Store',
   admin: 'Admin',
   following: 'Following',
-  
-  // Seller dashboard sub-pages
   analytics: 'Analytics',
   balance: 'Balance',
   orders: 'Orders',
@@ -82,7 +72,6 @@ const routeLabels: Record<string, string> = {
 const excludedRoutes = ['/', '/auth'];
 
 // Segments that are route prefixes only (not navigable on their own)
-// These will show as text labels, not clickable links
 const nonNavigableSegments = new Set(['store']);
 
 function formatSegmentLabel(segment: string): string {
@@ -96,7 +85,6 @@ function formatSegmentLabel(segment: string): string {
 export function UniversalBreadcrumb() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const { canGoBack, canGoForward, goBack, goForward } = useNavigationHistory();
   const { isCustomStoreDomain } = useStoreDomain();
   const pathSegments = location.pathname.split('/').filter(Boolean);
 
@@ -116,7 +104,6 @@ export function UniversalBreadcrumb() {
   // Append query-param context (e.g. ?category=buildings → "Buildings")
   const category = searchParams.get('category');
   if (category) {
-    // The last path item is no longer "last" visually
     if (breadcrumbItems.length > 0) {
       breadcrumbItems[breadcrumbItems.length - 1].isLast = false;
     }
@@ -128,75 +115,14 @@ export function UniversalBreadcrumb() {
     });
   }
 
-  const handleBack = () => {
-    hapticTap();
-    goBack();
-  };
-
-  const handleForward = () => {
-    hapticTap();
-    goForward();
-  };
-
   return (
-    <div className="border-b border-border/40 bg-card/50 backdrop-blur-sm">
-      <div className="container mx-auto py-2 px-3 sm:px-4 flex items-center gap-2.5">
-        {/* Navigation History Buttons */}
-        <div className="flex items-center gap-1 shrink-0">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={handleBack}
-                disabled={!canGoBack}
-                className={cn(
-                  "h-7 w-7 flex items-center justify-center rounded-full transition-all duration-150",
-                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  canGoBack
-                    ? "text-muted-foreground hover:text-foreground hover:bg-accent active:scale-90"
-                    : "text-muted-foreground/25 cursor-not-allowed"
-                )}
-                aria-label="Go back"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="text-xs">
-              Back
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={handleForward}
-                disabled={!canGoForward}
-                className={cn(
-                  "h-7 w-7 flex items-center justify-center rounded-full transition-all duration-150",
-                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  canGoForward
-                    ? "text-muted-foreground hover:text-foreground hover:bg-accent active:scale-90"
-                    : "text-muted-foreground/25 cursor-not-allowed"
-                )}
-                aria-label="Go forward"
-              >
-                <ArrowRight className="h-3.5 w-3.5" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="text-xs">
-              Forward
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-        {/* Divider */}
-        <div className="h-4 w-px bg-border/50 shrink-0" />
-
-        {/* Breadcrumb Trail */}
+    <div className="border-b border-border/40 bg-card/30">
+      <div className="container mx-auto py-2 px-3 sm:px-4">
         <Breadcrumb className="min-w-0">
           <BreadcrumbList className="flex-nowrap">
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to={isCustomStoreDomain ? '/' : '/'} className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/" className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors">
                   <Home className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline text-xs font-medium">{isCustomStoreDomain ? 'Store' : 'Home'}</span>
                 </Link>
