@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { CreditCard, ChevronLeft, Tag, X, Check, Sparkles, Gift } from 'lucide-react';
+import { ChevronLeft, X, Check, Sparkles, Gift } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,7 +44,6 @@ export default function Checkout() {
   // Calculate Eclipse+ member pricing
   const calculateMemberPricing = () => {
     const itemsWithMemberPricing = items.map(item => {
-      // PWYW items use custom_price directly — Eclipse+ discounts don't apply to buyer-chosen prices
       const effectivePrice = item.is_pwyw ? (item.custom_price ?? item.price) : item.price;
       const eligible = !item.is_pwyw && isEligibleForDiscount(item.category_id, item.is_resellable, item.store_eclipse_enabled);
       const memberPrice = eligible ? getMemberPrice(effectivePrice, item.category_id, item.is_resellable) : effectivePrice;
@@ -69,11 +68,9 @@ export default function Checkout() {
 
   const { itemsWithMemberPricing, memberSubtotal, eclipseDiscount, potentialSavings } = calculateMemberPricing();
 
-  // Reset processing state when coming back from Stripe (covers browser back / bfcache restore)
+  // Reset processing state when coming back from Stripe
   useEffect(() => {
     const reset = () => setIsProcessing(false);
-
-    // SPA navigation (e.g., cancel_url back to /checkout)
     reset();
 
     const handlePageShow = () => reset();
@@ -135,13 +132,11 @@ export default function Checkout() {
         return;
       }
 
-      // If discount is restricted to a specific user, verify ownership
       if (discount.restricted_to_user_id && discount.restricted_to_user_id !== user?.id) {
         showErrorNotification(t('common.error'), 'This discount code is not available for your account.');
         return;
       }
 
-      // If discount is store-scoped, check cart items belong to that store
       if (discount.store_id) {
         const productIds = items.map(i => i.id);
         const { data: products } = await supabase
@@ -278,8 +273,8 @@ export default function Checkout() {
 
         <div className="grid lg:grid-cols-2 gap-6 w-full min-w-0">
           {/* Order Summary */}
-          <div className="order-first lg:order-last gaming-card p-4 sm:p-6 h-fit space-y-6 min-w-0 overflow-hidden">
-            <h2 className="text-xl font-display font-bold">{t('checkout.orderSummary')}</h2>
+          <div className="order-first lg:order-last border border-border rounded-xl bg-card p-4 sm:p-6 h-fit space-y-6 min-w-0 overflow-hidden">
+            <h2 className="text-lg font-semibold">{t('checkout.orderSummary')}</h2>
             
             <div className="space-y-3">
               {itemsWithMemberPricing.map((item) => (
@@ -359,17 +354,13 @@ export default function Checkout() {
                 {t('checkout.receiptSentTo')} <span className="font-medium text-foreground">{user?.email}</span>
               </p>
             </div>
-
           </div>
 
           {/* Discount & Payment */}
           <div className="space-y-6 min-w-0 overflow-hidden">
             {!(isSubscribed && eclipseDiscount > 0) && (
-              <div className="gaming-card p-4 sm:p-6 space-y-4">
-                <h2 className="text-xl font-display font-bold flex items-center gap-2">
-                  <Tag className="h-5 w-5" />
-                  {t('checkout.discountCode')}
-                </h2>
+              <div className="border border-border rounded-xl bg-card p-4 sm:p-6 space-y-4">
+                <h2 className="text-lg font-semibold">{t('checkout.discountCode')}</h2>
                 
                 {appliedDiscount ? (
                   <div className="flex items-center justify-between p-3 bg-primary/10 border border-primary/20 rounded-lg">
@@ -413,9 +404,8 @@ export default function Checkout() {
               </div>
             )}
 
-            <div className="gaming-card p-4 sm:p-6 space-y-4">
-              <h2 className="text-xl font-display font-bold flex items-center gap-2">
-                {isFreeOrder ? <Gift className="h-5 w-5" /> : <CreditCard className="h-5 w-5" />}
+            <div className="border border-border rounded-xl bg-card p-4 sm:p-6 space-y-4">
+              <h2 className="text-lg font-semibold">
                 {isFreeOrder ? 'Claim Products' : t('checkout.payment')}
               </h2>
 
@@ -426,7 +416,7 @@ export default function Checkout() {
                   </p>
                   <Button
                     onClick={handleFreeOrder}
-                    className="w-full h-14 gradient-button border-0 text-base font-semibold"
+                    className="w-full h-12 gradient-button border-0 text-base font-semibold"
                     disabled={isProcessing}
                   >
                     <Gift className="h-5 w-5 mr-2" />

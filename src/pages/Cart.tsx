@@ -1,9 +1,8 @@
 import { Link } from 'react-router-dom';
-import { Trash2, ShoppingBag, ArrowRight, ShieldCheck, Zap, CreditCard, Sparkles } from 'lucide-react';
+import { Trash2, ShoppingBag, ArrowRight, Shield, Zap, CreditCard, Sparkles } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -38,33 +37,25 @@ export default function Cart() {
   if (items.length === 0) {
     return (
       <MainLayout>
-        
-          <div className="container py-16 max-w-lg mx-auto">
-            <Card className="bg-card border-border/50 text-center overflow-hidden relative">
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-              <CardContent className="pt-12 pb-8 space-y-6">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-muted/80 border border-border/50 mx-auto">
-                  <ShoppingBag className="h-10 w-10 text-muted-foreground" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-display font-bold mb-2">{t('cart.cartEmpty')}</h1>
-                  <p className="text-muted-foreground max-w-sm mx-auto">
-                    {t('cart.cartEmptyDesc')}
-                  </p>
-                </div>
-                <Button asChild className="gradient-button border-0 shadow-[0_0_20px_hsl(var(--primary)/0.3)]">
-                  <Link to="/products">{t('common.browseProducts')}</Link>
-                </Button>
-              </CardContent>
-            </Card>
+        <div className="container py-16 max-w-lg mx-auto text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-muted mb-4">
+            <ShoppingBag className="h-6 w-6 text-muted-foreground" />
           </div>
+          <h1 className="text-2xl font-display font-bold mb-2">{t('cart.cartEmpty')}</h1>
+          <p className="text-muted-foreground max-w-sm mx-auto mb-6">
+            {t('cart.cartEmptyDesc')}
+          </p>
+          <Button asChild className="gradient-button border-0">
+            <Link to="/products">{t('common.browseProducts')}</Link>
+          </Button>
+        </div>
       </MainLayout>
     );
   }
 
   return (
     <MainLayout>
-      <div className="container py-8 space-y-8">
+      <div className="container py-8 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold">{t('cart.yourCart')}</h1>
@@ -77,23 +68,18 @@ export default function Cart() {
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Cart Items */}
-          <Card className="lg:col-span-2 bg-card border-border">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
-                <ShoppingBag className="h-5 w-5" />
-                {t('cart.cartItems')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="lg:col-span-2 space-y-0">
+            <h2 className="text-lg font-semibold mb-4">{t('cart.cartItems')}</h2>
+            <div className="divide-y divide-border">
               {items.map((item) => {
                 const hasDiscount = isSubscribed && isEligibleForDiscount(item.category_id, item.is_resellable, item.store_eclipse_enabled);
                 const memberPrice = hasDiscount ? getMemberPrice(item.price, item.category_id, item.is_resellable) : item.price;
                 const discountPercent = getDiscountPercent(item.category_id, item.is_resellable);
                 
                 return (
-                  <div key={item.id} className="p-3 sm:p-4 rounded-lg bg-muted/50">
+                  <div key={item.id} className="py-4 first:pt-0">
                     <div className="flex gap-3 sm:gap-4">
-                      <div className="w-16 h-16 sm:w-24 sm:h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                      <div className="w-16 h-16 sm:w-20 sm:h-14 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                         {item.image ? (
                           <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                         ) : (
@@ -139,16 +125,14 @@ export default function Cart() {
                   </div>
                 );
               })}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Order Summary */}
           <div className="space-y-6">
-          <Card className="bg-card border-border h-fit">
-            <CardHeader>
-              <CardTitle>{t('cart.orderSummary')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+            <div className="border border-border rounded-xl bg-card p-5 h-fit space-y-5">
+              <h2 className="text-lg font-semibold">{t('cart.orderSummary')}</h2>
+              
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{t('cart.subtotal')} ({items.length} {t('cart.items')})</span>
@@ -191,26 +175,24 @@ export default function Cart() {
                 </Link>
               </Button>
 
-              {/* Trust badges */}
-              <div className="grid grid-cols-3 gap-2 pt-4 border-t border-border">
-                <div className="text-center">
-                  <ShieldCheck className="h-5 w-5 mx-auto text-primary mb-1" />
-                  <p className="text-[10px] text-muted-foreground">{t('common.secure')}</p>
-                </div>
-                <div className="text-center">
-                  <Zap className="h-5 w-5 mx-auto text-primary mb-1" />
-                  <p className="text-[10px] text-muted-foreground">{t('common.instant')}</p>
-                </div>
-                <div className="text-center">
-                  <CreditCard className="h-5 w-5 mx-auto text-primary mb-1" />
-                  <p className="text-[10px] text-muted-foreground">Stripe</p>
-                </div>
+              {/* Trust signals — compact inline strip */}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-3 border-t border-border/60">
+                {[
+                  { icon: Shield, label: t('common.secure') },
+                  { icon: Zap, label: t('common.instant') },
+                  { icon: CreditCard, label: 'Stripe' },
+                ].map((s, i, arr) => (
+                  <div key={s.label} className="flex items-center gap-1.5">
+                    <s.icon className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-[11px] text-muted-foreground font-medium">{s.label}</span>
+                    {i < arr.length - 1 && <span className="hidden sm:block h-3 w-px bg-border/40 ml-2" />}
+                  </div>
+                ))}
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Cart Upsells */}
-          <CartUpsells />
+            {/* Cart Upsells */}
+            <CartUpsells />
           </div>
         </div>
       </div>
