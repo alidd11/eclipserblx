@@ -570,28 +570,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         </div>
       </nav>
 
-      {/* Enterprise Footer */}
-      {!isCollapsed && (
-        <div className="border-t border-border/40 px-4 py-3 space-y-1 shrink-0">
-          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-            <Link to="/orders" onClick={handleNavClick} className="hover:text-foreground transition-colors">
-              {quickStats?.orders ?? 0} orders
-            </Link>
-            <span className="text-border">·</span>
-            <Link to="/wishlist" onClick={handleNavClick} className="hover:text-foreground transition-colors">
-              {quickStats?.wishlist ?? 0} wishlist
-            </Link>
-          </div>
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground/60">
-            <span>v2.4</span>
-            <span className="text-border">·</span>
-            <span className="flex items-center gap-1">
-              <span className={cn("h-1.5 w-1.5 rounded-full", statusConfig[systemStatus].bg)} />
-              {systemStatus === 'online' ? 'Online' : systemStatus}
-            </span>
-          </div>
-        </div>
-      )}
 
     </aside>
   );
