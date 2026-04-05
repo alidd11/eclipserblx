@@ -45,6 +45,8 @@ interface LayoutShellProps {
   contentClassName?: string;
   /** CSS class applied to the outer wrapper div */
   wrapperClassName?: string;
+  /** Inline style applied to the outer wrapper div */
+  wrapperStyle?: React.CSSProperties;
   /** CSS class applied to <main> */
   mainClassName?: string;
   /** CSS class applied to the inner column container (default: md-only height) */
@@ -64,6 +66,7 @@ function LayoutShellInner({
   mainStyle,
   contentClassName,
   wrapperClassName,
+  wrapperStyle,
   mainClassName,
   innerClassName,
 }: LayoutShellProps) {
@@ -88,7 +91,10 @@ function LayoutShellInner({
         Skip to main content
       </a>
 
-      <div className={wrapperClassName ?? "min-h-[100dvh] flex w-full overflow-x-clip relative max-w-full min-w-0"}>
+      <div
+        className={wrapperClassName ?? "min-h-[100dvh] flex w-full overflow-x-clip relative max-w-full min-w-0"}
+        style={wrapperStyle}
+      >
         {/* Desktop Sidebar */}
         <div className="hidden lg:block flex-shrink-0">
           {desktopSidebar}
