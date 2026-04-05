@@ -60,7 +60,7 @@ export function LandingHero() {
 
           <div className="flex items-center gap-4 mt-2">
             <Link to="/products">
-              <Button size="lg" className="h-11 px-7 text-sm font-semibold shadow-[0_0_24px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_36px_hsl(var(--primary)/0.45)] transition-shadow">
+              <Button size="lg" className="h-11 px-7 text-sm font-semibold transition-colors">
                 Browse Marketplace
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -83,7 +83,7 @@ export function LandingHero() {
 
           <div className="flex items-center gap-2.5 w-full max-w-sm mt-1">
             <Link to="/products" className="flex-1">
-              <Button size="sm" className="w-full h-9 text-xs font-semibold shadow-[0_0_16px_hsl(var(--primary)/0.25)]">
+              <Button size="sm" className="w-full h-9 text-xs font-semibold">
                 Browse
                 <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
               </Button>
