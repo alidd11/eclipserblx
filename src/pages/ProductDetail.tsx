@@ -834,27 +834,27 @@ export default function ProductDetail() {
           </div>
 
         {/* Reviews Section */}
-        <div ref={reviewSectionRef} id="reviews" className="scroll-mt-8">
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5" />
-                  Customer Reviews
-                </CardTitle>
-                {hasPurchased && !existingReview && user && (
-                  <Button 
-                    onClick={() => setShowReviewForm(!showReviewForm)}
-                    variant={showReviewForm ? "outline" : "default"}
-                    size="sm"
-                  >
-                    <Star className="h-4 w-4 mr-2" />
-                    {showReviewForm ? 'Cancel' : 'Write a Review'}
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
+        <section ref={reviewSectionRef} id="reviews" className="scroll-mt-8 border-t border-border pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="flex items-center gap-2 text-lg font-semibold">
+              <MessageSquare className="h-5 w-5" />
+              Customer Reviews
+              {productReviews && productReviews.length > 0 && (
+                <span className="text-sm font-normal text-muted-foreground">({productReviews.length})</span>
+              )}
+            </h2>
+            {hasPurchased && !existingReview && user && (
+              <Button 
+                onClick={() => setShowReviewForm(!showReviewForm)}
+                variant={showReviewForm ? "outline" : "default"}
+                size="sm"
+              >
+                <Star className="h-4 w-4 mr-2" />
+                {showReviewForm ? 'Cancel' : 'Write a Review'}
+              </Button>
+            )}
+          </div>
+          <div className="space-y-4">
               {/* Review Form - only show if user purchased and hasn't reviewed */}
               {showReviewForm && hasPurchased && !existingReview && user && (
                 <div className="border-b border-border pb-6">
