@@ -261,11 +261,10 @@ export default function SearchResults() {
                 'Searching...'
               ) : showResults ? (
                 <>
-                  <span className="font-medium text-foreground">{useAI ? displayProducts.length : totalCount}</span>
-                  {' '}result{(useAI ? displayProducts.length : totalCount) !== 1 ? 's' : ''}
+                  <span className="font-medium text-foreground">{totalCount}</span>
+                  {' '}result{totalCount !== 1 ? 's' : ''}
                   {debouncedQuery.length >= 2 && <> for "{debouncedQuery}"</>}
                   {categorySlug && <span className="text-primary ml-1">in {categorySlug}</span>}
-                  {useAI && <span className="text-primary ml-1">(AI enhanced)</span>}
                 </>
               ) : (
                 'Enter a search query or select a category'
