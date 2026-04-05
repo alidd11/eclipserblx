@@ -134,10 +134,6 @@ const AdminIPReports = lazyWithRetry(() => import("@/pages/admin/IPReports"));
 const AdminDeveloperSubmissions = lazyWithRetry(() => import("@/pages/admin/DeveloperSubmissions"));
 const AdminDeveloperPayments = lazyWithRetry(() => import("@/pages/admin/DeveloperPayments"));
 const AdminDeveloperPaymentDetail = lazyWithRetry(() => import("@/pages/admin/DeveloperPaymentDetail"));
-const AdminRecruiters = lazyWithRetry(() => import("@/pages/admin/Recruiters"));
-const AdminRecruiterApplications = lazyWithRetry(() => import("@/pages/admin/RecruiterApplications"));
-const AdminRecruiterPayouts = lazyWithRetry(() => import("@/pages/admin/RecruiterPayouts"));
-const AdminRecruiterCommissions = lazyWithRetry(() => import("@/pages/admin/RecruiterCommissions"));
 const AdminGDPRCompliance = lazyWithRetry(() => import("@/pages/admin/GDPRCompliance"));
 
 const AdminPortalBotSetup = lazyWithRetry(() => import("@/pages/admin/PortalBotSetup"));
