@@ -9,7 +9,7 @@ import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductGridSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { CategoryBar } from '@/components/shop/CategoryBar';
 import { ShopSidebar } from '@/components/shop/ShopSidebar';
-import { PullToRefresh } from '@/components/ui/PullToRefresh';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -174,7 +174,7 @@ export default function Products() {
 
   return (
     <MainLayout>
-      <PullToRefresh onRefresh={handleRefresh}>
+      
         <CollectionSchema
           name={activeCategory ? activeCategory.name : 'All Products'}
           description={activeCategory?.description || 'Browse premium Roblox scripts, vehicles, maps and game assets on Eclipse marketplace.'}
@@ -234,7 +234,7 @@ export default function Products() {
             </div>
           </div>
         </div>
-      </PullToRefresh>
+      
     </MainLayout>
   );
 }

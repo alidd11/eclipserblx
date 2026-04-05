@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { motion } from 'framer-motion';
 import { categoryIconMap, PackageIcon } from '@/components/icons/CategoryIcons';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { PullToRefresh } from '@/components/ui/PullToRefresh';
+
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageTracking } from '@/hooks/usePageTracking';
@@ -299,7 +299,7 @@ export default function Categories() {
         { name: 'Home', url: 'https://eclipserblx.com/' },
         { name: 'Categories', url: 'https://eclipserblx.com/categories' },
       ]} />
-      <PullToRefresh onRefresh={handleRefresh}>
+      
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <PageHeader
           title="Browse Categories"
@@ -338,7 +338,7 @@ export default function Categories() {
           );
         })()}
       </div>
-      </PullToRefresh>
+      
     </MainLayout>
   );
 }

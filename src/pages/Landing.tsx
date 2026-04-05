@@ -1,6 +1,5 @@
-import { lazy, Suspense, useCallback } from 'react';
+import { lazy, Suspense } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { LandingHero } from '@/components/landing/LandingHero';
 
 
@@ -27,13 +26,8 @@ import { LazySection } from '@/components/ui/LazySection';
 export default function Landing() {
   usePageMeta({ canonicalPath: '/' });
 
-  const handleRefresh = useCallback(async () => {
-    window.location.reload();
-  }, []);
-
   return (
     <MainLayout>
-      <PullToRefresh onRefresh={handleRefresh}>
       <OrganizationSchema />
       <WebsiteSearchSchema />
       <SiteNavigationSchema />
@@ -115,7 +109,6 @@ export default function Landing() {
           </Suspense>
         </SectionErrorBoundary>
       </LazySection>
-      </PullToRefresh>
     </MainLayout>
   );
 }
