@@ -283,8 +283,8 @@ export default function StaffDirectory() {
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredStaff.map(member => (
-                  <Card key={member.user_id} className="hover:border-primary/50 transition-colors">
-                    <CardContent className="p-4">
+                  <div key={member.user_id} className="border border-border rounded-xl hover:border-primary/50 transition-colors">
+                    <div className="p-4">
                       <Link to={`/admin/staff/${member.user_id}`}>
                         <div className="flex items-start gap-3">
                           <Avatar className="h-12 w-12">
