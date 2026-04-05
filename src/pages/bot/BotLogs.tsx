@@ -52,12 +52,12 @@ export default function BotLogs() {
           />
         </div>
 
-        <Card className="bg-white/[0.03] border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white text-base">Recent Errors</CardTitle>
-            <CardDescription className="text-white/40">{filtered.length} log entries</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
+        <div className="border border-white/10 rounded-xl overflow-hidden bg-white/[0.03]">
+          <div className="px-6 py-4 bg-white/[0.03] border-b border-white/10">
+            <h3 className="text-white text-base font-semibold">Recent Errors</h3>
+            <p className="text-white/40 text-sm">{filtered.length} log entries</p>
+          </div>
+          <div className="p-0">
             {isLoading ? (
               <div className="p-8 text-center text-white/40">Loading...</div>
             ) : filtered.length === 0 ? (
