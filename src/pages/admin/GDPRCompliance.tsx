@@ -295,14 +295,11 @@ export default function GDPRCompliance() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <Shield className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">GDPR & Tax Compliance Registry</h1>
-            <p className="text-muted-foreground text-sm">
-              ROPA (Art. 30) · Sub-Processors (Art. 28) · Retention · HMRC Tax Obligations
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-display font-bold">GDPR & Tax Compliance Registry</h1>
+          <p className="text-sm text-muted-foreground">
+            ROPA (Art. 30) · Sub-Processors (Art. 28) · Retention · HMRC Tax Obligations
+          </p>
         </div>
 
         <div className="flex gap-2 flex-wrap">
