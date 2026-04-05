@@ -88,7 +88,7 @@ export function OrdersTab({ storeId }: OrdersTabProps) {
 
       let ordersQuery = supabase
         .from('orders')
-        .select('*, order_items(id, product_name, price, product_id)', { count: 'exact' })
+        .select('*, order_items(id, product_name, price, product_id, download_count)', { count: 'exact' })
         .in('id', orderIds)
         .order('created_at', { ascending: false });
 
