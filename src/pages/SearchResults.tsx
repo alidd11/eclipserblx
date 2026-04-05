@@ -68,8 +68,7 @@ export default function SearchResults() {
   const [hasMore, setHasMore] = useState(false);
   const pageRef = useRef(0);
   const { addSearch } = useRecentSearches();
-  const { search: smartSearch, isSearching, results: smartResults } = useSmartSearch();
-  const [useAI, setUseAI] = useState(false);
+  const { correction } = useSearchSuggestions(debouncedQuery);
   const { correction } = useSearchSuggestions(debouncedQuery);
 
   // Sync to URL
