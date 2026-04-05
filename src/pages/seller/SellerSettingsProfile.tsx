@@ -385,8 +385,8 @@ export default function SellerSettingsProfile() {
                 <Save className="h-4 w-4 mr-2" />
                 {updateStore.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </SellerLayout>
