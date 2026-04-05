@@ -275,17 +275,12 @@ export default function RolePermissions() {
 
           <TabsContent value="assign" className="space-y-6 mt-6">
             {/* Role Selection */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <Shield className="h-5 w-5" />
-                  Select Role
-                </CardTitle>
-                <CardDescription>
-                  Choose a role to view and modify its permissions
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm">Select Role</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Choose a role to view and modify its permissions</p>
+              </div>
+              <div className="p-4">
                 {rolesLoading ? (
                   <Skeleton className="h-12 w-full" />
                 ) : customRoles ? (
@@ -295,8 +290,8 @@ export default function RolePermissions() {
                     onSelectRole={setSelectedRole}
                   />
                 ) : null}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Permissions Header with Expand/Collapse */}
             <div className="flex items-center justify-between">

@@ -539,18 +539,16 @@ export default function AdminUsers() {
         </div>
 
         {/* Desktop Table View */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">
-                {activeView === 'staff' ? 'Staff Members' : activeView === 'all' ? 'All Users' : 'Customer List'}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Showing {startIndex + 1}-{Math.min(endIndex, totalCustomers)} of {totalCustomers}
-              </p>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
+            <h3 className="font-semibold text-sm">
+              {activeView === 'staff' ? 'Staff Members' : activeView === 'all' ? 'All Users' : 'Customer List'}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Showing {startIndex + 1}-{Math.min(endIndex, totalCustomers)} of {totalCustomers}
+            </p>
+          </div>
+          <div>
             <div className="hidden md:block">
               <Table>
                 <TableHeader>
