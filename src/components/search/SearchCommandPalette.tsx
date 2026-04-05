@@ -102,7 +102,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
     fetchTrending();
   }, [open, trendingProducts.length]);
 
-  // Search products
+  // Search using search_products_v2 RPC for full-text + trigram + description matching
   useEffect(() => {
     if (!open || useAI) return;
     const fetchProducts = async () => {
@@ -113,21 +113,17 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
       }
       setIsLoading(true);
       try {
-        let productQuery = supabase
-          .from('products')
-          .select('id, name, slug, product_number, price, images, stores!inner (is_active), categories!inner (slug)')
-          .eq('is_active', true)
-          .eq('stores.is_active', true)
-          .or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)
-          .order('total_sales', { ascending: false })
-          .limit(8);
-
-        if (categoryFilter) {
-          productQuery = productQuery.eq('categories.slug', categoryFilter);
-        }
-
-        const [productRes, storeRes] = await Promise.all([
-          productQuery,
+        const [rpcRes, storeRes] = await Promise.all([
+          supabase.rpc('search_products_v2', {
+            search_query: searchQuery,
+            category_filter: categoryFilter,
+            min_price: null,
+            max_price: null,
+            free_only: false,
+            sort_by: 'relevance',
+            page_size: 6,
+            page_offset: 0,
+          }),
           supabase
             .from('stores')
             .select('id, name, slug, logo_url, is_verified')
@@ -137,8 +133,19 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
             .limit(4),
         ]);
 
-        if (!productRes.error && productRes.data) setProducts(productRes.data.slice(0, 6));
-        if (!storeRes.error && storeRes.data) setStoreResults(storeRes.data as StoreResult[]);
+        if (!rpcRes.error && rpcRes.data) {
+          setProducts(rpcRes.data.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            price: p.price,
+            images: p.images,
+            product_number: p.product_number,
+          })));
+        }
+        if (!storeRes.error && storeRes.data) {
+          setStoreResults(storeRes.data as StoreResult[]);
+        }
       } catch {
         console.error('Error fetching search results');
       } finally {

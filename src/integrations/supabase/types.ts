@@ -11584,12 +11584,12 @@ export type Database = {
           images: string[]
           name: string
           price: number
+          product_number: number
           rank_score: number
           slug: string
           store_name: string
           store_slug: string
           store_verified: boolean
-          total_sales: number
         }[]
       }
       seller_has_products_in_order: {
