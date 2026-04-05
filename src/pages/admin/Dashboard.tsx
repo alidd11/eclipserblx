@@ -395,11 +395,11 @@ export default function AdminDashboard() {
 
         {/* Role-Based Actions */}
         {roleLinks.length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium">Your Tools</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Your Tools</h3>
+            </div>
+            <div className="p-4">
               <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1.5 sm:gap-2">
                 {roleLinks.map((link) => (
                   <Link key={link.href} to={link.href}>
@@ -417,8 +417,8 @@ export default function AdminDashboard() {
                   </Link>
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Assigned Tickets */}
