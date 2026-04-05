@@ -932,7 +932,7 @@ export default function ProductDetail() {
                   {filteredReviews.map((review) => (
                     <div key={review.id} className="border-b border-border pb-4 last:border-0 last:pb-0">
                       <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                           {review.profile?.avatar_url ? (
                             <img 
                               src={review.profile.avatar_url} 
