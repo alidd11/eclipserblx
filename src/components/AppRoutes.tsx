@@ -163,8 +163,6 @@ const AdminAffiliateHub = lazyWithRetry(() => import("@/pages/admin/AffiliateHub
 const AdminPlatformLedger = lazyWithRetry(() => import("@/pages/admin/PlatformLedger"));
 const AdminCustomDomains = lazyWithRetry(() => import("@/pages/admin/CustomDomains"));
 
-// Recruiter page
-const Recruiter = lazyWithRetry(() => import("@/pages/Recruiter"));
 
 // Seller pages
 const SellerDashboard = lazyWithRetry(() => import("@/pages/seller/SellerDashboard"));
