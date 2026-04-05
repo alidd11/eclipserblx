@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, MessageSquare, Clock, CheckCircle, AlertCircle, Send, Link as LinkIcon, HelpCircle, CreditCard, Package, Settings, FileQuestion, Paperclip, X } from 'lucide-react';
 import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
