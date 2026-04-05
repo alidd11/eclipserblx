@@ -305,14 +305,14 @@ export function LinkedAccountsCard({
   }
 
   return (
-    <Card className="border-border bg-card">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="px-6 py-4 bg-muted/30 border-b border-border">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
           <Link2 className="h-4 w-4" />
           Linked Accounts
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </h3>
+      </div>
+      <div className="p-6 space-y-4">
         {/* Discord Section */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
