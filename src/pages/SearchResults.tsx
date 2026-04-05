@@ -187,7 +187,6 @@ export default function SearchResults() {
 
   const handleCorrectionClick = useCallback((corrected: string) => {
     setQuery(corrected);
-    setUseAI(false);
   }, []);
 
   const handleResetFilters = useCallback(() => {
