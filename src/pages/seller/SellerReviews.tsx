@@ -369,8 +369,8 @@ export default function SellerReviews() {
                 <p className="text-sm">Reviews will appear here once customers leave feedback</p>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </SellerLayout>
   );
