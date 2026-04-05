@@ -238,7 +238,7 @@ export default function SellerProductsAll() {
           <div className="space-y-2">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="animate-pulse">
-                <CardContent className="h-16" />
+                <div className="h-16 bg-muted rounded-xl" />
               </div>
             ))}
           </div>
