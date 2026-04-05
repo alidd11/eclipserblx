@@ -327,17 +327,12 @@ export default function SellerSettingsProfile() {
           </div>
 
           {/* Social Links */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <LinkIcon className="h-5 w-5" />
-                Social Links
-              </CardTitle>
-              <CardDescription>
-                Connect your social media accounts to display on your store
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Social Links</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Connect your social media accounts to display on your store</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="twitter_url" className="flex items-center gap-2">
