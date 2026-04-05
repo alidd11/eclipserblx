@@ -299,7 +299,7 @@ export default function Categories() {
         { name: 'Home', url: 'https://eclipserblx.com/' },
         { name: 'Categories', url: 'https://eclipserblx.com/categories' },
       ]} />
-      <PullToRefresh onRefresh={handleRefresh}>
+      
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <PageHeader
           title="Browse Categories"
