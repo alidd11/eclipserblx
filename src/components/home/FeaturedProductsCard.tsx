@@ -157,7 +157,7 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
 
   return (
     <div 
-      className="rounded-lg border border-border bg-card p-5 h-full"
+      className="rounded-lg border border-border bg-card p-5"
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
       onTouchStart={handleTouchStart}
