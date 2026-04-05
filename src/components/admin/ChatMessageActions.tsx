@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MoreHorizontal, Trash2, SmilePlus, Reply } from 'lucide-react';
+import { MoreHorizontal, Trash2, SmilePlus, Reply, MessageSquare, Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
