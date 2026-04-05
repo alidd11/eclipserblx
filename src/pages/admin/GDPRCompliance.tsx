@@ -542,14 +542,14 @@ export default function GDPRCompliance() {
             </div>
 
             {/* Key Tax Rules */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Landmark className="h-5 w-5" />
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Landmark className="h-4 w-4 text-muted-foreground" />
                   Key Tax Rules for UK Digital Marketplaces
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </h3>
+              </div>
+              <div className="p-4 space-y-4">
                 <div className="p-4 rounded-lg bg-muted/30 border border-border">
                   <h4 className="font-semibold mb-1">VAT on Commission Revenue</h4>
                   <p className="text-sm text-muted-foreground">
@@ -586,8 +586,8 @@ export default function GDPRCompliance() {
                     sellers set their own prices. Review if pricing model changes.
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* ─── Tab 5: Consent Records (Live from DB) ─── */}
