@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
 import { AdminLayout } from '@/components/admin/AdminLayout';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+// Card imports removed — using enterprise flat sections
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Settings as SettingsIcon, Bell, Shield, Rocket } from 'lucide-react';
@@ -33,16 +33,10 @@ export default function AdminSettings() {
   return (
     <AdminLayout>
       <div className="space-y-6 w-full">
-        {/* Page Header */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-2xl sm:text-3xl font-display flex items-center gap-2">
-              <SettingsIcon className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-              Settings
-            </CardTitle>
-            <CardDescription>Configure your store, notifications, security, and platform settings</CardDescription>
-          </CardHeader>
-        </Card>
+        <div>
+          <h1 className="text-2xl font-display font-bold">Settings</h1>
+          <p className="text-sm text-muted-foreground mt-1">Configure your store, notifications, security, and platform settings</p>
+        </div>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

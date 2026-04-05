@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Mail, Trash2, Eye, MessageSquare, Search, Filter, CheckCircle, Clock, AlertCircle, Send, Loader2, FileText, User, Reply } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+// Card imports removed — using enterprise flat sections
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -360,40 +360,23 @@ export default function ContactMessages() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-2 md:gap-3">
-          <Card className="p-3 md:p-4">
-            <div className="flex items-center gap-1.5">
-              <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Total</span>
-            </div>
-            <p className="text-xl md:text-2xl font-bold">{stats.total}</p>
-          </Card>
-          <Card className="p-3 md:p-4">
-            <div className="flex items-center gap-1.5">
-              <AlertCircle className="h-3.5 w-3.5 text-destructive" />
-              <span className="text-xs text-muted-foreground">Unread</span>
-            </div>
-            <p className="text-xl md:text-2xl font-bold">{stats.unread}</p>
-          </Card>
-          <Card className="p-3 md:p-4">
-            <div className="flex items-center gap-1.5">
-              <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Read</span>
-            </div>
-            <p className="text-xl md:text-2xl font-bold">{stats.read}</p>
-          </Card>
-          <Card className="p-3 md:p-4">
-            <div className="flex items-center gap-1.5">
-              <CheckCircle className="h-3.5 w-3.5 text-green-500" />
-              <span className="text-xs text-muted-foreground">Responded</span>
-            </div>
-            <p className="text-xl md:text-2xl font-bold">{stats.responded}</p>
-          </Card>
+        <div className="flex items-center gap-4 text-sm flex-wrap">
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{stats.total}</span> total
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-destructive">{stats.unread}</span> unread
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{stats.read}</span> read
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-green-500">{stats.responded}</span> responded
+          </span>
         </div>
 
         {/* Filters + Messages Combined */}
-        <Card>
-          {/* Compact Filters */}
+        <div className="border border-border rounded-xl overflow-hidden">
           <div className="p-3 md:p-4 border-b border-border">
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
@@ -420,7 +403,7 @@ export default function ContactMessages() {
           </div>
 
           {/* Messages List */}
-          <CardContent className="p-0">
+          <div>
             {isLoading ? (
               <div className="p-4 space-y-3">
                 {[...Array(5)].map((_, i) => (
@@ -536,8 +519,8 @@ export default function ContactMessages() {
                 </div>
               </>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* View Message Dialog */}
         <Dialog open={!!selectedMessage} onOpenChange={() => setSelectedMessage(null)}>

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+// Card imports removed — using enterprise flat sections
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -147,68 +147,32 @@ export default function SellerReviews() {
     <SellerLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Star className="h-6 w-6 text-yellow-500" />
-            Reviews
-          </h1>
-          <p className="text-muted-foreground">Manage and respond to customer feedback</p>
+          <h1 className="text-2xl font-display font-bold">Reviews</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage and respond to customer feedback</p>
         </div>
 
         {/* Stats Overview */}
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible">
-          <Card className="min-w-[200px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Average Rating</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-3xl font-bold">{stats?.average.toFixed(1) || '0.0'}</span>
-                    <div className="flex">{renderStars(Math.round(stats?.average || 0))}</div>
-                  </div>
-                </div>
-                <div className="p-3 rounded-full bg-yellow-500/10">
-                  <Star className="h-6 w-6 text-yellow-500" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[200px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Reviews</p>
-                  <span className="text-3xl font-bold">{stats?.total || 0}</span>
-                </div>
-                <div className="p-3 rounded-full bg-primary/10">
-                  <MessageSquare className="h-6 w-6 text-primary" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[200px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Positive Reviews</p>
-                  <span className="text-3xl font-bold text-green-600">
-                    {stats ? Math.round(((stats.distribution[0].count + stats.distribution[1].count) / Math.max(stats.total, 1)) * 100) : 0}%
-                  </span>
-                </div>
-                <div className="p-3 rounded-full bg-green-500/10">
-                  <ThumbsUp className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="flex items-center gap-4 text-sm flex-wrap">
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-yellow-500">{stats?.average.toFixed(1) || '0.0'}</span> avg rating
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{stats?.total || 0}</span> reviews
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-green-500">
+              {stats ? Math.round(((stats.distribution[0].count + stats.distribution[1].count) / Math.max(stats.total, 1)) * 100) : 0}%
+            </span> positive
+          </span>
         </div>
 
         {/* Rating Distribution */}
         {stats && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Rating Distribution</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Rating Distribution</h3>
+            </div>
+            <div className="p-4 space-y-3">
               {stats.distribution.map(({ rating, count, percent }) => (
                 <button
                   key={rating}
@@ -222,8 +186,8 @@ export default function SellerReviews() {
                   <span className="w-16 text-sm text-muted-foreground text-right">{count} ({percent.toFixed(0)}%)</span>
                 </button>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Filters */}
@@ -258,15 +222,15 @@ export default function SellerReviews() {
         </div>
 
         {/* Reviews List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Customer Reviews</CardTitle>
-            <CardDescription>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm">Customer Reviews</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               {totalCount} review{totalCount !== 1 ? 's' : ''}
               {filterRating !== 'all' && ` with ${filterRating} stars`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </p>
+          </div>
+          <div className="p-4">
             {reviewsLoading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map(i => <Skeleton key={i} className="h-24" />)}
@@ -405,8 +369,8 @@ export default function SellerReviews() {
                 <p className="text-sm">Reviews will appear here once customers leave feedback</p>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </SellerLayout>
   );

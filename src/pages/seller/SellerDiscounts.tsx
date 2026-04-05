@@ -3,7 +3,7 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+// Card imports removed — using enterprise flat sections
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -297,8 +297,8 @@ export default function SellerDiscounts() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Discount Codes</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-display font-bold">Discount Codes</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               Create and manage discount codes for your products
             </p>
           </div>
@@ -309,18 +309,16 @@ export default function SellerDiscounts() {
         </div>
 
         {/* Info Card */}
-        <Card className="mb-6 bg-blue-500/5 border-blue-500/20">
-          <CardContent className="flex items-start gap-3 py-4">
-            <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
-            <div className="text-sm">
-              <p className="font-medium text-blue-500">Discount Limits</p>
-              <p className="text-muted-foreground">
-                To maintain platform health, seller discount codes are limited to a maximum of 50% off. 
-                Customers can apply your codes at checkout for products from your store.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="mb-6 rounded-xl border border-blue-500/20 bg-blue-500/5 flex items-start gap-3 p-4">
+          <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <p className="font-medium text-blue-500">Discount Limits</p>
+            <p className="text-muted-foreground">
+              To maintain platform health, seller discount codes are limited to a maximum of 50% off. 
+              Customers can apply your codes at checkout for products from your store.
+            </p>
+          </div>
+        </div>
 
         {/* Discount Codes List */}
         <div className="space-y-4">
@@ -330,8 +328,7 @@ export default function SellerDiscounts() {
             ))
           ) : discountCodes && discountCodes.length > 0 ? (
             discountCodes.map((code) => (
-              <Card key={code.id} className={!code.is_active || isExpired(code.expires_at) ? 'opacity-60' : ''}>
-                <CardContent className="flex items-center justify-between py-4">
+              <div key={code.id} className={`border border-border rounded-xl p-4 flex items-center justify-between ${!code.is_active || isExpired(code.expires_at) ? 'opacity-60' : ''}`}>
                   <div className="flex items-center gap-4">
                     <div 
                       className="h-12 w-12 rounded-lg flex items-center justify-center bg-primary/10"
@@ -406,23 +403,20 @@ export default function SellerDiscounts() {
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+              </div>
             ))
           ) : (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Tag className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No Discount Codes</h3>
-                <p className="text-muted-foreground mb-4">
-                  Create your first discount code to boost sales
-                </p>
-                <Button onClick={() => setShowCreateDialog(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Code
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-xl py-12 text-center">
+              <Tag className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <h3 className="text-lg font-medium mb-2">No Discount Codes</h3>
+              <p className="text-muted-foreground mb-4">
+                Create your first discount code to boost sales
+              </p>
+              <Button onClick={() => setShowCreateDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Code
+              </Button>
+            </div>
           )}
         </div>
       </div>

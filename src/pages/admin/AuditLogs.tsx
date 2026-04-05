@@ -4,7 +4,7 @@ import { Search, Shield, UserPlus, UserMinus, Filter, Ban, Wifi, Trash2, Eye } f
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+// Card imports removed — using enterprise flat sections
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
@@ -392,12 +392,12 @@ export default function AdminAuditLogs() {
   return (
     <AdminLayout requiredPermissions={['view_audit_logs']}>
       <div className="space-y-6">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-2xl sm:text-3xl font-display">Audit Logs</CardTitle>
-            <CardDescription>Track all moderation and administrative actions</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Audit Logs</h1>
+          <p className="text-sm text-muted-foreground mt-1">Track all moderation and administrative actions</p>
+        </div>
+
+        <div className="space-y-4">
             <div className="relative w-full sm:w-80">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -545,8 +545,7 @@ export default function AdminAuditLogs() {
                 </>
               )}
             </Tabs>
-          </CardContent>
-        </Card>
+        </div>
       </div>
     </AdminLayout>
   );
