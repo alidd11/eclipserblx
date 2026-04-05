@@ -395,7 +395,7 @@ export default function DeveloperPayments() {
                     const StatusIcon = config?.icon || Clock;
                     
                     return (
-                      <Card 
+                      <div 
                         key={payment.id}
                         className="cursor-pointer active:bg-muted/50 touch-manipulation transition-colors"
                         onClick={() => navigate(`/admin/developer-payments/${payment.id}`)}

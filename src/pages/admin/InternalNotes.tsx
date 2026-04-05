@@ -171,7 +171,7 @@ export default function InternalNotes() {
         ) : (
           <div className="space-y-3">
             {filtered.map((note: any) => (
-              <Card key={note.id} className={note.is_pinned ? 'border-primary/30 bg-primary/5' : ''}>
+              <div key={note.id} className={note.is_pinned ? 'border-primary/30 bg-primary/5' : ''}>
                 <div className="p-4 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">

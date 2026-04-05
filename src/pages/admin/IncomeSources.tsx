@@ -443,7 +443,7 @@ export default function AdminIncomeSources() {
             const Icon = config.icon;
 
             return (
-              <Card 
+              <div 
                 key={key} 
                 className={cn(
                   "bg-card border-border cursor-pointer transition-all hover:border-primary/30 overflow-hidden",

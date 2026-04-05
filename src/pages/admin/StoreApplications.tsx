@@ -317,7 +317,7 @@ export default function StoreApplications() {
     const hasWarnings = score.total > 0 && score.passed < score.total;
 
     return (
-      <Card 
+      <div 
         className="cursor-pointer hover:border-primary/50 transition-colors"
         onClick={() => setSelectedApplication(app)}
       >

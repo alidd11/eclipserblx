@@ -148,7 +148,7 @@ export default function BotServers() {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="animate-pulse">
+              <div key={i} className="animate-pulse">
                 <div className="p-4 p-4 space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-muted" />
@@ -168,7 +168,7 @@ export default function BotServers() {
             </div>
           ) : (
             installations.map((install) => (
-              <Card key={install.id} className="hover:border-primary/30 transition-colors">
+              <div key={install.id} className="hover:border-primary/30 transition-colors">
                 <div className="p-4 p-4 space-y-4">
                   {/* Server Header */}
                   <div className="flex items-start gap-3">

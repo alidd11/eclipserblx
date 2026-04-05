@@ -72,7 +72,7 @@ export default function ProductListingGuide() {
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
             {listingTips.map((tip, i) => (
-              <Card key={i} className="border-border/50">
+              <div key={i} className="border-border/50">
                 <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-primary/10">

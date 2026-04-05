@@ -269,7 +269,7 @@ export default function SellerStorePages() {
         ) : (
           <div className="space-y-3">
             {pages.map((page) => (
-              <Card key={page.id}>
+              <div key={page.id}>
                 <div className="p-4 p-4 flex items-center gap-4">
                   <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0" />
                   <div className="flex-1 min-w-0">

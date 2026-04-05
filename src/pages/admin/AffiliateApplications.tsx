@@ -115,7 +115,7 @@ const AffiliateApplications = () => {
         ) : (
           <div className="grid gap-3">
             {filtered.map((affiliate) => (
-              <Card
+              <div
                 key={affiliate.id}
                 className="cursor-pointer hover:border-primary/50 transition-colors"
                 onClick={() => setSelectedAffiliate(affiliate)}

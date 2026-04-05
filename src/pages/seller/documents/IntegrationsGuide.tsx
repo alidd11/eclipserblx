@@ -120,7 +120,7 @@ export default function IntegrationsGuide() {
           </h2>
           <div className="space-y-4">
             {discordFeatures.map((feature, i) => (
-              <Card key={i} className="border-border/50">
+              <div key={i} className="border-border/50">
                 <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-primary/10">
@@ -172,7 +172,7 @@ export default function IntegrationsGuide() {
           </p>
           <div className="grid sm:grid-cols-2 gap-4">
             {botIntegration.map((step) => (
-              <Card key={step.step} className="border-border/50">
+              <div key={step.step} className="border-border/50">
                 <div className="p-4 pt-6">
                   <div className="flex gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold flex items-center justify-center shrink-0 text-sm">
@@ -200,7 +200,7 @@ export default function IntegrationsGuide() {
           </p>
           <div className="grid sm:grid-cols-2 gap-4">
             {discordTemplates.map((item, i) => (
-              <Card key={i} className="border-border/50">
+              <div key={i} className="border-border/50">
                 <div className="p-4 pt-6">
                   <div className="flex gap-3">
                     <div className="p-2 rounded-lg bg-primary/10 h-fit shrink-0">
@@ -238,7 +238,7 @@ export default function IntegrationsGuide() {
           </h2>
           <div className="grid md:grid-cols-3 gap-4">
             {robloxFeatures.map((feature, i) => (
-              <Card key={i} className="border-border/50">
+              <div key={i} className="border-border/50">
                 <div className="p-4 pt-6 text-center">
                   <h4 className="font-semibold mb-2">{feature.title}</h4>
                   <p className="text-sm text-muted-foreground">{feature.description}</p>

@@ -193,7 +193,7 @@ export default function SellerAnnouncements() {
             [1,2,3].map(i => <Skeleton key={i} className="h-20" />)
           ) : announcements && announcements.length > 0 ? (
             announcements.map(a => (
-              <Card key={a.id} className={!a.is_active ? 'opacity-60' : ''}>
+              <div key={a.id} className={!a.is_active ? 'opacity-60' : ''}>
                 <div className="p-4 flex items-start justify-between py-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">

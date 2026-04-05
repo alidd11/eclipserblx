@@ -57,7 +57,7 @@ export default function PublicDocuments() {
         {/* Documents Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {publicDocuments.map((doc) => (
-            <Card key={doc.id} className="group hover:border-primary/50 transition-colors">
+            <div key={doc.id} className="group hover:border-primary/50 transition-colors">
               <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="p-2 rounded-lg bg-primary/10 shrink-0">

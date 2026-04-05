@@ -159,7 +159,7 @@ export default function IPReports() {
         {isLoading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="animate-pulse">
+              <div key={i} className="animate-pulse">
                 <CardContent className="h-32" />
               </div>
             ))}
@@ -174,7 +174,7 @@ export default function IPReports() {
         ) : (
           <div className="space-y-4">
             {reports?.map((report) => (
-              <Card key={report.id}>
+              <div key={report.id}>
                 <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">

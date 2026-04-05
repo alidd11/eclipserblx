@@ -133,7 +133,7 @@ export default function SellerPromotions() {
             { label: 'Clicks', value: totalClicks.toLocaleString(), icon: MousePointerClick, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
             { label: 'CTR', value: `${avgCtr}%`, icon: TrendingUp, color: 'text-primary', bg: 'bg-primary/10' },
           ].map(m => (
-            <Card key={m.label}>
+            <div key={m.label}>
               <div className="p-4 p-3 flex items-center gap-3">
                 <div className={cn("p-2 rounded-lg", m.bg)}>
                   <m.icon className={cn("h-4 w-4", m.color)} />

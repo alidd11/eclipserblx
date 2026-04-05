@@ -103,7 +103,7 @@ export default function CommunityGuidelines() {
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
             {coreRules.map((rule, i) => (
-              <Card key={i} className="border-border/50">
+              <div key={i} className="border-border/50">
                 <div className="p-4 pt-6">
                   <div className="flex items-start gap-3">
                     <div className="p-2 rounded-lg bg-primary/10 shrink-0">
@@ -151,7 +151,7 @@ export default function CommunityGuidelines() {
           </h2>
           <div className="space-y-3">
             {enforcementLevels.map((level, i) => (
-              <Card key={i} className="border-border/50">
+              <div key={i} className="border-border/50">
                 <div className="p-4 pt-5 pb-5">
                   <div className="flex items-start gap-3">
                     <Badge variant="outline" className={`${level.color} shrink-0 font-medium`}>
@@ -173,7 +173,7 @@ export default function CommunityGuidelines() {
           </h2>
           <div className="grid sm:grid-cols-2 gap-4">
             {disputeProcess.map((step) => (
-              <Card key={step.step} className="border-border/50">
+              <div key={step.step} className="border-border/50">
                 <div className="p-4 pt-6">
                   <div className="flex gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold flex items-center justify-center shrink-0 text-sm">

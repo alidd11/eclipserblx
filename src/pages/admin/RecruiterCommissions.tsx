@@ -240,7 +240,7 @@ export default function RecruiterCommissions() {
                       const eligibility = checkEligibility(commission);
                       
                       return (
-                        <Card key={commission.id}>
+                        <div key={commission.id}>
                           <div className="p-4 pt-6">
                             <div className="flex items-start justify-between gap-4">
                               <div className="flex-1 space-y-3">
