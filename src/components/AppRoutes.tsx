@@ -169,6 +169,7 @@ const SellerSetup = lazyWithRetry(() => import("@/pages/seller/SellerSetup"));
 const SellerProducts = lazyWithRetry(() => import("@/pages/seller/SellerProducts"));
 const SellerProductEditor = lazyWithRetry(() => import("@/pages/seller/SellerProductEditor"));
 const SellerOrders = lazyWithRetry(() => import("@/pages/seller/SellerOrders"));
+const SellerLeakReports = lazyWithRetry(() => import("@/pages/seller/SellerLeakReports"));
 const SellerBalance = lazyWithRetry(() => import("@/pages/seller/SellerBalance"));
 const SellerRevenueBreakdown = lazyWithRetry(() => import("@/pages/seller/SellerRevenueBreakdown"));
 const SellerTransactionHistory = lazyWithRetry(() => import("@/pages/seller/SellerTransactionHistory"));
