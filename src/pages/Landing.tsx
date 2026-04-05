@@ -15,7 +15,7 @@ const RecentReleases = lazy(() => import('@/components/landing/RecentReleases').
 const OnSaleProducts = lazy(() => import('@/components/landing/OnSaleProducts').then(m => ({ default: m.OnSaleProducts })));
 const FreeAssetsTeaser = lazy(() => import('@/components/landing/FreeAssetsTeaser').then(m => ({ default: m.FreeAssetsTeaser })));
 
-const TopSellers = lazy(() => import('@/components/landing/TopSellers').then(m => ({ default: m.TopSellers })));
+
 const FinalCTA = lazy(() => import('@/components/landing/FinalCTA').then(m => ({ default: m.FinalCTA })));
 const RecentlyViewedSection = lazy(() => import('@/components/landing/RecentlyViewedSection').then(m => ({ default: m.RecentlyViewedSection })));
 
