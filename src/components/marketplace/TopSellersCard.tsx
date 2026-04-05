@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { TrendingUp, Store, ChevronRight, Crown } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,7 +20,6 @@ export function TopSellersCard() {
   const { data: sellers, isLoading } = useQuery({
     queryKey: ['top-sellers'],
     queryFn: async () => {
-      // Get stores with most completed orders
       const { data, error } = await supabase
         .from('stores')
         .select('id, name, slug, logo_url, accent_color, is_verified')
@@ -36,16 +34,14 @@ export function TopSellersCard() {
   });
 
   return (
-    <Card className="overflow-hidden border-border bg-card">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20">
-            <TrendingUp className="h-4 w-4 text-amber-500" />
-          </div>
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="px-6 py-4 bg-muted/30 border-b border-border">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 text-amber-500" />
           Top Sellers
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
+        </h3>
+      </div>
+      <div className="p-6 space-y-3">
         {isLoading ? (
           Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex items-center gap-3">
@@ -89,10 +85,9 @@ export function TopSellersCard() {
                     />
                   ) : (
                     <div 
-                      className="h-10 w-10 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: `${accentColor}20` }}
+                      className="h-10 w-10 rounded-lg flex items-center justify-center bg-muted"
                     >
-                      <Store className="h-4 w-4" style={{ color: accentColor }} />
+                      <Store className="h-4 w-4 text-muted-foreground" />
                     </div>
                   )}
                 </div>
@@ -120,7 +115,7 @@ export function TopSellersCard() {
             No sellers available yet
           </p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
