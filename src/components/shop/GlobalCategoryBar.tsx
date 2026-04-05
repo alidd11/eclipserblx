@@ -26,10 +26,9 @@ export function GlobalCategoryBar() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const activeCategory = searchParams.get('category');
-  const isShopPage = location.pathname === '/products';
-
-  // Hide on products page — it has its own CategoryBar
-  if (isShopPage) return null;
+  // Only show on homepage and categories page — other pages use breadcrumbs
+  const showOnPaths = ['/', '/categories'];
+  if (!showOnPaths.includes(location.pathname)) return null;
 
   const { data: categories } = useQuery({
     queryKey: ['global-categories-bar'],
@@ -54,7 +53,7 @@ export function GlobalCategoryBar() {
             to="/products"
             className={cn(
               "flex items-center gap-1.5 px-3 py-1.5 lg:px-4 lg:py-2 rounded-md text-xs lg:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0",
-              isShopPage && !activeCategory
+              false
                 ? "bg-primary/15 text-primary border-b-2 border-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
             )}
@@ -64,7 +63,7 @@ export function GlobalCategoryBar() {
           </Link>
           {categories.map((cat) => {
             const Icon = CATEGORY_ICONS[cat.slug] || Package;
-            const isActive = isShopPage && activeCategory === cat.slug;
+            const isActive = activeCategory === cat.slug;
             return (
               <Link
                 key={cat.id}
