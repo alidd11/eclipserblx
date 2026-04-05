@@ -101,23 +101,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch quick stats (orders + wishlist count)
-  const { data: quickStats } = useQuery({
-    queryKey: ['sidebar-stats', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return { orders: 0, wishlist: 0 };
-      const [ordersRes, wishlistRes] = await Promise.all([
-        supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('wishlist').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-      ]);
-      return {
-        orders: ordersRes.count || 0,
-        wishlist: wishlistRes.count || 0,
-      };
-    },
-    enabled: !!user?.id,
-    staleTime: 5 * 60 * 1000,
-  });
 
   const profileAvatar = profileData?.avatar_url || null;
   const profileUsername = profileData?.username || null;
