@@ -13,7 +13,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  Globe, Plus, RefreshCw, CheckCircle, Shield, Key, Activity,
+  Globe, Plus, RefreshCw, CheckCircle, Shield, Key, Activity, Crown, Lock,
 } from 'lucide-react';
 import { SubdomainSection } from '@/components/domains/SubdomainSection';
 import { CustomDomainCard } from '@/components/domains/CustomDomainCard';
