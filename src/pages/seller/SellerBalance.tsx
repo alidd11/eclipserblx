@@ -152,82 +152,38 @@ export default function SellerBalance() {
         <div className="max-w-4xl mx-auto">
           {!isInsideHub && (
             <>
-              <div className="mb-6">
+              <div className="mb-4">
                 <h1 className="text-2xl font-display font-bold">Balance & Payouts</h1>
                 <p className="text-sm text-muted-foreground">
                   Track your net earnings and request payouts
                 </p>
               </div>
 
-              <div className="flex gap-3 overflow-x-auto pb-2 mb-6 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible">
-                <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <div className="flex items-center gap-1.5">
-                      <CardTitle className="text-sm font-medium">Ready to Withdraw</CardTitle>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Info className="h-3.5 w-3.5 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-[220px]">
-                          <p className="text-xs">Your net earnings after all fees and commissions have been deducted. This is the amount you can withdraw right now.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <Wallet className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-green-600">
-                      {balanceLoading ? '...' : formatCurrency(balance?.available_balance || 0)}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">After fees & commission</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <div className="flex items-center gap-1.5">
-                      <CardTitle className="text-sm font-medium">Clearing</CardTitle>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Info className="h-3.5 w-3.5 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-[220px]">
-                          <p className="text-xs">Earnings from recent sales that are still being processed. These will move to your withdrawable balance within 7–14 days.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-yellow-600">
-                      {balanceLoading ? '...' : formatCurrency(balance?.pending_balance || 0)}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">Available in 7–14 days</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <div className="flex items-center gap-1.5">
-                      <CardTitle className="text-sm font-medium">Lifetime Net Earnings</CardTitle>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Info className="h-3.5 w-3.5 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-[220px]">
-                          <p className="text-xs">The total amount you've earned across all sales, after fees and commissions. Includes withdrawn and pending amounts.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold">
-                      {balanceLoading ? '...' : formatCurrency(balance?.total_earned || 0)}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">Total after all deductions</p>
-                  </CardContent>
-                </Card>
+              <div className="flex items-center gap-6 text-sm mb-6 flex-wrap">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-muted-foreground cursor-default">
+                      Withdrawable: <span className="font-semibold text-green-500">{balanceLoading ? '...' : formatCurrency(balance?.available_balance || 0)}</span>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent><p className="text-xs">Net earnings available for payout right now.</p></TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-muted-foreground cursor-default">
+                      Clearing: <span className="font-semibold text-yellow-500">{balanceLoading ? '...' : formatCurrency(balance?.pending_balance || 0)}</span>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent><p className="text-xs">Earnings being processed (7–14 days).</p></TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-muted-foreground cursor-default">
+                      Lifetime: <span className="font-semibold text-foreground">{balanceLoading ? '...' : formatCurrency(balance?.total_earned || 0)}</span>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent><p className="text-xs">Total net earnings across all time.</p></TooltipContent>
+                </Tooltip>
               </div>
             </>
           )}
