@@ -240,17 +240,12 @@ export default function SellerSettingsNotifications() {
           </div>
 
           {/* Order Notifications */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5 text-green-500" />
-                Order Notifications
-              </CardTitle>
-              <CardDescription>
-                Receive notifications when someone purchases from your store
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Order Notifications</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Receive notifications when someone purchases from your store</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="discord_webhook_url" className="flex items-center gap-2">
                   <MessageCircle className="h-4 w-4" />
