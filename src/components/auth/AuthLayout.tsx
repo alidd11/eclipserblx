@@ -14,7 +14,7 @@ export const AuthLayout = forwardRef<HTMLDivElement, AuthLayoutProps>(function A
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-background overflow-y-auto">
+    <div ref={ref} className="min-h-screen bg-background overflow-y-auto">
       <div className="min-h-screen flex items-center justify-center p-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-6 sm:py-10 relative">
         <div className="w-full max-w-[420px] space-y-4">
           <Link
