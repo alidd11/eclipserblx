@@ -35,6 +35,13 @@ const PROMO_LIMITS: SellerProLimits = {
   monthlyAdCredit: 0,
   proBadge: false,
   priorityReview: false,
+  storeThemes: 'default',
+  maxNavLinks: 2,
+  announcementBar: false,
+  analyticsRetentionDays: 30,
+  analyticsExport: false,
+  maxActiveDiscounts: 1,
+  scheduledBanner: false,
 };
 
 const FREE_LIMITS: SellerProLimits = {
@@ -47,6 +54,13 @@ const FREE_LIMITS: SellerProLimits = {
   monthlyAdCredit: 0,
   proBadge: false,
   priorityReview: false,
+  storeThemes: 'default',
+  maxNavLinks: 2,
+  announcementBar: false,
+  analyticsRetentionDays: 30,
+  analyticsExport: false,
+  maxActiveDiscounts: 1,
+  scheduledBanner: false,
 };
 
 const PRO_LIMITS: SellerProLimits = {
@@ -59,6 +73,13 @@ const PRO_LIMITS: SellerProLimits = {
   monthlyAdCredit: 5,
   proBadge: true,
   priorityReview: true,
+  storeThemes: 'all',
+  maxNavLinks: 10,
+  announcementBar: true,
+  analyticsRetentionDays: 90,
+  analyticsExport: true,
+  maxActiveDiscounts: null,
+  scheduledBanner: true,
 };
 
 interface SellerSubscriptionState {
