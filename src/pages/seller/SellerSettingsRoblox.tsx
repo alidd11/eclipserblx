@@ -167,17 +167,12 @@ export default function SellerSettingsRoblox() {
           </div>
 
           {/* Group Member Discounts */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-blue-500" />
-                Group Member Discounts
-              </CardTitle>
-              <CardDescription>
-                Reward customers who are members of your Roblox group with automatic discounts
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Group Member Discounts</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Reward group members with automatic discounts</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="flex items-start gap-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                 <Info className="h-5 w-5 text-blue-500 mt-0.5" />
                 <div>
