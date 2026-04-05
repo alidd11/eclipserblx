@@ -675,8 +675,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         </div>
 
         {/* ═══ Danger Zone ═══ */}
-        <Card className="bg-card border-border overflow-hidden">
-          <CardContent className="p-1">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="p-1">
             <button onClick={() => setShowDeleteDialog(true)} className="w-full">
               <NavRow icon={Trash2} label="Delete Account" destructive />
             </button>
