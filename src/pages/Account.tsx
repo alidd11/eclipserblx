@@ -596,8 +596,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 <span className="text-[10px] text-muted-foreground">Alerts</span>
               </Link>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* ═══ Shopping ═══ */}
         <Card className="bg-card border-border overflow-hidden">
