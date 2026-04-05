@@ -506,8 +506,8 @@ export default function SellerSettingsTeam() {
         )}
 
         {/* Info Card */}
-        <Card className="border-primary/20 bg-primary/5">
-          <CardContent className="pt-6">
+        <div className="border border-primary/20 bg-primary/5 rounded-xl">
+          <div className="p-4">
             <div className="flex gap-3">
               <AlertCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
               <div className="space-y-1">
