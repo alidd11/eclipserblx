@@ -43,7 +43,7 @@ export function DiscordWidget() {
     return null;
   }
 
-  const theme = resolvedTheme === 'light' ? 'light' : 'dark';
+  const theme = 'dark';
 
   return (
     <div className="rounded-2xl border border-border bg-card p-4 h-full">
