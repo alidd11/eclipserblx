@@ -836,13 +836,12 @@ export default function ProductDetail() {
           </div>
 
         {/* Reviews Section */}
-        <section ref={reviewSectionRef} id="reviews" className="scroll-mt-8 border-t border-border pt-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="flex items-center gap-2 text-lg font-semibold">
-              <MessageSquare className="h-5 w-5" />
-              Customer Reviews
+        <section ref={reviewSectionRef} id="reviews" className="scroll-mt-8 border-t border-border/60 pt-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-foreground/70">
+              Reviews
               {productReviews && productReviews.length > 0 && (
-                <span className="text-sm font-normal text-muted-foreground">({productReviews.length})</span>
+                <span className="text-xs font-normal text-muted-foreground normal-case tracking-normal">({productReviews.length})</span>
               )}
             </h2>
             {hasPurchased && !existingReview && user && (
@@ -850,8 +849,8 @@ export default function ProductDetail() {
                 onClick={() => setShowReviewForm(!showReviewForm)}
                 variant={showReviewForm ? "outline" : "default"}
                 size="sm"
+                className="h-8 text-xs"
               >
-                <Star className="h-4 w-4 mr-2" />
                 {showReviewForm ? 'Cancel' : 'Write a Review'}
               </Button>
             )}
