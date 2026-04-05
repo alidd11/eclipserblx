@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
-import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { usePageMeta } from '@/hooks/usePageMeta';
