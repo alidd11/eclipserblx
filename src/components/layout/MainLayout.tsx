@@ -8,7 +8,7 @@ import { safeStorage } from '@/lib/safeStorage';
 interface MainLayoutProps {
   children: ReactNode;
   showFooter?: boolean;
-  showBreadcrumb?: boolean;
+  
 }
 
 const COLLAPSE_KEY = 'sidebar-collapsed';
