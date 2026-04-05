@@ -2,7 +2,6 @@ import {
   Wallet, CreditCard, Gift, Crown, ArrowUpRight, ArrowDownLeft, 
   Loader2, History 
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -16,63 +15,45 @@ interface TransactionHistoryCardProps {
 
 function getTransactionIcon(type: CreditTransaction['type']) {
   switch (type) {
-    case 'purchase':
-      return <CreditCard className="h-4 w-4" />;
-    case 'gift':
-      return <Gift className="h-4 w-4" />;
-    case 'subscription_bonus':
-      return <Crown className="h-4 w-4" />;
-    case 'spend':
-      return <ArrowUpRight className="h-4 w-4" />;
-    case 'refund':
-      return <ArrowDownLeft className="h-4 w-4" />;
-    default:
-      return <Wallet className="h-4 w-4" />;
+    case 'purchase': return <CreditCard className="h-4 w-4" />;
+    case 'gift': return <Gift className="h-4 w-4" />;
+    case 'subscription_bonus': return <Crown className="h-4 w-4" />;
+    case 'spend': return <ArrowUpRight className="h-4 w-4" />;
+    case 'refund': return <ArrowDownLeft className="h-4 w-4" />;
+    default: return <Wallet className="h-4 w-4" />;
   }
 }
 
 function getTransactionColor(type: CreditTransaction['type']) {
   switch (type) {
-    case 'purchase':
-    case 'gift':
-    case 'subscription_bonus':
-    case 'refund':
-      return 'text-green-500';
-    case 'spend':
-      return 'text-red-500';
-    default:
-      return 'text-muted-foreground';
+    case 'purchase': case 'gift': case 'subscription_bonus': case 'refund': return 'text-green-500';
+    case 'spend': return 'text-red-500';
+    default: return 'text-muted-foreground';
   }
 }
 
 function getTransactionLabel(type: CreditTransaction['type']) {
   switch (type) {
-    case 'purchase':
-      return 'Purchased';
-    case 'gift':
-      return 'Gift';
-    case 'subscription_bonus':
-      return 'Bonus';
-    case 'spend':
-      return 'Spent';
-    case 'refund':
-      return 'Refund';
-    default:
-      return type;
+    case 'purchase': return 'Purchased';
+    case 'gift': return 'Gift';
+    case 'subscription_bonus': return 'Bonus';
+    case 'spend': return 'Spent';
+    case 'refund': return 'Refund';
+    default: return type;
   }
 }
 
 export function TransactionHistoryCard({ transactions, isLoading }: TransactionHistoryCardProps) {
   return (
-    <Card className="max-w-full overflow-hidden">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
+    <div className="border border-border rounded-xl overflow-hidden max-w-full">
+      <div className="px-6 py-4 bg-muted/30 border-b border-border">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
           <History className="h-4 w-4" />
           History
-        </CardTitle>
-      </CardHeader>
+        </h3>
+      </div>
       
-      <CardContent>
+      <div className="p-6">
         {isLoading ? (
           <div className="flex justify-center py-6">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -124,7 +105,7 @@ export function TransactionHistoryCard({ transactions, isLoading }: TransactionH
             </div>
           </ScrollArea>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

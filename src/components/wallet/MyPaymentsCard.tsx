@@ -1,6 +1,5 @@
  import { useQuery } from '@tanstack/react-query';
  import { supabase } from '@/integrations/supabase/client';
- import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
  import { Badge } from '@/components/ui/badge';
  import { ScrollArea } from '@/components/ui/scroll-area';
  import { Skeleton } from '@/components/ui/skeleton';
@@ -49,21 +48,20 @@
      enabled: !!user?.id,
    });
  
-   // Only show if user has payments
    if (!isLoading && (!payments || payments.length === 0)) {
      return null;
    }
  
    return (
-     <Card className="max-w-full overflow-hidden">
-       <CardHeader className="pb-3">
-         <CardTitle className="flex items-center gap-2 text-lg">
+     <div className="border border-border rounded-xl overflow-hidden max-w-full">
+       <div className="px-6 py-4 bg-muted/30 border-b border-border">
+         <h3 className="text-sm font-semibold flex items-center gap-2">
            <Banknote className="h-4 w-4" />
            My Payments
-         </CardTitle>
-       </CardHeader>
+         </h3>
+       </div>
        
-       <CardContent>
+       <div className="p-6">
          {isLoading ? (
            <div className="flex justify-center py-6">
              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -120,7 +118,7 @@
              </div>
            </ScrollArea>
          )}
-       </CardContent>
-     </Card>
+       </div>
+     </div>
    );
  }

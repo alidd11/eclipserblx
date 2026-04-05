@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Plus, Loader2, Sparkles } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,18 +40,18 @@ export function AddCreditsCard({ onPurchase, isLoggedIn, onLoginRedirect, isPurc
   };
 
   return (
-    <Card className="max-w-full overflow-hidden">
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-lg">
+    <div className="border border-border rounded-xl overflow-hidden max-w-full">
+      <div className="px-6 py-4 bg-muted/30 border-b border-border">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
           <Plus className="h-4 w-4" />
           Add Credits
-        </CardTitle>
-        <CardDescription className="text-sm">
+        </h3>
+        <p className="text-xs text-muted-foreground mt-1">
           £{MIN_AMOUNT} - £{MAX_AMOUNT}
-        </CardDescription>
-      </CardHeader>
+        </p>
+      </div>
       
-      <CardContent className="space-y-4">
+      <div className="p-6 space-y-4">
         {/* Quick amounts */}
         <div className="flex flex-wrap gap-2">
           {suggestedAmounts.map((amount) => (
@@ -94,7 +93,7 @@ export function AddCreditsCard({ onPurchase, isLoggedIn, onLoginRedirect, isPurc
 
         {/* Purchase button */}
         <Button 
-          className="w-full gradient-button border-0"
+          className="w-full"
           onClick={() => handlePurchase(parseFloat(customAmount) || 0)}
           disabled={isPurchasing || !customAmount || parseFloat(customAmount) < MIN_AMOUNT}
         >
@@ -110,7 +109,7 @@ export function AddCreditsCard({ onPurchase, isLoggedIn, onLoginRedirect, isPurc
             </>
           )}
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

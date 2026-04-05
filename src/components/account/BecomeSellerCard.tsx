@@ -1,5 +1,4 @@
 import { Store, Sparkles, Clock, XCircle, CheckCircle, ExternalLink, ArrowRight, FileText, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,8 +16,7 @@ const applicationSteps = [
 function ApplicationTimeline({ application }: { application: any }) {
   const createdAt = application?.created_at ? new Date(application.created_at) : null;
   const daysSince = createdAt ? Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24)) : 0;
-  // If submitted < 2 days ago, show as "Under Review", otherwise still reviewing
-  const currentStepIndex = 1; // Always at review stage for pending
+  const currentStepIndex = 1;
 
   return (
     <div className="space-y-3">
@@ -60,37 +58,36 @@ export function BecomeSellerCard() {
 
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Store className="h-5 w-5" />
+      <div className="border border-border rounded-xl overflow-hidden">
+        <div className="px-6 py-4 bg-muted/30 border-b border-border">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <Store className="h-4 w-4" />
             Marketplace
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          </h3>
+        </div>
+        <div className="p-6">
           <div className="animate-pulse space-y-2">
             <div className="h-4 bg-muted rounded w-3/4" />
             <div className="h-4 bg-muted rounded w-1/2" />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
-  // User is an approved seller
   if (isSeller && store) {
     return (
-      <Card className="border-primary/20 bg-primary/5">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Store className="h-5 w-5 text-primary" />
+      <div className="border border-primary/20 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 bg-primary/5 border-b border-primary/20">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <Store className="h-4 w-4 text-primary" />
             Your Store
-          </CardTitle>
-          <CardDescription>
+          </h3>
+          <p className="text-xs text-muted-foreground mt-1">
             Manage your seller account and products
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+          </p>
+        </div>
+        <div className="p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-semibold">{store.name}</p>
@@ -122,22 +119,21 @@ export function BecomeSellerCard() {
               Go to Seller Dashboard
             </a>
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
-  // User has a pending application — with timeline
   if (hasPendingApplication && application) {
     return (
-      <Card className="border-amber-500/20 bg-amber-500/5">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <FileText className="h-5 w-5 text-amber-500" />
+      <div className="border border-amber-500/20 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 bg-amber-500/5 border-b border-amber-500/20">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <FileText className="h-4 w-4 text-amber-500" />
             Seller Application
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+          </h3>
+        </div>
+        <div className="p-6 space-y-4">
           <div className="p-3 bg-muted/50 rounded-lg">
             <p className="font-medium text-sm">{application.store_name}</p>
           </div>
@@ -150,25 +146,24 @@ export function BecomeSellerCard() {
               Our team is reviewing your application. You'll receive a notification once a decision is made.
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
-  // User's application was rejected
   if (applicationRejected && application) {
     return (
-      <Card className="border-destructive/20 bg-destructive/5">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <XCircle className="h-5 w-5 text-destructive" />
+      <div className="border border-destructive/20 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 bg-destructive/5 border-b border-destructive/20">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <XCircle className="h-4 w-4 text-destructive" />
             Application Declined
-          </CardTitle>
-          <CardDescription>
+          </h3>
+          <p className="text-xs text-muted-foreground mt-1">
             Your previous application was not approved
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+          </p>
+        </div>
+        <div className="p-6 space-y-4">
           {application.rejection_reason && (
             <div className="p-4 bg-muted/50 rounded-lg">
               <p className="text-sm font-medium">Reason:</p>
@@ -178,24 +173,23 @@ export function BecomeSellerCard() {
           <Button asChild className="w-full">
             <Link to="/become-seller">Apply Again</Link>
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
-  // Default: CTA to apply
   return (
-    <Card className="border-border bg-muted/30">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-primary" />
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="px-6 py-4 bg-muted/30 border-b border-border">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" />
           Start Selling on Eclipse
-        </CardTitle>
-        <CardDescription>
+        </h3>
+        <p className="text-xs text-muted-foreground mt-1">
           Create your own store and sell your digital products
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </p>
+      </div>
+      <div className="p-6 space-y-4">
         <div className="grid gap-2.5">
           <div className="flex items-center gap-2.5">
             <CheckCircle className="h-4 w-4 text-primary shrink-0" />
@@ -218,7 +212,7 @@ export function BecomeSellerCard() {
             <ArrowRight className="h-4 w-4 ml-2" />
           </Link>
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
