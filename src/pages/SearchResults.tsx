@@ -181,13 +181,6 @@ export default function SearchResults() {
     isLoading: isLoadingMore,
   });
 
-  const handleAISearch = useCallback(() => {
-    if (query.length < 3) return;
-    setUseAI(true);
-    smartSearch(query);
-    addSearch(query);
-  }, [query, smartSearch, addSearch]);
-
   const handleCategorySelect = useCallback((slug: string | null) => {
     setCategorySlug(slug || '');
     setUseAI(false);
