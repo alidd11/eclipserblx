@@ -141,8 +141,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     }) ?? []),
     // Discord Bots
     { title: 'Discord Bots', icon: BotIcon as unknown as LucideIcon, href: '/products?category=bots' },
-    // Templates
-    { title: 'Templates', icon: PenTool, href: '/store/blueprint' },
   ];
 
   const navGroups: NavGroup[] = [
