@@ -253,15 +253,18 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
           isChatPage ? 'flex-col md:flex-row overflow-hidden bg-card' : 'min-h-[100dvh]'
         )}
         wrapperStyle={chatWrapperStyle}
-        innerClassName={isChatPage ? 'flex-1 flex flex-col min-w-0 min-h-0' : undefined}
-        mainStyle={isChatPage ? { paddingBottom: 0 } : undefined}
+        innerClassName={cn(
+          'flex-1 flex flex-col min-w-0',
+          isChatPage && 'min-h-0 max-h-[var(--chat-vvh,100dvh)] overflow-hidden'
+        )}
+        mainStyle={isChatPage ? { paddingBottom: 0, flex: '1 1 0%', minHeight: 0 } : undefined}
         mainClassName={cn(
           'flex-1 overflow-x-hidden max-w-full min-w-0',
-          isChatPage ? 'overflow-y-hidden flex flex-col' : 'md:overflow-y-auto'
+          isChatPage ? 'overflow-y-hidden flex flex-col min-h-0' : 'md:overflow-y-auto'
         )}
         contentClassName={cn(
           isChatPage
-            ? 'flex-1 flex flex-col min-h-0 p-0'
+            ? 'flex-1 flex flex-col min-h-0 overflow-hidden p-0'
             : isImmersivePage
               ? 'p-0'
               : 'p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
