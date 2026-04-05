@@ -63,7 +63,7 @@ export function GlobalCategoryBar() {
           </Link>
           {categories.map((cat) => {
             const Icon = CATEGORY_ICONS[cat.slug] || Package;
-            const isActive = isShopPage && activeCategory === cat.slug;
+            const isActive = activeCategory === cat.slug;
             return (
               <Link
                 key={cat.id}
