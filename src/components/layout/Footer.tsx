@@ -89,7 +89,7 @@ export function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-border/30 mb-6" />
+        <div className="border-t border-border/30 mb-4" />
 
         {/* Bottom bar — copyright + trust signals */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
