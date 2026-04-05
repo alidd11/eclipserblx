@@ -613,7 +613,7 @@ export default function SellerProducts() {
     <SellerLayout>
       <div>
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
           <div>
             <h1 className="text-2xl font-display font-bold">Products</h1>
             <p className="text-sm text-muted-foreground">
@@ -636,20 +636,34 @@ export default function SellerProducts() {
           </div>
         </div>
 
+        {/* Inline stats */}
+        {!productsLoading && (
+          <div className="flex items-center gap-4 text-sm mb-4 flex-wrap">
+            <span className="text-muted-foreground">
+              <span className="font-semibold text-foreground">{totalCount}</span> total
+            </span>
+            <span className="text-muted-foreground">
+              <span className="font-semibold text-green-500">{products.filter((p: any) => p.moderation_status === 'approved' && p.is_active).length}</span> live
+            </span>
+            <span className="text-muted-foreground">
+              <span className="font-semibold text-yellow-500">{products.filter((p: any) => p.moderation_status === 'pending').length}</span> pending
+            </span>
+            <span className="text-muted-foreground">
+              <span className="font-semibold text-muted-foreground">{products.filter((p: any) => !p.is_active).length}</span> inactive
+            </span>
+          </div>
+        )}
+
         {/* Search */}
-        <Card className="mb-6">
-          <CardContent className="py-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </CardContent>
-        </Card>
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="pl-10"
+          />
+        </div>
 
         {/* Bulk Actions */}
         {filteredProducts.length > 0 && store?.id && (
@@ -661,225 +675,214 @@ export default function SellerProducts() {
           />
         )}
 
-        {/* Products - Mobile Card View */}
-        <div className="block md:hidden space-y-3">
+        {/* Products - Mobile List */}
+        <div className="block md:hidden">
           {productsLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map(i => (
-                <Skeleton key={i} className="h-24" />
+                <Skeleton key={i} className="h-20" />
               ))}
             </div>
           ) : filteredProducts.length > 0 ? (
-            filteredProducts.map((product: any) => {
-              const isLocked = isAdminManagedProduct(product);
-              return (
-                <Card 
-                  key={product.id}
-                  className={`overflow-hidden transition-colors ${isLocked ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer hover:border-primary/50 active:scale-[0.98]'}`}
-                  onClick={() => !isLocked && openEdit(product)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      {product.images?.[0] ? (
-                        <img
-                          src={product.images[0]}
-                          alt={product.name}
-                          className="h-14 w-14 rounded-lg object-cover flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                          <Package className="h-6 w-6 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium truncate">{product.name}</p>
-                          {isLocked && (
-                            <Badge variant="secondary" className="gap-1 text-xs flex-shrink-0">
-                              <ShieldCheck className="h-3 w-3" />
-                              Eclipse
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {(product.categories as any)?.name || 'Uncategorized'}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                          <span className="font-semibold text-sm">{formatCurrency(product.price)}</span>
-                          {getModerationBadge(product.moderation_status)}
-                          {!product.is_active && (
-                            <Badge variant="outline" className="text-xs">Inactive</Badge>
-                          )}
-                        </div>
+            <div className="divide-y divide-border">
+              {filteredProducts.map((product: any) => {
+                const isLocked = isAdminManagedProduct(product);
+                return (
+                  <div
+                    key={product.id}
+                    className={`py-3 flex items-start gap-3 ${isLocked ? 'opacity-75' : 'cursor-pointer active:bg-muted/30'}`}
+                    onClick={() => !isLocked && openEdit(product)}
+                  >
+                    {product.images?.[0] ? (
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        className="h-12 w-12 rounded-lg object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                        <Package className="h-5 w-5 text-muted-foreground" />
                       </div>
-                      {isLocked ? (
-                        <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      ) : (
-                        <Edit className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      )}
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium truncate text-sm">{product.name}</p>
+                        {isLocked && (
+                          <Badge variant="secondary" className="gap-1 text-xs flex-shrink-0">
+                            <ShieldCheck className="h-3 w-3" />
+                            Eclipse
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                        <span className="text-sm font-medium">{formatCurrency(product.price)}</span>
+                        <span className="text-muted-foreground text-xs">·</span>
+                        {getModerationBadge(product.moderation_status)}
+                        {!product.is_active && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">Inactive</Badge>
+                        )}
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })
+                    {isLocked ? (
+                      <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
+                    ) : (
+                      <Edit className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           ) : (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No products yet</h3>
-                <p className="text-muted-foreground mb-4">
-                  Start by adding your first product to the store.
-                </p>
-                <Button onClick={openCreate}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Your First Product
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="text-center py-12">
+              <Package className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-50" />
+              <h3 className="text-sm font-medium mb-1">No products yet</h3>
+              <p className="text-xs text-muted-foreground mb-3">
+                Start by adding your first product.
+              </p>
+              <Button size="sm" onClick={openCreate}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Product
+              </Button>
+            </div>
           )}
         </div>
 
         {/* Products Table - Desktop */}
-        <Card className="hidden md:block">
-          <CardHeader>
-            <CardTitle>Products ({totalCount})</CardTitle>
-            <CardDescription>
-              Click a product to view and edit all details
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {productsLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map(i => (
-                  <Skeleton key={i} className="h-16" />
-                ))}
-              </div>
-            ) : filteredProducts.length > 0 ? (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]"></TableHead>
-                      <TableHead>Product</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Downloads</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredProducts.map((product: any) => {
-                      const isLocked = isAdminManagedProduct(product);
-                      return (
-                        <TableRow 
-                          key={product.id}
-                          className={isLocked ? 'opacity-75' : 'cursor-pointer hover:bg-muted/50'}
-                          onClick={() => !isLocked && openEdit(product)}
-                        >
-                          <TableCell onClick={(e) => e.stopPropagation()}>
-                            <Checkbox
-                              checked={selectedProductIds.includes(product.id)}
-                              onCheckedChange={() => {
-                                if (selectedProductIds.includes(product.id)) {
-                                  setSelectedProductIds(selectedProductIds.filter(id => id !== product.id));
-                                } else {
-                                  setSelectedProductIds([...selectedProductIds, product.id]);
-                                }
-                              }}
-                              aria-label="Select product"
-                              disabled={isLocked}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              {product.images?.[0] ? (
-                                <img
-                                  src={product.images[0]}
-                                  alt={product.name}
-                                  className="h-10 w-10 rounded object-cover"
-                                />
-                              ) : (
-                                <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
-                                  <Package className="h-5 w-5 text-muted-foreground" />
-                                </div>
-                              )}
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <p className="font-medium">{product.name}</p>
-                                  {isLocked && (
-                                    <Badge variant="secondary" className="gap-1 text-xs">
-                                      <ShieldCheck className="h-3 w-3" />
-                                      Eclipse
-                                    </Badge>
-                                  )}
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                  {new Date(product.created_at).toLocaleDateString()}
-                                </p>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {(product.categories as any)?.name || 'Uncategorized'}
-                          </TableCell>
-                          <TableCell>{formatCurrency(product.price)}</TableCell>
-                          <TableCell>
-                            <div className="space-y-1">
-                              {getModerationBadge(product.moderation_status)}
-                              {!product.is_active && (
-                                <Badge variant="outline" className="block w-fit">Inactive</Badge>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>{product.download_count || 0}</TableCell>
-                          <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                            {isLocked ? (
-                              <Button variant="ghost" size="icon" disabled title="Managed by Eclipse admins">
-                                <Lock className="h-4 w-4 text-muted-foreground" />
-                              </Button>
+        <div className="hidden md:block border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <p className="text-sm font-medium">Products ({totalCount})</p>
+          </div>
+          {productsLoading ? (
+            <div className="p-4 space-y-3">
+              {[1, 2, 3].map(i => (
+                <Skeleton key={i} className="h-14" />
+              ))}
+            </div>
+          ) : filteredProducts.length > 0 ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30 hover:bg-muted/30">
+                    <TableHead className="w-[40px]"></TableHead>
+                    <TableHead>Product</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Downloads</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredProducts.map((product: any) => {
+                    const isLocked = isAdminManagedProduct(product);
+                    return (
+                      <TableRow 
+                        key={product.id}
+                        className={isLocked ? 'opacity-75' : 'cursor-pointer hover:bg-muted/50'}
+                        onClick={() => !isLocked && openEdit(product)}
+                      >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={selectedProductIds.includes(product.id)}
+                            onCheckedChange={() => {
+                              if (selectedProductIds.includes(product.id)) {
+                                setSelectedProductIds(selectedProductIds.filter(id => id !== product.id));
+                              } else {
+                                setSelectedProductIds([...selectedProductIds, product.id]);
+                              }
+                            }}
+                            aria-label="Select product"
+                            disabled={isLocked}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            {product.images?.[0] ? (
+                              <img
+                                src={product.images[0]}
+                                alt={product.name}
+                                className="h-10 w-10 rounded object-cover"
+                              />
                             ) : (
-                              <>
-                                <Button variant="ghost" size="icon" onClick={() => openEdit(product)}>
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon"
-                                  onClick={() => setDeleteProductId(product.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              </>
+                              <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
+                                <Package className="h-5 w-5 text-muted-foreground" />
+                              </div>
                             )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No products yet</h3>
-                <p className="text-muted-foreground mb-4">
-                  Start by adding your first product to the store.
-                </p>
-                <Button onClick={openCreate}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Your First Product
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium">{product.name}</p>
+                                {isLocked && (
+                                  <Badge variant="secondary" className="gap-1 text-xs">
+                                    <ShieldCheck className="h-3 w-3" />
+                                    Eclipse
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(product.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {(product.categories as any)?.name || 'Uncategorized'}
+                        </TableCell>
+                        <TableCell className="text-sm">{formatCurrency(product.price)}</TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            {getModerationBadge(product.moderation_status)}
+                            {!product.is_active && (
+                              <Badge variant="outline" className="block w-fit text-[10px]">Inactive</Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm">{product.download_count || 0}</TableCell>
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                          {isLocked ? (
+                            <Button variant="ghost" size="icon" disabled title="Managed by Eclipse admins">
+                              <Lock className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                          ) : (
+                            <>
+                              <Button variant="ghost" size="icon" onClick={() => openEdit(product)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => setDeleteProductId(product.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Package className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-50" />
+              <h3 className="text-sm font-medium mb-1">No products yet</h3>
+              <p className="text-xs text-muted-foreground mb-3">
+                Start by adding your first product.
+              </p>
+              <Button size="sm" onClick={openCreate}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Product
+              </Button>
+            </div>
+          )}
+        </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-4">
-            <p className="text-sm text-muted-foreground">
-              Showing {((currentPage - 1) * PRODUCTS_PER_PAGE) + 1}–{Math.min(currentPage * PRODUCTS_PER_PAGE, totalCount)} of {totalCount} products
+            <p className="text-xs text-muted-foreground">
+              {((currentPage - 1) * PRODUCTS_PER_PAGE) + 1}–{Math.min(currentPage * PRODUCTS_PER_PAGE, totalCount)} of {totalCount}
             </p>
             <div className="flex items-center gap-2">
               <Button
@@ -889,10 +892,9 @@ export default function SellerProducts() {
                 disabled={currentPage === 1}
               >
                 <ChevronLeft className="h-4 w-4" />
-                Previous
               </Button>
-              <span className="text-sm font-medium px-2">
-                {currentPage} / {totalPages}
+              <span className="text-xs font-medium px-1">
+                {currentPage}/{totalPages}
               </span>
               <Button
                 variant="outline"
@@ -900,26 +902,16 @@ export default function SellerProducts() {
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
               >
-                Next
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
         )}
 
-        <Card className="mt-6 border-blue-500/50 bg-blue-500/5">
-          <CardContent className="flex items-start gap-4 py-4">
-            <AlertCircle className="h-6 w-6 text-blue-500 mt-0.5" />
-            <div>
-              <p className="font-medium">Product Moderation</p>
-              <p className="text-sm text-muted-foreground">
-                All new products are reviewed by our team before being listed publicly. 
-                This usually takes 24-48 hours. You'll receive a notification once your 
-                product is approved or if any changes are needed.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground mt-4">
+          <AlertCircle className="h-3.5 w-3.5" />
+          All new products are reviewed within 24-48 hours before going live.
+        </p>
 
         {/* Product Edit/Create Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

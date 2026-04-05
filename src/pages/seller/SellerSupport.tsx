@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, MessageSquare, Clock, CheckCircle, AlertCircle, Send, Link as LinkIcon, HelpCircle, CreditCard, Package, Settings, FileQuestion, Paperclip, X } from 'lucide-react';
 import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -245,11 +244,11 @@ export default function SellerSupport() {
 
   return (
     <SellerLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-display font-bold">Support</h1>
-            <p className="text-muted-foreground">Get help with your seller account</p>
+            <p className="text-sm text-muted-foreground">Get help with your seller account</p>
           </div>
           
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
@@ -294,55 +293,53 @@ export default function SellerSupport() {
 
                 {/* Account Link Change specific fields */}
                 {category === 'account_link_change' && (
-                  <Card className="border-primary/20 bg-primary/5">
-                    <CardContent className="pt-4 space-y-4">
+                  <div className="border border-primary/20 rounded-xl bg-primary/5 p-4 space-y-4">
+                    <div className="space-y-2">
+                      <Label>Which account do you want to change? *</Label>
+                      <Select value={linkChangeType} onValueChange={setLinkChangeType}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select account type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="discord">Discord Only</SelectItem>
+                          <SelectItem value="roblox">Roblox Only</SelectItem>
+                          <SelectItem value="both">Both Accounts</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {(linkChangeType === 'discord' || linkChangeType === 'both') && (
                       <div className="space-y-2">
-                        <Label>Which account do you want to change? *</Label>
-                        <Select value={linkChangeType} onValueChange={setLinkChangeType}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select account type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="discord">Discord Only</SelectItem>
-                            <SelectItem value="roblox">Roblox Only</SelectItem>
-                            <SelectItem value="both">Both Accounts</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {(linkChangeType === 'discord' || linkChangeType === 'both') && (
-                        <div className="space-y-2">
-                          <Label>New Discord Username *</Label>
-                          <Input
-                            placeholder="username#0000 or username"
-                            value={newDiscordUsername}
-                            onChange={(e) => setNewDiscordUsername(e.target.value)}
-                          />
-                        </div>
-                      )}
-
-                      {(linkChangeType === 'roblox' || linkChangeType === 'both') && (
-                        <div className="space-y-2">
-                          <Label>New Roblox Username *</Label>
-                          <Input
-                            placeholder="RobloxUsername"
-                            value={newRobloxUsername}
-                            onChange={(e) => setNewRobloxUsername(e.target.value)}
-                          />
-                        </div>
-                      )}
-
-                      <div className="space-y-2">
-                        <Label>Reason for Change *</Label>
-                        <Textarea
-                          placeholder="Explain why you need to change your linked account..."
-                          value={changeReason}
-                          onChange={(e) => setChangeReason(e.target.value)}
-                          rows={3}
+                        <Label>New Discord Username *</Label>
+                        <Input
+                          placeholder="username#0000 or username"
+                          value={newDiscordUsername}
+                          onChange={(e) => setNewDiscordUsername(e.target.value)}
                         />
                       </div>
-                    </CardContent>
-                  </Card>
+                    )}
+
+                    {(linkChangeType === 'roblox' || linkChangeType === 'both') && (
+                      <div className="space-y-2">
+                        <Label>New Roblox Username *</Label>
+                        <Input
+                          placeholder="RobloxUsername"
+                          value={newRobloxUsername}
+                          onChange={(e) => setNewRobloxUsername(e.target.value)}
+                        />
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <Label>Reason for Change *</Label>
+                      <Textarea
+                        placeholder="Explain why you need to change your linked account..."
+                        value={changeReason}
+                        onChange={(e) => setChangeReason(e.target.value)}
+                        rows={3}
+                      />
+                    </div>
+                  </div>
                 )}
 
                 <div className="space-y-2">
@@ -392,66 +389,30 @@ export default function SellerSupport() {
           </Dialog>
         </div>
 
-        {/* Stats Cards */}
-        <div className="flex gap-3 overflow-x-auto pb-2 mb-4 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible">
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" />
-                Open Tickets
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{openTickets.length}</p>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Awaiting Response
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-orange-500">
-                {tickets?.filter(t => t.status === 'awaiting_seller').length || 0}
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                <CheckCircle className="h-4 w-4" />
-                Resolved
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-green-500">{closedTickets.length}</p>
-            </CardContent>
-          </Card>
+        {/* Inline stats */}
+        <div className="flex items-center gap-4 text-sm flex-wrap">
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{openTickets.length}</span> open
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-orange-500">{tickets?.filter(t => t.status === 'awaiting_seller').length || 0}</span> awaiting response
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-green-500">{closedTickets.length}</span> resolved
+          </span>
         </div>
 
         {/* Tickets List */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           {/* Mobile dropdown */}
-          <div className="sm:hidden mb-4">
+          <div className="sm:hidden mb-3">
             <Select value={activeTab} onValueChange={setActiveTab}>
               <SelectTrigger className="w-auto min-w-[140px] bg-background">
                 <SelectValue placeholder="Select view" />
               </SelectTrigger>
               <SelectContent className="bg-card border-border z-50">
-                <SelectItem value="open">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    Open ({openTickets.length})
-                  </div>
-                </SelectItem>
-                <SelectItem value="closed">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4" />
-                    Closed ({closedTickets.length})
-                  </div>
-                </SelectItem>
+                <SelectItem value="open">Open ({openTickets.length})</SelectItem>
+                <SelectItem value="closed">Closed ({closedTickets.length})</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -462,23 +423,21 @@ export default function SellerSupport() {
             <TabsTrigger value="closed">Closed ({closedTickets.length})</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="open" className="mt-4">
+          <TabsContent value="open" className="mt-3">
             {openTickets.length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="font-semibold mb-2">No Open Tickets</h3>
-                  <p className="text-sm text-muted-foreground text-center mb-4">
-                    You don't have any open support tickets
-                  </p>
-                  <Button onClick={() => setCreateDialogOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Ticket
-                  </Button>
-                </CardContent>
-              </Card>
+              <div className="text-center py-12">
+                <MessageSquare className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-50" />
+                <h3 className="text-sm font-medium mb-1">No open tickets</h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  You don't have any open support tickets
+                </p>
+                <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Ticket
+                </Button>
+              </div>
             ) : (
-              <div className="space-y-3">
+              <div className="divide-y divide-border">
                 {openTickets.map((ticket) => (
                   <TicketCard 
                     key={ticket.id} 
@@ -493,13 +452,13 @@ export default function SellerSupport() {
             )}
           </TabsContent>
 
-          <TabsContent value="closed" className="mt-4">
+          <TabsContent value="closed" className="mt-3">
             {closedTickets.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-8 text-sm text-muted-foreground">
                 No closed tickets
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="divide-y divide-border">
                 {closedTickets.map((ticket) => (
                   <TicketCard 
                     key={ticket.id} 
@@ -536,37 +495,32 @@ export default function SellerSupport() {
 
                 <div className="flex-1 overflow-hidden flex flex-col gap-4">
                   {/* Original message */}
-                  <Card className="bg-muted/50">
-                    <CardContent className="pt-4">
-                      <p className="text-sm whitespace-pre-wrap">{selectedTicket.description}</p>
-                      
-                      {selectedTicket.category === 'account_link_change' && (
-                        <div className="mt-4 pt-4 border-t space-y-2">
-                          <p className="text-xs font-medium text-muted-foreground">Account Link Change Request</p>
-                          {selectedTicket.new_discord_username && (
-                            <p className="text-sm">New Discord: <span className="font-medium">{selectedTicket.new_discord_username}</span></p>
-                          )}
-                          {selectedTicket.new_roblox_username && (
-                            <p className="text-sm">New Roblox: <span className="font-medium">{selectedTicket.new_roblox_username}</span></p>
-                          )}
-                          {selectedTicket.change_reason && (
-                            <p className="text-sm">Reason: {selectedTicket.change_reason}</p>
-                          )}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
+                  <div className="border-l-2 border-border pl-3">
+                    <p className="text-sm whitespace-pre-wrap">{selectedTicket.description}</p>
+                    
+                    {selectedTicket.category === 'account_link_change' && (
+                      <div className="mt-3 pt-3 border-t border-border/50 space-y-1.5">
+                        <p className="text-xs font-medium text-muted-foreground">Account Link Change Request</p>
+                        {selectedTicket.new_discord_username && (
+                          <p className="text-sm">New Discord: <span className="font-medium">{selectedTicket.new_discord_username}</span></p>
+                        )}
+                        {selectedTicket.new_roblox_username && (
+                          <p className="text-sm">New Roblox: <span className="font-medium">{selectedTicket.new_roblox_username}</span></p>
+                        )}
+                        {selectedTicket.change_reason && (
+                          <p className="text-sm">Reason: {selectedTicket.change_reason}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
                   {/* Resolution notes */}
                   {selectedTicket.resolution_notes && (
-                    <Card className="bg-green-500/10 border-green-500/30">
-                      <CardContent className="pt-4">
-                        <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-2">Resolution</p>
-                        <p className="text-sm">{selectedTicket.resolution_notes}</p>
-                      </CardContent>
-                    </Card>
+                    <div className="border-l-2 border-green-500/50 pl-3">
+                      <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-1">Resolution</p>
+                      <p className="text-sm">{selectedTicket.resolution_notes}</p>
+                    </div>
                   )}
-
                   {/* Messages */}
                   <ScrollArea className="flex-1 min-h-[200px] max-h-[300px]">
                     <div className="space-y-3 pr-4">
@@ -679,29 +633,26 @@ function TicketCard({ ticket, onSelect, getCategoryIcon, getCategoryLabel, getSt
   const Icon = getCategoryIcon(ticket.category);
   
   return (
-    <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={onSelect}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3 min-w-0">
-            <div className="p-2 bg-muted rounded-lg shrink-0">
-              <Icon className="h-4 w-4" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <Badge variant="outline" className="font-mono text-xs">{ticket.ticket_number}</Badge>
-                {getStatusBadge(ticket.status)}
-              </div>
-              <h3 className="font-medium truncate">{ticket.subject}</h3>
-              <p className="text-sm text-muted-foreground">
-                {getCategoryLabel(ticket.category)} • {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}
-              </p>
-            </div>
+    <div 
+      className="py-3 flex items-start justify-between gap-4 cursor-pointer hover:bg-muted/30 -mx-1 px-1 rounded-md transition-colors" 
+      onClick={onSelect}
+    >
+      <div className="flex items-start gap-3 min-w-0">
+        <Icon className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">{ticket.ticket_number}</Badge>
+            {getStatusBadge(ticket.status)}
           </div>
-          {ticket.status === 'awaiting_seller' && (
-            <AlertCircle className="h-5 w-5 text-orange-500 shrink-0" />
-          )}
+          <h3 className="text-sm font-medium truncate">{ticket.subject}</h3>
+          <p className="text-xs text-muted-foreground">
+            {getCategoryLabel(ticket.category)} · {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}
+          </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+      {ticket.status === 'awaiting_seller' && (
+        <AlertCircle className="h-4 w-4 text-orange-500 shrink-0 mt-0.5" />
+      )}
+    </div>
   );
 }
