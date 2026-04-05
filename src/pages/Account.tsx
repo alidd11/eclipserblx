@@ -611,8 +611,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         </div>
 
         {/* ═══ Account ═══ */}
-        <Card className="bg-card border-border overflow-hidden">
-          <CardContent className="p-1">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="p-1">
             <SectionHeader title="Account" />
             <ExpandableSection icon={Link2} label="Linked Accounts">
               <LinkedAccountsCard
