@@ -408,7 +408,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     return (
       <div key={group.id} className="mb-1">
         <div className="border-t border-border/30 mt-1 pt-2 mb-1">
-          <span className="px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="px-3 text-[11px] font-semibold tracking-wide text-muted-foreground/80">
             {group.title}
           </span>
         </div>
