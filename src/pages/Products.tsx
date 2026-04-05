@@ -182,47 +182,46 @@ export default function Products() {
           itemCount={productsData?.totalCount ?? 0}
         />
         <CategoryBar />
-        <div className="container py-6">
+        <div className="container py-4">
           <div className="flex gap-6">
             <ShopSidebar />
             <div className="flex-1 min-w-0 space-y-4">
-              <Card className="bg-card border-border">
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Package className="h-5 w-5 text-primary/80" />
-                    <h1 className="text-lg font-display text-foreground">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-xl font-display font-bold text-foreground">
                       {featuredOnly ? t('products.featuredProducts') : activeCategory ? activeCategory.name : t('products.allProducts')}
                     </h1>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {featuredOnly ? t('products.discoverPremium') : activeCategory?.description || t('products.browseCollection')}
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {featuredOnly ? t('products.discoverPremium') : activeCategory?.description || t('products.browseCollection')}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
-                      <Input
-                        placeholder={t('products.searchProducts')}
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="pl-9 h-9 text-sm bg-background/50 border-border/50 focus:border-primary/50 w-full"
-                      />
-                    </div>
-                    <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                      <SelectTrigger className="w-auto h-9 text-sm bg-muted/30 border-border/50 gap-1.5 px-2.5">
-                        <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                        <span className="hidden sm:inline"><SelectValue /></span>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {sortOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
+                    <Input
+                      placeholder={t('products.searchProducts')}
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="pl-9 h-9 text-sm bg-muted/30 border-border/50 focus:border-primary/50 w-full rounded-lg"
+                    />
                   </div>
-                </CardContent>
-              </Card>
+                  <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                    <SelectTrigger className="w-auto h-9 text-sm bg-muted/30 border-border/50 gap-1.5 px-2.5 rounded-lg">
+                      <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                      <span className="hidden sm:inline"><SelectValue /></span>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sortOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
               <ProductsGrid 
                 products={productsData?.products}
