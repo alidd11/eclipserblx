@@ -562,9 +562,10 @@ export default function CustomerTicketDetail() {
                   onKeyDown={handleKeyDown}
                   placeholder={isInternalNote ? 'Add an internal note (staff only)...' : 'Type your reply to the customer...'}
                   className={cn(
-                    'min-h-[80px] resize-none',
+                    'min-h-[60px] max-h-[120px] resize-none',
                     isInternalNote && 'border-yellow-500/30 bg-yellow-500/5'
                   )}
+                  style={{ fontSize: '16px' }}
                 />
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
