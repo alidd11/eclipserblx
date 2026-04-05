@@ -505,9 +505,9 @@ export default function SellerSettingsTeam() {
                     </div>
                   </div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+        </div>
         )}
 
         {/* Info Card */}
