@@ -1,6 +1,5 @@
-import { lazy, Suspense, useCallback } from 'react';
+import { lazy, Suspense } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { LandingHero } from '@/components/landing/LandingHero';
 
 
