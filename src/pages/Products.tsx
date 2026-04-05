@@ -174,7 +174,7 @@ export default function Products() {
 
   return (
     <MainLayout>
-      <PullToRefresh onRefresh={handleRefresh}>
+      
         <CollectionSchema
           name={activeCategory ? activeCategory.name : 'All Products'}
           description={activeCategory?.description || 'Browse premium Roblox scripts, vehicles, maps and game assets on Eclipse marketplace.'}
