@@ -186,8 +186,8 @@ export default function SellerReviews() {
                   <span className="w-16 text-sm text-muted-foreground text-right">{count} ({percent.toFixed(0)}%)</span>
                 </button>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Filters */}
