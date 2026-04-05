@@ -68,13 +68,10 @@ export default function FreeAssets() {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2">
             <Gift className="h-5 w-5 text-primary" />
-            <h1 className="text-2xl font-bold tracking-tight">Free Assets</h1>
+            <h1 className="text-xl font-display font-bold tracking-wide uppercase">Free Assets</h1>
           </div>
-          <p className="text-sm text-muted-foreground">
-            All free assets — no fees, no catch. Download and use in your Roblox games.
-          </p>
         </div>
 
         {/* Filters */}
