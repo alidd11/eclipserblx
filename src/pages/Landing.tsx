@@ -109,7 +109,6 @@ export default function Landing() {
           </Suspense>
         </SectionErrorBoundary>
       </LazySection>
-      </PullToRefresh>
     </MainLayout>
   );
 }
