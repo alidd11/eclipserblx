@@ -30,8 +30,6 @@ interface LayoutShellProps {
   };
   /** Completely replace the default Header with a custom element */
   customHeader?: (onMenuClick: () => void) => ReactNode;
-  /** Show the universal breadcrumb below the header (default: true) */
-  showBreadcrumb?: boolean;
   /** Show the footer at the bottom of main (default: true) */
   showFooter?: boolean;
   /** Show floating action buttons (default: true) */
