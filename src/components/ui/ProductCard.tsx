@@ -98,6 +98,8 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
   const hoverTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handleMouseEnter = useCallback(() => {
+    // Prefetch product detail data on hover
+    prefetchProduct(slug);
     if (videoRef.current && isVideo) {
       videoRef.current.play().catch(() => {});
     }
@@ -107,7 +109,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
         setMediaIndex((prev) => (prev + 1) % mediaChain.length);
       }, 1200);
     }
-  }, [isVideo, mediaChain.length]);
+  }, [isVideo, mediaChain.length, prefetchProduct, slug]);
 
   const handleMouseLeave = useCallback(() => {
     if (videoRef.current && isVideo) {
