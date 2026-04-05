@@ -575,45 +575,41 @@ export default function AdminAnalytics() {
   return (
     <AdminLayout requiredPermissions={['view_analytics']}>
       <div className="space-y-6">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <CardTitle className="text-2xl sm:text-3xl font-display">Analytics</CardTitle>
-                <p className="text-muted-foreground text-sm">Comprehensive platform metrics and insights</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center bg-muted rounded-lg p-0.5">
-                  {(['7d', '14d', '30d'] as const).map(r => (
-                    <Button
-                      key={r}
-                      variant={range === r ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() => setRange(r)}
-                      className="text-xs h-7 px-3"
-                    >
-                      {r}
-                    </Button>
-                  ))}
-                </div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-display font-bold">Analytics</h1>
+            <p className="text-sm text-muted-foreground mt-1">Comprehensive platform metrics and insights</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center bg-muted rounded-lg p-0.5">
+              {(['7d', '14d', '30d'] as const).map(r => (
                 <Button
-                  variant="outline"
+                  key={r}
+                  variant={range === r ? 'default' : 'ghost'}
                   size="sm"
-                  className="h-7 text-xs"
-                  onClick={() => {
-                    const exportData = activeTab === 'page-visits' ? recentVisits :
-                      activeTab === 'referrals' ? recentReferrals :
-                      downloadTrend;
-                    if (exportData?.length) exportToCSV(exportData as any[], `analytics-${activeTab}-${range}`);
-                  }}
+                  onClick={() => setRange(r)}
+                  className="text-xs h-7 px-3"
                 >
-                  <FileDown className="h-3.5 w-3.5 mr-1" />
-                  Export
+                  {r}
                 </Button>
-              </div>
+              ))}
             </div>
-          </CardHeader>
-        </Card>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => {
+                const exportData = activeTab === 'page-visits' ? recentVisits :
+                  activeTab === 'referrals' ? recentReferrals :
+                  downloadTrend;
+                if (exportData?.length) exportToCSV(exportData as any[], `analytics-${activeTab}-${range}`);
+              }}
+            >
+              <FileDown className="h-3.5 w-3.5 mr-1" />
+              Export
+            </Button>
+          </div>
+        </div>
 
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
