@@ -143,7 +143,7 @@ function LayoutShellInner({
             className={mainClassName ?? "flex-1 overflow-x-clip max-w-full min-w-0"}
             style={mainStyle ?? { paddingBottom: 'var(--bottom-safe-area, 0px)' }}
           >
-            <div className="w-full">
+            <div className={cn("w-full", chatMode && "flex-1 flex flex-col min-h-0 overflow-hidden")}>
               {contentClassName ? (
                 <div className={contentClassName}>{children}</div>
               ) : (
