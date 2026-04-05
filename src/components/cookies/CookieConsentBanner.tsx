@@ -22,7 +22,7 @@ export function CookieConsentBanner() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="fixed z-[200] w-[calc(100%-2rem)] max-w-3xl rounded-xl border border-border/60 bg-card/95 backdrop-blur-md shadow-2xl shadow-black/40 left-1/2 -translate-x-1/2"
+            className="fixed z-[200] left-4 right-4 max-w-3xl mx-auto rounded-xl border border-border/60 bg-card/95 backdrop-blur-md shadow-2xl shadow-black/40"
             style={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom, 0px))' }}
           >
             <div className="px-4 py-3 sm:px-5 sm:py-4 flex flex-col gap-3">
