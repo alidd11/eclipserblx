@@ -43,10 +43,6 @@ export default function Landing() {
         <LandingHero />
       </SectionErrorBoundary>
 
-      {/* Category Quick Nav */}
-      <SectionErrorBoundary section="categories" compact>
-        <CategoryQuickNav />
-      </SectionErrorBoundary>
 
       {/* Trending Products */}
       <SectionErrorBoundary section="trending" compact>

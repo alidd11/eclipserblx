@@ -81,16 +81,7 @@ export function LandingHero() {
             The Marketplace for {wordRotator} Creators
           </h1>
 
-          {/* Search bar — primary discovery */}
-          <button
-            onClick={() => navigate('/search')}
-            className="w-full max-w-sm flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border border-border/60 bg-muted/30 hover:bg-muted/50 transition-all mb-3"
-          >
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Search scripts, maps, bots...</span>
-          </button>
-
-          <div className="flex items-center gap-2.5 w-full max-w-sm">
+          <div className="flex items-center gap-2.5 w-full max-w-sm mt-1">
             <Link to="/products" className="flex-1">
               <Button size="sm" className="w-full h-9 text-xs font-semibold shadow-[0_0_16px_hsl(var(--primary)/0.25)]">
                 Browse
