@@ -90,6 +90,34 @@ export default function OrderSuccess() {
     enabled: !!verifiedOrderId,
   });
 
+  // Silent health check: if order exists but isn't linked, try to claim it
+  useEffect(() => {
+    const healthCheck = async () => {
+      if (!verifiedOrderId || !paymentIntentId) return;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        const { data: existingOrder } = await supabase
+          .from('orders')
+          .select('id')
+          .eq('id', verifiedOrderId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        // If we can't see the order via RLS, it might be orphaned — try claiming
+        if (!existingOrder && paymentIntentId) {
+          await supabase.functions.invoke('claim-order', {
+            body: { paymentIntentId },
+          });
+        }
+      } catch {
+        // Silent — don't disrupt the success page
+      }
+    };
+    healthCheck();
+  }, [verifiedOrderId, paymentIntentId]);
+
   useEffect(() => {
     if (!sessionId && !paymentIntentId && !orderId) {
       navigate('/');

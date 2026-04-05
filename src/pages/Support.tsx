@@ -6,16 +6,18 @@
  import { SITE_NAME } from '@/lib/constants';
  import { useDiscordUrl } from '@/hooks/useDiscordUrl';
  import { CreateTicketDialog } from '@/components/support/CreateTicketDialog';
+ import { GuestSupportForm } from '@/components/support/GuestSupportForm';
  import { useAuth } from '@/hooks/useAuth';
  import { usePageMeta } from '@/hooks/usePageMeta';
  import {
-   Ticket,
-   FileQuestion,
-   Download,
-   CreditCard,
-   ShieldCheck,
-   MessageCircle,
-   Headphones,
+  Ticket,
+  FileQuestion,
+  Download,
+  CreditCard,
+  ShieldCheck,
+  MessageCircle,
+  Headphones,
+  Package,
  } from 'lucide-react';
 
 const supportCategories = [
@@ -188,6 +190,35 @@ export default function Support() {
             ))}
           </div>
         </div>
+
+        {/* Order Recovery Banner */}
+        <Card className="mb-8 border-primary/20 bg-primary/5">
+          <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="p-3 rounded-lg bg-primary/10">
+              <Package className="w-6 h-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold">Missing an order?</h3>
+              <p className="text-sm text-muted-foreground">If you completed a payment but can't see your purchase, you can recover it instantly.</p>
+            </div>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/recover-order">Recover Order</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Guest Support Form (visible when not logged in) */}
+        {!user && (
+          <Card className="mb-8 bg-card border-border">
+            <CardHeader>
+              <CardTitle className="text-lg">Can't sign in? Submit a ticket here</CardTitle>
+              <CardDescription>We'll respond to your email directly — no account needed.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <GuestSupportForm />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Contact Section */}
         <div className="bg-muted/50 rounded-lg p-8 text-center">
