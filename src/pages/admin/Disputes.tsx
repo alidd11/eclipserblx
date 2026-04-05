@@ -477,8 +477,8 @@ export default function Disputes() {
                 )}
               </>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Dispute Detail Dialog */}

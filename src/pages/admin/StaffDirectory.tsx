@@ -207,13 +207,8 @@ export default function StaffDirectory() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <IdCard className="h-6 w-6 text-primary" />
-              Staff Directory
-            </h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              View all staff members and their IDs
-            </p>
+            <h1 className="text-2xl font-display font-bold">Staff Directory</h1>
+            <p className="text-sm text-muted-foreground">View all staff members and their IDs</p>
           </div>
           <Badge variant="outline" className="w-fit">
             {staffMembers.length} Staff Members

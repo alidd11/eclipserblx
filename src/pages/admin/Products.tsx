@@ -957,8 +957,7 @@ export default function AdminProducts() {
                 </TableBody>
               </Table>
             </div>
-          </CardContent>
-        </Card>
+        </div>
       </div>
 
       {/* Create/Edit Dialog */}
