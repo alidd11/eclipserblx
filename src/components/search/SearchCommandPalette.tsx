@@ -6,7 +6,6 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { hapticTap } from '@/lib/haptics';
-import { useSmartSearch } from '@/hooks/useSmartSearch';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { SearchCategoryChips } from './SearchCategoryChips';
