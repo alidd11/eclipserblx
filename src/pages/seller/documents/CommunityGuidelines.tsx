@@ -1,5 +1,4 @@
 import { SellerDocumentPage } from "@/components/seller/documents/SellerDocumentPage";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Shield, AlertTriangle, Ban, CheckCircle2, XCircle,
