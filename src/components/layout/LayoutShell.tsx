@@ -1,4 +1,5 @@
 import { ReactNode, useState, lazy, Suspense } from 'react';
+import { cn } from '@/lib/utils';
 import { GlobalCategoryBar } from '@/components/shop/GlobalCategoryBar';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Header } from '@/components/layout/Header';
