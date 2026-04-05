@@ -344,7 +344,6 @@ export default function AdminRefunds() {
                 <p className="text-sm mt-1">Refunded orders will appear here</p>
               </div>
             )}
-          </div>
         </div>
 
         {/* Order Detail Dialog */}
