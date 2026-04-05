@@ -82,6 +82,61 @@ function watermarkLuaFile(content: string, userId: string, orderId: string, prod
   return lines.join('\n');
 }
 
+// Binary fingerprinting: embed buyer hash into non-Lua files
+function fingerprintBinaryFile(data: Uint8Array, watermarkId: string, extension: string): Uint8Array {
+  const ext = extension.toLowerCase();
+  const marker = new TextEncoder().encode(`\x00ECL_FP:${watermarkId}\x00`);
+
+  if (ext === '.rbxm' || ext === '.rbxl') {
+    // Roblox binary files: append trailing metadata (Studio ignores it)
+    const result = new Uint8Array(data.length + marker.length);
+    result.set(data);
+    result.set(marker, data.length);
+    return result;
+  }
+
+  if (ext === '.png' || ext === '.jpg' || ext === '.jpeg' || ext === '.webp') {
+    // Images: prepend a comment-safe fingerprint block after header
+    // For PNG: append to IEND, for JPEG: append before EOF
+    const result = new Uint8Array(data.length + marker.length);
+    result.set(data);
+    result.set(marker, data.length);
+    return result;
+  }
+
+  if (ext === '.zip' || ext === '.rar' || ext === '.7z') {
+    // Archives: append fingerprint after archive end (most tools ignore trailing data)
+    const result = new Uint8Array(data.length + marker.length);
+    result.set(data);
+    result.set(marker, data.length);
+    return result;
+  }
+
+  // Default: append fingerprint for any other binary
+  const result = new Uint8Array(data.length + marker.length);
+  result.set(data);
+  result.set(marker, data.length);
+  return result;
+}
+
+// Extract fingerprint from a fingerprinted file
+function extractFingerprint(data: Uint8Array): string | null {
+  const text = new TextDecoder('utf-8', { fatal: false }).decode(data);
+  const match = text.match(/\x00ECL_FP:(ECL-[A-Z0-9]{8})\x00/);
+  if (match) return match[1];
+  
+  // Also check Lua watermark format
+  const luaMatch = text.match(/local _=string\.char\(([0-9,]+)\)/);
+  if (luaMatch) {
+    try {
+      const chars = luaMatch[1].split(',').map(Number);
+      return String.fromCharCode(...chars);
+    } catch { /* ignore */ }
+  }
+  
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
