@@ -400,7 +400,8 @@ Deno.serve(async (req) => {
                   order_item_id: orderItemId || userOrder.id,
                   signed_url: signedUrlData.signedUrl,
                   expires_at: expiresAt.toISOString(),
-                  temp_file_path: tempPath, // Store path for cleanup
+                  temp_file_path: tempPath,
+                  creator_ip: clientIp,
                 });
                 
                 if (!tokenError) {
