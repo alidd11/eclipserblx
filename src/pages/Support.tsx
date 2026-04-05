@@ -6,6 +6,7 @@
  import { SITE_NAME } from '@/lib/constants';
  import { useDiscordUrl } from '@/hooks/useDiscordUrl';
  import { CreateTicketDialog } from '@/components/support/CreateTicketDialog';
+ import { GuestSupportForm } from '@/components/support/GuestSupportForm';
  import { useAuth } from '@/hooks/useAuth';
  import { usePageMeta } from '@/hooks/usePageMeta';
  import {
