@@ -805,36 +805,32 @@ export default function ProductDetail() {
                     <RobuxPayButton />
                   )}
                 </div>
+                {/* Actions row */}
+                <div className="flex items-center gap-2 pt-3 border-t border-border">
+                  <SocialShareButtons
+                    url={`/products/${(product as any).product_number || productNumber}`}
+                    title={product.name}
+                    description={`Check out ${product.name} on Eclipse`}
+                  />
+                  {user && (
+                    <PriceAlertButton
+                      productId={product.id}
+                      currentPrice={product.price}
+                      className="h-9 px-3 text-xs"
+                    />
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 px-3 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowIPReportDialog(true)}
+                  >
+                    <Flag className="h-3.5 w-3.5" />
+                    Report
+                  </Button>
+                </div>
               </CardContent>
             </Card>
-
-
-            {/* Share + Price Alert + Report */}
-            <div className="rounded-2xl border border-border bg-card/60 p-3 space-y-3">
-              <SocialShareButtons
-                url={`/products/${(product as any).product_number || productNumber}`}
-                title={product.name}
-                description={`Check out ${product.name} on Eclipse`}
-              />
-              <div className={cn('grid gap-2', user ? 'grid-cols-2' : 'grid-cols-1')}>
-                {user && (
-                  <PriceAlertButton
-                    productId={product.id}
-                    currentPrice={product.price}
-                    className="h-11 w-full justify-start rounded-xl border border-border bg-background/60 px-4 text-sm hover:bg-accent hover:text-foreground"
-                  />
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-11 w-full justify-start rounded-xl border border-border bg-background/60 px-4 text-sm text-foreground hover:bg-accent hover:text-foreground"
-                  onClick={() => setShowIPReportDialog(true)}
-                >
-                  <Flag className="h-4 w-4 mr-2" />
-                  Report IP Violation
-                </Button>
-              </div>
-            </div>
           </div>
 
         {/* Reviews Section */}
