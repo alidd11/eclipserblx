@@ -335,8 +335,8 @@ export default function SellerSettingsPayments() {
                   </Button>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Alternative Payout Method */}
           <Card>
