@@ -1,19 +1,31 @@
 
 
-## Make PWA Title Bar Enterprise-Level
+## Clean Up Duplicate Search & Category Elements on Homepage
 
-The screenshot shows the iOS PWA status bar / title area. The issue is that the `theme_color` (`#151617`) doesn't perfectly match the app's actual background (`hsl(220, 8%, 6%)` ≈ `#0e0f11`), creating a subtle but noticeable disconnect. To make this feel seamless and enterprise-grade:
+### The Problem
+The homepage stacks four discovery elements above the fold:
+- Header search (global)
+- Hero search bar (landing-specific)
+- GlobalCategoryBar (global, but hidden on /products)
+- CategoryQuickNav (landing-specific)
 
-### Changes
+Two search bars and two category rows are redundant and push actual products further down.
 
-1. **`public/manifest.webmanifest`** — Update `theme_color` and `background_color` from `#151617` to `#0e0f11` to match the app's dark background exactly. This makes the status bar blend seamlessly into the app.
+### The Fix
 
-2. **`index.html`** — Update the `<meta name="theme-color">` tag from `#151617` to `#0e0f11` for the same reason.
+1. **Remove the search bar from LandingHero** — The header already has search, and tapping it opens the full-screen search takeover. The hero should just be headline + CTA buttons. Remove the `<button onClick={() => navigate('/search')}>` block from both desktop and mobile layouts in `LandingHero.tsx`.
 
-3. **`public/manifest-admin.json`** — Same update for consistency across all manifests (`#151617` → `#0e0f11`).
+2. **Remove CategoryQuickNav from the landing page** — The GlobalCategoryBar in the header already provides category navigation on every page (including the homepage). Remove the `<CategoryQuickNav />` import and usage from `Landing.tsx`.
 
-4. **`public/offline.html`** — Update `theme-color` meta from `#0a0a0f` to `#0e0f11` so the offline page matches too.
+3. **Ensure GlobalCategoryBar shows on the homepage** — Currently it hides on `/products` but shows everywhere else. Verify it renders on `/` (the landing page). It already does based on the code — no change needed.
 
 ### Result
-The iOS status bar, splash screen, and title bar will blend perfectly with the app background — no visible seam, fully cohesive. Users will need to re-add the PWA to home screen for the change to take effect.
+- One search entry point (header)
+- One category bar (GlobalCategoryBar below header)
+- Hero becomes a tight headline + "Browse" / "Sell" CTA
+- Products appear higher on screen, improving engagement
+
+### Files Changed
+- `src/components/landing/LandingHero.tsx` — Remove search bar button from both desktop and mobile sections
+- `src/pages/Landing.tsx` — Remove `CategoryQuickNav` import and usage
 
