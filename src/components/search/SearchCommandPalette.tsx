@@ -382,7 +382,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                 <section className="px-4 py-3">
                   <div className="flex items-center gap-2 mb-1">
                     <SectionLabel>
-                      {useAI ? 'AI Results' : 'Products'}
+                      Products
                     </SectionLabel>
                     <span className="text-[10px] text-muted-foreground/40 tabular-nums font-medium">
                       {displayProducts.length}
