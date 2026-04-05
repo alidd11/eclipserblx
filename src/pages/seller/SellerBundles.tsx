@@ -192,8 +192,7 @@ export default function SellerBundles() {
             [1,2].map(i => <Skeleton key={i} className="h-24" />)
           ) : bundles && bundles.length > 0 ? (
             bundles.map((bundle: any) => (
-              <Card key={bundle.id} className={!bundle.is_active ? 'opacity-60' : ''}>
-                <CardContent className="flex items-center justify-between py-4">
+              <div key={bundle.id} className={`border border-border rounded-xl p-4 flex items-center justify-between ${!bundle.is_active ? 'opacity-60' : ''}`}>
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-lg flex items-center justify-center bg-primary/10">
                       <PackagePlus className="h-6 w-6 text-primary" />
@@ -228,8 +227,7 @@ export default function SellerBundles() {
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+              </div>
             ))
           ) : (
             <Card>
