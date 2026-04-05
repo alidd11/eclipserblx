@@ -476,6 +476,7 @@ const LiveChatPage = () => {
               conversationId: conversation.id,
               userMessage: messageText,
               issueCategory: conversation.issue_category,
+              userId: user?.id,
             },
           });
 
