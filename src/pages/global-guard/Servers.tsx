@@ -5,7 +5,7 @@ import { UpgradeBanner } from '@/components/global-guard/UpgradeBanner';
 import { TierBadge } from '@/components/global-guard/TierBadge';
 import { useGlobalGuardData } from '@/hooks/useGlobalGuardData';
 import { useGlobalGuardLimits } from '@/hooks/useGlobalGuardLimits';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
