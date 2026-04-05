@@ -324,8 +324,7 @@ export default function SearchResults() {
             <div className="text-center space-y-1">
               <h3 className="font-semibold">No products found</h3>
               <p className="text-sm text-muted-foreground max-w-sm">
-                We couldn't find anything matching your criteria. Try different keywords or{' '}
-                <button onClick={handleAISearch} className="text-primary hover:underline">use AI search</button>.
+                We couldn't find anything matching your criteria. Try different keywords.
               </p>
             </div>
             <Button variant="outline" size="sm" asChild>
