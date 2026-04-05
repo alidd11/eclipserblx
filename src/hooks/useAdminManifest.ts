@@ -34,7 +34,7 @@ export function useAdminManifest() {
     // Update theme-color for admin
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', isAdminRoute ? '#7c3aed' : '#1a1a2e');
+      themeColorMeta.setAttribute('content', isAdminRoute ? '#7c3aed' : '#0e0f11');
     }
 
     // Update apple-mobile-web-app-title
