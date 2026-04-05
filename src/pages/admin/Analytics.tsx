@@ -532,7 +532,7 @@ export default function AdminAnalytics() {
   });
 
             {/* Country Breakdown */}
-            <Card className="bg-card border-border">
+            <div className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-sm">
                   <MapPin className="h-4 w-4" />
@@ -561,7 +561,7 @@ export default function AdminAnalytics() {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </div>
 
 
   const getDeviceIcon = (device: string) => {
@@ -659,7 +659,7 @@ export default function AdminAnalytics() {
           {/* ============ OVERVIEW TAB ============ */}
           <TabsContent value="overview" className="space-y-4">
             {/* Combined Overview Card */}
-            <Card className="bg-card border-border">
+            <div className="bg-card border-border">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
@@ -721,10 +721,10 @@ export default function AdminAnalytics() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </div>
 
             {/* Conversion Funnel */}
-            <Card className="bg-card border-border">
+            <div className="bg-card border-border">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2">
                   <ArrowRight className="h-5 w-5" />
@@ -773,11 +773,11 @@ export default function AdminAnalytics() {
                   );
                 })()}
               </CardContent>
-            </Card>
+            </div>
 
             {/* Quick Stats Row - Page Visits + Seller + Referrals */}
             <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-              <Card className="bg-card border-border">
+              <div className="bg-card border-border">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-2 text-sm">
                     <Eye className="h-4 w-4" />
@@ -790,9 +790,9 @@ export default function AdminAnalytics() {
                     {pageVisitStats?.newVisitors ?? 0} new · {pageVisitStats?.returningVisitors ?? 0} returning
                   </p>
                 </CardContent>
-              </Card>
+              </div>
 
-              <Card className="bg-card border-border">
+              <div className="bg-card border-border">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-2 text-sm">
                     <Store className="h-4 w-4" />
@@ -805,9 +805,9 @@ export default function AdminAnalytics() {
                     {sellerAnalyticsStats?.storeViews ?? 0} store views · {sellerAnalyticsStats?.productViews ?? 0} product views
                   </p>
                 </CardContent>
-              </Card>
+              </div>
 
-              <Card className="bg-card border-border">
+              <div className="bg-card border-border">
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-2 text-sm">
                     <Link2 className="h-4 w-4" />
@@ -820,13 +820,13 @@ export default function AdminAnalytics() {
                     {referralStats?.uniqueReferrers ?? 0} referrers · {referralStats?.conversions ?? 0} conversions
                   </p>
                 </CardContent>
-              </Card>
+              </div>
             </div>
 
             {/* Charts Row */}
             <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
               {/* Downloads Trend */}
-              <Card className="bg-card border-border">
+              <div className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5" />
@@ -841,10 +841,10 @@ export default function AdminAnalytics() {
                   height={250}
                 />
                 </CardContent>
-              </Card>
+              </div>
 
               {/* Orders Trend */}
-              <Card className="bg-card border-border">
+              <div className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <ShoppingCart className="h-5 w-5" />
@@ -859,12 +859,12 @@ export default function AdminAnalytics() {
                   height={250}
                 />
                 </CardContent>
-              </Card>
+              </div>
             </div>
 
             <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
               {/* User Registrations */}
-              <Card className="bg-card border-border">
+              <div className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5" />
@@ -879,10 +879,10 @@ export default function AdminAnalytics() {
                   height={250}
                 />
                 </CardContent>
-              </Card>
+              </div>
 
               {/* Category Distribution */}
-              <Card className="bg-card border-border">
+              <div className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="h-5 w-5" />
@@ -903,11 +903,11 @@ export default function AdminAnalytics() {
                     />
                   )}
                 </CardContent>
-              </Card>
+              </div>
             </div>
 
             {/* Top Downloaded Products */}
-            <Card className="bg-card border-border">
+            <div className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Download className="h-5 w-5" />
@@ -943,13 +943,13 @@ export default function AdminAnalytics() {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </div>
           </TabsContent>
 
           {/* ============ PAGE VISITS TAB ============ */}
           <TabsContent value="page-visits" className="space-y-4">
             {/* Visitor Statistics Overview */}
-            <Card className="bg-card border-border">
+            <div className="bg-card border-border">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2">
                   <Eye className="h-5 w-5" />
@@ -989,10 +989,10 @@ export default function AdminAnalytics() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </div>
 
             {/* Visitor Trend Chart */}
-            <Card className="bg-card border-border">
+            <div className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
@@ -1010,11 +1010,11 @@ export default function AdminAnalytics() {
                   height={250}
                 />
               </CardContent>
-            </Card>
+            </div>
 
             <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
               {/* Page Visits by Page */}
-              <Card className="bg-card border-border">
+              <div className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-sm">
                     <Globe className="h-4 w-4" />
@@ -1035,10 +1035,10 @@ export default function AdminAnalytics() {
                     </div>
                   )}
                 </CardContent>
-              </Card>
+              </div>
 
               {/* Device Distribution */}
-              <Card className="bg-card border-border">
+              <div className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-sm">
                     <Monitor className="h-4 w-4" />
@@ -1059,10 +1059,10 @@ export default function AdminAnalytics() {
                     />
                   )}
                 </CardContent>
-              </Card>
+              </div>
 
               {/* Browser Distribution */}
-              <Card className="bg-card border-border">
+              <div className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-sm">
                     <Globe className="h-4 w-4" />
@@ -1083,11 +1083,11 @@ export default function AdminAnalytics() {
                     />
                   )}
                 </CardContent>
-              </Card>
+              </div>
             </div>
 
             {/* Recent Visit Logs */}
-            <Card className="bg-card border-border">
+            <div className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5" />
@@ -1146,13 +1146,13 @@ export default function AdminAnalytics() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </div>
           </TabsContent>
 
           {/* ============ SELLER ANALYTICS TAB ============ */}
           <TabsContent value="seller-analytics" className="space-y-4">
             {/* Seller Overview */}
-            <Card className="bg-card border-border">
+            <div className="bg-card border-border">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2">
                   <Store className="h-5 w-5" />
@@ -1202,10 +1202,10 @@ export default function AdminAnalytics() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </div>
 
             {/* Seller Trend Chart */}
-            <Card className="bg-card border-border">
+            <div className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
@@ -1223,11 +1223,11 @@ export default function AdminAnalytics() {
                   height={250}
                 />
               </CardContent>
-            </Card>
+            </div>
 
             <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
               {/* Event Type Distribution */}
-              <Card className="bg-card border-border">
+              <div className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-sm">
                     <BarChart3 className="h-4 w-4" />
@@ -1245,10 +1245,10 @@ export default function AdminAnalytics() {
                     />
                   )}
                 </CardContent>
-              </Card>
+              </div>
 
               {/* Device Distribution */}
-              <Card className="bg-card border-border">
+              <div className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-sm">
                     <Monitor className="h-4 w-4" />
@@ -1266,11 +1266,11 @@ export default function AdminAnalytics() {
                     />
                   )}
                 </CardContent>
-              </Card>
+              </div>
             </div>
 
             {/* Top Stores */}
-            <Card className="bg-card border-border">
+            <div className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Store className="h-5 w-5" />
@@ -1310,13 +1310,13 @@ export default function AdminAnalytics() {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </div>
           </TabsContent>
 
           {/* ============ REFERRALS TAB ============ */}
           <TabsContent value="referrals" className="space-y-4">
             {/* Referral Overview */}
-            <Card className="bg-card border-border">
+            <div className="bg-card border-border">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2">
                   <Link2 className="h-5 w-5" />
@@ -1356,10 +1356,10 @@ export default function AdminAnalytics() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </div>
 
             {/* Referral Trend Chart */}
-            <Card className="bg-card border-border">
+            <div className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
@@ -1374,10 +1374,10 @@ export default function AdminAnalytics() {
                   height={250}
                 />
               </CardContent>
-            </Card>
+            </div>
 
             {/* Top Referrers */}
-            <Card className="bg-card border-border">
+            <div className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
@@ -1418,10 +1418,10 @@ export default function AdminAnalytics() {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </div>
 
             {/* Recent Referral Logs */}
-            <Card className="bg-card border-border">
+            <div className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5" />
@@ -1465,7 +1465,7 @@ export default function AdminAnalytics() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

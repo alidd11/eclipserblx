@@ -314,7 +314,7 @@ export default function SellerProducts() {
         {isLoading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="animate-pulse">
+              <div key={i} className="animate-pulse">
                 <CardContent className="h-48" />
               </div>
             ))}
@@ -329,7 +329,7 @@ export default function SellerProducts() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {products?.map((product: any) => (
-              <Card key={product.id} className="overflow-hidden">
+              <div key={product.id} className="overflow-hidden">
                 <div className="aspect-video relative bg-muted">
                   {product.images?.[0] ? (
                     <img

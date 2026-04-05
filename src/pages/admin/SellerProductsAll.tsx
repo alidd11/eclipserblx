@@ -238,7 +238,7 @@ export default function SellerProductsAll() {
         {isLoading ? (
           <div className="space-y-2">
             {[1, 2, 3, 4, 5].map((i) => (
-              <Card key={i} className="animate-pulse">
+              <div key={i} className="animate-pulse">
                 <CardContent className="h-16" />
               </div>
             ))}
@@ -263,7 +263,7 @@ export default function SellerProductsAll() {
             </div>
 
             {filteredProducts?.map((product: any) => (
-              <Card key={product.id} className="overflow-hidden">
+              <div key={product.id} className="overflow-hidden">
                 <div className="p-4 p-0">
                   <div className="grid grid-cols-1 md:grid-cols-[3fr_1.5fr_1fr_1fr_1fr_auto] gap-3 items-center px-4 py-3">
                     {/* Product */}

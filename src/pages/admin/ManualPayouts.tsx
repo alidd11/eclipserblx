@@ -193,7 +193,7 @@ export default function ManualPayouts() {
             {isLoading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
-                  <Card key={i}>
+                  <div key={i}>
                     <div className="p-4 p-6">
                       <Skeleton className="h-20 w-full" />
                     </div>
@@ -213,7 +213,7 @@ export default function ManualPayouts() {
             ) : (
               <div className="space-y-4">
                 {pendingRequests.map((request) => (
-                  <Card key={request.id}>
+                  <div key={request.id}>
                     <div className="p-4 p-6">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="space-y-2">
@@ -278,7 +278,7 @@ export default function ManualPayouts() {
             {isLoading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
-                  <Card key={i}>
+                  <div key={i}>
                     <div className="p-4 p-6">
                       <Skeleton className="h-20 w-full" />
                     </div>
@@ -302,7 +302,7 @@ export default function ManualPayouts() {
                   const StatusIcon = config.icon;
                   
                   return (
-                    <Card key={request.id}>
+                    <div key={request.id}>
                       <div className="p-4 p-6">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                           <div className="space-y-2">

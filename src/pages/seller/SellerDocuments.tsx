@@ -294,7 +294,7 @@ export default function SellerDocuments() {
               const needsSignature = doc.requiresSignature && !isSigned;
 
               return (
-                <Card key={doc.id} className="group hover:border-primary/50 transition-colors">
+                <div key={doc.id} className="group hover:border-primary/50 transition-colors">
                   <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                     <div className="flex items-start justify-between gap-4">
                       <div className="p-2 rounded-lg bg-primary/10 shrink-0">
@@ -348,7 +348,7 @@ export default function SellerDocuments() {
         {documentsLoading ? (
           <div className="grid gap-4 md:grid-cols-2">
             {[1, 2].map(i => (
-              <Card key={i}>
+              <div key={i}>
                 <div className="px-4 py-3 border-b border-border bg-muted/30">
                   <Skeleton className="h-5 w-20" />
                   <Skeleton className="h-6 w-full mt-2" />
@@ -367,7 +367,7 @@ export default function SellerDocuments() {
                 const isUnread = hasUnread(doc.id);
                 
                 return (
-                  <Card 
+                  <div 
                     key={doc.id} 
                     className={`group hover:border-primary/50 transition-colors ${isUnread ? "border-primary/30 bg-primary/5" : ""}`}
                     onClick={() => isUnread && markReadMutation.mutate(doc.id)}

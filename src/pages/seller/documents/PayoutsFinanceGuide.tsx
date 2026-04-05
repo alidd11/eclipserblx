@@ -134,7 +134,7 @@ export default function PayoutsFinanceGuide() {
           </h2>
           <div className="space-y-4">
             {payoutMethods.map((method, i) => (
-              <Card key={i} className={`border-border/50 ${method.recommended ? "border-primary/50 bg-primary/5" : ""}`}>
+              <div key={i} className={`border-border/50 ${method.recommended ? "border-primary/50 bg-primary/5" : ""}`}>
                 <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -181,7 +181,7 @@ export default function PayoutsFinanceGuide() {
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
             {importantNotes.map((note, i) => (
-              <Card key={i} className="border-border/50">
+              <div key={i} className="border-border/50">
                 <div className="p-4 pt-6">
                   <div className="flex items-start gap-3">
                     <div className="p-2 rounded-lg bg-primary/10 shrink-0">

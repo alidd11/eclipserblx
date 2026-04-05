@@ -265,7 +265,7 @@
              {isLoading ? (
                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                  {[...Array(6)].map((_, i) => (
-                   <Card key={i}>
+                   <div key={i}>
                      <div className="px-4 py-3 border-b border-border bg-muted/30">
                        <Skeleton className="h-5 w-3/4" />
                        <Skeleton className="h-4 w-1/2" />
@@ -290,7 +290,7 @@
                    const StatusIcon = config?.icon || Clock;
                    
                    return (
-                     <Card key={submission.id}>
+                     <div key={submission.id}>
                        <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                          <div className="flex items-start justify-between">
                            <div className="space-y-1">

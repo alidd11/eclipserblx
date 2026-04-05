@@ -89,7 +89,7 @@ export default function StoreSetupGuide() {
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {themes.map((theme, i) => (
-              <Card key={i} className={`border-border/50 ${theme.recommended ? "border-primary/50 bg-primary/5" : ""}`}>
+              <div key={i} className={`border-border/50 ${theme.recommended ? "border-primary/50 bg-primary/5" : ""}`}>
                 <div className="p-4 pt-5">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-semibold">{theme.name}</h4>
@@ -110,7 +110,7 @@ export default function StoreSetupGuide() {
           </h2>
           <div className="space-y-4">
             {customizationOptions.map((option, i) => (
-              <Card key={i} className="border-border/50">
+              <div key={i} className="border-border/50">
                 <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-primary/10">
@@ -145,7 +145,7 @@ export default function StoreSetupGuide() {
           </h2>
           <div className="space-y-4">
             {setupSteps.map((step) => (
-              <Card key={step.step} className="border-border/50">
+              <div key={step.step} className="border-border/50">
                 <div className="p-4 pt-6">
                   <div className="flex gap-4">
                     <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold text-lg flex items-center justify-center shrink-0">

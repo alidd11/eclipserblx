@@ -795,7 +795,7 @@ export default function SellerSettingsDomain() {
             const lastHealthCheck = (d as any).last_health_check;
 
             return (
-              <Card key={d.id} className="bg-muted/30">
+              <div key={d.id} className="bg-muted/30">
                 <div className="p-4 py-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">

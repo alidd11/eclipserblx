@@ -465,7 +465,7 @@ export default function AdminSellerDocuments() {
         {isLoading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map(i => (
-              <Card key={i}>
+              <div key={i}>
                 <div className="px-4 py-3 border-b border-border bg-muted/30">
                   <Skeleton className="h-5 w-20" />
                   <Skeleton className="h-6 w-full mt-2" />
@@ -477,7 +477,7 @@ export default function AdminSellerDocuments() {
         ) : filteredDocuments.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredDocuments.map((doc) => (
-              <Card key={doc.id} className={`group transition-colors ${!doc.is_active ? "opacity-60" : "hover:border-primary/50"}`}>
+              <div key={doc.id} className={`group transition-colors ${!doc.is_active ? "opacity-60" : "hover:border-primary/50"}`}>
                 <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">

@@ -552,7 +552,7 @@ export default function Disputes() {
 
                 {/* Escrow Status Banner */}
                 {selectedDispute.escrow && (
-                  <Card className={cn('border', selectedDispute.escrow.escrow_frozen ? 'border-sky-500/30 bg-sky-500/5' : 'border-amber-500/20 bg-amber-500/5')}>
+                  <div className={cn('border', selectedDispute.escrow.escrow_frozen ? 'border-sky-500/30 bg-sky-500/5' : 'border-amber-500/20 bg-amber-500/5')}>
                     <CardContent className="py-3 px-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -583,7 +583,7 @@ export default function Disputes() {
                         {getEscrowBadge(selectedDispute)}
                       </div>
                     </CardContent>
-                  </Card>
+                  </div>
                 )}
 
                 {/* Status */}
@@ -666,7 +666,7 @@ export default function Disputes() {
 
                 {/* Escalation */}
                 {selectedDispute.escalation_reason && (
-                  <Card className="border-amber-500/20 bg-amber-500/5">
+                  <div className="border-amber-500/20 bg-amber-500/5">
                     <CardContent className="py-3 px-4">
                       <div className="flex items-center gap-2 mb-1">
                         <ShieldAlert className="h-4 w-4 text-amber-500" />
@@ -679,7 +679,7 @@ export default function Disputes() {
                         </p>
                       )}
                     </CardContent>
-                  </Card>
+                  </div>
                 )}
 
                 {/* Previous admin response */}

@@ -167,7 +167,7 @@ export default function SellerNotifications() {
               const isUnread = !n.read_at;
 
               return (
-                <Card
+                <div
                   key={n.id}
                   interactive
                   className={cn(
@@ -207,7 +207,7 @@ export default function SellerNotifications() {
                       </Button>
                     )}
                   </CardContent>
-                </Card>
+                </div>
               );
             })}
           </div>

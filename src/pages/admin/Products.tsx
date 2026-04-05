@@ -814,7 +814,7 @@ export default function AdminProducts() {
                 <p className="text-center py-8 text-muted-foreground">No products found</p>
               ) : (
                 products?.map((product) => (
-                  <Card 
+                  <div 
                     key={product.id} 
                     className={`bg-muted/30 border-border overflow-hidden transition-colors ${
                       selectedProducts.has(product.id) ? 'ring-2 ring-primary' : ''
@@ -860,7 +860,7 @@ export default function AdminProducts() {
                         </Button>
                       </div>
                     </CardContent>
-                  </Card>
+                  </div>
                 ))
               )}
             </div>

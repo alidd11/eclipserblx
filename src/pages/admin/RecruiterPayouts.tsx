@@ -217,7 +217,7 @@ export default function RecruiterPayouts() {
                 ) : payouts && payouts.length > 0 ? (
                   <div className="space-y-4">
                     {payouts.map((payout) => (
-                      <Card key={payout.id}>
+                      <div key={payout.id}>
                         <div className="p-4 pt-6">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">

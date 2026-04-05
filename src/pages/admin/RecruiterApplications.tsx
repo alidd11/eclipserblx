@@ -128,7 +128,7 @@ export default function RecruiterApplications() {
         ) : applications && applications.length > 0 ? (
           <div className="grid gap-4">
             {applications.map((app) => (
-              <Card key={app.id} className={selectedApp?.id === app.id ? 'ring-2 ring-primary' : ''}>
+              <div key={app.id} className={selectedApp?.id === app.id ? 'ring-2 ring-primary' : ''}>
                 <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">

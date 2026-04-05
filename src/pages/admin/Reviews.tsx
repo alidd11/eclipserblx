@@ -266,7 +266,7 @@ export default function AdminReviews() {
   };
 
   const renderReviewCard = (review: Review) => (
-    <Card key={review.id} className="bg-muted/30 border-border overflow-hidden">
+    <div key={review.id} className="bg-muted/30 border-border overflow-hidden">
       <CardContent className="p-3 space-y-3">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -320,7 +320,7 @@ export default function AdminReviews() {
           </div>
         </div>
       </CardContent>
-    </Card>
+    </div>
   );
 
   const renderReviewRow = (review: Review) => (

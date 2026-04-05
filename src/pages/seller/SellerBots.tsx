@@ -245,7 +245,7 @@ export default function SellerBots() {
         ) : botProducts?.length ? (
           <div className="space-y-4">
             {botProducts.map(bot => (
-              <Card key={bot.id} className="overflow-hidden">
+              <div key={bot.id} className="overflow-hidden">
                 <div className="p-4 p-5">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4">
