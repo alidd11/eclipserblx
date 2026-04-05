@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { motion } from 'framer-motion';
 import { categoryIconMap, PackageIcon } from '@/components/icons/CategoryIcons';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { PullToRefresh } from '@/components/ui/PullToRefresh';
+
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageTracking } from '@/hooks/usePageTracking';
