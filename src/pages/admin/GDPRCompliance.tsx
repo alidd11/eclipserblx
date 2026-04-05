@@ -381,58 +381,56 @@ export default function GDPRCompliance() {
 
           {/* ─── Tab 2: Sub-Processors ─── */}
           <TabsContent value="processors" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Globe className="h-5 w-5" />
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-muted-foreground" />
                   Sub-Processor Registry
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Required under GDPR Article 28. All third-party processors with access to personal data.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Processor</TableHead>
-                        <TableHead>Purpose</TableHead>
-                        <TableHead>Data Processed</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Transfer Mechanism</TableHead>
-                        <TableHead>DPA Link</TableHead>
-                        <TableHead>Last Reviewed</TableHead>
+                </p>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Processor</TableHead>
+                      <TableHead>Purpose</TableHead>
+                      <TableHead>Data Processed</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Transfer Mechanism</TableHead>
+                      <TableHead>DPA Link</TableHead>
+                      <TableHead>Last Reviewed</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {SUB_PROCESSORS.map((proc, i) => (
+                      <TableRow key={i}>
+                        <TableCell className="font-medium text-sm">{proc.name}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{proc.purpose}</TableCell>
+                        <TableCell className="text-sm">{proc.dataProcessed}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-xs">{proc.location}</Badge>
+                        </TableCell>
+                        <TableCell className="text-sm">{proc.transferMechanism}</TableCell>
+                        <TableCell>
+                          <a
+                            href={proc.dpaUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary underline text-xs"
+                          >
+                            View DPA
+                          </a>
+                        </TableCell>
+                        <TableCell className="text-sm">{proc.lastReviewed}</TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {SUB_PROCESSORS.map((proc, i) => (
-                        <TableRow key={i}>
-                          <TableCell className="font-medium text-sm">{proc.name}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{proc.purpose}</TableCell>
-                          <TableCell className="text-sm">{proc.dataProcessed}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="text-xs">{proc.location}</Badge>
-                          </TableCell>
-                          <TableCell className="text-sm">{proc.transferMechanism}</TableCell>
-                          <TableCell>
-                            <a
-                              href={proc.dpaUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary underline text-xs"
-                            >
-                              View DPA
-                            </a>
-                          </TableCell>
-                          <TableCell className="text-sm">{proc.lastReviewed}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
           </TabsContent>
 
           {/* ─── Tab 3: Retention Schedule ─── */}
