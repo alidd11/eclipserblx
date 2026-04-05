@@ -432,8 +432,8 @@ export default function SellerSettingsNotifications() {
                 Learn more about Discord webhooks
                 <ExternalLink className="h-3 w-3 ml-1" />
               </a>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Save Button */}
           <Button 
