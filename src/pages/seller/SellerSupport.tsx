@@ -64,6 +64,7 @@ export default function SellerSupport() {
   const [newMessage, setNewMessage] = useState('');
   const [activeTab, setActiveTab] = useState('open');
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Form state
@@ -74,6 +75,21 @@ export default function SellerSupport() {
   const [newDiscordUsername, setNewDiscordUsername] = useState('');
   const [newRobloxUsername, setNewRobloxUsername] = useState('');
   const [changeReason, setChangeReason] = useState('');
+
+  // Realtime subscription
+  useEffect(() => {
+    if (!user?.id) return;
+    const channel = supabase
+      .channel('seller-support-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'seller_support_tickets' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['seller-support-tickets'] });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'seller_ticket_messages' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['seller-ticket-messages'] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user?.id, queryClient]);
 
   // Fetch tickets
   const { data: tickets, isLoading } = useQuery({
