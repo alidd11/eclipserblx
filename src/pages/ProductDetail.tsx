@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ShoppingCart, Check, ChevronLeft, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck, Clock, Flag, Share2, Heart, Shield } from 'lucide-react';
 import { StoreTrustSignals } from '@/components/store/StoreTrustSignals';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { PullToRefresh } from '@/components/ui/PullToRefresh';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
