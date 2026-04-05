@@ -378,8 +378,8 @@ export default function SellerSettingsTeam() {
                 </ul>
               </div>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Current Team Members */}
         <Card>
