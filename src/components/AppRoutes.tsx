@@ -28,6 +28,7 @@ const AllStores = lazyWithRetry(() => import("@/pages/AllStores"));
 
 const ProductDetail = lazyWithRetry(() => import("@/pages/ProductDetail"));
 const Cart = lazyWithRetry(() => import("@/pages/Cart"));
+const RecoverOrder = lazyWithRetry(() => import("@/pages/RecoverOrder"));
 const Checkout = lazyWithRetry(() => import("@/pages/Checkout"));
 const OrderSuccess = lazyWithRetry(() => import("@/pages/OrderSuccess"));
 const ChatHistory = lazyWithRetry(() => import("@/pages/ChatHistory"));
