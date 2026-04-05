@@ -472,18 +472,17 @@ export default function GDPRCompliance() {
 
           {/* ─── Tab 4: Tax & HMRC ─── */}
           <TabsContent value="tax" className="space-y-4">
-            {/* Platform Tax Position Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5" />
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-muted-foreground" />
                   Platform Tax Position
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Summary of Eclipse's tax model and HMRC obligations as a UK digital marketplace.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+              </div>
+              <div className="p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Object.entries(PLATFORM_TAX_POSITION).map(([key, value]) => (
                     <div key={key} className="p-3 rounded-lg bg-muted/30 border border-border">
@@ -492,58 +491,55 @@ export default function GDPRCompliance() {
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            {/* Detailed Obligations */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Receipt className="h-5 w-5" />
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Receipt className="h-4 w-4 text-muted-foreground" />
                   HMRC Tax Obligations Checklist
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   All tax obligations for Eclipse as a commission-based digital marketplace operating under UK law.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="min-w-[160px]">Obligation</TableHead>
-                        <TableHead className="min-w-[200px]">Description</TableHead>
-                        <TableHead className="min-w-[100px]">Status</TableHead>
-                        <TableHead className="min-w-[120px]">HMRC Reference</TableHead>
-                        <TableHead className="min-w-[250px]">Notes</TableHead>
+                </p>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[160px]">Obligation</TableHead>
+                      <TableHead className="min-w-[200px]">Description</TableHead>
+                      <TableHead className="min-w-[100px]">Status</TableHead>
+                      <TableHead className="min-w-[120px]">HMRC Reference</TableHead>
+                      <TableHead className="min-w-[250px]">Notes</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {TAX_OBLIGATIONS.map((item, i) => (
+                      <TableRow key={i}>
+                        <TableCell className="font-medium text-sm">{item.obligation}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{item.description}</TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={
+                              item.status === 'Implemented' || item.status === 'Documented' ? 'default' :
+                              item.status === 'Required' ? 'destructive' :
+                              'secondary'
+                            } 
+                            className="text-xs whitespace-nowrap"
+                          >
+                            {item.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm font-mono text-xs">{item.hmrcRef}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{item.notes}</TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {TAX_OBLIGATIONS.map((item, i) => (
-                        <TableRow key={i}>
-                          <TableCell className="font-medium text-sm">{item.obligation}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{item.description}</TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant={
-                                item.status === 'Implemented' || item.status === 'Documented' ? 'default' :
-                                item.status === 'Required' ? 'destructive' :
-                                'secondary'
-                              } 
-                              className="text-xs whitespace-nowrap"
-                            >
-                              {item.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-sm font-mono text-xs">{item.hmrcRef}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{item.notes}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
 
             {/* Key Tax Rules */}
             <Card>
