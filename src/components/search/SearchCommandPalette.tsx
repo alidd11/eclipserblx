@@ -151,7 +151,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
 
     const debounce = setTimeout(fetchProducts, 150);
     return () => clearTimeout(debounce);
-  }, [searchQuery, open, useAI, categoryFilter]);
+  }, [searchQuery, open, categoryFilter]);
 
   const displayProducts = products;
   const displayLoading = isLoading;
