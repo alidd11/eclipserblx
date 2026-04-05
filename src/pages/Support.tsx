@@ -190,8 +190,8 @@ export default function Support() {
                       );
                     })}
                   </ul>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </div>
