@@ -404,7 +404,6 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                         )}
                         style={{ animationDelay: `${idx * 40}ms` }}
                       >
-                        {useAI && <Sparkles className="h-3.5 w-3.5 text-primary/50 shrink-0" />}
                         <ProductRow
                           product={product}
                           formatPrice={formatPrice}
