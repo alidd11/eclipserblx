@@ -1,65 +1,20 @@
 
 
-## Enterprise-Level Sidebar Overhaul
+## Fix Grey Bar at Bottom of Mobile Sidebar
 
-Redesign the customer sidebar to feel like a premium SaaS product (think Linear, Notion, Discord) rather than a simple nav menu.
+The grey strip visible at the bottom of the sidebar drawer is the `SheetContent` container's background (`bg-card`) showing through below the sidebar content. The sidebar itself uses `bg-sidebar` (near-black), but the Sheet wrapper uses `bg-card` (lighter grey) with safe-area bottom padding — creating a visible mismatch.
 
-### Current Issues
-- Group headers feel lightweight (small uppercase labels)
-- Quick stats pills with borders look cluttered
-- No visual hierarchy between primary and secondary actions
-- Missing subtle polish (hover states, micro-animations, spacing rhythm)
-- Sign-out removed but no footer content — sidebar ends abruptly
+### Fix — Single file: `LayoutShell.tsx`
 
-### Design Direction
+**Change the `SheetContent` background** from `bg-card` to `bg-sidebar` so the container matches the sidebar's own background color. This eliminates the color mismatch in the safe-area padding zone.
 
-```text
-┌──────────────────────────┐
-│ ◐ Eclipse            ◀  │  ← Branded header (unchanged)
-├──────────────────────────┤
-│  [Avatar] DisplayName    │
-│           @username      │
-│           £0.00 · + Add  │  ← Tighter profile row
-│                          │
-│  ⚡ Seller Dashboard     │  ← CTA (unchanged)
-├──────────────────────────┤
-│  🏠 Home            ←── │  ← Active: filled bg + left accent
-│  🛡 Admin Dashboard      │
-│                          │
-│  MY ACCOUNT         ───  │  ← Divider line instead of chevron
-│    👤 Profile            │
-│    🔔 Notifications  3   │
-│    🛒 Cart               │
-│                          │
-│  EXPLORE            ───  │
-│    ▦ All Products        │
-│    🏪 All Stores         │
-│    ...                   │
-│                          │
-├──────────────────────────┤
-│  6 orders · 0 wishlist   │  ← Stats moved to footer as subtle text
-│  v2.4 · Status: Online   │
-└──────────────────────────┘
+```
+// Current (line ~89)
+className="p-0 w-[280px] border-r-0 bg-card overflow-hidden ..."
+
+// Updated
+className="p-0 w-[280px] border-r-0 bg-sidebar overflow-hidden ..."
 ```
 
-### Changes — Single file: `CustomerSidebar.tsx`
-
-1. **Remove quick stats pills from profile section** — Move orders/wishlist count to a minimal footer row (text only, no borders/pills)
-
-2. **Replace group chevron toggles with cleaner dividers** — Use a thin `border-t` separator between groups instead of collapsible chevrons. Groups stay always-open (remove Collapsible wrapper). This matches Linear/Notion where sidebar sections are always visible.
-
-3. **Refine nav item hover states** — Add `group` class with subtle left-border reveal on hover (2px primary, opacity transition). Remove the current heavy `border-l-[3px]` active style and replace with a softer `bg-primary/10` fill + `font-semibold` text treatment.
-
-4. **Add a polished footer** — Below the nav, add a slim footer showing: orders count, wishlist count (as plain text links), app version, and a green status dot — all in `text-[11px] text-muted-foreground`.
-
-5. **Tighten spacing** — Reduce nav item vertical padding from `py-2.5` to `py-2`. Reduce group gaps. Overall sidebar feels denser and more professional.
-
-6. **Remove the X close button reference** — Already done, just ensure no remnants.
-
-### What stays the same
-- Profile section layout (avatar + name + balance)
-- Seller Dashboard CTA gradient button
-- Collapsed sidebar behavior
-- All navigation links and routes
-- Mobile drawer behavior
+One word change, one file.
 
