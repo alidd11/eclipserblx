@@ -270,7 +270,7 @@ export default function SearchResults() {
                 'Enter a search query or select a category'
               )}
             </p>
-            <Select value={sortBy || 'relevance'} onValueChange={(v) => { setSortBy(v); setUseAI(false); }}>
+            <Select value={sortBy || 'relevance'} onValueChange={(v) => { setSortBy(v); }}>
               <SelectTrigger className="w-[160px] h-9 text-xs">
                 <SlidersHorizontal className="h-3 w-3 mr-1.5" />
                 <SelectValue />
