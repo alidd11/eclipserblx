@@ -267,26 +267,22 @@ export default function ModerationQueue() {
         <div className="space-y-2">
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
-              <Card key={i}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="h-10 w-10 rounded-lg" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-48" />
-                      <Skeleton className="h-3 w-32" />
-                    </div>
+              <div key={i} className="border border-border rounded-xl p-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-lg" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-3 w-32" />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))
           ) : filteredItems.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center text-muted-foreground">
-                <Package className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                <p className="font-medium">Queue is clear!</p>
-                <p className="text-sm mt-1">No items awaiting moderation.</p>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-xl p-8 text-center text-muted-foreground">
+              <Package className="h-12 w-12 mx-auto mb-3 opacity-30" />
+              <p className="font-medium">Queue is clear!</p>
+              <p className="text-sm mt-1">No items awaiting moderation.</p>
+            </div>
           ) : (
             filteredItems.map(item => {
               const config = typeConfig[item.type];
