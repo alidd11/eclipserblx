@@ -301,8 +301,8 @@ export default function SellerCustomSections() {
     <SellerLayout>
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">Custom Sections</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-display font-bold">Custom Sections</h1>
+          <p className="text-sm text-muted-foreground">
             Add custom content sections to your store page
           </p>
         </div>
