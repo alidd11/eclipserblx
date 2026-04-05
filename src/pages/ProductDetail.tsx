@@ -475,7 +475,7 @@ export default function ProductDetail() {
         />
       )}
       
-        <div className="container py-4 sm:py-8 space-y-6 pb-20 md:pb-8">
+        <div className="container py-4 sm:py-8 space-y-4 pb-20 md:pb-8">
         
         {/* Admin Preview Banner for Scheduled Products */}
         {isStaff && isScheduledProduct && (
