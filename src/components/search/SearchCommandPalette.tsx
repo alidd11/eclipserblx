@@ -224,7 +224,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
               ref={inputRef}
               type="text"
               value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setUseAI(false); }}
+              onChange={(e) => { setSearchQuery(e.target.value); }}
               onKeyDown={(e) => { if (e.key === 'Enter' && hasQuery) handleViewAllResults(); }}
               placeholder="Search assets..."
               autoComplete="off"
