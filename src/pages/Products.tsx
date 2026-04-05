@@ -186,11 +186,10 @@ export default function Products() {
           <div className="flex gap-6">
             <ShopSidebar />
             <div className="flex-1 min-w-0 space-y-4">
-              <div>
+              <div className="space-y-3">
                 <h1 className="text-xl font-display font-bold text-foreground uppercase tracking-wide">
                   {featuredOnly ? t('products.featuredProducts') : activeCategory ? activeCategory.name : t('products.allProducts')}
                 </h1>
-              </div>
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
