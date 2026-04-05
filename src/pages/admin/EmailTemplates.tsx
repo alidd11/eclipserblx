@@ -352,11 +352,8 @@ export default function EmailTemplates() {
     <AdminLayout requiredPermissions={['manage_settings']}>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Mail className="h-6 w-6" />
-            Email Templates
-          </h1>
-          <p className="text-muted-foreground">Preview all email templates with sample data</p>
+          <h1 className="text-2xl font-display font-bold">Email Templates</h1>
+          <p className="text-sm text-muted-foreground">Preview all email templates with sample data</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
