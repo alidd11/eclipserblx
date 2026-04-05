@@ -2,6 +2,7 @@ import { ReactNode, useState, lazy, Suspense } from 'react';
 import { GlobalCategoryBar } from '@/components/shop/GlobalCategoryBar';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Header } from '@/components/layout/Header';
+import { useScrollDirection } from '@/hooks/useScrollDirection';
 // Lazy-load below-fold Footer to reduce initial bundle
 const Footer = lazy(() => import('@/components/layout/Footer').then(m => ({ default: m.Footer })));
 // Lazy-load breadcrumb — non-critical for initial paint
@@ -68,6 +69,8 @@ function LayoutShellInner({
 }: LayoutShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
+  const scrollDir = useScrollDirection(12);
+  const headerHidden = scrollDir === 'down';
 
   useEdgeSwipe({
     onSwipe: () => setMobileOpen(true),
@@ -109,15 +112,18 @@ function LayoutShellInner({
           {customHeader ? (
             customHeader(() => setMobileOpen(true))
           ) : (
-            <>
+            <div
+              className="sticky top-0 z-50 transition-transform duration-300 ease-out"
+              style={{ transform: headerHidden ? 'translateY(-100%)' : 'translateY(0)' }}
+            >
               <Header
                 showDesktopNav={false}
                 onMenuClick={() => setMobileOpen(true)}
-                className=""
+                className="backdrop-blur-md bg-background/95"
                 {...headerProps}
               />
               <GlobalCategoryBar />
-            </>
+            </div>
           )}
           {showBreadcrumb && (
             <Suspense fallback={null}><UniversalBreadcrumb /></Suspense>
