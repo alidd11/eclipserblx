@@ -221,7 +221,7 @@ export default function SupportTicketDetail() {
   const isTicketClosed = ticket.status === 'closed';
 
   return (
-    <MainLayout showFooter={false} showBreadcrumb={false}>
+    <MainLayout showFooter={false}>
       <div className="flex flex-col h-[calc(100dvh-var(--header-height,56px)-var(--tab-bar-height,0px))] min-h-0 overflow-hidden">
         {/* Header - fixed at top */}
         <div className="shrink-0 border-b border-border bg-background px-4 py-3">
