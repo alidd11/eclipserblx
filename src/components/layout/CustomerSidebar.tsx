@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { 
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
-  HelpCircle, ChevronDown, ShoppingCart, 
+  HelpCircle, ShoppingCart, 
   User, LucideIcon, Home, TrendingUp, Store, Bell,
   Sparkles, Heart, LogOut, ChevronLeft, ChevronRight,
   MessageSquareText, Megaphone, FileQuestion, LayoutGrid, Shield,
-  Globe, PenTool, Zap, Wallet, X, Plus, Crown, ShoppingBag
+  Globe, PenTool, Zap, Wallet, Plus, Crown, ShoppingBag
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { categoryIconMap, PackageIcon, BotIcon } from '@/components/icons/CategoryIcons';
@@ -17,7 +17,7 @@ import { EclipseLogo } from '@/components/ui/EclipseLogo';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'; // kept for collapsed tooltip
 import { safeStorage } from '@/lib/safeStorage';
 import { hapticTap } from '@/lib/haptics';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
@@ -299,13 +299,13 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     );
 
     const linkClassName = cn(
-      "text-[13px] font-medium select-none transition-colors duration-100",
+      "text-[13px] font-medium select-none transition-all duration-100",
       isCollapsed
         ? "flex w-full max-w-full items-center justify-center py-2 rounded-lg overflow-hidden"
-        : "flex w-full max-w-full min-w-0 flex-row flex-nowrap items-center gap-3 px-3 py-2.5 ml-2 rounded-lg overflow-hidden active:scale-[0.98] active:opacity-80",
+        : "flex w-full max-w-full min-w-0 flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-2 rounded-lg overflow-hidden active:scale-[0.98] active:opacity-80 border-l-2 border-transparent",
       isActive
-        ? "border-l-[3px] border-primary bg-primary/10 text-foreground !rounded-l-none pl-[calc(0.75rem-3px)]"
-        : "text-foreground/70 hover:text-foreground hover:bg-muted/50"
+        ? "bg-primary/10 text-foreground font-semibold !border-l-2 !border-primary"
+        : "text-foreground/70 hover:text-foreground hover:bg-muted/50 hover:border-primary/40"
     );
 
     if (item.external) {
@@ -421,28 +421,18 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       );
     }
 
-    // Expanded: collapsible group (flat — no nested collapsibles)
+    // Expanded: always-open group with divider label
     return (
-      <Collapsible key={group.id} open={isOpen} onOpenChange={() => toggleGroup(group.id)} className="mb-1.5">
-        <CollapsibleTrigger asChild>
-          <button
-            className={cn(
-              "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[11px] font-semibold select-none uppercase tracking-wider",
-              "transition-colors duration-100 focus:outline-none focus-visible:outline-none active:scale-[0.98]",
-              hasActiveItem ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <span className="flex-1 text-left truncate">{group.title}</span>
-            <ChevronDown className={cn(
-              ICON_SIZE_SMALL, "shrink-0 transition-transform duration-200",
-              isOpen ? "rotate-0" : "-rotate-90"
-            )} />
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="space-y-0.5 pt-0.5">
+      <div key={group.id} className="mb-1">
+        <div className="border-t border-border/30 mt-1 pt-2 mb-1">
+          <span className="px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            {group.title}
+          </span>
+        </div>
+        <div className="space-y-0.5 pt-0.5">
           {group.items.map(renderNavItem)}
-        </CollapsibleContent>
-      </Collapsible>
+        </div>
+      </div>
     );
   };
 
@@ -535,26 +525,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             </div>
           </div>
 
-          {/* Quick Stats Pills */}
-          <div className="flex items-center gap-2">
-            <Link
-              to="/orders"
-              onClick={handleNavClick}
-              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-full px-3 py-1.5 border border-border/60 hover:border-border hover:bg-muted/40 active:scale-[0.97]"
-            >
-              <ShoppingBag className="h-3.5 w-3.5" />
-              <span className="text-xs font-semibold">{quickStats?.orders ?? 0}</span>
-            </Link>
-            <Link
-              to="/wishlist"
-              onClick={handleNavClick}
-              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-full px-3 py-1.5 border border-border/60 hover:border-border hover:bg-muted/40 active:scale-[0.97]"
-            >
-              <Heart className="h-3.5 w-3.5" />
-              <span className="text-xs font-semibold">{quickStats?.wishlist ?? 0}</span>
-            </Link>
-          </div>
-
           {/* CTA Button */}
           {isSeller ? (
             <a
@@ -593,12 +563,35 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
 
       {/* Navigation */}
       <nav className="flex-1 px-2 py-2 overflow-y-auto overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {navGroups.map(group => (
             <div key={group.id}>{renderGroup(group)}</div>
           ))}
         </div>
       </nav>
+
+      {/* Enterprise Footer */}
+      {!isCollapsed && (
+        <div className="border-t border-border/40 px-4 py-3 space-y-1 shrink-0">
+          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+            <Link to="/orders" onClick={handleNavClick} className="hover:text-foreground transition-colors">
+              {quickStats?.orders ?? 0} orders
+            </Link>
+            <span className="text-border">·</span>
+            <Link to="/wishlist" onClick={handleNavClick} className="hover:text-foreground transition-colors">
+              {quickStats?.wishlist ?? 0} wishlist
+            </Link>
+          </div>
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground/60">
+            <span>v2.4</span>
+            <span className="text-border">·</span>
+            <span className="flex items-center gap-1">
+              <span className={cn("h-1.5 w-1.5 rounded-full", statusConfig[systemStatus].bg)} />
+              {systemStatus === 'online' ? 'Online' : systemStatus}
+            </span>
+          </div>
+        </div>
+      )}
 
     </aside>
   );
