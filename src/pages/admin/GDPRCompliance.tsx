@@ -435,41 +435,39 @@ export default function GDPRCompliance() {
 
           {/* ─── Tab 3: Retention Schedule ─── */}
           <TabsContent value="retention" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
                   Data Retention Schedule
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   GDPR principle of storage limitation (Art. 5(1)(e)). Data must not be kept longer than necessary.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Data Type</TableHead>
-                      <TableHead>Retention Period</TableHead>
-                      <TableHead>Deletion Method</TableHead>
-                      <TableHead>Legal Basis</TableHead>
+                </p>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data Type</TableHead>
+                    <TableHead>Retention Period</TableHead>
+                    <TableHead>Deletion Method</TableHead>
+                    <TableHead>Legal Basis</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {RETENTION_SCHEDULE.map((item, i) => (
+                    <TableRow key={i}>
+                      <TableCell className="font-medium text-sm">{item.dataType}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="text-xs">{item.retention}</Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{item.method}</TableCell>
+                      <TableCell className="text-sm">{item.legal}</TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {RETENTION_SCHEDULE.map((item, i) => (
-                      <TableRow key={i}>
-                        <TableCell className="font-medium text-sm">{item.dataType}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="text-xs">{item.retention}</Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{item.method}</TableCell>
-                        <TableCell className="text-sm">{item.legal}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </TabsContent>
 
           {/* ─── Tab 4: Tax & HMRC ─── */}
