@@ -105,6 +105,7 @@ export default function SellerProductEditor() {
   const assetInputRef = useRef<HTMLInputElement>(null);
   
   const { user, loading: authLoading } = useAuth();
+  const { isPro } = useSellerSubscription();
   const { hasAccess, loading: flagLoading } = useMarketplaceAccess();
   const { store, isSeller, loading: sellerLoading } = useSellerStatus();
 
