@@ -46,7 +46,6 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
   const [isClosing, setIsClosing] = useState(false);
   const { searches: recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
 
-  // Auto-focus input on open
   useEffect(() => {
     if (open) {
       setIsClosing(false);
@@ -55,12 +54,10 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
     } else {
       setSearchQuery('');
       setStoreResults([]);
-      setStoreResults([]);
       setCategoryFilter(null);
     }
   }, [open]);
 
-  // Escape key
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
@@ -70,7 +67,6 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
     return () => document.removeEventListener('keydown', handler);
   }, [open]);
 
-  // Lock body scroll
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
@@ -80,7 +76,6 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
-  // Fetch trending
   useEffect(() => {
     if (!open || trendingProducts.length > 0) return;
     const fetchTrending = async () => {
@@ -98,7 +93,6 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
     fetchTrending();
   }, [open, trendingProducts.length]);
 
-  // Search using search_products_v2 RPC for full-text + trigram + description matching
   useEffect(() => {
     if (!open) return;
     const fetchProducts = async () => {
@@ -194,8 +188,6 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
 
   if (!open) return null;
 
-  const totalResults = displayProducts.length + storeResults.length;
-
   return (
     <div
       className={cn(
@@ -207,24 +199,24 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
       )}
       style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      {/* ── Header ── */}
-      <header className="shrink-0 px-3 pt-2 pb-3 bg-background">
-        <div className="flex items-center gap-2.5">
+      {/* ── Search bar ── */}
+      <header className="shrink-0 px-3 pt-2 pb-2">
+        <div className="flex items-center gap-2">
           <button
             onClick={handleClose}
-            className="shrink-0 h-10 w-10 flex items-center justify-center rounded-xl hover:bg-muted active:scale-[0.97] transition-all touch-manipulation"
+            className="shrink-0 h-10 w-10 flex items-center justify-center rounded-lg hover:bg-muted/60 active:scale-[0.97] transition-all touch-manipulation"
             aria-label="Close search"
           >
-            <ArrowLeft className="h-5 w-5 text-foreground" />
+            <ArrowLeft className="h-5 w-5 text-muted-foreground" />
           </button>
 
           <div className="flex-1 relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 pointer-events-none" />
             <input
               ref={inputRef}
               type="text"
               value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); }}
+              onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && hasQuery) handleViewAllResults(); }}
               placeholder="Search assets..."
               autoComplete="off"
@@ -233,9 +225,9 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
               spellCheck={false}
               enterKeyHint="search"
               className={cn(
-                "w-full h-11 pl-10 pr-10 rounded-xl text-sm text-foreground",
-                "bg-muted/50 placeholder:text-muted-foreground/50",
-                "outline-none ring-1 ring-border/40 focus:ring-2 focus:ring-primary/40",
+                "w-full h-11 pl-10 pr-10 rounded-lg text-sm text-foreground",
+                "bg-muted/40 placeholder:text-muted-foreground/40",
+                "outline-none ring-1 ring-primary/50 focus:ring-2 focus:ring-primary/60",
                 "transition-all duration-150"
               )}
               style={{ WebkitUserSelect: 'text' }}
@@ -243,240 +235,193 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
             {searchQuery && (
               <button
                 onClick={() => { setSearchQuery(''); inputRef.current?.focus(); }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full bg-muted hover:bg-muted-foreground/20 transition-colors active:scale-[0.95]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full bg-muted/80 hover:bg-muted transition-colors active:scale-[0.95]"
               >
-                <X className="h-3.5 w-3.5 text-muted-foreground" />
+                <X className="h-3 w-3 text-muted-foreground" />
               </button>
             )}
           </div>
-
         </div>
-
-        {/* Result count bar */}
-        {hasQuery && !displayLoading && totalResults > 0 && (
-          <div className="mt-2.5 flex items-center justify-between px-1">
-            <span className="text-[11px] text-muted-foreground/60">
-              {totalResults} result{totalResults !== 1 ? 's' : ''}
-            </span>
-            {categoryFilter && (
-              <button
-                onClick={() => setCategoryFilter(null)}
-                className="text-[11px] font-medium text-primary flex items-center gap-1"
-              >
-                <X className="h-3 w-3" /> Clear filter
-              </button>
-            )}
-          </div>
-        )}
       </header>
-
-      {/* Divider */}
-      <div className="h-px bg-border/40" />
 
       {/* ── Scrollable content ── */}
       <div className="flex-1 overflow-y-auto overscroll-contain">
         <div className="max-w-2xl mx-auto w-full">
 
-          {/* ── Idle state: recent + categories + trending ── */}
+          {/* ── Idle state ── */}
           {!hasQuery && (
-            <div className="divide-y divide-border/30">
+            <>
+              {/* Categories */}
+              <section className="px-4 pt-2 pb-3">
+                <SectionLabel className="mb-2.5">CATEGORIES</SectionLabel>
+                <SearchCategoryChips selected={categoryFilter} onSelect={setCategoryFilter} />
+              </section>
+
+              <div className="h-px bg-border/20 mx-4" />
+
               {/* Recent searches */}
               {recentSearches.length > 0 && (
-                <section className="px-4 py-3.5">
-                  <div className="flex items-center justify-between mb-3">
-                    <SectionLabel>Recent</SectionLabel>
-                    <button
-                      onClick={() => { hapticTap(); clearAll(); }}
-                      className="text-[11px] font-medium text-muted-foreground/60 hover:text-foreground transition-colors active:scale-[0.97]"
-                    >
-                      Clear all
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-1 px-1">
+                <>
+                  <section className="px-4 pt-3 pb-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <SectionLabel>RECENT</SectionLabel>
+                      <button
+                        onClick={() => { hapticTap(); clearAll(); }}
+                        className="text-[11px] font-medium text-muted-foreground/50 hover:text-foreground transition-colors active:scale-[0.97]"
+                      >
+                        Clear all
+                      </button>
+                    </div>
                     {recentSearches.map((query) => (
                       <button
                         key={query}
                         onClick={() => handleRecentSearchClick(query)}
-                        className="shrink-0 flex items-center gap-2 pl-2.5 pr-1.5 py-1.5 rounded-lg bg-muted/60 hover:bg-muted text-xs text-muted-foreground hover:text-foreground transition-all active:scale-[0.97] touch-manipulation group"
+                        className="w-full flex items-center gap-3 py-2.5 text-left hover:bg-muted/30 active:bg-muted/50 transition-colors rounded-lg px-1 -mx-1 group"
                       >
-                        <Clock className="h-3 w-3 text-muted-foreground/40 shrink-0" />
-                        <span className="font-medium">{query}</span>
+                        <Clock className="h-4 w-4 text-muted-foreground/30 shrink-0" />
+                        <span className="flex-1 text-sm text-muted-foreground">{query}</span>
                         <button
                           onClick={(e) => { e.stopPropagation(); hapticTap(); removeSearch(query); }}
-                          className="opacity-0 group-hover:opacity-100 h-5 w-5 flex items-center justify-center rounded-md hover:bg-background/60 transition-all"
+                          className="opacity-0 group-hover:opacity-100 sm:opacity-100 h-6 w-6 flex items-center justify-center rounded-md hover:bg-muted/60 transition-all shrink-0"
                         >
-                          <X className="h-2.5 w-2.5" />
+                          <X className="h-3 w-3 text-muted-foreground/40" />
                         </button>
                       </button>
                     ))}
-                  </div>
-                </section>
+                  </section>
+                  <div className="h-px bg-border/20 mx-4" />
+                </>
               )}
-
-              {/* Categories */}
-              <section className="px-4 py-3.5">
-                <SectionLabel className="mb-3">Categories</SectionLabel>
-                <SearchCategoryChips selected={categoryFilter} onSelect={setCategoryFilter} />
-              </section>
 
               {/* Trending */}
               {trendingProducts.length > 0 && (
-                <section className="px-4 py-3.5">
-                  <SectionLabel className="mb-1">Trending</SectionLabel>
-                  <div className="divide-y divide-border/20">
-                    {trendingProducts.map((product, idx) => (
-                      <button
-                        key={product.id}
-                        onClick={() => handleSelect(`/products/${(product as any).product_number}`)}
-                        className={cn(
-                          "w-full flex items-center gap-3.5 py-3 text-left",
-                          "hover:bg-muted/40 active:bg-muted/60 transition-colors active:scale-[0.99] touch-manipulation",
-                          "rounded-lg -mx-1 px-1"
-                        )}
-                        style={{ animationDelay: `${idx * 30}ms` }}
-                      >
-                        <TrendingUp className="h-3.5 w-3.5 text-primary/40 shrink-0" />
-                        <ProductRow product={product} formatPrice={formatPrice} />
-                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
-                      </button>
-                    ))}
-                  </div>
+                <section className="px-4 pt-3 pb-2">
+                  <SectionLabel className="mb-1">TRENDING</SectionLabel>
+                  {trendingProducts.map((product) => (
+                    <button
+                      key={product.id}
+                      onClick={() => handleSelect(`/products/${(product as any).product_number}`)}
+                      className="w-full flex items-center gap-3 py-2.5 text-left hover:bg-muted/30 active:bg-muted/50 transition-colors rounded-lg px-1 -mx-1 active:scale-[0.99] touch-manipulation"
+                    >
+                      <TrendingUp className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
+                      <ProductRow product={product} formatPrice={formatPrice} />
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/20 shrink-0" />
+                    </button>
+                  ))}
                 </section>
               )}
-            </div>
+            </>
           )}
 
-          {/* ── Active search state ── */}
+          {/* ── Active search ── */}
           {hasQuery && (
-            <div>
-              {/* Category filter chips while searching */}
-              <div className="px-4 py-2.5">
+            <>
+              {/* Category filter */}
+              <div className="px-4 py-2">
                 <SearchCategoryChips selected={categoryFilter} onSelect={setCategoryFilter} />
               </div>
-
-              <div className="h-px bg-border/30" />
 
               {/* Loading */}
               {displayLoading && (
                 <div className="flex items-center justify-center gap-2.5 py-16">
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                  <span className="text-xs text-muted-foreground font-medium">
-                    Searching...
-                  </span>
+                  <span className="text-xs text-muted-foreground font-medium">Searching...</span>
                 </div>
               )}
 
               {/* No results */}
               {!displayLoading && displayProducts.length === 0 && storeResults.length === 0 && (
                 <div className="py-16 text-center px-4">
-                  <div className="h-14 w-14 rounded-2xl bg-muted/40 flex items-center justify-center mx-auto mb-4">
-                    <Search className="h-6 w-6 text-muted-foreground/30" />
+                  <div className="h-14 w-14 rounded-2xl bg-muted/30 flex items-center justify-center mx-auto mb-4">
+                    <Search className="h-6 w-6 text-muted-foreground/20" />
                   </div>
                   <p className="text-sm font-medium text-foreground">No results found</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1.5">Try different keywords or browse categories</p>
+                  <p className="text-xs text-muted-foreground/50 mt-1.5">Try different keywords or browse categories</p>
                 </div>
               )}
 
-              {/* Product results */}
+              {/* Products */}
               {!displayLoading && displayProducts.length > 0 && (
-                <section className="px-4 py-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <SectionLabel>
-                      Products
-                    </SectionLabel>
-                    <span className="text-[10px] text-muted-foreground/40 tabular-nums font-medium">
-                      {displayProducts.length}
-                    </span>
-                  </div>
-                  <div className="divide-y divide-border/20">
-                    {displayProducts.map((product, idx) => (
-                      <button
-                        key={product.id}
-                        onClick={() => {
-                          addSearch(searchQuery);
-                          handleSelect(`/products/${(product as any).product_number}`);
-                        }}
-                        className={cn(
-                          "w-full flex items-center gap-3.5 py-3 text-left",
-                          "hover:bg-muted/40 active:bg-muted/60 transition-colors active:scale-[0.99] touch-manipulation",
-                          "rounded-lg -mx-1 px-1",
-                          "animate-in fade-in slide-in-from-bottom-1 duration-200"
-                        )}
-                        style={{ animationDelay: `${idx * 40}ms` }}
-                      >
-                        <ProductRow
-                          product={product}
-                          formatPrice={formatPrice}
-                          highlightMatch={(text: string) => highlightMatch(text, searchQuery)}
-                        />
-                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
-                      </button>
-                    ))}
-                  </div>
+                <section className="px-4 pt-1 pb-1">
+                  {displayProducts.map((product, idx) => (
+                    <button
+                      key={product.id}
+                      onClick={() => {
+                        addSearch(searchQuery);
+                        handleSelect(`/products/${(product as any).product_number}`);
+                      }}
+                      className={cn(
+                        "w-full flex items-center gap-3 py-3 text-left",
+                        "hover:bg-muted/30 active:bg-muted/50 transition-colors active:scale-[0.99] touch-manipulation",
+                        "rounded-lg px-1 -mx-1",
+                        "animate-in fade-in slide-in-from-bottom-1 duration-150",
+                        idx > 0 && "border-t border-border/10"
+                      )}
+                      style={{ animationDelay: `${idx * 30}ms` }}
+                    >
+                      <ProductRow
+                        product={product}
+                        formatPrice={formatPrice}
+                        highlightMatch={(text: string) => highlightMatch(text, searchQuery)}
+                      />
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/20 shrink-0" />
+                    </button>
+                  ))}
                 </section>
               )}
 
-              {/* Store results */}
+              {/* Stores */}
               {!displayLoading && storeResults.length > 0 && (
-                <>
-                  <div className="h-px bg-border/30" />
-                  <section className="px-4 py-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <SectionLabel>Stores</SectionLabel>
-                      <span className="text-[10px] text-muted-foreground/40 tabular-nums font-medium">{storeResults.length}</span>
-                    </div>
-                    <div className="divide-y divide-border/20">
-                      {storeResults.map((store, idx) => (
-                        <button
-                          key={store.id}
-                          onClick={() => handleSelect(`/store/${store.slug}`)}
-                          className={cn(
-                            "w-full flex items-center gap-3.5 py-3 text-left",
-                            "hover:bg-muted/40 active:bg-muted/60 transition-colors active:scale-[0.99] touch-manipulation",
-                            "rounded-lg -mx-1 px-1",
-                            "animate-in fade-in slide-in-from-bottom-1 duration-200"
-                          )}
-                          style={{ animationDelay: `${idx * 40}ms` }}
-                        >
-                          {store.logo_url ? (
-                            <img src={store.logo_url} alt="" className="h-10 w-10 rounded-xl object-cover bg-muted shrink-0" loading="lazy" />
-                          ) : (
-                            <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                              <Store className="h-4 w-4 text-muted-foreground/30" />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <span className="text-sm font-medium truncate block">
-                              {highlightMatch(store.name, searchQuery)}
-                            </span>
-                          </div>
-                          {store.is_verified && (
-                            <span className="text-[10px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full shrink-0">Verified</span>
-                          )}
-                          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
-                        </button>
-                      ))}
-                    </div>
-                  </section>
-                </>
+                <section className="px-4 pt-2 pb-1">
+                  <div className="h-px bg-border/20 -mx-1 mb-2" />
+                  <SectionLabel className="mb-1">STORES</SectionLabel>
+                  {storeResults.map((store, idx) => (
+                    <button
+                      key={store.id}
+                      onClick={() => handleSelect(`/store/${store.slug}`)}
+                      className={cn(
+                        "w-full flex items-center gap-3 py-3 text-left",
+                        "hover:bg-muted/30 active:bg-muted/50 transition-colors active:scale-[0.99] touch-manipulation",
+                        "rounded-lg px-1 -mx-1",
+                        "animate-in fade-in slide-in-from-bottom-1 duration-150",
+                        idx > 0 && "border-t border-border/10"
+                      )}
+                      style={{ animationDelay: `${idx * 30}ms` }}
+                    >
+                      {store.logo_url ? (
+                        <img src={store.logo_url} alt="" className="h-10 w-10 rounded-lg object-cover bg-muted shrink-0" loading="lazy" />
+                      ) : (
+                        <div className="h-10 w-10 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
+                          <Store className="h-4 w-4 text-muted-foreground/30" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm font-medium truncate block">
+                          {highlightMatch(store.name, searchQuery)}
+                        </span>
+                      </div>
+                      {store.is_verified && (
+                        <span className="text-[10px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full shrink-0">Verified</span>
+                      )}
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/20 shrink-0" />
+                    </button>
+                  ))}
+                </section>
               )}
 
-              {/* View all CTA */}
+              {/* View all */}
               {!displayLoading && (displayProducts.length > 0 || storeResults.length > 0) && (
-                <>
-                  <div className="h-px bg-border/30" />
-                  <div className="px-4 py-3">
-                    <button
-                      onClick={handleViewAllResults}
-                      className="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-primary/5 hover:bg-primary/10 text-sm font-medium text-primary transition-all active:scale-[0.99] touch-manipulation"
-                    >
-                      <span>View all results</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                </>
+                <div className="px-4 py-3">
+                  <button
+                    onClick={handleViewAllResults}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-primary/10 hover:bg-primary/15 text-sm font-medium text-primary transition-all active:scale-[0.99] touch-manipulation"
+                  >
+                    <span>View all results</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                </div>
               )}
-            </div>
+            </>
           )}
         </div>
       </div>
@@ -488,7 +433,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
 function SectionLabel({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <h3 className={cn(
-      "text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/50",
+      "text-[11px] font-semibold tracking-wider text-muted-foreground/40",
       className
     )}>
       {children}
@@ -509,20 +454,20 @@ function ProductRow({ product, formatPrice, highlightMatch }: {
         <img
           src={img}
           alt=""
-          className="h-11 w-11 rounded-xl object-cover bg-muted shrink-0"
+          className="h-12 w-12 rounded-lg object-cover bg-muted shrink-0"
           loading="lazy"
         />
       ) : (
-        <div className="h-11 w-11 rounded-xl bg-muted flex items-center justify-center shrink-0">
-          <Package className="h-4.5 w-4.5 text-muted-foreground/30" />
+        <div className="h-12 w-12 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
+          <Package className="h-5 w-5 text-muted-foreground/20" />
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <span className="text-sm font-medium truncate block">
+        <span className="text-sm font-medium truncate block leading-tight">
           {highlightMatch ? highlightMatch(product.name) : product.name}
         </span>
       </div>
-      <span className="text-xs font-semibold text-foreground/70 tabular-nums shrink-0">
+      <span className="text-sm font-semibold text-foreground/80 tabular-nums shrink-0">
         {formatPrice(product.price)}
       </span>
     </>
