@@ -99,8 +99,8 @@ export default function Support() {
         {/* Quick Links */}
         <div className="grid md:grid-cols-3 gap-4 mb-12">
           {quickLinks.map((link, index) => (
-            <Card key={index} className="bg-card border-border hover:border-primary/50 transition-colors">
-              <CardContent className="p-6">
+            <div key={index} className="border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors">
+              <div className="p-6">
                 {link.action === 'chat' ? (
                   <button
                     onClick={() => {
