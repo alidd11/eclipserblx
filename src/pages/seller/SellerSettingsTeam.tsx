@@ -382,17 +382,12 @@ export default function SellerSettingsTeam() {
         </div>
 
         {/* Current Team Members */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Current Team ({teamMembers.length})
-            </CardTitle>
-            <CardDescription>
-              People who have access to your store
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm">Current Team ({teamMembers.length})</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">People who have access to your store</p>
+          </div>
+          <div className="p-4">
             {isLoading ? (
               <div className="text-center py-8 text-muted-foreground">
                 Loading team members...
