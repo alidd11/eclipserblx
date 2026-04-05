@@ -268,17 +268,12 @@ export default function SellerSettingsProfile() {
           </div>
 
           {/* Branding */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ImageIcon className="h-5 w-5" />
-                Branding
-              </CardTitle>
-              <CardDescription>
-                Upload your store's logo and banner images
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Branding</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Upload your store's logo and banner images</p>
+            </div>
+            <div className="p-4 space-y-6">
               {user && (
                 <>
                   <BrandingImageUpload
