@@ -4,7 +4,7 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+// Card imports removed — using enterprise flat sections
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -196,7 +196,7 @@ export default function SellerSettingsNotifications() {
     <SellerLayout>
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">Discord Settings</h1>
+          <h1 className="text-2xl font-display font-bold">Discord Settings</h1>
           <p className="text-muted-foreground">
             Configure Discord notifications and role integration for your store
           </p>
@@ -204,17 +204,12 @@ export default function SellerSettingsNotifications() {
 
         <div className="space-y-6">
           {/* Discord Server Link */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageCircle className="h-5 w-5 text-[#5865F2]" />
-                Discord Server
-              </CardTitle>
-              <CardDescription>
-                Link your Discord server so customers can join your community
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Discord Server</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Link your Discord server so customers can join your community</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="discord_url" className="flex items-center gap-2">
                   Discord Invite Link
@@ -241,21 +236,16 @@ export default function SellerSettingsNotifications() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Order Notifications */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5 text-green-500" />
-                Order Notifications
-              </CardTitle>
-              <CardDescription>
-                Receive notifications when someone purchases from your store
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Order Notifications</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Receive notifications when someone purchases from your store</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="discord_webhook_url" className="flex items-center gap-2">
                   <MessageCircle className="h-4 w-4" />
@@ -296,21 +286,16 @@ export default function SellerSettingsNotifications() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Review Notifications */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-amber-500" />
-                Review Notifications
-              </CardTitle>
-              <CardDescription>
-                Receive notifications when customers leave reviews on your products
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Review Notifications</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Receive notifications when customers leave reviews</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="review_discord_webhook_url" className="flex items-center gap-2">
                   <MessageCircle className="h-4 w-4" />
@@ -351,21 +336,16 @@ export default function SellerSettingsNotifications() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Discord Role Integration */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-[#5865F2]" />
-                Discord Role Integration
-              </CardTitle>
-              <CardDescription>
-                Automatically assign roles to customers who purchase from your store via the Eclipse Portal Bot
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Discord Role Integration</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Automatically assign roles to customers who purchase via the Eclipse Portal Bot</p>
+            </div>
+            <div className="p-4 space-y-4">
               {store?.credentials?.discord_guild_id ? (
                 <div className="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                   <CheckCircle className="h-5 w-5 text-green-500" />
@@ -412,35 +392,27 @@ export default function SellerSettingsNotifications() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Additional Role Configurations */}
           {store?.id && store?.credentials?.discord_guild_id && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-[#5865F2]" />
-                  Additional Discord Roles
-                </CardTitle>
-                <CardDescription>
-                  Create additional roles to assign based on order count, spend amount, or subscription status
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm">Additional Discord Roles</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Create roles based on order count, spend amount, or subscription status</p>
+              </div>
+              <div className="p-4">
                 <DiscordRoleManager storeId={store.id} />
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
           {/* How to Create Webhook */}
-          <Card className="border-muted">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Bell className="h-5 w-5" />
-                How to Create a Discord Webhook
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="border border-border rounded-xl overflow-hidden border-muted">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">How to Create a Discord Webhook</h3>
+            </div>
+            <div className="p-4">
               <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
                 <li>Open your Discord server settings</li>
                 <li>Go to <strong>Integrations</strong> → <strong>Webhooks</strong></li>
@@ -457,8 +429,8 @@ export default function SellerSettingsNotifications() {
                 Learn more about Discord webhooks
                 <ExternalLink className="h-3 w-3 ml-1" />
               </a>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Save Button */}
           <Button 

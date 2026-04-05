@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -311,24 +310,19 @@ export default function SellerSettingsTeam() {
     <SellerLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Team Members</h1>
+          <h1 className="text-2xl font-display font-bold">Team Members</h1>
           <p className="text-muted-foreground">
             Invite and manage team members who can help run your store
           </p>
         </div>
 
         {/* Invite Team Member */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5" />
-              Invite Team Member
-            </CardTitle>
-            <CardDescription>
-              Send an invitation to add someone to your store team
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm">Invite Team Member</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Send an invitation to add someone to your store team</p>
+          </div>
+          <div className="p-4">
             <form onSubmit={handleSendInvite} className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-[1fr,auto,auto]">
                 <div className="space-y-2">
@@ -384,21 +378,16 @@ export default function SellerSettingsTeam() {
                 </ul>
               </div>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Current Team Members */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Current Team ({teamMembers.length})
-            </CardTitle>
-            <CardDescription>
-              People who have access to your store
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm">Current Team ({teamMembers.length})</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">People who have access to your store</p>
+          </div>
+          <div className="p-4">
             {isLoading ? (
               <div className="text-center py-8 text-muted-foreground">
                 Loading team members...
@@ -467,22 +456,17 @@ export default function SellerSettingsTeam() {
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Pending Invites */}
         {pendingInvites.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Mail className="h-5 w-5" />
-                Pending Invitations ({pendingInvites.length})
-              </CardTitle>
-              <CardDescription>
-                Invitations that haven't been accepted yet
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Pending Invitations ({pendingInvites.length})</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Invitations that haven't been accepted yet</p>
+            </div>
+            <div className="p-4">
               <div className="space-y-3">
                 {pendingInvites.map((invite) => (
                   <div
@@ -516,14 +500,14 @@ export default function SellerSettingsTeam() {
                     </div>
                   </div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+        </div>
         )}
 
         {/* Info Card */}
-        <Card className="border-primary/20 bg-primary/5">
-          <CardContent className="pt-6">
+        <div className="border border-primary/20 bg-primary/5 rounded-xl">
+          <div className="p-4">
             <div className="flex gap-3">
               <AlertCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
               <div className="space-y-1">
@@ -535,8 +519,8 @@ export default function SellerSettingsTeam() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Remove Member Dialog */}

@@ -258,8 +258,8 @@ export default function StaffDirectory() {
             {staffLoading ? (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {[1, 2, 3, 4, 5, 6].map(i => (
-                  <Card key={i} className="animate-pulse">
-                    <CardContent className="p-4">
+                  <div key={i} className="animate-pulse border border-border rounded-xl">
+                    <div className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="h-12 w-12 rounded-full bg-muted" />
                         <div className="space-y-2 flex-1">
@@ -267,24 +267,24 @@ export default function StaffDirectory() {
                           <div className="h-3 bg-muted rounded w-1/2" />
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : filteredStaff.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center">
+              <div className="border border-border rounded-xl">
+                <div className="p-8 text-center">
                   <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">
                     {searchQuery ? 'No staff members match your search' : 'No staff members found'}
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredStaff.map(member => (
-                  <Card key={member.user_id} className="hover:border-primary/50 transition-colors">
-                    <CardContent className="p-4">
+                  <div key={member.user_id} className="border border-border rounded-xl hover:border-primary/50 transition-colors">
+                    <div className="p-4">
                       <Link to={`/admin/staff/${member.user_id}`}>
                         <div className="flex items-start gap-3">
                           <Avatar className="h-12 w-12">
@@ -343,22 +343,19 @@ export default function StaffDirectory() {
                           </Link>
                         </div>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
           </TabsContent>
 
           <TabsContent value="logs" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Staff ID Assignment History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm">Staff ID Assignment History</h3>
+              </div>
+              <div className="p-4">
                 {logsLoading ? (
                   <div className="space-y-3">
                     {[1, 2, 3].map(i => (
@@ -397,8 +394,8 @@ export default function StaffDirectory() {
                     ))}
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

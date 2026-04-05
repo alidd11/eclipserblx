@@ -5,7 +5,7 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+// Card imports removed — using enterprise flat sections
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -263,7 +263,7 @@ export default function SellerSettingsPayments() {
     <SellerLayout>
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">Payments & Earnings</h1>
+          <h1 className="text-2xl font-display font-bold">Payments & Earnings</h1>
           <p className="text-muted-foreground">
             Manage your payment setup and view earnings
           </p>
@@ -271,17 +271,12 @@ export default function SellerSettingsPayments() {
 
         <div className="space-y-6">
           {/* Direct Payouts */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Direct Payouts
-              </CardTitle>
-              <CardDescription>
-                Connect your account to receive automatic payouts directly to your bank
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Direct Payouts</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Connect your account to receive automatic payouts directly to your bank</p>
+            </div>
+            <div className="p-4">
               {connectStatusLoading ? (
                 <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
                   <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -340,21 +335,16 @@ export default function SellerSettingsPayments() {
                   </Button>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Alternative Payout Method */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Wallet className="h-5 w-5" />
-                Payout Method
-              </CardTitle>
-              <CardDescription>
-                Choose how you'd like to receive your earnings
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Payout Method</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Choose how you'd like to receive your earnings</p>
+            </div>
+            <div className="p-4 space-y-4">
               <RadioGroup
                 value={payoutMethod}
                 onValueChange={(value) => setPayoutMethod(value as 'stripe' | 'paypal' | 'bank_transfer')}
@@ -529,24 +519,19 @@ export default function SellerSettingsPayments() {
                   )}
                 </p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Earnings Calculator */}
           <EarningsCalculator commissionRate={store?.commission_rate || 15} />
 
           {/* Store Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Store Statistics
-              </CardTitle>
-              <CardDescription>
-                Your store's performance overview
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Store Statistics</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Your store's performance overview</p>
+            </div>
+            <div className="p-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <p className="text-sm text-muted-foreground">Total Sales</p>
@@ -582,8 +567,8 @@ export default function SellerSettingsPayments() {
                   {store?.created_at ? new Date(store.created_at).toLocaleDateString() : 'N/A'}
                 </span>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </SellerLayout>

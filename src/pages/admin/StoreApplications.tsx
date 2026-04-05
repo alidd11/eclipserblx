@@ -377,31 +377,16 @@ export default function StoreApplications() {
           <p className="text-muted-foreground">Review and manage seller applications</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 md:gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Pending</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-yellow-500">{pendingApps.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Approved</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-green-500">{approvedApps.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Rejected</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-red-500">{rejectedApps.length}</p>
-            </CardContent>
-          </Card>
+        <div className="flex items-center gap-4 text-sm flex-wrap">
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-yellow-500">{pendingApps.length}</span> pending
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-green-500">{approvedApps.length}</span> approved
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-destructive">{rejectedApps.length}</span> rejected
+          </span>
         </div>
 
         <Tabs value={storeAppTab} onValueChange={setStoreAppTab}>

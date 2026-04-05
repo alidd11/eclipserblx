@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { AdminStatCard } from "@/components/admin/AdminStatCard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// AdminStatCard removed — using inline stats
+// Card imports removed — using enterprise flat sections
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

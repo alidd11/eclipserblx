@@ -4,7 +4,7 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+// Card imports removed — using enterprise flat sections
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -123,7 +123,7 @@ export default function SellerSettingsRoblox() {
     <SellerLayout>
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">Roblox Settings</h1>
+          <h1 className="text-2xl font-display font-bold">Roblox Settings</h1>
           <p className="text-muted-foreground">
             Configure Roblox integrations and customer rewards for your store
           </p>
@@ -131,17 +131,12 @@ export default function SellerSettingsRoblox() {
 
         <div className="space-y-6">
           {/* Roblox Game/Group Link */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Gamepad2 className="h-5 w-5 text-red-500" />
-                Roblox Game/Group
-              </CardTitle>
-              <CardDescription>
-                Link your Roblox game or group to display on your store page
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Roblox Game/Group</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Link your Roblox game or group to display on your store page</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="roblox_url" className="flex items-center gap-2">
                   Roblox URL
@@ -168,21 +163,16 @@ export default function SellerSettingsRoblox() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Group Member Discounts */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-blue-500" />
-                Group Member Discounts
-              </CardTitle>
-              <CardDescription>
-                Reward customers who are members of your Roblox group with automatic discounts
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Group Member Discounts</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Reward group members with automatic discounts</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="flex items-start gap-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                 <Info className="h-5 w-5 text-blue-500 mt-0.5" />
                 <div>
@@ -274,21 +264,16 @@ export default function SellerSettingsRoblox() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Roblox Premium Discounts */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Crown className="h-5 w-5 text-amber-500" />
-                Premium User Discounts
-              </CardTitle>
-              <CardDescription>
-                Reward customers who have Roblox Premium with exclusive discounts
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Premium User Discounts</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Reward Roblox Premium users with exclusive discounts</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Enable Premium Discount</Label>
@@ -335,21 +320,16 @@ export default function SellerSettingsRoblox() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Gamepass Rewards */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Ticket className="h-5 w-5 text-purple-500" />
-                Gamepass Owner Discounts
-              </CardTitle>
-              <CardDescription>
-                Reward customers who own a specific gamepass from your game
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Gamepass Owner Discounts</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Reward customers who own a specific gamepass from your game</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="flex items-start gap-3 p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">
                 <Info className="h-5 w-5 text-purple-500 mt-0.5" />
                 <div>
@@ -424,18 +404,15 @@ export default function SellerSettingsRoblox() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* How to Find IDs */}
-          <Card className="border-muted">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <AlertCircle className="h-5 w-5" />
-                How to Find Roblox IDs
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="border border-border rounded-xl overflow-hidden border-muted">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">How to Find Roblox IDs</h3>
+            </div>
+            <div className="p-4">
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium text-sm mb-1">Group ID</h4>
@@ -461,8 +438,8 @@ export default function SellerSettingsRoblox() {
                 Open Roblox Creator Dashboard
                 <ExternalLink className="h-3 w-3 ml-1" />
               </a>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Save Button */}
           <Button 

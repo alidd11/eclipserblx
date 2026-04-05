@@ -4,7 +4,7 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+// Card imports removed — using enterprise flat sections
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,15 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { BrandingImageUpload } from '@/components/seller/BrandingImageUpload';
 import { Switch } from '@/components/ui/switch';
-import { 
-  Store, 
-  Image as ImageIcon,
-  CheckCircle,
-  Save,
-  Link as LinkIcon,
-  Info,
-  Sparkles,
-} from 'lucide-react';
+import { Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 
@@ -186,7 +178,7 @@ export default function SellerSettingsProfile() {
     <SellerLayout>
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">Store Profile</h1>
+          <h1 className="text-2xl font-display font-bold">Store Profile</h1>
           <p className="text-muted-foreground">
             Manage your store's basic information and branding
           </p>
@@ -206,17 +198,12 @@ export default function SellerSettingsProfile() {
 
         <div className="space-y-6">
           {/* Basic Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Store className="h-5 w-5" />
-                Basic Information
-              </CardTitle>
-              <CardDescription>
-                Your store's public name and description
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Basic Information</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Your store's public name and description</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Store Name</Label>
                 <Input
@@ -254,21 +241,16 @@ export default function SellerSettingsProfile() {
                 <Save className="h-4 w-4 mr-2" />
                 {updateStore.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* About Us Content */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Info className="h-5 w-5" />
-                About Us Page
-              </CardTitle>
-              <CardDescription>
-                Rich content for your store's dedicated About page. Customers can access this from your store navigation.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">About Us Page</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Rich content for your store's dedicated About page</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="space-y-2">
                 <Label>About Content</Label>
                 <RichTextEditor
@@ -282,21 +264,16 @@ export default function SellerSettingsProfile() {
                 <Save className="h-4 w-4 mr-2" />
                 {updateStore.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Branding */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ImageIcon className="h-5 w-5" />
-                Branding
-              </CardTitle>
-              <CardDescription>
-                Upload your store's logo and banner images
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Branding</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Upload your store's logo and banner images</p>
+            </div>
+            <div className="p-4 space-y-6">
               {user && (
                 <>
                   <BrandingImageUpload
@@ -319,21 +296,16 @@ export default function SellerSettingsProfile() {
                 <Save className="h-4 w-4 mr-2" />
                 {updateStore.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Pay What You Want */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-emerald-500" />
-                Pay What You Want
-              </CardTitle>
-              <CardDescription>
-                Allow products in your store to use flexible "Pay What You Want" pricing, where buyers choose their own price
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Pay What You Want</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Allow flexible pricing where buyers choose their own price</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Enable PWYW Pricing</Label>
@@ -351,21 +323,16 @@ export default function SellerSettingsProfile() {
                 <Save className="h-4 w-4 mr-2" />
                 {updateStore.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Social Links */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <LinkIcon className="h-5 w-5" />
-                Social Links
-              </CardTitle>
-              <CardDescription>
-                Connect your social media accounts to display on your store
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Social Links</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Connect your social media accounts to display on your store</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="twitter_url" className="flex items-center gap-2">
@@ -418,8 +385,8 @@ export default function SellerSettingsProfile() {
                 <Save className="h-4 w-4 mr-2" />
                 {updateStore.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </SellerLayout>

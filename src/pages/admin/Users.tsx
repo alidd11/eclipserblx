@@ -472,7 +472,7 @@ export default function AdminUsers() {
       <div className="space-y-6 min-h-0">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-display font-bold">User Management</h1>
+            <h1 className="text-2xl font-display font-bold">User Management</h1>
             <p className="text-muted-foreground">Manage customers, staff, and roles</p>
           </div>
         </div>
@@ -514,41 +514,17 @@ export default function AdminUsers() {
           ))}
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-3">
-          <Card>
-            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
-                <Users className="h-3 w-3 md:h-4 md:w-4" />
-                Customers
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-              <p className="text-lg md:text-2xl font-bold">{stats.total}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
-                <IdCard className="h-3 w-3 md:h-4 md:w-4" />
-                Staff
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-              <p className="text-lg md:text-2xl font-bold">{stats.staff}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
-                <Sparkles className="h-3 w-3 md:h-4 md:w-4 text-amber-500" />
-                Eclipse+
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-              <p className="text-lg md:text-2xl font-bold">{stats.eclipsePlus}</p>
-            </CardContent>
-          </Card>
+        {/* Inline Stats */}
+        <div className="flex items-center gap-4 text-sm flex-wrap">
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{stats.total}</span> customers
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{stats.staff}</span> staff
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{stats.eclipsePlus}</span> Eclipse+
+          </span>
         </div>
 
         {/* Search */}
@@ -563,18 +539,16 @@ export default function AdminUsers() {
         </div>
 
         {/* Desktop Table View */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">
-                {activeView === 'staff' ? 'Staff Members' : activeView === 'all' ? 'All Users' : 'Customer List'}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Showing {startIndex + 1}-{Math.min(endIndex, totalCustomers)} of {totalCustomers}
-              </p>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
+            <h3 className="font-semibold text-sm">
+              {activeView === 'staff' ? 'Staff Members' : activeView === 'all' ? 'All Users' : 'Customer List'}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Showing {startIndex + 1}-{Math.min(endIndex, totalCustomers)} of {totalCustomers}
+            </p>
+          </div>
+          <div>
             <div className="hidden md:block">
               <Table>
                 <TableHeader>
@@ -854,8 +828,8 @@ export default function AdminUsers() {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Manage Roles Dialog */}
