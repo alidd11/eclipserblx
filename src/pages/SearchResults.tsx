@@ -213,7 +213,7 @@ export default function SearchResults() {
               />
               {query && (
                 <button
-                  onClick={() => { setQuery(''); setUseAI(false); }}
+                  onClick={() => { setQuery(''); }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-muted transition-colors"
                 >
                   <X className="h-4 w-4 text-muted-foreground" />
