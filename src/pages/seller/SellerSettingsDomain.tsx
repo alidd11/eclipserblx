@@ -25,6 +25,7 @@ export default function SellerSettingsDomain() {
   const queryClient = useQueryClient();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('domains');
+  const { isPro } = useSellerSubscription();
 
   const { data: store, isLoading: storeLoading } = useQuery({
     queryKey: ['seller-store-for-domain', user?.id],
