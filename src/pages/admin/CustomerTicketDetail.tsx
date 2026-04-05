@@ -3,15 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import {
   Select,
   SelectContent,
@@ -20,25 +17,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
+  Collapsible, CollapsibleContent, CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import {
-  ArrowLeft, Send, Clock, User, Headphones, Eye, Tag, Mail,
+  ArrowLeft, Send, Clock, User, Headphones, Eye, Mail,
   Paperclip, X, Loader2, MessageSquare, ShoppingBag, ChevronDown,
-  Zap, AlertTriangle, UserCheck, Package, CreditCard, History,
+  Zap, AlertTriangle, UserCheck, History,
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { toast } from 'sonner';
@@ -390,9 +381,9 @@ export default function CustomerTicketDetail() {
 
   return (
     <AdminLayout>
-      <div className="flex h-full min-h-0 flex-col gap-3 p-3 md:p-4">
+      <div className="flex h-full min-h-0 flex-col gap-3 p-2 sm:p-3 md:p-4">
         {/* ── Top bar ──────────────────────────────────────────────────────── */}
-        <div className="rounded-lg border bg-card p-3 space-y-3">
+        <div className="shrink-0 rounded-xl border border-border bg-card p-3 space-y-3">
           <Button variant="ghost" size="sm" className="w-fit" onClick={() => navigate('/admin/customer-tickets')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Tickets
@@ -400,61 +391,54 @@ export default function CustomerTicketDetail() {
 
           <h1 className="text-xl font-bold leading-tight">{ticket.subject}</h1>
 
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <Badge variant="outline" className="font-mono text-xs">{ticket.ticket_number}</Badge>
+          <div className="flex items-center gap-1.5 flex-wrap text-xs">
+            <Badge variant="outline" className="font-mono text-[11px]">{ticket.ticket_number}</Badge>
             <Badge className={cn('text-xs', status.color)}>{status.label}</Badge>
-            {ticket.priority === 'high' && <Badge variant="destructive" className="text-xs">High</Badge>}
-            {ticket.priority === 'urgent' && <Badge variant="destructive" className="text-xs"><AlertTriangle className="h-3 w-3 mr-1" />Urgent</Badge>}
+            {ticket.priority === 'high' && <Badge variant="destructive" className="text-[11px]">High</Badge>}
+            {ticket.priority === 'urgent' && <Badge variant="destructive" className="text-[11px]"><AlertTriangle className="h-3 w-3 mr-1" />Urgent</Badge>}
             {categoryLabel && <Badge variant="secondary" className="text-xs">{categoryLabel}</Badge>}
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              {!ticket.assigned_to && (
-                <Button size="sm" variant="outline" onClick={() => claimTicket.mutate()} disabled={claimTicket.isPending}>
-                  <UserCheck className="h-4 w-4 mr-1" />
-                  Claim
-                </Button>
-              )}
-
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <Select value={ticket.priority || 'medium'} onValueChange={(v) => updatePriority.mutate(v)}>
-                <SelectTrigger className="w-full min-w-0 h-9 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low Priority</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High Priority</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={ticket.status} onValueChange={(v) => updateStatus.mutate(v)}>
-                <SelectTrigger className="w-full min-w-0 h-9 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="awaiting_customer">Awaiting Customer</SelectItem>
-                  <SelectItem value="resolved">Resolved</SelectItem>
-                  <SelectItem value="closed">Closed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {!ticket.assigned_to && (
+              <Button size="sm" variant="outline" onClick={() => claimTicket.mutate()} disabled={claimTicket.isPending}>
+                <UserCheck className="h-4 w-4 mr-1" />
+                Claim
+              </Button>
+            )}
+            <Select value={ticket.priority || 'medium'} onValueChange={(v) => updatePriority.mutate(v)}>
+              <SelectTrigger className="w-auto min-w-[120px] h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={ticket.status} onValueChange={(v) => updateStatus.mutate(v)}>
+              <SelectTrigger className="w-auto min-w-[150px] h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="open">Open</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="awaiting_customer">Awaiting Customer</SelectItem>
+                <SelectItem value="resolved">Resolved</SelectItem>
+                <SelectItem value="closed">Closed</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         {/* ── Main content: conversation + context sidebar ─────────────────── */}
-        <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-4">
+        <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-3">
           {/* ── Conversation panel ─────────────────────────────────────────── */}
           <div className="flex-1 min-w-0 flex flex-col min-h-0">
-            <div className="border border-border rounded-xl overflow-hidden flex-1 min-h-0 flex flex-col overflow-hidden">
-              <div className="px-4 py-3 border-b border-border bg-muted/30 py-3 px-4 border-b">
-                <h3 className="font-semibold text-sm text-sm font-medium flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden flex-1 min-h-0 flex flex-col">
+              <div className="shrink-0 px-4 py-2.5 border-b border-border bg-muted/30">
+                <h3 className="text-sm font-medium flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" />
                   Conversation
                   <span className="text-muted-foreground font-normal">({messages?.length || 0} messages)</span>
@@ -473,9 +457,12 @@ export default function CustomerTicketDetail() {
               {/* Messages area */}
               <div
                 className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y"
-                style={{ WebkitOverflowScrolling: 'touch' }}
+                style={{
+                  WebkitOverflowScrolling: 'touch',
+                  scrollPaddingBottom: 'calc(var(--chat-safe-bottom, env(safe-area-inset-bottom)) + 10rem)',
+                }}
               >
-                <div className="p-4 space-y-6">
+                <div className="p-3 sm:p-4 space-y-5">
                   {loadingMessages ? (
                     <div className="space-y-4">
                       {Array.from({ length: 3 }).map((_, i) => (
@@ -489,12 +476,12 @@ export default function CustomerTicketDetail() {
                     </div>
                   ) : (
                     groupedMessages.map((group) => (
-                      <div key={group.date} className="space-y-4">
+                      <div key={group.date} className="space-y-3">
                         {/* Date separator */}
                         <div className="flex items-center gap-3">
-                          <Separator className="flex-1" />
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">{group.date}</span>
-                          <Separator className="flex-1" />
+                          <div className="flex-1 h-px bg-border" />
+                          <span className="text-[11px] text-muted-foreground whitespace-nowrap font-medium">{group.date}</span>
+                          <div className="flex-1 h-px bg-border" />
                         </div>
 
                         {group.messages.map((msg) => {
@@ -555,7 +542,10 @@ export default function CustomerTicketDetail() {
               </div>
 
               {/* Reply input */}
-              <div className="border-t p-4 space-y-3">
+              <div
+                className="shrink-0 border-t border-border bg-card p-3 sm:p-4 space-y-3"
+                style={{ paddingBottom: 'max(0.75rem, var(--chat-safe-bottom, env(safe-area-inset-bottom)))' }}
+              >
                 {attachmentFile && (
                   <div className="flex items-center gap-2 text-sm bg-muted rounded-md px-3 py-1.5">
                     <Paperclip className="h-3 w-3 shrink-0" />
@@ -649,18 +639,18 @@ export default function CustomerTicketDetail() {
 
           {/* ── Context sidebar ────────────────────────────────────────────── */}
           <div className={cn(
-            'md:w-80 lg:w-96 space-y-4 shrink-0',
+            'md:w-72 lg:w-80 space-y-3 shrink-0 overflow-y-auto',
             !showContext && 'hidden md:block'
           )}>
             {/* Customer info */}
             <div className="border border-border rounded-xl overflow-hidden">
-              <div className="px-4 py-3 border-b border-border bg-muted/30 py-3 px-4">
-                <h3 className="font-semibold text-sm text-sm font-medium flex items-center gap-2">
+              <div className="px-4 py-2.5 border-b border-border bg-muted/30">
+                <h3 className="text-sm font-medium flex items-center gap-2">
                   <User className="h-4 w-4" />
                   Customer
                 </h3>
               </div>
-              <div className="p-4 px-4 pb-4 space-y-3">
+              <div className="p-4 space-y-3">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={customerProfile?.avatar_url || undefined} />
@@ -677,7 +667,7 @@ export default function CustomerTicketDetail() {
                   </div>
                 </div>
 
-                <Separator />
+                <div className="h-px bg-border" />
 
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
@@ -701,7 +691,7 @@ export default function CustomerTicketDetail() {
                 {/* Assigned to */}
                 {ticket.assigned_to && (
                   <>
-                    <Separator />
+                    <div className="h-px bg-border" />
                     <div className="flex items-center gap-2 text-xs">
                       <UserCheck className="h-3.5 w-3.5 text-muted-foreground" />
                       <span className="text-muted-foreground">Assigned to</span>
@@ -716,8 +706,8 @@ export default function CustomerTicketDetail() {
             <Collapsible defaultOpen>
               <div className="border border-border rounded-xl overflow-hidden">
                 <CollapsibleTrigger className="w-full">
-                  <div className="px-4 py-3 border-b border-border bg-muted/30 py-3 px-4 flex flex-row items-center justify-between">
-                    <h3 className="font-semibold text-sm text-sm font-medium flex items-center gap-2">
+                  <div className="px-4 py-2.5 border-b border-border bg-muted/30 flex items-center justify-between">
+                    <h3 className="text-sm font-medium flex items-center gap-2">
                       <ShoppingBag className="h-4 w-4" />
                       Recent Orders
                       {customerOrders && customerOrders.length > 0 && (
@@ -728,7 +718,7 @@ export default function CustomerTicketDetail() {
                   </div>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <div className="p-4 px-4 pb-4 space-y-2">
+                  <div className="p-3 space-y-2">
                     {!customerOrders?.length ? (
                       <p className="text-xs text-muted-foreground text-center py-3">No orders found</p>
                     ) : (
@@ -756,8 +746,8 @@ export default function CustomerTicketDetail() {
             <Collapsible>
               <div className="border border-border rounded-xl overflow-hidden">
                 <CollapsibleTrigger className="w-full">
-                  <div className="px-4 py-3 border-b border-border bg-muted/30 py-3 px-4 flex flex-row items-center justify-between">
-                    <h3 className="font-semibold text-sm text-sm font-medium flex items-center gap-2">
+                  <div className="px-4 py-2.5 border-b border-border bg-muted/30 flex items-center justify-between">
+                    <h3 className="text-sm font-medium flex items-center gap-2">
                       <History className="h-4 w-4" />
                       Past Tickets
                       {pastTickets && pastTickets.length > 0 && (
@@ -768,7 +758,7 @@ export default function CustomerTicketDetail() {
                   </div>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <div className="p-4 px-4 pb-4 space-y-2">
+                  <div className="p-3 space-y-2">
                     {!pastTickets?.length ? (
                       <p className="text-xs text-muted-foreground text-center py-3">No past tickets</p>
                     ) : (
@@ -794,13 +784,13 @@ export default function CustomerTicketDetail() {
 
             {/* Ticket meta */}
             <div className="border border-border rounded-xl overflow-hidden">
-              <div className="px-4 py-3 border-b border-border bg-muted/30 py-3 px-4">
-                <h3 className="font-semibold text-sm text-sm font-medium flex items-center gap-2">
+              <div className="px-4 py-2.5 border-b border-border bg-muted/30">
+                <h3 className="text-sm font-medium flex items-center gap-2">
                   <Clock className="h-4 w-4" />
                   Ticket Info
                 </h3>
               </div>
-              <div className="p-4 px-4 pb-4 space-y-2 text-xs">
+              <div className="p-4 space-y-2 text-xs">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Created</span>
                   <span>{format(new Date(ticket.created_at), 'MMM d, yyyy h:mm a')}</span>
