@@ -12,8 +12,8 @@ export function useScrollDirection(threshold = 10, desktopOnly = false): 'up' | 
   const ticking = useRef(false);
 
   useEffect(() => {
-    // Only activate on mobile/tablet
-    if (window.innerWidth >= 768) return;
+    // Optionally restrict to desktop only
+    if (desktopOnly && window.innerWidth < 768) return;
 
     const update = () => {
       const currentY = window.scrollY;
