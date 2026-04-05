@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { useSmartSearch } from '@/hooks/useSmartSearch';
+import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
 import { useDebounce } from '@/hooks/useDebounce';
