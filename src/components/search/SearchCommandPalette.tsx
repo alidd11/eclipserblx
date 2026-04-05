@@ -250,22 +250,6 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
             )}
           </div>
 
-          {/* AI toggle */}
-          {searchQuery.length >= 3 && !useAI && (
-            <button
-              onClick={() => { hapticTap(); setUseAI(true); smartSearch(searchQuery); }}
-              className="shrink-0 flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary px-3 py-2 rounded-xl bg-muted/50 hover:bg-primary/5 ring-1 ring-border/30 hover:ring-primary/30 transition-all active:scale-[0.97] touch-manipulation"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              AI
-            </button>
-          )}
-          {useAI && isSmartSearching && (
-            <div className="shrink-0 flex items-center gap-1.5 text-xs text-primary bg-primary/10 px-3 py-2 rounded-xl ring-1 ring-primary/20">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              <span className="font-medium">AI</span>
-            </div>
-          )}
         </div>
 
         {/* Result count bar */}
