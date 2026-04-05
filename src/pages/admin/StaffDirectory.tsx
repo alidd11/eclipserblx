@@ -272,14 +272,14 @@ export default function StaffDirectory() {
                 ))}
               </div>
             ) : filteredStaff.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center">
+              <div className="border border-border rounded-xl">
+                <div className="p-8 text-center">
                   <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">
                     {searchQuery ? 'No staff members match your search' : 'No staff members found'}
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredStaff.map(member => (
