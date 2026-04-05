@@ -28,7 +28,7 @@ import { ReferralCard } from '@/components/account/ReferralCard';
 import { AffiliateCard } from '@/components/account/AffiliateCard';
 import { NotificationSettingsCard } from '@/components/account/NotificationSettingsCard';
 import { SoundCustomizationCard } from '@/components/account/SoundCustomizationCard';
-import { ThemeSettingsCard } from '@/components/account/ThemeSettingsCard';
+
 import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
 import { SavedCardsCard } from '@/components/account/SavedCardsCard';
 import { BecomeSellerCard } from '@/components/account/BecomeSellerCard';
