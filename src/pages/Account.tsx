@@ -6,7 +6,7 @@ import {
   Download, CreditCard, MessageSquare, Bell, Package,
   ChevronRight, Link2, Palette, Mail, Volume2, Store,
   Award, ShoppingBag, Gift, Sparkles, Trash2, Shield,
-  Copy, Hash,
+  Copy, Hash, Heart,
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
