@@ -407,16 +407,16 @@ export default function SellerDiscounts() {
             ))
           ) : (
             <div className="border border-border rounded-xl py-12 text-center">
-                <h3 className="text-lg font-medium mb-2">No Discount Codes</h3>
-                <p className="text-muted-foreground mb-4">
-                  Create your first discount code to boost sales
-                </p>
-                <Button onClick={() => setShowCreateDialog(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Code
-                </Button>
-              </CardContent>
-            </Card>
+              <Tag className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <h3 className="text-lg font-medium mb-2">No Discount Codes</h3>
+              <p className="text-muted-foreground mb-4">
+                Create your first discount code to boost sales
+              </p>
+              <Button onClick={() => setShowCreateDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Code
+              </Button>
+            </div>
           )}
         </div>
       </div>
