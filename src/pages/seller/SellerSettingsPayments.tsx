@@ -339,17 +339,12 @@ export default function SellerSettingsPayments() {
           </div>
 
           {/* Alternative Payout Method */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Wallet className="h-5 w-5" />
-                Payout Method
-              </CardTitle>
-              <CardDescription>
-                Choose how you'd like to receive your earnings
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Payout Method</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Choose how you'd like to receive your earnings</p>
+            </div>
+            <div className="p-4 space-y-4">
               <RadioGroup
                 value={payoutMethod}
                 onValueChange={(value) => setPayoutMethod(value as 'stripe' | 'paypal' | 'bank_transfer')}
