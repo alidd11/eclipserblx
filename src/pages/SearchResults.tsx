@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
-import { useRecentSearches } from '@/hooks/useRecentSearches';
+import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
