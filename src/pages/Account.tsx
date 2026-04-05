@@ -671,8 +671,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               <CreditsCard />
             </ExpandableSection>
             <UserIdsCollapsible userId={user.id} customerId={profile?.customer_id || null} />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* ═══ Danger Zone ═══ */}
         <Card className="bg-card border-border overflow-hidden">
