@@ -161,6 +161,28 @@ export function ChatMessageActions({
             </DropdownMenuItem>
           )}
 
+          {/* Thread option */}
+          {onThread && (
+            <DropdownMenuItem
+              onClick={() => { hapticTap(); onThread(); }}
+              className="cursor-pointer"
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Reply in Thread
+            </DropdownMenuItem>
+          )}
+
+          {/* Pin option */}
+          {onPin && (
+            <DropdownMenuItem
+              onClick={() => { hapticTap(); onPin(); }}
+              className="cursor-pointer"
+            >
+              <Pin className="h-4 w-4 mr-2" />
+              Pin Message
+            </DropdownMenuItem>
+          )}
+
           {/* Reaction picker */}
           <Popover open={isReactionOpen} onOpenChange={setIsReactionOpen}>
             <PopoverTrigger asChild>
