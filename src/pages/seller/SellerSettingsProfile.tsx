@@ -13,15 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { BrandingImageUpload } from '@/components/seller/BrandingImageUpload';
 import { Switch } from '@/components/ui/switch';
-import { 
-  Store, 
-  Image as ImageIcon,
-  CheckCircle,
-  Save,
-  Link as LinkIcon,
-  Info,
-  Sparkles,
-} from 'lucide-react';
+import { Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 
