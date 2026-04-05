@@ -7,7 +7,7 @@ export function FinalCTA() {
   return (
     <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
-        <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-6 sm:p-8 text-center">
+        <div className="p-6 sm:p-8 text-center">
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight mb-2">
             Turn your creations into revenue
           </h2>
