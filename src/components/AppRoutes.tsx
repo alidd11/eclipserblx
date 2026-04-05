@@ -496,10 +496,6 @@ export function AppRoutes() {
         <Route path="/admin/developer-submissions" element={<AdminDeveloperSubmissions />} />
         <Route path="/admin/developer-payments" element={<Navigate to="/admin/payouts?tab=developer" replace />} />
         <Route path="/admin/developer-payments/:id" element={<AdminDeveloperPaymentDetail />} />
-        <Route path="/admin/recruiters" element={<AdminRecruiters />} />
-        <Route path="/admin/recruiter-applications" element={<AdminRecruiterApplications />} />
-        <Route path="/admin/recruiter-payouts" element={<AdminRecruiterPayouts />} />
-        <Route path="/admin/recruiter-commissions" element={<AdminRecruiterCommissions />} />
         <Route path="/admin/gdpr-compliance" element={<AdminGDPRCompliance />} />
         <Route path="/admin/botghost-setup" element={<Navigate to="/bot/settings" replace />} />
         <Route path="/admin/portal-bot-setup" element={<AdminPortalBotSetup />} />
