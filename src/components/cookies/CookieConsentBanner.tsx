@@ -25,31 +25,31 @@ export function CookieConsentBanner() {
             className="fixed z-[200] w-[calc(100%-2rem)] max-w-3xl rounded-xl border border-border/60 bg-card/95 backdrop-blur-md shadow-2xl shadow-black/40 left-1/2 -translate-x-1/2"
             style={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom, 0px))' }}
           >
-            <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
-              <p className="text-[12px] text-foreground/70 leading-relaxed sm:flex-1 sm:min-w-0">
+            <div className="px-4 py-3 sm:px-5 sm:py-4 flex flex-col gap-3">
+              <p className="text-[12px] text-foreground/70 leading-relaxed">
                 {t('cookies.description')}{' '}
                 <Link to="/privacy" className="text-foreground hover:text-primary underline underline-offset-2 transition-colors">
                   {t('auth.privacyPolicy')}
                 </Link>
               </p>
 
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3">
                 <button
                   onClick={rejectNonEssential}
-                  className="text-[11px] uppercase tracking-wider font-semibold text-foreground/60 hover:text-foreground transition-colors whitespace-nowrap"
+                  className="text-[10px] sm:text-[11px] uppercase tracking-wider font-semibold text-foreground/60 hover:text-foreground transition-colors whitespace-nowrap"
                 >
                   {t('cookies.rejectNonEssential')}
                 </button>
                 <button
                   onClick={openSettings}
-                  className="text-[11px] uppercase tracking-wider font-semibold text-foreground/60 hover:text-foreground transition-colors whitespace-nowrap"
+                  className="text-[10px] sm:text-[11px] uppercase tracking-wider font-semibold text-foreground/60 hover:text-foreground transition-colors whitespace-nowrap"
                 >
                   {t('cookies.customize')}
                 </button>
                 <Button
                   size="sm"
                   onClick={acceptAll}
-                  className="h-7 px-4 text-[11px] uppercase tracking-wider font-bold rounded-md"
+                  className="h-7 px-3 sm:px-4 text-[10px] sm:text-[11px] uppercase tracking-wider font-bold rounded-md"
                 >
                   {t('cookies.acceptAll')}
                 </Button>
