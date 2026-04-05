@@ -7,9 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RevolutAreaChart, RevolutBarChart } from '@/components/ui/revolut-chart';
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
-import { TrendingUp, Package, DollarSign, Layers } from 'lucide-react';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { format, subDays } from 'date-fns';
 
 export default function SellerRevenueBreakdown() {
   const isInsideHub = useIsInsideHub();
@@ -18,7 +17,7 @@ export default function SellerRevenueBreakdown() {
 
   const startDate = useMemo(() => subDays(new Date(), Number(period)), [period]);
 
-  const { data: transactions = [], isLoading } = useQuery({
+  const { data: transactions = [] } = useQuery({
     queryKey: ['seller-revenue-breakdown', store?.id, period],
     queryFn: async () => {
       if (!store?.id) return [];
@@ -36,7 +35,6 @@ export default function SellerRevenueBreakdown() {
     enabled: !!store?.id,
   });
 
-  // Revenue by day
   const dailyRevenue = useMemo(() => {
     const map = new Map<string, number>();
     for (let i = Number(period) - 1; i >= 0; i--) {
@@ -50,7 +48,6 @@ export default function SellerRevenueBreakdown() {
     return Array.from(map, ([date, revenue]) => ({ date, revenue: Number(revenue.toFixed(2)) }));
   }, [transactions, period]);
 
-  // Revenue by product
   const byProduct = useMemo(() => {
     const map = new Map<string, number>();
     transactions.forEach((t: any) => {
@@ -64,7 +61,6 @@ export default function SellerRevenueBreakdown() {
       .slice(0, 10);
   }, [transactions]);
 
-  // Revenue by category
   const byCategory = useMemo(() => {
     const map = new Map<string, number>();
     transactions.forEach((t: any) => {
@@ -92,7 +88,19 @@ export default function SellerRevenueBreakdown() {
           </div>
         </div>
       )}
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        {/* Inline Stats */}
+        <div className="flex items-center gap-4 text-sm flex-wrap">
+          <span className="text-muted-foreground">
+            Net: <span className="font-semibold text-foreground">£{totalRevenue.toFixed(2)}</span>
+          </span>
+          <span className="text-muted-foreground">
+            Avg order: <span className="font-semibold text-foreground">£{avgOrderValue.toFixed(2)}</span>
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{transactions.length}</span> sales
+          </span>
+        </div>
         <Select value={period} onValueChange={(v) => setPeriod(v as any)}>
           <SelectTrigger className="w-auto min-w-[140px]">
             <SelectValue />
@@ -103,43 +111,6 @@ export default function SellerRevenueBreakdown() {
             <SelectItem value="90">Last 90 days</SelectItem>
           </SelectContent>
         </Select>
-      </div>
-
-      {/* Summary cards */}
-      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible">
-        <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10"><DollarSign className="h-5 w-5 text-primary" /></div>
-              <div>
-                <p className="text-xs text-muted-foreground">Net Revenue</p>
-                <p className="text-xl font-bold">£{totalRevenue.toFixed(2)}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10"><TrendingUp className="h-5 w-5 text-primary" /></div>
-              <div>
-                <p className="text-xs text-muted-foreground">Avg Order Value</p>
-                <p className="text-xl font-bold">£{avgOrderValue.toFixed(2)}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10"><Package className="h-5 w-5 text-primary" /></div>
-              <div>
-                <p className="text-xs text-muted-foreground">Total Sales</p>
-                <p className="text-xl font-bold">{transactions.length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Revenue over time */}
@@ -158,7 +129,6 @@ export default function SellerRevenueBreakdown() {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top products */}
         <Card>
           <CardHeader><CardTitle className="text-base">Top Products by Revenue</CardTitle></CardHeader>
           <CardContent>
@@ -174,7 +144,6 @@ export default function SellerRevenueBreakdown() {
           </CardContent>
         </Card>
 
-        {/* By category */}
         <Card>
           <CardHeader><CardTitle className="text-base">Revenue by Category</CardTitle></CardHeader>
           <CardContent>

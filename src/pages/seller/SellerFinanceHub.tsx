@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { AdminHubProvider } from '@/components/admin/AdminHubContext';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -13,7 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Wallet, Clock, TrendingUp, Info, DollarSign, LineChart, Receipt, Calculator } from 'lucide-react';
+import { Info, DollarSign, LineChart, Receipt, TrendingUp, Calculator } from 'lucide-react';
 
 const SellerBalance = lazy(() => import('@/pages/seller/SellerBalance'));
 const SellerRevenueBreakdown = lazy(() => import('@/pages/seller/SellerRevenueBreakdown'));
@@ -39,30 +38,6 @@ export default function SellerFinanceHub() {
   const fmt = (v: number) =>
     new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(v);
 
-  const summaryCards = [
-    {
-      label: 'Ready to Withdraw',
-      value: fmt(balance?.available_balance || 0),
-      icon: Wallet,
-      tooltip: 'Net earnings available for payout right now.',
-      color: 'text-green-500',
-    },
-    {
-      label: 'Clearing',
-      value: fmt(balance?.pending_balance || 0),
-      icon: Clock,
-      tooltip: 'Recent sales still being processed (7–14 days).',
-      color: 'text-yellow-500',
-    },
-    {
-      label: 'Lifetime Earnings',
-      value: fmt(balance?.total_earned || 0),
-      icon: TrendingUp,
-      tooltip: 'Total net earnings across all time.',
-      color: 'text-primary',
-    },
-  ];
-
   return (
     <SellerLayout>
       <TooltipProvider>
@@ -75,31 +50,32 @@ export default function SellerFinanceHub() {
             </p>
           </div>
 
-          {/* Summary Cards (always visible) */}
-          <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible">
-            {summaryCards.map((card) => (
-              <Card key={card.label} className="min-w-[160px] flex-shrink-0 md:min-w-0">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <div className="flex items-center gap-1.5">
-                    <CardTitle className="text-sm font-medium">{card.label}</CardTitle>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Info className="h-3.5 w-3.5 text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-[220px]">
-                        <p className="text-xs">{card.tooltip}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <card.icon className={`h-4 w-4 ${card.color}`} />
-                </CardHeader>
-                <CardContent>
-                  <div className={`text-2xl font-bold ${card.color}`}>
-                    {balanceLoading ? '...' : card.value}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          {/* Inline Summary Stats */}
+          <div className="flex items-center gap-6 text-sm flex-wrap">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-muted-foreground cursor-default">
+                  Ready to withdraw: <span className="font-semibold text-green-500">{balanceLoading ? '...' : fmt(balance?.available_balance || 0)}</span>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent><p className="text-xs">Net earnings available for payout right now.</p></TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-muted-foreground cursor-default">
+                  Clearing: <span className="font-semibold text-yellow-500">{balanceLoading ? '...' : fmt(balance?.pending_balance || 0)}</span>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent><p className="text-xs">Recent sales still being processed (7–14 days).</p></TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-muted-foreground cursor-default">
+                  Lifetime: <span className="font-semibold text-foreground">{balanceLoading ? '...' : fmt(balance?.total_earned || 0)}</span>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent><p className="text-xs">Total net earnings across all time.</p></TooltipContent>
+            </Tooltip>
           </div>
 
           {/* Tabs */}

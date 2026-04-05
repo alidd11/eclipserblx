@@ -5,9 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, UserCheck, TrendingUp, Globe, ShoppingCart, Repeat } from 'lucide-react';
+import { Users, TrendingUp, Globe } from 'lucide-react';
 
 export default function SellerCustomerInsights() {
   const { store } = useSellerStatus();
@@ -22,7 +21,6 @@ export default function SellerCustomerInsights() {
 
       const since = new Date(Date.now() - daysBack * 86400000).toISOString();
 
-      // Get orders for this store's products, join to orders for buyer info
       const { data: transactions } = await supabase
         .from('seller_transactions')
         .select('order_id, gross_amount, created_at, orders!inner(user_id)')
@@ -38,7 +36,6 @@ export default function SellerCustomerInsights() {
         avgOrderValue: 0, topCustomers: [], countries: [] 
       };
 
-      // Aggregate by buyer
       const buyerMap = new Map<string, { orders: number; total: number; lastOrder: string }>();
       transactions.forEach((tx: any) => {
         const id = tx.orders?.user_id || 'anonymous';
@@ -57,13 +54,11 @@ export default function SellerCustomerInsights() {
       const totalRevenue = (transactions as any[]).reduce((sum: number, tx: any) => sum + Number(tx.gross_amount || 0), 0);
       const avgOrderValue = transactions.length > 0 ? totalRevenue / transactions.length : 0;
 
-      // Top customers by spend
       const topCustomers = Array.from(buyerMap.entries())
         .filter(([id]) => id !== 'anonymous')
         .sort((a, b) => b[1].total - a[1].total)
         .slice(0, 10);
 
-      // Get profiles for top customers
       const topIds = topCustomers.map(([id]) => id);
       let profiles: any[] = [];
       if (topIds.length > 0) {
@@ -74,7 +69,6 @@ export default function SellerCustomerInsights() {
         profiles = profileData || [];
       }
 
-      // Get country data from analytics
       const { data: countryData } = await supabase
         .from('seller_analytics')
         .select('country')
@@ -121,10 +115,7 @@ export default function SellerCustomerInsights() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-display font-bold flex items-center gap-2">
-              <Users className="h-6 w-6" />
-              Customer Insights
-            </h1>
+            <h1 className="text-2xl font-display font-bold">Customer Insights</h1>
             <p className="text-muted-foreground text-sm">Understand your buyers and grow your audience</p>
           </div>
           <Select value={timeRange} onValueChange={setTimeRange}>
@@ -140,72 +131,45 @@ export default function SellerCustomerInsights() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />)}
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-64" />
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card>
-                <CardContent className="pt-4 pb-3">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <Users className="h-4 w-4" />
-                    <span className="text-xs">Total Customers</span>
-                  </div>
-                  <p className="text-2xl font-bold">{data?.totalCustomers || 0}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-4 pb-3">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <Repeat className="h-4 w-4" />
-                    <span className="text-xs">Repeat Buyers</span>
-                  </div>
-                  <p className="text-2xl font-bold">{data?.repeatCustomers || 0}</p>
-                  {data && data.totalCustomers > 0 && (
-                    <p className="text-xs text-primary">
-                      {((data.repeatCustomers / data.totalCustomers) * 100).toFixed(0)}% return rate
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-4 pb-3">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <UserCheck className="h-4 w-4" />
-                    <span className="text-xs">New Customers</span>
-                  </div>
-                  <p className="text-2xl font-bold">{data?.newCustomers || 0}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-4 pb-3">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <ShoppingCart className="h-4 w-4" />
-                    <span className="text-xs">Avg Order Value</span>
-                  </div>
-                  <p className="text-2xl font-bold">£{(data?.avgOrderValue || 0).toFixed(2)}</p>
-                </CardContent>
-              </Card>
+            {/* Inline Stats */}
+            <div className="flex items-center gap-4 text-sm flex-wrap">
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{data?.totalCustomers || 0}</span> customers
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{data?.repeatCustomers || 0}</span> repeat
+                {data && data.totalCustomers > 0 && (
+                  <span className="text-primary ml-1">({((data.repeatCustomers / data.totalCustomers) * 100).toFixed(0)}%)</span>
+                )}
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{data?.newCustomers || 0}</span> new
+              </span>
+              <span className="text-muted-foreground">
+                Avg order: <span className="font-semibold text-foreground">£{(data?.avgOrderValue || 0).toFixed(2)}</span>
+              </span>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
               {/* Top Customers */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4" />
-                    Top Customers
-                  </CardTitle>
+                  <CardTitle className="text-base">Top Customers</CardTitle>
                   <CardDescription>By total spend</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {data?.topCustomers?.length ? (
-                    <div className="space-y-3">
+                    <div className="divide-y divide-border">
                       {data.topCustomers.map((customer: any, i: number) => (
-                        <div key={customer.id} className="flex items-center gap-3">
+                        <div key={customer.id} className="flex items-center gap-3 py-2.5">
                           <span className="text-xs font-bold text-muted-foreground w-5">#{i + 1}</span>
-                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                          <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
                             {customer.avatar ? (
                               <img src={customer.avatar} alt="" className="w-full h-full object-cover" />
                             ) : (
@@ -229,10 +193,7 @@ export default function SellerCustomerInsights() {
               {/* Geographic Breakdown */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Globe className="h-4 w-4" />
-                    Buyer Locations
-                  </CardTitle>
+                  <CardTitle className="text-base">Buyer Locations</CardTitle>
                   <CardDescription>Where your customers are from</CardDescription>
                 </CardHeader>
                 <CardContent>

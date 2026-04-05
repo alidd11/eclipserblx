@@ -3,19 +3,19 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { 
   RotateCcw, Check, X, AlertTriangle, Clock, 
-  ShieldAlert, MessageSquare, Info, FileImage
+  ShieldAlert, MessageSquare, FileImage
 } from 'lucide-react';
 import { DisputeEvidenceUpload } from '@/components/purchases/DisputeEvidenceUpload';
 
@@ -37,7 +37,6 @@ export default function SellerRefunds() {
         .order('created_at', { ascending: false });
       if (error) throw error;
 
-      // Fetch customer profiles
       const customerIds = [...new Set((data || []).map((r: any) => r.customer_id))];
       if (customerIds.length === 0) return data;
       const { data: profiles } = await supabase
@@ -60,7 +59,6 @@ export default function SellerRefunds() {
       }).eq('id', id);
       if (error) throw error;
 
-      // Notify the buyer about the dispute response
       if (customerId) {
         const statusText = status === 'approved' ? 'approved' : 'denied';
         await supabase.from('notifications').insert({
@@ -71,13 +69,12 @@ export default function SellerRefunds() {
           link: '/account/orders',
         });
 
-        // Send push notification to buyer
         try {
           await supabase.functions.invoke('send-push-notification', {
             body: {
               user_ids: [customerId],
               payload: {
-                title: `Dispute ${status === 'approved' ? 'Approved ✅' : 'Denied'}`,
+                title: `Dispute ${status === 'approved' ? 'Approved \u2705' : 'Denied'}`,
                 body: `The seller has ${statusText} your dispute.${status === 'approved' ? ' Your refund will be processed shortly.' : ''}`,
                 tag: `dispute-response-${id}`,
                 url: '/account/orders',
@@ -117,61 +114,37 @@ export default function SellerRefunds() {
   return (
     <SellerLayout>
       <div>
-        <div className="mb-6">
-         <h1 className="text-3xl font-bold">Disputes</h1>
-          <p className="text-muted-foreground">
+        <div className="mb-4">
+          <h1 className="text-2xl font-display font-bold">Disputes</h1>
+          <p className="text-sm text-muted-foreground">
             Manage customer disputes for your products. Respond within 48 hours to prevent escalation.
           </p>
         </div>
 
-        {/* Stats */}
-        <div className="flex gap-3 overflow-x-auto pb-2 mb-6 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible">
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <RotateCcw className="h-4 w-4" />
-                <span className="text-sm">Total Requests</span>
-              </div>
-              <p className="text-2xl font-bold">{refundRequests?.length || 0}</p>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2 text-amber-500 mb-1">
-                <Clock className="h-4 w-4" />
-                <span className="text-sm">Pending</span>
-              </div>
-              <p className="text-2xl font-bold text-amber-500">{pendingCount}</p>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2 text-red-500 mb-1">
-                <ShieldAlert className="h-4 w-4" />
-                <span className="text-sm">Escalated</span>
-              </div>
-              <p className="text-2xl font-bold text-red-500">{escalatedCount}</p>
-            </CardContent>
-          </Card>
+        {/* Inline Stats */}
+        <div className="flex items-center gap-4 text-sm mb-4 flex-wrap">
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{refundRequests?.length || 0}</span> total
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-yellow-500">{pendingCount}</span> pending
+          </span>
+          {escalatedCount > 0 && (
+            <span className="text-muted-foreground">
+              <span className="font-semibold text-destructive">{escalatedCount}</span> escalated
+            </span>
+          )}
         </div>
 
         {escalatedCount > 0 && (
-          <Card className="mb-6 bg-amber-500/5 border-amber-500/20">
-            <CardContent className="flex items-start gap-3 py-4">
-              <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-              <div className="text-sm">
-                <p className="font-medium text-amber-500">Escalated Requests</p>
-                <p className="text-muted-foreground">
-                  {escalatedCount} request(s) have been escalated to Eclipse for review. 
-                  These are being handled by platform administrators.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex items-start gap-2 text-sm text-amber-500 mb-4">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <p>{escalatedCount} request(s) escalated to Eclipse for review.</p>
+          </div>
         )}
 
         {/* Filter */}
-        <div className="mb-6">
+        <div className="mb-4">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-auto min-w-[140px]">
               <SelectValue placeholder="Filter by status" />
@@ -188,42 +161,42 @@ export default function SellerRefunds() {
         </div>
 
         {/* Requests List */}
-        <div className="space-y-3">
-          {isLoading ? (
-            [1,2,3].map(i => <Skeleton key={i} className="h-24" />)
-          ) : filtered.length > 0 ? (
-            filtered.map((r: any) => (
-              <Card key={r.id} className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setSelectedRequest(r)}>
-                <CardContent className="flex items-center justify-between py-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-mono text-primary">{r.dispute_number}</span>
-                      <span className="font-medium">
-                        {r.customer?.display_name || 'Unknown Customer'}
-                      </span>
-                      {getStatusBadge(r.status)}
-                    </div>
-                    <p className="text-sm text-muted-foreground line-clamp-1">{r.reason}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {format(new Date(r.created_at), 'MMM d, yyyy')} · £{Number(r.amount).toFixed(2)}
-                    </p>
+        {isLoading ? (
+          <div className="space-y-2">
+            {[1,2,3].map(i => <Skeleton key={i} className="h-16" />)}
+          </div>
+        ) : filtered.length > 0 ? (
+          <div className="border border-border rounded-xl overflow-hidden divide-y divide-border">
+            {filtered.map((r: any) => (
+              <button
+                key={r.id}
+                className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors text-left"
+                onClick={() => setSelectedRequest(r)}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-xs font-mono text-primary">{r.dispute_number}</span>
+                    <span className="text-sm font-medium">
+                      {r.customer?.display_name || 'Unknown Customer'}
+                    </span>
+                    {getStatusBadge(r.status)}
                   </div>
-                  <MessageSquare className="h-4 w-4 text-muted-foreground ml-3" />
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <RotateCcw className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No Refund Requests</h3>
-                <p className="text-muted-foreground">
-                  Customer refund requests will appear here when submitted.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+                  <p className="text-xs text-muted-foreground line-clamp-1">{r.reason}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {format(new Date(r.created_at), 'MMM d, yyyy')} · £{Number(r.amount).toFixed(2)}
+                  </p>
+                </div>
+                <MessageSquare className="h-4 w-4 text-muted-foreground ml-3 shrink-0" />
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="py-12 text-center">
+            <RotateCcw className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-40" />
+            <p className="text-sm font-medium mb-1">No Refund Requests</p>
+            <p className="text-xs text-muted-foreground">Customer refund requests will appear here when submitted.</p>
+          </div>
+        )}
       </div>
 
       {/* Request Detail Dialog */}
@@ -251,7 +224,6 @@ export default function SellerRefunds() {
 }
 
 function SellerDisputeDetail({ request, response, setResponse, respondMutation, getStatusBadge }: any) {
-  // Fetch evidence for this dispute
   const { data: evidence } = useQuery({
     queryKey: ['dispute-evidence-seller', request.id],
     queryFn: async () => {
@@ -287,16 +259,15 @@ function SellerDisputeDetail({ request, response, setResponse, respondMutation, 
         </div>
       )}
 
-      {/* Customer Evidence */}
       {evidence && evidence.length > 0 && (
         <div>
           <span className="text-sm font-medium flex items-center gap-1.5 mb-2">
             <FileImage className="h-3.5 w-3.5" /> Customer Evidence ({evidence.length})
           </span>
-          <div className="space-y-2">
+          <div className="space-y-1">
             {evidence.map((e: any) => (
-              <div key={e.id} className="flex items-center gap-2 p-2 rounded-lg border bg-muted/30 text-sm">
-                <FileImage className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div key={e.id} className="flex items-center gap-2 py-1.5 text-sm">
+                <FileImage className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <span className="truncate flex-1">{e.file_name}</span>
               </div>
             ))}
@@ -305,12 +276,10 @@ function SellerDisputeDetail({ request, response, setResponse, respondMutation, 
       )}
 
       {request.escalation_reason && (
-        <Card className="bg-amber-500/5 border-amber-500/20">
-          <CardContent className="py-3">
-            <p className="text-sm font-medium text-amber-500">Escalation Reason</p>
-            <p className="text-sm text-muted-foreground">{request.escalation_reason}</p>
-          </CardContent>
-        </Card>
+        <div className="border-l-2 border-amber-500 pl-3">
+          <p className="text-sm font-medium text-amber-500">Escalation Reason</p>
+          <p className="text-sm text-muted-foreground">{request.escalation_reason}</p>
+        </div>
       )}
       {request.seller_response && (
         <div>
@@ -343,7 +312,6 @@ function SellerDisputeDetail({ request, response, setResponse, respondMutation, 
             <p className="text-xs text-muted-foreground text-right">{response.length}/1,000</p>
           </div>
 
-          {/* Seller evidence upload */}
           <div className="space-y-2">
             <Label>Attach Evidence (optional)</Label>
             <DisputeEvidenceUpload
