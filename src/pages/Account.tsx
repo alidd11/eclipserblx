@@ -464,8 +464,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       <div className="container py-4 space-y-3 max-w-lg mx-auto">
 
         {/* ═══ Profile Header ═══ */}
-        <Card className="rounded-xl border-border bg-card overflow-hidden">
-          <CardContent className="p-0">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="p-0">
             <div className="p-5 flex flex-col items-center text-center gap-2 relative">
               <AvatarUpload
                 userId={user.id}
