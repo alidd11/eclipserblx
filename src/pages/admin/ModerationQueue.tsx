@@ -289,8 +289,7 @@ export default function ModerationQueue() {
               const Icon = config.icon;
               return (
                 <Link key={`${item.type}-${item.id}`} to={item.href} className="block group">
-                  <Card className="transition-colors hover:bg-muted/50 active:scale-[0.995]">
-                    <CardContent className="p-4">
+                  <div className="border border-border rounded-xl transition-colors hover:bg-muted/50 active:scale-[0.995] p-4">
                       <div className="flex items-start gap-3">
                         <div className={`p-2 rounded-lg bg-muted shrink-0 ${config.color}`}>
                           <Icon className="h-5 w-5" />
