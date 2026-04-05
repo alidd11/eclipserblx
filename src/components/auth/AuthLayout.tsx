@@ -40,4 +40,4 @@ export const AuthLayout = forwardRef<HTMLDivElement, AuthLayoutProps>(function A
       </div>
     </div>
   );
-}
+});
