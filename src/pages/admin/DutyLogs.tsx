@@ -167,8 +167,8 @@ export default function DutyLogs() {
             ) : (
               <div className="space-y-2">
                 {myDutyLogs?.filter(l => l.clock_out).map((log) => (
-                  <Card key={log.id} className="bg-card border-border">
-                    <div className="p-4 p-3 sm:p-4">
+                  <div key={log.id} className="border border-border rounded-xl bg-card">
+                    <div className="p-3 sm:p-4">
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium">
