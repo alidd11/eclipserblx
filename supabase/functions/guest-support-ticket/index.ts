@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
     const { count } = await supabaseAdmin
       .from("support_tickets")
       .select("id", { count: "exact", head: true })
-      .eq("guest_email", email)
+      .eq("customer_email", email)
       .gte("created_at", oneHourAgo);
 
     if ((count ?? 0) >= 3) {
@@ -58,14 +58,13 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (profile) userId = profile.user_id;
 
-    // Create the ticket
+    // Create the ticket (using service role bypasses RLS)
     const { data: ticket, error } = await supabaseAdmin
       .from("support_tickets")
       .insert({
         user_id: userId,
-        guest_email: email,
+        customer_email: email,
         subject,
-        message,
         category: category || "general",
         status: "open",
         priority: "normal",
@@ -80,6 +79,16 @@ Deno.serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Add the initial message
+    await supabaseAdmin
+      .from("ticket_messages")
+      .insert({
+        ticket_id: ticket.id,
+        sender_id: userId,
+        sender_type: "customer",
+        message,
+      });
 
     return new Response(
       JSON.stringify({ success: true, ticketId: ticket.id }),
