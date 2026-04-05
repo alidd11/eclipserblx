@@ -286,8 +286,8 @@ export default function SellerSettingsNotifications() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Review Notifications */}
           <Card>
