@@ -54,7 +54,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
       return () => clearTimeout(t);
     } else {
       setSearchQuery('');
-      setUseAI(false);
+      setStoreResults([]);
       setStoreResults([]);
       setCategoryFilter(null);
     }
