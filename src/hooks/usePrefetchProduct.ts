@@ -2,17 +2,23 @@ import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+const PRODUCT_PREFETCH_STALE = 1000 * 60 * 5; // 5 minutes
+
 /**
- * Returns a prefetch handler to warm the product detail query cache on hover.
- * Attach `onMouseEnter={prefetch}` to product card links.
+ * Returns a prefetch handler to warm the product detail query cache on hover/touch.
+ * Used automatically by ProductCard — no manual wiring needed.
  */
 export function usePrefetchProduct() {
   const queryClient = useQueryClient();
 
   const prefetch = useCallback(
     (productNumber: string | number) => {
+      const key = ['product', String(productNumber)];
+      // Skip if already cached and fresh
+      if (queryClient.getQueryData(key)) return;
+
       queryClient.prefetchQuery({
-        queryKey: ['product', String(productNumber)],
+        queryKey: key,
         queryFn: async () => {
           const { data } = await supabase
             .from('products')
@@ -27,7 +33,7 @@ export function usePrefetchProduct() {
             .maybeSingle();
           return data;
         },
-        staleTime: 1000 * 60 * 2, // 2 minutes
+        staleTime: PRODUCT_PREFETCH_STALE,
       });
     },
     [queryClient]
