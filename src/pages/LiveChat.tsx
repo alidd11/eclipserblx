@@ -411,6 +411,7 @@ const LiveChatPage = () => {
             conversationId: newConv.id,
             userMessage: initialMessage,
             issueCategory: issueCategory,
+            userId: user.id,
           },
         });
 
