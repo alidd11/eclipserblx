@@ -60,7 +60,7 @@ export function LandingHero() {
 
           <div className="flex items-center gap-4 mt-2">
             <Link to="/products">
-              <Button size="lg" className="h-11 px-7 text-sm font-semibold shadow-[0_0_24px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_36px_hsl(var(--primary)/0.45)] transition-shadow">
+              <Button size="lg" className="h-11 px-7 text-sm font-semibold transition-colors">
                 Browse Marketplace
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
