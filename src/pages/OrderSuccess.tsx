@@ -19,7 +19,6 @@ export default function OrderSuccess() {
   const navigate = useNavigate();
   const { clearCart } = useCart();
   
-  // Support session_id (from Stripe Checkout), payment_intent (from Apple/Google Pay), order_id (from receipts), and id (legacy)
   const sessionId = searchParams.get('session_id');
   const paymentIntentId = searchParams.get('payment_intent');
   const orderId = searchParams.get('order_id') || searchParams.get('id');
@@ -28,11 +27,9 @@ export default function OrderSuccess() {
   const [isVerifying, setIsVerifying] = useState(!!(sessionId || paymentIntentId) && !orderId);
   const [showConfetti, setShowConfetti] = useState(false);
   
-  // Use refs to prevent multiple verification calls
   const hasVerified = useRef(false);
   const hasCleared = useRef(false);
 
-  // Memoize clearCart to prevent dependency issues
   const stableClearCart = useCallback(() => {
     if (!hasCleared.current) {
       hasCleared.current = true;
@@ -40,10 +37,8 @@ export default function OrderSuccess() {
     }
   }, [clearCart]);
 
-  // Verify payment and create order - only run once
   useEffect(() => {
     const verifyPayment = async () => {
-      // Skip if already verified, have order ID, or no payment reference
       if (hasVerified.current || orderId || (!sessionId && !paymentIntentId)) {
         setIsVerifying(false);
         return;
@@ -64,11 +59,8 @@ export default function OrderSuccess() {
         
         if (data?.success && data?.orderId) {
           setVerifiedOrderId(data.orderId);
-          // Clear the cart after successful payment
           stableClearCart();
-          // Check for new badges after successful purchase
           checkBadges();
-          // Trigger confetti celebration
           setShowConfetti(true);
         } else if (!data?.success) {
           console.error('Payment not completed:', data?.message);
@@ -82,6 +74,7 @@ export default function OrderSuccess() {
     
     verifyPayment();
   }, [sessionId, paymentIntentId, orderId, stableClearCart, checkBadges]);
+
   const { data: order, isLoading: isLoadingOrder } = useQuery({
     queryKey: ['order', verifiedOrderId],
     queryFn: async () => {
@@ -97,7 +90,6 @@ export default function OrderSuccess() {
     enabled: !!verifiedOrderId,
   });
 
-  // If no payment reference, redirect to home
   useEffect(() => {
     if (!sessionId && !paymentIntentId && !orderId) {
       navigate('/');
@@ -109,7 +101,7 @@ export default function OrderSuccess() {
   return (
     <MainLayout>
       <ConfettiCelebration isActive={showConfetti} onComplete={() => setShowConfetti(false)} />
-      <div className="container py-16 max-w-2xl text-center space-y-8">
+      <div className="container py-16 max-w-2xl text-center space-y-6">
         {isLoading ? (
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -117,8 +109,8 @@ export default function OrderSuccess() {
           </div>
         ) : (
           <>
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-500/10 text-green-500">
-              <CheckCircle className="h-10 w-10" />
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-green-500/10 text-green-500">
+              <CheckCircle className="h-7 w-7" />
             </div>
 
             <div className="space-y-2">
@@ -129,7 +121,7 @@ export default function OrderSuccess() {
             </div>
 
             {order && (
-              <div className="gaming-card p-6 text-left space-y-4">
+              <div className="border border-border rounded-xl bg-card p-5 text-left space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Order ID</span>
                   <span className="font-mono">{order.id.slice(0, 8).toUpperCase()}</span>
@@ -156,12 +148,12 @@ export default function OrderSuccess() {
               </div>
             )}
 
-            <div className="gaming-card p-6 space-y-4">
+            <div className="border border-border rounded-xl bg-card p-5 space-y-4">
               <div className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-primary" />
                 <div className="text-left">
-                  <p className="font-medium">Check your email</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="font-medium text-sm">Check your email</p>
+                  <p className="text-xs text-muted-foreground">
                     A confirmation email with your receipt has been sent
                   </p>
                 </div>
@@ -169,23 +161,23 @@ export default function OrderSuccess() {
               <div className="flex items-center gap-3">
                 <Download className="h-5 w-5 text-primary" />
                 <div className="text-left">
-                  <p className="font-medium">Instant access</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="font-medium text-sm">Instant access</p>
+                  <p className="text-xs text-muted-foreground">
                     Download your files now from your account
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button asChild className="gradient-button border-0">
+                <Link to="/account?tab=downloads">View My Downloads</Link>
+              </Button>
               <Button asChild variant="outline">
                 <Link to="/products">
                   Continue Shopping
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
-              </Button>
-              <Button asChild className="gradient-button border-0">
-                <Link to="/account?tab=downloads">View My Downloads</Link>
               </Button>
             </div>
           </>
