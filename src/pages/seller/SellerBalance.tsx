@@ -287,8 +287,8 @@ export default function SellerBalance() {
                   </Button>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Payout History */}
           <Card>
