@@ -138,7 +138,7 @@ export default function SearchResults() {
     };
 
     fetchInitial();
-  }, [debouncedQuery, sortBy, categorySlug, useAI, debouncedMinPrice, debouncedMaxPrice, freeOnly]);
+  }, [debouncedQuery, sortBy, categorySlug, debouncedMinPrice, debouncedMaxPrice, freeOnly]);
 
   // Load more
   const loadMore = useCallback(async () => {
