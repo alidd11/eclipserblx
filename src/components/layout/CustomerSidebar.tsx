@@ -17,7 +17,7 @@ import { EclipseLogo } from '@/components/ui/EclipseLogo';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'; // kept for collapsed tooltip
 import { safeStorage } from '@/lib/safeStorage';
 import { hapticTap } from '@/lib/haptics';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
