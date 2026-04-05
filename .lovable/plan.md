@@ -1,100 +1,76 @@
 
 
-## Enterprise AI-Dominated Live Chat — Order-Aware Support Agent
+## Enterprise File Security for Seller Products
 
-### What This Does
-Transforms the live chat from a basic AI responder into an intelligent support agent that automatically fetches and understands the customer's order history, identifies which order they're discussing, and provides contextual help with real data — no more asking customers for order numbers.
+### What's Already in Place
+Your current system has solid foundations: one-time download tokens (5-min expiry), rate limiting (5/day per product, 15/hr global), Lua watermarking with traceable hashes, purchase verification, IP logging, atomic token claiming, and file security scanning. These cover the basics well.
 
-### Architecture
+### Gaps at Enterprise Level
 
-```text
-Customer opens chat
-        │
-        ▼
-  ┌─────────────────────────┐
-  │  Edge Function receives  │
-  │  message + user_id       │
-  │          │                │
-  │  ┌───────▼──────────┐    │
-  │  │ Fetch customer's  │    │
-  │  │ recent orders +   │    │
-  │  │ order items +     │    │
-  │  │ download stats    │    │
-  │  └───────┬──────────┘    │
-  │          │                │
-  │  ┌───────▼──────────┐    │
-  │  │ Inject order data │    │
-  │  │ into AI system    │    │
-  │  │ prompt as context │    │
-  │  └───────┬──────────┘    │
-  │          │                │
-  │  ┌───────▼──────────┐    │
-  │  │ AI uses tool-call │    │
-  │  │ to take actions:  │    │
-  │  │ - lookup order    │    │
-  │  │ - check downloads │    │
-  │  │ - reset dl count  │    │
-  │  └──────────────────┘    │
-  └─────────────────────────┘
+1. **Non-Lua files have zero watermarking** — .rbxm, .rbxl, images, and other assets are served as raw originals. If a buyer leaks them, there's no way to trace the source.
+2. **Signed URL sharing** — Within the 5-minute window, a buyer can share the download URL with anyone (no IP or session binding).
+3. **No download fingerprinting** — Beyond the Lua watermark hash, there's no invisible metadata embedded in binary files to trace leaks.
+4. **No proactive leak detection** — The platform doesn't scan external sources for leaked assets.
+
+### Proposed Enhancements (3 changes)
+
+**1. IP-Bound Token Redemption**
+Lock each download token to the IP that generated it. When the token is redeemed via GET, verify the requester's IP matches the IP recorded at token creation. This prevents URL sharing — even within the 5-minute window.
+
+- Add `creator_ip` column to `download_tokens`
+- Record IP at token creation time
+- Verify IP match at redemption (with a configurable toggle per store for sellers who want strict vs relaxed)
+
+**2. Binary File Fingerprinting (Steganographic Metadata)**
+For non-Lua files (.rbxm, .rbxl, images, zip archives), inject an invisible buyer fingerprint before serving:
+
+- **Images**: Embed a unique buyer hash in EXIF metadata and LSB (least-significant-bit) steganography
+- **Roblox binary files (.rbxm/.rbxl)**: Append a trailing metadata block with an encoded buyer hash (Roblox Studio ignores trailing data)
+- **ZIP/archive files**: Add a hidden file (`.eclipse-license`) containing the buyer's watermark ID inside the archive
+- All fingerprints use the same `ECL-XXXXXXXX` format already used for Lua watermarking, linking to the `download_logs` audit trail
+
+Implementation: Extend the `download-asset` edge function with format-specific fingerprinting handlers that run before the signed URL is generated.
+
+**3. Leak Detection Registry & Seller Alerts**
+Allow sellers to submit file hashes of suspected leaked copies. The system cross-references the embedded fingerprint to identify the buyer:
+
+- New `leak_reports` table: `id, store_id, product_id, reported_file_hash, extracted_fingerprint, matched_user_id, status, created_at`
+- New edge function `report-leak` that accepts a file upload, extracts the embedded fingerprint, and resolves it to a buyer
+- Seller dashboard panel showing leak reports with matched buyer info (anonymized until confirmed)
+- Auto-flag buyers with multiple confirmed leaks
+
+### Database Changes
+
+```sql
+-- Add IP binding to download tokens
+ALTER TABLE download_tokens ADD COLUMN creator_ip text;
+
+-- Leak detection registry
+CREATE TABLE leak_reports (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  store_id uuid REFERENCES stores(id) NOT NULL,
+  product_id uuid REFERENCES products(id) NOT NULL,
+  reported_by uuid REFERENCES auth.users(id) NOT NULL,
+  file_hash text,
+  extracted_fingerprint text,
+  matched_user_id uuid REFERENCES auth.users(id),
+  status text DEFAULT 'pending' CHECK (status IN ('pending','confirmed','dismissed')),
+  notes text,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE leak_reports ENABLE ROW LEVEL SECURITY;
 ```
 
-### Implementation Steps
-
-**1. Update `ai-chat-support` edge function — Order context injection**
-- Accept `userId` from the request body (passed from frontend)
-- Before calling the AI, query the customer's recent orders (last 10) with `order_items` joined
-- Query download history for those order items
-- Format this data as structured context in the system prompt:
-  ```
-  CUSTOMER ORDER HISTORY:
-  Order #abc123 — Jan 5 2026 — $12.99 — Status: completed
-    - "Neon Car Model" (downloaded 3/5 times)
-    - "Racing Track Pack" (downloaded 0/5 times)
-  Order #def456 — Dec 20 2025 — $8.50 — Status: refunded
-    - "Sunset Skybox" (downloaded 1/5 times)
-  ```
-- Add tool-calling definitions so the AI can take actions:
-  - `lookup_order` — fetch specific order details by ID
-  - `check_download_status` — check remaining downloads for an item
-  - `reset_download_count` — reset download counter for an order item (for common support cases)
-
-**2. Enhance the system prompt**
-- Instruct the AI to proactively reference order data when relevant
-- When a customer mentions a product name, the AI should match it against their order history
-- AI should never ask for an order number if it can identify the order from context
-- AI should present order info naturally: "I can see your order for 'Neon Car Model' placed on Jan 5th..."
-- Add structured response guidelines for order-specific scenarios (download issues, missing items, status checks)
-
-**3. Update frontend (`LiveChat.tsx` + `ChatSidePanel.tsx`)**
-- Pass `userId` in the edge function invocation body
-- Display order context cards inline when AI references an order (parse `message_type: "order_context"`)
-- Show a compact order summary card with: product name, order date, status, download count
-- Add a "View Order" button on order cards that links to the customer's order page
-
-**4. Update admin `LiveChat.tsx` — Staff order panel**
-- When staff views a conversation, auto-fetch and display the customer's recent orders in a collapsible side panel
-- Staff can click an order to insert its details into the chat context
-- Show download analytics per order item
-
-**5. Add AI action execution in the edge function**
-- Implement tool-calling loop: if AI returns a tool call, execute it server-side and feed results back
-- `lookup_order`: query `orders` + `order_items` by order ID, return formatted details
-- `check_download_status`: return current download count vs limit for an order item
-- `reset_download_count`: reset `download_count` to 0 on `order_items` (common support action)
-- After executing tools, re-call AI with results for a natural language response
-
-### Technical Details
-
-- **No database migration needed** — all data comes from existing `orders`, `order_items` tables
-- The edge function uses `SUPABASE_SERVICE_ROLE_KEY` so it can read orders regardless of RLS
-- Tool calls use the OpenAI-compatible `tools` parameter with `tool_choice: "auto"`
-- Order data is limited to last 10 orders to stay within token limits
-- User ID is validated against the conversation's `user_id` to prevent data leakage
-- The AI model stays `google/gemini-3-flash-preview` for speed, with `max_tokens` increased to 800
-
 ### Files Changed
-- `supabase/functions/ai-chat-support/index.ts` — Major rewrite: order fetching, tool definitions, tool execution loop
-- `src/pages/LiveChat.tsx` — Pass `userId`, render order context cards
-- `src/components/chat/ChatSidePanel.tsx` — Pass `userId`, render order context cards
-- `src/pages/admin/LiveChat.tsx` — Add customer orders side panel
+- `supabase/functions/download-asset/index.ts` — Add `creator_ip` recording, IP verification on redemption, binary fingerprinting for images/rbxm/zip
+- `src/pages/seller/SellerOrders.tsx` or similar — Add leak report submission UI
+- New `supabase/functions/report-leak/index.ts` — Accept file, extract fingerprint, resolve buyer
+- Migration for `creator_ip` column and `leak_reports` table
+
+### What This Achieves
+- **Traceability**: Every downloaded file (not just Lua) carries an invisible, unique buyer fingerprint
+- **Prevention**: IP-bound tokens stop casual URL sharing
+- **Detection**: Sellers can identify exactly which buyer leaked their assets
+- **Deterrence**: Buyers know their identity is embedded in every download
 
