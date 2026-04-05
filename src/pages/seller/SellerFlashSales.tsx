@@ -193,16 +193,14 @@ export default function SellerFlashSales() {
               </div>
             ))
           ) : (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Zap className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No Flash Sales</h3>
-                <p className="text-muted-foreground mb-4">Create a time-limited sale to boost engagement</p>
-                <Button onClick={() => setShowDialog(true)}>
-                  <Plus className="h-4 w-4 mr-2" />Create Flash Sale
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-xl py-12 text-center">
+              <Zap className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <h3 className="text-lg font-medium mb-2">No Flash Sales</h3>
+              <p className="text-muted-foreground mb-4">Create a time-limited sale to boost engagement</p>
+              <Button onClick={() => setShowDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />Create Flash Sale
+              </Button>
+            </div>
           )}
         </div>
       </div>

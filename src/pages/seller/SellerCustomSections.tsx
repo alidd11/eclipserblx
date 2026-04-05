@@ -422,15 +422,13 @@ export default function SellerCustomSections() {
             ))}
           </div>
         ) : (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <LayoutGrid className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h3 className="text-lg font-medium mb-2">No Custom Sections</h3>
-              <p className="text-muted-foreground">
-                Add FAQ, testimonials, or other sections to make your store stand out.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="border border-border rounded-xl py-12 text-center">
+            <LayoutGrid className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <h3 className="text-lg font-medium mb-2">No Custom Sections</h3>
+            <p className="text-muted-foreground">
+              Add FAQ, testimonials, or other sections to make your store stand out.
+            </p>
+          </div>
         )}
       </div>
     </SellerLayout>

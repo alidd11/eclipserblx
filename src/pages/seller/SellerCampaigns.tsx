@@ -185,8 +185,7 @@ export default function SellerCampaigns() {
               const status = getCampaignStatus(campaign);
               const isLive = status.label === 'Active';
               return (
-                <Card key={campaign.id} className={isLive ? 'border-primary/30' : ''}>
-                  <CardContent className="py-4">
+                <div key={campaign.id} className={`border border-border rounded-xl p-4 ${isLive ? 'border-primary/30' : ''}`}>
                     <div className="flex items-center gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
@@ -225,8 +224,7 @@ export default function SellerCampaigns() {
                         </Button>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                </div>
               );
             })}
           </div>

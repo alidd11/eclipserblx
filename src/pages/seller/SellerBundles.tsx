@@ -230,16 +230,14 @@ export default function SellerBundles() {
               </div>
             ))
           ) : (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <PackagePlus className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No Bundles</h3>
-                <p className="text-muted-foreground mb-4">Create bundle deals to increase average order value</p>
-                <Button onClick={() => setShowDialog(true)}>
-                  <Plus className="h-4 w-4 mr-2" />Create Bundle
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-xl py-12 text-center">
+              <PackagePlus className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <h3 className="text-lg font-medium mb-2">No Bundles</h3>
+              <p className="text-muted-foreground mb-4">Create bundle deals to increase average order value</p>
+              <Button onClick={() => setShowDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />Create Bundle
+              </Button>
+            </div>
           )}
         </div>
       </div>

@@ -217,8 +217,7 @@ export default function SellerGoals() {
               const achieved = goal.current_amount >= goal.target_amount;
 
               return (
-                <Card key={goal.id} className={achieved ? 'border-primary/30 bg-primary/5' : ''}>
-                  <CardContent className="py-5">
+                <div key={goal.id} className={`border border-border rounded-xl p-5 ${achieved ? 'border-primary/30 bg-primary/5' : ''}`}>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -262,8 +261,7 @@ export default function SellerGoals() {
                         </span>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                </div>
               );
             })}
           </div>
