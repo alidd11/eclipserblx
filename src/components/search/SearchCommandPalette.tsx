@@ -100,7 +100,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
 
   // Search using search_products_v2 RPC for full-text + trigram + description matching
   useEffect(() => {
-    if (!open || useAI) return;
+    if (!open) return;
     const fetchProducts = async () => {
       if (searchQuery.length < 2) {
         setProducts([]);
