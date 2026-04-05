@@ -48,6 +48,6 @@ function MainLayoutContent({ children, showFooter = true }: MainLayoutProps) {
   );
 }
 
-export function MainLayout({ children, showFooter = true, showBreadcrumb = true }: MainLayoutProps) {
-  return <MainLayoutContent showFooter={showFooter} showBreadcrumb={showBreadcrumb}>{children}</MainLayoutContent>;
+export function MainLayout({ children, showFooter = true }: MainLayoutProps) {
+  return <MainLayoutContent showFooter={showFooter}>{children}</MainLayoutContent>;
 }

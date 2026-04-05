@@ -131,9 +131,6 @@ function LayoutShellInner({
               <GlobalCategoryBar />
             </div>
           )}
-          {showBreadcrumb && (
-            <Suspense fallback={null}><UniversalBreadcrumb /></Suspense>
-          )}
           <main
             id="main-content"
             className={mainClassName ?? "flex-1 overflow-x-clip max-w-full min-w-0"}
