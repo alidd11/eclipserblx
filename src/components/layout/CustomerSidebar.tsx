@@ -299,13 +299,13 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     );
 
     const linkClassName = cn(
-      "text-[13px] font-medium select-none transition-colors duration-100",
+      "text-[13px] font-medium select-none transition-all duration-100",
       isCollapsed
         ? "flex w-full max-w-full items-center justify-center py-2 rounded-lg overflow-hidden"
-        : "flex w-full max-w-full min-w-0 flex-row flex-nowrap items-center gap-3 px-3 py-2.5 ml-2 rounded-lg overflow-hidden active:scale-[0.98] active:opacity-80",
+        : "flex w-full max-w-full min-w-0 flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-2 rounded-lg overflow-hidden active:scale-[0.98] active:opacity-80 border-l-2 border-transparent",
       isActive
-        ? "border-l-[3px] border-primary bg-primary/10 text-foreground !rounded-l-none pl-[calc(0.75rem-3px)]"
-        : "text-foreground/70 hover:text-foreground hover:bg-muted/50"
+        ? "bg-primary/10 text-foreground font-semibold !border-l-2 !border-primary"
+        : "text-foreground/70 hover:text-foreground hover:bg-muted/50 hover:border-primary/40"
     );
 
     if (item.external) {
