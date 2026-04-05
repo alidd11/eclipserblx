@@ -111,17 +111,12 @@ export default function CommunityAnnouncements() {
           <p className="text-muted-foreground">Send announcements to your Discord community</p>
         </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Megaphone className="h-5 w-5" />
-            Discord Announcements
-          </CardTitle>
-          <CardDescription>
-            Send announcements to your Discord community
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+      <div className="border border-border rounded-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-muted/30">
+          <h2 className="font-semibold text-sm">Discord Announcements</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Send announcements to your Discord community</p>
+        </div>
+        <div className="p-4 space-y-6">
           {!webhookUrl && (
             <Alert className="border-amber-500/50 bg-amber-500/10">
               <AlertCircle className="h-4 w-4 text-amber-500" />
