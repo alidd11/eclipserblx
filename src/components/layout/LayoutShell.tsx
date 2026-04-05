@@ -6,8 +6,6 @@ import { Header } from '@/components/layout/Header';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 // Lazy-load below-fold Footer to reduce initial bundle
 const Footer = lazy(() => import('@/components/layout/Footer').then(m => ({ default: m.Footer })));
-// Lazy-load breadcrumb — non-critical for initial paint
-const UniversalBreadcrumb = lazy(() => import('@/components/layout/UniversalBreadcrumb').then(m => ({ default: m.UniversalBreadcrumb })));
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
 import { useEdgeSwipe } from '@/hooks/useEdgeSwipe';
