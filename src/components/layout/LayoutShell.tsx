@@ -2,6 +2,7 @@ import { ReactNode, useState, lazy, Suspense } from 'react';
 import { GlobalCategoryBar } from '@/components/shop/GlobalCategoryBar';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Header } from '@/components/layout/Header';
+import { useScrollDirection } from '@/hooks/useScrollDirection';
 // Lazy-load below-fold Footer to reduce initial bundle
 const Footer = lazy(() => import('@/components/layout/Footer').then(m => ({ default: m.Footer })));
 // Lazy-load breadcrumb — non-critical for initial paint
