@@ -1,34 +1,64 @@
 
 
-## Polish Recovery & Guest Support to Enterprise Visual Standard
+## Old-Style Card Audit — Should They Be Flattened?
 
-### What Changes
+### What I Found
 
-Align the three customer-facing recovery features with the site's established flattened enterprise aesthetic — bordered containers, muted headers, clean typography, no gradient buttons on utility pages.
+There are **~40+ files** across the customer-facing codebase still using Shadcn `Card`/`CardHeader`/`CardTitle` wrappers instead of the flattened `div` + `border-border rounded-xl` pattern established in the v4 enterprise overhaul. An enterprise company would absolutely standardize this — inconsistent component patterns create visual noise and maintenance debt.
 
-### Steps
+### Where the Old Cards Still Exist
 
-1. **RecoverOrder.tsx — Visual overhaul**
-   - Replace `Card`/`CardHeader` with flat bordered container (`border-border rounded-xl`) and `bg-muted/30` header area
-   - Replace `gradient-button` with standard primary button (utility page, not conversion)
-   - Add a step-by-step visual guide: "1. Check your email receipt → 2. Copy the reference starting with pi_ or cs_ → 3. Paste below"
-   - Remove "from Stripe" copy — replace with "from your payment confirmation email"
-   - Add the guest support form as a fallback in the unauthenticated state (instead of just "please sign in")
-   - Improve result states: success card with order details, error card with actionable next steps
+**Account section (13 files)** — the biggest offender:
+- `ReferralCard.tsx`, `BecomeSellerCard.tsx`, `MyMessagesCard.tsx`, `NotificationSettingsCard.tsx`, `SoundCustomizationCard.tsx`, `CreditsCard.tsx`
+- `MyAdvertisementsPage.tsx`, `AdAnalyticsPage.tsx`, `FollowingPage.tsx`
 
-2. **GuestSupportForm.tsx — Polish**
-   - Add character counter on textarea (X/5000)
-   - Expose category dropdown (Downloads, Payments, Account, Other) — the edge function already supports it
-   - Add subtle info banner: "We typically respond within 24 hours"
-   - Match input styling to the flattened aesthetic
+**Wallet section (4 files)**:
+- `WalletBalanceCard.tsx`, `TransactionHistoryCard.tsx`, `MyPaymentsCard.tsx`, `AddCreditsCard.tsx`
 
-3. **Support.tsx — Integration fixes**
-   - Show guest support form for ALL users (not just logged-out) with a toggle/accordion "Having trouble signing in?" — this covers the exact edge case of auth-broken users
-   - Flatten the order recovery banner: remove `bg-primary/5`, use standard `bg-muted/30` with left border accent
-   - Add the recovery link to the "Payments & Orders" help topic articles list
+**Marketplace sidebar cards (5 files)**:
+- `TopSellersCard.tsx`, `CategoriesGridCard.tsx`, `NewArrivalsCard.tsx`, `BecomeSellerCard.tsx`, `HowItWorksCard.tsx` — these also use gradient icon backgrounds (`bg-gradient-to-br from-amber-500/20`) which contradicts the flat aesthetic
+
+**Support page (1 file)**:
+- `Support.tsx` quick-link cards still use `Card`/`CardContent`
+
+**Bot/GlobalGuard pages (3 files)**:
+- `BotDashboard.tsx`, `BotLogs.tsx`, `Servers.tsx`
+
+**Seller banners (2 files)**:
+- `PendingReviewBanner.tsx`, `TosBanner.tsx`
+
+**Product detail (1 file)**:
+- `ProductDetail.tsx` — review/info sections
+
+### Would an Enterprise Company Do This?
+
+No. An enterprise company enforces a single container pattern across the entire product. The current mix of `<Card>` wrappers (with their built-in padding, shadows, and rounded corners) alongside raw `div` containers with `border-border rounded-xl` creates two competing visual languages. Enterprise platforms like Shopify Admin, Stripe Dashboard, and Linear all use one consistent container style throughout.
+
+### The Plan
+
+Systematically replace all customer-facing `Card`/`CardHeader`/`CardTitle` usage with the established flattened pattern:
+- `<Card>` → `<div className="border border-border rounded-xl overflow-hidden">`
+- `<CardHeader>` → `<div className="px-6 py-4 bg-muted/30 border-b border-border">`
+- `<CardTitle>` → `<h3 className="text-sm font-semibold">` (or appropriate size)
+- `<CardContent>` → `<div className="p-6">`
+- Remove gradient icon backgrounds → use flat `bg-primary/10` or `bg-muted`
+
+### Execution Order (by impact)
+
+1. **Account cards** (13 files) — most user-facing, highest traffic
+2. **Wallet cards** (4 files) — payment-critical, needs polish
+3. **Marketplace sidebar cards** (5 files) — visible on every browse page
+4. **Support quick-link cards** (1 file)
+5. **Bot/GlobalGuard pages** (3 files)
+6. **Seller banners** (2 files)
+7. **ProductDetail sections** (1 file)
 
 ### Files Changed
-- `src/pages/RecoverOrder.tsx` — Visual redesign + unauthenticated fallback
-- `src/components/support/GuestSupportForm.tsx` — Category selector, character counter, response time info
-- `src/pages/Support.tsx` — Show guest form for all users, flatten recovery banner
+~29 files total across `src/components/account/`, `src/components/wallet/`, `src/components/marketplace/`, `src/pages/Account/`, `src/pages/Support.tsx`, `src/pages/BotDashboard.tsx`, `src/pages/global-guard/`, `src/components/seller/banners/`, and `src/pages/ProductDetail.tsx`
+
+### What This Achieves
+- One consistent container language across the entire customer experience
+- Removes the visual weight of Card shadows/borders in favor of the established flat aesthetic
+- Eliminates gradient icon backgrounds that conflict with the enterprise direction
+- Reduces dependency on the Shadcn Card component for layout (it remains available for truly interactive/clickable card patterns like ProductCard)
 
