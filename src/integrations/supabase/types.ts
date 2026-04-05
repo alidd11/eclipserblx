@@ -5512,6 +5512,7 @@ export type Database = {
       order_items: {
         Row: {
           created_at: string
+          download_count: number
           id: string
           order_id: string
           price: number
@@ -5520,6 +5521,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          download_count?: number
           id?: string
           order_id: string
           price: number
@@ -5528,6 +5530,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          download_count?: number
           id?: string
           order_id?: string
           price?: number
@@ -6162,6 +6165,7 @@ export type Database = {
           is_pay_what_you_want: boolean
           is_resellable: boolean
           is_seller_product: boolean | null
+          max_downloads_per_purchase: number | null
           min_price: number | null
           moderation_flags: Json | null
           moderation_notes: string | null
@@ -6205,6 +6209,7 @@ export type Database = {
           is_pay_what_you_want?: boolean
           is_resellable?: boolean
           is_seller_product?: boolean | null
+          max_downloads_per_purchase?: number | null
           min_price?: number | null
           moderation_flags?: Json | null
           moderation_notes?: string | null
@@ -6248,6 +6253,7 @@ export type Database = {
           is_pay_what_you_want?: boolean
           is_resellable?: boolean
           is_seller_product?: boolean | null
+          max_downloads_per_purchase?: number | null
           min_price?: number | null
           moderation_flags?: Json | null
           moderation_notes?: string | null
