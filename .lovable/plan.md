@@ -1,76 +1,47 @@
 
 
-## Enterprise File Security for Seller Products
+## Improve Product Cards to Enterprise Level
 
-### What's Already in Place
-Your current system has solid foundations: one-time download tokens (5-min expiry), rate limiting (5/day per product, 15/hr global), Lua watermarking with traceable hashes, purchase verification, IP logging, atomic token claiming, and file security scanning. These cover the basics well.
+### What Changes
 
-### Gaps at Enterprise Level
+Taking inspiration from ClearlyDev, Amazon, and eBay card patterns, these refinements polish the existing `ProductCard` without a full rewrite:
 
-1. **Non-Lua files have zero watermarking** — .rbxm, .rbxl, images, and other assets are served as raw originals. If a buyer leaks them, there's no way to trace the source.
-2. **Signed URL sharing** — Within the 5-minute window, a buyer can share the download URL with anyone (no IP or session binding).
-3. **No download fingerprinting** — Beyond the Lua watermark hash, there's no invisible metadata embedded in binary files to trace leaks.
-4. **No proactive leak detection** — The platform doesn't scan external sources for leaked assets.
+**1. Image area — taller aspect ratio + image dots**
+- Change from `aspect-[4/3]` to `aspect-square` for more visual impact (matches ClearlyDev)
+- Add small dot indicators when multiple images exist (visible on hover), so users know there's more to see
+- Use `object-contain` with a subtle dark background instead of `object-cover` to show products without cropping
 
-### Proposed Enhancements (3 changes)
+**2. Store strip — merge into content area**
+- Remove the separate `h-7` store strip bar. Instead, place the store name + verified badge inline below the product title (like Amazon's "by StoreName" pattern)
+- This saves vertical space and feels cleaner
 
-**1. IP-Bound Token Redemption**
-Lock each download token to the IP that generated it. When the token is redeemed via GET, verify the requester's IP matches the IP recorded at token creation. This prevents URL sharing — even within the 5-minute window.
+**3. Rating stars — always visible when available**
+- Move star rating from the store strip to sit next to the price, like ClearlyDev and Amazon
+- Show rating count if available (e.g. "4.8 (12)")
 
-- Add `creator_ip` column to `download_tokens`
-- Record IP at token creation time
-- Verify IP match at redemption (with a configurable toggle per store for sellers who want strict vs relaxed)
+**4. Price row — bolder, left-aligned with quick-add**
+- Make price larger and bolder (`text-sm font-bold` on mobile, `text-base` on desktop)
+- Add a compact cart icon button on the right side of the price row (like ClearlyDev's cart icon). Currently there is no add-to-cart on the card itself — this is a major conversion improvement
+- Member discount pricing stays as-is but with slightly larger text
 
-**2. Binary File Fingerprinting (Steganographic Metadata)**
-For non-Lua files (.rbxm, .rbxl, images, zip archives), inject an invisible buyer fingerprint before serving:
+**5. Category badge — move below image**
+- Instead of overlaying on the image, show category as a small muted text label above the product name (like ClearlyDev's tag pill). Keeps the image clean
+- Sale/Featured/New badges stay as image overlays since they're attention-grabbers
 
-- **Images**: Embed a unique buyer hash in EXIF metadata and LSB (least-significant-bit) steganography
-- **Roblox binary files (.rbxm/.rbxl)**: Append a trailing metadata block with an encoded buyer hash (Roblox Studio ignores trailing data)
-- **ZIP/archive files**: Add a hidden file (`.eclipse-license`) containing the buyer's watermark ID inside the archive
-- All fingerprints use the same `ECL-XXXXXXXX` format already used for Lua watermarking, linking to the `download_logs` audit trail
+**6. Hover state — more polished**
+- Replace the dark gradient overlay with a subtle border highlight + slight lift (`shadow-md`)
+- Image zoom stays at 1.05 scale
 
-Implementation: Extend the `download-asset` edge function with format-specific fingerprinting handlers that run before the signed URL is generated.
-
-**3. Leak Detection Registry & Seller Alerts**
-Allow sellers to submit file hashes of suspected leaked copies. The system cross-references the embedded fingerprint to identify the buyer:
-
-- New `leak_reports` table: `id, store_id, product_id, reported_file_hash, extracted_fingerprint, matched_user_id, status, created_at`
-- New edge function `report-leak` that accepts a file upload, extracts the embedded fingerprint, and resolves it to a buyer
-- Seller dashboard panel showing leak reports with matched buyer info (anonymized until confirmed)
-- Auto-flag buyers with multiple confirmed leaks
-
-### Database Changes
-
-```sql
--- Add IP binding to download tokens
-ALTER TABLE download_tokens ADD COLUMN creator_ip text;
-
--- Leak detection registry
-CREATE TABLE leak_reports (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  store_id uuid REFERENCES stores(id) NOT NULL,
-  product_id uuid REFERENCES products(id) NOT NULL,
-  reported_by uuid REFERENCES auth.users(id) NOT NULL,
-  file_hash text,
-  extracted_fingerprint text,
-  matched_user_id uuid REFERENCES auth.users(id),
-  status text DEFAULT 'pending' CHECK (status IN ('pending','confirmed','dismissed')),
-  notes text,
-  created_at timestamptz DEFAULT now()
-);
-
-ALTER TABLE leak_reports ENABLE ROW LEVEL SECURITY;
-```
+**7. Border & rounding**
+- Tighten border radius from `rounded-lg` to `rounded-xl` for a more modern feel
+- Remove the faint border default, add it only on hover for a cleaner grid appearance
 
 ### Files Changed
-- `supabase/functions/download-asset/index.ts` — Add `creator_ip` recording, IP verification on redemption, binary fingerprinting for images/rbxm/zip
-- `src/pages/seller/SellerOrders.tsx` or similar — Add leak report submission UI
-- New `supabase/functions/report-leak/index.ts` — Accept file, extract fingerprint, resolve buyer
-- Migration for `creator_ip` column and `leak_reports` table
+- `src/components/ui/ProductCard.tsx` — All visual changes above
+- `src/components/ui/ProductCardSkeleton.tsx` — Match new layout proportions
 
-### What This Achieves
-- **Traceability**: Every downloaded file (not just Lua) carries an invisible, unique buyer fingerprint
-- **Prevention**: IP-bound tokens stop casual URL sharing
-- **Detection**: Sellers can identify exactly which buyer leaked their assets
-- **Deterrence**: Buyers know their identity is embedded in every download
+### Technical Notes
+- No new dependencies or database changes
+- All existing props preserved — purely visual refactor
+- The quick-add cart button uses `e.preventDefault()` + `e.stopPropagation()` to avoid navigating on click (same pattern already in handleAddToCart)
 
