@@ -88,7 +88,7 @@ export function OrdersTab({ storeId }: OrdersTabProps) {
 
       let ordersQuery = supabase
         .from('orders')
-        .select('*, order_items(id, product_name, price, product_id)', { count: 'exact' })
+        .select('*, order_items(id, product_name, price, product_id, download_count)', { count: 'exact' })
         .in('id', orderIds)
         .order('created_at', { ascending: false });
 
@@ -309,7 +309,12 @@ export function OrdersTab({ storeId }: OrdersTabProps) {
                 <div className="space-y-2">
                   {(selectedOrder.order_items || []).map((item: any) => (
                     <div key={item.id} className="flex justify-between items-center p-2 rounded-md bg-muted/50">
-                      <span className="text-sm">{item.product_name}</span>
+                      <div>
+                        <span className="text-sm">{item.product_name}</span>
+                        <span className="text-xs text-muted-foreground ml-2">
+                          ({item.download_count ?? 0} download{(item.download_count ?? 0) !== 1 ? 's' : ''})
+                        </span>
+                      </div>
                       <span className="text-sm font-medium">{formatCurrency(item.price)}</span>
                     </div>
                   ))}

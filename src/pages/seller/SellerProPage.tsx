@@ -53,6 +53,7 @@ const featureGroups: { section: string; rows: FeatureRow[] }[] = [
       { label: 'Analytics', free: '30 days', pro: '90 days + export', icon: BarChart3 },
       { label: 'Discount codes', free: '1 active', pro: 'Unlimited', icon: Tag },
       { label: 'Monthly ad credit', free: '—', pro: '£5', icon: Megaphone },
+      { label: 'Download limits', free: false, pro: true, icon: Shield },
       { label: 'Priority product review', free: false, pro: true, icon: Zap },
       { label: 'Advanced analytics', free: false, pro: true, icon: Star },
     ],

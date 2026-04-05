@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
+import { useSellerSubscription } from '@/hooks/useSellerSubscription';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
@@ -18,6 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -72,6 +74,7 @@ interface ProductFormData {
   ip_ownership_confirmed: boolean;
   is_pay_what_you_want: boolean;
   min_price: string;
+  max_downloads_per_purchase: string;
 }
 
 const INITIAL_FORM_DATA: ProductFormData = {
@@ -92,6 +95,7 @@ const INITIAL_FORM_DATA: ProductFormData = {
   ip_ownership_confirmed: false,
   is_pay_what_you_want: false,
   min_price: '0',
+  max_downloads_per_purchase: '',
 };
 
 export default function SellerProductEditor() {
@@ -102,6 +106,7 @@ export default function SellerProductEditor() {
   const assetInputRef = useRef<HTMLInputElement>(null);
   
   const { user, loading: authLoading } = useAuth();
+  const { isPro } = useSellerSubscription();
   const { hasAccess, loading: flagLoading } = useMarketplaceAccess();
   const { store, isSeller, loading: sellerLoading } = useSellerStatus();
 
@@ -174,6 +179,7 @@ export default function SellerProductEditor() {
         ip_ownership_confirmed: product.ip_ownership_confirmed ?? false,
         is_pay_what_you_want: product.is_pay_what_you_want ?? false,
         min_price: (product.min_price ?? 0).toString(),
+        max_downloads_per_purchase: (product as any).max_downloads_per_purchase?.toString() || '',
       });
     }
   }, [product]);
@@ -397,6 +403,7 @@ export default function SellerProductEditor() {
         ip_ownership_confirmed: data.ip_ownership_confirmed,
         is_pay_what_you_want: data.is_pay_what_you_want,
         min_price: data.is_pay_what_you_want ? (parseFloat(data.min_price) || 0) : null,
+        max_downloads_per_purchase: isPro && data.max_downloads_per_purchase ? parseInt(data.max_downloads_per_purchase) : null,
       };
 
       if (isEditing && productId) {
@@ -956,7 +963,48 @@ export default function SellerProductEditor() {
             </div>
           </div>
 
-          {/* Actions */}
+          {/* Download Limit — Pro Only */}
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-sm">Download Limit</h3>
+                {!isPro && (
+                  <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">PRO</Badge>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Limit how many times a buyer can download after purchase
+              </p>
+            </div>
+            <div className="p-4">
+              {isPro ? (
+                <div className="space-y-2">
+                  <Label htmlFor="max_downloads">Max downloads per purchase</Label>
+                  <Input
+                    id="max_downloads"
+                    type="number"
+                    min="1"
+                    max="100"
+                    placeholder="Unlimited (leave empty)"
+                    value={formData.max_downloads_per_purchase}
+                    onChange={(e) => setFormData({ ...formData, max_downloads_per_purchase: e.target.value })}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {formData.max_downloads_per_purchase
+                      ? `Buyers can download up to ${formData.max_downloads_per_purchase} time${parseInt(formData.max_downloads_per_purchase) !== 1 ? 's' : ''}`
+                      : 'No limit — buyers can re-download as many times as they want'}
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground mb-2">Upgrade to Pro to set download limits on your products.</p>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="/seller/pro">Upgrade to Pro</a>
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
           <div className="flex justify-end gap-4">
             <Button
               type="button"
