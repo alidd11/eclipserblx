@@ -175,12 +175,10 @@ export default function SellerCampaigns() {
             {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 rounded-lg" />)}
           </div>
         ) : campaigns?.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Megaphone className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No campaigns yet. Create your first discount campaign!</p>
-            </CardContent>
-          </Card>
+          <div className="border border-border rounded-xl py-12 text-center">
+            <Megaphone className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground">No campaigns yet. Create your first discount campaign!</p>
+          </div>
         ) : (
           <div className="space-y-3">
             {campaigns?.map((campaign: any) => {
