@@ -1,8 +1,9 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState, useCallback } from 'react';
 import { LayoutShell } from './LayoutShell';
 import { PageTransition } from './PageTransition';
 import { CustomerSidebar } from './CustomerSidebar';
 import { useDeferredScheduledReleaseCheck } from '@/hooks/useScheduledReleaseCheck';
+import { safeStorage } from '@/lib/safeStorage';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -10,14 +11,25 @@ interface MainLayoutProps {
   showBreadcrumb?: boolean;
 }
 
+const COLLAPSE_KEY = 'sidebar-collapsed';
+
 function MainLayoutContent({ children, showFooter = true, showBreadcrumb = true }: MainLayoutProps) {
-  // Deferred: waits for idle before starting polling
   useDeferredScheduledReleaseCheck();
+
+  const [collapsed, setCollapsed] = useState(() => safeStorage.getItem(COLLAPSE_KEY) === 'true');
+
+  const handleToggle = useCallback(() => {
+    setCollapsed(prev => {
+      const next = !prev;
+      safeStorage.setItem(COLLAPSE_KEY, String(next));
+      return next;
+    });
+  }, []);
 
   return (
     <LayoutShell
       desktopSidebar={
-        <CustomerSidebar collapsed={false} onToggle={() => {}} />
+        <CustomerSidebar collapsed={collapsed} onToggle={handleToggle} />
       }
       mobileSidebar={(onClose) => (
         <CustomerSidebar
