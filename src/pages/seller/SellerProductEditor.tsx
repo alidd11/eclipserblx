@@ -962,7 +962,48 @@ export default function SellerProductEditor() {
             </div>
           </div>
 
-          {/* Actions */}
+          {/* Download Limit — Pro Only */}
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-sm">Download Limit</h3>
+                {!isPro && (
+                  <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">PRO</Badge>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Limit how many times a buyer can download after purchase
+              </p>
+            </div>
+            <div className="p-4">
+              {isPro ? (
+                <div className="space-y-2">
+                  <Label htmlFor="max_downloads">Max downloads per purchase</Label>
+                  <Input
+                    id="max_downloads"
+                    type="number"
+                    min="1"
+                    max="100"
+                    placeholder="Unlimited (leave empty)"
+                    value={formData.max_downloads_per_purchase}
+                    onChange={(e) => setFormData({ ...formData, max_downloads_per_purchase: e.target.value })}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {formData.max_downloads_per_purchase
+                      ? `Buyers can download up to ${formData.max_downloads_per_purchase} time${parseInt(formData.max_downloads_per_purchase) !== 1 ? 's' : ''}`
+                      : 'No limit — buyers can re-download as many times as they want'}
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground mb-2">Upgrade to Pro to set download limits on your products.</p>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="/seller/pro">Upgrade to Pro</a>
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
           <div className="flex justify-end gap-4">
             <Button
               type="button"
