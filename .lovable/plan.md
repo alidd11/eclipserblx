@@ -1,41 +1,100 @@
 
 
-## Fix: Broken Flex Height Chain on Chat/Ticket Pages
+## Enterprise AI-Dominated Live Chat — Order-Aware Support Agent
 
-### Root Cause
+### What This Does
+Transforms the live chat from a basic AI responder into an intelligent support agent that automatically fetches and understands the customer's order history, identifies which order they're discussing, and provides contextual help with real data — no more asking customers for order numbers.
 
-On chat and ticket pages, the flex height chain from the viewport-constrained outer wrapper down to the chat composer is broken at **one specific point** in `LayoutShell.tsx`:
+### Architecture
 
 ```text
-wrapper (max-h: --chat-vvh) ✓
-  inner column (flex-1 min-h-0) ✓
-    main (flex: 1 1 0%, flex-col) ✓
-      div.w-full  ← ✗ BREAKS HERE — plain block div, no flex participation
-        div.contentClassName (flex-1 flex-col min-h-0) ✓
-          StaffChatRoom / TicketDetail ✓
+Customer opens chat
+        │
+        ▼
+  ┌─────────────────────────┐
+  │  Edge Function receives  │
+  │  message + user_id       │
+  │          │                │
+  │  ┌───────▼──────────┐    │
+  │  │ Fetch customer's  │    │
+  │  │ recent orders +   │    │
+  │  │ order items +     │    │
+  │  │ download stats    │    │
+  │  └───────┬──────────┘    │
+  │          │                │
+  │  ┌───────▼──────────┐    │
+  │  │ Inject order data │    │
+  │  │ into AI system    │    │
+  │  │ prompt as context │    │
+  │  └───────┬──────────┘    │
+  │          │                │
+  │  ┌───────▼──────────┐    │
+  │  │ AI uses tool-call │    │
+  │  │ to take actions:  │    │
+  │  │ - lookup order    │    │
+  │  │ - check downloads │    │
+  │  │ - reset dl count  │    │
+  │  └──────────────────┘    │
+  └─────────────────────────┘
 ```
 
-The `<div className="w-full">` on line 142 of `LayoutShell.tsx` is a plain block-level element. It does not participate in the flex column, so `flex-1` on its children has no effect. The chat content cannot fill the available space, causing the black gap.
+### Implementation Steps
 
-### Fix (2 files, ~6 lines changed)
+**1. Update `ai-chat-support` edge function — Order context injection**
+- Accept `userId` from the request body (passed from frontend)
+- Before calling the AI, query the customer's recent orders (last 10) with `order_items` joined
+- Query download history for those order items
+- Format this data as structured context in the system prompt:
+  ```
+  CUSTOMER ORDER HISTORY:
+  Order #abc123 — Jan 5 2026 — $12.99 — Status: completed
+    - "Neon Car Model" (downloaded 3/5 times)
+    - "Racing Track Pack" (downloaded 0/5 times)
+  Order #def456 — Dec 20 2025 — $8.50 — Status: refunded
+    - "Sunset Skybox" (downloaded 1/5 times)
+  ```
+- Add tool-calling definitions so the AI can take actions:
+  - `lookup_order` — fetch specific order details by ID
+  - `check_download_status` — check remaining downloads for an item
+  - `reset_download_count` — reset download counter for an order item (for common support cases)
 
-**1. `LayoutShell.tsx`** — Add a new prop `chatMode` (boolean) to LayoutShell. When true, the inner `<div className="w-full">` becomes `flex-1 flex flex-col min-h-0 overflow-hidden w-full` so the flex height chain is unbroken. Footer is already hidden on chat pages so no conflict.
+**2. Enhance the system prompt**
+- Instruct the AI to proactively reference order data when relevant
+- When a customer mentions a product name, the AI should match it against their order history
+- AI should never ask for an order number if it can identify the order from context
+- AI should present order info naturally: "I can see your order for 'Neon Car Model' placed on Jan 5th..."
+- Add structured response guidelines for order-specific scenarios (download issues, missing items, status checks)
 
-```tsx
-// Line 142 — change from:
-<div className="w-full">
+**3. Update frontend (`LiveChat.tsx` + `ChatSidePanel.tsx`)**
+- Pass `userId` in the edge function invocation body
+- Display order context cards inline when AI references an order (parse `message_type: "order_context"`)
+- Show a compact order summary card with: product name, order date, status, download count
+- Add a "View Order" button on order cards that links to the customer's order page
 
-// To:
-<div className={cn("w-full", chatMode && "flex-1 flex flex-col min-h-0 overflow-hidden")}>
-```
+**4. Update admin `LiveChat.tsx` — Staff order panel**
+- When staff views a conversation, auto-fetch and display the customer's recent orders in a collapsible side panel
+- Staff can click an order to insert its details into the chat context
+- Show download analytics per order item
 
-**2. `AdminLayout.tsx`** — Pass `chatMode={isChatPage}` to LayoutShell so it knows when to apply the flex constraint.
+**5. Add AI action execution in the edge function**
+- Implement tool-calling loop: if AI returns a tool call, execute it server-side and feed results back
+- `lookup_order`: query `orders` + `order_items` by order ID, return formatted details
+- `check_download_status`: return current download count vs limit for an order item
+- `reset_download_count`: reset `download_count` to 0 on `order_items` (common support action)
+- After executing tools, re-call AI with results for a natural language response
 
-This is the minimal, surgical fix — one prop, one conditional class. No structural refactoring needed.
+### Technical Details
 
-### Technical Detail
+- **No database migration needed** — all data comes from existing `orders`, `order_items` tables
+- The edge function uses `SUPABASE_SERVICE_ROLE_KEY` so it can read orders regardless of RLS
+- Tool calls use the OpenAI-compatible `tools` parameter with `tool_choice: "auto"`
+- Order data is limited to last 10 orders to stay within token limits
+- User ID is validated against the conversation's `user_id` to prevent data leakage
+- The AI model stays `google/gemini-3-flash-preview` for speed, with `max_tokens` increased to 800
 
-- `cn` utility is already imported in LayoutShell
-- The `chatMode` prop only needs to be added to the `LayoutShellProps` interface
-- The `isChatPage` detection in AdminLayout already covers `/admin/messages`, `/admin/live-chat`, and `/admin/customer-tickets/`
+### Files Changed
+- `supabase/functions/ai-chat-support/index.ts` — Major rewrite: order fetching, tool definitions, tool execution loop
+- `src/pages/LiveChat.tsx` — Pass `userId`, render order context cards
+- `src/components/chat/ChatSidePanel.tsx` — Pass `userId`, render order context cards
+- `src/pages/admin/LiveChat.tsx` — Add customer orders side panel
 
