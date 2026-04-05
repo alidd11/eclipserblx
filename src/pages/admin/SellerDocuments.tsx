@@ -367,16 +367,16 @@ export default function AdminSellerDocuments() {
 
         {/* Seller Terms of Service Preview */}
         <Collapsible open={isTosExpanded} onOpenChange={setIsTosExpanded}>
-          <Card className="border-primary/30">
-            <CardHeader className="pb-3">
+          <div className="border border-border rounded-xl overflow-hidden border-primary/30">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-primary/10">
                     <Scale className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Seller Terms of Service</CardTitle>
-                    <CardDescription>The agreement all sellers must sign before their store goes live (v1.0)</CardDescription>
+                    <h3 className="font-semibold text-sm text-lg">Seller Terms of Service</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">The agreement all sellers must sign before their store goes live (v1.0)</p>
                   </div>
                 </div>
                 <CollapsibleTrigger asChild>
@@ -386,9 +386,9 @@ export default function AdminSellerDocuments() {
                   </Button>
                 </CollapsibleTrigger>
               </div>
-            </CardHeader>
+            </div>
             <CollapsibleContent>
-              <CardContent className="border-t pt-6">
+              <div className="p-4 border-t pt-6">
                 <div className="prose prose-invert max-w-none space-y-6 text-sm">
                   <section>
                     <h3 className="text-base font-semibold mb-2">Introduction</h3>
@@ -456,9 +456,9 @@ export default function AdminSellerDocuments() {
                     </p>
                   </section>
                 </div>
-              </CardContent>
+              </div>
             </CollapsibleContent>
-          </Card>
+          </div>
         </Collapsible>
 
         {/* Documents Grid */}
@@ -466,19 +466,19 @@ export default function AdminSellerDocuments() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map(i => (
               <Card key={i}>
-                <CardHeader>
+                <div className="px-4 py-3 border-b border-border bg-muted/30">
                   <Skeleton className="h-5 w-20" />
                   <Skeleton className="h-6 w-full mt-2" />
                   <Skeleton className="h-4 w-3/4 mt-2" />
-                </CardHeader>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         ) : filteredDocuments.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredDocuments.map((doc) => (
               <Card key={doc.id} className={`group transition-colors ${!doc.is_active ? "opacity-60" : "hover:border-primary/50"}`}>
-                <CardHeader className="pb-3">
+                <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className={getCategoryColor(doc.category)}>
@@ -523,12 +523,12 @@ export default function AdminSellerDocuments() {
                       </AlertDialog>
                     </div>
                   </div>
-                  <CardTitle className="text-lg mt-2">{doc.title}</CardTitle>
+                  <h3 className="font-semibold text-sm text-lg mt-2">{doc.title}</h3>
                   {doc.description && (
-                    <CardDescription className="line-clamp-2">{doc.description}</CardDescription>
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{doc.description}</p>
                   )}
-                </CardHeader>
-                <CardContent className="pt-0">
+                </div>
+                <div className="p-4 pt-0">
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>Created: {format(new Date(doc.created_at), "MMM d, yyyy")}</span>
                     {doc.external_url && (
@@ -548,13 +548,13 @@ export default function AdminSellerDocuments() {
                       Requires Acknowledgement
                     </Badge>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="border border-border rounded-xl overflow-hidden border-dashed">
+            <div className="p-4 flex flex-col items-center justify-center py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
               <h3 className="text-lg font-semibold">No documents found</h3>
               <p className="text-muted-foreground text-sm mt-1">
@@ -562,8 +562,8 @@ export default function AdminSellerDocuments() {
                   ? "No documents in this category. Try a different filter."
                   : "Create your first seller document to get started."}
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
       </div>
     </AdminLayout>

@@ -216,26 +216,20 @@ export default function ModerationQueue() {
           </p>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: 'Products', count: counts.products, icon: Package, color: 'text-blue-500' },
-            { label: 'Store Apps', count: counts.stores, icon: Store, color: 'text-emerald-500' },
-            { label: 'Reviews', count: counts.reviews, icon: Star, color: 'text-amber-500' },
-            { label: 'Submissions', count: counts.submissions, icon: Upload, color: 'text-purple-500' },
-          ].map(stat => (
-            <Card key={stat.label}>
-              <CardHeader className="p-3 pb-1 md:p-4 md:pb-1">
-                <CardDescription className="flex items-center gap-1.5 text-xs">
-                  <stat.icon className={`h-3.5 w-3.5 ${stat.color}`} />
-                  {stat.label}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-3 pt-0 md:p-4 md:pt-0">
-                <p className="text-xl font-bold">{stat.count}</p>
-              </CardContent>
-            </Card>
-          ))}
+        {/* Inline Stats */}
+        <div className="flex items-center gap-4 text-sm flex-wrap">
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-blue-500">{counts.products}</span> products
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-emerald-500">{counts.stores}</span> store apps
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-amber-500">{counts.reviews}</span> reviews
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-purple-500">{counts.submissions}</span> submissions
+          </span>
         </div>
 
         {/* Mobile: Select, Desktop: Tabs */}
@@ -273,34 +267,29 @@ export default function ModerationQueue() {
         <div className="space-y-2">
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
-              <Card key={i}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="h-10 w-10 rounded-lg" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-48" />
-                      <Skeleton className="h-3 w-32" />
-                    </div>
+              <div key={i} className="border border-border rounded-xl p-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-lg" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-3 w-32" />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))
           ) : filteredItems.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center text-muted-foreground">
-                <Package className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                <p className="font-medium">Queue is clear!</p>
-                <p className="text-sm mt-1">No items awaiting moderation.</p>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-xl p-8 text-center text-muted-foreground">
+              <Package className="h-12 w-12 mx-auto mb-3 opacity-30" />
+              <p className="font-medium">Queue is clear!</p>
+              <p className="text-sm mt-1">No items awaiting moderation.</p>
+            </div>
           ) : (
             filteredItems.map(item => {
               const config = typeConfig[item.type];
               const Icon = config.icon;
               return (
                 <Link key={`${item.type}-${item.id}`} to={item.href} className="block group">
-                  <Card className="transition-colors hover:bg-muted/50 active:scale-[0.995]">
-                    <CardContent className="p-4">
+                  <div className="border border-border rounded-xl transition-colors hover:bg-muted/50 active:scale-[0.995] p-4">
                       <div className="flex items-start gap-3">
                         <div className={`p-2 rounded-lg bg-muted shrink-0 ${config.color}`}>
                           <Icon className="h-5 w-5" />
@@ -319,8 +308,7 @@ export default function ModerationQueue() {
                         </div>
                         <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1" />
                       </div>
-                    </CardContent>
-                  </Card>
+                  </div>
                 </Link>
               );
             })

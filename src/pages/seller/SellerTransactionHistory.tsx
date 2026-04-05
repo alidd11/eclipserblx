@@ -80,8 +80,8 @@ export default function SellerTransactionHistory() {
         </div>
       )}
 
-      <Card>
-        <CardHeader className="pb-3">
+      <div className="border border-border rounded-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-muted/30">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -103,8 +103,8 @@ export default function SellerTransactionHistory() {
               </Button>
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="p-0">
+        </div>
+        <div>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -158,8 +158,8 @@ export default function SellerTransactionHistory() {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div></SellerLayout>
   );
 }

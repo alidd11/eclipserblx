@@ -127,17 +127,17 @@ export default function SellerCommissions() {
         </div>
 
         {/* Default Rates Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
               <Percent className="h-5 w-5" />
               Default Commission Rates
-            </CardTitle>
-            <CardDescription>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               These rates are applied when no custom rate is set
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </p>
+          </div>
+          <div className="p-4">
             <div className="flex gap-6">
               <div className="flex items-center gap-2">
                 <Badge variant="secondary">Standard</Badge>
@@ -148,21 +148,21 @@ export default function SellerCommissions() {
                 <span className="font-medium">{eclipseRate}%</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Stores Card */}
-        <Card>
-          <CardHeader>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <CardTitle className="flex items-center gap-2">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Store className="h-5 w-5" />
                   All Stores ({filteredStores?.length ?? 0})
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Tap a store to view detailed information and manage settings
-                </CardDescription>
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <Input
@@ -193,8 +193,8 @@ export default function SellerCommissions() {
                 </Select>
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="p-4">
             {isLoading ? (
               <div className="text-center py-8 text-muted-foreground">Loading stores...</div>
             ) : filteredStores && filteredStores.length > 0 ? (
@@ -279,8 +279,8 @@ export default function SellerCommissions() {
                 {searchQuery ? 'No stores match your search' : 'No stores found'}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

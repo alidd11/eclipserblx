@@ -90,14 +90,14 @@ export default function StoreSetupGuide() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {themes.map((theme, i) => (
               <Card key={i} className={`border-border/50 ${theme.recommended ? "border-primary/50 bg-primary/5" : ""}`}>
-                <CardContent className="pt-5">
+                <div className="p-4 pt-5">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-semibold">{theme.name}</h4>
                     {theme.recommended && <Badge className="bg-primary text-xs">Popular</Badge>}
                   </div>
                   <p className="text-sm text-muted-foreground">{theme.description}</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </section>
@@ -111,18 +111,18 @@ export default function StoreSetupGuide() {
           <div className="space-y-4">
             {customizationOptions.map((option, i) => (
               <Card key={i} className="border-border/50">
-                <CardHeader className="pb-3">
+                <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-primary/10">
                       <option.icon className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg">{option.title}</CardTitle>
+                      <h3 className="font-semibold text-sm text-lg">{option.title}</h3>
                       <p className="text-sm text-muted-foreground mt-1">{option.description}</p>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent className="pt-0">
+                </div>
+                <div className="p-4 pt-0">
                   <ul className="space-y-1.5">
                     {option.items.map((item, j) => (
                       <li key={j} className="flex items-center gap-2 text-sm">
@@ -131,8 +131,8 @@ export default function StoreSetupGuide() {
                       </li>
                     ))}
                   </ul>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </section>
@@ -146,7 +146,7 @@ export default function StoreSetupGuide() {
           <div className="space-y-4">
             {setupSteps.map((step) => (
               <Card key={step.step} className="border-border/50">
-                <CardContent className="pt-6">
+                <div className="p-4 pt-6">
                   <div className="flex gap-4">
                     <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold text-lg flex items-center justify-center shrink-0">
                       {step.step}
@@ -168,16 +168,16 @@ export default function StoreSetupGuide() {
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </section>
 
         {/* Trusted Seller */}
         <section>
-          <Card className="border-amber-500/30 bg-amber-500/5">
-            <CardContent className="pt-6">
+          <div className="border border-border rounded-xl overflow-hidden border-amber-500/30 bg-amber-500/5">
+            <div className="p-4 pt-6">
               <div className="flex items-start gap-4">
                 <div className="p-3 rounded-lg bg-amber-500/10">
                   <Star className="h-6 w-6 text-amber-500" />
@@ -194,8 +194,8 @@ export default function StoreSetupGuide() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </section>
       </div>
     </SellerDocumentPage>

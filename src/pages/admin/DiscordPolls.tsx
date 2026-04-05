@@ -170,17 +170,17 @@ export default function DiscordPolls() {
           </Select>
 
           <TabsContent value="create" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <BarChart3 className="h-5 w-5" />
                   Create Discord Poll
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Send a poll or survey to gather community feedback
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+                </p>
+              </div>
+              <div className="p-4 space-y-6">
                 {!webhookUrl && (
                   <Alert className="border-amber-500/50 bg-amber-500/10">
                     <AlertCircle className="h-4 w-4 text-amber-500" />
@@ -330,22 +330,22 @@ export default function DiscordPolls() {
                   <Send className="h-4 w-4 mr-2" />
                   {isSending ? 'Sending...' : 'Send Poll to Discord'}
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="history" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Clock className="h-5 w-5" />
                   Poll History
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   View previously sent polls and surveys
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+              </div>
+              <div className="p-4">
                 {pollsLoading ? (
                   <div className="text-center py-8 text-muted-foreground">Loading...</div>
                 ) : polls && polls.length > 0 ? (
@@ -386,8 +386,8 @@ export default function DiscordPolls() {
                     No polls sent yet
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

@@ -485,8 +485,8 @@ export default function StaffProfile() {
         </Button>
 
         {/* Profile Header */}
-        <Card>
-          <CardContent className="pt-6">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="p-4 pt-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
               <Avatar className="h-24 w-24">
                 <AvatarImage src={profile.avatar_url || undefined} />
@@ -527,20 +527,20 @@ export default function StaffProfile() {
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Details Grid */}
         <div className="grid gap-4 md:grid-cols-2">
           {/* Account Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
                 <User className="h-5 w-5" />
                 Account Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+              </h3>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Customer ID</span>
                 <span className="font-mono text-sm">{profile.customer_id || 'N/A'}</span>
@@ -567,18 +567,18 @@ export default function StaffProfile() {
                   {format(new Date(profile.created_at), 'MMM d, yyyy')}
                 </span>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Employment Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
                 <Briefcase className="h-5 w-5" />
                 Employment Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+              </h3>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground flex items-center gap-1.5">
                   <Calendar className="h-4 w-4" />
@@ -618,19 +618,19 @@ export default function StaffProfile() {
                   </div>
                 </>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Role Management */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
               <IdCard className="h-5 w-5" />
               Role Management
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </h3>
+          </div>
+          <div className="p-4 space-y-4">
             {/* Add Role */}
             {availableRoles().length > 0 && (
               <div className="flex gap-2">
@@ -700,24 +700,24 @@ export default function StaffProfile() {
                 })}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Internal Notes Section */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 flex flex-row items-center justify-between">
+            <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
               <StickyNote className="h-5 w-5" />
               Internal Notes
-            </CardTitle>
+            </h3>
             {!isAddingNote && (
               <Button size="sm" onClick={() => setIsAddingNote(true)}>
                 <Plus className="h-4 w-4 mr-1" />
                 Add Note
               </Button>
             )}
-          </CardHeader>
-          <CardContent className="space-y-4">
+          </div>
+          <div className="p-4 space-y-4">
             {/* Add Note Form */}
             {isAddingNote && (
               <div className="space-y-3 p-4 rounded-lg border border-border bg-muted/20">
@@ -824,8 +824,8 @@ export default function StaffProfile() {
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Effective Permissions Viewer */}
         <EffectivePermissions userId={userId!} />

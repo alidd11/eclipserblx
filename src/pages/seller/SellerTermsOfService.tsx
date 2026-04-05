@@ -128,8 +128,8 @@ export default function SellerTermsOfService() {
 
         {/* Signed Info */}
         {hasSigned && agreement && (
-          <Card className="border-green-500/30 bg-green-500/5">
-            <CardContent className="pt-6">
+          <div className="border border-border rounded-xl overflow-hidden border-green-500/30 bg-green-500/5">
+            <div className="p-4 pt-6">
               <div className="flex items-start gap-4">
                 <div className="p-2 rounded-lg bg-green-500/10">
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -150,13 +150,13 @@ export default function SellerTermsOfService() {
                   </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Terms Content */}
-        <Card className="bg-card border-border">
-          <CardContent className="pt-8 pb-8">
+        <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+          <div className="p-4 pt-8 pb-8">
             <div className="prose prose-invert max-w-none space-y-8">
               {/* Introduction */}
               <section>
@@ -235,13 +235,13 @@ export default function SellerTermsOfService() {
                   payment information and ensuring your Stripe account remains in good standing. Payouts are 
                   processed according to Stripe's standard payout schedule.
                 </p>
-                <Card className="glass-card mt-4">
-                  <CardContent className="pt-4">
+                <div className="border border-border rounded-xl overflow-hidden glass-card mt-4">
+                  <div className="p-4 pt-4">
                     <p className="text-sm text-muted-foreground">
                       <strong>Earnings Formula:</strong> (Sale Price - UK Stripe Fee) × (1 - Commission Rate)
                     </p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
                 <h3 className="font-semibold text-lg mt-6 mb-3">Tax Responsibilities</h3>
                 <p className="text-muted-foreground mb-4">
@@ -401,13 +401,13 @@ export default function SellerTermsOfService() {
                 </p>
               </section>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Sign Agreement Section */}
         {!hasSigned && isOwner && (
-          <Card className="border-primary/30">
-            <CardContent className="pt-6">
+          <div className="border border-border rounded-xl overflow-hidden border-primary/30">
+            <div className="p-4 pt-6">
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <Checkbox
@@ -438,14 +438,14 @@ export default function SellerTermsOfService() {
                   </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Non-Owner Message */}
         {!hasSigned && !isOwner && (
-          <Card className="border-amber-500/30 bg-amber-500/5">
-            <CardContent className="pt-6">
+          <div className="border border-border rounded-xl overflow-hidden border-amber-500/30 bg-amber-500/5">
+            <div className="p-4 pt-6">
               <div className="flex items-start gap-4">
                 <div className="p-2 rounded-lg bg-amber-500/10">
                   <AlertTriangle className="h-5 w-5 text-amber-500" />
@@ -458,8 +458,8 @@ export default function SellerTermsOfService() {
                   </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
       </div>
     </SellerLayout>

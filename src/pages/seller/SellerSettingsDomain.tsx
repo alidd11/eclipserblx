@@ -253,18 +253,18 @@ function CloudflareCredentialsCard({ storeId }: { storeId: string }) {
   if (isLoading) return <Skeleton className="h-32 w-full" />;
 
   return (
-    <Card>
-      <CardHeader>
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="px-4 py-3 border-b border-border bg-muted/30">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg flex items-center gap-2">
+            <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
               <Key className="w-4 h-4 text-primary" />
               Cloudflare Integration
               <Badge variant="outline" className="text-xs">Optional</Badge>
-            </CardTitle>
-            <CardDescription>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Save your Cloudflare API Token to enable one-click DNS auto-fix when issues are detected.
-            </CardDescription>
+            </p>
           </div>
           {hasToken && (
             <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
@@ -272,8 +272,8 @@ function CloudflareCredentialsCard({ storeId }: { storeId: string }) {
             </Badge>
           )}
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
+      </div>
+      <div className="p-4 space-y-4">
         {/* Permissions Guide */}
         <Collapsible open={guideOpen} onOpenChange={setGuideOpen}>
           <CollapsibleTrigger asChild>
@@ -390,8 +390,8 @@ function CloudflareCredentialsCard({ storeId }: { storeId: string }) {
             {hasToken ? 'Update Credentials' : 'Save Credentials'}
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -661,12 +661,12 @@ export default function SellerSettingsDomain() {
     return (
       <SellerLayout>
         <div className="p-6">
-          <Card>
-            <CardContent className="py-8 text-center">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="p-4 py-8 text-center">
               <Globe className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground">You need an approved store to use custom domains.</p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </SellerLayout>
     );
@@ -686,20 +686,20 @@ export default function SellerSettingsDomain() {
       </div>
 
       {/* Free Subdomain Section */}
-      <Card>
-        <CardHeader>
+      <div className="border border-border rounded-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-muted/30">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg flex items-center gap-2">
+              <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
                 <Zap className="w-4 h-4 text-primary" />
                 Free Subdomain
-              </CardTitle>
-              <CardDescription>Your store on eclipserblx.com — included free with every store.</CardDescription>
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Your store on eclipserblx.com — included free with every store.</p>
             </div>
             {subdomain && <StatusBadge status={subdomain.status} />}
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+        <div className="p-4">
           {subdomain ? (
             <div className="flex items-center gap-3">
               <code className="flex-1 px-3 py-2 bg-muted rounded-md text-sm font-mono text-foreground">
@@ -723,30 +723,30 @@ export default function SellerSettingsDomain() {
               </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <Separator />
 
       {/* Custom Domain */}
-      <Card>
-        <CardHeader>
+      <div className="border border-border rounded-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-muted/30">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg flex items-center gap-2">
+              <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
                 <Globe className="w-4 h-4 text-primary" />
                 Custom Domain
                 <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-xs">
                   Free
                 </Badge>
-              </CardTitle>
-              <CardDescription>
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Connect your own domain (e.g., mystore.com) for a fully branded experience.
-              </CardDescription>
+              </p>
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        </div>
+        <div className="p-4 space-y-4">
           {/* Prominent DNS-only warning */}
           <Alert className="border-amber-500/30 bg-amber-500/5">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -796,7 +796,7 @@ export default function SellerSettingsDomain() {
 
             return (
               <Card key={d.id} className="bg-muted/30">
-                <CardContent className="py-4 space-y-3">
+                <div className="p-4 py-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <code className="font-mono text-sm text-foreground">{d.domain}</code>
@@ -954,8 +954,8 @@ export default function SellerSettingsDomain() {
                       <Trash2 className="w-4 h-4 text-destructive" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             );
           })}
 
@@ -964,8 +964,8 @@ export default function SellerSettingsDomain() {
               No custom domains yet. Add one above to get started.
             </p>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Cloudflare Integration */}
       {store && <CloudflareCredentialsCard storeId={store.id} />}

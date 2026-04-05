@@ -138,34 +138,34 @@ export default function AdvertisementAnalytics() {
         {/* Charts Row */}
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Clicks Over Time */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
                 <MousePointerClick className="h-5 w-5" />
                 Clicks Over Time
-              </CardTitle>
-              <CardDescription>Last 30 days</CardDescription>
-            </CardHeader>
-            <CardContent>
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Last 30 days</p>
+            </div>
+            <div className="p-4">
               <RevolutLineChart
                 data={dailyData}
                 xKey="date"
                 series={[{ dataKey: 'clicks', color: 'hsl(262 100% 71%)', name: 'Clicks' }]}
                 height={256}
               />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Revenue Over Time */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
                 Revenue Over Time
-              </CardTitle>
-              <CardDescription>Last 30 days</CardDescription>
-            </CardHeader>
-            <CardContent>
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Last 30 days</p>
+            </div>
+            <div className="p-4">
               <RevolutAreaChart
                 data={dailyData}
                 xKey="date"
@@ -174,40 +174,40 @@ export default function AdvertisementAnalytics() {
                 yFormatter={(v) => `£${v}`}
                 tooltipFormatter={(value: number) => [formatCurrency(value), 'Revenue']}
               />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Breakdowns Row */}
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Subscription Tiers */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
                 <Users className="h-5 w-5" />
                 Subscription Tiers
-              </CardTitle>
-              <CardDescription>Active subscriptions by tier</CardDescription>
-            </CardHeader>
-            <CardContent>
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Active subscriptions by tier</p>
+            </div>
+            <div className="p-4">
               {tierBreakdown.length > 0 ? (
                 <RevolutDonutChart data={tierDonutData} height={192} />
               ) : (
                 <p className="text-muted-foreground text-center py-8">No active subscriptions</p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Device Breakdown */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
                 <Monitor className="h-5 w-5" />
                 Device Breakdown
-              </CardTitle>
-              <CardDescription>Clicks by device type</CardDescription>
-            </CardHeader>
-            <CardContent>
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Clicks by device type</p>
+            </div>
+            <div className="p-4">
               {deviceBreakdown.length > 0 ? (
                 <div className="space-y-3">
                   {deviceBreakdown.map((item) => (
@@ -226,38 +226,38 @@ export default function AdvertisementAnalytics() {
               ) : (
                 <p className="text-muted-foreground text-center py-8">No click data</p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Ads Posted Per Day */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
                 <Megaphone className="h-5 w-5" />
                 Ads Posted
-              </CardTitle>
-              <CardDescription>Last 30 days</CardDescription>
-            </CardHeader>
-            <CardContent>
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Last 30 days</p>
+            </div>
+            <div className="p-4">
               <RevolutAreaChart
                 data={dailyData}
                 xKey="date"
                 series={[{ dataKey: 'adsPosted', color: 'hsl(185 85% 50%)', name: 'Ads Posted' }]}
                 height={192}
               />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Tables Row */}
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Top Performing Ads */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Performing Ads</CardTitle>
-              <CardDescription>By total clicks</CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Top Performing Ads</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">By total clicks</p>
+            </div>
+            <div className="p-4">
               {topPerformingAds.length > 0 ? (
                 <div className="space-y-3">
                   {topPerformingAds.map((ad, index) => (
@@ -293,16 +293,16 @@ export default function AdvertisementAnalytics() {
               ) : (
                 <p className="text-muted-foreground text-center py-8">No posted ads yet</p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Recent Ads */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Ads</CardTitle>
-              <CardDescription>Latest advertisements</CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Recent Ads</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Latest advertisements</p>
+            </div>
+            <div className="p-4">
               {recentAds.length > 0 ? (
                 <div className="space-y-3">
                   {recentAds.map((ad) => (
@@ -336,8 +336,8 @@ export default function AdvertisementAnalytics() {
               ) : (
                 <p className="text-muted-foreground text-center py-8">No ads yet</p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </AdminLayout>

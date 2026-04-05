@@ -263,58 +263,58 @@ export default function Subscribers() {
 
         {/* Stats Cards */}
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
+          <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 p-3 pb-1 md:p-6 md:pb-2">
+              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5 text-xs md:text-sm">
                 <Users className="h-3 w-3 md:h-4 md:w-4" />
                 Total
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              </p>
+            </div>
+            <div className="p-4 p-3 pt-0 md:p-6 md:pt-0">
               <p className="text-lg md:text-2xl font-bold">{stats.total}</p>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 p-3 pb-1 md:p-6 md:pb-2">
+              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5 text-xs md:text-sm">
                 <Bell className="h-3 w-3 md:h-4 md:w-4" />
                 Updates
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              </p>
+            </div>
+            <div className="p-4 p-3 pt-0 md:p-6 md:pt-0">
               <p className="text-lg md:text-2xl font-bold">{stats.updates}</p>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 p-3 pb-1 md:p-6 md:pb-2">
+              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5 text-xs md:text-sm">
                 <Tag className="h-3 w-3 md:h-4 md:w-4" />
                 Discounts
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              </p>
+            </div>
+            <div className="p-4 p-3 pt-0 md:p-6 md:pt-0">
               <p className="text-lg md:text-2xl font-bold">{stats.discounts}</p>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 p-3 pb-1 md:p-6 md:pb-2">
+              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5 text-xs md:text-sm">
                 <Newspaper className="h-3 w-3 md:h-4 md:w-4" />
                 Newsletters
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+              </p>
+            </div>
+            <div className="p-4 p-3 pt-0 md:p-6 md:pt-0">
               <p className="text-lg md:text-2xl font-bold">{stats.newsletters}</p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Filters */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Subscriber List</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm">Subscriber List</h3>
+          </div>
+          <div className="p-4 space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -388,8 +388,8 @@ export default function Subscribers() {
                 </Table>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

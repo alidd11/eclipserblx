@@ -177,12 +177,12 @@ export default function RecruiterCommissions() {
           </Button>
         </div>
 
-        <Card>
-          <CardHeader>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>All Commissions</CardTitle>
-                <CardDescription>Commission status based on store qualification</CardDescription>
+                <h3 className="font-semibold text-sm">All Commissions</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Commission status based on store qualification</p>
               </div>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -194,8 +194,8 @@ export default function RecruiterCommissions() {
                 />
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="p-4">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="hidden sm:inline-flex">
                 <TabsTrigger value="pending" className="gap-2">
@@ -241,7 +241,7 @@ export default function RecruiterCommissions() {
                       
                       return (
                         <Card key={commission.id}>
-                          <CardContent className="pt-6">
+                          <div className="p-4 pt-6">
                             <div className="flex items-start justify-between gap-4">
                               <div className="flex-1 space-y-3">
                                 <div className="flex items-center gap-3">
@@ -317,8 +317,8 @@ export default function RecruiterCommissions() {
                                 )}
                               </div>
                             </div>
-                          </CardContent>
-                        </Card>
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
@@ -330,8 +330,8 @@ export default function RecruiterCommissions() {
                 )}
               </TabsContent>
             </Tabs>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

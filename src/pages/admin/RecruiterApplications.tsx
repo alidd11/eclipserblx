@@ -129,15 +129,15 @@ export default function RecruiterApplications() {
           <div className="grid gap-4">
             {applications.map((app) => (
               <Card key={app.id} className={selectedApp?.id === app.id ? 'ring-2 ring-primary' : ''}>
-                <CardHeader className="pb-3">
+                <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                         <User className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg">{app.display_name || 'Unknown'}</CardTitle>
-                        <CardDescription className="font-mono text-xs">{app.recruiter_id}</CardDescription>
+                        <h3 className="font-semibold text-sm text-lg">{app.display_name || 'Unknown'}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5 font-mono text-xs">{app.recruiter_id}</p>
                       </div>
                     </div>
                     <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/30">
@@ -145,8 +145,8 @@ export default function RecruiterApplications() {
                       Pending
                     </Badge>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                </div>
+                <div className="p-4 space-y-4">
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="flex items-center gap-2 text-sm">
                       <Mail className="h-4 w-4 text-muted-foreground" />
@@ -213,20 +213,20 @@ export default function RecruiterApplications() {
                       Reject
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
-          <Card>
-            <CardContent className="py-12">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="p-4 py-12">
               <div className="text-center text-muted-foreground">
                 <CheckCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p>No pending applications</p>
                 <p className="text-sm">All caught up!</p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Reject Dialog */}

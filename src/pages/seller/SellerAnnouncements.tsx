@@ -178,15 +178,15 @@ export default function SellerAnnouncements() {
           </Button>
         </div>
 
-        <Card className="mb-6 bg-blue-500/5 border-blue-500/20">
-          <CardContent className="flex items-start gap-3 py-4">
+        <div className="border border-border rounded-xl overflow-hidden mb-6 bg-blue-500/5 border-blue-500/20">
+          <div className="p-4 flex items-start gap-3 py-4">
             <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-muted-foreground">
               Announcements appear on your store page. Pinned announcements stay at the top. 
               Followers with notifications enabled will be alerted about new announcements.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         <div className="space-y-3">
           {isLoading ? (
@@ -194,7 +194,7 @@ export default function SellerAnnouncements() {
           ) : announcements && announcements.length > 0 ? (
             announcements.map(a => (
               <Card key={a.id} className={!a.is_active ? 'opacity-60' : ''}>
-                <CardContent className="flex items-start justify-between py-4">
+                <div className="p-4 flex items-start justify-between py-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       {a.pinned && <Pin className="h-3.5 w-3.5 text-primary" />}
@@ -226,12 +226,12 @@ export default function SellerAnnouncements() {
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))
           ) : (
-            <Card>
-              <CardContent className="py-12 text-center">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="p-4 py-12 text-center">
                 <Megaphone className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                 <h3 className="text-lg font-medium mb-2">No Announcements</h3>
                 <p className="text-muted-foreground mb-4">
@@ -240,8 +240,8 @@ export default function SellerAnnouncements() {
                 <Button onClick={() => setShowDialog(true)}>
                   <Plus className="h-4 w-4 mr-2" />Create Announcement
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
         </div>
       </div>

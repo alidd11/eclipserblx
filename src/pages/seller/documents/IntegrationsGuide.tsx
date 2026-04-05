@@ -121,22 +121,22 @@ export default function IntegrationsGuide() {
           <div className="space-y-4">
             {discordFeatures.map((feature, i) => (
               <Card key={i} className="border-border/50">
-                <CardHeader className="pb-3">
+                <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-primary/10">
                       <feature.icon className="h-5 w-5 text-primary" />
                     </div>
-                    <CardTitle className="text-lg">{feature.title}</CardTitle>
+                    <h3 className="font-semibold text-sm text-lg">{feature.title}</h3>
                   </div>
-                </CardHeader>
-                <CardContent className="pt-0 space-y-3">
+                </div>
+                <div className="p-4 pt-0 space-y-3">
                   <p className="text-sm text-muted-foreground">{feature.description}</p>
                   <div className="bg-muted/30 rounded-lg p-3">
                     <p className="text-xs font-medium text-muted-foreground mb-1">HOW TO SET UP</p>
                     <p className="text-sm">{feature.setup}</p>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </section>
@@ -147,8 +147,8 @@ export default function IntegrationsGuide() {
             <Webhook className="h-6 w-6 text-primary" />
             Webhook Best Practices
           </h2>
-          <Card className="border-border/50">
-            <CardContent className="pt-6">
+          <div className="border border-border rounded-xl overflow-hidden border-border/50">
+            <div className="p-4 pt-6">
               <ul className="space-y-3">
                 {webhookTips.map((tip, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm">
@@ -157,8 +157,8 @@ export default function IntegrationsGuide() {
                   </li>
                 ))}
               </ul>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </section>
 
         {/* Bot Licensing */}
@@ -173,7 +173,7 @@ export default function IntegrationsGuide() {
           <div className="grid sm:grid-cols-2 gap-4">
             {botIntegration.map((step) => (
               <Card key={step.step} className="border-border/50">
-                <CardContent className="pt-6">
+                <div className="p-4 pt-6">
                   <div className="flex gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold flex items-center justify-center shrink-0 text-sm">
                       {step.step}
@@ -183,8 +183,8 @@ export default function IntegrationsGuide() {
                       <p className="text-sm text-muted-foreground">{step.description}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </section>
@@ -201,7 +201,7 @@ export default function IntegrationsGuide() {
           <div className="grid sm:grid-cols-2 gap-4">
             {discordTemplates.map((item, i) => (
               <Card key={i} className="border-border/50">
-                <CardContent className="pt-6">
+                <div className="p-4 pt-6">
                   <div className="flex gap-3">
                     <div className="p-2 rounded-lg bg-primary/10 h-fit shrink-0">
                       <item.icon className="h-4 w-4 text-primary" />
@@ -211,12 +211,12 @@ export default function IntegrationsGuide() {
                       <p className="text-sm text-muted-foreground">{item.description}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
-          <Card className="border-border/50">
-            <CardContent className="pt-6">
+          <div className="border border-border rounded-xl overflow-hidden border-border/50">
+            <div className="p-4 pt-6">
               <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Best Practices</p>
               <ul className="space-y-3">
                 {templateTips.map((tip, i) => (
@@ -226,8 +226,8 @@ export default function IntegrationsGuide() {
                   </li>
                 ))}
               </ul>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </section>
 
         {/* Roblox Integration */}
@@ -239,18 +239,18 @@ export default function IntegrationsGuide() {
           <div className="grid md:grid-cols-3 gap-4">
             {robloxFeatures.map((feature, i) => (
               <Card key={i} className="border-border/50">
-                <CardContent className="pt-6 text-center">
+                <div className="p-4 pt-6 text-center">
                   <h4 className="font-semibold mb-2">{feature.title}</h4>
                   <p className="text-sm text-muted-foreground">{feature.description}</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </section>
 
         {/* Security Note */}
-        <Card className="border-amber-500/30 bg-amber-500/5">
-          <CardContent className="pt-6">
+        <div className="border border-border rounded-xl overflow-hidden border-amber-500/30 bg-amber-500/5">
+          <div className="p-4 pt-6">
             <div className="flex items-start gap-4">
               <div className="p-2 rounded-lg bg-amber-500/10">
                 <Shield className="h-5 w-5 text-amber-500" />
@@ -263,8 +263,8 @@ export default function IntegrationsGuide() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </SellerDocumentPage>
   );

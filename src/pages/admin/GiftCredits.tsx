@@ -123,15 +123,15 @@ export default function AdminGiftCredits() {
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* User Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
                 <Search className="h-4 w-4" />
                 Select User
-              </CardTitle>
-              <CardDescription>Search by name, email, username, or customer ID</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Search by name, email, username, or customer ID</p>
+            </div>
+            <div className="p-4 space-y-4">
               <Input
                 placeholder="Search users..."
                 value={searchQuery}
@@ -176,18 +176,18 @@ export default function AdminGiftCredits() {
                   No users found
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Gift Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
                 <Wallet className="h-4 w-4" />
                 Gift Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+              </h3>
+            </div>
+            <div className="p-4 space-y-4">
               {selectedUser ? (
                 <>
                   {/* Selected user card */}
@@ -290,8 +290,8 @@ export default function AdminGiftCredits() {
                   <p>Select a user to gift credits</p>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </AdminLayout>

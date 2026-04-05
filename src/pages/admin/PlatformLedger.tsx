@@ -167,8 +167,8 @@ export default function PlatformLedger() {
         </div>
 
         {/* Filters */}
-        <Card>
-          <CardContent className="py-4">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="p-4 py-4">
             <div className="flex flex-col lg:flex-row gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -210,16 +210,16 @@ export default function PlatformLedger() {
                 <Download className="h-4 w-4 mr-1" /> Export
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Transactions Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>All Transactions</CardTitle>
-            <CardDescription>{totalCount} transactions across all stores</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm">All Transactions</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">{totalCount} transactions across all stores</p>
+          </div>
+          <div className="p-4 p-0">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -310,8 +310,8 @@ export default function PlatformLedger() {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );
@@ -320,13 +320,13 @@ export default function PlatformLedger() {
 function SummaryCard({ label, value, icon, highlight }: { label: string; value: string; icon: React.ReactNode; highlight?: boolean }) {
   return (
     <Card className={cn('min-w-[160px] flex-shrink-0 md:min-w-0', highlight && 'border-green-500/30 bg-green-500/5')}>
-      <CardContent className="pt-4 pb-3 px-4">
+      <div className="p-4 pt-4 pb-3 px-4">
         <div className="flex items-center gap-2 text-muted-foreground mb-1">
           {icon}
           <span className="text-xs font-medium">{label}</span>
         </div>
         <p className={cn('text-lg font-bold', highlight && 'text-green-600')}>{value}</p>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

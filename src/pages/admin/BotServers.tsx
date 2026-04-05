@@ -127,11 +127,11 @@ export default function BotServers() {
         </div>
 
         {/* Search */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Search Servers</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
+            <h3 className="font-semibold text-sm text-lg">Search Servers</h3>
+          </div>
+          <div className="p-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -141,15 +141,15 @@ export default function BotServers() {
                 className="pl-10"
               />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Server List */}
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
               <Card key={i} className="animate-pulse">
-                <CardContent className="p-4 space-y-3">
+                <div className="p-4 p-4 space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-muted" />
                     <div className="flex-1 space-y-2">
@@ -157,19 +157,19 @@ export default function BotServers() {
                       <div className="h-3 bg-muted rounded w-1/2" />
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))
           ) : installations.length === 0 ? (
-            <Card className="md:col-span-2 xl:col-span-3">
-              <CardContent className="py-12 text-center text-muted-foreground">
+            <div className="border border-border rounded-xl overflow-hidden md:col-span-2 xl:col-span-3">
+              <div className="p-4 py-12 text-center text-muted-foreground">
                 {searchQuery ? 'No servers found matching your search' : 'No bot installations yet'}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ) : (
             installations.map((install) => (
               <Card key={install.id} className="hover:border-primary/30 transition-colors">
-                <CardContent className="p-4 space-y-4">
+                <div className="p-4 p-4 space-y-4">
                   {/* Server Header */}
                   <div className="flex items-start gap-3">
                     {install.discord_guild_icon ? (
@@ -255,8 +255,8 @@ export default function BotServers() {
                       Join Server
                     </Button>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))
           )}
         </div>

@@ -208,15 +208,15 @@ export default function StaffActivityPage() {
   return (
     <AdminLayout requiredPermissions={['view_staff_activity']}>
       <div className="space-y-6">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-2xl sm:text-3xl font-display flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
+            <h3 className="font-semibold text-sm text-2xl sm:text-3xl font-display flex items-center gap-2">
               <Activity className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               Staff Activity
-            </CardTitle>
-            <CardDescription>Track staff logins, ticket claims, and chat activity</CardDescription>
-          </CardHeader>
-        </Card>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Track staff logins, ticket claims, and chat activity</p>
+          </div>
+        </div>
 
         {/* Today's Stats */}
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-5 md:overflow-visible">
@@ -228,15 +228,15 @@ export default function StaffActivityPage() {
         </div>
 
         {/* Filters */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
               <Filter className="h-5 w-5" />
               Activity Log
-            </CardTitle>
-            <CardDescription>View detailed staff activity history</CardDescription>
-          </CardHeader>
-          <CardContent>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">View detailed staff activity history</p>
+          </div>
+          <div className="p-4">
             <div className="flex flex-wrap items-center gap-4 mb-6">
               <div>
                 <Select value={filterType} onValueChange={setFilterType}>
@@ -338,8 +338,8 @@ export default function StaffActivityPage() {
                 </div>
               )}
             </ScrollArea>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

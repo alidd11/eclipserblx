@@ -167,12 +167,12 @@ export default function InternalNotes() {
         {isLoading ? (
           <div className="text-center text-muted-foreground py-8">Loading...</div>
         ) : filtered.length === 0 ? (
-          <Card><CardContent className="p-8 text-center text-muted-foreground">No notes yet. Create your first one!</CardContent></Card>
+          <div className="border border-border rounded-xl overflow-hidden"><div className="p-4 p-8 text-center text-muted-foreground">No notes yet. Create your first one!</div></div>
         ) : (
           <div className="space-y-3">
             {filtered.map((note: any) => (
               <Card key={note.id} className={note.is_pinned ? 'border-primary/30 bg-primary/5' : ''}>
-                <CardContent className="p-4">
+                <div className="p-4 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -200,8 +200,8 @@ export default function InternalNotes() {
                       )}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         )}

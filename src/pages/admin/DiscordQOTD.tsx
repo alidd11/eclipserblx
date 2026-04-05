@@ -402,8 +402,8 @@ export default function DiscordQOTD() {
             </p>
           </div>
 
-          <Card className="border-yellow-500/30 bg-yellow-500/5">
-            <CardContent className="pt-6">
+          <div className="border border-border rounded-xl overflow-hidden border-yellow-500/30 bg-yellow-500/5">
+            <div className="p-4 pt-6">
               <div className="flex flex-col items-center text-center space-y-4 py-8">
                 <div className="h-16 w-16 rounded-full bg-yellow-500/20 flex items-center justify-center">
                   <AlertTriangle className="h-8 w-8 text-yellow-500" />
@@ -422,8 +422,8 @@ export default function DiscordQOTD() {
                   </a>
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </AdminLayout>
     );
@@ -466,17 +466,17 @@ export default function DiscordQOTD() {
           </TabsList>
 
           <TabsContent value="create" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <MessageCircleQuestion className="h-5 w-5 text-primary" />
                   Create Question
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Choose to auto-generate from categories or write your own custom question
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+                </p>
+              </div>
+              <div className="p-4 space-y-6">
                 {/* Toggle between auto-generate and custom */}
                 <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
                   <div className="space-y-0.5">
@@ -652,22 +652,22 @@ export default function DiscordQOTD() {
                     Generate a preview first before posting
                   </p>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="history" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <History className="h-5 w-5 text-primary" />
                   QOTD History
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Previously posted questions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+              </div>
+              <div className="p-4">
                 {isLoadingHistory ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -704,8 +704,8 @@ export default function DiscordQOTD() {
                     <p className="text-sm">Create your first QOTD above!</p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

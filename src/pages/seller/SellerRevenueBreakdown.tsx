@@ -114,9 +114,9 @@ export default function SellerRevenueBreakdown() {
       </div>
 
       {/* Revenue over time */}
-      <Card>
-        <CardHeader><CardTitle className="text-base">Revenue Over Time</CardTitle></CardHeader>
-        <CardContent>
+      <div className="border border-border rounded-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm text-base">Revenue Over Time</h3></div>
+        <div className="p-4">
           <RevolutAreaChart
             data={dailyRevenue}
             xKey="date"
@@ -125,13 +125,13 @@ export default function SellerRevenueBreakdown() {
             yFormatter={(v) => `£${v}`}
             tooltipFormatter={(v) => [`£${v.toFixed(2)}`, 'Revenue']}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader><CardTitle className="text-base">Top Products by Revenue</CardTitle></CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm text-base">Top Products by Revenue</h3></div>
+          <div className="p-4">
             <RevolutBarChart
               data={byProduct}
               xKey="name"
@@ -141,12 +141,12 @@ export default function SellerRevenueBreakdown() {
               yFormatter={(v) => `£${v}`}
               tooltipFormatter={(v) => [`£${v.toFixed(2)}`, 'Revenue']}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader><CardTitle className="text-base">Revenue by Category</CardTitle></CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm text-base">Revenue by Category</h3></div>
+          <div className="p-4">
             {byCategory.length > 0 ? (
               <RevolutDonutChart
                 data={byCategory}
@@ -158,8 +158,8 @@ export default function SellerRevenueBreakdown() {
             ) : (
               <p className="text-sm text-muted-foreground text-center py-8">No category data available</p>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div></SellerLayout>
   );

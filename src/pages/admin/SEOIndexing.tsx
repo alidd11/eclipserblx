@@ -33,49 +33,49 @@ export default function SEOIndexing() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
               <Globe className="h-5 w-5" />
               Submit All URLs
-            </CardTitle>
-            <CardDescription>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Submit all products, stores, and static pages to IndexNow (Bing, Yandex) and ping Google's sitemap crawler.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </p>
+          </div>
+          <div className="p-4">
             <Button onClick={() => submitToSearchEngines('all')} disabled={loading} className="w-full">
               {loading ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Globe className="h-4 w-4 mr-2" />}
               {loading ? 'Submitting...' : 'Submit to Search Engines'}
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
               <Clock className="h-5 w-5" />
               Automatic Indexing
-            </CardTitle>
-            <CardDescription>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               New products and stores are automatically submitted when created or approved. A daily cron job also re-submits all URLs.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </p>
+          </div>
+          <div className="p-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <CheckCircle className="h-4 w-4 text-green-500" />
               Auto-indexing is active
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {lastResult && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Last Submission Result</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm">Last Submission Result</h3>
+          </div>
+          <div className="p-4 space-y-3">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
               <span className="font-medium">{lastResult.totalUrls} URLs submitted</span>
@@ -110,8 +110,8 @@ export default function SEOIndexing() {
                 </span>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );

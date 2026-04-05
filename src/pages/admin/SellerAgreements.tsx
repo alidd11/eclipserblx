@@ -112,36 +112,36 @@ export default function SellerAgreements() {
 
         {/* Stats Cards */}
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible">
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="pb-2">
-              <CardDescription>Total Approved Stores</CardDescription>
-              <CardTitle className="text-3xl">{stores?.length || 0}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="border-green-500/30 min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
+              <p className="text-xs text-muted-foreground mt-0.5">Total Approved Stores</p>
+              <h3 className="font-semibold text-sm text-3xl">{stores?.length || 0}</h3>
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden border-green-500/30 min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
+              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-500" />
                 Signed Agreements
-              </CardDescription>
-              <CardTitle className="text-3xl text-green-500">{signedCount}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="border-amber-500/30 min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-2">
+              </p>
+              <h3 className="font-semibold text-sm text-3xl text-green-500">{signedCount}</h3>
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden border-amber-500/30 min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
+              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
                 <Clock className="h-4 w-4 text-amber-500" />
                 Pending Signatures
-              </CardDescription>
-              <CardTitle className="text-3xl text-amber-500">{pendingCount}</CardTitle>
-            </CardHeader>
-          </Card>
+              </p>
+              <h3 className="font-semibold text-sm text-3xl text-amber-500">{pendingCount}</h3>
+            </div>
+          </div>
         </div>
 
         {/* Alert for pending */}
         {pendingCount > 0 && (
-          <Card className="border-amber-500/50 bg-amber-500/5">
-            <CardContent className="pt-6">
+          <div className="border border-border rounded-xl overflow-hidden border-amber-500/50 bg-amber-500/5">
+            <div className="p-4 pt-6">
               <div className="flex items-start gap-4">
                 <div className="p-2 rounded-lg bg-amber-500/10">
                   <AlertTriangle className="h-5 w-5 text-amber-500" />
@@ -154,8 +154,8 @@ export default function SellerAgreements() {
                   </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Search and Tabs */}
@@ -199,8 +199,8 @@ export default function SellerAgreements() {
           </div>
 
           <TabsContent value={activeTab} className="mt-4">
-            <Card>
-              <CardContent className="p-0">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="p-4 p-0">
                 {isLoading ? (
                   <div className="p-8 text-center text-muted-foreground">
                     Loading stores...
@@ -289,8 +289,8 @@ export default function SellerAgreements() {
                     </TableBody>
                   </Table>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

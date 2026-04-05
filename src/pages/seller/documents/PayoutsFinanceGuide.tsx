@@ -78,20 +78,20 @@ export default function PayoutsFinanceGuide() {
             Commission Structure
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
-            <Card className="border-border/50">
-              <CardContent className="pt-6 text-center">
+            <div className="border border-border rounded-xl overflow-hidden border-border/50">
+              <div className="p-4 pt-6 text-center">
                 <Badge variant="secondary" className="mb-3">Base Seller</Badge>
                 <p className="text-4xl font-bold text-foreground">85%</p>
                 <p className="text-sm text-muted-foreground mt-2">of net earnings (15% commission)</p>
-              </CardContent>
-            </Card>
-            <Card className="border-primary/50 bg-primary/5">
-              <CardContent className="pt-6 text-center">
+              </div>
+            </div>
+            <div className="border border-border rounded-xl overflow-hidden border-primary/50 bg-primary/5">
+              <div className="p-4 pt-6 text-center">
                 <Badge className="mb-3 bg-gradient-to-r from-amber-500 to-yellow-500">Eclipse+ Seller</Badge>
                 <p className="text-4xl font-bold text-primary">90%</p>
                 <p className="text-sm text-muted-foreground mt-2">of net earnings (10% commission)</p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -101,8 +101,8 @@ export default function PayoutsFinanceGuide() {
             <TrendingUp className="h-6 w-6 text-primary" />
             Earnings Breakdown Example
           </h2>
-          <Card className="border-border/50">
-            <CardContent className="pt-6">
+          <div className="border border-border rounded-xl overflow-hidden border-border/50">
+            <div className="p-4 pt-6">
               <div className="space-y-0 divide-y divide-border">
                 {earningsBreakdown.map((item, i) => (
                   <div key={i} className={`flex justify-between items-center py-3 ${
@@ -122,8 +122,8 @@ export default function PayoutsFinanceGuide() {
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </section>
 
         {/* Payout Methods */}
@@ -135,21 +135,21 @@ export default function PayoutsFinanceGuide() {
           <div className="space-y-4">
             {payoutMethods.map((method, i) => (
               <Card key={i} className={`border-border/50 ${method.recommended ? "border-primary/50 bg-primary/5" : ""}`}>
-                <CardHeader className="pb-3">
+                <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-primary/10">
                         <method.icon className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg">{method.method}</CardTitle>
+                        <h3 className="font-semibold text-sm text-lg">{method.method}</h3>
                         <p className="text-sm text-muted-foreground mt-1">{method.description}</p>
                       </div>
                     </div>
                     {method.recommended && <Badge className="bg-primary shrink-0">Recommended</Badge>}
                   </div>
-                </CardHeader>
-                <CardContent className="pt-0">
+                </div>
+                <div className="p-4 pt-0">
                   <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex-1">
                       <p className="text-xs font-medium text-muted-foreground mb-2">BENEFITS</p>
@@ -167,8 +167,8 @@ export default function PayoutsFinanceGuide() {
                       <p className="text-sm">{method.timing}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </section>
@@ -182,7 +182,7 @@ export default function PayoutsFinanceGuide() {
           <div className="grid md:grid-cols-2 gap-4">
             {importantNotes.map((note, i) => (
               <Card key={i} className="border-border/50">
-                <CardContent className="pt-6">
+                <div className="p-4 pt-6">
                   <div className="flex items-start gap-3">
                     <div className="p-2 rounded-lg bg-primary/10 shrink-0">
                       <note.icon className="h-4 w-4 text-primary" />
@@ -192,8 +192,8 @@ export default function PayoutsFinanceGuide() {
                       <p className="text-sm text-muted-foreground">{note.description}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </section>

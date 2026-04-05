@@ -316,16 +316,16 @@ export default function SellerProducts() {
             {[1, 2, 3].map((i) => (
               <Card key={i} className="animate-pulse">
                 <CardContent className="h-48" />
-              </Card>
+              </div>
             ))}
           </div>
         ) : products?.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="p-4 py-12 text-center">
               <Package className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-muted-foreground">No products found</p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {products?.map((product: any) => (
@@ -346,13 +346,13 @@ export default function SellerProducts() {
                     {getStatusBadge(product.moderation_status || "pending", product)}
                   </div>
                 </div>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg line-clamp-1">{product.name}</CardTitle>
+                <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
+                  <h3 className="font-semibold text-sm text-lg line-clamp-1">{product.name}</h3>
                   <p className="text-sm text-muted-foreground">
                     by {product.stores?.name || "Unknown Store"}
                   </p>
-                </CardHeader>
-                <CardContent className="space-y-3">
+                </div>
+                <div className="p-4 space-y-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Price</span>
                     <span className="font-medium">£{product.price?.toFixed(2)}</span>
@@ -544,8 +544,8 @@ export default function SellerProducts() {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         )}

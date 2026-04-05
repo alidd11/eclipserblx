@@ -268,14 +268,14 @@ export default function GameNewsFeeds() {
         </div>
 
         {/* Popular Games Grid */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Game & Dev Feeds</CardTitle>
-            <CardDescription>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
+            <h3 className="font-semibold text-sm text-base">Game & Dev Feeds</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Toggle feeds on/off to auto-post updates to your Discord channel.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </p>
+          </div>
+          <div className="p-4">
             <div className="grid gap-3">
               {POPULAR_GAMES.map((preset) => {
                 const isAdded = addedFeedUrls.has(preset.feed_url) || !!getFeedForPreset(preset);
@@ -371,18 +371,18 @@ export default function GameNewsFeeds() {
                 );
               })}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Free Game Alerts Grid */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">🆓 Free Game Alerts</CardTitle>
-            <CardDescription>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
+            <h3 className="font-semibold text-sm text-base">🆓 Free Game Alerts</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Auto-post free game giveaways, deals, and limited-time offers to Discord.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </p>
+          </div>
+          <div className="p-4">
             <div className="grid gap-3">
               {FREE_GAME_FEEDS.map((preset) => {
                 const isAdded = addedFeedUrls.has(preset.feed_url) || !!getFeedForPreset(preset);
@@ -478,8 +478,8 @@ export default function GameNewsFeeds() {
                 );
               })}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Channel Setup Dialog for Presets */}
         <Dialog open={channelDialogOpen} onOpenChange={setChannelDialogOpen}>
@@ -527,12 +527,12 @@ export default function GameNewsFeeds() {
         </Dialog>
 
         {/* Custom Feeds Section */}
-        <Card>
-          <CardHeader className="pb-3">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base">Custom Feeds</CardTitle>
-                <CardDescription>Add your own RSS or JSON news feeds.</CardDescription>
+                <h3 className="font-semibold text-sm text-base">Custom Feeds</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Add your own RSS or JSON news feeds.</p>
               </div>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
@@ -604,8 +604,8 @@ export default function GameNewsFeeds() {
                 </DialogContent>
               </Dialog>
             </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="p-4">
             {isLoading ? (
               <div className="flex justify-center py-8">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -668,8 +668,8 @@ export default function GameNewsFeeds() {
                 </div>
               );
             })()}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

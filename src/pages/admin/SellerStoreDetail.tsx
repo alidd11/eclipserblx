@@ -366,62 +366,62 @@ export default function SellerStoreDetail() {
 
         {/* Stats Cards */}
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
-          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden min-w-[140px] flex-shrink-0 md:min-w-0">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
+              <h3 className="font-semibold text-sm text-sm text-muted-foreground flex items-center gap-2">
                 <Package className="h-4 w-4" />
                 Products
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </h3>
+            </div>
+            <div className="p-4">
               <p className="text-2xl font-bold">{stats?.productCount || 0}</p>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden min-w-[140px] flex-shrink-0 md:min-w-0">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
+              <h3 className="font-semibold text-sm text-sm text-muted-foreground flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
                 Orders
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </h3>
+            </div>
+            <div className="p-4">
               <p className="text-2xl font-bold">{stats?.orderCount || 0}</p>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden min-w-[140px] flex-shrink-0 md:min-w-0">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
+              <h3 className="font-semibold text-sm text-sm text-muted-foreground flex items-center gap-2">
                 <DollarSign className="h-4 w-4" />
                 Total Revenue
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </h3>
+            </div>
+            <div className="p-4">
               <p className="text-2xl font-bold">£{(stats?.totalRevenue || 0).toFixed(2)}</p>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[140px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden min-w-[140px] flex-shrink-0 md:min-w-0">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
+              <h3 className="font-semibold text-sm text-sm text-muted-foreground flex items-center gap-2">
                 <User className="h-4 w-4" />
                 Followers
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </h3>
+            </div>
+            <div className="p-4">
               <p className="text-2xl font-bold">{stats?.followerCount || 0}</p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Owner Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
                 <User className="h-5 w-5" />
                 Store Owner
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+              </h3>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="flex items-center gap-4">
                 {ownerProfile?.avatar_url ? (
                   <img src={ownerProfile.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" />
@@ -570,22 +570,22 @@ export default function SellerStoreDetail() {
                   <span>{format(parseISO(store.created_at), 'MMM d, yyyy')}</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Commission Settings - Hidden for admin-managed stores */}
           {!ADMIN_MANAGED_STORES.includes(storeId as any) ? (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Percent className="h-5 w-5" />
                   Commission Settings
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Current effective rate: <Badge>{getEffectiveRate()}%</Badge>
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              <div className="p-4 space-y-4">
                 <div className="grid gap-4">
                   <div className="grid gap-2">
                     <Label>Custom Commission Rate (%)</Label>
@@ -626,36 +626,36 @@ export default function SellerStoreDetail() {
                     </Button>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Percent className="h-5 w-5" />
                   Commission Settings
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Current effective rate: <Badge>0%</Badge>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+              </div>
+              <div className="p-4">
                 <p className="text-sm text-muted-foreground">
                   This is a platform-managed store with a fixed 0% commission rate. Commission settings cannot be modified.
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
 
           {/* Balance Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
                 <DollarSign className="h-5 w-5" />
                 Seller Balance
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </h3>
+            </div>
+            <div className="p-4">
               <div className="grid gap-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Available Balance</span>
@@ -675,22 +675,22 @@ export default function SellerStoreDetail() {
                   <span className="font-medium">£{(stats?.balance?.total_paid || 0).toFixed(2)}</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* AI Branding Generation - Only for admin-managed stores */}
           {ADMIN_MANAGED_STORES.includes(storeId as any) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Sparkles className="h-5 w-5" />
                   AI Branding
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Generate logo and banner using AI
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+              </div>
+              <div className="p-4">
                 <GenerateStoreBranding
                   storeId={storeId!}
                   storeName={store.name}
@@ -698,19 +698,19 @@ export default function SellerStoreDetail() {
                   currentLogoUrl={store.logo_url || undefined}
                   currentBannerUrl={store.banner_url || undefined}
                 />
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
 
           {/* Store Controls */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
                 <Store className="h-5 w-5" />
                 Store Controls
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+              </h3>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Active Status</p>
@@ -876,8 +876,8 @@ export default function SellerStoreDetail() {
                   </div>
                 </>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Deactivate Confirmation with Re-auth */}

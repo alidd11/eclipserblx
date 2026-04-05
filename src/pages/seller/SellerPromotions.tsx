@@ -134,7 +134,7 @@ export default function SellerPromotions() {
             { label: 'CTR', value: `${avgCtr}%`, icon: TrendingUp, color: 'text-primary', bg: 'bg-primary/10' },
           ].map(m => (
             <Card key={m.label}>
-              <CardContent className="p-3 flex items-center gap-3">
+              <div className="p-4 p-3 flex items-center gap-3">
                 <div className={cn("p-2 rounded-lg", m.bg)}>
                   <m.icon className={cn("h-4 w-4", m.color)} />
                 </div>
@@ -142,8 +142,8 @@ export default function SellerPromotions() {
                   <p className="text-lg font-bold">{m.value}</p>
                   <p className="text-[10px] text-muted-foreground">{m.label}</p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
 
@@ -167,15 +167,15 @@ export default function SellerPromotions() {
                 return (
                   <TabsContent key={tab} value={tab} className="mt-3">
                     {campaigns.length === 0 ? (
-                      <Card>
-                        <CardContent className="py-10 text-center text-sm text-muted-foreground">
+                      <div className="border border-border rounded-xl overflow-hidden">
+                        <div className="p-4 py-10 text-center text-sm text-muted-foreground">
                           {tab === 'active' ? 'No active campaigns. Create one to get started!' :
                            tab === 'pending' ? 'No campaigns in review.' :
                            'No completed campaigns yet.'}
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     ) : (
-                      <Card>
+                      <div className="border border-border rounded-xl overflow-hidden">
                         <div className="overflow-x-auto">
                           <Table>
                             <TableHeader>
@@ -198,7 +198,7 @@ export default function SellerPromotions() {
                             </TableBody>
                           </Table>
                         </div>
-                      </Card>
+                      </div>
                     )}
                   </TabsContent>
                 );
@@ -208,8 +208,8 @@ export default function SellerPromotions() {
 
           <TabsContent value="billing" className="mt-3 space-y-4">
             {/* Balance card */}
-            <Card>
-              <CardContent className="p-4 flex items-center justify-between">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="p-4 p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-lg bg-amber-500/10">
                     <Coins className="h-5 w-5 text-amber-500" />
@@ -222,13 +222,13 @@ export default function SellerPromotions() {
                 <Button size="sm" asChild>
                   <Link to="/credits">Top Up</Link>
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Spend summary */}
             <div className="grid grid-cols-2 gap-3">
-              <Card>
-                <CardContent className="p-4">
+              <div className="border border-border rounded-xl overflow-hidden">
+                <div className="p-4 p-4">
                   <p className="text-xs text-muted-foreground">This Month</p>
                   <p className="text-xl font-bold mt-1">
                     £{filtered
@@ -236,27 +236,27 @@ export default function SellerPromotions() {
                       .reduce((s, p) => s + Number(p.total_spent || 0), 0)
                       .toFixed(0)}
                   </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
+                </div>
+              </div>
+              <div className="border border-border rounded-xl overflow-hidden">
+                <div className="p-4 p-4">
                   <p className="text-xs text-muted-foreground">All Time</p>
                   <p className="text-xl font-bold mt-1">
                     £{(promotions || []).reduce((s, p) => s + Number(p.total_spent || 0), 0).toFixed(0)}
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
 
             {/* Transaction history */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
+                <h3 className="font-semibold text-sm text-sm font-semibold flex items-center gap-2">
                   <Receipt className="h-4 w-4 text-muted-foreground" />
                   Ad Spend History
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
+                </h3>
+              </div>
+              <div className="p-4 p-0">
                 {!creditHistory || creditHistory.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-8">No ad spend transactions yet.</p>
                 ) : (
@@ -276,14 +276,14 @@ export default function SellerPromotions() {
                     ))}
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
 
         {/* How it works */}
-        <Card className="border-primary/20 bg-primary/5">
-          <CardContent className="p-4">
+        <div className="border border-border rounded-xl overflow-hidden border-primary/20 bg-primary/5">
+          <div className="p-4 p-4">
             <h3 className="text-sm font-semibold mb-2">How Spend-Based Ads Work</h3>
             <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
               <li>Create a campaign — choose CPC (pay per click) or CPM (pay per 1,000 views)</li>
@@ -292,8 +292,8 @@ export default function SellerPromotions() {
               <li>Higher bids = more visibility. Budget depletes in real-time as you get results</li>
               <li>Campaign auto-pauses when budget is spent. Top up anytime to resume</li>
             </ol>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </SellerLayout>
   );

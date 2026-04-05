@@ -261,17 +261,17 @@ export default function SellerCategories() {
         </div>
 
         {/* Hierarchical Categories List */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
               <LayoutGrid className="h-5 w-5" />
               Marketplace Categories
-            </CardTitle>
-            <CardDescription>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Toggle categories to show them in your store. Toggling a parent enables/disables all sub-categories.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </p>
+          </div>
+          <div className="p-4">
             {isLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3, 4, 5].map(i => (
@@ -404,12 +404,12 @@ export default function SellerCategories() {
                 </p>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Info Card */}
-        <Card className="mt-6">
-          <CardContent className="pt-6">
+        <div className="border border-border rounded-xl overflow-hidden mt-6">
+          <div className="p-4 pt-6">
             <div className="flex items-start gap-4">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                 <LayoutGrid className="h-5 w-5 text-primary" />
@@ -423,8 +423,8 @@ export default function SellerCategories() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </SellerLayout>
   );

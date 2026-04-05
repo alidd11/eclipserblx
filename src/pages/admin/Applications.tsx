@@ -278,58 +278,58 @@ export default function AdminApplications() {
   return (
     <AdminLayout requiredPermissions={['view_applications']}>
       <div className="space-y-6">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
+        <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <CardTitle className="text-2xl sm:text-3xl font-display">Job Applications</CardTitle>
-                <CardDescription>Review and manage job applications</CardDescription>
+                <h3 className="font-semibold text-sm text-2xl sm:text-3xl font-display">Job Applications</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Review and manage job applications</p>
               </div>
               <Button onClick={() => setShowMassMessage(true)} variant="outline" className="gap-2 w-full sm:w-auto">
                 <Megaphone className="h-4 w-4" />
                 Mass Message
               </Button>
             </div>
-          </CardHeader>
-        </Card>
+          </div>
+        </div>
 
         {/* Stats */}
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-5 md:overflow-visible">
-          <Card className="glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-6 text-center">
+          <div className="border border-border rounded-xl overflow-hidden glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
+            <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold">{stats.total}</p>
               <p className="text-sm text-muted-foreground">Total</p>
-            </CardContent>
-          </Card>
-          <Card className="glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-6 text-center">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
+            <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold text-yellow-400">{stats.pending}</p>
               <p className="text-sm text-muted-foreground">Pending</p>
-            </CardContent>
-          </Card>
-          <Card className="glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-6 text-center">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
+            <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold text-blue-400">{stats.reviewing}</p>
               <p className="text-sm text-muted-foreground">Reviewing</p>
-            </CardContent>
-          </Card>
-          <Card className="glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-6 text-center">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
+            <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold text-green-400">{stats.accepted}</p>
               <p className="text-sm text-muted-foreground">Accepted</p>
-            </CardContent>
-          </Card>
-          <Card className="glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-6 text-center">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
+            <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold text-red-400">{stats.rejected}</p>
               <p className="text-sm text-muted-foreground">Rejected</p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Filters */}
-        <Card className="glass-card">
-          <CardContent className="pt-6">
+        <div className="border border-border rounded-xl overflow-hidden glass-card">
+          <div className="p-4 pt-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -354,18 +354,18 @@ export default function AdminApplications() {
                 </SelectContent>
               </Select>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Applications Table */}
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden glass-card">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
               <FileText className="h-5 w-5" />
               Applications ({filteredApplications?.length || 0})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+            </h3>
+          </div>
+          <div className="p-4">
             {isLoading ? (
               <p className="text-muted-foreground text-center py-8">Loading applications...</p>
             ) : filteredApplications?.length === 0 ? (
@@ -448,8 +448,8 @@ export default function AdminApplications() {
                 </div>
               </>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Application Detail Dialog */}
         <Dialog open={!!selectedApplication} onOpenChange={(open) => !open && setSelectedApplication(null)}>
@@ -575,14 +575,14 @@ export default function AdminApplications() {
 
                 <TabsContent value="messages" className="space-y-4 mt-4">
                   {/* Send new message */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg flex items-center gap-2">
+                  <div className="border border-border rounded-xl overflow-hidden">
+                    <div className="px-4 py-3 border-b border-border bg-muted/30">
+                      <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
                         <Send className="h-4 w-4" />
                         Send Message to Applicant
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+                      </h3>
+                    </div>
+                    <div className="p-4 space-y-4">
                       <div className="space-y-2">
                         <Label>Subject</Label>
                         <Input
@@ -606,8 +606,8 @@ export default function AdminApplications() {
                       >
                         {sendMessageMutation.isPending ? 'Sending...' : 'Send Message'}
                       </Button>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
 
                   {/* Message history */}
                   <div className="space-y-3">

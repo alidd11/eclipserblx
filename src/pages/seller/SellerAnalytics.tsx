@@ -316,12 +316,12 @@ export default function SellerAnalytics() {
 
               {/* ── Traffic Tab ── */}
               <TabsContent value="traffic" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Views Over Time</CardTitle>
-                    <CardDescription>Daily store and product views</CardDescription>
-                  </CardHeader>
-                  <CardContent>
+                <div className="border border-border rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 border-b border-border bg-muted/30">
+                    <h3 className="font-semibold text-sm">Views Over Time</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">Daily store and product views</p>
+                  </div>
+                  <div className="p-4">
                     <RevolutLineChart
                       data={processedData.dailyData}
                       xKey="date"
@@ -331,16 +331,16 @@ export default function SellerAnalytics() {
                       ]}
                       height={320}
                     />
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Visitor Breakdown */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base">Visitor Breakdown</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                  <div className="border border-border rounded-xl overflow-hidden">
+                    <div className="px-4 py-3 border-b border-border bg-muted/30">
+                      <h3 className="font-semibold text-sm">Visitor Breakdown</h3>
+                    </div>
+                    <div className="p-4">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
@@ -371,15 +371,15 @@ export default function SellerAnalytics() {
                           )}
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
 
                   {/* Device Breakdown */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base">Device Breakdown</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                  <div className="border border-border rounded-xl overflow-hidden">
+                    <div className="px-4 py-3 border-b border-border bg-muted/30">
+                      <h3 className="font-semibold text-sm">Device Breakdown</h3>
+                    </div>
+                    <div className="p-4">
                       {processedData.deviceData.length > 0 ? (
                         <RevolutDonutChart
                           data={processedData.deviceData}
@@ -392,15 +392,15 @@ export default function SellerAnalytics() {
                           No device data available
                         </div>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
 
                   {/* Top Countries */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base">Top Countries</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                  <div className="border border-border rounded-xl overflow-hidden">
+                    <div className="px-4 py-3 border-b border-border bg-muted/30">
+                      <h3 className="font-semibold text-sm">Top Countries</h3>
+                    </div>
+                    <div className="p-4">
                       {processedData.countryData.length > 0 ? (
                         <div className="space-y-3">
                           {processedData.countryData.map((country, index) => (
@@ -426,19 +426,19 @@ export default function SellerAnalytics() {
                           No country data available
                         </div>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </div>
               </TabsContent>
 
               {/* ── Funnel Tab ── */}
               <TabsContent value="funnel" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Conversion Funnel</CardTitle>
-                    <CardDescription>Track drop-off at each stage from view to purchase</CardDescription>
-                  </CardHeader>
-                  <CardContent>
+                <div className="border border-border rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 border-b border-border bg-muted/30">
+                    <h3 className="font-semibold text-sm">Conversion Funnel</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">Track drop-off at each stage from view to purchase</p>
+                  </div>
+                  <div className="p-4">
                     {/* Visual Step Funnel */}
                     <div className="space-y-0">
                       {processedData.funnelSteps.map((step, i) => {
@@ -489,16 +489,16 @@ export default function SellerAnalytics() {
                         );
                       })}
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
                 {/* Daily Conversion Chart */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Daily Conversion Breakdown</CardTitle>
-                    <CardDescription>Views, add-to-carts, and purchases per day</CardDescription>
-                  </CardHeader>
-                  <CardContent>
+                <div className="border border-border rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 border-b border-border bg-muted/30">
+                    <h3 className="font-semibold text-sm">Daily Conversion Breakdown</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">Views, add-to-carts, and purchases per day</p>
+                  </div>
+                  <div className="p-4">
                     <RevolutAreaChart
                       data={processedData.dailyData}
                       xKey="date"
@@ -509,18 +509,18 @@ export default function SellerAnalytics() {
                       ]}
                       height={320}
                     />
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </TabsContent>
 
               {/* ── Products Tab ── */}
               <TabsContent value="products" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Product Performance</CardTitle>
-                    <CardDescription>Per-product analytics — views, cart adds, purchases, and conversion rates</CardDescription>
-                  </CardHeader>
-                  <CardContent>
+                <div className="border border-border rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 border-b border-border bg-muted/30">
+                    <h3 className="font-semibold text-sm">Product Performance</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">Per-product analytics — views, cart adds, purchases, and conversion rates</p>
+                  </div>
+                  <div className="p-4">
                     {processedData.productPerformance.length > 0 ? (
                       <div className="space-y-3">
                         {/* Header */}
@@ -573,18 +573,18 @@ export default function SellerAnalytics() {
                         <p className="text-sm mt-1">Data appears once customers view your products</p>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </TabsContent>
 
               {/* ── Sources Tab ── */}
               <TabsContent value="sources">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Traffic Sources</CardTitle>
-                    <CardDescription>Where your visitors come from</CardDescription>
-                  </CardHeader>
-                  <CardContent>
+                <div className="border border-border rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 border-b border-border bg-muted/30">
+                    <h3 className="font-semibold text-sm">Traffic Sources</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">Where your visitors come from</p>
+                  </div>
+                  <div className="p-4">
                     {processedData.referrerData.length > 0 ? (
                       <div className="space-y-4">
                         {processedData.referrerData.map((source, index) => (
@@ -618,8 +618,8 @@ export default function SellerAnalytics() {
                         No referrer data available yet
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
 
@@ -627,15 +627,15 @@ export default function SellerAnalytics() {
             <ExportReportsCard />
           </div>
         ) : (
-          <Card>
-            <CardContent className="py-12 text-center">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="p-4">
               <TrendingUp className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
               <h3 className="text-lg font-medium mb-2">No Analytics Data</h3>
               <p className="text-muted-foreground">
                 Analytics will start tracking once customers visit your store
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
       </div>
     </SellerLayout>

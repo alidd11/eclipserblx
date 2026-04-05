@@ -80,8 +80,8 @@ export default function SellerDiscord() {
             <AddPortalBotCard />
 
             {/* Webhook Config Link */}
-            <Card className="border-border/50">
-              <CardContent className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4">
+            <div className="border border-border rounded-xl overflow-hidden border-border/50">
+              <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4">
                 <div className="flex items-center gap-3 min-w-0">
                   <Settings className="h-4 w-4 text-muted-foreground shrink-0" />
                   <p className="text-sm text-muted-foreground">
@@ -93,8 +93,8 @@ export default function SellerDiscord() {
                     Configure
                   </Link>
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="welcome" className="mt-4">

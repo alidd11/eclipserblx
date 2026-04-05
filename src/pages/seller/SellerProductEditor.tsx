@@ -587,12 +587,12 @@ export default function SellerProductEditor() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-              <CardDescription>Essential details about your product</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Basic Information</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Essential details about your product</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Product Name *</Label>
                 <Input
@@ -814,8 +814,8 @@ export default function SellerProductEditor() {
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Early Access for Eclipse+ */}
           <EarlyAccessCard
@@ -831,17 +831,17 @@ export default function SellerProductEditor() {
           />
 
           {/* Images */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm flex items-center justify-between">
                 <span>Product Images</span>
                 <span className="text-sm font-normal text-muted-foreground">
                   {formData.images.length}/{MAX_IMAGES}
                 </span>
-              </CardTitle>
-              <CardDescription>Upload up to {MAX_IMAGES} images to showcase your product</CardDescription>
-            </CardHeader>
-            <CardContent>
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Upload up to {MAX_IMAGES} images to showcase your product</p>
+            </div>
+            <div className="p-4">
               <div className="space-y-4">
                 {formData.images.length > 0 && (
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -901,16 +901,16 @@ export default function SellerProductEditor() {
                   onChange={handleImageUpload}
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Digital Asset */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Digital Asset <span className="text-destructive">*</span></CardTitle>
-              <CardDescription>Upload the file customers will download after purchase (required)</CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Digital Asset <span className="text-destructive">*</span></h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Upload the file customers will download after purchase (required)</p>
+            </div>
+            <div className="p-4">
               <div className="space-y-4">
                 {formData.asset_file_url && (
                   <div className="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
@@ -953,8 +953,8 @@ export default function SellerProductEditor() {
                   onChange={handleAssetUpload}
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Actions */}
           <div className="flex justify-end gap-4">

@@ -452,9 +452,9 @@ export default function CustomerTicketDetail() {
         <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-4">
           {/* ── Conversation panel ─────────────────────────────────────────── */}
           <div className="flex-1 min-w-0 flex flex-col min-h-0">
-            <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
-              <CardHeader className="py-3 px-4 border-b">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden flex-1 min-h-0 flex flex-col overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30 py-3 px-4 border-b">
+                <h3 className="font-semibold text-sm text-sm font-medium flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" />
                   Conversation
                   <span className="text-muted-foreground font-normal">({messages?.length || 0} messages)</span>
@@ -467,8 +467,8 @@ export default function CustomerTicketDetail() {
                     <User className="h-3.5 w-3.5 mr-1" />
                     {showContext ? 'Hide' : 'Context'}
                   </Button>
-                </CardTitle>
-              </CardHeader>
+                </h3>
+              </div>
 
               {/* Messages area */}
               <div
@@ -644,7 +644,7 @@ export default function CustomerTicketDetail() {
                   Press Ctrl+Enter to send
                 </p>
               </div>
-            </Card>
+            </div>
           </div>
 
           {/* ── Context sidebar ────────────────────────────────────────────── */}
@@ -653,14 +653,14 @@ export default function CustomerTicketDetail() {
             !showContext && 'hidden md:block'
           )}>
             {/* Customer info */}
-            <Card>
-              <CardHeader className="py-3 px-4">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30 py-3 px-4">
+                <h3 className="font-semibold text-sm text-sm font-medium flex items-center gap-2">
                   <User className="h-4 w-4" />
                   Customer
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-4 pb-4 space-y-3">
+                </h3>
+              </div>
+              <div className="p-4 px-4 pb-4 space-y-3">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={customerProfile?.avatar_url || undefined} />
@@ -709,26 +709,26 @@ export default function CustomerTicketDetail() {
                     </div>
                   </>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Recent orders */}
             <Collapsible defaultOpen>
-              <Card>
+              <div className="border border-border rounded-xl overflow-hidden">
                 <CollapsibleTrigger className="w-full">
-                  <CardHeader className="py-3 px-4 flex flex-row items-center justify-between">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <div className="px-4 py-3 border-b border-border bg-muted/30 py-3 px-4 flex flex-row items-center justify-between">
+                    <h3 className="font-semibold text-sm text-sm font-medium flex items-center gap-2">
                       <ShoppingBag className="h-4 w-4" />
                       Recent Orders
                       {customerOrders && customerOrders.length > 0 && (
                         <Badge variant="secondary" className="text-[10px] px-1.5 h-4">{customerOrders.length}</Badge>
                       )}
-                    </CardTitle>
+                    </h3>
                     <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-180" />
-                  </CardHeader>
+                  </div>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <CardContent className="px-4 pb-4 space-y-2">
+                  <div className="p-4 px-4 pb-4 space-y-2">
                     {!customerOrders?.length ? (
                       <p className="text-xs text-muted-foreground text-center py-3">No orders found</p>
                     ) : (
@@ -747,28 +747,28 @@ export default function CustomerTicketDetail() {
                         </div>
                       ))
                     )}
-                  </CardContent>
+                  </div>
                 </CollapsibleContent>
-              </Card>
+              </div>
             </Collapsible>
 
             {/* Past tickets */}
             <Collapsible>
-              <Card>
+              <div className="border border-border rounded-xl overflow-hidden">
                 <CollapsibleTrigger className="w-full">
-                  <CardHeader className="py-3 px-4 flex flex-row items-center justify-between">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <div className="px-4 py-3 border-b border-border bg-muted/30 py-3 px-4 flex flex-row items-center justify-between">
+                    <h3 className="font-semibold text-sm text-sm font-medium flex items-center gap-2">
                       <History className="h-4 w-4" />
                       Past Tickets
                       {pastTickets && pastTickets.length > 0 && (
                         <Badge variant="secondary" className="text-[10px] px-1.5 h-4">{pastTickets.length}</Badge>
                       )}
-                    </CardTitle>
+                    </h3>
                     <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-180" />
-                  </CardHeader>
+                  </div>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <CardContent className="px-4 pb-4 space-y-2">
+                  <div className="p-4 px-4 pb-4 space-y-2">
                     {!pastTickets?.length ? (
                       <p className="text-xs text-muted-foreground text-center py-3">No past tickets</p>
                     ) : (
@@ -787,20 +787,20 @@ export default function CustomerTicketDetail() {
                         </div>
                       ))
                     )}
-                  </CardContent>
+                  </div>
                 </CollapsibleContent>
-              </Card>
+              </div>
             </Collapsible>
 
             {/* Ticket meta */}
-            <Card>
-              <CardHeader className="py-3 px-4">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30 py-3 px-4">
+                <h3 className="font-semibold text-sm text-sm font-medium flex items-center gap-2">
                   <Clock className="h-4 w-4" />
                   Ticket Info
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-4 pb-4 space-y-2 text-xs">
+                </h3>
+              </div>
+              <div className="p-4 px-4 pb-4 space-y-2 text-xs">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Created</span>
                   <span>{format(new Date(ticket.created_at), 'MMM d, yyyy h:mm a')}</span>
@@ -815,8 +815,8 @@ export default function CustomerTicketDetail() {
                     <span>{categoryLabel}</span>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       </div>

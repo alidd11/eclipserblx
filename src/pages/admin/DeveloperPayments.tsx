@@ -321,33 +321,33 @@ export default function DeveloperPayments() {
  
          {!isInsideHub && (
            <div className="flex gap-3">
-            <Card className="flex-1 min-w-0">
-              <CardHeader className="flex flex-row items-center justify-between pb-2 p-3">
-                <CardTitle className="text-xs font-medium truncate">Total Owed</CardTitle>
+            <div className="border border-border rounded-xl overflow-hidden flex-1 min-w-0">
+              <div className="px-4 py-3 border-b border-border bg-muted/30 flex flex-row items-center justify-between pb-2 p-3">
+                <h3 className="font-semibold text-sm text-xs font-medium truncate">Total Owed</h3>
                 <Wallet className="h-4 w-4 text-muted-foreground shrink-0" />
-              </CardHeader>
-              <CardContent className="p-3 pt-0">
+              </div>
+              <div className="p-4 p-3 pt-0">
                 <div className="text-lg font-bold truncate">£{stats.totalOwed.toFixed(2)}</div>
-              </CardContent>
-            </Card>
-            <Card className="flex-1 min-w-0">
-              <CardHeader className="flex flex-row items-center justify-between pb-2 p-3">
-                <CardTitle className="text-xs font-medium truncate">Pending</CardTitle>
+              </div>
+            </div>
+            <div className="border border-border rounded-xl overflow-hidden flex-1 min-w-0">
+              <div className="px-4 py-3 border-b border-border bg-muted/30 flex flex-row items-center justify-between pb-2 p-3">
+                <h3 className="font-semibold text-sm text-xs font-medium truncate">Pending</h3>
                 <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-              </CardHeader>
-              <CardContent className="p-3 pt-0">
+              </div>
+              <div className="p-4 p-3 pt-0">
                 <div className="text-lg font-bold">{stats.pendingCount}</div>
-              </CardContent>
-            </Card>
-            <Card className="flex-1 min-w-0">
-              <CardHeader className="flex flex-row items-center justify-between pb-2 p-3">
-                <CardTitle className="text-xs font-medium truncate">This Month</CardTitle>
+              </div>
+            </div>
+            <div className="border border-border rounded-xl overflow-hidden flex-1 min-w-0">
+              <div className="px-4 py-3 border-b border-border bg-muted/30 flex flex-row items-center justify-between pb-2 p-3">
+                <h3 className="font-semibold text-sm text-xs font-medium truncate">This Month</h3>
                 <Banknote className="h-4 w-4 text-muted-foreground shrink-0" />
-              </CardHeader>
-              <CardContent className="p-3 pt-0">
+              </div>
+              <div className="p-4 p-3 pt-0">
                 <div className="text-lg font-bold truncate">£{stats.paidThisMonth.toFixed(2)}</div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
            </div>
          )}
  
@@ -372,22 +372,22 @@ export default function DeveloperPayments() {
  
            <TabsContent value={activeTab} className="mt-6">
              {isLoading ? (
-               <Card>
-                 <CardContent className="p-6">
+               <div className="border border-border rounded-xl overflow-hidden">
+                 <div className="p-4 p-6">
                    <div className="space-y-4">
                      {[...Array(5)].map((_, i) => (
                        <Skeleton key={i} className="h-12 w-full" />
                      ))}
                    </div>
-                 </CardContent>
-               </Card>
+                 </div>
+               </div>
              ) : filteredPayments.length === 0 ? (
-               <Card>
-                 <CardContent className="flex flex-col items-center justify-center py-12">
+               <div className="border border-border rounded-xl overflow-hidden">
+                 <div className="p-4 flex flex-col items-center justify-center py-12">
                    <CreditCard className="h-12 w-12 text-muted-foreground mb-4" />
                    <p className="text-muted-foreground">No payments found</p>
-                 </CardContent>
-               </Card>
+                 </div>
+               </div>
              ) : (
                 <div className="space-y-3">
                   {filteredPayments.map((payment) => {
@@ -400,7 +400,7 @@ export default function DeveloperPayments() {
                         className="cursor-pointer active:bg-muted/50 touch-manipulation transition-colors"
                         onClick={() => navigate(`/admin/developer-payments/${payment.id}`)}
                       >
-                        <CardContent className="p-4">
+                        <div className="p-4 p-4">
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
@@ -427,8 +427,8 @@ export default function DeveloperPayments() {
                             </div>
                             <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>

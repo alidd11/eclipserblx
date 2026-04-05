@@ -89,8 +89,8 @@ export default function SellerTaxFeeSummary() {
       </div>
 
       {/* Effective fee rate */}
-      <Card>
-        <CardContent className="pt-6">
+      <div className="border border-border rounded-xl overflow-hidden">
+        <div className="p-4 pt-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium">Effective Fee Rate</p>
@@ -105,13 +105,13 @@ export default function SellerTaxFeeSummary() {
             <span>Commission: £{summary.totalPlatformFee.toFixed(2)}</span>
             <span>Processing: £{summary.totalStripeFee.toFixed(2)}</span>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Monthly breakdown chart */}
-      <Card>
-        <CardHeader><CardTitle className="text-base">Monthly Fee Breakdown</CardTitle></CardHeader>
-        <CardContent>
+      <div className="border border-border rounded-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm text-base">Monthly Fee Breakdown</h3></div>
+        <div className="p-4">
           <div className="h-72">
             {monthlyData.length > 0 ? (
               <RevolutBarChart
@@ -132,8 +132,8 @@ export default function SellerTaxFeeSummary() {
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div></SellerLayout>
   );
 }

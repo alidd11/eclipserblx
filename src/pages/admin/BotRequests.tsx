@@ -113,14 +113,14 @@ export default function AdminBotRequests() {
         </div>
 
         {/* Info Card */}
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden border-primary/20 bg-primary/5">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
+            <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
               <Bell className="h-5 w-5 text-primary" />
               How Notifications Work
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground space-y-2">
+            </h3>
+          </div>
+          <div className="p-4 text-sm text-muted-foreground space-y-2">
             <p>
               When a customer purchases a bot product, an installation code is automatically generated and emailed to them.
               Staff should regularly check this page for pending requests that need manual bot installation.
@@ -129,15 +129,15 @@ export default function AdminBotRequests() {
               After installing the bot for the customer, go to <Link to="/admin/bot-codes" className="text-primary underline underline-offset-2">Bot Codes</Link> and 
               mark the code as "Claimed" to track completion.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Pending Requests Count */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Pending Requests</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
+            <h3 className="font-semibold text-sm text-sm font-medium text-muted-foreground">Pending Requests</h3>
+          </div>
+          <div className="p-4">
             <div className="flex items-center gap-3">
               <div className="text-3xl font-bold text-primary">{pendingCount}</div>
               {pendingCount > 0 && (
@@ -152,16 +152,16 @@ export default function AdminBotRequests() {
                 </Badge>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Pending Requests List */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Pending Installations</CardTitle>
-            <CardDescription>Bot codes awaiting manual installation</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm text-lg">Pending Installations</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Bot codes awaiting manual installation</p>
+          </div>
+          <div className="p-4">
             {isLoading ? (
               <div className="text-center py-8 text-muted-foreground">Loading requests...</div>
             ) : !pendingRequests?.length ? (
@@ -288,8 +288,8 @@ export default function AdminBotRequests() {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

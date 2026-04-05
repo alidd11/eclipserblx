@@ -73,18 +73,18 @@ export default function ProductListingGuide() {
           <div className="grid md:grid-cols-2 gap-4">
             {listingTips.map((tip, i) => (
               <Card key={i} className="border-border/50">
-                <CardHeader className="pb-3">
+                <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-primary/10">
                       <tip.icon className="h-5 w-5 text-primary" />
                     </div>
-                    <CardTitle className="text-lg">{tip.title}</CardTitle>
+                    <h3 className="font-semibold text-sm text-lg">{tip.title}</h3>
                   </div>
-                </CardHeader>
-                <CardContent>
+                </div>
+                <div className="p-4">
                   <p className="text-sm text-muted-foreground">{tip.description}</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </section>
@@ -95,8 +95,8 @@ export default function ProductListingGuide() {
             <TrendingUp className="h-6 w-6 text-primary" />
             Pricing Guide
           </h2>
-          <Card className="border-border/50">
-            <CardContent className="pt-6">
+          <div className="border border-border rounded-xl overflow-hidden border-border/50">
+            <div className="p-4 pt-6">
               <div className="space-y-0 divide-y divide-border">
                 {pricingTiers.map((tier, i) => (
                   <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-2 py-4 first:pt-0 last:pb-0">
@@ -113,8 +113,8 @@ export default function ProductListingGuide() {
               <p className="text-xs text-muted-foreground mt-4 pt-4 border-t border-border">
                 * These are suggested ranges. You're free to set any price above £1.00 minimum.
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </section>
 
         {/* Do's and Don'ts */}
@@ -124,13 +124,13 @@ export default function ProductListingGuide() {
             Do's & Don'ts
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
-            <Card className="border-green-500/30 bg-green-500/5">
-              <CardHeader>
-                <CardTitle className="text-green-500 flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden border-green-500/30 bg-green-500/5">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm text-green-500 flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5" /> Do
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
+                </h3>
+              </div>
+              <div className="p-4 pt-0">
                 <ul className="space-y-3">
                   {dosAndDonts.dos.map((item, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm">
@@ -139,15 +139,15 @@ export default function ProductListingGuide() {
                     </li>
                   ))}
                 </ul>
-              </CardContent>
-            </Card>
-            <Card className="border-destructive/30 bg-destructive/5">
-              <CardHeader>
-                <CardTitle className="text-destructive flex items-center gap-2">
+              </div>
+            </div>
+            <div className="border border-border rounded-xl overflow-hidden border-destructive/30 bg-destructive/5">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm text-destructive flex items-center gap-2">
                   <XCircle className="h-5 w-5" /> Don't
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
+                </h3>
+              </div>
+              <div className="p-4 pt-0">
                 <ul className="space-y-3">
                   {dosAndDonts.donts.map((item, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm">
@@ -156,8 +156,8 @@ export default function ProductListingGuide() {
                     </li>
                   ))}
                 </ul>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -167,8 +167,8 @@ export default function ProductListingGuide() {
             <Package className="h-6 w-6 text-primary" />
             File Requirements
           </h2>
-          <Card className="border-border/50">
-            <CardContent className="pt-6 space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden border-border/50">
+            <div className="p-4 pt-6 space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-lg bg-muted/30">
                   <h4 className="font-semibold mb-2">Accepted File Types</h4>
@@ -187,8 +187,8 @@ export default function ProductListingGuide() {
                   <p className="text-sm text-muted-foreground">New products are reviewed within 24-48 hours before going live on the marketplace.</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </section>
       </div>
     </SellerDocumentPage>

@@ -175,12 +175,12 @@ export default function RecruiterPayouts() {
           </p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Payout Requests</CardTitle>
-            <CardDescription>Review and process payout requests from recruiters</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm">Payout Requests</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Review and process payout requests from recruiters</p>
+          </div>
+          <div className="p-4">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="hidden sm:inline-flex">
                 <TabsTrigger value="pending" className="gap-2">
@@ -218,7 +218,7 @@ export default function RecruiterPayouts() {
                   <div className="space-y-4">
                     {payouts.map((payout) => (
                       <Card key={payout.id}>
-                        <CardContent className="pt-6">
+                        <div className="p-4 pt-6">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -281,8 +281,8 @@ export default function RecruiterPayouts() {
                               Rejection reason: {payout.rejection_reason}
                             </div>
                           )}
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 ) : (
@@ -293,8 +293,8 @@ export default function RecruiterPayouts() {
                 )}
               </TabsContent>
             </Tabs>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Reject Dialog */}
         <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>

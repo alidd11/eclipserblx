@@ -321,7 +321,7 @@ export default function StoreApplications() {
         className="cursor-pointer hover:border-primary/50 transition-colors"
         onClick={() => setSelectedApplication(app)}
       >
-        <CardContent className="p-4 space-y-3">
+        <div className="p-4 p-4 space-y-3">
           <div className="flex items-start justify-between">
             <div>
               <h3 className="font-semibold">{app.store_name}</h3>
@@ -364,8 +364,8 @@ export default function StoreApplications() {
             )}
             <span>{formatDistanceToNow(new Date(app.created_at), { addSuffix: true })}</span>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   };
 
@@ -709,14 +709,14 @@ function VerificationResultsCard({ results }: { results: VerificationResults }) 
   const percentage = Math.round((passedCount / items.length) * 100);
 
   return (
-    <Card className="border-muted">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm flex items-center gap-2">
+    <div className="border border-border rounded-xl overflow-hidden border-muted">
+      <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
+        <h3 className="font-semibold text-sm text-sm flex items-center gap-2">
           <Shield className="h-4 w-4" />
           Verification Report
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
+        </h3>
+      </div>
+      <div className="p-4 space-y-3">
         <div className="flex items-center gap-2">
           <Progress value={percentage} className="flex-1" />
           <span className="text-sm font-medium">{passedCount}/{items.length}</span>
@@ -742,7 +742,7 @@ function VerificationResultsCard({ results }: { results: VerificationResults }) 
             </div>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
