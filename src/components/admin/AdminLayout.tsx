@@ -247,6 +247,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
         showBreadcrumb={false}
         showFooter={false}
         showFABs={false}
+        chatMode={isChatPage}
         wrapperClassName={cn(
           'flex w-full bg-background overflow-x-hidden relative max-w-full min-w-0',
           isChatPage ? 'flex-col md:flex-row overflow-hidden bg-card' : 'min-h-[100dvh]'
