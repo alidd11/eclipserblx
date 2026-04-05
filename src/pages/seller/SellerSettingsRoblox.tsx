@@ -408,14 +408,11 @@ export default function SellerSettingsRoblox() {
           </div>
 
           {/* How to Find IDs */}
-          <Card className="border-muted">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <AlertCircle className="h-5 w-5" />
-                How to Find Roblox IDs
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="border border-border rounded-xl overflow-hidden border-muted">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">How to Find Roblox IDs</h3>
+            </div>
+            <div className="p-4">
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium text-sm mb-1">Group ID</h4>
