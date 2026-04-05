@@ -519,8 +519,8 @@ export default function SellerSettingsPayments() {
                   )}
                 </p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Earnings Calculator */}
           <EarningsCalculator commissionRate={store?.commission_rate || 15} />
