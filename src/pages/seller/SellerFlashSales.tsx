@@ -147,15 +147,13 @@ export default function SellerFlashSales() {
           </Button>
         </div>
 
-        <Card className="mb-6 bg-blue-500/5 border-blue-500/20">
-          <CardContent className="flex items-start gap-3 py-4">
-            <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-muted-foreground">
-              Flash sales apply automatic discounts to your products during the sale period. 
-              Maximum discount is 50%. Sales are visible on your store page with a countdown timer.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3 flex items-start gap-3 mb-6">
+          <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-muted-foreground">
+            Flash sales apply automatic discounts to your products during the sale period. 
+            Maximum discount is 50%. Sales are visible on your store page with a countdown timer.
+          </p>
+        </div>
 
         <div className="space-y-3">
           {isLoading ? (
