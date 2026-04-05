@@ -456,8 +456,8 @@ export default function SellerSettingsTeam() {
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Pending Invites */}
         {pendingInvites.length > 0 && (
