@@ -237,8 +237,8 @@ export default function SellerBalance() {
                   Purchases made with store credits skip Stripe fees entirely, meaning higher earnings for you.
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Payout Section */}
           <Card className="mb-6">
