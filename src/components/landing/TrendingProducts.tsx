@@ -9,6 +9,19 @@ import { getFirstImageUrl } from '@/lib/mediaUtils';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { usePreloadImages } from '@/hooks/usePreloadImages';
 import { useMemo } from 'react';
+import { cn } from '@/lib/utils';
+
+// Masonry height classes — alternate between tall and short cards
+const MASONRY_HEIGHTS = [
+  'row-span-2', // tall
+  'row-span-1', // short
+  'row-span-1', // short
+  'row-span-2', // tall
+  'row-span-1', // short
+  'row-span-2', // tall
+  'row-span-1', // short
+  'row-span-1', // short
+];
 
 export function TrendingProducts() {
   const { data: products, isLoading } = useQuery({
@@ -45,9 +58,11 @@ export function TrendingProducts() {
           <Skeleton className="h-5 w-5" />
           <Skeleton className="h-6 w-40" />
         </div>
-        <div className="grid grid-cols-3 lg:grid-cols-4 gap-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <ProductCardSkeleton key={i} />
+        <div className="columns-2 sm:columns-3 lg:columns-4 gap-3 space-y-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="break-inside-avoid">
+              <ProductCardSkeleton />
+            </div>
           ))}
         </div>
       </section>
@@ -72,66 +87,79 @@ export function TrendingProducts() {
           </Link>
         </div>
 
-        {/* Mobile: horizontal scroll, 2 rows */}
-        <div className="sm:hidden overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4 snap-x snap-mandatory">
-          <div className="grid grid-rows-2 grid-flow-col auto-cols-[45%] gap-2 snap-start">
-            {products.map((product) => {
-              const store = product.stores as any;
-              const category = product.categories as any;
-              return (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  slug={product.slug}
-                  price={product.price}
-                  image={getFirstImageUrl(product.images)}
-                  images={product.images as string[]}
-                  category={category?.name}
-                  categorySlug={category?.slug}
-                  categoryId={product.category_id ?? undefined}
-                  storeName={store?.name}
-                  storeSlug={store?.slug}
-                  storeLogo={store?.logo_url}
-                  isVerified={store?.is_verified}
-                  storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
-                  createdAt={product.created_at}
-                  priority
-                />
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Desktop: normal grid */}
-        <div className="hidden sm:grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-          {products.map((product) => {
+        {/* Masonry layout using CSS columns */}
+        <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-3 [column-fill:_balance]">
+          {products.map((product, idx) => {
             const store = product.stores as any;
             const category = product.categories as any;
+            // Alternate between tall (aspect-[3/4]) and standard (aspect-square) cards
+            const isTall = idx % 3 === 0;
             return (
-              <ProductCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                slug={product.slug}
-                price={product.price}
-                image={getFirstImageUrl(product.images)}
-                images={product.images as string[]}
-                category={category?.name}
-                categorySlug={category?.slug}
-                categoryId={product.category_id ?? undefined}
-                storeName={store?.name}
-                storeSlug={store?.slug}
-                storeLogo={store?.logo_url}
-                isVerified={store?.is_verified}
-                storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
-                createdAt={product.created_at}
-                priority
-              />
+              <div 
+                key={product.id} 
+                className={cn(
+                  "break-inside-avoid mb-3",
+                  // Stagger entry animation
+                  "animate-fade-in",
+                )}
+                style={{ animationDelay: `${idx * 60}ms` }}
+              >
+                <MasonryProductCard
+                  product={product}
+                  store={store}
+                  category={category}
+                  isTall={isTall}
+                  rank={idx + 1}
+                />
+              </div>
             );
           })}
         </div>
       </ScrollReveal>
     </section>
+  );
+}
+
+/** Masonry-specific card with variable aspect ratio */
+function MasonryProductCard({ 
+  product, 
+  store, 
+  category, 
+  isTall, 
+  rank 
+}: { 
+  product: any; 
+  store: any; 
+  category: any; 
+  isTall: boolean; 
+  rank: number;
+}) {
+  return (
+    <div className="relative">
+      {/* Rank badge */}
+      <div className="absolute top-2 left-2 z-10 flex items-center justify-center w-6 h-6 rounded-full bg-background/90 backdrop-blur-sm border border-border shadow-sm">
+        <span className="text-[10px] font-bold text-foreground">
+          {rank <= 3 ? ['🥇', '🥈', '🥉'][rank - 1] : `#${rank}`}
+        </span>
+      </div>
+      <ProductCard
+        id={product.id}
+        name={product.name}
+        slug={product.slug}
+        price={product.price}
+        image={getFirstImageUrl(product.images)}
+        images={product.images as string[]}
+        category={category?.name}
+        categorySlug={category?.slug}
+        categoryId={product.category_id ?? undefined}
+        storeName={store?.name}
+        storeSlug={store?.slug}
+        storeLogo={store?.logo_url}
+        isVerified={store?.is_verified}
+        storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
+        createdAt={product.created_at}
+        priority
+      />
+    </div>
   );
 }
