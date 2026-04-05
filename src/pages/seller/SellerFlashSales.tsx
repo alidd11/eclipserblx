@@ -139,8 +139,8 @@ export default function SellerFlashSales() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Flash Sales</h1>
-            <p className="text-muted-foreground">Create time-limited sales for your store</p>
+            <h1 className="text-2xl font-display font-bold">Flash Sales</h1>
+            <p className="text-sm text-muted-foreground">Create time-limited sales for your store</p>
           </div>
           <Button onClick={() => setShowDialog(true)}>
             <Plus className="h-4 w-4 mr-2" />New Flash Sale
