@@ -8,7 +8,6 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductGridSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { CategoryBar } from '@/components/shop/CategoryBar';
-import { ShopSidebar } from '@/components/shop/ShopSidebar';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -183,9 +182,7 @@ export default function Products() {
         />
         <CategoryBar />
         <div className="container py-4">
-          <div className="flex gap-6">
-            <ShopSidebar />
-            <div className="flex-1 min-w-0 space-y-4">
+          <div className="space-y-4">
               <div className="space-y-3">
                 <h1 className="text-xl font-display font-bold text-foreground uppercase tracking-wide">
                   {featuredOnly ? t('products.featuredProducts') : activeCategory ? activeCategory.name : t('products.allProducts')}
@@ -231,7 +228,6 @@ export default function Products() {
               />
 
               <FeaturedProductsCard />
-            </div>
           </div>
         </div>
       
