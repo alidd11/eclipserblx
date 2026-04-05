@@ -187,16 +187,9 @@ export default function Products() {
             <ShopSidebar />
             <div className="flex-1 min-w-0 space-y-4">
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="text-xl font-display font-bold text-foreground">
-                      {featuredOnly ? t('products.featuredProducts') : activeCategory ? activeCategory.name : t('products.allProducts')}
-                    </h1>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {featuredOnly ? t('products.discoverPremium') : activeCategory?.description || t('products.browseCollection')}
-                    </p>
-                  </div>
-                </div>
+                <h1 className="text-xl font-display font-bold text-foreground uppercase tracking-wide">
+                  {featuredOnly ? t('products.featuredProducts') : activeCategory ? activeCategory.name : t('products.allProducts')}
+                </h1>
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
