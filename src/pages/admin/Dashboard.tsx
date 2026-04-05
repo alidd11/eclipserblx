@@ -277,14 +277,12 @@ export default function AdminDashboard() {
         </div>
 
         {/* Duty Clock In/Out */}
-        <Card className="bg-card border-border max-w-md">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Clock className="h-4 w-4" />
-              Duty Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <div className="border border-border rounded-xl overflow-hidden max-w-md">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <h3 className="font-semibold text-sm">Duty Status</h3>
+          </div>
+          <div className="p-4 space-y-3">
 
             {activeSession ? (
               <div className="space-y-3">
@@ -366,8 +364,8 @@ export default function AdminDashboard() {
                 </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Quick Actions - right after hero like seller dashboard */}
         <Card>
