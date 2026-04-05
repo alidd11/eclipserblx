@@ -371,32 +371,40 @@ export default function SellerTickets() {
 
   return (
     <AdminLayout requiredPermissions={['view_seller_tickets']}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
           <h1 className="text-2xl font-display font-bold">Seller Support Tickets</h1>
-          <p className="text-muted-foreground">Manage support requests from sellers</p>
+          <p className="text-sm text-muted-foreground">Manage support requests from sellers</p>
         </div>
 
-        {/* Stats */}
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-5 md:overflow-visible">
+        {/* Inline stats */}
+        <div className="flex items-center gap-4 text-sm flex-wrap">
           {escalatedCount > 0 && (
-            <AdminStatCard label="Escalated" value={escalatedCount} valueColor="destructive" subtitle="24h+ no response" className="border-destructive bg-destructive/5 min-w-[160px] flex-shrink-0 md:min-w-0" />
+            <span className="text-destructive font-semibold">{escalatedCount} escalated</span>
           )}
-          <AdminStatCard label="Open" value={openCount} valueColor="blue" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
-          <AdminStatCard label="In Progress" value={inProgressCount} valueColor="yellow" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
-          <AdminStatCard label="Awaiting Seller" value={awaitingCount} valueColor="orange" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
-          <AdminStatCard label="Total" value={tickets?.length || 0} className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{openCount}</span> open
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-yellow-500">{inProgressCount}</span> in progress
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-orange-500">{awaitingCount}</span> awaiting seller
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-muted-foreground">{tickets?.length || 0}</span> total
+          </span>
         </div>
 
         {/* Filters */}
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-auto min-w-[140px]">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Tickets</SelectItem>
-              <SelectItem value="escalated">\uD83D\uDD25 Escalated</SelectItem>
+              <SelectItem value="escalated">{'\uD83D\uDD25'} Escalated</SelectItem>
               <SelectItem value="open">Open Only</SelectItem>
               <SelectItem value="in_progress">In Progress</SelectItem>
               <SelectItem value="awaiting_seller">Awaiting Seller</SelectItem>
@@ -408,58 +416,61 @@ export default function SellerTickets() {
 
         {/* Tickets List */}
         {sortedTickets.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="font-semibold mb-2">No Tickets Found</h3>
-              <p className="text-sm text-muted-foreground">{statusFilter === 'all' ? 'No support tickets yet' : `No ${statusFilter} tickets`}</p>
-            </CardContent>
-          </Card>
+          <div className="text-center py-12">
+            <MessageSquare className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-50" />
+            <h3 className="text-sm font-medium mb-1">No tickets found</h3>
+            <p className="text-xs text-muted-foreground">{statusFilter === 'all' ? 'No support tickets yet' : `No ${statusFilter} tickets`}</p>
+          </div>
         ) : (
-          <div className="space-y-3">
-            {sortedTickets.map((ticket) => (
-              <Card
-                key={ticket.id}
-                className={cn('cursor-pointer hover:border-primary/50 transition-colors', ticket.escalated_at && 'border-destructive bg-destructive/5')}
-                onClick={() => setSelectedTicket(ticket)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3 min-w-0">
-                      <Avatar className="h-9 w-9 shrink-0 mt-0.5">
-                        <AvatarImage src={ticket.profiles?.avatar_url || undefined} />
-                        <AvatarFallback className={cn('text-xs', ticket.escalated_at ? 'bg-destructive/20 text-destructive' : 'bg-primary/20 text-primary')}>
-                          {ticket.escalated_at ? <AlertTriangle className="h-4 w-4" /> : <User className="h-4 w-4" />}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <Badge variant="outline" className="font-mono text-xs">{ticket.ticket_number}</Badge>
-                          {ticket.escalated_at && <Badge variant="destructive" className="text-xs"><AlertTriangle className="h-3 w-3 mr-1" />Escalated</Badge>}
-                          {getStatusBadge(ticket.status)}
-                          {getPriorityBadge(ticket.priority)}
-                        </div>
-                        <h3 className="font-medium line-clamp-2">{ticket.subject}</h3>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                          <User className="h-3 w-3" />
-                          <span>{ticket.profiles?.display_name || 'Unknown'}</span>
-                          {ticket.stores && (
-                            <>
-                              <Store className="h-3 w-3 ml-2" />
-                              <span>{ticket.stores.name}</span>
-                            </>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {CATEGORY_LABELS[ticket.category] || ticket.category} • {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}
-                          {ticket.escalated_at && <span className="text-destructive ml-2">• Escalated {formatDistanceToNow(new Date(ticket.escalated_at), { addSuffix: true })}</span>}
-                        </p>
-                      </div>
+          <div className="divide-y divide-border">
+            {sortedTickets.map((ticket) => {
+              const slaHours = ticket.last_staff_response_at
+                ? (Date.now() - new Date(ticket.last_staff_response_at).getTime()) / (1000 * 60 * 60)
+                : (Date.now() - new Date(ticket.created_at).getTime()) / (1000 * 60 * 60);
+              const slaColor = slaHours < 4 ? 'text-green-500' : slaHours < 12 ? 'text-yellow-500' : slaHours < 24 ? 'text-orange-500' : 'text-destructive';
+
+              return (
+                <div
+                  key={ticket.id}
+                  className={cn(
+                    'py-3 flex items-start gap-3 cursor-pointer hover:bg-muted/30 -mx-1 px-1 rounded-md transition-colors',
+                    ticket.escalated_at && 'bg-destructive/5'
+                  )}
+                  onClick={() => setSelectedTicket(ticket)}
+                >
+                  <Avatar className="h-8 w-8 shrink-0 mt-0.5">
+                    <AvatarImage src={ticket.profiles?.avatar_url || undefined} />
+                    <AvatarFallback className={cn('text-xs', ticket.escalated_at ? 'bg-destructive/20 text-destructive' : 'bg-primary/20 text-primary')}>
+                      {ticket.escalated_at ? <AlertTriangle className="h-3.5 w-3.5" /> : <User className="h-3.5 w-3.5" />}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                      <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">{ticket.ticket_number}</Badge>
+                      {ticket.escalated_at && <Badge variant="destructive" className="text-[10px] px-1.5 py-0"><AlertTriangle className="h-3 w-3 mr-0.5" />Escalated</Badge>}
+                      {getStatusBadge(ticket.status)}
+                      {getPriorityBadge(ticket.priority)}
+                    </div>
+                    <h3 className="text-sm font-medium line-clamp-1">{ticket.subject}</h3>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                      <span>{ticket.profiles?.display_name || 'Unknown'}</span>
+                      {ticket.stores && (
+                        <>
+                          <span>\u00B7</span>
+                          <span>{ticket.stores.name}</span>
+                        </>
+                      )}
+                      <span>\u00B7</span>
+                      <span>{formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}</span>
+                      <span>\u00B7</span>
+                      <span className={cn('font-medium', slaColor)}>
+                        SLA: {Math.floor(slaHours)}h
+                      </span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              );
+            })}
           </div>
         )}
 
