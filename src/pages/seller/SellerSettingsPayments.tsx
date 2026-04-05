@@ -526,17 +526,12 @@ export default function SellerSettingsPayments() {
           <EarningsCalculator commissionRate={store?.commission_rate || 15} />
 
           {/* Store Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Store Statistics
-              </CardTitle>
-              <CardDescription>
-                Your store's performance overview
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Store Statistics</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Your store's performance overview</p>
+            </div>
+            <div className="p-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <p className="text-sm text-muted-foreground">Total Sales</p>
