@@ -204,17 +204,12 @@ export default function SellerSettingsNotifications() {
 
         <div className="space-y-6">
           {/* Discord Server Link */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageCircle className="h-5 w-5 text-[#5865F2]" />
-                Discord Server
-              </CardTitle>
-              <CardDescription>
-                Link your Discord server so customers can join your community
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Discord Server</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Link your Discord server so customers can join your community</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="discord_url" className="flex items-center gap-2">
                   Discord Invite Link
