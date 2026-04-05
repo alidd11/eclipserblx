@@ -828,8 +828,8 @@ export default function AdminUsers() {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Manage Roles Dialog */}
