@@ -361,7 +361,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                 <div className="flex items-center justify-center gap-2.5 py-16">
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
                   <span className="text-xs text-muted-foreground font-medium">
-                    {useAI ? 'AI is searching...' : 'Searching...'}
+                    Searching...
                   </span>
                 </div>
               )}
