@@ -461,17 +461,12 @@ export default function SellerSettingsTeam() {
 
         {/* Pending Invites */}
         {pendingInvites.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Mail className="h-5 w-5" />
-                Pending Invitations ({pendingInvites.length})
-              </CardTitle>
-              <CardDescription>
-                Invitations that haven't been accepted yet
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Pending Invitations ({pendingInvites.length})</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Invitations that haven't been accepted yet</p>
+            </div>
+            <div className="p-4">
               <div className="space-y-3">
                 {pendingInvites.map((invite) => (
                   <div
