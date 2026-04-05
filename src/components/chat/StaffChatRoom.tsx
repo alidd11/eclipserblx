@@ -259,12 +259,12 @@ export function StaffChatRoom({
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-1 min-h-0">
+    <div className="flex flex-1 min-h-0 overflow-hidden">
       {/* Main chat column */}
       <div
         data-gesture-exempt="true"
         className={cn(
-          'flex-1 flex flex-col min-h-0 bg-card transition-colors',
+          'relative flex-1 flex flex-col min-h-0 overflow-hidden bg-card transition-colors',
           isDragOver && 'ring-2 ring-primary ring-inset',
         )}
         style={{ overscrollBehavior: 'none' }}
@@ -373,7 +373,11 @@ export function StaffChatRoom({
           data-gesture-exempt="true"
           ref={scrollRef}
           className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 sm:px-4"
-          style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain',
+            scrollPaddingBottom: 'calc(var(--chat-safe-bottom, env(safe-area-inset-bottom)) + 6rem)',
+          }}
         >
           <div className="py-4 flex flex-col">
             {isLoading ? (
@@ -560,7 +564,10 @@ export function StaffChatRoom({
         {/* Input bar */}
         <div
           data-gesture-exempt="true"
-          className="px-3 py-2 sm:px-4 sm:py-3 flex-shrink-0 bg-card pb-[var(--chat-safe-bottom,env(safe-area-inset-bottom))] relative"
+          className="relative flex-shrink-0 border-t border-border/70 bg-card px-3 pt-3 sm:px-4 supports-[backdrop-filter]:bg-card/85 supports-[backdrop-filter]:backdrop-blur-xl"
+          style={{
+            paddingBottom: 'max(0.75rem, var(--chat-safe-bottom, env(safe-area-inset-bottom)))',
+          }}
         >
           {/* Mention suggestions */}
           {showSuggestions && (
@@ -642,11 +649,11 @@ export function StaffChatRoom({
           />
 
           {/* Input bar */}
-          <div data-gesture-exempt="true" className="flex gap-2 items-center">
+          <div data-gesture-exempt="true" className="flex items-center gap-2 rounded-[1.25rem] border border-border/60 bg-background/70 p-1.5 shadow-sm">
             <Button
               variant="ghost"
               size="icon"
-              className="flex-shrink-0 rounded-full h-10 w-10 border border-border/50 bg-muted/30"
+              className="h-10 w-10 flex-shrink-0 rounded-2xl"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
             >
@@ -674,8 +681,8 @@ export function StaffChatRoom({
                   try { input.focus({ preventScroll: true }); } catch { input.focus(); }
                 }}
                 onFocus={handleInputFocus}
-                placeholder="Message…"
-                className="w-full rounded-full bg-muted/50 border-0 focus-visible:ring-1 pr-10 text-base"
+                placeholder="Message your team…"
+                className="h-10 w-full rounded-xl border-0 bg-transparent pr-2 text-base shadow-none focus-visible:ring-0"
                 disabled={isUploading}
                 style={{ fontSize: '16px' }}
               />
@@ -685,7 +692,7 @@ export function StaffChatRoom({
               onClick={handleSend}
               disabled={(!newMessage.trim() && !selectedFile) || isUploading || sendMessageMutation.isPending}
               size="icon"
-              className="flex-shrink-0 rounded-full h-10 w-10"
+              className="h-10 w-10 flex-shrink-0 rounded-2xl shadow-sm"
             >
               {isUploading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

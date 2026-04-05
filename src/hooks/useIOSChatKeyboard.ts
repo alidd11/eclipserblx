@@ -38,8 +38,9 @@ export function useIOSChatKeyboard(
     }
 
     const vv = window.visualViewport;
-    let baseHeight = vv?.height ?? window.innerHeight;
-    let blurTimer: number | undefined;
+    const getViewportHeight = () => vv?.height ?? window.innerHeight;
+    let baseHeight = getViewportHeight();
+    let settleTimer: number | undefined;
 
     const applyState = (keyboardOpen: boolean, viewportHeight: number) => {
       html.style.setProperty('--chat-vvh', `${viewportHeight}px`);
@@ -51,7 +52,7 @@ export function useIOSChatKeyboard(
     };
 
     const update = () => {
-      const viewportHeight = vv?.height ?? window.innerHeight;
+      const viewportHeight = getViewportHeight();
       const inputFocused = isTextInput(document.activeElement);
 
       if (!inputFocused) {
@@ -62,28 +63,37 @@ export function useIOSChatKeyboard(
       applyState(keyboardOpen, viewportHeight);
     };
 
+    const queueSettleUpdate = (delay: number) => {
+      window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(update, delay);
+    };
+
     const handleFocusIn = () => {
       if (!isTextInput(document.activeElement)) return;
-      applyState(true, vv?.height ?? window.innerHeight);
+      applyState(true, getViewportHeight());
       requestAnimationFrame(update);
+      queueSettleUpdate(180);
     };
 
     const handleFocusOut = () => {
-      window.clearTimeout(blurTimer);
       requestAnimationFrame(update);
-      blurTimer = window.setTimeout(update, 120);
+      queueSettleUpdate(160);
     };
 
-    applyState(false, vv?.height ?? window.innerHeight);
+    applyState(false, getViewportHeight());
     requestAnimationFrame(update);
 
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
     vv?.addEventListener('resize', update);
     vv?.addEventListener('scroll', update);
     document.addEventListener('focusin', handleFocusIn, true);
     document.addEventListener('focusout', handleFocusOut, true);
 
     return () => {
-      window.clearTimeout(blurTimer);
+      window.clearTimeout(settleTimer);
+      window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
       vv?.removeEventListener('resize', update);
       vv?.removeEventListener('scroll', update);
       document.removeEventListener('focusin', handleFocusIn, true);

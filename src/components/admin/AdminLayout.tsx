@@ -87,8 +87,8 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
 
   // iOS PWA keyboard handling for chat pages
   useIOSChatKeyboard(isChatPage, {
-    closedSafeBottom: '4px',
-    openSafeBottom: '4px',
+    closedSafeBottom: 'env(safe-area-inset-bottom)',
+    openSafeBottom: '12px',
   });
 
   // Enable notifications & presence across all admin pages
@@ -106,6 +106,13 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
     }
     window.location.reload();
   };
+
+  const chatWrapperStyle = isChatPage
+    ? {
+        height: 'var(--chat-vvh, 100dvh)',
+        minHeight: 'var(--chat-vvh, 100dvh)',
+      }
+    : undefined;
 
   const isGateLoading = loading || (!!user?.id && permissionsRequired && permissionsLoading) || isAuthRecovering;
 
@@ -243,8 +250,9 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
         showFABs={false}
         wrapperClassName={cn(
           'flex w-full bg-background overflow-x-hidden relative max-w-full min-w-0',
-          isChatPage ? 'flex-col md:flex-row overflow-hidden bg-card h-[100dvh]' : 'min-h-[100dvh]'
+          isChatPage ? 'flex-col md:flex-row overflow-hidden bg-card' : 'min-h-[100dvh]'
         )}
+        wrapperStyle={chatWrapperStyle}
         innerClassName={isChatPage ? 'flex-1 flex flex-col min-w-0 min-h-0' : undefined}
         mainStyle={isChatPage ? { paddingBottom: 0 } : undefined}
         mainClassName={cn(

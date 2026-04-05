@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { RichMessageContent } from './RichMessageContent';
+import { useChatScroll } from './useChatScroll';
 import { useThreadMessages } from './useThreadMessages';
 import type { ChatMessage, ChatRoomConfig, UserProfile } from './chatHelpers';
 
@@ -33,6 +34,7 @@ export function ThreadPanel({
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { threadMessages, isLoading, sendThreadReply } = useThreadMessages(config, parentMessage.id);
+  const { handleInputFocus, scrollToBottom } = useChatScroll(scrollRef, inputRef);
 
   const getDisplayName = (userId: string) => {
     const profile = profiles[userId];
@@ -43,8 +45,8 @@ export function ThreadPanel({
 
   // Auto-scroll on new replies
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [threadMessages.length]);
+    requestAnimationFrame(() => scrollToBottom());
+  }, [threadMessages.length, scrollToBottom]);
 
   const handleSend = async () => {
     if (!reply.trim()) return;
@@ -54,7 +56,7 @@ export function ThreadPanel({
   };
 
   return (
-    <div className="w-full md:w-[380px] border-l border-border flex flex-col bg-card h-full">
+    <div className="w-full md:w-[380px] min-h-0 border-t border-border md:border-l md:border-t-0 flex flex-col bg-card h-full">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <div>
@@ -89,7 +91,11 @@ export function ThreadPanel({
       </div>
 
       {/* Thread replies */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+      <div
+        ref={scrollRef}
+        className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3"
+        style={{ scrollPaddingBottom: 'calc(var(--chat-safe-bottom, env(safe-area-inset-bottom)) + 5rem)' }}
+      >
         {isLoading ? (
           <div className="text-center text-muted-foreground text-sm py-4">Loading thread…</div>
         ) : threadMessages.length === 0 ? (
@@ -135,22 +141,36 @@ export function ThreadPanel({
       </div>
 
       {/* Reply input */}
-      <div className="px-3 py-2 border-t border-border">
-        <div className="flex gap-2 items-center">
+      <div
+        className="flex-shrink-0 border-t border-border bg-card px-3 pt-3 supports-[backdrop-filter]:bg-card/85 supports-[backdrop-filter]:backdrop-blur-xl"
+        style={{ paddingBottom: 'max(0.75rem, var(--chat-safe-bottom, env(safe-area-inset-bottom)))' }}
+      >
+        <div className="flex items-center gap-2 rounded-[1.25rem] border border-border/60 bg-background/70 p-1.5 shadow-sm">
           <Input
             ref={inputRef}
             value={reply}
             onChange={(e) => setReply(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+            onPointerDown={(e) => {
+              const input = e.currentTarget;
+              if (document.activeElement === input) return;
+              try { input.focus({ preventScroll: true }); } catch { input.focus(); }
+            }}
+            onTouchStart={(e) => {
+              const input = e.currentTarget;
+              if (document.activeElement === input) return;
+              try { input.focus({ preventScroll: true }); } catch { input.focus(); }
+            }}
+            onFocus={handleInputFocus}
             placeholder="Reply in thread…"
-            className="flex-1 rounded-full bg-muted/50 border-0 focus-visible:ring-1 text-sm"
+            className="h-10 flex-1 rounded-xl border-0 bg-transparent text-sm shadow-none focus-visible:ring-0"
             style={{ fontSize: '16px' }}
           />
           <Button
             onClick={handleSend}
             disabled={!reply.trim() || sendThreadReply.isPending}
             size="icon"
-            className="flex-shrink-0 rounded-full h-9 w-9"
+            className="h-10 w-10 flex-shrink-0 rounded-2xl shadow-sm"
           >
             {sendThreadReply.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
