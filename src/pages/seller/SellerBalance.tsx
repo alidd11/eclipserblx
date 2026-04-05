@@ -241,17 +241,15 @@ export default function SellerBalance() {
           </div>
 
           {/* Payout Section */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ArrowDownToLine className="h-5 w-5" />
+          <div className="mb-6 border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
+                <ArrowDownToLine className="h-4 w-4" />
                 Request Payout
-              </CardTitle>
-              <CardDescription>
-                Minimum payout amount is {formatCurrency(minPayout)}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Minimum payout amount is {formatCurrency(minPayout)}</p>
+            </div>
+            <div className="p-4">
               {!hasPayoutMethod ? (
                 <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 flex items-start gap-3">
                   <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
