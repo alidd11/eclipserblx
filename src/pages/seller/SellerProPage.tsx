@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Crown, Check, X, Zap, Shield, Image, FileText, Megaphone, 
-  Star, Package, Percent, Calendar, Loader2, ExternalLink 
+  Star, Package, Percent, Calendar, Loader2, ExternalLink,
+  Palette, Link2, BarChart3, Tag, Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSellerSubscription, SellerBillingPeriod } from '@/hooks/useSellerSubscription';
@@ -20,6 +21,12 @@ const comparisonRows = [
   { label: 'Product listings', free: '25', pro: 'Unlimited', icon: Package },
   { label: 'Custom store pages', free: '1', pro: '5', icon: FileText },
   { label: 'Monthly ad credit', free: '\u2014', pro: '\u00A35', icon: Megaphone },
+  { label: 'Store themes', free: 'Default', pro: 'All themes', icon: Palette },
+  { label: 'Custom nav links', free: '2', pro: '10', icon: Link2 },
+  { label: 'Announcement bar', free: false, pro: true, icon: Megaphone },
+  { label: 'Analytics', free: '30 days', pro: '90 days + export', icon: BarChart3 },
+  { label: 'Discount codes', free: '1 active', pro: 'Unlimited', icon: Tag },
+  { label: 'Scheduled banner', free: false, pro: true, icon: Clock },
   { label: 'PRO badge on store', free: false, pro: true, icon: Shield },
   { label: 'Priority product review', free: false, pro: true, icon: Zap },
   { label: 'Advanced analytics', free: false, pro: true, icon: Star },
