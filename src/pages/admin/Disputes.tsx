@@ -347,10 +347,10 @@ export default function Disputes() {
         )}
 
         {/* Table */}
-        <Card>
-          <CardHeader className="pb-3">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
             <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
-              <CardTitle className="text-lg">All Disputes</CardTitle>
+              <h3 className="font-semibold text-sm">All Disputes</h3>
               <div className="flex gap-2 w-full sm:w-auto">
                 <div className="relative flex-1 sm:flex-none">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
