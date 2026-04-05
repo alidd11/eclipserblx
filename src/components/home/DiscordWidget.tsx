@@ -1,11 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useTheme } from 'next-themes';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export function DiscordWidget() {
-  const { resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
 
   // Fetch server ID from settings
@@ -45,7 +43,7 @@ export function DiscordWidget() {
     return null;
   }
 
-  const theme = resolvedTheme === 'light' ? 'light' : 'dark';
+  const theme = 'dark';
 
   return (
     <div className="rounded-2xl border border-border bg-card p-4 h-full">

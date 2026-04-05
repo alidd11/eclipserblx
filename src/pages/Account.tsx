@@ -28,7 +28,7 @@ import { ReferralCard } from '@/components/account/ReferralCard';
 import { AffiliateCard } from '@/components/account/AffiliateCard';
 import { NotificationSettingsCard } from '@/components/account/NotificationSettingsCard';
 import { SoundCustomizationCard } from '@/components/account/SoundCustomizationCard';
-import { ThemeSettingsCard } from '@/components/account/ThemeSettingsCard';
+
 import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
 import { SavedCardsCard } from '@/components/account/SavedCardsCard';
 import { BecomeSellerCard } from '@/components/account/BecomeSellerCard';
@@ -639,9 +639,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         <Card className="bg-card border-border overflow-hidden">
           <CardContent className="p-1">
             <SectionHeader title="Preferences" />
-            <ExpandableSection icon={Palette} label="Theme">
-              <ThemeSettingsCard />
-            </ExpandableSection>
             <ExpandableSection icon={Bell} label="Notifications">
               <NotificationSettingsCard />
             </ExpandableSection>
