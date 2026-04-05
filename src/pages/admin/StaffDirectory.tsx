@@ -258,8 +258,8 @@ export default function StaffDirectory() {
             {staffLoading ? (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {[1, 2, 3, 4, 5, 6].map(i => (
-                  <Card key={i} className="animate-pulse">
-                    <CardContent className="p-4">
+                  <div key={i} className="animate-pulse border border-border rounded-xl">
+                    <div className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="h-12 w-12 rounded-full bg-muted" />
                         <div className="space-y-2 flex-1">
@@ -267,8 +267,8 @@ export default function StaffDirectory() {
                           <div className="h-3 bg-muted rounded w-1/2" />
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : filteredStaff.length === 0 ? (
