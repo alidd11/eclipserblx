@@ -100,8 +100,8 @@ export default function BotLogs() {
                 })}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </BotDashboardLayout>
   );

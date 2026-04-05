@@ -122,8 +122,8 @@ export default function GlobalGuardServers() {
               )}
             </TabsContent>
           </Tabs>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </GlobalGuardLayout>
   );
 }
