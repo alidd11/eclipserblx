@@ -310,7 +310,7 @@ export default function SellerSettingsTeam() {
     <SellerLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Team Members</h1>
+          <h1 className="text-2xl font-display font-bold">Team Members</h1>
           <p className="text-muted-foreground">
             Invite and manage team members who can help run your store
           </p>
