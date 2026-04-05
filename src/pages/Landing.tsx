@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PullToRefresh } from '@/components/ui/PullToRefresh';
 import { LandingHero } from '@/components/landing/LandingHero';
-import { CategoryQuickNav } from '@/components/landing/CategoryQuickNav';
+
 
 // Eager-load above-the-fold sections (no lazy)
 import { TrendingProducts } from '@/components/landing/TrendingProducts';
