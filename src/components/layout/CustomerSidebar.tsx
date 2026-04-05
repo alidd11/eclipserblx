@@ -5,7 +5,7 @@ import {
   User, LucideIcon, Home, TrendingUp, Store, Bell,
   Sparkles, Heart, LogOut, ChevronLeft, ChevronRight,
   MessageSquareText, Megaphone, FileQuestion, LayoutGrid, Shield,
-  Globe, PenTool, Zap, Wallet, Plus, Crown, ShoppingBag
+  Globe, PenTool, Zap, Crown, ShoppingBag
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { categoryIconMap, PackageIcon, BotIcon } from '@/components/icons/CategoryIcons';
@@ -17,19 +17,17 @@ import { EclipseLogo } from '@/components/ui/EclipseLogo';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'; // kept for collapsed tooltip
 import { safeStorage } from '@/lib/safeStorage';
 import { hapticTap } from '@/lib/haptics';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { supabase } from '@/integrations/supabase/client';
-import { useCredits } from '@/hooks/useCredits';
 import { useSystemStatus } from '@/hooks/useSystemStatus';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useTranslation } from 'react-i18next';
 import { useNotifications } from '@/hooks/useNotifications';
 
-import { DiscordIcon, RobloxIcon } from './sidebar/SidebarBrandIcons';
+import { DiscordIcon } from './sidebar/SidebarBrandIcons';
 import { ICON_SIZE, ICON_SIZE_SMALL, ICON_STROKE_ACTIVE, ICON_STROKE_DEFAULT, SIDEBAR_STORAGE_KEY } from './sidebar/sidebarConstants';
 import { SidebarFooter } from './sidebar/SidebarFooter';
 
@@ -62,7 +60,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const { discordUrl } = useDiscordUrl();
   const { isSeller } = useSellerStatus();
   const { isStaff } = useAdminAuth();
-  const { balance } = useCredits();
   const navigate = useNavigate();
 
   // Fetch user profile data (avatar + username)
@@ -81,37 +78,15 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch subscription status
-  const { data: subscriptionData } = useQuery({
-    queryKey: ['sidebar-subscription', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data } = await supabase
-        .from('subscriptions')
-        .select('status, current_period_end')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .maybeSingle();
-      if (data && data.current_period_end && new Date(data.current_period_end) > new Date()) {
-        return { isActive: true };
-      }
-      return { isActive: false };
-    },
-    enabled: !!user?.id,
-    staleTime: 5 * 60 * 1000,
-  });
-
-
   const profileAvatar = profileData?.avatar_url || null;
   const profileUsername = profileData?.username || null;
-  const isPremium = subscriptionData?.isActive || false;
   const location = useLocation();
   const { t } = useTranslation();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const systemStatus = useSystemStatus();
 
-  // Fetch parent categories for Resources section
+  // Fetch parent categories for Browse section
   const { data: parentCategories } = useQuery({
     queryKey: ['sidebar-categories'],
     queryFn: async () => {
@@ -128,9 +103,11 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   const { unreadCount: unreadNotifications } = useNotifications();
   const isCollapsed = isMobileDrawer ? false : collapsed;
 
-  // Build flat resource items from categories
-  const resourceItems: NavItem[] = [
-    // Roblox categories listed directly (flat)
+  // Build browse items: explore + resource categories merged
+  const browseItems: NavItem[] = [
+    { title: t('sidebar.allProducts'), icon: Grid3X3, href: '/products' },
+    { title: t('sidebar.allStores'), icon: Store, href: '/stores' },
+    { title: t('sidebar.featured'), icon: Star, href: '/featured' },
     ...(parentCategories?.filter(cat => cat.slug !== 'bots').map((cat) => {
       const CatIcon = categoryIconMap[cat.slug] || PackageIcon;
       return {
@@ -139,14 +116,14 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         href: `/products?category=${cat.slug}`,
       };
     }) ?? []),
-    // Discord Bots
     { title: 'Discord Bots', icon: BotIcon as unknown as LucideIcon, href: '/products?category=bots' },
   ];
 
   const navGroups: NavGroup[] = [
+    // Quick access — rendered without header
     {
       id: 'quick-access',
-      title: t('sidebar.quickAccess'),
+      title: '',
       icon: Home,
       items: [
         { title: t('sidebar.home'), icon: Home, href: '/' },
@@ -164,25 +141,13 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       ],
     },
     {
-      id: 'explore',
-      title: t('sidebar.explore', 'Explore'),
-      icon: Sparkles,
-      items: [
-        { title: t('sidebar.allProducts'), icon: Grid3X3, href: '/products' },
-        { title: t('sidebar.allStores'), icon: Store, href: '/stores' },
-        { title: t('sidebar.viewAllCategories', 'All Categories'), icon: Grid3X3, href: '/categories' },
-        { title: t('sidebar.featured'), icon: Star, href: '/featured' },
-        
-      ],
+      id: 'browse',
+      title: t('sidebar.explore', 'Browse'),
+      icon: Grid3X3,
+      items: browseItems,
     },
     {
-      id: 'resources',
-      title: t('sidebar.resources', 'Resources'),
-      icon: LayoutGrid,
-      items: resourceItems,
-    },
-    {
-      id: 'community',
+      id: 'support',
       title: t('sidebar.support'),
       icon: HelpCircle,
       items: [
@@ -457,74 +422,53 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         )}
       </div>
 
+      {/* Profile Section — enterprise: tight, no gaming visuals */}
       {user && !isCollapsed && (
         <div className="border-b border-border/50 px-4 py-3 space-y-2">
-          {/* User info + inline balance */}
           <div className="flex items-center gap-3">
-            {/* Avatar with online dot + premium ring */}
-            <div className="relative shrink-0">
-              <div className={cn(
-                "rounded-full",
-                isPremium && "p-[2px] bg-gradient-to-br from-primary to-purple-500"
-              )}>
-                {profileAvatar ? (
-                  <img
-                    src={profileAvatar}
-                    alt=""
-                    className={cn(
-                      "h-11 w-11 rounded-full object-cover bg-muted",
-                      isPremium && "border-2 border-sidebar"
-                    )}
-                  />
-                ) : (
-                  <div className={cn(
-                    "h-11 w-11 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center",
-                    isPremium && "border-2 border-sidebar"
-                  )}>
-                    <span className="text-sm font-bold text-primary-foreground">
-                      {(user.user_metadata?.display_name || user.email || '?')[0].toUpperCase()}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-sidebar" />
+            {/* Clean avatar — no gradient ring, no online dot */}
+            <div className="shrink-0">
+              {profileAvatar ? (
+                <img
+                  src={profileAvatar}
+                  alt=""
+                  className="h-9 w-9 rounded-full object-cover bg-muted"
+                />
+              ) : (
+                <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center">
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    {(user.user_metadata?.display_name || user.email || '?')[0].toUpperCase()}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold truncate leading-tight">{user.user_metadata?.display_name || 'User'}</p>
               {profileUsername && (
                 <p className="text-[11px] text-muted-foreground truncate leading-tight mt-0.5">@{profileUsername}</p>
               )}
-              <div className="flex items-center gap-1.5 mt-1">
-                <Wallet className="h-3 w-3 text-primary" />
-                <span className="text-xs font-bold">£{balance.toFixed(2)}</span>
-                <span className="text-muted-foreground/50">·</span>
-                <Link to="/credits" onClick={handleNavClick} className="text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-0.5">
-                  <Plus className="h-2.5 w-2.5" />
-                  Add
-                </Link>
-              </div>
             </div>
           </div>
 
-          {/* CTA Button */}
-          {isSeller ? (
+          {/* Seller Dashboard — subtle enterprise CTA */}
+          {isSeller && (
             <a
               href="/seller"
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleNavClick}
-              className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-primary to-purple-500 text-primary-foreground py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98] shadow-[0_0_16px_hsl(var(--primary)/0.25)]"
+              className="flex items-center justify-center gap-2 w-full rounded-lg bg-primary/10 text-primary border border-primary/20 py-2 text-[13px] font-semibold transition-colors hover:bg-primary/15 active:scale-[0.98]"
             >
-              <Zap className="h-4 w-4" />
+              <Zap className="h-3.5 w-3.5" />
               Seller Dashboard
             </a>
-          ) : null}
+          )}
         </div>
       )}
 
-      {/* Collapsed CTA */}
+      {/* Collapsed: seller CTA */}
       {user && isCollapsed && isSeller && (
-        <div className="border-b border-border px-1.5 py-2 flex justify-center">
+        <div className="border-b border-border/50 px-1.5 py-2 flex justify-center">
           <Tooltip>
             <TooltipTrigger asChild>
               <a
@@ -532,9 +476,9 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={handleNavClick}
-                className="flex items-center justify-center h-8 w-8 rounded-lg bg-gradient-to-r from-primary to-purple-500 text-primary-foreground transition-all hover:opacity-90 active:scale-[0.95]"
+                className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary border border-primary/20 transition-colors hover:bg-primary/15 active:scale-[0.95]"
               >
-                <Zap className="h-4 w-4" />
+                <Zap className="h-3.5 w-3.5" />
               </a>
             </TooltipTrigger>
             <TooltipContent side="right">Seller Dashboard</TooltipContent>
@@ -551,7 +495,18 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         </div>
       </nav>
 
+      {/* Sign Out Footer */}
+      <SidebarFooter
+        isCollapsed={isCollapsed}
+        onSignOut={() => setShowSignOutDialog(true)}
+      />
 
+      <SignOutConfirmDialog
+        open={showSignOutDialog}
+        onOpenChange={setShowSignOutDialog}
+        onConfirm={handleSignOut}
+        isLoading={isSigningOut}
+      />
     </aside>
   );
 }
