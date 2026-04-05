@@ -142,7 +142,7 @@ export default function SearchResults() {
 
   // Load more
   const loadMore = useCallback(async () => {
-    if (isLoadingMore || useAI) return;
+    if (isLoadingMore) return;
     const nextOffset = (pageRef.current + 1) * PAGE_SIZE;
     setIsLoadingMore(true);
     try {
