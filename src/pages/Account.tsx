@@ -680,8 +680,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             <button onClick={() => setShowDeleteDialog(true)} className="w-full">
               <NavRow icon={Trash2} label="Delete Account" destructive />
             </button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* App Version */}
         <p className="text-center text-[10px] text-muted-foreground/60 pb-4">Eclipse v3.0</p>
