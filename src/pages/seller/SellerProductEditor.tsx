@@ -403,7 +403,6 @@ export default function SellerProductEditor() {
         is_pay_what_you_want: data.is_pay_what_you_want,
         min_price: data.is_pay_what_you_want ? (parseFloat(data.min_price) || 0) : null,
         max_downloads_per_purchase: isPro && data.max_downloads_per_purchase ? parseInt(data.max_downloads_per_purchase) : null,
-        min_price: data.is_pay_what_you_want ? (parseFloat(data.min_price) || 0) : null,
       };
 
       if (isEditing && productId) {
