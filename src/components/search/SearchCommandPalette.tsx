@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Package, Search, Sparkles, Loader2,
+  Package, Search, Loader2,
   Clock, X, TrendingUp, ArrowRight, ArrowLeft, Store, ChevronRight
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { hapticTap } from '@/lib/haptics';
-import { useSmartSearch } from '@/hooks/useSmartSearch';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { SearchCategoryChips } from './SearchCategoryChips';
@@ -43,12 +42,9 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [useAI, setUseAI] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [isClosing, setIsClosing] = useState(false);
   const { searches: recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
-
-  const { search: smartSearch, isSearching: isSmartSearching, results: smartResults } = useSmartSearch();
 
   // Auto-focus input on open
   useEffect(() => {
@@ -58,7 +54,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
       return () => clearTimeout(t);
     } else {
       setSearchQuery('');
-      setUseAI(false);
+      setStoreResults([]);
       setStoreResults([]);
       setCategoryFilter(null);
     }
@@ -104,7 +100,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
 
   // Search using search_products_v2 RPC for full-text + trigram + description matching
   useEffect(() => {
-    if (!open || useAI) return;
+    if (!open) return;
     const fetchProducts = async () => {
       if (searchQuery.length < 2) {
         setProducts([]);
@@ -155,10 +151,10 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
 
     const debounce = setTimeout(fetchProducts, 150);
     return () => clearTimeout(debounce);
-  }, [searchQuery, open, useAI, categoryFilter]);
+  }, [searchQuery, open, categoryFilter]);
 
-  const displayProducts = useAI && smartResults.length > 0 ? smartResults : products;
-  const displayLoading = useAI ? isSmartSearching : isLoading;
+  const displayProducts = products;
+  const displayLoading = isLoading;
   const hasQuery = searchQuery.length >= 2;
 
   const highlightMatch = useCallback((text: string, query: string) => {
@@ -228,7 +224,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
               ref={inputRef}
               type="text"
               value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setUseAI(false); }}
+              onChange={(e) => { setSearchQuery(e.target.value); }}
               onKeyDown={(e) => { if (e.key === 'Enter' && hasQuery) handleViewAllResults(); }}
               placeholder="Search assets..."
               autoComplete="off"
@@ -254,22 +250,6 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
             )}
           </div>
 
-          {/* AI toggle */}
-          {searchQuery.length >= 3 && !useAI && (
-            <button
-              onClick={() => { hapticTap(); setUseAI(true); smartSearch(searchQuery); }}
-              className="shrink-0 flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary px-3 py-2 rounded-xl bg-muted/50 hover:bg-primary/5 ring-1 ring-border/30 hover:ring-primary/30 transition-all active:scale-[0.97] touch-manipulation"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              AI
-            </button>
-          )}
-          {useAI && isSmartSearching && (
-            <div className="shrink-0 flex items-center gap-1.5 text-xs text-primary bg-primary/10 px-3 py-2 rounded-xl ring-1 ring-primary/20">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              <span className="font-medium">AI</span>
-            </div>
-          )}
         </div>
 
         {/* Result count bar */}
@@ -381,7 +361,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                 <div className="flex items-center justify-center gap-2.5 py-16">
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
                   <span className="text-xs text-muted-foreground font-medium">
-                    {useAI ? 'AI is searching...' : 'Searching...'}
+                    Searching...
                   </span>
                 </div>
               )}
@@ -402,7 +382,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                 <section className="px-4 py-3">
                   <div className="flex items-center gap-2 mb-1">
                     <SectionLabel>
-                      {useAI ? 'AI Results' : 'Products'}
+                      Products
                     </SectionLabel>
                     <span className="text-[10px] text-muted-foreground/40 tabular-nums font-medium">
                       {displayProducts.length}
@@ -424,7 +404,6 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                         )}
                         style={{ animationDelay: `${idx * 40}ms` }}
                       >
-                        {useAI && <Sparkles className="h-3.5 w-3.5 text-primary/50 shrink-0" />}
                         <ProductRow
                           product={product}
                           formatPrice={formatPrice}

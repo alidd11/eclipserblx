@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
-import { Search, SlidersHorizontal, X, Sparkles, Loader2, Package } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Loader2, Package } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductGridSkeleton } from '@/components/ui/ProductCardSkeleton';
@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { useSmartSearch } from '@/hooks/useSmartSearch';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -68,8 +67,6 @@ export default function SearchResults() {
   const [hasMore, setHasMore] = useState(false);
   const pageRef = useRef(0);
   const { addSearch } = useRecentSearches();
-  const { search: smartSearch, isSearching, results: smartResults } = useSmartSearch();
-  const [useAI, setUseAI] = useState(false);
   const { correction } = useSearchSuggestions(debouncedQuery);
 
   // Sync to URL
@@ -96,7 +93,6 @@ export default function SearchResults() {
 
   // Initial fetch using search_products_v2 RPC
   useEffect(() => {
-    if (useAI) return;
     if (debouncedQuery.length < 2 && !categorySlug) {
       setProducts([]);
       setTotalCount(0);
@@ -139,11 +135,11 @@ export default function SearchResults() {
     };
 
     fetchInitial();
-  }, [debouncedQuery, sortBy, categorySlug, useAI, debouncedMinPrice, debouncedMaxPrice, freeOnly]);
+  }, [debouncedQuery, sortBy, categorySlug, debouncedMinPrice, debouncedMaxPrice, freeOnly]);
 
   // Load more
   const loadMore = useCallback(async () => {
-    if (isLoadingMore || useAI) return;
+    if (isLoadingMore) return;
     const nextOffset = (pageRef.current + 1) * PAGE_SIZE;
     setIsLoadingMore(true);
     try {
@@ -174,7 +170,7 @@ export default function SearchResults() {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [debouncedQuery, sortBy, categorySlug, isLoadingMore, useAI, debouncedMinPrice, debouncedMaxPrice, freeOnly]);
+  }, [debouncedQuery, sortBy, categorySlug, isLoadingMore, debouncedMinPrice, debouncedMaxPrice, freeOnly]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: loadMore,
@@ -182,21 +178,12 @@ export default function SearchResults() {
     isLoading: isLoadingMore,
   });
 
-  const handleAISearch = useCallback(() => {
-    if (query.length < 3) return;
-    setUseAI(true);
-    smartSearch(query);
-    addSearch(query);
-  }, [query, smartSearch, addSearch]);
-
   const handleCategorySelect = useCallback((slug: string | null) => {
     setCategorySlug(slug || '');
-    setUseAI(false);
   }, [setCategorySlug]);
 
   const handleCorrectionClick = useCallback((corrected: string) => {
     setQuery(corrected);
-    setUseAI(false);
   }, []);
 
   const handleResetFilters = useCallback(() => {
@@ -205,10 +192,8 @@ export default function SearchResults() {
     setFreeOnly(false);
   }, []);
 
-  const displayProducts = useAI && smartResults.length > 0
-    ? smartResults.map(r => ({ ...r, is_featured: false, categories: r.categories ? { ...r.categories, slug: '' } : null, stores: null, average_rating: undefined, review_count: undefined }))
-    : products;
-  const displayLoading = useAI ? isSearching : isLoading;
+  const displayProducts = products;
+  const displayLoading = isLoading;
   const showResults = debouncedQuery.length >= 2 || categorySlug;
 
   return (
@@ -221,14 +206,14 @@ export default function SearchResults() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 value={query}
-                onChange={(e) => { setQuery(e.target.value); setUseAI(false); }}
+                onChange={(e) => { setQuery(e.target.value); }}
                 placeholder="Search products..."
                 className="pl-10 pr-10 h-11"
                 autoFocus
               />
               {query && (
                 <button
-                  onClick={() => { setQuery(''); setUseAI(false); }}
+                  onClick={() => { setQuery(''); }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-muted transition-colors"
                 >
                   <X className="h-4 w-4 text-muted-foreground" />
@@ -245,16 +230,6 @@ export default function SearchResults() {
               onReset={handleResetFilters}
               activeFilterCount={activeFilterCount}
             />
-            <Button
-              variant={useAI ? "default" : "outline"}
-              size="sm"
-              onClick={handleAISearch}
-              disabled={query.length < 3 || isSearching}
-              className="gap-1.5 shrink-0"
-            >
-              {isSearching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-              AI
-            </Button>
           </div>
 
           {/* "Did you mean?" */}
@@ -281,17 +256,16 @@ export default function SearchResults() {
                 'Searching...'
               ) : showResults ? (
                 <>
-                  <span className="font-medium text-foreground">{useAI ? displayProducts.length : totalCount}</span>
-                  {' '}result{(useAI ? displayProducts.length : totalCount) !== 1 ? 's' : ''}
+                  <span className="font-medium text-foreground">{totalCount}</span>
+                  {' '}result{totalCount !== 1 ? 's' : ''}
                   {debouncedQuery.length >= 2 && <> for "{debouncedQuery}"</>}
                   {categorySlug && <span className="text-primary ml-1">in {categorySlug}</span>}
-                  {useAI && <span className="text-primary ml-1">(AI enhanced)</span>}
                 </>
               ) : (
                 'Enter a search query or select a category'
               )}
             </p>
-            <Select value={sortBy || 'relevance'} onValueChange={(v) => { setSortBy(v); setUseAI(false); }}>
+            <Select value={sortBy || 'relevance'} onValueChange={(v) => { setSortBy(v); }}>
               <SelectTrigger className="w-[160px] h-9 text-xs">
                 <SlidersHorizontal className="h-3 w-3 mr-1.5" />
                 <SelectValue />
@@ -345,8 +319,7 @@ export default function SearchResults() {
             <div className="text-center space-y-1">
               <h3 className="font-semibold">No products found</h3>
               <p className="text-sm text-muted-foreground max-w-sm">
-                We couldn't find anything matching your criteria. Try different keywords or{' '}
-                <button onClick={handleAISearch} className="text-primary hover:underline">use AI search</button>.
+                We couldn't find anything matching your criteria. Try different keywords.
               </p>
             </div>
             <Button variant="outline" size="sm" asChild>
