@@ -13,7 +13,7 @@ interface MainLayoutProps {
 
 const COLLAPSE_KEY = 'sidebar-collapsed';
 
-function MainLayoutContent({ children, showFooter = true, showBreadcrumb = true }: MainLayoutProps) {
+function MainLayoutContent({ children, showFooter = true }: MainLayoutProps) {
   useDeferredScheduledReleaseCheck();
 
   const [collapsed, setCollapsed] = useState(() => safeStorage.getItem(COLLAPSE_KEY) === 'true');
