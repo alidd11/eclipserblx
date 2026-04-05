@@ -87,6 +87,7 @@ function StoreStandaloneContent({
           <Route path="/store/:storeSlug/reviews" element={<StoreReviewsPage />} />
           <Route path="/store/:storeSlug/about" element={<StoreAbout />} />
           <Route path="/store/:storeSlug/page/:pageSlug" element={<StoreCustomPage />} />
+          <Route path="/product/:productNumber" element={<ProductDetail />} />
           <Route path="/products/:productNumber" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />

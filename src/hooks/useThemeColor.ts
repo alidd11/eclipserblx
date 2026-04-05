@@ -31,35 +31,42 @@ function isDarkMode(html: HTMLElement): boolean {
   return html.classList.contains('dark');
 }
 
+function getResolvedThemeColor(html: HTMLElement): string {
+  const dark = isDarkMode(html);
+  const staffTheme = getActiveStaffTheme(html);
+  const colorTheme = staffTheme || 'default';
+  const themeColors = THEME_COLORS[colorTheme] || THEME_COLORS.default;
+  const fallbackColor = dark ? themeColors.dark : themeColors.light;
+  const computedBackground = getComputedStyle(html).backgroundColor;
+
+  return computedBackground && computedBackground !== 'rgba(0, 0, 0, 0)'
+    ? computedBackground
+    : fallbackColor;
+}
+
+function syncBrowserTheme(html: HTMLElement) {
+  const themeColor = getResolvedThemeColor(html);
+
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute('content', themeColor);
+  }
+
+  const metaTileColor = document.querySelector('meta[name="msapplication-TileColor"]');
+  if (metaTileColor) {
+    metaTileColor.setAttribute('content', themeColor);
+  }
+
+  html.style.backgroundColor = themeColor;
+  document.body.style.backgroundColor = themeColor;
+}
+
 export function useThemeColor() {
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     const html = document.documentElement;
-    const dark = isDarkMode(html);
-    
-    // Staff themes take precedence
-    const staffTheme = getActiveStaffTheme(html);
-    const colorTheme = staffTheme || 'default';
-    
-    const themeColors = THEME_COLORS[colorTheme] || THEME_COLORS.default;
-    const themeColor = dark ? themeColors.dark : themeColors.light;
-
-    // Update meta theme-color (browser UI)
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', themeColor);
-    }
-
-    // Update msapplication-TileColor
-    const metaTileColor = document.querySelector('meta[name="msapplication-TileColor"]');
-    if (metaTileColor) {
-      metaTileColor.setAttribute('content', themeColor);
-    }
-
-    // For in-app safe areas, prefer our design tokens (matches Tailwind theme)
-    document.documentElement.style.backgroundColor = 'hsl(var(--background))';
-    document.body.style.backgroundColor = 'hsl(var(--background))';
+    syncBrowserTheme(html);
   }, [resolvedTheme]);
 
   // Also observe class changes for staff theme switches
@@ -69,23 +76,7 @@ export function useThemeColor() {
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.attributeName === 'class') {
-          const dark = isDarkMode(html);
-          
-          const staffTheme = getActiveStaffTheme(html);
-          const colorTheme = staffTheme || 'default';
-          
-          const themeColors = THEME_COLORS[colorTheme] || THEME_COLORS.default;
-          const themeColor = dark ? themeColors.dark : themeColors.light;
-          
-          const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-          if (metaThemeColor) {
-            metaThemeColor.setAttribute('content', themeColor);
-          }
-          
-          const metaTileColor = document.querySelector('meta[name="msapplication-TileColor"]');
-          if (metaTileColor) {
-            metaTileColor.setAttribute('content', themeColor);
-          }
+          syncBrowserTheme(html);
         }
       }
     });
