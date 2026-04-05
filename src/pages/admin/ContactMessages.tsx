@@ -403,7 +403,7 @@ export default function ContactMessages() {
           </div>
 
           {/* Messages List */}
-          <CardContent className="p-0">
+          <div>
             {isLoading ? (
               <div className="p-4 space-y-3">
                 {[...Array(5)].map((_, i) => (
