@@ -53,7 +53,7 @@ export function GlobalCategoryBar() {
             to="/products"
             className={cn(
               "flex items-center gap-1.5 px-3 py-1.5 lg:px-4 lg:py-2 rounded-md text-xs lg:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0",
-              isShopPage && !activeCategory
+              false
                 ? "bg-primary/15 text-primary border-b-2 border-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
             )}
