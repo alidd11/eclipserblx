@@ -625,6 +625,8 @@
     overflow-x: hidden;
     width: 100%;
     max-width: 100%;
+    min-height: 100%;
+    min-height: -webkit-fill-available;
     background-color: hsl(var(--background));
     transition: background-color 0.3s ease, color 0.3s ease;
   }
@@ -638,6 +640,7 @@
     max-width: 100%;
     min-height: 100vh;
     min-height: 100dvh;
+    min-height: -webkit-fill-available;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
     user-select: none;
@@ -646,6 +649,13 @@
     padding-bottom: 0;
     box-sizing: border-box;
     transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  #root {
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    background-color: hsl(var(--background));
   }
   
   /* Allow text selection in inputs and textareas */

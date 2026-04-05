@@ -91,6 +91,7 @@ export default function ProductDetail() {
   }, [queryClient, productNumber]);
 
   const isNumericParam = /^\d+$/.test(productNumber || '');
+  const isUuidParam = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(productNumber || '');
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', productNumber, isStaff],
@@ -99,9 +100,11 @@ export default function ProductDetail() {
         .from('products')
         .select(`*, categories(name, slug), stores(${STORE_LISTING_COLUMNS})`);
 
-      // If param is numeric, query by product_number; otherwise fall back to slug (legacy URLs)
+      // Support product_number, direct product id fallbacks, and legacy slug URLs
       if (isNumericParam) {
         query = query.eq('product_number' as any, Number(productNumber));
+      } else if (isUuidParam) {
+        query = query.eq('id', productNumber!);
       } else {
         query = query.eq('slug', productNumber!);
       }
