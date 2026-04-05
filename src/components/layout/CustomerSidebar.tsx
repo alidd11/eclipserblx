@@ -427,7 +427,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         isMobileDrawer
           ? "h-full w-full border-0"
           : "h-[100dvh] sticky top-0 border-r border-border",
-        !isMobileDrawer && (isCollapsed ? "w-12" : "w-52"),
+        !isMobileDrawer && (isCollapsed ? "w-12" : "w-56"),
         className
       )}
       data-gesture-exempt="true"
