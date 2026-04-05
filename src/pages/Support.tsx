@@ -10,13 +10,14 @@
  import { useAuth } from '@/hooks/useAuth';
  import { usePageMeta } from '@/hooks/usePageMeta';
  import {
-   Ticket,
-   FileQuestion,
-   Download,
-   CreditCard,
-   ShieldCheck,
-   MessageCircle,
-   Headphones,
+  Ticket,
+  FileQuestion,
+  Download,
+  CreditCard,
+  ShieldCheck,
+  MessageCircle,
+  Headphones,
+  Package,
  } from 'lucide-react';
 
 const supportCategories = [
