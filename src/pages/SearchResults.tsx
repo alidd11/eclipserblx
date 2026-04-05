@@ -68,7 +68,6 @@ export default function SearchResults() {
   const pageRef = useRef(0);
   const { addSearch } = useRecentSearches();
   const { correction } = useSearchSuggestions(debouncedQuery);
-  const { correction } = useSearchSuggestions(debouncedQuery);
 
   // Sync to URL
   useEffect(() => { setUrlQuery(debouncedQuery); }, [debouncedQuery, setUrlQuery]);
