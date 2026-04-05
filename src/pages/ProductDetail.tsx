@@ -794,7 +794,7 @@ export default function ProductDetail() {
                     </Button>
                     
                     {inCart && (
-                      <Button size="lg" asChild className="h-14">
+                     <Button size="lg" asChild className="h-12">
                         <Link to="/cart">View Cart</Link>
                       </Button>
                     )}
