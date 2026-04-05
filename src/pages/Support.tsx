@@ -151,8 +151,8 @@ export default function Support() {
                     </div>
                   </Link>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
 
