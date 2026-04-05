@@ -258,89 +258,84 @@
          </div>
  
          {/* Tickets List */}
-         <div className="space-y-3">
+         <div>
            {isLoading ? (
              Array.from({ length: 5 }).map((_, i) => (
-               <Skeleton key={i} className="h-24 rounded-xl" />
+               <Skeleton key={i} className="h-16 rounded-lg mb-2" />
              ))
            ) : filteredTickets?.length === 0 ? (
-             <Card className="p-8 text-center">
-               <Ticket className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-               <h3 className="font-semibold text-lg mb-2">No tickets found</h3>
-               <p className="text-muted-foreground text-sm">
+             <div className="text-center py-12">
+               <Ticket className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-50" />
+               <h3 className="text-sm font-medium mb-1">No tickets found</h3>
+               <p className="text-xs text-muted-foreground">
                  {search ? 'Try adjusting your search or filters' : 'No support tickets yet'}
                </p>
-             </Card>
+             </div>
            ) : (
-             filteredTickets?.map((ticket) => {
-               const status = statusConfig[ticket.status] || statusConfig.open;
-               const profile = ticket.user_id ? profiles?.[ticket.user_id] : null;
-               const categoryLabel = ticket.category ? categoryLabels[ticket.category] : null;
- 
-               return (
-                 <Card
-                   key={ticket.id}
-                   className="cursor-pointer hover:bg-muted/50 active:bg-muted/70 transition-colors touch-manipulation"
-                   onClick={() => navigate(`/admin/customer-tickets/${ticket.id}`)}
-                 >
-                   <CardContent className="p-4">
-                     <div className="flex items-center gap-4">
-                       {/* Avatar */}
-                       <Avatar className="h-10 w-10 shrink-0">
-                         <AvatarImage src={profile?.avatar_url || undefined} />
-                         <AvatarFallback className="bg-primary/20 text-primary">
-                           <User className="h-5 w-5" />
-                         </AvatarFallback>
-                       </Avatar>
- 
-                       {/* Content */}
-                       <div className="flex-1 min-w-0">
-                         <div className="flex items-center gap-2 mb-1">
-                           <Badge variant="outline" className="text-xs font-mono shrink-0">
-                             {ticket.ticket_number}
-                           </Badge>
-                           <Badge className={cn('text-xs shrink-0', status.color)}>
-                             {status.label}
-                           </Badge>
-                           {ticket.priority === 'high' && (
-                             <Badge variant="destructive" className="text-xs shrink-0">
-                               High
-                             </Badge>
-                           )}
-                         </div>
- 
-                         <h3 className="font-medium text-sm truncate">{ticket.subject}</h3>
- 
-                         <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                           <span>{profile?.display_name || ticket.customer_email}</span>
-                           {categoryLabel && <span>• {categoryLabel}</span>}
-                           <span>• {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}</span>
-                         </div>
-                       </div>
- 
-                       {/* Actions */}
-                       <div className="flex items-center gap-2 shrink-0">
-                         {ticket.status === 'open' && !ticket.assigned_to && (
-                           <Button
-                             size="sm"
-                             variant="outline"
-                             onClick={(e) => {
-                               e.stopPropagation();
-                               claimTicket.mutate(ticket.id);
-                             }}
-                           >
-                             Claim
-                           </Button>
+             <div className="divide-y divide-border">
+               {filteredTickets?.map((ticket) => {
+                 const status = statusConfig[ticket.status] || statusConfig.open;
+                 const profile = ticket.user_id ? profiles?.[ticket.user_id] : null;
+                 const categoryLabel = ticket.category ? categoryLabels[ticket.category] : null;
+
+                 return (
+                   <div
+                     key={ticket.id}
+                     className="py-3 flex items-center gap-3 cursor-pointer hover:bg-muted/30 -mx-1 px-1 rounded-md transition-colors touch-manipulation"
+                     onClick={() => navigate(`/admin/customer-tickets/${ticket.id}`)}
+                   >
+                     <Avatar className="h-8 w-8 shrink-0">
+                       <AvatarImage src={profile?.avatar_url || undefined} />
+                       <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                         <User className="h-3.5 w-3.5" />
+                       </AvatarFallback>
+                     </Avatar>
+
+                     <div className="flex-1 min-w-0">
+                       <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                         <Badge variant="outline" className="text-[10px] font-mono px-1.5 py-0 shrink-0">
+                           {ticket.ticket_number}
+                         </Badge>
+                         <Badge className={cn('text-[10px] px-1.5 py-0 shrink-0', status.color)}>
+                           {status.label}
+                         </Badge>
+                         {ticket.priority === 'high' && (
+                           <Badge variant="destructive" className="text-[10px] px-1.5 py-0 shrink-0">High</Badge>
                          )}
-                         <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                       </div>
+
+                       <h3 className="text-sm font-medium truncate">{ticket.subject}</h3>
+
+                       <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                         <span>{profile?.display_name || ticket.customer_email}</span>
+                         {categoryLabel && <><span>\u00B7</span><span>{categoryLabel}</span></>}
+                         <span>\u00B7</span>
+                         <span>{formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}</span>
                        </div>
                      </div>
-                   </CardContent>
-                 </Card>
-               );
-              })
-            )}
-          </div>
+
+                     <div className="flex items-center gap-2 shrink-0">
+                       {ticket.status === 'open' && !ticket.assigned_to && (
+                         <Button
+                           size="sm"
+                           variant="outline"
+                           className="h-7 text-xs"
+                           onClick={(e) => {
+                             e.stopPropagation();
+                             claimTicket.mutate(ticket.id);
+                           }}
+                         >
+                           Claim
+                         </Button>
+                       )}
+                       <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                     </div>
+                   </div>
+                 );
+               })}
+             </div>
+           )}
+         </div>
 
           {/* Pagination */}
           {totalPages > 1 && (

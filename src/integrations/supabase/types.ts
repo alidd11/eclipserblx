@@ -10170,7 +10170,9 @@ export type Database = {
           category: string | null
           created_at: string
           customer_email: string
+          escalated_at: string | null
           id: string
+          last_staff_response_at: string | null
           priority: string | null
           status: string
           subject: string
@@ -10183,7 +10185,9 @@ export type Database = {
           category?: string | null
           created_at?: string
           customer_email: string
+          escalated_at?: string | null
           id?: string
+          last_staff_response_at?: string | null
           priority?: string | null
           status?: string
           subject: string
@@ -10196,7 +10200,9 @@ export type Database = {
           category?: string | null
           created_at?: string
           customer_email?: string
+          escalated_at?: string | null
           id?: string
+          last_staff_response_at?: string | null
           priority?: string | null
           status?: string
           subject?: string
@@ -11253,6 +11259,7 @@ export type Database = {
         Returns: undefined
       }
       auth_user_exists: { Args: { _user_id: string }; Returns: boolean }
+      auto_escalate_all_tickets: { Args: never; Returns: Json }
       calculate_level_from_xp: { Args: { xp: number }; Returns: number }
       can_assign_role: {
         Args: { _assigner_id: string; _target_role: string }
@@ -11352,6 +11359,7 @@ export type Database = {
         Args: { p_dispute_id: string; p_reason: string }
         Returns: undefined
       }
+      escalate_unanswered_customer_tickets: { Args: never; Returns: number }
       escalate_unanswered_tickets: { Args: never; Returns: number }
       fulfill_credits_idempotent: {
         Args: {

@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, MessageSquare, Clock, CheckCircle, AlertCircle, Send, Link as LinkIcon, HelpCircle, CreditCard, Package, Settings, FileQuestion, Paperclip, X } from 'lucide-react';
+import { Plus, MessageSquare, Clock, CheckCircle, AlertCircle, Send, Link as LinkIcon, HelpCircle, CreditCard, Package, Settings, FileQuestion, Paperclip, X, Search, Zap } from 'lucide-react';
 import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Button } from '@/components/ui/button';
@@ -64,6 +64,7 @@ export default function SellerSupport() {
   const [newMessage, setNewMessage] = useState('');
   const [activeTab, setActiveTab] = useState('open');
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Form state
@@ -74,6 +75,21 @@ export default function SellerSupport() {
   const [newDiscordUsername, setNewDiscordUsername] = useState('');
   const [newRobloxUsername, setNewRobloxUsername] = useState('');
   const [changeReason, setChangeReason] = useState('');
+
+  // Realtime subscription
+  useEffect(() => {
+    if (!user?.id) return;
+    const channel = supabase
+      .channel('seller-support-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'seller_support_tickets' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['seller-support-tickets'] });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'seller_ticket_messages' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['seller-ticket-messages'] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user?.id, queryClient]);
 
   // Fetch tickets
   const { data: tickets, isLoading } = useQuery({
@@ -239,8 +255,14 @@ export default function SellerSupport() {
     return TICKET_CATEGORIES.find(c => c.value === cat)?.label || cat;
   };
 
-  const openTickets = tickets?.filter(t => !['resolved', 'closed'].includes(t.status)) || [];
-  const closedTickets = tickets?.filter(t => ['resolved', 'closed'].includes(t.status)) || [];
+  const filterBySearch = (list: Ticket[]) => {
+    if (!searchQuery.trim()) return list;
+    const q = searchQuery.toLowerCase();
+    return list.filter(t => t.subject.toLowerCase().includes(q) || t.ticket_number.toLowerCase().includes(q));
+  };
+
+  const openTickets = filterBySearch(tickets?.filter(t => !['resolved', 'closed'].includes(t.status)) || []);
+  const closedTickets = filterBySearch(tickets?.filter(t => ['resolved', 'closed'].includes(t.status)) || []);
 
   return (
     <SellerLayout>
@@ -400,6 +422,17 @@ export default function SellerSupport() {
           <span className="text-muted-foreground">
             <span className="font-semibold text-green-500">{closedTickets.length}</span> resolved
           </span>
+        </div>
+
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search tickets..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
         </div>
 
         {/* Tickets List */}
@@ -631,6 +664,8 @@ interface TicketCardProps {
 
 function TicketCard({ ticket, onSelect, getCategoryIcon, getCategoryLabel, getStatusBadge }: TicketCardProps) {
   const Icon = getCategoryIcon(ticket.category);
+  const ageHours = (Date.now() - new Date(ticket.created_at).getTime()) / (1000 * 60 * 60);
+  const isStale = ageHours > 48 && !['resolved', 'closed'].includes(ticket.status);
   
   return (
     <div 
@@ -640,9 +675,12 @@ function TicketCard({ ticket, onSelect, getCategoryIcon, getCategoryLabel, getSt
       <div className="flex items-start gap-3 min-w-0">
         <Icon className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
         <div className="min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
             <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">{ticket.ticket_number}</Badge>
             {getStatusBadge(ticket.status)}
+            {isStale && (
+              <span className="text-[10px] text-orange-500 font-medium">⚡ Priority response incoming</span>
+            )}
           </div>
           <h3 className="text-sm font-medium truncate">{ticket.subject}</h3>
           <p className="text-xs text-muted-foreground">
