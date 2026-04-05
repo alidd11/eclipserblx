@@ -323,6 +323,7 @@ export function AppRoutes() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/order-success" element={<OrderSuccess />} />
+        <Route path="/recover-order" element={<RecoverOrder />} />
         <Route path="/chat-history" element={<ChatHistory />} />
         <Route path="/support/tickets" element={<SupportTickets />} />
         <Route path="/support/tickets/:ticketId" element={<SupportTicketDetail />} />
