@@ -80,8 +80,7 @@ const navGroups: NavGroup[] = [
        { title: 'Customer Tickets', icon: Ticket, href: '/admin/customer-tickets', permissions: ['view_live_chat'] },
       { title: 'Seller Tickets', icon: Ticket, href: '/admin/seller-tickets', permissions: ['view_seller_tickets'] },
       { title: 'Transcripts', icon: FileText, href: '/admin/transcripts', permissions: ['view_live_chat'], dividerAfter: true },
-      { title: 'Staff Messages', icon: MessageCircle, href: '/admin/staff-messages', permissions: [] },
-      { title: 'Admin Chat', icon: Shield, href: '/admin/admin-chat', permissions: ['view_admin_chat'] },
+      { title: 'Messages', icon: MessageCircle, href: '/admin/messages', permissions: [] },
     ],
   },
   {
