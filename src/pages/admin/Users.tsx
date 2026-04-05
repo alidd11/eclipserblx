@@ -514,41 +514,17 @@ export default function AdminUsers() {
           ))}
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-3">
-          <Card>
-            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
-                <Users className="h-3 w-3 md:h-4 md:w-4" />
-                Customers
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-              <p className="text-lg md:text-2xl font-bold">{stats.total}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
-                <IdCard className="h-3 w-3 md:h-4 md:w-4" />
-                Staff
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-              <p className="text-lg md:text-2xl font-bold">{stats.staff}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-              <CardDescription className="flex items-center gap-1.5 text-xs md:text-sm">
-                <Sparkles className="h-3 w-3 md:h-4 md:w-4 text-amber-500" />
-                Eclipse+
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-              <p className="text-lg md:text-2xl font-bold">{stats.eclipsePlus}</p>
-            </CardContent>
-          </Card>
+        {/* Inline Stats */}
+        <div className="flex items-center gap-4 text-sm flex-wrap">
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{stats.total}</span> customers
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{stats.staff}</span> staff
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{stats.eclipsePlus}</span> Eclipse+
+          </span>
         </div>
 
         {/* Search */}
