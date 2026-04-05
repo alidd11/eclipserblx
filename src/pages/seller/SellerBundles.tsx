@@ -171,8 +171,8 @@ export default function SellerBundles() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Bundle Deals</h1>
-            <p className="text-muted-foreground">Group products together at a discounted price</p>
+            <h1 className="text-2xl font-display font-bold">Bundle Deals</h1>
+            <p className="text-sm text-muted-foreground">Group products together at a discounted price</p>
           </div>
           <Button onClick={() => setShowDialog(true)}>
             <Plus className="h-4 w-4 mr-2" />New Bundle
