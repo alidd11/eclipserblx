@@ -449,7 +449,7 @@ export function LinkedAccountsCard({
             Accounts locked after becoming a seller. Contact staff to request changes.
           </p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
