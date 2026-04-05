@@ -639,9 +639,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         <Card className="bg-card border-border overflow-hidden">
           <CardContent className="p-1">
             <SectionHeader title="Preferences" />
-            <ExpandableSection icon={Palette} label="Theme">
-              <ThemeSettingsCard />
-            </ExpandableSection>
             <ExpandableSection icon={Bell} label="Notifications">
               <NotificationSettingsCard />
             </ExpandableSection>

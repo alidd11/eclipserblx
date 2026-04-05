@@ -15,7 +15,7 @@ export function GlobalBackground() {
 
       {/* Very subtle radial vignette for depth */}
       <div 
-        className="absolute inset-0 dark:opacity-100 opacity-0"
+        className="absolute inset-0"
         style={{
           background: 'radial-gradient(ellipse at 50% 0%, transparent 50%, hsl(var(--background)) 100%)',
         }}
