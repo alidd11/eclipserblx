@@ -52,6 +52,8 @@ interface LayoutShellProps {
   mainClassName?: string;
   /** CSS class applied to the inner column container (default: md-only height) */
   innerClassName?: string;
+  /** Enable flex height chain for chat/ticket pages (prevents black gap on mobile) */
+  chatMode?: boolean;
 }
 
 function LayoutShellInner({
