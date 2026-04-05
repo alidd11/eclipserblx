@@ -993,39 +993,35 @@ export default function ProductDetail() {
         </div>
 
         {relatedProducts && relatedProducts.length > 0 && (
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5" />
-                Related Products
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {relatedProducts.map((p) => (
-                  <Link 
-                    key={p.id} 
-                    to={`/products/${(p as any).product_number}`}
-                    className="group rounded-lg overflow-hidden bg-muted/30 hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="aspect-video bg-muted overflow-hidden">
-                      {p.images?.[0] ? (
-                        <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-3xl font-bold text-muted-foreground/30">{p.name.charAt(0)}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-3">
-                      <h3 className="font-semibold truncate group-hover:text-primary transition-colors">{p.name}</h3>
-                      <p className="text-primary font-bold">£{p.price.toFixed(2)}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <section className="border-t border-border pt-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Package className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold text-foreground">Related Products</h2>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {relatedProducts.map((p) => (
+                <Link 
+                  key={p.id} 
+                  to={`/products/${(p as any).product_number}`}
+                  className="group block rounded-lg border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
+                >
+                  <div className="aspect-square bg-muted overflow-hidden">
+                    {p.images?.[0] ? (
+                      <img src={p.images[0]} alt={p.name} loading="lazy" decoding="async" className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-lg font-bold text-muted-foreground/30">{p.name.charAt(0)}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-2">
+                    <p className="text-xs font-medium text-foreground truncate">{p.name}</p>
+                    <p className="text-xs font-bold text-muted-foreground">{formatPrice(p.price)}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
         )}
         <FrequentlyBoughtTogether productId={product.id} categoryId={product.category_id} storeId={product.store_id} />
         <SponsoredProductSection categoryId={product.category_id} />
