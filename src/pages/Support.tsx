@@ -161,19 +161,19 @@ export default function Support() {
           <h2 className="text-2xl font-display font-bold mb-6">Help Topics</h2>
           <div className="grid md:grid-cols-2 gap-6">
             {supportCategories.map((category, index) => (
-              <Card key={index} className="bg-card border-border">
-                <CardHeader>
+              <div key={index} className="border border-border rounded-xl overflow-hidden">
+                <div className="px-6 py-4 bg-muted/30 border-b border-border">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-primary/10">
                       <category.icon className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg">{category.title}</CardTitle>
-                      <CardDescription>{category.description}</CardDescription>
+                      <h3 className="text-sm font-semibold">{category.title}</h3>
+                      <p className="text-xs text-muted-foreground">{category.description}</p>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent>
+                </div>
+                <div className="p-6">
                   <ul className="space-y-2">
                     {category.articles.map((article, articleIndex) => {
                       const isRecoverLink = article === 'Recover a missing order';
