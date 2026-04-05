@@ -169,6 +169,7 @@ const SellerSetup = lazyWithRetry(() => import("@/pages/seller/SellerSetup"));
 const SellerProducts = lazyWithRetry(() => import("@/pages/seller/SellerProducts"));
 const SellerProductEditor = lazyWithRetry(() => import("@/pages/seller/SellerProductEditor"));
 const SellerOrders = lazyWithRetry(() => import("@/pages/seller/SellerOrders"));
+const SellerLeakReports = lazyWithRetry(() => import("@/pages/seller/SellerLeakReports"));
 const SellerBalance = lazyWithRetry(() => import("@/pages/seller/SellerBalance"));
 const SellerRevenueBreakdown = lazyWithRetry(() => import("@/pages/seller/SellerRevenueBreakdown"));
 const SellerTransactionHistory = lazyWithRetry(() => import("@/pages/seller/SellerTransactionHistory"));
@@ -366,6 +367,7 @@ export function AppRoutes() {
         <Route path="/seller/products/new" element={<SellerProductEditor />} />
         <Route path="/seller/products/:productId/edit" element={<SellerProductEditor />} />
         <Route path="/seller/orders" element={<SellerOrders />} />
+        <Route path="/seller/security" element={<SellerLeakReports />} />
         <Route path="/seller/finance" element={<SellerFinanceHub />} />
         <Route path="/seller/balance" element={<Navigate to="/seller/finance?tab=overview" replace />} />
         <Route path="/seller/revenue" element={<Navigate to="/seller/finance?tab=revenue" replace />} />

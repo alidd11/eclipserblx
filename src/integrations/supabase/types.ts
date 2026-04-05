@@ -3373,6 +3373,7 @@ export type Database = {
       download_tokens: {
         Row: {
           created_at: string
+          creator_ip: string | null
           expires_at: string
           id: string
           order_item_id: string | null
@@ -3385,6 +3386,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          creator_ip?: string | null
           expires_at: string
           id?: string
           order_item_id?: string | null
@@ -3397,6 +3399,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          creator_ip?: string | null
           expires_at?: string
           id?: string
           order_item_id?: string | null
@@ -5316,6 +5319,77 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      leak_reports: {
+        Row: {
+          created_at: string
+          extracted_fingerprint: string | null
+          file_hash: string | null
+          id: string
+          matched_display_name: string | null
+          matched_user_id: string | null
+          notes: string | null
+          product_id: string
+          reported_by: string
+          status: string
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          extracted_fingerprint?: string | null
+          file_hash?: string | null
+          id?: string
+          matched_display_name?: string | null
+          matched_user_id?: string | null
+          notes?: string | null
+          product_id: string
+          reported_by: string
+          status?: string
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          extracted_fingerprint?: string | null
+          file_hash?: string | null
+          id?: string
+          matched_display_name?: string | null
+          matched_user_id?: string | null
+          notes?: string | null
+          product_id?: string
+          reported_by?: string
+          status?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leak_reports_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leak_reports_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leak_reports_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leak_reports_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       loyalty_points: {
         Row: {

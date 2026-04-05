@@ -82,6 +82,61 @@ function watermarkLuaFile(content: string, userId: string, orderId: string, prod
   return lines.join('\n');
 }
 
+// Binary fingerprinting: embed buyer hash into non-Lua files
+function fingerprintBinaryFile(data: Uint8Array, watermarkId: string, extension: string): Uint8Array {
+  const ext = extension.toLowerCase();
+  const marker = new TextEncoder().encode(`\x00ECL_FP:${watermarkId}\x00`);
+
+  if (ext === '.rbxm' || ext === '.rbxl') {
+    // Roblox binary files: append trailing metadata (Studio ignores it)
+    const result = new Uint8Array(data.length + marker.length);
+    result.set(data);
+    result.set(marker, data.length);
+    return result;
+  }
+
+  if (ext === '.png' || ext === '.jpg' || ext === '.jpeg' || ext === '.webp') {
+    // Images: prepend a comment-safe fingerprint block after header
+    // For PNG: append to IEND, for JPEG: append before EOF
+    const result = new Uint8Array(data.length + marker.length);
+    result.set(data);
+    result.set(marker, data.length);
+    return result;
+  }
+
+  if (ext === '.zip' || ext === '.rar' || ext === '.7z') {
+    // Archives: append fingerprint after archive end (most tools ignore trailing data)
+    const result = new Uint8Array(data.length + marker.length);
+    result.set(data);
+    result.set(marker, data.length);
+    return result;
+  }
+
+  // Default: append fingerprint for any other binary
+  const result = new Uint8Array(data.length + marker.length);
+  result.set(data);
+  result.set(marker, data.length);
+  return result;
+}
+
+// Extract fingerprint from a fingerprinted file
+function extractFingerprint(data: Uint8Array): string | null {
+  const text = new TextDecoder('utf-8', { fatal: false }).decode(data);
+  const match = text.match(/\x00ECL_FP:(ECL-[A-Z0-9]{8})\x00/);
+  if (match) return match[1];
+  
+  // Also check Lua watermark format
+  const luaMatch = text.match(/local _=string\.char\(([0-9,]+)\)/);
+  if (luaMatch) {
+    try {
+      const chars = luaMatch[1].split(',').map(Number);
+      return String.fromCharCode(...chars);
+    } catch { /* ignore */ }
+  }
+  
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -345,7 +400,8 @@ Deno.serve(async (req) => {
                   order_item_id: orderItemId || userOrder.id,
                   signed_url: signedUrlData.signedUrl,
                   expires_at: expiresAt.toISOString(),
-                  temp_file_path: tempPath, // Store path for cleanup
+                  temp_file_path: tempPath,
+                  creator_ip: clientIp,
                 });
                 
                 if (!tokenError) {
@@ -372,17 +428,68 @@ Deno.serve(async (req) => {
       }
     }
 
-    // === STANDARD (non-Lua) DOWNLOAD FLOW ===
-    const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
-      .from('product-assets')
-      .createSignedUrl(assetUrl, 300);
+    // === STANDARD (non-Lua) DOWNLOAD FLOW with binary fingerprinting ===
+    const watermarkId = generateWatermarkHash(
+      user.id,
+      ((userOrder as Record<string, unknown>).order_id as string) || userOrder.id,
+      productId
+    );
 
-    if (signedUrlError || !signedUrlData?.signedUrl) {
-      console.error("Error creating signed URL:", signedUrlError);
-      return new Response(
-        JSON.stringify({ error: "Failed to generate download link" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // Try binary fingerprinting for supported file types
+    let finalSignedUrl: string | null = null;
+    let tempFilePath: string | null = null;
+
+    const fingerprintableExts = ['.rbxm', '.rbxl', '.png', '.jpg', '.jpeg', '.webp', '.zip', '.rar', '.7z'];
+    const shouldFingerprint = fingerprintableExts.some(ext => fileExtension.toLowerCase() === ext);
+
+    if (shouldFingerprint) {
+      try {
+        console.log(`Fingerprinting ${fileExtension} file for user=${user.id}, watermark=${watermarkId}`);
+        const { data: fileData, error: dlErr } = await supabaseAdmin.storage
+          .from('product-assets')
+          .download(assetUrl);
+
+        if (!dlErr && fileData) {
+          const originalBytes = new Uint8Array(await fileData.arrayBuffer());
+          const fingerprinted = fingerprintBinaryFile(originalBytes, watermarkId, fileExtension);
+
+          const fpToken = generateToken();
+          const fpPath = `_watermarked/${user.id}/${fpToken}${fileExtension}`;
+
+          const { error: upErr } = await supabaseAdmin.storage
+            .from('product-assets')
+            .upload(fpPath, fingerprinted, { contentType: 'application/octet-stream', upsert: true });
+
+          if (!upErr) {
+            const { data: fpSigned, error: fpSignErr } = await supabaseAdmin.storage
+              .from('product-assets')
+              .createSignedUrl(fpPath, 300);
+
+            if (!fpSignErr && fpSigned?.signedUrl) {
+              finalSignedUrl = fpSigned.signedUrl;
+              tempFilePath = fpPath;
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Binary fingerprinting failed, falling back:", e);
+      }
+    }
+
+    // Fallback: use original signed URL if fingerprinting was skipped or failed
+    if (!finalSignedUrl) {
+      const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
+        .from('product-assets')
+        .createSignedUrl(assetUrl, 300);
+
+      if (signedUrlError || !signedUrlData?.signedUrl) {
+        console.error("Error creating signed URL:", signedUrlError);
+        return new Response(
+          JSON.stringify({ error: "Failed to generate download link" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      finalSignedUrl = signedUrlData.signedUrl;
     }
 
     const downloadToken = generateToken();
@@ -395,8 +502,10 @@ Deno.serve(async (req) => {
         user_id: user.id,
         product_id: productId,
         order_item_id: orderItemId || userOrder.id,
-        signed_url: signedUrlData.signedUrl,
+        signed_url: finalSignedUrl,
         expires_at: expiresAt.toISOString(),
+        creator_ip: clientIp,
+        ...(tempFilePath ? { temp_file_path: tempFilePath } : {}),
       });
 
     if (tokenError) {
@@ -514,6 +623,26 @@ async function handleTokenRedemption(token: string, req: Request): Promise<Respo
       </html>`,
       { status: 410, headers: { ...corsHeaders, "Content-Type": "text/html" } }
     );
+  }
+
+  // IP verification: if token has a creator_ip, verify it matches the redeemer
+  if (tokenData.creator_ip && tokenData.creator_ip !== 'unknown') {
+    const redeemIp = getClientIp(req);
+    if (redeemIp !== tokenData.creator_ip && redeemIp !== 'unknown') {
+      console.warn(`IP mismatch on token redemption: creator=${tokenData.creator_ip}, redeemer=${redeemIp}, token=${token.slice(0, 8)}`);
+      return new Response(
+        `<!DOCTYPE html>
+        <html>
+          <head><title>Download Error</title></head>
+          <body style="font-family: system-ui; text-align: center; padding: 50px;">
+            <h1>\u26A0\uFE0F Security Check Failed</h1>
+            <p>This download link can only be used from the device that requested it.</p>
+            <p>Please request a new download link from your account.</p>
+          </body>
+        </html>`,
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "text/html" } }
+      );
+    }
   }
 
   // Atomically claim the token — use .select() to check if any row was actually updated
