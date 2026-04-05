@@ -255,8 +255,14 @@ export default function SellerSupport() {
     return TICKET_CATEGORIES.find(c => c.value === cat)?.label || cat;
   };
 
-  const openTickets = tickets?.filter(t => !['resolved', 'closed'].includes(t.status)) || [];
-  const closedTickets = tickets?.filter(t => ['resolved', 'closed'].includes(t.status)) || [];
+  const filterBySearch = (list: Ticket[]) => {
+    if (!searchQuery.trim()) return list;
+    const q = searchQuery.toLowerCase();
+    return list.filter(t => t.subject.toLowerCase().includes(q) || t.ticket_number.toLowerCase().includes(q));
+  };
+
+  const openTickets = filterBySearch(tickets?.filter(t => !['resolved', 'closed'].includes(t.status)) || []);
+  const closedTickets = filterBySearch(tickets?.filter(t => ['resolved', 'closed'].includes(t.status)) || []);
 
   return (
     <SellerLayout>
