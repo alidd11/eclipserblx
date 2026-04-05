@@ -42,7 +42,10 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   }, []);
 
   // iOS PWA keyboard handling
-  useIOSChatKeyboard(isChatPage);
+  useIOSChatKeyboard(isChatPage, {
+    closedSafeBottom: 'env(safe-area-inset-bottom)',
+    openSafeBottom: '12px',
+  });
 
   // iOS PWA: Lock document scroll on chat pages to prevent rubber-banding
   useLayoutEffect(() => {
@@ -87,6 +90,13 @@ export function SellerLayout({ children }: SellerLayoutProps) {
     }
     window.location.reload();
   };
+
+  const chatWrapperStyle = isChatPage
+    ? {
+        height: 'var(--chat-vvh, 100dvh)',
+        minHeight: 'var(--chat-vvh, 100dvh)',
+      }
+    : undefined;
 
   // Wait for ALL async sources before making any access decisions
   const loading = authLoading || sellerLoading || flagLoading || roleLoading || onboardingLoading;
@@ -163,8 +173,9 @@ export function SellerLayout({ children }: SellerLayoutProps) {
         showFABs={false}
         wrapperClassName={cn(
           'flex w-full bg-background overflow-x-hidden relative max-w-full min-w-0',
-          isChatPage ? 'flex-col md:flex-row overflow-hidden bg-card h-[100dvh]' : 'min-h-[100dvh]'
+          isChatPage ? 'flex-col md:flex-row overflow-hidden bg-card' : 'min-h-[100dvh]'
         )}
+        wrapperStyle={chatWrapperStyle}
         innerClassName={isChatPage ? 'flex-1 flex flex-col min-w-0 min-h-0' : undefined}
         mainStyle={isChatPage ? { paddingBottom: 0 } : undefined}
         mainClassName={cn(
