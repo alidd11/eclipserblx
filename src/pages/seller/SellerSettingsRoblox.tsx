@@ -438,8 +438,8 @@ export default function SellerSettingsRoblox() {
                 Open Roblox Creator Dashboard
                 <ExternalLink className="h-3 w-3 ml-1" />
               </a>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Save Button */}
           <Button 
