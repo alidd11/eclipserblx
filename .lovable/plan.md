@@ -1,24 +1,71 @@
 
 
-## Remove Border from Free Assets Teaser
+## Enterprise-Level Full-Screen Search Experience
 
-Remove the outlined container styling from the Free Assets section so it flows naturally with the rest of the homepage.
+Replace the current floating command palette with a full-screen search takeover that feels native and premium on all devices.
 
-### Change
+### Design
 
-**File: `src/components/landing/FreeAssetsTeaser.tsx`** (line ~53)
+```text
+┌─────────────────────────────────────┐
+│  ← Back    [🔍 Search...        ] X │  ← Sticky top bar
+├─────────────────────────────────────┤
+│  RECENT          Clear all          │
+│  ┌───┐ ┌───┐ ┌───┐ ┌───┐          │  ← Horizontal pills
+│  └───┘ └───┘ └───┘ └───┘          │
+├─────────────────────────────────────┤
+│  TRENDING                           │
+│  ┌─────┐ Product Name      £2.00   │
+│  │ img │ Product Name      £3.50   │  ← List rows with thumbnails
+│  │ img │ Product Name      £1.00   │
+│  └─────┘                            │
+├─────────────────────────────────────┤
+│  CATEGORIES                         │
+│  ┌──────┐ ┌──────┐ ┌──────┐       │  ← Quick-tap category chips
+│  │Vehicles│ │Scripts│ │ Maps │       │
+│  └──────┘ └──────┘ └──────┘       │
+└─────────────────────────────────────┘
 
-Current wrapper div:
+When typing → results replace trending:
+┌─────────────────────────────────────┐
+│  ← Back    [🔍 "ford bun"      ] X │
+├─────────────────────────────────────┤
+│  PRODUCTS  3 results                │
+│  ┌─────┐ Ford Transit Bundle £2.50 │
+│  │ img │ Ford Focus Pack     £3.00 │
+│  └─────┘                            │
+│  STORES  1 result                   │
+│  ┌─────┐ Ford Motors         ✓     │
+│  └─────┘                            │
+├─────────────────────────────────────┤
+│  [  View all results →            ] │
+└─────────────────────────────────────┘
 ```
-className="rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-6"
-```
 
-Replace with borderless, no-background version:
-```
-className="p-0"
-```
+### Key UX decisions
 
-This removes the rounded border, tinted background, and internal padding — letting the section sit flush like every other homepage section. The outer `<section>` already has the correct `max-w-[1400px]` padding.
+- **Full viewport overlay** — `fixed inset-0 z-50 bg-background` with smooth slide-up animation on mobile, fade-in on desktop
+- **No cmdk dependency** — replace `CommandDialog` with a custom full-screen component. This removes the small floating modal and keyboard-hint footer that feel out of place on mobile
+- **Auto-focus input** on open with native keyboard appearance on mobile
+- **Recent searches as horizontal pills** (tappable, swipeable) instead of a vertical list
+- **Category quick-filters** — horizontal chip row so users can tap "Vehicles" and immediately see filtered results without leaving search
+- **Smooth exit** — back button or swipe-right to close, maintaining the page underneath
+- **Desktop adaptation** — same full-screen layout but max-width constrained to ~720px centered, with `Esc` to close and ⌘K shortcut preserved
+- **Remove keyboard shortcut footer** — unnecessary on mobile, clutters the UI
 
-Single line change, one file.
+### Technical changes
+
+| File | Change |
+|---|---|
+| `src/components/search/SearchCommandPalette.tsx` | Full rewrite — replace cmdk-based dialog with custom full-screen overlay component |
+| `src/components/search/SearchCategoryChips.tsx` | New — horizontal category chip row for in-search filtering |
+| `src/hooks/useSearchCommand.tsx` | No change — keep existing open/close state management |
+| `src/components/layout/HeaderSearchBar.tsx` | No change — still triggers `toggle()` |
+| `src/components/ui/command.tsx` | No change — keep for potential other uses |
+
+### Animation
+
+- Mobile: `translate-y-full → translate-y-0` slide-up (200ms ease-out)
+- Desktop: `opacity-0 scale-98 → opacity-100 scale-100` fade-in (150ms)
+- Uses Tailwind transitions, no framer-motion dependency needed
 
