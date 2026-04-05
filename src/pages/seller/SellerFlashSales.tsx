@@ -160,8 +160,7 @@ export default function SellerFlashSales() {
             [1,2].map(i => <Skeleton key={i} className="h-24" />)
           ) : flashSales && flashSales.length > 0 ? (
             flashSales.map((sale: any) => (
-              <Card key={sale.id} className={isExpired(sale) ? 'opacity-60' : ''}>
-                <CardContent className="flex items-center justify-between py-4">
+              <div key={sale.id} className={`border border-border rounded-xl p-4 flex items-center justify-between ${isExpired(sale) ? 'opacity-60' : ''}`}>
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-lg flex items-center justify-center bg-primary/10">
                       <Zap className="h-6 w-6 text-primary" />
@@ -191,8 +190,7 @@ export default function SellerFlashSales() {
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+              </div>
             ))
           ) : (
             <Card>
