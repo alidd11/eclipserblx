@@ -58,7 +58,7 @@ function LayoutShellInner({
   mobileSidebar,
   headerProps = {},
   customHeader,
-  showBreadcrumb = true,
+  
   showFooter = true,
   showFABs = true,
   extra,
