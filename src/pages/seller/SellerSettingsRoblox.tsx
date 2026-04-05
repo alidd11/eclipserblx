@@ -131,17 +131,12 @@ export default function SellerSettingsRoblox() {
 
         <div className="space-y-6">
           {/* Roblox Game/Group Link */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Gamepad2 className="h-5 w-5 text-red-500" />
-                Roblox Game/Group
-              </CardTitle>
-              <CardDescription>
-                Link your Roblox game or group to display on your store page
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Roblox Game/Group</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Link your Roblox game or group to display on your store page</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="roblox_url" className="flex items-center gap-2">
                   Roblox URL
