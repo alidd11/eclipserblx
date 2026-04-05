@@ -348,8 +348,8 @@ export default function SellerBalance() {
                   </p>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Payout Confirmation Dialog */}
           <Dialog open={showPayoutDialog} onOpenChange={setShowPayoutDialog}>

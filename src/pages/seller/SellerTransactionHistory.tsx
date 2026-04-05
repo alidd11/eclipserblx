@@ -158,8 +158,8 @@ export default function SellerTransactionHistory() {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div></SellerLayout>
   );
 }
