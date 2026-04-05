@@ -61,14 +61,14 @@
     --glow-pink: 0 0 12px hsl(340 70% 58% / 0.25);
     --glow-primary: 0 0 20px hsl(235 86% 65% / 0.3);
     
-    /* Sidebar - near-black, minimal contrast */
-    --sidebar-background: 220 8% 5%;
-    --sidebar-foreground: 210 6% 80%;
+    /* Sidebar - harmonized with card/background for cohesive feel */
+    --sidebar-background: 220 7% 8%;
+    --sidebar-foreground: 210 8% 93%;
     --sidebar-primary: 235 86% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 6% 12%;
-    --sidebar-accent-foreground: 210 6% 80%;
-    --sidebar-border: 220 5% 12%;
+    --sidebar-accent: 220 6% 14%;
+    --sidebar-accent-foreground: 210 8% 93%;
+    --sidebar-border: 220 5% 15%;
     --sidebar-ring: 235 86% 65%;
   }
 
