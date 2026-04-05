@@ -10,6 +10,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { cn } from '@/lib/utils';
 import { getCardMediaChain, isVideoUrl } from '@/lib/mediaUtils';
 import { WishlistButton } from '@/components/wishlist/WishlistButton';
+import { usePrefetchProduct } from '@/hooks/usePrefetchProduct';
 import quantisOverlay from '@/assets/quantis-product-overlay.png';
 import { QUANTIS_STORE_ID } from '@/lib/constants';
 
@@ -46,6 +47,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
   const { isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
+  const prefetchProduct = usePrefetchProduct();
   const inCart = isInCart(id);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -96,6 +98,8 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
   const hoverTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handleMouseEnter = useCallback(() => {
+    // Prefetch product detail data on hover
+    prefetchProduct(slug);
     if (videoRef.current && isVideo) {
       videoRef.current.play().catch(() => {});
     }
@@ -105,7 +109,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
         setMediaIndex((prev) => (prev + 1) % mediaChain.length);
       }, 1200);
     }
-  }, [isVideo, mediaChain.length]);
+  }, [isVideo, mediaChain.length, prefetchProduct, slug]);
 
   const handleMouseLeave = useCallback(() => {
     if (videoRef.current && isVideo) {
@@ -126,6 +130,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
       className="group block h-full"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onTouchStart={() => prefetchProduct(slug)}
     >
       <div className={cn(
         "overflow-hidden h-full flex flex-col rounded-lg border border-border/60 bg-card transition-all duration-300",
