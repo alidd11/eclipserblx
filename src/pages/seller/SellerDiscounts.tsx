@@ -328,8 +328,7 @@ export default function SellerDiscounts() {
             ))
           ) : discountCodes && discountCodes.length > 0 ? (
             discountCodes.map((code) => (
-              <Card key={code.id} className={!code.is_active || isExpired(code.expires_at) ? 'opacity-60' : ''}>
-                <CardContent className="flex items-center justify-between py-4">
+              <div key={code.id} className={`border border-border rounded-xl p-4 flex items-center justify-between ${!code.is_active || isExpired(code.expires_at) ? 'opacity-60' : ''}`}>
                   <div className="flex items-center gap-4">
                     <div 
                       className="h-12 w-12 rounded-lg flex items-center justify-center bg-primary/10"
