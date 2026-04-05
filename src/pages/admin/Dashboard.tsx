@@ -257,35 +257,24 @@ export default function AdminDashboard() {
         <SystemAlerts />
 
         {/* Hero Banner */}
-        <Card className="overflow-hidden border-border bg-card max-w-lg">
-          {/* Banner area with branding */}
-          <div className="relative h-20 sm:h-28 bg-gradient-to-br from-primary/20 via-muted/80 to-card overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
-          </div>
-
-          <CardContent className="relative -mt-8 px-4 sm:px-5 pb-4">
-            {/* Avatar + Name row */}
-            <div className="flex items-start gap-3 mb-3">
-              <div className="flex flex-col items-center gap-1">
-                <Avatar className="h-14 w-14 sm:h-16 sm:w-16 border-4 border-card shadow-lg">
-                  <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.display_name || 'User'} className="object-cover" />
-                  <AvatarFallback className="bg-muted text-xl font-bold">{profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
-                </Avatar>
-                <Badge variant="default" className="gap-1 text-[10px]">
-                  <Shield className="h-2.5 w-2.5" />
-                  Admin
-                </Badge>
-              </div>
-
-              <div className="flex-1 min-w-0 pt-1">
-                <h1 className="text-lg sm:text-xl font-bold leading-tight">
-                  {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
-                </h1>
-                  <TimezoneClock />
-              </div>
+        <div className="flex items-center gap-3 max-w-lg">
+          <Avatar className="h-12 w-12 border-2 border-border">
+            <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.display_name || 'User'} className="object-cover" />
+            <AvatarFallback className="bg-muted text-lg font-bold">{profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-display font-bold leading-tight">
+                {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
+              </h1>
+              <Badge variant="default" className="gap-1 text-[10px]">
+                <Shield className="h-2.5 w-2.5" />
+                Admin
+              </Badge>
             </div>
-          </CardContent>
-        </Card>
+            <TimezoneClock />
+          </div>
+        </div>
 
         {/* Duty Clock In/Out */}
         <Card className="bg-card border-border max-w-md">
