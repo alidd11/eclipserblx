@@ -94,6 +94,7 @@ const INITIAL_FORM_DATA: ProductFormData = {
   ip_ownership_confirmed: false,
   is_pay_what_you_want: false,
   min_price: '0',
+  max_downloads_per_purchase: '',
 };
 
 export default function SellerProductEditor() {
