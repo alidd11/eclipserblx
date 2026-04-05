@@ -300,17 +300,12 @@ export default function SellerSettingsProfile() {
           </div>
 
           {/* Pay What You Want */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-emerald-500" />
-                Pay What You Want
-              </CardTitle>
-              <CardDescription>
-                Allow products in your store to use flexible "Pay What You Want" pricing, where buyers choose their own price
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Pay What You Want</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Allow flexible pricing where buyers choose their own price</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Enable PWYW Pricing</Label>
