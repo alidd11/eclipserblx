@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { SITE_NAME } from '@/lib/constants';
 import { useTranslation } from 'react-i18next';
 import { useStoreDomain } from '@/hooks/useStoreDomain';
+import { Shield, Lock } from 'lucide-react';
 
 export function Footer() {
   const { t } = useTranslation();
@@ -63,19 +64,21 @@ export function Footer() {
   ];
 
   return (
-    <footer className="border-t border-border mt-auto min-h-[366px]" role="contentinfo" aria-label="Site footer">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <footer className="border-t border-border/40 mt-auto" role="contentinfo" aria-label="Site footer">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
         {/* 3-column link grid */}
         <div className="grid grid-cols-2 xs:grid-cols-3 gap-6 xs:gap-12 mb-10">
           {columns.map((col) => (
-            <div key={col.heading} className="flex flex-col gap-4">
-              <p className="text-sm font-bold text-foreground" id={`footer-${col.heading.toLowerCase()}`}>{col.heading}</p>
-              <nav className="flex flex-col gap-3" aria-labelledby={`footer-${col.heading.toLowerCase()}`}>
+            <div key={col.heading} className="flex flex-col gap-3">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-foreground/40" id={`footer-${col.heading.toLowerCase()}`}>
+                {col.heading}
+              </p>
+              <nav className="flex flex-col gap-2.5" aria-labelledby={`footer-${col.heading.toLowerCase()}`}>
                 {col.links.map((link) => (
                   <Link
                     key={link.href}
                     to={link.href}
-                    className="text-sm text-foreground/70 hover:text-foreground transition-colors"
+                    className="text-[13px] text-foreground/55 hover:text-foreground transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -86,15 +89,25 @@ export function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-border mb-6" />
+        <div className="border-t border-border/30 mb-6" />
 
-        {/* Bottom copyright */}
-        <div className="flex flex-col gap-1">
-          <p className="text-sm text-foreground/70">
+        {/* Bottom bar — copyright + trust signals */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <p className="text-[12px] text-foreground/40">
             © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
           </p>
-          <p className="text-sm text-foreground/70">Made with care for the Roblox community</p>
-          <p className="text-sm text-foreground/70">Secure payments powered by Stripe</p>
+
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1.5 text-[11px] text-foreground/35">
+              <Lock className="h-3 w-3" />
+              256-bit SSL
+            </span>
+            <span className="h-3 w-px bg-border/30" />
+            <span className="flex items-center gap-1.5 text-[11px] text-foreground/35">
+              <Shield className="h-3 w-3" />
+              Payments by Stripe
+            </span>
+          </div>
         </div>
       </div>
     </footer>
