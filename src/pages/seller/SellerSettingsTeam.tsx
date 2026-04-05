@@ -317,17 +317,12 @@ export default function SellerSettingsTeam() {
         </div>
 
         {/* Invite Team Member */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5" />
-              Invite Team Member
-            </CardTitle>
-            <CardDescription>
-              Send an invitation to add someone to your store team
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm">Invite Team Member</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Send an invitation to add someone to your store team</p>
+          </div>
+          <div className="p-4">
             <form onSubmit={handleSendInvite} className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-[1fr,auto,auto]">
                 <div className="space-y-2">
