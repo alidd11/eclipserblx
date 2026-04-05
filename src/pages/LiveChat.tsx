@@ -411,6 +411,7 @@ const LiveChatPage = () => {
             conversationId: newConv.id,
             userMessage: initialMessage,
             issueCategory: issueCategory,
+            userId: user.id,
           },
         });
 
@@ -475,6 +476,7 @@ const LiveChatPage = () => {
               conversationId: conversation.id,
               userMessage: messageText,
               issueCategory: conversation.issue_category,
+              userId: user?.id,
             },
           });
 
