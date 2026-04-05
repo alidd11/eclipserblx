@@ -600,8 +600,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
         </div>
 
         {/* ═══ Shopping ═══ */}
-        <Card className="bg-card border-border overflow-hidden">
-          <CardContent className="p-1">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="p-1">
             <SectionHeader title="Shopping" />
             <NavRow icon={Download} label="My Purchases" to="/purchases" />
             <NavRow icon={ShoppingBag} label="Order History" to="/purchases" badge={orders?.length || undefined} />
