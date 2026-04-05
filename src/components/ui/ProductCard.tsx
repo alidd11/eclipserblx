@@ -134,8 +134,8 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
     >
       <div className={cn(
         "overflow-hidden h-full flex flex-col rounded-lg border border-border/60 bg-card transition-all duration-300",
-        "hover:border-primary/50 hover:shadow-[0_0_20px_hsl(var(--primary)/0.15)]",
-        isFeatured && "border-primary/30 shadow-[0_0_12px_hsl(var(--primary)/0.1)]"
+        "hover:border-primary/30 hover:shadow-sm",
+        isFeatured && "border-primary/20"
       )}>
         {/* Image/Video */}
         <div className="relative aspect-[4/3] bg-muted/30 overflow-hidden flex-shrink-0">
