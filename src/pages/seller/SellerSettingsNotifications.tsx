@@ -397,20 +397,15 @@ export default function SellerSettingsNotifications() {
 
           {/* Additional Role Configurations */}
           {store?.id && store?.credentials?.discord_guild_id && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-[#5865F2]" />
-                  Additional Discord Roles
-                </CardTitle>
-                <CardDescription>
-                  Create additional roles to assign based on order count, spend amount, or subscription status
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm">Additional Discord Roles</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Create roles based on order count, spend amount, or subscription status</p>
+              </div>
+              <div className="p-4">
                 <DiscordRoleManager storeId={store.id} />
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
           {/* How to Create Webhook */}
           <Card className="border-muted">
