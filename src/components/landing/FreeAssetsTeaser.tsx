@@ -45,7 +45,7 @@ export function FreeAssetsTeaser() {
   return (
     <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-6">
+        <div className="p-0">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-bold tracking-tight uppercase">Free Assets</h2>
