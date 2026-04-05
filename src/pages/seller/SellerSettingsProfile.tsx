@@ -245,17 +245,12 @@ export default function SellerSettingsProfile() {
           </div>
 
           {/* About Us Content */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Info className="h-5 w-5" />
-                About Us Page
-              </CardTitle>
-              <CardDescription>
-                Rich content for your store's dedicated About page. Customers can access this from your store navigation.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">About Us Page</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Rich content for your store's dedicated About page</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="space-y-2">
                 <Label>About Content</Label>
                 <RichTextEditor
