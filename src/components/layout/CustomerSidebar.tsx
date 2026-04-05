@@ -533,11 +533,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                 </Link>
               </div>
             </div>
-            {isMobileDrawer && (
-              <Button variant="ghost" size="icon" className="h-8 w-8 min-h-0 min-w-0 rounded-full bg-muted/60 hover:bg-muted" onClick={onNavigate}>
-                <X className="h-4 w-4" />
-              </Button>
-            )}
           </div>
 
           {/* Quick Stats Pills */}
