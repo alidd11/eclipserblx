@@ -295,14 +295,11 @@ export default function GDPRCompliance() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <Shield className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">GDPR & Tax Compliance Registry</h1>
-            <p className="text-muted-foreground text-sm">
-              ROPA (Art. 30) · Sub-Processors (Art. 28) · Retention · HMRC Tax Obligations
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-display font-bold">GDPR & Tax Compliance Registry</h1>
+          <p className="text-sm text-muted-foreground">
+            ROPA (Art. 30) · Sub-Processors (Art. 28) · Retention · HMRC Tax Obligations
+          </p>
         </div>
 
         <div className="flex gap-2 flex-wrap">
@@ -335,164 +332,157 @@ export default function GDPRCompliance() {
 
           {/* ─── Tab 1: ROPA ─── */}
           <TabsContent value="ropa" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Database className="h-5 w-5" />
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Database className="h-4 w-4 text-muted-foreground" />
                   Records of Processing Activities
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Required under GDPR Article 30. Documents every processing activity, its legal basis, and data flows.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="min-w-[180px]">Processing Activity</TableHead>
-                        <TableHead className="min-w-[150px]">Purpose</TableHead>
-                        <TableHead className="min-w-[180px]">Legal Basis</TableHead>
-                        <TableHead className="min-w-[180px]">Data Categories</TableHead>
-                        <TableHead className="min-w-[100px]">Data Subjects</TableHead>
-                        <TableHead className="min-w-[150px]">Recipients</TableHead>
-                        <TableHead className="min-w-[150px]">Retention</TableHead>
-                        <TableHead className="min-w-[150px]">Int'l Transfers</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {PROCESSING_ACTIVITIES.map((activity, i) => (
-                        <TableRow key={i}>
-                          <TableCell className="font-medium text-sm">{activity.activity}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{activity.purpose}</TableCell>
-                          <TableCell>
-                            <Badge variant="secondary" className="text-xs whitespace-nowrap">
-                              {activity.legalBasis}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-sm">{activity.dataCategories}</TableCell>
-                          <TableCell className="text-sm">{activity.dataSubjects}</TableCell>
-                          <TableCell className="text-sm">{activity.recipients}</TableCell>
-                          <TableCell className="text-sm">{activity.retention}</TableCell>
-                          <TableCell className="text-sm">{activity.transfers}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* ─── Tab 2: Sub-Processors ─── */}
-          <TabsContent value="processors" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Globe className="h-5 w-5" />
-                  Sub-Processor Registry
-                </CardTitle>
-                <CardDescription>
-                  Required under GDPR Article 28. All third-party processors with access to personal data.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Processor</TableHead>
-                        <TableHead>Purpose</TableHead>
-                        <TableHead>Data Processed</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Transfer Mechanism</TableHead>
-                        <TableHead>DPA Link</TableHead>
-                        <TableHead>Last Reviewed</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {SUB_PROCESSORS.map((proc, i) => (
-                        <TableRow key={i}>
-                          <TableCell className="font-medium text-sm">{proc.name}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{proc.purpose}</TableCell>
-                          <TableCell className="text-sm">{proc.dataProcessed}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="text-xs">{proc.location}</Badge>
-                          </TableCell>
-                          <TableCell className="text-sm">{proc.transferMechanism}</TableCell>
-                          <TableCell>
-                            <a
-                              href={proc.dpaUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary underline text-xs"
-                            >
-                              View DPA
-                            </a>
-                          </TableCell>
-                          <TableCell className="text-sm">{proc.lastReviewed}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* ─── Tab 3: Retention Schedule ─── */}
-          <TabsContent value="retention" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Data Retention Schedule
-                </CardTitle>
-                <CardDescription>
-                  GDPR principle of storage limitation (Art. 5(1)(e)). Data must not be kept longer than necessary.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+              </div>
+              <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Data Type</TableHead>
-                      <TableHead>Retention Period</TableHead>
-                      <TableHead>Deletion Method</TableHead>
-                      <TableHead>Legal Basis</TableHead>
+                      <TableHead className="min-w-[180px]">Processing Activity</TableHead>
+                      <TableHead className="min-w-[150px]">Purpose</TableHead>
+                      <TableHead className="min-w-[180px]">Legal Basis</TableHead>
+                      <TableHead className="min-w-[180px]">Data Categories</TableHead>
+                      <TableHead className="min-w-[100px]">Data Subjects</TableHead>
+                      <TableHead className="min-w-[150px]">Recipients</TableHead>
+                      <TableHead className="min-w-[150px]">Retention</TableHead>
+                      <TableHead className="min-w-[150px]">Int'l Transfers</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {RETENTION_SCHEDULE.map((item, i) => (
+                    {PROCESSING_ACTIVITIES.map((activity, i) => (
                       <TableRow key={i}>
-                        <TableCell className="font-medium text-sm">{item.dataType}</TableCell>
+                        <TableCell className="font-medium text-sm">{activity.activity}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{activity.purpose}</TableCell>
                         <TableCell>
-                          <Badge variant="secondary" className="text-xs">{item.retention}</Badge>
+                          <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                            {activity.legalBasis}
+                          </Badge>
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{item.method}</TableCell>
-                        <TableCell className="text-sm">{item.legal}</TableCell>
+                        <TableCell className="text-sm">{activity.dataCategories}</TableCell>
+                        <TableCell className="text-sm">{activity.dataSubjects}</TableCell>
+                        <TableCell className="text-sm">{activity.recipients}</TableCell>
+                        <TableCell className="text-sm">{activity.retention}</TableCell>
+                        <TableCell className="text-sm">{activity.transfers}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* ─── Tab 2: Sub-Processors ─── */}
+          <TabsContent value="processors" className="space-y-4">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-muted-foreground" />
+                  Sub-Processor Registry
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Required under GDPR Article 28. All third-party processors with access to personal data.
+                </p>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Processor</TableHead>
+                      <TableHead>Purpose</TableHead>
+                      <TableHead>Data Processed</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Transfer Mechanism</TableHead>
+                      <TableHead>DPA Link</TableHead>
+                      <TableHead>Last Reviewed</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {SUB_PROCESSORS.map((proc, i) => (
+                      <TableRow key={i}>
+                        <TableCell className="font-medium text-sm">{proc.name}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{proc.purpose}</TableCell>
+                        <TableCell className="text-sm">{proc.dataProcessed}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-xs">{proc.location}</Badge>
+                        </TableCell>
+                        <TableCell className="text-sm">{proc.transferMechanism}</TableCell>
+                        <TableCell>
+                          <a
+                            href={proc.dpaUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary underline text-xs"
+                          >
+                            View DPA
+                          </a>
+                        </TableCell>
+                        <TableCell className="text-sm">{proc.lastReviewed}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* ─── Tab 3: Retention Schedule ─── */}
+          <TabsContent value="retention" className="space-y-4">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  Data Retention Schedule
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  GDPR principle of storage limitation (Art. 5(1)(e)). Data must not be kept longer than necessary.
+                </p>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data Type</TableHead>
+                    <TableHead>Retention Period</TableHead>
+                    <TableHead>Deletion Method</TableHead>
+                    <TableHead>Legal Basis</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {RETENTION_SCHEDULE.map((item, i) => (
+                    <TableRow key={i}>
+                      <TableCell className="font-medium text-sm">{item.dataType}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="text-xs">{item.retention}</Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{item.method}</TableCell>
+                      <TableCell className="text-sm">{item.legal}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </TabsContent>
 
           {/* ─── Tab 4: Tax & HMRC ─── */}
           <TabsContent value="tax" className="space-y-4">
-            {/* Platform Tax Position Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5" />
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-muted-foreground" />
                   Platform Tax Position
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Summary of Eclipse's tax model and HMRC obligations as a UK digital marketplace.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+              </div>
+              <div className="p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Object.entries(PLATFORM_TAX_POSITION).map(([key, value]) => (
                     <div key={key} className="p-3 rounded-lg bg-muted/30 border border-border">
@@ -501,68 +491,65 @@ export default function GDPRCompliance() {
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            {/* Detailed Obligations */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Receipt className="h-5 w-5" />
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Receipt className="h-4 w-4 text-muted-foreground" />
                   HMRC Tax Obligations Checklist
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   All tax obligations for Eclipse as a commission-based digital marketplace operating under UK law.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="min-w-[160px]">Obligation</TableHead>
-                        <TableHead className="min-w-[200px]">Description</TableHead>
-                        <TableHead className="min-w-[100px]">Status</TableHead>
-                        <TableHead className="min-w-[120px]">HMRC Reference</TableHead>
-                        <TableHead className="min-w-[250px]">Notes</TableHead>
+                </p>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[160px]">Obligation</TableHead>
+                      <TableHead className="min-w-[200px]">Description</TableHead>
+                      <TableHead className="min-w-[100px]">Status</TableHead>
+                      <TableHead className="min-w-[120px]">HMRC Reference</TableHead>
+                      <TableHead className="min-w-[250px]">Notes</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {TAX_OBLIGATIONS.map((item, i) => (
+                      <TableRow key={i}>
+                        <TableCell className="font-medium text-sm">{item.obligation}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{item.description}</TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={
+                              item.status === 'Implemented' || item.status === 'Documented' ? 'default' :
+                              item.status === 'Required' ? 'destructive' :
+                              'secondary'
+                            } 
+                            className="text-xs whitespace-nowrap"
+                          >
+                            {item.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm font-mono text-xs">{item.hmrcRef}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{item.notes}</TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {TAX_OBLIGATIONS.map((item, i) => (
-                        <TableRow key={i}>
-                          <TableCell className="font-medium text-sm">{item.obligation}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{item.description}</TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant={
-                                item.status === 'Implemented' || item.status === 'Documented' ? 'default' :
-                                item.status === 'Required' ? 'destructive' :
-                                'secondary'
-                              } 
-                              className="text-xs whitespace-nowrap"
-                            >
-                              {item.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-sm font-mono text-xs">{item.hmrcRef}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{item.notes}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
 
             {/* Key Tax Rules */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Landmark className="h-5 w-5" />
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Landmark className="h-4 w-4 text-muted-foreground" />
                   Key Tax Rules for UK Digital Marketplaces
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </h3>
+              </div>
+              <div className="p-4 space-y-4">
                 <div className="p-4 rounded-lg bg-muted/30 border border-border">
                   <h4 className="font-semibold mb-1">VAT on Commission Revenue</h4>
                   <p className="text-sm text-muted-foreground">
@@ -599,8 +586,8 @@ export default function GDPRCompliance() {
                     sellers set their own prices. Review if pricing model changes.
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* ─── Tab 5: Consent Records (Live from DB) ─── */}
@@ -634,18 +621,17 @@ function ConsentRecordsTab({ search, onSearchChange }: { search: string; onSearc
   });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5" />
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="px-4 py-3 border-b border-border bg-muted/30">
+        <h3 className="font-semibold text-sm flex items-center gap-2">
+          <Users className="h-4 w-4 text-muted-foreground" />
           Consent Records
-        </CardTitle>
-        <CardDescription>
+        </h3>
+        <p className="text-xs text-muted-foreground mt-0.5">
           Live proof-of-consent log from the database (GDPR Art. 7 — Conditions for consent).
-          Each record captures the visitor's consent decision with timestamp and version.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </p>
+      </div>
+      <div className="p-4 space-y-4">
         <Input
           placeholder="Search by visitor ID or action..."
           value={search}
@@ -709,7 +695,7 @@ function ConsentRecordsTab({ search, onSearchChange }: { search: string; onSearc
             </Table>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

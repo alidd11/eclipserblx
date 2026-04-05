@@ -386,16 +386,15 @@ export default function AdminReviews() {
   return (
     <AdminLayout requiredPermissions={['view_reviews']}>
       <div className="space-y-6">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <CardTitle className="text-2xl sm:text-3xl font-display">Reviews</CardTitle>
-                <CardDescription>Manage customer and external reviews</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-display font-bold">Reviews</h1>
+            <p className="text-sm text-muted-foreground">Manage customer and external reviews</p>
+          </div>
+        </div>
+
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="p-4">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <TabsList className="w-full sm:w-auto">
@@ -501,8 +500,8 @@ export default function AdminReviews() {
                 )}
               </TabsContent>
             </Tabs>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Add External Review Dialog */}

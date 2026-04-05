@@ -257,45 +257,32 @@ export default function AdminDashboard() {
         <SystemAlerts />
 
         {/* Hero Banner */}
-        <Card className="overflow-hidden border-border bg-card max-w-lg">
-          {/* Banner area with branding */}
-          <div className="relative h-20 sm:h-28 bg-gradient-to-br from-primary/20 via-muted/80 to-card overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
-          </div>
-
-          <CardContent className="relative -mt-8 px-4 sm:px-5 pb-4">
-            {/* Avatar + Name row */}
-            <div className="flex items-start gap-3 mb-3">
-              <div className="flex flex-col items-center gap-1">
-                <Avatar className="h-14 w-14 sm:h-16 sm:w-16 border-4 border-card shadow-lg">
-                  <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.display_name || 'User'} className="object-cover" />
-                  <AvatarFallback className="bg-muted text-xl font-bold">{profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
-                </Avatar>
-                <Badge variant="default" className="gap-1 text-[10px]">
-                  <Shield className="h-2.5 w-2.5" />
-                  Admin
-                </Badge>
-              </div>
-
-              <div className="flex-1 min-w-0 pt-1">
-                <h1 className="text-lg sm:text-xl font-bold leading-tight">
-                  {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
-                </h1>
-                  <TimezoneClock />
-              </div>
+        <div className="flex items-center gap-3 max-w-lg">
+          <Avatar className="h-12 w-12 border-2 border-border">
+            <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.display_name || 'User'} className="object-cover" />
+            <AvatarFallback className="bg-muted text-lg font-bold">{profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-display font-bold leading-tight">
+                {getTimeBasedGreeting()}{profile?.display_name ? `, ${profile.display_name}` : ''}!
+              </h1>
+              <Badge variant="default" className="gap-1 text-[10px]">
+                <Shield className="h-2.5 w-2.5" />
+                Admin
+              </Badge>
             </div>
-          </CardContent>
-        </Card>
+            <TimezoneClock />
+          </div>
+        </div>
 
         {/* Duty Clock In/Out */}
-        <Card className="bg-card border-border max-w-md">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Clock className="h-4 w-4" />
-              Duty Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <div className="border border-border rounded-xl overflow-hidden max-w-md">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <h3 className="font-semibold text-sm">Duty Status</h3>
+          </div>
+          <div className="p-4 space-y-3">
 
             {activeSession ? (
               <div className="space-y-3">
@@ -377,15 +364,15 @@ export default function AdminDashboard() {
                 </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Quick Actions - right after hero like seller dashboard */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm">Quick Actions</h3>
+          </div>
+          <div className="p-4">
             <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 sm:gap-2">
               {quickLinks.map((link) => (
                 <Link key={link.href} to={link.href}>
@@ -403,16 +390,16 @@ export default function AdminDashboard() {
                 </Link>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Role-Based Actions */}
         {roleLinks.length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium">Your Tools</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Your Tools</h3>
+            </div>
+            <div className="p-4">
               <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1.5 sm:gap-2">
                 {roleLinks.map((link) => (
                   <Link key={link.href} to={link.href}>
@@ -430,23 +417,21 @@ export default function AdminDashboard() {
                   </Link>
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Assigned Tickets */}
         {assignedTickets && assignedTickets.length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium flex items-center gap-2">
-                  <Ticket className="h-4 w-4" />
-                  Your Assigned Tickets
-                </CardTitle>
-                <Badge variant="secondary" className="text-xs">{assignedTickets.length}</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0 space-y-2">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
+                <Ticket className="h-4 w-4 text-muted-foreground" />
+                Your Assigned Tickets
+              </h3>
+              <Badge variant="secondary" className="text-xs">{assignedTickets.length}</Badge>
+            </div>
+            <div className="p-4 space-y-2">
               {assignedTickets.map((ticket) => {
                 const statusColors: Record<string, string> = {
                   open: 'bg-yellow-500/20 text-yellow-500',
@@ -477,8 +462,8 @@ export default function AdminDashboard() {
                   </Link>
                 );
               })}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
 

@@ -352,11 +352,8 @@ export default function EmailTemplates() {
     <AdminLayout requiredPermissions={['manage_settings']}>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Mail className="h-6 w-6" />
-            Email Templates
-          </h1>
-          <p className="text-muted-foreground">Preview all email templates with sample data</p>
+          <h1 className="text-2xl font-display font-bold">Email Templates</h1>
+          <p className="text-sm text-muted-foreground">Preview all email templates with sample data</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -389,20 +386,20 @@ export default function EmailTemplates() {
             ))}
           </TabsList>
 
-          <Card className="mt-4">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden mt-4">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">
                 {templates.find(t => t.id === activeTab)?.label} Preview
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </h3>
+            </div>
+            <div className="p-4">
               <ScrollArea className="h-[600px] w-full rounded-lg border">
                 <div className="min-w-[320px]">
                   {renderTemplate()}
                 </div>
               </ScrollArea>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </Tabs>
       </div>
     </AdminLayout>

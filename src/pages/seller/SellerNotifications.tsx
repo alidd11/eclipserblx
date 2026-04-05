@@ -138,8 +138,8 @@ export default function SellerNotifications() {
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Notifications</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-display font-bold">Notifications</h1>
+            <p className="text-sm text-muted-foreground">
               {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up!'}
             </p>
           </div>
@@ -212,15 +212,13 @@ export default function SellerNotifications() {
             })}
           </div>
         ) : (
-          <Card>
-            <CardContent className="text-center py-12">
-              <BellOff className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h3 className="text-lg font-medium mb-2">No notifications</h3>
-              <p className="text-muted-foreground">
-                You'll receive notifications here for new orders, refund requests, and more.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="border border-border rounded-xl text-center py-12">
+            <BellOff className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <h3 className="text-lg font-medium mb-2">No notifications</h3>
+            <p className="text-muted-foreground">
+              You'll receive notifications here for new orders, refund requests, and more.
+            </p>
+          </div>
         )}
       </div>
     </SellerLayout>

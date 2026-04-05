@@ -175,20 +175,17 @@ export default function SellerCampaigns() {
             {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 rounded-lg" />)}
           </div>
         ) : campaigns?.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Megaphone className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No campaigns yet. Create your first discount campaign!</p>
-            </CardContent>
-          </Card>
+          <div className="border border-border rounded-xl py-12 text-center">
+            <Megaphone className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground">No campaigns yet. Create your first discount campaign!</p>
+          </div>
         ) : (
           <div className="space-y-3">
             {campaigns?.map((campaign: any) => {
               const status = getCampaignStatus(campaign);
               const isLive = status.label === 'Active';
               return (
-                <Card key={campaign.id} className={isLive ? 'border-primary/30' : ''}>
-                  <CardContent className="py-4">
+                <div key={campaign.id} className={`border border-border rounded-xl p-4 ${isLive ? 'border-primary/30' : ''}`}>
                     <div className="flex items-center gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
@@ -227,8 +224,7 @@ export default function SellerCampaigns() {
                         </Button>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                </div>
               );
             })}
           </div>

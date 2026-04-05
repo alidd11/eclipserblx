@@ -301,18 +301,18 @@ export default function SellerCustomSections() {
     <SellerLayout>
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">Custom Sections</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-display font-bold">Custom Sections</h1>
+          <p className="text-sm text-muted-foreground">
             Add custom content sections to your store page
           </p>
         </div>
 
         {/* Add Section */}
-        <Card className="mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Add New Section</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden mb-6">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm">Add New Section</h3>
+          </div>
+          <div className="p-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
               {SECTION_TYPES.map(type => (
                 <Button
@@ -327,8 +327,8 @@ export default function SellerCustomSections() {
                 </Button>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Sections List */}
         {isLoading ? (
@@ -338,8 +338,7 @@ export default function SellerCustomSections() {
         ) : sections && sections.length > 0 ? (
           <div className="space-y-3">
             {sections.map((section) => (
-              <Card key={section.id} className={!section.is_visible ? 'opacity-60' : ''}>
-                <CardContent className="py-4">
+              <div key={section.id} className={`border border-border rounded-xl p-4 ${!section.is_visible ? 'opacity-60' : ''}`}>
                   {editingId === section.id ? (
                     <div className="space-y-4">
                       <div className="flex items-center gap-2">
@@ -419,20 +418,17 @@ export default function SellerCustomSections() {
                       </div>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+              </div>
             ))}
           </div>
         ) : (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <LayoutGrid className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h3 className="text-lg font-medium mb-2">No Custom Sections</h3>
-              <p className="text-muted-foreground">
-                Add FAQ, testimonials, or other sections to make your store stand out.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="border border-border rounded-xl py-12 text-center">
+            <LayoutGrid className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <h3 className="text-lg font-medium mb-2">No Custom Sections</h3>
+            <p className="text-muted-foreground">
+              Add FAQ, testimonials, or other sections to make your store stand out.
+            </p>
+          </div>
         )}
       </div>
     </SellerLayout>

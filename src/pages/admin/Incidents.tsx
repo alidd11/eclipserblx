@@ -302,101 +302,97 @@ export default function AdminIncidents() {
   return (
     <AdminLayout requiredPermissions={['view_incidents']}>
       <div className="space-y-6">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <CardTitle className="text-2xl sm:text-3xl font-display">Incident Management</CardTitle>
-                <CardDescription>Create and manage system incidents</CardDescription>
-              </div>
-              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Incident
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-lg">
-                  <DialogHeader>
-                    <DialogTitle>Create Incident</DialogTitle>
-                    <DialogDescription>Report a new system incident</DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="title">Title *</Label>
-                      <Input
-                        id="title"
-                        value={formData.title}
-                        onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="Brief incident title"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea
-                        id="description"
-                        value={formData.description}
-                        onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Detailed description of the incident"
-                        rows={3}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Status</Label>
-                        <Select value={formData.status} onValueChange={v => setFormData(prev => ({ ...prev, status: v }))}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {statusOptions.map(opt => (
-                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Severity</Label>
-                        <Select value={formData.severity} onValueChange={v => setFormData(prev => ({ ...prev, severity: v }))}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {severityOptions.map(opt => (
-                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Affected Services</Label>
-                      <div className="flex flex-wrap gap-2">
-                        {serviceOptions.map(service => (
-                          <Badge
-                            key={service}
-                            variant={formData.affected_services.includes(service) ? 'default' : 'outline'}
-                            className="cursor-pointer"
-                            onClick={() => toggleService(service)}
-                          >
-                            {service}
-                          </Badge>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-display font-bold">Incident Management</h1>
+            <p className="text-sm text-muted-foreground">Create and manage system incidents</p>
+          </div>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                New Incident
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Create Incident</DialogTitle>
+                <DialogDescription>Report a new system incident</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Title *</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="Brief incident title"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Detailed description of the incident"
+                    rows={3}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select value={formData.status} onValueChange={v => setFormData(prev => ({ ...prev, status: v }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {statusOptions.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                         ))}
-                      </div>
-                    </div>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={handleCreate} disabled={createMutation.isPending}>
-                      {createMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                      Create Incident
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </CardHeader>
-        </Card>
+                  <div className="space-y-2">
+                    <Label>Severity</Label>
+                    <Select value={formData.severity} onValueChange={v => setFormData(prev => ({ ...prev, severity: v }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {severityOptions.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Affected Services</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {serviceOptions.map(service => (
+                      <Badge
+                        key={service}
+                        variant={formData.affected_services.includes(service) ? 'default' : 'outline'}
+                        className="cursor-pointer"
+                        onClick={() => toggleService(service)}
+                      >
+                        {service}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleCreate} disabled={createMutation.isPending}>
+                  {createMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Create Incident
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
 
         {/* Search */}
         <div className="relative">
@@ -410,88 +406,84 @@ export default function AdminIncidents() {
         </div>
 
         {/* Incidents List */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {filteredIncidents?.length === 0 ? (
-            <Card className="bg-card border-border">
-              <CardContent className="py-12 text-center">
-                <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-4" />
-                <p className="text-lg font-medium">No incidents found</p>
-                <p className="text-muted-foreground">All systems are operating normally</p>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-xl p-12 text-center">
+              <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-4" />
+              <p className="text-lg font-medium">No incidents found</p>
+              <p className="text-muted-foreground">All systems are operating normally</p>
+            </div>
           ) : (
             filteredIncidents?.map(incident => (
-              <Card key={incident.id} className="bg-card border-border">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {incident.status !== 'resolved' && (
-                          <AlertTriangle className="h-4 w-4 text-yellow-500 shrink-0" />
-                        )}
-                        {incident.status === 'resolved' && (
-                          <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
-                        )}
-                        <h3 className="font-semibold">{incident.title}</h3>
-                        {getStatusBadge(incident.status)}
-                        {getSeverityBadge(incident.severity)}
-                      </div>
-                      {incident.description && (
-                        <p className="text-sm text-muted-foreground">{incident.description}</p>
+              <div key={incident.id} className="border border-border rounded-xl p-4 sm:p-5">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {incident.status !== 'resolved' && (
+                        <AlertTriangle className="h-4 w-4 text-yellow-500 shrink-0" />
                       )}
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+                      {incident.status === 'resolved' && (
+                        <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+                      )}
+                      <h3 className="font-semibold">{incident.title}</h3>
+                      {getStatusBadge(incident.status)}
+                      {getSeverityBadge(incident.severity)}
+                    </div>
+                    {incident.description && (
+                      <p className="text-sm text-muted-foreground">{incident.description}</p>
+                    )}
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        Started: {format(new Date(incident.started_at), 'MMM d, yyyy HH:mm')}
+                      </span>
+                      {incident.resolved_at && (
                         <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          Started: {format(new Date(incident.started_at), 'MMM d, yyyy HH:mm')}
+                          <CheckCircle className="h-3 w-3" />
+                          Resolved: {format(new Date(incident.resolved_at), 'MMM d, yyyy HH:mm')}
                         </span>
-                        {incident.resolved_at && (
-                          <span className="flex items-center gap-1">
-                            <CheckCircle className="h-3 w-3" />
-                            Resolved: {format(new Date(incident.resolved_at), 'MMM d, yyyy HH:mm')}
-                          </span>
-                        )}
-                      </div>
-                      {incident.affected_services && incident.affected_services.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {incident.affected_services.map(service => (
-                            <Badge key={service} variant="outline" className="text-xs">
-                              {service}
-                            </Badge>
-                          ))}
-                        </div>
                       )}
                     </div>
-                    <div className="flex gap-2 shrink-0">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openUpdateDialog(incident)}
-                      >
-                        <MessageSquarePlus className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Add Update</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(incident)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => {
-                          if (confirm('Are you sure you want to delete this incident?')) {
-                            deleteMutation.mutate(incident.id);
-                          }
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    {incident.affected_services && incident.affected_services.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {incident.affected_services.map(service => (
+                          <Badge key={service} variant="outline" className="text-xs">
+                            {service}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex gap-2 shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openUpdateDialog(incident)}
+                    >
+                      <MessageSquarePlus className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Add Update</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(incident)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        if (confirm('Are you sure you want to delete this incident?')) {
+                          deleteMutation.mutate(incident.id);
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
             ))
           )}
         </div>

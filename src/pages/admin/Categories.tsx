@@ -452,14 +452,12 @@ export default function AdminCategories() {
           </Button>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>All Categories</CardTitle>
-            <CardDescription>
-              Drag and drop to reorder. Products will appear in this order.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm">All Categories</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Drag and drop to reorder. Products will appear in this order.</p>
+          </div>
+          <div className="p-4">
             {isLoading ? (
               <div className="text-center py-8 text-muted-foreground">Loading...</div>
             ) : categories.length === 0 ? (
@@ -522,8 +520,8 @@ export default function AdminCategories() {
                 </div>
               </DndContext>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Add/Edit Dialog */}

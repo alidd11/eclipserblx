@@ -139,31 +139,28 @@ export default function SellerFlashSales() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Flash Sales</h1>
-            <p className="text-muted-foreground">Create time-limited sales for your store</p>
+            <h1 className="text-2xl font-display font-bold">Flash Sales</h1>
+            <p className="text-sm text-muted-foreground">Create time-limited sales for your store</p>
           </div>
           <Button onClick={() => setShowDialog(true)}>
             <Plus className="h-4 w-4 mr-2" />New Flash Sale
           </Button>
         </div>
 
-        <Card className="mb-6 bg-blue-500/5 border-blue-500/20">
-          <CardContent className="flex items-start gap-3 py-4">
-            <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-muted-foreground">
-              Flash sales apply automatic discounts to your products during the sale period. 
-              Maximum discount is 50%. Sales are visible on your store page with a countdown timer.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3 flex items-start gap-3 mb-6">
+          <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-muted-foreground">
+            Flash sales apply automatic discounts to your products during the sale period. 
+            Maximum discount is 50%. Sales are visible on your store page with a countdown timer.
+          </p>
+        </div>
 
         <div className="space-y-3">
           {isLoading ? (
             [1,2].map(i => <Skeleton key={i} className="h-24" />)
           ) : flashSales && flashSales.length > 0 ? (
             flashSales.map((sale: any) => (
-              <Card key={sale.id} className={isExpired(sale) ? 'opacity-60' : ''}>
-                <CardContent className="flex items-center justify-between py-4">
+              <div key={sale.id} className={`border border-border rounded-xl p-4 flex items-center justify-between ${isExpired(sale) ? 'opacity-60' : ''}`}>
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-lg flex items-center justify-center bg-primary/10">
                       <Zap className="h-6 w-6 text-primary" />
@@ -193,20 +190,17 @@ export default function SellerFlashSales() {
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+              </div>
             ))
           ) : (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Zap className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No Flash Sales</h3>
-                <p className="text-muted-foreground mb-4">Create a time-limited sale to boost engagement</p>
-                <Button onClick={() => setShowDialog(true)}>
-                  <Plus className="h-4 w-4 mr-2" />Create Flash Sale
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-xl py-12 text-center">
+              <Zap className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <h3 className="text-lg font-medium mb-2">No Flash Sales</h3>
+              <p className="text-muted-foreground mb-4">Create a time-limited sale to boost engagement</p>
+              <Button onClick={() => setShowDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />Create Flash Sale
+              </Button>
+            </div>
           )}
         </div>
       </div>

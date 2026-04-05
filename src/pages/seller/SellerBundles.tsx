@@ -171,31 +171,28 @@ export default function SellerBundles() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Bundle Deals</h1>
-            <p className="text-muted-foreground">Group products together at a discounted price</p>
+            <h1 className="text-2xl font-display font-bold">Bundle Deals</h1>
+            <p className="text-sm text-muted-foreground">Group products together at a discounted price</p>
           </div>
           <Button onClick={() => setShowDialog(true)}>
             <Plus className="h-4 w-4 mr-2" />New Bundle
           </Button>
         </div>
 
-        <Card className="mb-6 bg-blue-500/5 border-blue-500/20">
-          <CardContent className="flex items-start gap-3 py-4">
-            <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-muted-foreground">
-              Bundles let customers buy multiple products together at a reduced price. 
-              Select at least 2 products and set a bundle price below the combined total.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3 flex items-start gap-3 mb-6">
+          <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-muted-foreground">
+            Bundles let customers buy multiple products together at a reduced price. 
+            Select at least 2 products and set a bundle price below the combined total.
+          </p>
+        </div>
 
         <div className="space-y-3">
           {isLoading ? (
             [1,2].map(i => <Skeleton key={i} className="h-24" />)
           ) : bundles && bundles.length > 0 ? (
             bundles.map((bundle: any) => (
-              <Card key={bundle.id} className={!bundle.is_active ? 'opacity-60' : ''}>
-                <CardContent className="flex items-center justify-between py-4">
+              <div key={bundle.id} className={`border border-border rounded-xl p-4 flex items-center justify-between ${!bundle.is_active ? 'opacity-60' : ''}`}>
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-lg flex items-center justify-center bg-primary/10">
                       <PackagePlus className="h-6 w-6 text-primary" />
@@ -230,20 +227,17 @@ export default function SellerBundles() {
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+              </div>
             ))
           ) : (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <PackagePlus className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No Bundles</h3>
-                <p className="text-muted-foreground mb-4">Create bundle deals to increase average order value</p>
-                <Button onClick={() => setShowDialog(true)}>
-                  <Plus className="h-4 w-4 mr-2" />Create Bundle
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-xl py-12 text-center">
+              <PackagePlus className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <h3 className="text-lg font-medium mb-2">No Bundles</h3>
+              <p className="text-muted-foreground mb-4">Create bundle deals to increase average order value</p>
+              <Button onClick={() => setShowDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />Create Bundle
+              </Button>
+            </div>
           )}
         </div>
       </div>
