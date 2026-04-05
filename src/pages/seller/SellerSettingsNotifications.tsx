@@ -336,8 +336,8 @@ export default function SellerSettingsNotifications() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Discord Role Integration */}
           <Card>
