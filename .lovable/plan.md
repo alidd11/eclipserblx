@@ -1,87 +1,72 @@
 
 
-## Enterprise-Level Store Page Overhaul + Seller Subscription Tier Enhancements
+## Enterprise-Level Seller Pro Page Redesign
 
-Two areas of work: (A) making the public store page feel enterprise-grade on desktop, and (B) expanding the Free vs Pro seller subscription feature set.
-
----
-
-### A. Store Page — Enterprise Polish
-
-**Current problems:**
-- 985-line monolith `StorePage.tsx` with duplicated product grid code (lines 638-761 and 809-923 are nearly identical)
-- Store header is centered with large logo (96px) and scattered action buttons — feels like a personal profile, not a professional storefront
-- `StoreFloatingHeader` conflicts with the smart sticky header we just built (both fight for `fixed top-0 z-50`)
-- Theme system (`getThemeStyles`) adds complexity but most stores use default — enterprise stores (Shopify, Etsy) don't offer per-store visual themes
-- Banner section has 6 conditional branches for different themes — overengineered
-- Product pagination uses swipe + animated page transitions — enterprise stores use simple load-more or infinite scroll
-- Reviews section uses heavy `Card`/`CardHeader` wrappers inconsistent with flattened enterprise style
-- Trust signals are tiny (11px text) and easily missed
-
-**Planned changes:**
-
-1. **Store header redesign** — Left-aligned layout on desktop: logo (48px) + store name + verified badge inline, stats as compact pills, action buttons (Follow, Message, Reviews) right-aligned. Matches Shopify/Etsy store header pattern.
-
-2. **Remove StoreFloatingHeader** — It conflicts with the global smart sticky header. The global header already hides/shows on scroll; a second floating bar is redundant.
-
-3. **Simplify banner** — One clean banner render: if `banner_url` exists show it with a single bottom fade, otherwise show a subtle `bg-muted/30` strip. Remove all theme-specific banner branches.
-
-4. **Flatten product grid** — Extract duplicated product grid into a `StoreProductGrid` component. Replace swipe pagination with a simple "Show more" button that appends the next page of products (no animated page transitions).
-
-5. **Flatten Reviews and sections** — Replace `Card` wrappers with `border-t border-border pt-6` dividers matching the product page enterprise style.
-
-6. **Trust signals** — Increase to 12px text, add a thin top border to visually separate from content above.
-
-7. **Bio treatment** — Remove quotation marks and italic styling. Use plain `text-sm text-muted-foreground` with a "Read more" link.
+The current page is a basic comparison table with a centered header — functional but generic. Enterprise pricing pages (Stripe, Linear, Vercel) use distinct visual hierarchy, feature grouping, social proof, and clear value framing.
 
 ---
 
-### B. Seller Subscription — Free vs Pro Feature Expansion
+### Problems
 
-**Current Free vs Pro limits** (from `useSellerSubscription.ts`):
+1. **Flat comparison table** — 15 rows in a single undifferentiated list. Hard to scan, no feature grouping.
+2. **No value framing** — No hero stats ("Save £X/year"), no ROI messaging, no testimonials or social proof.
+3. **Weak visual hierarchy** — Free and Pro columns look nearly identical. Pro column should feel premium.
+4. **No feature highlights** — Top 3-4 key selling points should be called out above the table as visual cards, not buried in rows.
+5. **Active subscription card** uses `Card` wrapper — inconsistent with flattened enterprise style.
+6. **CTA is at the bottom** — enterprise pages put the CTA both above and below the fold.
+7. **Mobile layout** — 3-column grid is cramped on 440px viewport. Feature labels get cut off.
 
-| Feature | Free | Pro (£7.99/mo) |
-|---|---|---|
-| Commission | 15% | 10% |
-| Max file size | 200 MB | 500 MB |
-| Product images | 5 | 15 |
-| Product files | 1 | 3 |
-| Max products | 25 | Unlimited |
-| Store pages | 1 | 5 |
-| Ad credit | £0 | £5/mo |
-| Pro badge | No | Yes |
-| Priority review | No | Yes |
+---
 
-**Recommended additions to differentiate tiers further:**
+### Planned Changes
 
-| New Feature | Free | Pro |
-|---|---|---|
-| Store themes | Default only | All themes (minimal, bold, gradient, dark) |
-| Custom nav links | 2 max | 10 max |
-| Store announcement bar | No | Yes |
-| Analytics dashboard | Basic (30 days) | Advanced (90 days + export) |
-| Discount/coupon codes | 1 active | Unlimited |
-| Scheduled banner | No | Yes |
+#### 1. Hero Section with Value Props
+Replace the simple centered text with a stronger hero:
+- Large headline: "Grow faster with Eclipse Pro"
+- Subline with concrete savings: "Save 5% on every sale. Keep more of what you earn."
+- 3 highlight cards below: **Lower Commission (10%)**, **Unlimited Products**, **Priority Review** — each with icon, title, one-line description
+- Primary CTA button right in the hero (duplicate at bottom too)
 
-**Implementation:**
-- Add new limit fields to the `SellerProLimits` interface and `FREE_LIMITS`/`PRO_LIMITS` constants
-- Gate theme selection in the Store Builder behind Pro (show lock icon + upgrade prompt for non-default themes)
-- Gate announcement bar toggle behind Pro in Store Builder
-- Gate custom nav link count in seller settings
-- Update the `SellerProPage` comparison table to show the new features
-- Add inline upgrade prompts (small banner with Crown icon) at each gated feature in the seller dashboard
+#### 2. Grouped Comparison Table
+Split the 15-row flat table into 3-4 labeled sections:
+- **Selling** — Commission, file size, images, listings
+- **Store Customization** — Themes, nav links, announcement bar, scheduled banner, store pages
+- **Growth Tools** — Analytics, discounts, ad credit, priority review
+- **Brand** — PRO badge
+
+Each group gets a small section header (`text-xs uppercase tracking-wide text-muted-foreground`). This makes scanning instant.
+
+#### 3. Pro Column Visual Emphasis
+- Pro column header gets a subtle `bg-primary/5 border border-primary/20 rounded-xl` wrapper
+- "RECOMMENDED" badge on the Pro column
+- Pro values rendered in `text-foreground font-medium` vs Free in `text-muted-foreground`
+
+#### 4. Mobile-Responsive Layout
+- On mobile (<640px), switch from 3-column grid to a stacked card layout: show Pro features as a checklist with checkmarks, and a collapsible "Compare with Free" section
+- Highlight cards stack vertically
+
+#### 5. Active Subscription — Flatten
+Replace `Card` wrapper with a clean `border border-primary/20 rounded-xl bg-primary/5 p-4` div, matching the flattened enterprise style.
+
+#### 6. FAQ Section
+Add 3-4 common questions at the bottom (collapsible):
+- "Can I cancel anytime?"
+- "What happens to my products if I downgrade?"
+- "Do I keep the PRO badge after cancelling?"
+- "How does the ad credit work?"
+
+Uses simple `details/summary` or an accordion pattern.
 
 ---
 
 ### Technical Details
 
-**Files modified:**
-- `src/pages/StorePage.tsx` — Refactor header, remove floating header, simplify banner, extract product grid
-- `src/components/store/StoreFloatingHeader.tsx` — Delete
-- `src/components/store/StoreProductGrid.tsx` — New extracted component
-- `src/components/store/StoreReviews.tsx` — Flatten Card wrappers
-- `src/components/store/StoreTrustSignals.tsx` — Increase text size
-- `src/hooks/useSellerSubscription.ts` — Add new limit fields
-- `src/pages/seller/SellerProPage.tsx` — Add new comparison rows
-- `src/pages/seller/SellerStoreBuilder.tsx` — Gate themes and announcement behind Pro
+**File modified:** `src/pages/seller/SellerProPage.tsx` — Full redesign of the page content
+
+- Group `comparisonRows` into sections: `{ section: string, rows: Row[] }[]`
+- Add `HighlightCard` inline component for the 3 hero feature cards
+- Add FAQ data array with `Collapsible` from radix or simple `details` elements
+- Mobile breakpoint: `sm:grid-cols-3` for table, stack on mobile with a different render
+- Duplicate CTA in hero and after FAQ
+- Remove `Card`/`CardHeader`/`CardContent` wrappers, use plain divs with borders
 
