@@ -381,7 +381,7 @@ export default function CustomerTicketDetail() {
 
   return (
     <AdminLayout>
-      <div className="flex h-full min-h-0 flex-col gap-3 p-2 sm:p-3 md:p-4">
+      <div className="flex flex-col gap-3 p-2 sm:p-3 md:p-4 flex-1 min-h-0 overflow-hidden">
         {/* ── Top bar ──────────────────────────────────────────────────────── */}
         <div className="shrink-0 rounded-xl border border-border bg-card p-3 space-y-3">
           <Button variant="ghost" size="sm" className="w-fit" onClick={() => navigate('/admin/customer-tickets')}>
