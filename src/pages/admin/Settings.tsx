@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
 import { AdminLayout } from '@/components/admin/AdminLayout';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+// Card imports removed — using enterprise flat sections
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Settings as SettingsIcon, Bell, Shield, Rocket } from 'lucide-react';

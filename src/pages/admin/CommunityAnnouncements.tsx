@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Send, MessageCircle, Megaphone, Link as LinkIcon, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+// Card imports removed — using enterprise flat sections
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
