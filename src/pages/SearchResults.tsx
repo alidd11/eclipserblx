@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
-import { Search, SlidersHorizontal, X, Sparkles, Loader2, Package } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Loader2, Package } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductGridSkeleton } from '@/components/ui/ProductCardSkeleton';
