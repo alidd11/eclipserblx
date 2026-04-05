@@ -1,61 +1,63 @@
 
+## Enterprise Polish Pass
 
-## Enterprise Sidebar Overhaul
-
-After auditing the 557-line `CustomerSidebar.tsx`, here are the issues and fixes:
-
----
-
-### Problems Found
-
-1. **Sign-out button is missing** — `SidebarFooter` is imported but never rendered. Users have no way to sign out from the sidebar.
-2. **Gaming aesthetics** — Gradient CTA button with glow shadow, premium ring with gradient border, always-on green "online" dot — these feel like a gaming social app, not an enterprise marketplace.
-3. **Profile section is heavy** — 11px avatar with gradient fallback, online indicator, wallet balance with "Add" link, premium ring — too much visual noise for a sidebar header.
-4. **Too many nav items** — 20+ items across 5 groups creates decision fatigue. Enterprise sidebars are focused.
-5. **Collapsed state is fragile** — Collapse preference is not persisted; uses tooltip menus that are awkward on touch devices.
+After auditing every customer-facing surface, here are the remaining rough edges:
 
 ---
 
-### Plan
+### 1. Auth Page — 1,257 Lines, No Layout Shell
+The auth page (`Auth.tsx`) is a **1,257-line monolith** with no `MainLayout` wrapper — it renders raw, with no header/footer. Enterprise login pages (Shopify, Gumroad, Stripe) always show consistent branding + a link back to the homepage.
 
-#### 1. Restore Sign-Out
-- Render `<SidebarFooter>` at the bottom of the sidebar (it's already imported but unused).
+**Fix:**
+- Wrap in a minimal layout with the Eclipse logo + a "← Back to store" link
+- Split the 1,257-line file into smaller sub-components (LoginForm, SignupForm, ForgotPasswordForm, ResetForm, VerifyForm)
 
-#### 2. Strip Gaming Visuals
-- Replace the gradient CTA ("Seller Dashboard") with a subtle `bg-primary/10 text-primary` outlined button — no glow, no gradient.
-- Remove the green online dot from the avatar.
-- Remove the premium gradient ring — replace with a small "PRO" badge text if needed.
-- Avatar fallback: plain `bg-muted` with initial letter, no gradient.
+---
 
-#### 3. Tighten Profile Section
-- Shrink avatar from `h-11 w-11` to `h-9 w-9`.
-- Remove the wallet balance row entirely from the sidebar — balance belongs on the Account page, not navigation chrome.
-- Keep: username, @handle, and the Seller Dashboard link (as a text link, not a button).
+### 2. Hero Banner — "gaming-card" Overlay Language
+`HeroBanner.tsx` line 21 says `"Dark overlay — deeper for gaming feel"` — the overlays are fine technically, but the `bg-background/65` + left gradient + bottom gradient creates a muddy, washed-out image. Enterprise hero sections use a single clean overlay.
 
-#### 4. Streamline Navigation Groups
-- Merge "Quick Access" (Home, Admin) into the top level without a group header — they're already rendered headerless but the code treats them specially.
-- Merge "Explore" and "Resources" into one "Browse" group — having separate groups for "All Products" and then individual categories is redundant when the GlobalCategoryBar already handles discovery.
-- Keep "My Account" and "Support" as-is — they're well-scoped.
-- Result: 3 groups instead of 5, fewer total items.
+**Fix:**
+- Simplify to one `bg-background/50` overlay + one bottom fade — remove the left-side gradient (it was for left-aligned text that no longer exists since text is centered)
 
-#### 5. Mobile Drawer Polish
-- Add a subtle close affordance: the user's name row should be tappable to close, or add a small `X` icon in the header area.
-- Ensure the drawer has proper `overscroll-contain` (already present) and respects safe areas.
+---
 
-#### 6. Collapsed State
-- Persist collapsed preference to localStorage (currently group open/close is persisted, but sidebar collapse itself is not — the parent controls it with `useState(false)`).
+### 3. Mobile Hero — Shadow Glow on CTA
+The mobile "Browse" button still has `shadow-[0_0_16px_hsl(var(--primary)/0.25)]` — a gaming-style glow that doesn't match the enterprise direction.
+
+**Fix:**
+- Remove the glow shadow from the mobile CTA button
+
+---
+
+### 4. FinalCTA — No Visual Container
+The "Turn your creations into revenue" section is floating text with no visual boundary — it looks disconnected from the page. Enterprise CTAs use a subtle card or background treatment.
+
+**Fix:**
+- Add `rounded-xl border border-border/50 bg-card/50` to the inner div to give it a grounded container
+
+---
+
+### 5. Auth Page Size
+At 1,257 lines, `Auth.tsx` is the largest single file in the project. This is a maintainability risk.
+
+**Fix:**
+- Extract each auth mode into its own component file under `src/components/auth/`
+- Keep the main `Auth.tsx` as a thin router between modes
+
+---
+
+### 6. Product Card Hover States
+Product cards likely still have gaming-style hover effects. Need to verify and normalize to enterprise `hover:border-primary/30` instead of glow shadows.
+
+**Fix:**
+- Audit `ProductCard.tsx` for any remaining glow/gradient hover effects
 
 ---
 
 ### Files Changed
-- **`src/components/layout/CustomerSidebar.tsx`** — Strip gaming visuals, restore SidebarFooter, tighten profile, merge nav groups, remove wallet row
-- **`src/components/layout/MainLayout.tsx`** — Persist sidebar collapse state to localStorage
-
-### Technical Details
-- Remove gradient classes: `bg-gradient-to-r from-primary to-purple-500`, `shadow-[0_0_16px_...]`
-- Replace with: `bg-primary/10 text-primary border border-primary/20 rounded-lg`
-- Remove online dot: delete the `<span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ...">` element
-- Remove wallet row (lines 497-505): the `<Wallet>` icon, balance display, and "Add" link
-- Render `<SidebarFooter isCollapsed={isCollapsed} onSignOut={() => setShowSignOutDialog(true)} />` before the closing `</aside>`
-- In MainLayout: `const [collapsed, setCollapsed] = useState(() => safeStorage.getItem('sidebar-collapsed') === 'true')` + persist on toggle
-
+- `src/components/landing/HeroBanner.tsx` — Simplify overlays
+- `src/components/landing/LandingHero.tsx` — Remove glow shadow from mobile CTA
+- `src/components/landing/FinalCTA.tsx` — Add container treatment
+- `src/pages/Auth.tsx` — Add minimal branding layout, extract sub-components
+- `src/components/ui/ProductCard.tsx` — Normalize hover states (if needed)
