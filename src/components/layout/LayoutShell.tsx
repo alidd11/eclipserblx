@@ -72,6 +72,7 @@ function LayoutShellInner({
   wrapperStyle,
   mainClassName,
   innerClassName,
+  chatMode,
 }: LayoutShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
