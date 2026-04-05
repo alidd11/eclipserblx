@@ -2,7 +2,6 @@ import { useSearchParams } from 'react-router-dom';
 import { RotateCcw, AlertTriangle } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { AdminHubProvider } from '@/components/admin/AdminHubContext';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { lazy, Suspense } from 'react';
@@ -24,19 +23,10 @@ export default function DisputesRefundsHub() {
   return (
     <AdminLayout requiredPermissions={['manage_orders']}>
       <div className="space-y-6 w-full">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <CardTitle className="text-2xl sm:text-3xl font-display flex items-center gap-2">
-                  <RotateCcw className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-                  Refunds & Disputes
-                </CardTitle>
-                <p className="text-muted-foreground text-sm mt-1">Track refunded orders, commission reversals, and customer disputes</p>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
+        <div>
+          <h1 className="text-2xl font-display font-bold">Refunds & Disputes</h1>
+          <p className="text-sm text-muted-foreground mt-1">Track refunded orders, commission reversals, and customer disputes</p>
+        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="hidden sm:grid w-full max-w-md grid-cols-2">

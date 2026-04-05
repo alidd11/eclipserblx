@@ -277,11 +277,10 @@ export default function AdminRefunds() {
         </div>
 
         {/* Refunds Table */}
-        <Card className="bg-card/50 backdrop-blur border-border/50">
-          <CardHeader>
-            <CardTitle>Refunded Orders</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <p className="text-sm font-medium">Refunded Orders</p>
+          </div>
             {ordersLoading ? (
               <div className="space-y-3">
                 {[...Array(5)].map((_, i) => (

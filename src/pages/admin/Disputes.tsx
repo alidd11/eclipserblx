@@ -310,41 +310,38 @@ export default function Disputes() {
             </div>
 
             {stats.overdue > 0 && (
-              <Card className="border-destructive/30 bg-destructive/5">
-                <CardContent className="flex items-center gap-3 py-3 px-4">
-                  <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-destructive">
-                      {stats.overdue} dispute{stats.overdue > 1 ? 's' : ''} overdue — seller 48h window expired
-                    </p>
-                    <p className="text-xs text-muted-foreground">Consider escalating or resolving these directly.</p>
-                  </div>
-                  <Button size="sm" variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => setStatusFilter('pending')}>
-                    View Pending
-                  </Button>
-                </CardContent>
-              </Card>
+              <div className="flex items-start gap-2 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                <p>
+                  {stats.overdue} dispute{stats.overdue > 1 ? 's' : ''} overdue — seller 48h window expired.{' '}
+                  <button className="underline" onClick={() => setStatusFilter('pending')}>View Pending</button>
+                </p>
+              </div>
             )}
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              {[
-                { label: 'Total', value: stats.total, icon: FileText, color: 'text-foreground' },
-                { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-yellow-500' },
-                { label: 'Overdue', value: stats.overdue, icon: AlertCircle, color: 'text-destructive' },
-                { label: 'Escalated', value: stats.escalated, icon: ShieldAlert, color: 'text-amber-500' },
-                { label: 'Resolved', value: stats.resolved, icon: CheckCircle, color: 'text-emerald-500' },
-                { label: 'Funds Frozen', value: stats.frozen, icon: Snowflake, color: 'text-sky-400' },
-              ].map((stat) => (
-                <Card key={stat.label} className="bg-card border-border">
-                  <CardContent className="pt-4 pb-3 px-4">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
-                      <stat.icon className={cn('h-4 w-4', stat.color)} />
-                    </div>
-                    <p className={cn('text-2xl font-bold mt-1', stat.color)}>{stat.value}</p>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="flex items-center gap-4 text-sm flex-wrap">
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{stats.total}</span> total
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-yellow-500">{stats.pending}</span> pending
+              </span>
+              {stats.overdue > 0 && (
+                <span className="text-muted-foreground">
+                  <span className="font-semibold text-destructive">{stats.overdue}</span> overdue
+                </span>
+              )}
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-amber-500">{stats.escalated}</span> escalated
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-green-500">{stats.resolved}</span> resolved
+              </span>
+              {stats.frozen > 0 && (
+                <span className="text-muted-foreground">
+                  <span className="font-semibold text-sky-400">{stats.frozen}</span> frozen
+                </span>
+              )}
             </div>
           </>
         )}
