@@ -268,17 +268,12 @@ export default function SellerSettingsRoblox() {
           </div>
 
           {/* Roblox Premium Discounts */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Crown className="h-5 w-5 text-amber-500" />
-                Premium User Discounts
-              </CardTitle>
-              <CardDescription>
-                Reward customers who have Roblox Premium with exclusive discounts
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Premium User Discounts</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Reward Roblox Premium users with exclusive discounts</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Enable Premium Discount</Label>
