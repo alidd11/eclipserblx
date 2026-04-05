@@ -392,8 +392,8 @@ export default function SellerSettingsNotifications() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Additional Role Configurations */}
           {store?.id && store?.credentials?.discord_guild_id && (
