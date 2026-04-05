@@ -30,7 +30,7 @@ function MainLayoutContent({ children, showFooter = true, showBreadcrumb = true 
       headerProps={{ mobileFixed: true, showDesktopNav: true }}
       showFooter={showFooter}
       showBreadcrumb={showBreadcrumb}
-      mainStyle={{ paddingBottom: 'calc(var(--chat-safe-bottom, env(safe-area-inset-bottom)) + var(--tab-bar-height, 0px))' }}
+      mainStyle={{ paddingBottom: 'calc(var(--chat-safe-bottom, var(--bottom-safe-area, 0px)) + var(--tab-bar-height, 0px))' }}
     >
       <PageTransition>{children}</PageTransition>
     </LayoutShell>
