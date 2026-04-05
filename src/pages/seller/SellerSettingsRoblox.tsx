@@ -320,8 +320,8 @@ export default function SellerSettingsRoblox() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Gamepass Rewards */}
           <Card>
