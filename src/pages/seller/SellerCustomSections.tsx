@@ -338,8 +338,7 @@ export default function SellerCustomSections() {
         ) : sections && sections.length > 0 ? (
           <div className="space-y-3">
             {sections.map((section) => (
-              <Card key={section.id} className={!section.is_visible ? 'opacity-60' : ''}>
-                <CardContent className="py-4">
+              <div key={section.id} className={`border border-border rounded-xl p-4 ${!section.is_visible ? 'opacity-60' : ''}`}>
                   {editingId === section.id ? (
                     <div className="space-y-4">
                       <div className="flex items-center gap-2">
@@ -419,8 +418,7 @@ export default function SellerCustomSections() {
                       </div>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+              </div>
             ))}
           </div>
         ) : (
