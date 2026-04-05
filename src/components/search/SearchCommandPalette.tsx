@@ -18,7 +18,7 @@ interface Product {
   slug: string;
   price: number;
   images?: string[];
-  product_number?: string;
+  product_number?: string | number;
 }
 
 interface StoreResult {
