@@ -58,8 +58,10 @@ const featureGroups: { section: string; rows: FeatureRow[] }[] = [
     ],
   },
   {
-    section: 'Brand',
+    section: 'Brand & Domain',
     rows: [
+      { label: 'Free subdomain', free: true, pro: true, icon: Link2 },
+      { label: 'Custom domain', free: false, pro: true, icon: ExternalLink },
       { label: 'PRO badge on store', free: false, pro: true, icon: Shield },
     ],
   },
