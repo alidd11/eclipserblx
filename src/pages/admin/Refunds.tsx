@@ -236,48 +236,51 @@ export default function AdminRefunds() {
               </Button>
             </div>
 
-            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
-              <AdminStatCard label="Total Refunds" value={stats.totalRefunds} className="min-w-[160px] flex-shrink-0 md:min-w-0" />
-              <AdminStatCard label="Total Refunded" value={formatCurrency(stats.totalRefundedAmount)} valueColor="destructive" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
-              <AdminStatCard label="Full Refunds" value={stats.fullRefunds} valueColor="destructive" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
-              <AdminStatCard label="Partial Refunds" value={stats.partialRefunds} valueColor="orange" className="min-w-[160px] flex-shrink-0 md:min-w-0" />
+            <div className="flex items-center gap-4 text-sm flex-wrap">
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{stats.totalRefunds}</span> refunds
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-destructive">{formatCurrency(stats.totalRefundedAmount)}</span> refunded
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{stats.fullRefunds}</span> full
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{stats.partialRefunds}</span> partial
+              </span>
             </div>
           </>
         )}
 
         {/* Filters */}
-        <Card className="bg-card/50 backdrop-blur border-border/50">
-          <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by customer ID, order ID, payment ID..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-background/50"
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-auto min-w-[140px] bg-background/50">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Refunds</SelectItem>
-                  <SelectItem value="refunded">Full Refunds</SelectItem>
-                  <SelectItem value="partially_refunded">Partial Refunds</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by customer ID, order ID, payment ID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-auto min-w-[140px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Refunds</SelectItem>
+              <SelectItem value="refunded">Full Refunds</SelectItem>
+              <SelectItem value="partially_refunded">Partial Refunds</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Refunds Table */}
-        <Card className="bg-card/50 backdrop-blur border-border/50">
-          <CardHeader>
-            <CardTitle>Refunded Orders</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <p className="text-sm font-medium">Refunded Orders</p>
+          </div>
             {ordersLoading ? (
               <div className="space-y-3">
                 {[...Array(5)].map((_, i) => (
@@ -341,8 +344,8 @@ export default function AdminRefunds() {
                 <p className="text-sm mt-1">Refunded orders will appear here</p>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Order Detail Dialog */}
         <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>

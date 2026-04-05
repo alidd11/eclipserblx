@@ -79,20 +79,12 @@ export default function SellerTaxFeeSummary() {
         </div>
       )}
 
-      {/* Summary cards */}
-      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
+      {/* Inline Stats */}
+      <div className="flex items-center gap-4 text-sm flex-wrap">
         {cards.map(card => (
-          <Card key={card.label} className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-muted"><card.icon className={`h-5 w-5 ${card.color}`} /></div>
-                <div>
-                  <p className="text-xs text-muted-foreground">{card.label}</p>
-                  <p className="text-lg font-bold">{card.value}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <span key={card.label} className="text-muted-foreground">
+            {card.label}: <span className="font-semibold text-foreground">{card.value}</span>
+          </span>
         ))}
       </div>
 

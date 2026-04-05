@@ -3,10 +3,8 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShoppingCart, DollarSign, TrendingUp } from 'lucide-react';
 import { OrdersTab } from '@/components/seller/orders/OrdersTab';
 import { TransactionsTab } from '@/components/seller/orders/TransactionsTab';
 
@@ -41,30 +39,22 @@ export default function SellerOrders() {
   return (
     <SellerLayout>
       <div>
-        <div className="mb-6">
+        <div className="mb-4">
           <h1 className="text-2xl font-display font-bold">Orders & Transactions</h1>
           <p className="text-sm text-muted-foreground">Track your sales, orders, and transaction history</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          {[
-            { label: 'Total Sales', value: stats?.totalSales || 0, icon: ShoppingCart, sub: 'Completed orders', color: 'from-primary/20 to-primary/5', iconColor: 'text-primary' },
-            { label: 'Revenue', value: formatCurrency(stats?.totalRevenue || 0), icon: DollarSign, sub: 'After fees', color: 'from-green-500/20 to-green-500/5', iconColor: 'text-green-500' },
-            { label: 'Pending', value: formatCurrency(stats?.pendingAmount || 0), icon: TrendingUp, sub: 'Awaiting clearance', color: 'from-yellow-500/20 to-yellow-500/5', iconColor: 'text-yellow-500' },
-          ].map(stat => (
-            <div key={stat.label} className="relative rounded-xl border border-border/50 bg-card p-4 overflow-hidden">
-              <div className={`absolute inset-0 bg-gradient-to-br opacity-40 rounded-xl ${stat.color}`} />
-              <div className="relative">
-                <div className="h-8 w-8 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center mb-2 border border-border/30">
-                  <stat.icon className={`h-4 w-4 ${stat.iconColor}`} />
-                </div>
-                <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-1">{stat.label}</p>
-                <p className="text-lg font-bold tracking-tight">{stat.value}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{stat.sub}</p>
-              </div>
-            </div>
-          ))}
+        {/* Inline Stats */}
+        <div className="flex items-center gap-4 text-sm mb-6 flex-wrap">
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{stats?.totalSales || 0}</span> sales
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-green-500">{formatCurrency(stats?.totalRevenue || 0)}</span> revenue
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-yellow-500">{formatCurrency(stats?.pendingAmount || 0)}</span> pending
+          </span>
         </div>
 
         {/* Tabbed Content */}

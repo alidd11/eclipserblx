@@ -270,26 +270,23 @@ export default function SellerAnalytics() {
           </div>
         ) : processedData ? (
           <div className="space-y-6">
-            {/* Stats Overview */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              {[
-                { label: 'Store Views', value: processedData.totals.storeViews, icon: Eye, color: 'from-primary/20 to-primary/5', iconColor: 'text-primary' },
-                { label: 'Product Views', value: processedData.totals.productViews, icon: MousePointer, color: 'from-blue-500/20 to-blue-500/5', iconColor: 'text-blue-500' },
-                { label: 'Add to Carts', value: processedData.totals.addToCarts, icon: ShoppingCart, color: 'from-orange-500/20 to-orange-500/5', iconColor: 'text-orange-500' },
-                { label: 'Purchases', value: processedData.totals.purchases, icon: CreditCard, color: 'from-green-500/20 to-green-500/5', iconColor: 'text-green-500' },
-                { label: 'Conversion', value: `${processedData.conversionRate}%`, icon: TrendingUp, color: 'from-purple-500/20 to-purple-500/5', iconColor: 'text-purple-500' },
-              ].map(stat => (
-                <div key={stat.label} className="relative rounded-xl border border-border/50 bg-card p-4 overflow-hidden">
-                  <div className={`absolute inset-0 bg-gradient-to-br opacity-40 rounded-xl ${stat.color}`} />
-                  <div className="relative">
-                    <div className="h-8 w-8 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center mb-2 border border-border/30">
-                      <stat.icon className={`h-4 w-4 ${stat.iconColor}`} />
-                    </div>
-                    <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-1">{stat.label}</p>
-                    <p className="text-lg font-bold tracking-tight">{typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}</p>
-                  </div>
-                </div>
-              ))}
+            {/* Inline Stats */}
+            <div className="flex items-center gap-4 text-sm flex-wrap">
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{processedData.totals.storeViews.toLocaleString()}</span> store views
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{processedData.totals.productViews.toLocaleString()}</span> product views
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{processedData.totals.addToCarts}</span> add to carts
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-green-500">{processedData.totals.purchases}</span> purchases
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-primary">{processedData.conversionRate}%</span> conversion
+              </span>
             </div>
 
             {/* Charts */}
