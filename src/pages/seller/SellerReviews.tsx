@@ -147,59 +147,23 @@ export default function SellerReviews() {
     <SellerLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Star className="h-6 w-6 text-yellow-500" />
-            Reviews
-          </h1>
-          <p className="text-muted-foreground">Manage and respond to customer feedback</p>
+          <h1 className="text-2xl font-display font-bold">Reviews</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage and respond to customer feedback</p>
         </div>
 
         {/* Stats Overview */}
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible">
-          <Card className="min-w-[200px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Average Rating</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-3xl font-bold">{stats?.average.toFixed(1) || '0.0'}</span>
-                    <div className="flex">{renderStars(Math.round(stats?.average || 0))}</div>
-                  </div>
-                </div>
-                <div className="p-3 rounded-full bg-yellow-500/10">
-                  <Star className="h-6 w-6 text-yellow-500" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[200px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Reviews</p>
-                  <span className="text-3xl font-bold">{stats?.total || 0}</span>
-                </div>
-                <div className="p-3 rounded-full bg-primary/10">
-                  <MessageSquare className="h-6 w-6 text-primary" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[200px] flex-shrink-0 md:min-w-0">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Positive Reviews</p>
-                  <span className="text-3xl font-bold text-green-600">
-                    {stats ? Math.round(((stats.distribution[0].count + stats.distribution[1].count) / Math.max(stats.total, 1)) * 100) : 0}%
-                  </span>
-                </div>
-                <div className="p-3 rounded-full bg-green-500/10">
-                  <ThumbsUp className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="flex items-center gap-4 text-sm flex-wrap">
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-yellow-500">{stats?.average.toFixed(1) || '0.0'}</span> avg rating
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{stats?.total || 0}</span> reviews
+          </span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-green-500">
+              {stats ? Math.round(((stats.distribution[0].count + stats.distribution[1].count) / Math.max(stats.total, 1)) * 100) : 0}%
+            </span> positive
+          </span>
         </div>
 
         {/* Rating Distribution */}
