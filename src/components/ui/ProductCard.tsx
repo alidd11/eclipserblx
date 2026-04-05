@@ -47,6 +47,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
   const { isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
+  const prefetchProduct = usePrefetchProduct();
   const inCart = isInCart(id);
   const videoRef = useRef<HTMLVideoElement>(null);
 
