@@ -684,20 +684,18 @@ export default function AdminProducts() {
   return (
     <AdminLayout requiredPermissions={['view_products']}>
       <div className="space-y-6">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <CardTitle className="text-2xl sm:text-3xl font-display">Products</CardTitle>
-                <CardDescription>Manage your product catalog</CardDescription>
-              </div>
-              <Button onClick={openCreate} className="gradient-button border-0 w-full sm:w-auto">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Product
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-display font-bold">Products</h1>
+            <p className="text-sm text-muted-foreground">Manage your product catalog</p>
+          </div>
+          <Button onClick={openCreate} className="gradient-button border-0 w-full sm:w-auto">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Product
+          </Button>
+        </div>
+
+        <div className="space-y-4">
             {/* Search */}
             <div className="relative max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
