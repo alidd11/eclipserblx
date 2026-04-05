@@ -26,10 +26,9 @@ export function GlobalCategoryBar() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const activeCategory = searchParams.get('category');
-  const isShopPage = location.pathname === '/products';
-
-  // Hide on products page — it has its own CategoryBar
-  if (isShopPage) return null;
+  // Only show on homepage and categories page — other pages use breadcrumbs
+  const showOnPaths = ['/', '/categories'];
+  if (!showOnPaths.includes(location.pathname)) return null;
 
   const { data: categories } = useQuery({
     queryKey: ['global-categories-bar'],
