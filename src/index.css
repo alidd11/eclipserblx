@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Smooth scroll (desktop only, skip on reduced motion) ── */
+@media (min-width: 768px) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 /* Orientation lock is now handled by React component OrientationLockOverlay */
 
 /* Fonts loaded via <link> in index.html for faster FCP */

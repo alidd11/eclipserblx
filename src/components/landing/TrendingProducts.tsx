@@ -73,8 +73,8 @@ export function TrendingProducts() {
         </div>
 
         {/* Mobile: horizontal scroll, 2 rows */}
-        <div className="sm:hidden overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
-          <div className="grid grid-rows-2 grid-flow-col auto-cols-[45%] gap-2">
+        <div className="sm:hidden overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4 snap-x snap-mandatory">
+          <div className="grid grid-rows-2 grid-flow-col auto-cols-[45%] gap-2 snap-start">
             {products.map((product) => {
               const store = product.stores as any;
               const category = product.categories as any;
