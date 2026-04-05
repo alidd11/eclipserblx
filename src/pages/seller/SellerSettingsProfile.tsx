@@ -198,17 +198,12 @@ export default function SellerSettingsProfile() {
 
         <div className="space-y-6">
           {/* Basic Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Store className="h-5 w-5" />
-                Basic Information
-              </CardTitle>
-              <CardDescription>
-                Your store's public name and description
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Basic Information</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Your store's public name and description</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Store Name</Label>
                 <Input
