@@ -351,14 +351,11 @@ export default function StaffDirectory() {
           </TabsContent>
 
           <TabsContent value="logs" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Staff ID Assignment History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm">Staff ID Assignment History</h3>
+              </div>
+              <div className="p-4">
                 {logsLoading ? (
                   <div className="space-y-3">
                     {[1, 2, 3].map(i => (
@@ -397,8 +394,8 @@ export default function StaffDirectory() {
                     ))}
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
