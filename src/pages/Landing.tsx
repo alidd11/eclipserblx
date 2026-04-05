@@ -91,15 +91,6 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* Top Creators */}
-      <LazySection minHeight="150px" rootMargin="200px">
-        <SectionErrorBoundary section="top-creators" compact>
-          <Suspense fallback={null}>
-            <TopSellers />
-          </Suspense>
-        </SectionErrorBoundary>
-      </LazySection>
-
       {/* Recently Viewed */}
       <LazySection minHeight="150px" rootMargin="200px">
         <SectionErrorBoundary section="recently-viewed" compact>
