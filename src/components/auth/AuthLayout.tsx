@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +10,7 @@ interface AuthLayoutProps {
   footer?: React.ReactNode;
 }
 
-export function AuthLayout({ title, description, children, footer }: AuthLayoutProps) {
+export const AuthLayout = forwardRef<HTMLDivElement, AuthLayoutProps>(function AuthLayout({ title, description, children, footer }, ref) {
   const { t } = useTranslation();
 
   return (
