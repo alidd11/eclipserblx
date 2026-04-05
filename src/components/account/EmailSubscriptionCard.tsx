@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Mail, Bell, Tag, Newspaper, Loader2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -32,7 +31,6 @@ export function EmailSubscriptionCard() {
     enabled: !!user?.id,
   });
 
-  // Sync local state with fetched data
   useEffect(() => {
     if (subscription) {
       setUpdates(subscription.subscribed_to_updates);
@@ -50,7 +48,6 @@ export function EmailSubscriptionCard() {
       if (!user?.id || !user?.email) throw new Error('Not authenticated');
 
       if (subscription) {
-        // Update existing subscription
         const { error } = await supabase
           .from('email_subscriptions')
           .update({
@@ -60,7 +57,6 @@ export function EmailSubscriptionCard() {
           .eq('user_id', user.id);
         if (error) throw error;
       } else {
-        // Create new subscription
         const { error } = await supabase
           .from('email_subscriptions')
           .insert({
@@ -108,26 +104,26 @@ export function EmailSubscriptionCard() {
 
   if (isLoading) {
     return (
-      <Card className="border-border bg-card">
-        <CardContent className="py-8 flex items-center justify-center">
+      <div className="border border-border rounded-xl overflow-hidden">
+        <div className="py-8 flex items-center justify-center">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="border-border bg-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Mail className="h-5 w-5" />
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="px-6 py-4 bg-muted/30 border-b border-border">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Mail className="h-4 w-4" />
           Email Subscriptions
-        </CardTitle>
-        <CardDescription>
+        </h3>
+        <p className="text-xs text-muted-foreground mt-1">
           Manage what emails you receive from us
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </p>
+      </div>
+      <div className="p-6 space-y-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50 hover:border-primary/20 transition-colors">
             <div className="flex items-center gap-3">
@@ -179,7 +175,6 @@ export function EmailSubscriptionCard() {
           <Button
             onClick={handleSave}
             disabled={!hasChanges || updateMutation.isPending}
-            className="gradient-button border-0"
           >
             {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Save Preferences
@@ -192,7 +187,7 @@ export function EmailSubscriptionCard() {
             Unsubscribe from All
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
