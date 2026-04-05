@@ -173,7 +173,7 @@ export default function SearchResults() {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [debouncedQuery, sortBy, categorySlug, isLoadingMore, useAI, debouncedMinPrice, debouncedMaxPrice, freeOnly]);
+  }, [debouncedQuery, sortBy, categorySlug, isLoadingMore, debouncedMinPrice, debouncedMaxPrice, freeOnly]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: loadMore,
