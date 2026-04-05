@@ -34,11 +34,16 @@ export function MobileTabBar() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-[60] md:hidden border-t border-border"
+      className="fixed bottom-0 left-0 right-0 z-[60] overflow-visible border-t border-border md:hidden"
       style={{ paddingBottom: 'var(--bottom-safe-area, 0px)', backgroundColor: 'hsl(var(--background))' }}
       role="tablist"
       aria-label="Main navigation"
     >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-full"
+        style={{ height: 'env(safe-area-inset-bottom, 0px)', backgroundColor: 'hsl(var(--background))' }}
+      />
       <div className="flex items-center justify-around h-14">
         {TAB_ITEMS.map(({ icon: Icon, label, href, showBadge }) => {
           const isActive = href === '/'

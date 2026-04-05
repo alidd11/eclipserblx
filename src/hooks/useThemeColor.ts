@@ -37,28 +37,41 @@ function getResolvedThemeColor(html: HTMLElement): string {
   const colorTheme = staffTheme || 'default';
   const themeColors = THEME_COLORS[colorTheme] || THEME_COLORS.default;
   const fallbackColor = dark ? themeColors.dark : themeColors.light;
-  const computedBackground = getComputedStyle(html).backgroundColor;
+  const htmlBackground = getComputedStyle(html).backgroundColor;
+  const bodyBackground = getComputedStyle(document.body).backgroundColor;
+  const computedBackground = [htmlBackground, bodyBackground].find(
+    (color) => color && color !== 'rgba(0, 0, 0, 0)' && color !== 'transparent'
+  );
 
   return computedBackground && computedBackground !== 'rgba(0, 0, 0, 0)'
     ? computedBackground
     : fallbackColor;
 }
 
+function upsertMetaTag(name: string, content: string) {
+  let meta = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
+
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.setAttribute('name', name);
+    document.head.appendChild(meta);
+  }
+
+  meta.setAttribute('content', content);
+}
+
 function syncBrowserTheme(html: HTMLElement) {
   const themeColor = getResolvedThemeColor(html);
+  const colorScheme = isDarkMode(html) ? 'dark' : 'light';
 
-  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-  if (metaThemeColor) {
-    metaThemeColor.setAttribute('content', themeColor);
-  }
-
-  const metaTileColor = document.querySelector('meta[name="msapplication-TileColor"]');
-  if (metaTileColor) {
-    metaTileColor.setAttribute('content', themeColor);
-  }
+  upsertMetaTag('theme-color', themeColor);
+  upsertMetaTag('msapplication-TileColor', themeColor);
 
   html.style.backgroundColor = themeColor;
-  document.body.style.backgroundColor = themeColor;
+  html.style.colorScheme = colorScheme;
+  document.body.style.setProperty('background-color', themeColor);
+  document.body.style.colorScheme = colorScheme;
+  document.getElementById('root')?.style.setProperty('background-color', themeColor);
 }
 
 export function useThemeColor() {
