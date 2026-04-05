@@ -61,11 +61,11 @@ export default function GlobalGuardServers() {
         </div>
       )}
       
-      <Card className="bg-card border-border">
-        <CardHeader>
+      <div className="border border-border rounded-xl overflow-hidden">
+        <div className="px-6 py-4 bg-muted/30 border-b border-border">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl font-medium">Connected Servers</CardTitle>
+              <h3 className="text-lg font-semibold">Connected Servers</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {isPremium 
                   ? 'Click a server to configure its protection settings'
@@ -77,8 +77,8 @@ export default function GlobalGuardServers() {
               {activeServers.length}{!isPremium && maxServers ? `/${maxServers}` : ''} Active
             </Badge>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
+        </div>
+        <div className="p-6 space-y-6">
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
