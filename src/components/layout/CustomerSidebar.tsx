@@ -101,23 +101,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch quick stats (orders + wishlist count)
-  const { data: quickStats } = useQuery({
-    queryKey: ['sidebar-stats', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return { orders: 0, wishlist: 0 };
-      const [ordersRes, wishlistRes] = await Promise.all([
-        supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('wishlist').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-      ]);
-      return {
-        orders: ordersRes.count || 0,
-        wishlist: wishlistRes.count || 0,
-      };
-    },
-    enabled: !!user?.id,
-    staleTime: 5 * 60 * 1000,
-  });
 
   const profileAvatar = profileData?.avatar_url || null;
   const profileUsername = profileData?.username || null;
@@ -570,28 +553,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         </div>
       </nav>
 
-      {/* Enterprise Footer */}
-      {!isCollapsed && (
-        <div className="border-t border-border/40 px-4 py-3 space-y-1 shrink-0">
-          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-            <Link to="/orders" onClick={handleNavClick} className="hover:text-foreground transition-colors">
-              {quickStats?.orders ?? 0} orders
-            </Link>
-            <span className="text-border">·</span>
-            <Link to="/wishlist" onClick={handleNavClick} className="hover:text-foreground transition-colors">
-              {quickStats?.wishlist ?? 0} wishlist
-            </Link>
-          </div>
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground/60">
-            <span>v2.4</span>
-            <span className="text-border">·</span>
-            <span className="flex items-center gap-1">
-              <span className={cn("h-1.5 w-1.5 rounded-full", statusConfig[systemStatus].bg)} />
-              {systemStatus === 'online' ? 'Online' : systemStatus}
-            </span>
-          </div>
-        </div>
-      )}
 
     </aside>
   );
