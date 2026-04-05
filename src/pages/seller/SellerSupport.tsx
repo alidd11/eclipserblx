@@ -496,37 +496,32 @@ export default function SellerSupport() {
 
                 <div className="flex-1 overflow-hidden flex flex-col gap-4">
                   {/* Original message */}
-                  <Card className="bg-muted/50">
-                    <CardContent className="pt-4">
-                      <p className="text-sm whitespace-pre-wrap">{selectedTicket.description}</p>
-                      
-                      {selectedTicket.category === 'account_link_change' && (
-                        <div className="mt-4 pt-4 border-t space-y-2">
-                          <p className="text-xs font-medium text-muted-foreground">Account Link Change Request</p>
-                          {selectedTicket.new_discord_username && (
-                            <p className="text-sm">New Discord: <span className="font-medium">{selectedTicket.new_discord_username}</span></p>
-                          )}
-                          {selectedTicket.new_roblox_username && (
-                            <p className="text-sm">New Roblox: <span className="font-medium">{selectedTicket.new_roblox_username}</span></p>
-                          )}
-                          {selectedTicket.change_reason && (
-                            <p className="text-sm">Reason: {selectedTicket.change_reason}</p>
-                          )}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
+                  <div className="border-l-2 border-border pl-3">
+                    <p className="text-sm whitespace-pre-wrap">{selectedTicket.description}</p>
+                    
+                    {selectedTicket.category === 'account_link_change' && (
+                      <div className="mt-3 pt-3 border-t border-border/50 space-y-1.5">
+                        <p className="text-xs font-medium text-muted-foreground">Account Link Change Request</p>
+                        {selectedTicket.new_discord_username && (
+                          <p className="text-sm">New Discord: <span className="font-medium">{selectedTicket.new_discord_username}</span></p>
+                        )}
+                        {selectedTicket.new_roblox_username && (
+                          <p className="text-sm">New Roblox: <span className="font-medium">{selectedTicket.new_roblox_username}</span></p>
+                        )}
+                        {selectedTicket.change_reason && (
+                          <p className="text-sm">Reason: {selectedTicket.change_reason}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
                   {/* Resolution notes */}
                   {selectedTicket.resolution_notes && (
-                    <Card className="bg-green-500/10 border-green-500/30">
-                      <CardContent className="pt-4">
-                        <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-2">Resolution</p>
-                        <p className="text-sm">{selectedTicket.resolution_notes}</p>
-                      </CardContent>
-                    </Card>
+                    <div className="border-l-2 border-green-500/50 pl-3">
+                      <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-1">Resolution</p>
+                      <p className="text-sm">{selectedTicket.resolution_notes}</p>
+                    </div>
                   )}
-
                   {/* Messages */}
                   <ScrollArea className="flex-1 min-h-[200px] max-h-[300px]">
                     <div className="space-y-3 pr-4">
