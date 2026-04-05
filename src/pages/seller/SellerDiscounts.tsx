@@ -297,8 +297,8 @@ export default function SellerDiscounts() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Discount Codes</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-display font-bold">Discount Codes</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               Create and manage discount codes for your products
             </p>
           </div>
@@ -309,18 +309,16 @@ export default function SellerDiscounts() {
         </div>
 
         {/* Info Card */}
-        <Card className="mb-6 bg-blue-500/5 border-blue-500/20">
-          <CardContent className="flex items-start gap-3 py-4">
-            <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
-            <div className="text-sm">
-              <p className="font-medium text-blue-500">Discount Limits</p>
-              <p className="text-muted-foreground">
-                To maintain platform health, seller discount codes are limited to a maximum of 50% off. 
-                Customers can apply your codes at checkout for products from your store.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="mb-6 rounded-xl border border-blue-500/20 bg-blue-500/5 flex items-start gap-3 p-4">
+          <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <p className="font-medium text-blue-500">Discount Limits</p>
+            <p className="text-muted-foreground">
+              To maintain platform health, seller discount codes are limited to a maximum of 50% off. 
+              Customers can apply your codes at checkout for products from your store.
+            </p>
+          </div>
+        </div>
 
         {/* Discount Codes List */}
         <div className="space-y-4">
