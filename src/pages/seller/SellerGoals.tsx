@@ -205,12 +205,10 @@ export default function SellerGoals() {
             {[1, 2].map(i => <Skeleton key={i} className="h-32 rounded-lg" />)}
           </div>
         ) : goals?.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Target className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No active goals. Set your first sales target!</p>
-            </CardContent>
-          </Card>
+          <div className="border border-border rounded-xl py-12 text-center">
+            <Target className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground">No active goals. Set your first sales target!</p>
+          </div>
         ) : (
           <div className="space-y-4">
             {goals?.map((goal: any) => {
