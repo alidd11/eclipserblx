@@ -222,15 +222,15 @@ export default function SellerReviews() {
         </div>
 
         {/* Reviews List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Customer Reviews</CardTitle>
-            <CardDescription>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm">Customer Reviews</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               {totalCount} review{totalCount !== 1 ? 's' : ''}
               {filterRating !== 'all' && ` with ${filterRating} stars`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </p>
+          </div>
+          <div className="p-4">
             {reviewsLoading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map(i => <Skeleton key={i} className="h-24" />)}
