@@ -235,16 +235,6 @@ export default function SearchResults() {
               onReset={handleResetFilters}
               activeFilterCount={activeFilterCount}
             />
-            <Button
-              variant={useAI ? "default" : "outline"}
-              size="sm"
-              onClick={handleAISearch}
-              disabled={query.length < 3 || isSearching}
-              className="gap-1.5 shrink-0"
-            >
-              {isSearching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-              AI
-            </Button>
           </div>
 
           {/* "Did you mean?" */}
