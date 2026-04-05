@@ -289,12 +289,9 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
     let hasMention = false;
     let hasUnread = false;
     
-    if (item.href === '/admin/staff-messages') {
-      hasMention = chatNotifications.staffMessagesMention;
-      hasUnread = chatNotifications.staffMessagesUnread && !hasMention;
-    } else if (item.href === '/admin/admin-chat') {
-      hasMention = chatNotifications.adminChatMention;
-      hasUnread = chatNotifications.adminChatUnread && !hasMention;
+    if (item.href === '/admin/messages') {
+      hasMention = chatNotifications.staffMessagesMention || chatNotifications.adminChatMention;
+      hasUnread = (chatNotifications.staffMessagesUnread || chatNotifications.adminChatUnread) && !hasMention;
     }
 
     const NotificationDot = () => {

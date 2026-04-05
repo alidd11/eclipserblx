@@ -430,10 +430,11 @@ export function AppRoutes() {
         <Route path="/admin/income-sources" element={<Navigate to="/admin/revenue?tab=sources" replace />} />
         <Route path="/admin/staff-activity" element={<AdminStaffActivity />} />
         <Route path="/admin/duty-logs" element={<AdminDutyLogs />} />
-        <Route path="/admin/staff-messages" element={<AdminStaffMessages />} />
-        <Route path="/admin/admin-chat" element={<AdminChat />} />
-        {/* Legacy compatibility redirect */}
-        <Route path="/admin/chat" element={<Navigate to="/admin/admin-chat" replace />} />
+        <Route path="/admin/messages" element={<AdminInternalMessages />} />
+        {/* Legacy redirects */}
+        <Route path="/admin/staff-messages" element={<Navigate to="/admin/messages?channel=staff" replace />} />
+        <Route path="/admin/admin-chat" element={<Navigate to="/admin/messages?channel=admin" replace />} />
+        <Route path="/admin/chat" element={<Navigate to="/admin/messages?channel=admin" replace />} />
         <Route path="/admin/products" element={<AdminProducts />} />
         <Route path="/admin/categories" element={<AdminCategories />} />
         <Route path="/admin/promotions" element={<AdminPromotions />} />

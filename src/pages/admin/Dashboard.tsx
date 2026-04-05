@@ -179,7 +179,7 @@ export default function AdminDashboard() {
     { title: 'Disputes', href: '/admin/disputes', icon: Gavel, description: 'Handle disputes', permissions: ['view_orders', 'manage_orders'] },
     { title: 'Tickets', href: '/admin/customer-tickets', icon: Ticket, description: 'Customer tickets', permissions: ['view_live_chat', 'manage_live_chat'] },
     { title: 'Stores', href: '/admin/store-applications', icon: Store, description: 'Store applications', permissions: ['view_applications', 'manage_applications'] },
-    { title: 'Staff Chat', href: '/admin/admin-chat', icon: Headphones, description: 'Internal chat', permissions: ['view_admin_chat'] },
+    { title: 'Messages', href: '/admin/messages', icon: Headphones, description: 'Internal messaging', permissions: [] },
     { title: 'Roles', href: '/admin/role-permissions', icon: UserCheck, description: 'Manage roles', permissions: ['manage_roles'] },
     { title: 'Settings', href: '/admin/settings', icon: Settings, description: 'System settings', permissions: ['manage_settings'] },
     { title: 'Moderation', href: '/admin/moderation', icon: Shield, description: 'Content review', permissions: ['view_products', 'manage_products'] },
