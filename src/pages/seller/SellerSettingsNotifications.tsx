@@ -290,17 +290,12 @@ export default function SellerSettingsNotifications() {
           </div>
 
           {/* Review Notifications */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-amber-500" />
-                Review Notifications
-              </CardTitle>
-              <CardDescription>
-                Receive notifications when customers leave reviews on your products
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Review Notifications</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Receive notifications when customers leave reviews</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="review_discord_webhook_url" className="flex items-center gap-2">
                   <MessageCircle className="h-4 w-4" />
