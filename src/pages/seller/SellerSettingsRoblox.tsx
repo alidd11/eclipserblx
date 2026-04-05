@@ -324,17 +324,12 @@ export default function SellerSettingsRoblox() {
           </div>
 
           {/* Gamepass Rewards */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Ticket className="h-5 w-5 text-purple-500" />
-                Gamepass Owner Discounts
-              </CardTitle>
-              <CardDescription>
-                Reward customers who own a specific gamepass from your game
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Gamepass Owner Discounts</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Reward customers who own a specific gamepass from your game</p>
+            </div>
+            <div className="p-4 space-y-4">
               <div className="flex items-start gap-3 p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">
                 <Info className="h-5 w-5 text-purple-500 mt-0.5" />
                 <div>
