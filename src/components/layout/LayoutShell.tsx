@@ -95,7 +95,7 @@ function LayoutShellInner({
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetContent
             side="left"
-            className="p-0 w-[280px] border-r-0 bg-card overflow-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
+            className="p-0 w-[280px] border-r-0 bg-sidebar overflow-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
             style={{ height: '100dvh', maxHeight: '100dvh' }}
             data-gesture-exempt="true"
             hideCloseButton
