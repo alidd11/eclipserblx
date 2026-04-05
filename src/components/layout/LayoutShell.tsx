@@ -112,15 +112,18 @@ function LayoutShellInner({
           {customHeader ? (
             customHeader(() => setMobileOpen(true))
           ) : (
-            <>
+            <div
+              className="sticky top-0 z-50 transition-transform duration-300 ease-out"
+              style={{ transform: headerHidden ? 'translateY(-100%)' : 'translateY(0)' }}
+            >
               <Header
                 showDesktopNav={false}
                 onMenuClick={() => setMobileOpen(true)}
-                className=""
+                className="backdrop-blur-md bg-background/95"
                 {...headerProps}
               />
               <GlobalCategoryBar />
-            </>
+            </div>
           )}
           {showBreadcrumb && (
             <Suspense fallback={null}><UniversalBreadcrumb /></Suspense>
