@@ -73,6 +73,7 @@ interface ProductFormData {
   ip_ownership_confirmed: boolean;
   is_pay_what_you_want: boolean;
   min_price: string;
+  max_downloads_per_purchase: string;
 }
 
 const INITIAL_FORM_DATA: ProductFormData = {
