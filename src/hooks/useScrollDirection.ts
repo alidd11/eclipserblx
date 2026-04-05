@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 
 /**
  * Tracks scroll direction and returns 'up' | 'down'.
- * Only activates below the md breakpoint (768px) to avoid desktop interference.
  * Uses a threshold to prevent jittery toggling.
+ * @param threshold - minimum scroll delta to trigger a direction change
+ * @param desktopOnly - if true, only activates on desktop (≥768px). Default false (all viewports).
  */
-export function useScrollDirection(threshold = 10): 'up' | 'down' {
+export function useScrollDirection(threshold = 10, desktopOnly = false): 'up' | 'down' {
   const [direction, setDirection] = useState<'up' | 'down'>('up');
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
