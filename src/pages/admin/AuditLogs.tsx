@@ -545,8 +545,7 @@ export default function AdminAuditLogs() {
                 </>
               )}
             </Tabs>
-          </CardContent>
-        </Card>
+        </div>
       </div>
     </AdminLayout>
   );

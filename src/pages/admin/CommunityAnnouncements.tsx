@@ -203,8 +203,8 @@ export default function CommunityAnnouncements() {
             <Send className="h-4 w-4 mr-2" />
             {isSending ? 'Sending...' : 'Send Now'}
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
       </div>
     </AdminLayout>
   );
