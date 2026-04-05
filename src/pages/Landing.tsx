@@ -2,18 +2,18 @@ import { lazy, Suspense } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LandingHero } from '@/components/landing/LandingHero';
 
-
-// Eager-load above-the-fold sections (no lazy)
+// Eager-load above-the-fold
 import { TrendingProducts } from '@/components/landing/TrendingProducts';
 
 const ActiveOffersCard = lazy(() => import('@/components/home/ActiveOffersCard').then(m => ({ default: m.ActiveOffersCard })));
 const ForYouSection = lazy(() => import('@/components/home/ForYouSection').then(m => ({ default: m.ForYouSection })));
 const AbandonedCartBanner = lazy(() => import('@/components/marketplace/AbandonedCartBanner').then(m => ({ default: m.AbandonedCartBanner })));
 
+const CategorySpotlight = lazy(() => import('@/components/landing/CategorySpotlight').then(m => ({ default: m.CategorySpotlight })));
+const TopStoresSection = lazy(() => import('@/components/landing/TopStoresSection').then(m => ({ default: m.TopStoresSection })));
 const RecentReleases = lazy(() => import('@/components/landing/RecentReleases').then(m => ({ default: m.RecentReleases })));
 const OnSaleProducts = lazy(() => import('@/components/landing/OnSaleProducts').then(m => ({ default: m.OnSaleProducts })));
 const FreeAssetsTeaser = lazy(() => import('@/components/landing/FreeAssetsTeaser').then(m => ({ default: m.FreeAssetsTeaser })));
-
 
 const FinalCTA = lazy(() => import('@/components/landing/FinalCTA').then(m => ({ default: m.FinalCTA })));
 const RecentlyViewedSection = lazy(() => import('@/components/landing/RecentlyViewedSection').then(m => ({ default: m.RecentlyViewedSection })));
@@ -32,16 +32,24 @@ export default function Landing() {
       <WebsiteSearchSchema />
       <SiteNavigationSchema />
 
-      {/* Hero — compact */}
+      {/* Hero — stats-driven, clean */}
       <SectionErrorBoundary section="hero" compact>
         <LandingHero />
       </SectionErrorBoundary>
-
 
       {/* Trending Products */}
       <SectionErrorBoundary section="trending" compact>
         <TrendingProducts />
       </SectionErrorBoundary>
+
+      {/* Category Spotlight */}
+      <LazySection minHeight="120px" rootMargin="300px">
+        <SectionErrorBoundary section="categories" compact>
+          <Suspense fallback={null}>
+            <CategorySpotlight />
+          </Suspense>
+        </SectionErrorBoundary>
+      </LazySection>
 
       {/* Promotions */}
       <SectionErrorBoundary section="promotions" compact>
@@ -59,6 +67,15 @@ export default function Landing() {
         <SectionErrorBoundary section="recent-releases" compact>
           <Suspense fallback={null}>
             <RecentReleases />
+          </Suspense>
+        </SectionErrorBoundary>
+      </LazySection>
+
+      {/* Top Stores */}
+      <LazySection minHeight="120px" rootMargin="200px">
+        <SectionErrorBoundary section="top-stores" compact>
+          <Suspense fallback={null}>
+            <TopStoresSection />
           </Suspense>
         </SectionErrorBoundary>
       </LazySection>
