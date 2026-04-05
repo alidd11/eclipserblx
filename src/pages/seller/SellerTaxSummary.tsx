@@ -168,8 +168,8 @@ export default function SellerTaxSummary() {
         </div>
 
         {/* Disclaimer */}
-        <Card className="border-amber-500/30 bg-amber-500/5">
-          <CardContent className="pt-4 pb-4">
+        <div className="border border-border rounded-xl overflow-hidden border-amber-500/30 bg-amber-500/5">
+          <div className="p-4 pt-4 pb-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
@@ -182,8 +182,8 @@ export default function SellerTaxSummary() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Printable Content */}
         <div ref={printRef} className="space-y-6 print:p-8">
@@ -199,81 +199,81 @@ export default function SellerTaxSummary() {
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : !summary || summary.saleCount === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="p-4 py-12 text-center">
                 <Receipt className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
                 <p className="text-muted-foreground">No sales recorded for tax year {selectedYear}</p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ) : (
             <>
               {/* Summary Cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card>
-                  <CardContent className="pt-4 pb-4">
+                <div className="border border-border rounded-xl overflow-hidden">
+                  <div className="p-4 pt-4 pb-4">
                     <p className="text-xs text-muted-foreground">Gross Sales</p>
                     <p className="text-xl font-bold">{fmt(summary.totalGross)}</p>
                     <p className="text-xs text-muted-foreground mt-1">{summary.saleCount} sales</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-4 pb-4">
+                  </div>
+                </div>
+                <div className="border border-border rounded-xl overflow-hidden">
+                  <div className="p-4 pt-4 pb-4">
                     <p className="text-xs text-muted-foreground">Platform Commission</p>
                     <p className="text-xl font-bold text-destructive">-{fmt(summary.totalCommission)}</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-4 pb-4">
+                  </div>
+                </div>
+                <div className="border border-border rounded-xl overflow-hidden">
+                  <div className="p-4 pt-4 pb-4">
                     <p className="text-xs text-muted-foreground">Payment Processing Fees</p>
                     <p className="text-xl font-bold text-destructive">-{fmt(summary.totalStripeFees)}</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-primary/30">
-                  <CardContent className="pt-4 pb-4">
+                  </div>
+                </div>
+                <div className="border border-border rounded-xl overflow-hidden border-primary/30">
+                  <div className="p-4 pt-4 pb-4">
                     <p className="text-xs text-muted-foreground">Net Earnings (Taxable)</p>
                     <p className="text-xl font-bold text-primary">{fmt(summary.totalNet)}</p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
 
               {/* Additional Info */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <Card>
-                  <CardContent className="pt-4 pb-4">
+                <div className="border border-border rounded-xl overflow-hidden">
+                  <div className="p-4 pt-4 pb-4">
                     <p className="text-xs text-muted-foreground">Refunded Sales</p>
                     <p className="text-lg font-semibold">{summary.refundCount}</p>
                     <p className="text-xs text-muted-foreground">{fmt(summary.totalRefunded)} refunded</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-4 pb-4">
+                  </div>
+                </div>
+                <div className="border border-border rounded-xl overflow-hidden">
+                  <div className="p-4 pt-4 pb-4">
                     <p className="text-xs text-muted-foreground">Paid Out</p>
                     <p className="text-lg font-semibold">{fmt(totalPaidOut)}</p>
                     <p className="text-xs text-muted-foreground">{payouts?.length || 0} payouts</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-4 pb-4">
+                  </div>
+                </div>
+                <div className="border border-border rounded-xl overflow-hidden">
+                  <div className="p-4 pt-4 pb-4">
                     <p className="text-xs text-muted-foreground">Effective Commission Rate</p>
                     <p className="text-lg font-semibold">
                       {summary.totalGross > 0 ? ((summary.totalCommission / summary.totalGross) * 100).toFixed(1) : '0'}%
                     </p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </div>
 
               {/* Monthly Breakdown */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
+              <div className="border border-border rounded-xl overflow-hidden">
+                <div className="px-4 py-3 border-b border-border bg-muted/30">
+                  <h3 className="font-semibold text-sm flex items-center gap-2 text-lg">
                     <TrendingUp className="h-5 w-5" />
                     Monthly Breakdown
-                  </CardTitle>
-                  <CardDescription>
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     Tax year {selectedYear} ({selectedTaxYear.startDate} to {selectedTaxYear.endDate})
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+                  </p>
+                </div>
+                <div className="p-4">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -309,8 +309,8 @@ export default function SellerTaxSummary() {
                       </TableRow>
                     </TableBody>
                   </Table>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Footer for Print */}
               <div className="hidden print:block mt-8 pt-4 border-t text-xs text-gray-500">

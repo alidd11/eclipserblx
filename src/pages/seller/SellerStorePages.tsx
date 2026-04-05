@@ -251,10 +251,10 @@ export default function SellerStorePages() {
         </div>
 
         {isLoading ? (
-          <Card><CardContent className="p-8 text-center text-muted-foreground">Loading...</CardContent></Card>
+          <div className="border border-border rounded-xl overflow-hidden"><div className="p-4 p-8 text-center text-muted-foreground">Loading...</div></div>
         ) : pages.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="p-4 p-12 text-center">
               <FileText className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
               <h3 className="text-lg font-semibold mb-2">No custom pages yet</h3>
               <p className="text-muted-foreground mb-4">
@@ -264,13 +264,13 @@ export default function SellerStorePages() {
                 <Plus className="h-4 w-4 mr-2" />
                 Create Your First Page
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ) : (
           <div className="space-y-3">
             {pages.map((page) => (
               <Card key={page.id}>
-                <CardContent className="p-4 flex items-center gap-4">
+                <div className="p-4 p-4 flex items-center gap-4">
                   <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -310,8 +310,8 @@ export default function SellerStorePages() {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         )}

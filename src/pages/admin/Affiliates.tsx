@@ -296,12 +296,12 @@ export default function AdminAffiliates() {
 
           {/* Payout Requests Tab */}
           <TabsContent value="payouts" className="space-y-4">
-            <Card className="bg-card border-border">
-              <CardHeader>
+            <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
                 <div className="flex flex-col sm:flex-row gap-4 justify-between">
                   <div>
-                    <CardTitle>Payout Requests</CardTitle>
-                    <CardDescription>Review and process affiliate payout requests</CardDescription>
+                    <h3 className="font-semibold text-sm">Payout Requests</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">Review and process affiliate payout requests</p>
                   </div>
                   <Select value={payoutStatusFilter} onValueChange={setPayoutStatusFilter}>
                     <SelectTrigger className="w-auto min-w-[140px]">
@@ -315,8 +315,8 @@ export default function AdminAffiliates() {
                     </SelectContent>
                   </Select>
                 </div>
-              </CardHeader>
-              <CardContent>
+              </div>
+              <div className="p-4">
                 {payoutsLoading ? (
                   <div className="py-8 text-center text-muted-foreground">Loading...</div>
                 ) : payouts && payouts.length > 0 ? (
@@ -428,18 +428,18 @@ export default function AdminAffiliates() {
                     <p>No payout requests found</p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Commissions Tab */}
           <TabsContent value="commissions" className="space-y-4">
-            <Card className="bg-card border-border">
-              <CardHeader>
+            <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
                 <div className="flex flex-col sm:flex-row gap-4 justify-between">
                   <div>
-                    <CardTitle>Commission History</CardTitle>
-                    <CardDescription>View all affiliate commissions earned</CardDescription>
+                    <h3 className="font-semibold text-sm">Commission History</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">View all affiliate commissions earned</p>
                   </div>
                   <div className="relative w-full sm:w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -451,8 +451,8 @@ export default function AdminAffiliates() {
                     />
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
+              </div>
+              <div className="p-4">
                 {commissionsLoading ? (
                   <div className="py-8 text-center text-muted-foreground">Loading...</div>
                 ) : commissions && commissions.length > 0 ? (
@@ -508,20 +508,20 @@ export default function AdminAffiliates() {
                     <p>No commissions recorded yet</p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
 
         {/* Program Settings Info */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
               <Gift className="h-5 w-5" />
               Program Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+            </h3>
+          </div>
+          <div className="p-4">
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="p-4 rounded-lg bg-muted/50">
                 <p className="text-sm text-muted-foreground">Commission Rate</p>
@@ -539,8 +539,8 @@ export default function AdminAffiliates() {
                 <p className="text-xs text-muted-foreground mt-1">On all future purchases</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

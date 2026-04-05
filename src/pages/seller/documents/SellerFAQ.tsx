@@ -172,8 +172,8 @@ export default function SellerFAQ() {
               <section.icon className="h-5 w-5 text-primary" />
               {section.title}
             </h2>
-            <Card className="border-border/50">
-              <CardContent className="pt-2 pb-2">
+            <div className="border border-border rounded-xl overflow-hidden border-border/50">
+              <div className="p-4 pt-2 pb-2">
                 <Accordion type="multiple" className="w-full">
                   {section.questions.map((faq, j) => (
                     <AccordionItem key={j} value={`${i}-${j}`} className="border-border/50">
@@ -186,22 +186,22 @@ export default function SellerFAQ() {
                     </AccordionItem>
                   ))}
                 </Accordion>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </section>
         ))}
 
         {/* Still need help */}
-        <Card className="border-primary/30 bg-primary/5">
-          <CardContent className="pt-6 text-center">
+        <div className="border border-border rounded-xl overflow-hidden border-primary/30 bg-primary/5">
+          <div className="p-4 pt-6 text-center">
             <HelpCircle className="h-8 w-8 text-primary mx-auto mb-3" />
             <h3 className="font-bold text-lg mb-2">Still Have Questions?</h3>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
               Can't find what you're looking for? Reach out to our support team through the seller dashboard 
               or join our Discord community for quick help from staff and fellow sellers.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </SellerDocumentPage>
   );

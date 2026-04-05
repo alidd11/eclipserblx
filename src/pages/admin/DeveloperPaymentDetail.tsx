@@ -138,17 +138,17 @@ export default function DeveloperPaymentDetail() {
            </div>
          </div>
  
-         <Card>
-           <CardHeader className="pb-4">
+         <div className="border border-border rounded-xl overflow-hidden">
+           <div className="px-4 py-3 border-b border-border bg-muted/30 pb-4">
              <div className="flex items-center justify-between flex-wrap gap-3">
-               <CardTitle className="text-xl">£{payment.amount.toFixed(2)}</CardTitle>
+               <h3 className="font-semibold text-sm text-xl">£{payment.amount.toFixed(2)}</h3>
                <Badge className={config?.color}>
                  <StatusIcon className="h-3 w-3 mr-1" />
                  {config?.label}
                </Badge>
              </div>
-           </CardHeader>
-           <CardContent className="space-y-6">
+           </div>
+           <div className="p-4 space-y-6">
              <div className="grid gap-4 sm:grid-cols-2">
                <div className="flex items-start gap-3">
                  <User className="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -230,8 +230,8 @@ export default function DeveloperPaymentDetail() {
                   </Button>
                 </div>
               )}
-           </CardContent>
-         </Card>
+           </div>
+         </div>
  
          <Dialog open={isMarkPaidOpen} onOpenChange={setIsMarkPaidOpen}>
            <DialogContent>

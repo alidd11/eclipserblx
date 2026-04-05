@@ -320,38 +320,38 @@ export default function AdminHelp() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
+        <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10">
                 <BookOpen className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-2xl sm:text-3xl font-display">Dashboard Guide</CardTitle>
-                <CardDescription>Learn how everything works in the admin dashboard</CardDescription>
+                <h3 className="font-semibold text-sm text-2xl sm:text-3xl font-display">Dashboard Guide</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Learn how everything works in the admin dashboard</p>
               </div>
             </div>
-          </CardHeader>
-        </Card>
+          </div>
+        </div>
 
         {/* Quick Tips - Collapsible */}
         <Collapsible open={quickTipsOpen} onOpenChange={setQuickTipsOpen}>
-          <Card className="bg-card border-border">
+          <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
             <CollapsibleTrigger asChild>
-              <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors rounded-t-lg">
+              <div className="px-4 py-3 border-b border-border bg-muted/30 cursor-pointer hover:bg-muted/30 transition-colors rounded-t-lg">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-lg">
+                  <h3 className="font-semibold text-sm flex items-center gap-2 text-lg">
                     <HelpCircle className="h-5 w-5" />
                     Quick Tips & Getting Started
-                  </CardTitle>
+                  </h3>
                   <Button variant="ghost" size="icon" className="h-8 w-8">
                     {quickTipsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </Button>
                 </div>
-              </CardHeader>
+              </div>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <CardContent className="pt-0">
+              <div className="p-4 pt-0">
                 {/* Getting Started Checklist */}
                 {gettingStartedTips.length > 0 && (
                   <div className="mb-6">
@@ -397,23 +397,23 @@ export default function AdminHelp() {
                     </div>
                   </div>
                 )}
-              </CardContent>
+              </div>
             </CollapsibleContent>
-          </Card>
+          </div>
         </Collapsible>
 
         {/* Dashboard Sections - Filtered by role */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
+        <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm flex items-center gap-2 text-lg">
               <LayoutDashboard className="h-5 w-5" />
               Your Dashboard Sections
-            </CardTitle>
-            <CardDescription>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Features available to you based on your roles
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </p>
+          </div>
+          <div className="p-4">
             {visibleSections.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
                 No sections available for your current role.
@@ -456,8 +456,8 @@ export default function AdminHelp() {
                 ))}
               </Accordion>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

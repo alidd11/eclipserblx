@@ -665,12 +665,12 @@ export default function AdminLiveChat() {
     <AdminLayout requiredPermissions={['view_live_chat']}>
       <div className="h-full flex flex-col min-h-0 overflow-hidden p-3 lg:p-4 pb-[max(0.75rem,var(--chat-safe-bottom,env(safe-area-inset-bottom)))]">
         {/* Header Card - compact on mobile */}
-        <Card className="bg-card border-border mb-3 shrink-0">
-          <CardHeader className="pb-2 py-2.5 lg:py-4">
-            <CardTitle className="text-lg sm:text-2xl font-display">Live Chat</CardTitle>
+        <div className="border border-border rounded-xl overflow-hidden bg-card border-border mb-3 shrink-0">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2 py-2.5 lg:py-4">
+            <h3 className="font-semibold text-sm text-lg sm:text-2xl font-display">Live Chat</h3>
             <p className="text-muted-foreground text-xs sm:text-sm">Respond to customer inquiries in real-time</p>
-          </CardHeader>
-        </Card>
+          </div>
+        </div>
 
         {/* Main content area - fills remaining space */}
         <div className="flex-1 flex gap-3 lg:gap-4 min-h-0 overflow-hidden">

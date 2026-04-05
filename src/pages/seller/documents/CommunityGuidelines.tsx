@@ -104,7 +104,7 @@ export default function CommunityGuidelines() {
           <div className="grid md:grid-cols-2 gap-4">
             {coreRules.map((rule, i) => (
               <Card key={i} className="border-border/50">
-                <CardContent className="pt-6">
+                <div className="p-4 pt-6">
                   <div className="flex items-start gap-3">
                     <div className="p-2 rounded-lg bg-primary/10 shrink-0">
                       <rule.icon className="h-5 w-5 text-primary" />
@@ -114,8 +114,8 @@ export default function CommunityGuidelines() {
                       <p className="text-sm text-muted-foreground">{rule.description}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </section>
@@ -126,8 +126,8 @@ export default function CommunityGuidelines() {
             <Ban className="h-6 w-6 text-destructive" />
             Prohibited Content
           </h2>
-          <Card className="border-destructive/30 bg-destructive/5">
-            <CardContent className="pt-6">
+          <div className="border border-border rounded-xl overflow-hidden border-destructive/30 bg-destructive/5">
+            <div className="p-4 pt-6">
               <p className="text-sm text-muted-foreground mb-4">
                 The following content is strictly prohibited and will result in immediate removal:
               </p>
@@ -139,8 +139,8 @@ export default function CommunityGuidelines() {
                   </li>
                 ))}
               </ul>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </section>
 
         {/* Enforcement */}
@@ -152,15 +152,15 @@ export default function CommunityGuidelines() {
           <div className="space-y-3">
             {enforcementLevels.map((level, i) => (
               <Card key={i} className="border-border/50">
-                <CardContent className="pt-5 pb-5">
+                <div className="p-4 pt-5 pb-5">
                   <div className="flex items-start gap-3">
                     <Badge variant="outline" className={`${level.color} shrink-0 font-medium`}>
                       {level.level}
                     </Badge>
                     <p className="text-sm text-muted-foreground">{level.description}</p>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </section>
@@ -174,7 +174,7 @@ export default function CommunityGuidelines() {
           <div className="grid sm:grid-cols-2 gap-4">
             {disputeProcess.map((step) => (
               <Card key={step.step} className="border-border/50">
-                <CardContent className="pt-6">
+                <div className="p-4 pt-6">
                   <div className="flex gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold flex items-center justify-center shrink-0 text-sm">
                       {step.step}
@@ -184,15 +184,15 @@ export default function CommunityGuidelines() {
                       <p className="text-sm text-muted-foreground">{step.description}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </section>
 
         {/* Contact */}
-        <Card className="border-primary/30 bg-primary/5">
-          <CardContent className="pt-6">
+        <div className="border border-border rounded-xl overflow-hidden border-primary/30 bg-primary/5">
+          <div className="p-4 pt-6">
             <div className="flex items-start gap-4">
               <div className="p-2 rounded-lg bg-primary/10">
                 <MessageSquare className="h-5 w-5 text-primary" />
@@ -205,8 +205,8 @@ export default function CommunityGuidelines() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </SellerDocumentPage>
   );

@@ -158,12 +158,12 @@ export default function SellerCustomerInsights() {
 
             <div className="grid md:grid-cols-2 gap-6">
               {/* Top Customers */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Top Customers</CardTitle>
-                  <CardDescription>By total spend</CardDescription>
-                </CardHeader>
-                <CardContent>
+              <div className="border border-border rounded-xl overflow-hidden">
+                <div className="px-4 py-3 border-b border-border bg-muted/30">
+                  <h3 className="font-semibold text-sm text-base">Top Customers</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">By total spend</p>
+                </div>
+                <div className="p-4">
                   {data?.topCustomers?.length ? (
                     <div className="divide-y divide-border">
                       {data.topCustomers.map((customer: any, i: number) => (
@@ -187,16 +187,16 @@ export default function SellerCustomerInsights() {
                   ) : (
                     <p className="text-sm text-muted-foreground text-center py-6">No customer data yet</p>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Geographic Breakdown */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Buyer Locations</CardTitle>
-                  <CardDescription>Where your customers are from</CardDescription>
-                </CardHeader>
-                <CardContent>
+              <div className="border border-border rounded-xl overflow-hidden">
+                <div className="px-4 py-3 border-b border-border bg-muted/30">
+                  <h3 className="font-semibold text-sm text-base">Buyer Locations</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Where your customers are from</p>
+                </div>
+                <div className="p-4">
                   {data?.countries?.length ? (
                     <div className="space-y-2">
                       {data.countries.map((country: any) => {
@@ -218,8 +218,8 @@ export default function SellerCustomerInsights() {
                   ) : (
                     <p className="text-sm text-muted-foreground text-center py-6">No location data yet</p>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </>
         )}

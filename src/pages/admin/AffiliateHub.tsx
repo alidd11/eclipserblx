@@ -26,19 +26,19 @@ export default function AffiliateHub() {
   return (
     <AdminLayout requiredPermissions={['view_affiliates']}>
       <div className="space-y-6 w-full">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
+        <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <CardTitle className="text-2xl sm:text-3xl font-display flex items-center gap-2">
+                <h3 className="font-semibold text-sm text-2xl sm:text-3xl font-display flex items-center gap-2">
                   <Gift className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                   Affiliates
-                </CardTitle>
+                </h3>
                 <p className="text-muted-foreground text-sm mt-1">Manage commissions, applications, and referral tracking</p>
               </div>
             </div>
-          </CardHeader>
-        </Card>
+          </div>
+        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="hidden sm:grid w-full max-w-xl grid-cols-3">

@@ -246,7 +246,7 @@ export default function SellerBots() {
           <div className="space-y-4">
             {botProducts.map(bot => (
               <Card key={bot.id} className="overflow-hidden">
-                <CardContent className="p-5">
+                <div className="p-4 p-5">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4">
                       <div className={cn(
@@ -286,13 +286,13 @@ export default function SellerBots() {
                       Manage
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
-          <Card className="border-dashed">
-            <CardContent className="py-12 text-center">
+          <div className="border border-border rounded-xl overflow-hidden border-dashed">
+            <div className="p-4 py-12 text-center">
               <Bot className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
               <h3 className="font-semibold mb-2">No bots configured</h3>
               <p className="text-muted-foreground text-sm mb-4 max-w-md mx-auto">
@@ -308,8 +308,8 @@ export default function SellerBots() {
                   Create a product first, then come back here to configure it as a bot.
                 </p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Create Bot Dialog */}

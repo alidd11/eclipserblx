@@ -252,17 +252,17 @@ export default function SellerStoreTabs() {
         </div>
 
         {/* Categories List */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
               <LayoutGrid className="h-5 w-5" />
               Your Categories
-            </CardTitle>
-            <CardDescription>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Drag to reorder, assign products, or edit your categories
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </p>
+          </div>
+          <div className="p-4">
             {tabsLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}
@@ -328,8 +328,8 @@ export default function SellerStoreTabs() {
                 </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Create/Edit Dialog */}
         <Dialog open={isCreateOpen || !!editingTab} onOpenChange={(open) => {

@@ -263,8 +263,8 @@ export default function SellerDocuments() {
 
         {/* Action Required Banner */}
         {!agreementLoading && !hasSigned && (
-          <Card className="border-amber-500/50 bg-amber-500/5">
-            <CardContent className="pt-6">
+          <div className="border border-border rounded-xl overflow-hidden border-amber-500/50 bg-amber-500/5">
+            <div className="p-4 pt-6">
               <div className="flex items-start gap-4">
                 <div className="p-2 rounded-lg bg-amber-500/10">
                   <Scale className="h-5 w-5 text-amber-500" />
@@ -282,8 +282,8 @@ export default function SellerDocuments() {
                   </Link>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Static Documents Grid */}
@@ -295,7 +295,7 @@ export default function SellerDocuments() {
 
               return (
                 <Card key={doc.id} className="group hover:border-primary/50 transition-colors">
-                  <CardHeader className="pb-3">
+                  <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                     <div className="flex items-start justify-between gap-4">
                       <div className="p-2 rounded-lg bg-primary/10 shrink-0">
                         <doc.icon className="h-5 w-5 text-primary" />
@@ -319,12 +319,12 @@ export default function SellerDocuments() {
                         </Badge>
                       </div>
                     </div>
-                    <CardTitle className="text-lg mt-3">{doc.title}</CardTitle>
-                    <CardDescription className="line-clamp-2">
+                    <h3 className="font-semibold text-sm text-lg mt-3">{doc.title}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                       {doc.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-0">
+                    </p>
+                  </div>
+                  <div className="p-4 pt-0">
                     <div className="flex items-center justify-end">
                       <Link to={doc.href}>
                         <Button 
@@ -337,8 +337,8 @@ export default function SellerDocuments() {
                         </Button>
                       </Link>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               );
             })}
           </div>
@@ -349,12 +349,12 @@ export default function SellerDocuments() {
           <div className="grid gap-4 md:grid-cols-2">
             {[1, 2].map(i => (
               <Card key={i}>
-                <CardHeader>
+                <div className="px-4 py-3 border-b border-border bg-muted/30">
                   <Skeleton className="h-5 w-20" />
                   <Skeleton className="h-6 w-full mt-2" />
                   <Skeleton className="h-4 w-3/4 mt-2" />
-                </CardHeader>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         ) : filteredDynamicDocs.length > 0 && (
@@ -372,7 +372,7 @@ export default function SellerDocuments() {
                     className={`group hover:border-primary/50 transition-colors ${isUnread ? "border-primary/30 bg-primary/5" : ""}`}
                     onClick={() => isUnread && markReadMutation.mutate(doc.id)}
                   >
-                    <CardHeader className="pb-3">
+                    <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                       <div className="flex items-start justify-between gap-4">
                         <div className="p-2 rounded-lg bg-primary/10 shrink-0 relative">
                           <FileText className="h-5 w-5 text-primary" />
@@ -392,14 +392,14 @@ export default function SellerDocuments() {
                           </Badge>
                         </div>
                       </div>
-                      <CardTitle className="text-lg mt-3">{doc.title}</CardTitle>
+                      <h3 className="font-semibold text-sm text-lg mt-3">{doc.title}</h3>
                       {doc.description && (
-                        <CardDescription className="line-clamp-2">
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                           {doc.description}
-                        </CardDescription>
+                        </p>
                       )}
-                    </CardHeader>
-                    <CardContent className="pt-0">
+                    </div>
+                    <div className="p-4 pt-0">
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">
                           Added: {format(new Date(doc.created_at), "MMM d, yyyy")}
@@ -418,8 +418,8 @@ export default function SellerDocuments() {
                           </a>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -427,8 +427,8 @@ export default function SellerDocuments() {
         )}
 
         {/* Info Section */}
-        <Card className="bg-muted/30 border-dashed">
-          <CardContent className="pt-6">
+        <div className="border border-border rounded-xl overflow-hidden bg-muted/30 border-dashed">
+          <div className="p-4 pt-6">
             <div className="flex items-start gap-4">
               <div className="p-2 rounded-lg bg-primary/10">
                 <FileText className="h-5 w-5 text-primary" />
@@ -441,8 +441,8 @@ export default function SellerDocuments() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </SellerLayout>
   );

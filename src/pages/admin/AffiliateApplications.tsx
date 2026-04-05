@@ -64,8 +64,8 @@ const AffiliateApplications = () => {
             </div>
 
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-2 md:overflow-visible">
-              <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-                <CardContent className="p-3 md:p-4">
+              <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">
+                <div className="p-4 p-3 md:p-4">
                   <div className="flex items-center gap-2 md:gap-3">
                     <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
                       <Users className="w-4 h-4 md:w-5 md:h-5 text-primary" />
@@ -75,10 +75,10 @@ const AffiliateApplications = () => {
                       <p className="text-xs text-muted-foreground">Total Affiliates</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-              <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-                <CardContent className="p-3 md:p-4">
+                </div>
+              </div>
+              <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">
+                <div className="p-4 p-3 md:p-4">
                   <div className="flex items-center gap-2 md:gap-3">
                     <div className="p-1.5 md:p-2 rounded-lg bg-green-500/10">
                       <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-green-500" />
@@ -90,8 +90,8 @@ const AffiliateApplications = () => {
                       <p className="text-xs text-muted-foreground">With Payout Info</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </>
         )}
@@ -120,7 +120,7 @@ const AffiliateApplications = () => {
                 className="cursor-pointer hover:border-primary/50 transition-colors"
                 onClick={() => setSelectedAffiliate(affiliate)}
               >
-                <CardContent className="p-4">
+                <div className="p-4 p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -136,8 +136,8 @@ const AffiliateApplications = () => {
                       {format(new Date(affiliate.created_at), "MMM d, yyyy")}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         )}

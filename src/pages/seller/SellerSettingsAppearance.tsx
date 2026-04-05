@@ -235,17 +235,17 @@ export default function SellerSettingsAppearance() {
 
           {/* Theme Tab */}
           <TabsContent value="theme" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Palette className="h-5 w-5" />
                   Store Theme
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Choose a visual style for your storefront
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              <div className="p-4 space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {STORE_THEMES.map((theme) => (
                     <div
@@ -262,20 +262,20 @@ export default function SellerSettingsAppearance() {
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Settings2 className="h-5 w-5" />
                   Accent Color
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Choose your store's primary accent color
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              <div className="p-4 space-y-4">
                 <div className="flex flex-wrap gap-3">
                   {ACCENT_COLORS.map((color) => (
                     <button
@@ -303,20 +303,20 @@ export default function SellerSettingsAppearance() {
                   />
                   <span className="text-sm text-muted-foreground font-mono">{formData.accent_color}</span>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Layout className="h-5 w-5" />
                   Product Layout
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Choose how products are displayed on your store
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+              </div>
+              <div className="p-4">
                 <div className="grid grid-cols-3 gap-3">
                   {LAYOUT_OPTIONS.map((layout) => (
                     <div
@@ -333,23 +333,23 @@ export default function SellerSettingsAppearance() {
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Hero Tab */}
           <TabsContent value="hero" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Star className="h-5 w-5" />
                   Hero Section
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Customize the main banner area of your store
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              <div className="p-4 space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="hero-title">Hero Title</Label>
                   <Input
@@ -394,20 +394,20 @@ export default function SellerSettingsAppearance() {
                     />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Megaphone className="h-5 w-5" />
                   Store Announcement
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Display a banner message to all visitors
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              <div className="p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="announcement-active">Show Announcement</Label>
                   <Switch
@@ -427,21 +427,21 @@ export default function SellerSettingsAppearance() {
                     disabled={!formData.announcement_active}
                   />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Banner Scheduling */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <CalendarIcon className="h-5 w-5" />
                   Banner Scheduling
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Schedule when your store banner is visible
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              <div className="p-4 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Start Date (optional)</Label>
@@ -517,23 +517,23 @@ export default function SellerSettingsAppearance() {
                 <p className="text-xs text-muted-foreground">
                   Leave both empty to always show the banner. Set dates to control visibility.
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Typography Tab */}
           <TabsContent value="typography" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Type className="h-5 w-5" />
                   Typography
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Choose fonts for your store
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+                </p>
+              </div>
+              <div className="p-4 space-y-6">
                 <div className="space-y-2">
                   <Label>Heading Font</Label>
                   <Select
@@ -583,23 +583,23 @@ export default function SellerSettingsAppearance() {
                     This is how your body text will look on your store page.
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Features Tab */}
           <TabsContent value="features" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Eye className="h-5 w-5" />
                   Display Options
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Control what elements appear on your store
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              <div className="p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <Label htmlFor="show-reviews">Show Reviews</Label>
@@ -625,8 +625,8 @@ export default function SellerSettingsAppearance() {
                     onCheckedChange={(checked) => setFormData({ ...formData, show_social_proof: checked })}
                   />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Navigation Tab */}
@@ -638,17 +638,17 @@ export default function SellerSettingsAppearance() {
 
           {/* Advanced Tab */}
           <TabsContent value="advanced" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Code className="h-5 w-5" />
                   Custom CSS
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Add custom styles to your store (advanced users only)
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              <div className="p-4 space-y-4">
                 <Textarea
                   placeholder={`/* Custom CSS */\n.store-header {\n  /* your styles */\n}`}
                   value={formData.custom_css}
@@ -658,20 +658,20 @@ export default function SellerSettingsAppearance() {
                 <p className="text-xs text-muted-foreground">
                   ⚠️ Custom CSS is applied to your store page. Be careful not to break the layout.
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Image className="h-5 w-5" />
                   Favicon
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Custom browser icon for your store (visible on custom domains)
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
+                </p>
+              </div>
+              <div className="p-4 space-y-3">
                 <div className="space-y-2">
                   <Label>Favicon URL</Label>
                   <Input
@@ -683,20 +683,20 @@ export default function SellerSettingsAppearance() {
                     Recommended: 32x32 or 64x64 .ico or .png file
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <EyeOff className="h-5 w-5" />
                   Branding
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Control the "Powered by Eclipse" badge on your custom domain
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+              </div>
+              <div className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <Label>Hide "Powered by" Badge</Label>
@@ -709,8 +709,8 @@ export default function SellerSettingsAppearance() {
                     onCheckedChange={(checked) => setFormData({ ...formData, hide_branding: checked })}
                   />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
 

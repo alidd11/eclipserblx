@@ -135,11 +135,11 @@ export default function AcceptTeamInvite() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="max-w-md w-full">
-        <CardHeader className="text-center">
+      <div className="border border-border rounded-xl overflow-hidden max-w-md w-full">
+        <div className="px-4 py-3 border-b border-border bg-muted/30 text-center">
           <Users className="h-10 w-10 mx-auto text-primary mb-2" />
-          <CardTitle>Team Invitation</CardTitle>
-          <CardDescription>
+          <h3 className="font-semibold text-sm">Team Invitation</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
             {status === 'loading' && 'Verifying your invitation...'}
             {status === 'needs_auth' && 'Sign in to accept this invitation'}
             {status === 'valid' && `You've been invited to join a store team`}
@@ -149,9 +149,9 @@ export default function AcceptTeamInvite() {
             {status === 'wrong_email' && 'Email mismatch'}
             {status === 'not_found' && 'Invitation not found'}
             {status === 'error' && 'Invalid invitation'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+          </p>
+        </div>
+        <div className="p-4 space-y-4">
           {status === 'loading' && (
             <div className="flex justify-center py-6">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -268,8 +268,8 @@ export default function AcceptTeamInvite() {
               </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

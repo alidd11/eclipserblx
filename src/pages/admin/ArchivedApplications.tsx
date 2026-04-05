@@ -85,41 +85,41 @@ export default function AdminArchivedApplications() {
   return (
     <AdminLayout requiredPermissions={['review_applications']}>
       <div className="space-y-6">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-2xl sm:text-3xl font-display flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-4">
+            <h3 className="font-semibold text-sm text-2xl sm:text-3xl font-display flex items-center gap-2">
               <Archive className="h-6 w-6" />
               Archived Applications
-            </CardTitle>
-            <CardDescription>View completed job applications (accepted/rejected)</CardDescription>
-          </CardHeader>
-        </Card>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">View completed job applications (accepted/rejected)</p>
+          </div>
+        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
-          <Card className="glass-card">
-            <CardContent className="pt-6 text-center">
+          <div className="border border-border rounded-xl overflow-hidden glass-card">
+            <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold">{stats.total}</p>
               <p className="text-sm text-muted-foreground">Total Archived</p>
-            </CardContent>
-          </Card>
-          <Card className="glass-card">
-            <CardContent className="pt-6 text-center">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden glass-card">
+            <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold text-green-400">{stats.accepted}</p>
               <p className="text-sm text-muted-foreground">Accepted</p>
-            </CardContent>
-          </Card>
-          <Card className="glass-card">
-            <CardContent className="pt-6 text-center">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden glass-card">
+            <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold text-red-400">{stats.rejected}</p>
               <p className="text-sm text-muted-foreground">Rejected</p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Search */}
-        <Card className="glass-card">
-          <CardContent className="pt-6">
+        <div className="border border-border rounded-xl overflow-hidden glass-card">
+          <div className="p-4 pt-6">
             <div className="relative w-full max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -129,18 +129,18 @@ export default function AdminArchivedApplications() {
                 className="pl-10"
               />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Applications Table */}
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden glass-card">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
               <FileText className="h-5 w-5" />
               Archived ({filteredApplications?.length || 0})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+            </h3>
+          </div>
+          <div className="p-4">
             {isLoading ? (
               <p className="text-muted-foreground text-center py-8">Loading...</p>
             ) : filteredApplications?.length === 0 ? (
@@ -219,8 +219,8 @@ export default function AdminArchivedApplications() {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Application Detail Dialog */}
