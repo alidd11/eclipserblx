@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
-  HelpCircle, ChevronDown, ShoppingCart, 
+  HelpCircle, ShoppingCart, 
   User, LucideIcon, Home, TrendingUp, Store, Bell,
   Sparkles, Heart, LogOut, ChevronLeft, ChevronRight,
   MessageSquareText, Megaphone, FileQuestion, LayoutGrid, Shield,
