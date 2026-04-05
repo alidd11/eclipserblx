@@ -343,8 +343,8 @@ export default function StaffDirectory() {
                           </Link>
                         </div>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
