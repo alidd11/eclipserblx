@@ -543,11 +543,11 @@ export default function CustomerTicketDetail() {
 
               {/* Reply input */}
               <div
-                className="shrink-0 border-t border-border bg-card p-3 sm:p-4 space-y-3"
-                style={{ paddingBottom: 'max(0.75rem, var(--chat-safe-bottom, env(safe-area-inset-bottom)))' }}
+                className="shrink-0 border-t border-border bg-card p-2 sm:p-3 space-y-2"
+                style={{ paddingBottom: 'max(0.5rem, var(--chat-safe-bottom, env(safe-area-inset-bottom)))' }}
               >
                 {attachmentFile && (
-                  <div className="flex items-center gap-2 text-sm bg-muted rounded-md px-3 py-1.5">
+                  <div className="flex items-center gap-2 text-xs bg-muted rounded-md px-2 py-1">
                     <Paperclip className="h-3 w-3 shrink-0" />
                     <span className="truncate flex-1">{attachmentFile.name}</span>
                     <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setAttachmentFile(null)}>
@@ -560,16 +560,16 @@ export default function CustomerTicketDetail() {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={isInternalNote ? 'Add an internal note (staff only)...' : 'Type your reply to the customer...'}
+                  placeholder={isInternalNote ? 'Internal note (staff only)...' : 'Type your reply...'}
                   className={cn(
-                    'min-h-[60px] max-h-[120px] resize-none',
+                    'min-h-[44px] max-h-[80px] sm:max-h-[120px] resize-none text-sm',
                     isInternalNote && 'border-yellow-500/30 bg-yellow-500/5'
                   )}
                   style={{ fontSize: '16px' }}
                 />
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                     <input
                       type="file"
                       ref={fileInputRef}
@@ -577,17 +577,16 @@ export default function CustomerTicketDetail() {
                       accept="image/*,.pdf,.zip,.rar,.txt,.doc,.docx"
                       onChange={handleFileSelect}
                     />
-                    <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                      <Paperclip className="h-3.5 w-3.5 mr-1.5" />
-                      Attach
+                    <Button variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={() => fileInputRef.current?.click()}>
+                      <Paperclip className="h-3 w-3 sm:mr-1" />
+                      <span className="hidden sm:inline">Attach</span>
                     </Button>
 
-                    {/* Canned responses */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Zap className="h-3.5 w-3.5 mr-1.5" />
-                          Quick Reply
+                        <Button variant="outline" size="sm" className="h-7 px-2 text-xs">
+                          <Zap className="h-3 w-3 sm:mr-1" />
+                          <span className="hidden sm:inline">Quick Reply</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start" className="w-64">
@@ -604,36 +603,32 @@ export default function CustomerTicketDetail() {
                       </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1">
                       <Checkbox
                         id="internal"
                         checked={isInternalNote}
                         onCheckedChange={(checked) => setIsInternalNote(!!checked)}
                       />
-                      <Label htmlFor="internal" className="text-xs text-muted-foreground cursor-pointer">
-                        Internal note
+                      <Label htmlFor="internal" className="text-[10px] sm:text-xs text-muted-foreground cursor-pointer">
+                        Note
                       </Label>
                     </div>
                   </div>
 
                   <Button
+                    size="sm"
                     onClick={handleSend}
                     disabled={(!newMessage.trim() && !attachmentFile) || sendMessage.isPending}
-                    className={isInternalNote ? '' : 'gradient-button'}
+                    className={cn('h-7 px-3 text-xs', isInternalNote ? '' : 'gradient-button')}
                     variant={isInternalNote ? 'outline' : 'default'}
                   >
                     {sendMessage.isPending ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
-                      <Send className="h-4 w-4 mr-2" />
+                      <Send className="h-3.5 w-3.5" />
                     )}
-                    {isInternalNote ? 'Add Note' : 'Send Reply'}
                   </Button>
                 </div>
-
-                <p className="text-[10px] text-muted-foreground">
-                  Press Ctrl+Enter to send
-                </p>
               </div>
             </div>
           </div>
