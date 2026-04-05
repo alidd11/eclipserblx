@@ -1,64 +1,41 @@
 
 
-## Unified Internal Messaging — Single-Page Channel System
+## Fix: Broken Flex Height Chain on Chat/Ticket Pages
 
-### Current State
-Two separate pages exist — **Staff Messages** (`/admin/staff-messages`) and **Admin Chat** (`/admin/admin-chat`) — each backed by its own DB table (`staff_chat_messages`, `admin_chat_messages`), reactions table, and storage bucket. They share the same `StaffChatRoom` component but are configured independently.
+### Root Cause
 
-### Proposed Architecture
-Replace both pages with a **single unified messaging page** at `/admin/messages` that uses a **channel sidebar + main chat area** layout (Slack/Teams pattern). The two existing DB tables remain as-is (no data migration needed) — channels simply switch which config is active.
+On chat and ticket pages, the flex height chain from the viewport-constrained outer wrapper down to the chat composer is broken at **one specific point** in `LayoutShell.tsx`:
 
 ```text
-┌──────────────────────────────────────────────────┐
-│  Internal Messages                               │
-├────────────┬─────────────────────────────────────┤
-│ CHANNELS   │  # Staff General                    │
-│            │  ─────────────────────────────────── │
-│ # Staff    │  [message list with threads,         │
-│   General  │   search, pins, read receipts]       │
-│ # Admin    │                                      │
-│   Only     │  ─────────────────────────────────── │
-│            │  [composer bar]                      │
-│ ───────    │                                      │
-│ Online (3) │                                      │
-└────────────┴─────────────────────────────────────┘
+wrapper (max-h: --chat-vvh) ✓
+  inner column (flex-1 min-h-0) ✓
+    main (flex: 1 1 0%, flex-col) ✓
+      div.w-full  ← ✗ BREAKS HERE — plain block div, no flex participation
+        div.contentClassName (flex-1 flex-col min-h-0) ✓
+          StaffChatRoom / TicketDetail ✓
 ```
 
-On mobile (< 768px), the channel sidebar becomes a top tab bar or sheet.
+The `<div className="w-full">` on line 142 of `LayoutShell.tsx` is a plain block-level element. It does not participate in the flex column, so `flex-1` on its children has no effect. The chat content cannot fill the available space, causing the black gap.
 
-### Implementation Steps
+### Fix (2 files, ~6 lines changed)
 
-**1. Create unified page `src/pages/admin/InternalMessages.tsx`**
-- Holds state for `activeChannel: 'staff' | 'admin'`
-- Renders a channel sidebar (desktop) or tab strip (mobile) on the left
-- Renders `StaffChatRoom` on the right, passing the matching config
-- Channel sidebar shows unread badges from existing `useChatNotifications`
-- Admin-only channel hidden for non-admin staff (uses existing `view_admin_chat` permission check)
-- Online presence indicators pulled from existing `useChatPresence`
+**1. `LayoutShell.tsx`** — Add a new prop `chatMode` (boolean) to LayoutShell. When true, the inner `<div className="w-full">` becomes `flex-1 flex flex-col min-h-0 overflow-hidden w-full` so the flex height chain is unbroken. Footer is already hidden on chat pages so no conflict.
 
-**2. Update routing (`AppRoutes.tsx`)**
-- New route: `/admin/messages`
-- Legacy redirects: `/admin/staff-messages` → `/admin/messages?channel=staff`, `/admin/admin-chat` → `/admin/messages?channel=admin`
+```tsx
+// Line 142 — change from:
+<div className="w-full">
 
-**3. Update sidebar (`AdminSidebar.tsx`)**
-- Replace the two separate "Staff Messages" and "Admin Chat" entries with a single "Messages" entry pointing to `/admin/messages`
-- Merge notification badges (show dot if either channel has unread)
+// To:
+<div className={cn("w-full", chatMode && "flex-1 flex flex-col min-h-0 overflow-hidden")}>
+```
 
-**4. Update `AdminLayout.tsx` isChatPage detection**
-- Add `/admin/messages` to the chat-page path list for keyboard-safe layout
+**2. `AdminLayout.tsx`** — Pass `chatMode={isChatPage}` to LayoutShell so it knows when to apply the flex constraint.
 
-**5. Delete old pages**
-- Remove `src/pages/admin/AdminChat.tsx`
-- Remove `src/pages/admin/StaffMessages.tsx`
+This is the minimal, surgical fix — one prop, one conditional class. No structural refactoring needed.
 
-**6. Update Dashboard quick links**
-- Change the "Staff Chat" card on the admin dashboard to point to `/admin/messages`
+### Technical Detail
 
-### Technical Details
-
-- No database changes needed — both tables (`staff_chat_messages`, `admin_chat_messages`) and their RLS policies remain intact
-- The `StaffChatRoom` component is already fully config-driven; switching channels just swaps the `ChatRoomConfig` prop
-- `fetchMembers` functions from the deleted pages move into the new unified page
-- Channel switching preserves scroll position per-channel using a ref map
-- Mobile: channel selector renders as a compact pill/tab bar above the chat area (not a sidebar) to maximize vertical space for keyboard
+- `cn` utility is already imported in LayoutShell
+- The `chatMode` prop only needs to be added to the `LayoutShellProps` interface
+- The `isChatPage` detection in AdminLayout already covers `/admin/messages`, `/admin/live-chat`, and `/admin/customer-tickets/`
 
