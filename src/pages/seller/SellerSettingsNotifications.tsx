@@ -340,17 +340,12 @@ export default function SellerSettingsNotifications() {
           </div>
 
           {/* Discord Role Integration */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-[#5865F2]" />
-                Discord Role Integration
-              </CardTitle>
-              <CardDescription>
-                Automatically assign roles to customers who purchase from your store via the Eclipse Portal Bot
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Discord Role Integration</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Automatically assign roles to customers who purchase via the Eclipse Portal Bot</p>
+            </div>
+            <div className="p-4 space-y-4">
               {store?.credentials?.discord_guild_id ? (
                 <div className="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                   <CheckCircle className="h-5 w-5 text-green-500" />
