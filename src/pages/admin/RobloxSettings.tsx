@@ -285,17 +285,17 @@ export default function RobloxSettings() {
 
           {/* General Tab */}
           <TabsContent value="general" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Gamepad2 className="h-5 w-5" />
                   Game Configuration
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Configure your Roblox game URL for Robux payments
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              <div className="p-4 space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="game-url">Roblox Game URL</Label>
                   <div className="flex gap-2">
@@ -330,21 +330,21 @@ export default function RobloxSettings() {
                     Your Roblox group ID for membership verification and discounts
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Webhook Configuration */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Webhook className="h-5 w-5" />
                   Webhook Configuration
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Configuration for receiving Robux purchase notifications
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              <div className="p-4 space-y-4">
                 <div className="p-4 bg-muted/50 rounded-lg space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
@@ -387,21 +387,21 @@ export default function RobloxSettings() {
                     <li>Map your Roblox Product IDs to website products</li>
                   </ol>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Advertisement Subscription Configuration */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Megaphone className="h-5 w-5 text-purple-500" />
                   Advertisement Tier Subscriptions
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Configure Roblox Subscriptions for each advertisement tier (Basic, Pro, Premium)
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+                </p>
+              </div>
+              <div className="p-4 space-y-6">
                 {/* Basic Tier */}
                 <div className="p-4 border border-border rounded-lg space-y-4">
                   <div className="flex items-center gap-2">
@@ -548,24 +548,24 @@ export default function RobloxSettings() {
                     Configure your Roblox game to send SubscriptionPurchased, SubscriptionRenewed, SubscriptionExpired, and SubscriptionRefunded events to this webhook.
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Discounts Tab */}
           <TabsContent value="discounts" className="space-y-6">
             {/* Group Discount */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Users className="h-5 w-5" />
                   Group Member Discount
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Offer discounts to members of your Roblox group
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              <div className="p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Enable Group Discount</Label>
@@ -612,21 +612,21 @@ export default function RobloxSettings() {
                     </div>
                   </>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Premium Discount */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Crown className="h-5 w-5 text-amber-500" />
                   Roblox Premium Discount
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Reward Roblox Premium subscribers with exclusive discounts
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              <div className="p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Enable Premium Discount</Label>
@@ -656,21 +656,21 @@ export default function RobloxSettings() {
                     />
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Badge Rewards */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Award className="h-5 w-5 text-purple-500" />
                   Badge Rewards
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Unlock site badges for Roblox achievements
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              <div className="p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Enable Badge Sync</Label>
@@ -691,23 +691,23 @@ export default function RobloxSettings() {
                     </p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Verification Tab */}
           <TabsContent value="verification" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Shield className="h-5 w-5" />
                   Test Verification
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Test group membership and premium status verification
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+                </p>
+              </div>
+              <div className="p-4 space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="test-roblox-id">Roblox User ID to Test</Label>
                   <Input
@@ -789,23 +789,23 @@ export default function RobloxSettings() {
                     )}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Transactions Tab */}
           <TabsContent value="transactions" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Webhook className="h-5 w-5" />
                   Recent Robux Transactions
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Latest purchases made with Robux
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+              </div>
+              <div className="p-4">
                 {recentTransactions.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Gamepad2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
@@ -851,8 +851,8 @@ export default function RobloxSettings() {
                     </Table>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

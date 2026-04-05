@@ -136,36 +136,36 @@ export default function IpBans() {
 
         {/* Stats */}
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible">
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Bans</CardTitle>
+          <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 flex flex-row items-center justify-between space-y-0 pb-2">
+              <h3 className="font-semibold text-sm text-sm font-medium">Active Bans</h3>
               <Ban className="h-4 w-4 text-destructive" />
-            </CardHeader>
-            <CardContent>
+            </div>
+            <div className="p-4">
               <div className="text-2xl font-bold">{activeBans.length}</div>
               <p className="text-xs text-muted-foreground">Currently enforced</p>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Expired Bans</CardTitle>
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 flex flex-row items-center justify-between space-y-0 pb-2">
+              <h3 className="font-semibold text-sm text-sm font-medium">Expired Bans</h3>
               <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
+            </div>
+            <div className="p-4">
               <div className="text-2xl font-bold">{expiredBans.length}</div>
               <p className="text-xs text-muted-foreground">Historical records</p>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Bans</CardTitle>
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 flex flex-row items-center justify-between space-y-0 pb-2">
+              <h3 className="font-semibold text-sm text-sm font-medium">Total Bans</h3>
               <Shield className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
+            </div>
+            <div className="p-4">
               <div className="text-2xl font-bold">{bans?.length || 0}</div>
               <p className="text-xs text-muted-foreground">All time</p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Search */}
@@ -180,17 +180,17 @@ export default function IpBans() {
         </div>
 
         {/* Active Bans */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
               <Ban className="h-5 w-5 text-destructive" />
               Active Bans
-            </CardTitle>
-            <CardDescription>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Currently enforced IP bans
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </p>
+          </div>
+          <div className="p-4">
             {isLoading ? (
               <div className="text-center py-8 text-muted-foreground">Loading...</div>
             ) : activeBans.length === 0 ? (
@@ -277,21 +277,21 @@ export default function IpBans() {
                 </TableBody>
               </Table>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Expired Bans / History */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
               <Clock className="h-5 w-5 text-muted-foreground" />
               Ban History
-            </CardTitle>
-            <CardDescription>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Expired bans for reference
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </p>
+          </div>
+          <div className="p-4">
             {isLoading ? (
               <div className="text-center py-8 text-muted-foreground">Loading...</div>
             ) : expiredBans.length === 0 ? (
@@ -373,8 +373,8 @@ export default function IpBans() {
                 </TableBody>
               </Table>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

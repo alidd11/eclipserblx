@@ -148,8 +148,8 @@ export default function AdminCustomDomains() {
       <div className="space-y-6">
         {/* Stats */}
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardContent className="p-4">
+          <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="p-4 p-4">
               <div className="flex items-center gap-2">
                 <Globe className="h-4 w-4 text-muted-foreground" />
                 <div>
@@ -157,10 +157,10 @@ export default function AdminCustomDomains() {
                   <p className="text-xs text-muted-foreground">Total Domains</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardContent className="p-4">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="p-4 p-4">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-emerald-500" />
                 <div>
@@ -168,10 +168,10 @@ export default function AdminCustomDomains() {
                   <p className="text-xs text-muted-foreground">Active</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardContent className="p-4">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="p-4 p-4">
               <div className="flex items-center gap-2">
                 <Cloud className="h-4 w-4 text-amber-500" />
                 <div>
@@ -179,10 +179,10 @@ export default function AdminCustomDomains() {
                   <p className="text-xs text-muted-foreground">On Cloudflare</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-          <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardContent className="p-4">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="p-4 p-4">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-destructive" />
                 <div>
@@ -190,17 +190,17 @@ export default function AdminCustomDomains() {
                   <p className="text-xs text-muted-foreground">With Issues</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Search & Actions */}
-        <Card>
-          <CardHeader className="pb-3">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div>
-                <CardTitle className="text-lg">All Custom Domains</CardTitle>
-                <CardDescription>Monitor and manage seller custom domains</CardDescription>
+                <h3 className="font-semibold text-sm text-lg">All Custom Domains</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Monitor and manage seller custom domains</p>
               </div>
               <Button
                 variant="outline"
@@ -230,8 +230,8 @@ export default function AdminCustomDomains() {
                 className="pl-9"
               />
             </div>
-          </CardHeader>
-          <CardContent className="p-0">
+          </div>
+          <div className="p-4 p-0">
             {isLoading ? (
               <div className="p-4 space-y-3">
                 {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
@@ -410,19 +410,19 @@ export default function AdminCustomDomains() {
                 </div>
               </>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Domains with issues detail */}
         {filtered.some(d => (d.last_health_check as any)?.error_code) && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-destructive" />
                 Domains with Issues ({filtered.filter(d => (d.last_health_check as any)?.error_code).length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+              </h3>
+            </div>
+            <div className="p-4 space-y-4">
               {filtered
                 .filter(d => (d.last_health_check as any)?.error_code)
                 .map(domain => {
@@ -442,8 +442,8 @@ export default function AdminCustomDomains() {
                     </div>
                   );
                 })}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
       </div>
     </AdminLayout>

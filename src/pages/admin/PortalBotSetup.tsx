@@ -2149,14 +2149,14 @@ export default function AdminPortalBotSetup() {
         </div>
 
         {/* Setup Steps */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
+            <h3 className="font-semibold text-sm text-base flex items-center gap-2">
               <Terminal className="h-4 w-4" />
               Quick Setup
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+            </h3>
+          </div>
+          <div className="p-4 space-y-2">
             {[
               { step: '1', text: 'Create a folder called eclipse-portal-bot and add all files below' },
               { step: '2', text: 'Run npm install to install dependencies' },
@@ -2169,34 +2169,34 @@ export default function AdminPortalBotSetup() {
                 <span className="text-muted-foreground">{item.text}</span>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Deployment Info */}
         <div className="grid grid-cols-2 gap-3">
-          <Card className="p-3">
+          <div className="border border-border rounded-xl overflow-hidden p-3">
             <div className="flex items-center gap-2 mb-1">
               <Server className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium">Railway</span>
             </div>
             <p className="text-xs text-muted-foreground">~£5/mo, easy deploy</p>
-          </Card>
-          <Card className="p-3">
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden p-3">
             <div className="flex items-center gap-2 mb-1">
               <Shield className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium">Fly.io</span>
             </div>
             <p className="text-xs text-muted-foreground">Free tier available</p>
-          </Card>
+          </div>
         </div>
 
         {/* File Browser */}
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-2">
+        <div className="border border-border rounded-xl overflow-hidden overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
         <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base">Bot Files ({Object.keys(BOT_FILES).length} files)</CardTitle>
-                <CardDescription>Tap a file to view, then copy</CardDescription>
+                <h3 className="font-semibold text-sm text-base">Bot Files ({Object.keys(BOT_FILES).length} files)</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Tap a file to view, then copy</p>
               </div>
               <Button
                 size="sm"
@@ -2222,8 +2222,8 @@ export default function AdminPortalBotSetup() {
                 Download ZIP
               </Button>
             </div>
-          </CardHeader>
-          <CardContent className="p-0">
+          </div>
+          <div className="p-4 p-0">
             {/* File Tree */}
             <div className="border-b p-3 max-h-64 overflow-y-auto">
               {fileTree.map(node => (
@@ -2259,8 +2259,8 @@ export default function AdminPortalBotSetup() {
                 </ScrollArea>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

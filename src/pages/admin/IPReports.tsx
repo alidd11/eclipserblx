@@ -161,28 +161,28 @@ export default function IPReports() {
             {[1, 2, 3].map((i) => (
               <Card key={i} className="animate-pulse">
                 <CardContent className="h-32" />
-              </Card>
+              </div>
             ))}
           </div>
         ) : reports?.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="p-4 py-12 text-center">
               <Shield className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-muted-foreground">No reports found</p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ) : (
           <div className="space-y-4">
             {reports?.map((report) => (
               <Card key={report.id}>
-                <CardHeader className="pb-3">
+                <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">
-                      <CardTitle className="text-lg flex items-center gap-2">
+                      <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
                         {report.products?.name || "Unknown Product"}
                         {getStatusBadge(report.status)}
-                      </CardTitle>
-                      <CardDescription className="flex items-center gap-2">
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
                         {getViolationTypeBadge(report.violation_type)}
                         <span>•</span>
                         <span>Reported {formatDistanceToNow(new Date(report.created_at))} ago</span>
@@ -192,7 +192,7 @@ export default function IPReports() {
                             <span className="text-primary">Rights Holder</span>
                           </>
                         )}
-                      </CardDescription>
+                      </p>
                     </div>
                     <div className="flex gap-2">
                       {(report.products as any)?.product_number && (
@@ -212,8 +212,8 @@ export default function IPReports() {
                       </Button>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent className="pt-0">
+                </div>
+                <div className="p-4 pt-0">
                   <div className="grid md:grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-muted-foreground">Reporter:</span>
@@ -227,8 +227,8 @@ export default function IPReports() {
                   <p className="text-sm mt-3 line-clamp-2 text-muted-foreground">
                     {report.description}
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         )}

@@ -266,23 +266,23 @@
                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                  {[...Array(6)].map((_, i) => (
                    <Card key={i}>
-                     <CardHeader>
+                     <div className="px-4 py-3 border-b border-border bg-muted/30">
                        <Skeleton className="h-5 w-3/4" />
                        <Skeleton className="h-4 w-1/2" />
-                     </CardHeader>
-                     <CardContent>
+                     </div>
+                     <div className="p-4">
                        <Skeleton className="h-20" />
-                     </CardContent>
-                   </Card>
+                     </div>
+                   </div>
                  ))}
                </div>
              ) : filteredSubmissions.length === 0 ? (
-               <Card>
-                 <CardContent className="flex flex-col items-center justify-center py-12">
+               <div className="border border-border rounded-xl overflow-hidden">
+                 <div className="p-4 flex flex-col items-center justify-center py-12">
                    <Package className="h-12 w-12 text-muted-foreground mb-4" />
                    <p className="text-muted-foreground">No submissions found</p>
-                 </CardContent>
-               </Card>
+                 </div>
+               </div>
              ) : (
                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                  {filteredSubmissions.map((submission) => {
@@ -291,24 +291,24 @@
                    
                    return (
                      <Card key={submission.id}>
-                       <CardHeader className="pb-3">
+                       <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                          <div className="flex items-start justify-between">
                            <div className="space-y-1">
-                             <CardTitle className="text-base">{submission.product_name}</CardTitle>
-                             <CardDescription>
+                             <h3 className="font-semibold text-sm text-base">{submission.product_name}</h3>
+                             <p className="text-xs text-muted-foreground mt-0.5">
                                {submission.developer?.display_name || submission.developer?.username || 'Unknown'}
                                {submission.developer?.staff_id && (
                                  <span className="text-xs ml-1">({submission.developer.staff_id})</span>
                                )}
-                             </CardDescription>
+                             </p>
                            </div>
                            <Badge className={config?.color}>
                              <StatusIcon className="h-3 w-3 mr-1" />
                              {config?.label}
                            </Badge>
                          </div>
-                       </CardHeader>
-                       <CardContent className="space-y-3">
+                       </div>
+                       <div className="p-4 space-y-3">
                          {submission.product_description && (
                            <p className="text-sm text-muted-foreground line-clamp-2">
                              {submission.product_description}
@@ -340,8 +340,8 @@
                              {submission.reviewer_notes}
                            </div>
                          )}
-                       </CardContent>
-                     </Card>
+                       </div>
+                     </div>
                    );
                  })}
                </div>

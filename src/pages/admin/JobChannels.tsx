@@ -222,12 +222,12 @@ export default function JobChannels() {
   return (
     <AdminLayout requiredPermissions={['view_job_channels']}>
       <div className="space-y-6">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-4">
+        <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <CardTitle className="text-2xl sm:text-3xl font-display">Job Channels</CardTitle>
-                <CardDescription>Manage available job positions and openings</CardDescription>
+                <h3 className="font-semibold text-sm text-2xl sm:text-3xl font-display">Job Channels</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Manage available job positions and openings</p>
               </div>
               <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogTrigger asChild>
@@ -312,40 +312,40 @@ export default function JobChannels() {
                 </DialogContent>
               </Dialog>
             </div>
-          </CardHeader>
-        </Card>
+          </div>
+        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
-          <Card className="glass-card">
-            <CardContent className="pt-6 text-center">
+          <div className="border border-border rounded-xl overflow-hidden glass-card">
+            <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold">{stats.total}</p>
               <p className="text-sm text-muted-foreground">Total</p>
-            </CardContent>
-          </Card>
-          <Card className="glass-card">
-            <CardContent className="pt-6 text-center">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden glass-card">
+            <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold text-green-400">{stats.active}</p>
               <p className="text-sm text-muted-foreground">Active</p>
-            </CardContent>
-          </Card>
-          <Card className="glass-card">
-            <CardContent className="pt-6 text-center">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden glass-card">
+            <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold text-muted-foreground">{stats.inactive}</p>
               <p className="text-sm text-muted-foreground">Inactive</p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Channels List */}
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden glass-card">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
               <Briefcase className="h-5 w-5" />
               Job Channels ({channels.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+            </h3>
+          </div>
+          <div className="p-4">
             {isLoading ? (
               <p className="text-muted-foreground text-center py-8">Loading channels...</p>
             ) : channels.length === 0 ? (
@@ -445,8 +445,8 @@ export default function JobChannels() {
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Edit Dialog */}
         <Dialog open={!!editingChannel} onOpenChange={(open) => { if (!open) { setEditingChannel(null); resetForm(); } }}>

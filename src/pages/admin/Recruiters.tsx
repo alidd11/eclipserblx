@@ -116,50 +116,50 @@ export default function Recruiters() {
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
+              <h3 className="font-semibold text-sm text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Active Recruiters
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </h3>
+            </div>
+            <div className="p-4">
               <div className="text-2xl font-bold">{stats?.total_recruiters || 0}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
+              <h3 className="font-semibold text-sm text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 Pending Applications
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </h3>
+            </div>
+            <div className="p-4">
               <div className="text-2xl font-bold text-amber-500">{stats?.pending_applications || 0}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
+              <h3 className="font-semibold text-sm text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
                 Qualified Commissions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </h3>
+            </div>
+            <div className="p-4">
               <div className="text-2xl font-bold">£{(stats?.total_commissions || 0).toFixed(2)}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
+              <h3 className="font-semibold text-sm text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <DollarSign className="h-4 w-4" />
                 Pending Payouts
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </h3>
+            </div>
+            <div className="p-4">
               <div className="text-2xl font-bold text-primary">£{(stats?.pending_payouts || 0).toFixed(2)}</div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Quick Actions */}
@@ -176,12 +176,12 @@ export default function Recruiters() {
         </div>
 
         {/* Recruiters List */}
-        <Card>
-          <CardHeader>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Recruiters</CardTitle>
-                <CardDescription>All recruiter applications and status</CardDescription>
+                <h3 className="font-semibold text-sm">Recruiters</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">All recruiter applications and status</p>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative">
@@ -195,8 +195,8 @@ export default function Recruiters() {
                 </div>
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="p-4">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="hidden sm:inline-flex">
                 <TabsTrigger value="approved" className="gap-2">
@@ -264,8 +264,8 @@ export default function Recruiters() {
                 )}
               </TabsContent>
             </Tabs>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

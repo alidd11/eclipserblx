@@ -263,36 +263,36 @@ export default function SellerPayouts() {
 
         {!isInsideHub && (
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-2 md:overflow-visible">
-            <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-              <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-                <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
+            <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">
+              <div className="px-4 py-3 border-b border-border bg-muted/30 p-3 pb-1 md:p-6 md:pb-2">
+                <h3 className="font-semibold text-sm text-xs md:text-sm font-medium text-muted-foreground">
                   Pending Payouts
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+                </h3>
+              </div>
+              <div className="p-4 p-3 pt-0 md:p-6 md:pt-0">
                 <div className="text-lg md:text-2xl font-bold">
                   £{pendingTotal.toFixed(2)}
                 </div>
-              </CardContent>
-            </Card>
-            <Card className="min-w-[160px] flex-shrink-0 md:min-w-0">
-              <CardHeader className="p-3 pb-1 md:p-6 md:pb-2">
-                <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
+              </div>
+            </div>
+            <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">
+              <div className="px-4 py-3 border-b border-border bg-muted/30 p-3 pb-1 md:p-6 md:pb-2">
+                <h3 className="font-semibold text-sm text-xs md:text-sm font-medium text-muted-foreground">
                   Pending Requests
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+                </h3>
+              </div>
+              <div className="p-4 p-3 pt-0 md:p-6 md:pt-0">
                 <div className="text-lg md:text-2xl font-bold">
                   {payouts?.filter((p: any) => p.status === "pending").length || 0}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         )}
 
         {isError && (
-          <Card className="border-destructive/30 bg-destructive/5">
-            <CardContent className="pt-6">
+          <div className="border border-border rounded-xl overflow-hidden border-destructive/30 bg-destructive/5">
+            <div className="p-4 pt-6">
               <div className="flex items-start gap-3">
                 <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
                 <div className="flex-1">
@@ -306,12 +306,12 @@ export default function SellerPayouts() {
                   </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
-        <Card>
-          <CardContent className="p-0">
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="p-4 p-0">
             {/* Desktop table */}
             <div className="hidden md:block">
               <Table>
@@ -482,8 +482,8 @@ export default function SellerPayouts() {
                 </div>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         <Dialog open={!!selectedPayout} onOpenChange={() => setSelectedPayout(null)}>
           <DialogContent>

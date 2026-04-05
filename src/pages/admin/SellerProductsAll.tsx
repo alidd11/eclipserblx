@@ -240,16 +240,16 @@ export default function SellerProductsAll() {
             {[1, 2, 3, 4, 5].map((i) => (
               <Card key={i} className="animate-pulse">
                 <CardContent className="h-16" />
-              </Card>
+              </div>
             ))}
           </div>
         ) : filteredProducts?.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="p-4 py-12 text-center">
               <Package className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-muted-foreground">No seller products found</p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ) : (
           <div className="space-y-1.5">
             {/* Header */}
@@ -264,7 +264,7 @@ export default function SellerProductsAll() {
 
             {filteredProducts?.map((product: any) => (
               <Card key={product.id} className="overflow-hidden">
-                <CardContent className="p-0">
+                <div className="p-4 p-0">
                   <div className="grid grid-cols-1 md:grid-cols-[3fr_1.5fr_1fr_1fr_1fr_auto] gap-3 items-center px-4 py-3">
                     {/* Product */}
                     <div className="flex items-center gap-3 min-w-0">
@@ -394,8 +394,8 @@ export default function SellerProductsAll() {
                       </CollapsibleContent>
                     </Collapsible>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         )}

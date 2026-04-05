@@ -57,7 +57,7 @@ export default function StaffDocuments() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {staffDocuments.map((doc) => (
               <Card key={doc.id} className="group hover:border-primary/50 transition-colors">
-                <CardHeader className="pb-3">
+                <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                   <div className="flex items-start justify-between gap-4">
                     <div className="p-2 rounded-lg bg-primary/10 shrink-0">
                       <doc.icon className="h-5 w-5 text-primary" />
@@ -66,37 +66,37 @@ export default function StaffDocuments() {
                       {doc.category}
                     </Badge>
                   </div>
-                  <CardTitle className="text-lg mt-3">{doc.title}</CardTitle>
-                  <CardDescription className="line-clamp-2">
+                  <h3 className="font-semibold text-sm text-lg mt-3">{doc.title}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                     {doc.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
+                  </p>
+                </div>
+                <div className="p-4 pt-0">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">
                       Updated: {doc.lastUpdated}
                     </span>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
           /* Empty State */
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="border border-border rounded-xl overflow-hidden border-dashed">
+            <div className="p-4 flex flex-col items-center justify-center py-12 text-center">
               <FolderOpen className="h-12 w-12 text-muted-foreground/50 mb-4" />
               <h3 className="text-lg font-semibold">No staff documents yet</h3>
               <p className="text-muted-foreground text-sm mt-1 max-w-md">
                 Internal training materials, policy documents, and procedure guides will appear here when created.
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Info Section */}
-        <Card className="bg-muted/30 border-dashed">
-          <CardContent className="pt-6">
+        <div className="border border-border rounded-xl overflow-hidden bg-muted/30 border-dashed">
+          <div className="p-4 pt-6">
             <div className="flex items-start gap-4">
               <div className="p-2 rounded-lg bg-primary/10">
                 <Printer className="h-5 w-5 text-primary" />
@@ -110,8 +110,8 @@ export default function StaffDocuments() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

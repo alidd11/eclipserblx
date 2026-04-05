@@ -407,8 +407,8 @@ export default function AdminIncomeSources() {
 
 
         {/* Grand total */}
-        <Card className="bg-card border-border">
-          <CardContent className="pt-6">
+        <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+          <div className="p-4 pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
@@ -429,8 +429,8 @@ export default function AdminIncomeSources() {
                 <TrendingUp className="h-6 w-6 text-primary" />
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Enhanced source breakdown cards */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
@@ -451,7 +451,7 @@ export default function AdminIncomeSources() {
                 )}
                 onClick={() => setSourceFilter(sourceFilter === key ? 'all' : key)}
               >
-                <CardContent className="pt-4 pb-2 px-4">
+                <div className="p-4 pt-4 pb-2 px-4">
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center", config.badgeVariant.split(' ')[0])}>
@@ -489,8 +489,8 @@ export default function AdminIncomeSources() {
                       </div>
                     </>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             );
           })}
         </div>
@@ -520,12 +520,12 @@ export default function AdminIncomeSources() {
 
           {/* Revenue trend stacked area chart */}
           <TabsContent value="trend">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Revenue by Source Over Time</CardTitle>
-                <CardDescription className="text-xs">Stacked view of all income streams ({periodLabels[periodFilter]})</CardDescription>
-              </CardHeader>
-              <CardContent>
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm text-base">Revenue by Source Over Time</h3>
+                <p className="text-xs text-muted-foreground mt-0.5 text-xs">Stacked view of all income streams ({periodLabels[periodFilter]})</p>
+              </div>
+              <div className="p-4">
                 {isLoading ? (
                   <Skeleton className="h-[320px] w-full" />
                 ) : (
@@ -538,21 +538,21 @@ export default function AdminIncomeSources() {
                     tooltipFormatter={(v) => [`£${Number(v).toFixed(2)}`, 'Revenue']}
                   />
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Transaction ledger */}
           <TabsContent value="ledger">
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-3">
+            <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+              <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
-                    <CardTitle className="text-base">Transaction Ledger</CardTitle>
-                    <CardDescription className="text-xs">
+                    <h3 className="font-semibold text-sm text-base">Transaction Ledger</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5 text-xs">
                       {filteredTransactions.length} transactions
                       {sourceFilter !== 'all' && ` · ${sourceConfig[sourceFilter]?.label}`}
-                    </CardDescription>
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="relative">
@@ -578,8 +578,8 @@ export default function AdminIncomeSources() {
                     </Select>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="p-0">
+              </div>
+              <div className="p-4 p-0">
                 <ScrollArea className="h-[500px]">
                   {/* Desktop table */}
                   <div className="hidden md:block">
@@ -713,8 +713,8 @@ export default function AdminIncomeSources() {
                     )}
                   </div>
                 </ScrollArea>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

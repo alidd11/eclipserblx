@@ -267,11 +267,11 @@ export default function AdminBotCodes() {
         </div>
 
         {/* Search */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Search Codes</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm text-lg">Search Codes</h3>
+          </div>
+          <div className="p-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -281,15 +281,15 @@ export default function AdminBotCodes() {
                 className="pl-10"
               />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Codes Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Installation Codes</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm text-lg">Installation Codes</h3>
+          </div>
+          <div className="p-4">
             {isLoading ? (
               <div className="text-center py-8 text-muted-foreground">Loading codes...</div>
             ) : !codes?.length ? (
@@ -493,8 +493,8 @@ export default function AdminBotCodes() {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Mark as Used Dialog */}

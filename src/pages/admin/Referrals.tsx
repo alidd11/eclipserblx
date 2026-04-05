@@ -144,8 +144,8 @@ export default function AdminReferrals() {
             </div>
 
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
-          <Card className="bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardContent className="p-3 md:pt-6 md:p-6">
+          <div className="border border-border rounded-xl overflow-hidden bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="p-4 p-3 md:pt-6 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
                   <Users className="h-4 w-4 md:h-5 md:w-5 text-primary" />
@@ -155,11 +155,11 @@ export default function AdminReferrals() {
                   <p className="text-xs text-muted-foreground">Total</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
           
-          <Card className="bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardContent className="p-3 md:pt-6 md:p-6">
+          <div className="border border-border rounded-xl overflow-hidden bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="p-4 p-3 md:pt-6 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="p-1.5 md:p-2 rounded-lg bg-green-500/10">
                   <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500" />
@@ -169,11 +169,11 @@ export default function AdminReferrals() {
                   <p className="text-xs text-muted-foreground">Completed</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
           
-          <Card className="bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardContent className="p-3 md:pt-6 md:p-6">
+          <div className="border border-border rounded-xl overflow-hidden bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="p-4 p-3 md:pt-6 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="p-1.5 md:p-2 rounded-lg bg-yellow-500/10">
                   <Clock className="h-4 w-4 md:h-5 md:w-5 text-yellow-500" />
@@ -183,11 +183,11 @@ export default function AdminReferrals() {
                   <p className="text-xs text-muted-foreground">Pending</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
           
-          <Card className="bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
-            <CardContent className="p-3 md:pt-6 md:p-6">
+          <div className="border border-border rounded-xl overflow-hidden bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
+            <div className="p-4 p-3 md:pt-6 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="p-1.5 md:p-2 rounded-lg bg-blue-500/10">
                   <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
@@ -197,17 +197,17 @@ export default function AdminReferrals() {
                   <p className="text-xs text-muted-foreground">Conversion</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
             </div>
           </>
         )}
 
         {/* Referrals Table */}
-        <Card className="bg-card border-border">
-          <CardHeader>
+        <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
             <div className="flex flex-col sm:flex-row gap-4 justify-between">
-              <CardTitle>All Referrals</CardTitle>
+              <h3 className="font-semibold text-sm">All Referrals</h3>
               <div className="flex gap-2">
                 <div className="relative flex-1 sm:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -230,8 +230,8 @@ export default function AdminReferrals() {
                 </Select>
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="p-4">
             {isLoading ? (
               <div className="py-8 text-center text-muted-foreground">Loading...</div>
             ) : referrals && referrals.length > 0 ? (
@@ -283,18 +283,18 @@ export default function AdminReferrals() {
                 <p>No referrals found</p>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Recent Rewards */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
               <Gift className="h-5 w-5" />
               Recent Rewards Issued
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+            </h3>
+          </div>
+          <div className="p-4">
             {rewards && rewards.length > 0 ? (
               <div className="space-y-3">
                 {rewards.map((reward: any) => (
@@ -329,8 +329,8 @@ export default function AdminReferrals() {
                 <p>No rewards issued yet</p>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

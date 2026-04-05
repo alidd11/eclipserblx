@@ -108,24 +108,24 @@ export default function DutyLogs() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-3">
-          <Card className="bg-card border-border">
-            <CardContent className="p-3 sm:p-4 text-center">
+          <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+            <div className="p-4 p-3 sm:p-4 text-center">
               <p className="text-[10px] sm:text-xs text-muted-foreground">This Week</p>
               <p className="text-lg sm:text-xl font-bold font-mono mt-1">{formatHM(weeklyMinutes)}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-card border-border">
-            <CardContent className="p-3 sm:p-4 text-center">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+            <div className="p-4 p-3 sm:p-4 text-center">
               <p className="text-[10px] sm:text-xs text-muted-foreground">This Month</p>
               <p className="text-lg sm:text-xl font-bold font-mono mt-1">{formatHM(monthlyMinutes)}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-card border-border">
-            <CardContent className="p-3 sm:p-4 text-center">
+            </div>
+          </div>
+          <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
+            <div className="p-4 p-3 sm:p-4 text-center">
               <p className="text-[10px] sm:text-xs text-muted-foreground">Sessions</p>
               <p className="text-lg sm:text-xl font-bold font-mono mt-1">{totalSessions}</p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Tabs: mobile dropdown, desktop tabs */}
@@ -158,17 +158,17 @@ export default function DutyLogs() {
           {/* My Logs */}
           <TabsContent value="my-logs" className="mt-4">
             {myDutyLogs?.filter(l => l.clock_out).length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center text-muted-foreground">
+              <div className="border border-border rounded-xl overflow-hidden">
+                <div className="p-4 py-12 text-center text-muted-foreground">
                   <Clock className="h-10 w-10 mx-auto mb-3 opacity-40" />
                   <p>No duty logs yet. Clock in from the dashboard to start logging hours.</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ) : (
               <div className="space-y-2">
                 {myDutyLogs?.filter(l => l.clock_out).map((log) => (
                   <Card key={log.id} className="bg-card border-border">
-                    <CardContent className="p-3 sm:p-4">
+                    <div className="p-4 p-3 sm:p-4">
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium">
@@ -185,8 +185,8 @@ export default function DutyLogs() {
                           {formatDuration(log.duration_minutes)}
                         </Badge>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
@@ -195,17 +195,17 @@ export default function DutyLogs() {
           {/* All Staff */}
           <TabsContent value="all-staff" className="mt-4">
             {allDutyLogs?.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center text-muted-foreground">
+              <div className="border border-border rounded-xl overflow-hidden">
+                <div className="p-4 py-12 text-center text-muted-foreground">
                   <Users className="h-10 w-10 mx-auto mb-3 opacity-40" />
                   <p>No staff duty logs recorded yet.</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ) : (
               <div className="space-y-2">
                 {allDutyLogs?.map((log) => (
                   <Card key={log.id} className="bg-card border-border">
-                    <CardContent className="p-3 sm:p-4">
+                    <div className="p-4 p-3 sm:p-4">
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">
@@ -227,8 +227,8 @@ export default function DutyLogs() {
                           <Badge className="shrink-0 bg-green-500 text-white">On Duty</Badge>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}

@@ -140,27 +140,27 @@ export default function ManualPayouts() {
             </div>
 
             <div className="grid grid-cols-3 gap-2 md:gap-3">
-              <Card className="bg-card">
-                <CardContent className="p-3 text-center">
+              <div className="border border-border rounded-xl overflow-hidden bg-card">
+                <div className="p-4 p-3 text-center">
                   <Clock className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
                   <div className="text-xl md:text-2xl font-bold">{pendingRequests.length}</div>
                   <p className="text-xs md:text-sm text-muted-foreground">Pending</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-card">
-                <CardContent className="p-3 text-center">
+                </div>
+              </div>
+              <div className="border border-border rounded-xl overflow-hidden bg-card">
+                <div className="p-4 p-3 text-center">
                   <DollarSign className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
                   <div className="text-xl md:text-2xl font-bold">£{totalPending.toFixed(2)}</div>
                   <p className="text-xs md:text-sm text-muted-foreground">Pending Amount</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-card">
-                <CardContent className="p-3 text-center">
+                </div>
+              </div>
+              <div className="border border-border rounded-xl overflow-hidden bg-card">
+                <div className="p-4 p-3 text-center">
                   <CheckCircle className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
                   <div className="text-xl md:text-2xl font-bold">{processedRequests.length}</div>
                   <p className="text-xs md:text-sm text-muted-foreground">Processed</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </>
         )}
@@ -194,27 +194,27 @@ export default function ManualPayouts() {
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
                   <Card key={i}>
-                    <CardContent className="p-6">
+                    <div className="p-4 p-6">
                       <Skeleton className="h-20 w-full" />
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : pendingRequests.length === 0 ? (
-              <Card className="border-dashed">
-                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="border border-border rounded-xl overflow-hidden border-dashed">
+                <div className="p-4 flex flex-col items-center justify-center py-12 text-center">
                   <TrendingUp className="h-12 w-12 text-muted-foreground/50 mb-4" />
                   <h3 className="text-lg font-semibold">No pending requests</h3>
                   <p className="text-muted-foreground text-sm mt-1">
                     All payout requests have been processed.
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ) : (
               <div className="space-y-4">
                 {pendingRequests.map((request) => (
                   <Card key={request.id}>
-                    <CardContent className="p-6">
+                    <div className="p-4 p-6">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
@@ -267,8 +267,8 @@ export default function ManualPayouts() {
                           </div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
@@ -279,22 +279,22 @@ export default function ManualPayouts() {
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
                   <Card key={i}>
-                    <CardContent className="p-6">
+                    <div className="p-4 p-6">
                       <Skeleton className="h-20 w-full" />
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : processedRequests.length === 0 ? (
-              <Card className="border-dashed">
-                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="border border-border rounded-xl overflow-hidden border-dashed">
+                <div className="p-4 flex flex-col items-center justify-center py-12 text-center">
                   <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
                   <h3 className="text-lg font-semibold">No processed requests</h3>
                   <p className="text-muted-foreground text-sm mt-1">
                     Processed payout requests will appear here.
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ) : (
               <div className="space-y-4">
                 {processedRequests.map((request) => {
@@ -303,7 +303,7 @@ export default function ManualPayouts() {
                   
                   return (
                     <Card key={request.id}>
-                      <CardContent className="p-6">
+                      <div className="p-4 p-6">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                           <div className="space-y-2">
                             <div className="flex items-center gap-2">
@@ -344,8 +344,8 @@ export default function ManualPayouts() {
                             </div>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
