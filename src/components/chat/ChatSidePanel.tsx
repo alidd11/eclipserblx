@@ -415,6 +415,7 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
             conversationId: newConv.id,
             userMessage: initialMessage,
             issueCategory: issueCategory,
+            userId: user.id,
           },
         });
 
