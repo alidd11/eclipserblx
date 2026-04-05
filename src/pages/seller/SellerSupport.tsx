@@ -664,6 +664,8 @@ interface TicketCardProps {
 
 function TicketCard({ ticket, onSelect, getCategoryIcon, getCategoryLabel, getStatusBadge }: TicketCardProps) {
   const Icon = getCategoryIcon(ticket.category);
+  const ageHours = (Date.now() - new Date(ticket.created_at).getTime()) / (1000 * 60 * 60);
+  const isStale = ageHours > 48 && !['resolved', 'closed'].includes(ticket.status);
   
   return (
     <div 
@@ -673,9 +675,12 @@ function TicketCard({ ticket, onSelect, getCategoryIcon, getCategoryLabel, getSt
       <div className="flex items-start gap-3 min-w-0">
         <Icon className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
         <div className="min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
             <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">{ticket.ticket_number}</Badge>
             {getStatusBadge(ticket.status)}
+            {isStale && (
+              <span className="text-[10px] text-orange-500 font-medium">⚡ Priority response incoming</span>
+            )}
           </div>
           <h3 className="text-sm font-medium truncate">{ticket.subject}</h3>
           <p className="text-xs text-muted-foreground">
