@@ -232,7 +232,6 @@ export default function Products() {
               />
 
               <FeaturedProductsCard />
-            </div>
           </div>
         </div>
       
