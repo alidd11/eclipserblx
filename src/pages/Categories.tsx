@@ -338,7 +338,7 @@ export default function Categories() {
           );
         })()}
       </div>
-      </PullToRefresh>
+      
     </MainLayout>
   );
 }

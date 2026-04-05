@@ -1036,7 +1036,7 @@ export default function ProductDetail() {
         <SponsoredProductSection categoryId={product.category_id} />
         <RecentlyViewedProducts currentProductId={product.id} />
         </div>
-      </PullToRefresh>
+      
 
       {/* Mobile sticky buy bar */}
       {product && (
