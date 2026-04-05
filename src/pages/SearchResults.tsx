@@ -192,10 +192,8 @@ export default function SearchResults() {
     setFreeOnly(false);
   }, []);
 
-  const displayProducts = useAI && smartResults.length > 0
-    ? smartResults.map(r => ({ ...r, is_featured: false, categories: r.categories ? { ...r.categories, slug: '' } : null, stores: null, average_rating: undefined, review_count: undefined }))
-    : products;
-  const displayLoading = useAI ? isSearching : isLoading;
+  const displayProducts = products;
+  const displayLoading = isLoading;
   const showResults = debouncedQuery.length >= 2 || categorySlug;
 
   return (
