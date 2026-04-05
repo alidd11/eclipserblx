@@ -35,8 +35,9 @@ interface ChatMessageActionsProps {
   onRemoveReaction: (reactionId: string) => void;
   onDelete: (messageId: string) => void;
   onReply?: (messageId: string) => void;
+  onThread?: () => void;
+  onPin?: () => void;
   isOwnBubble?: boolean;
-  // PWA-specific props for tap-to-open behavior
   isPWA?: boolean;
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
