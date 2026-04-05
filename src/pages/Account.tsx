@@ -649,8 +649,8 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             <ExpandableSection icon={Volume2} label="Sound Effects">
               <SoundCustomizationCard />
             </ExpandableSection>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* ═══ More ═══ */}
         <Card className="bg-card border-border overflow-hidden">
