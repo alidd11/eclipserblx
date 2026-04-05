@@ -332,53 +332,51 @@ export default function GDPRCompliance() {
 
           {/* ─── Tab 1: ROPA ─── */}
           <TabsContent value="ropa" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Database className="h-5 w-5" />
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Database className="h-4 w-4 text-muted-foreground" />
                   Records of Processing Activities
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Required under GDPR Article 30. Documents every processing activity, its legal basis, and data flows.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="min-w-[180px]">Processing Activity</TableHead>
-                        <TableHead className="min-w-[150px]">Purpose</TableHead>
-                        <TableHead className="min-w-[180px]">Legal Basis</TableHead>
-                        <TableHead className="min-w-[180px]">Data Categories</TableHead>
-                        <TableHead className="min-w-[100px]">Data Subjects</TableHead>
-                        <TableHead className="min-w-[150px]">Recipients</TableHead>
-                        <TableHead className="min-w-[150px]">Retention</TableHead>
-                        <TableHead className="min-w-[150px]">Int'l Transfers</TableHead>
+                </p>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[180px]">Processing Activity</TableHead>
+                      <TableHead className="min-w-[150px]">Purpose</TableHead>
+                      <TableHead className="min-w-[180px]">Legal Basis</TableHead>
+                      <TableHead className="min-w-[180px]">Data Categories</TableHead>
+                      <TableHead className="min-w-[100px]">Data Subjects</TableHead>
+                      <TableHead className="min-w-[150px]">Recipients</TableHead>
+                      <TableHead className="min-w-[150px]">Retention</TableHead>
+                      <TableHead className="min-w-[150px]">Int'l Transfers</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {PROCESSING_ACTIVITIES.map((activity, i) => (
+                      <TableRow key={i}>
+                        <TableCell className="font-medium text-sm">{activity.activity}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{activity.purpose}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                            {activity.legalBasis}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm">{activity.dataCategories}</TableCell>
+                        <TableCell className="text-sm">{activity.dataSubjects}</TableCell>
+                        <TableCell className="text-sm">{activity.recipients}</TableCell>
+                        <TableCell className="text-sm">{activity.retention}</TableCell>
+                        <TableCell className="text-sm">{activity.transfers}</TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {PROCESSING_ACTIVITIES.map((activity, i) => (
-                        <TableRow key={i}>
-                          <TableCell className="font-medium text-sm">{activity.activity}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{activity.purpose}</TableCell>
-                          <TableCell>
-                            <Badge variant="secondary" className="text-xs whitespace-nowrap">
-                              {activity.legalBasis}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-sm">{activity.dataCategories}</TableCell>
-                          <TableCell className="text-sm">{activity.dataSubjects}</TableCell>
-                          <TableCell className="text-sm">{activity.recipients}</TableCell>
-                          <TableCell className="text-sm">{activity.retention}</TableCell>
-                          <TableCell className="text-sm">{activity.transfers}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
           </TabsContent>
 
           {/* ─── Tab 2: Sub-Processors ─── */}
