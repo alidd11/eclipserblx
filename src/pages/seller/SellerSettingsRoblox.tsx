@@ -163,8 +163,8 @@ export default function SellerSettingsRoblox() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Group Member Discounts */}
           <Card>
