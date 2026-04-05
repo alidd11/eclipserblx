@@ -183,7 +183,6 @@ export default function SearchResults() {
 
   const handleCategorySelect = useCallback((slug: string | null) => {
     setCategorySlug(slug || '');
-    setUseAI(false);
   }, [setCategorySlug]);
 
   const handleCorrectionClick = useCallback((corrected: string) => {
