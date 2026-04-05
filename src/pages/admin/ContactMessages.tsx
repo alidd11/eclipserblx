@@ -519,8 +519,8 @@ export default function ContactMessages() {
                 </div>
               </>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* View Message Dialog */}
         <Dialog open={!!selectedMessage} onOpenChange={() => setSelectedMessage(null)}>
