@@ -302,52 +302,71 @@ export default function SellerSettingsDomain() {
               isClaiming={claimSubdomain.isPending}
             />
 
-            {/* Custom Domains Header */}
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-foreground">Custom Domains</h2>
-              {activeDomains.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => bulkHealthCheck.mutate()}
-                  disabled={bulkHealthCheck.isPending}
-                >
-                  {bulkHealthCheck.isPending ? (
-                    <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                  ) : (
-                    <Activity className="w-3.5 h-3.5 mr-1.5" />
+            {/* Custom Domains */}
+            {isPro ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-foreground">Custom Domains</h2>
+                  {activeDomains.length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => bulkHealthCheck.mutate()}
+                      disabled={bulkHealthCheck.isPending}
+                    >
+                      {bulkHealthCheck.isPending ? (
+                        <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                      ) : (
+                        <Activity className="w-3.5 h-3.5 mr-1.5" />
+                      )}
+                      Check All
+                    </Button>
                   )}
-                  Check All
-                </Button>
-              )}
-            </div>
+                </div>
 
-            {/* Domain Cards */}
-            {customDomains.map((d) => (
-              <CustomDomainCard
-                key={d.id}
-                domain={d}
-                onVerify={(id) => verifyDomain.mutate(id)}
-                onHealthCheck={(id) => healthCheck.mutate(id)}
-                onRemove={(id) => removeDomain.mutate(id)}
-                onAutoFix={(id) => autoFixDns.mutate(id)}
-                isVerifying={verifyDomain.isPending && verifyDomain.variables === d.id}
-                isHealthChecking={healthCheck.isPending && healthCheck.variables === d.id}
-                isAutoFixing={autoFixDns.isPending && autoFixDns.variables === d.id}
-                healthCheckData={healthCheck.data && healthCheck.variables === d.id ? healthCheck.data : undefined}
-                hasCloudflareCredentials={!!cfCreds?.cloudflare_api_token}
-              />
-            ))}
+                {customDomains.map((d) => (
+                  <CustomDomainCard
+                    key={d.id}
+                    domain={d}
+                    onVerify={(id) => verifyDomain.mutate(id)}
+                    onHealthCheck={(id) => healthCheck.mutate(id)}
+                    onRemove={(id) => removeDomain.mutate(id)}
+                    onAutoFix={(id) => autoFixDns.mutate(id)}
+                    isVerifying={verifyDomain.isPending && verifyDomain.variables === d.id}
+                    isHealthChecking={healthCheck.isPending && healthCheck.variables === d.id}
+                    isAutoFixing={autoFixDns.isPending && autoFixDns.variables === d.id}
+                    healthCheckData={healthCheck.data && healthCheck.variables === d.id ? healthCheck.data : undefined}
+                    hasCloudflareCredentials={!!cfCreds?.cloudflare_api_token}
+                  />
+                ))}
 
-            {customDomains.length === 0 && (
-              <div className="border border-dashed border-border rounded-xl p-8 text-center">
-                <Globe className="w-10 h-10 mx-auto text-muted-foreground/40 mb-3" />
-                <p className="text-sm font-medium text-muted-foreground">No custom domains yet</p>
-                <p className="text-xs text-muted-foreground/70 mt-1 mb-4">Connect your own domain for a fully branded store experience.</p>
-                <Button variant="outline" size="sm" onClick={() => setWizardOpen(true)}>
-                  <Plus className="w-4 h-4 mr-1.5" />
-                  Add Your First Domain
+                {customDomains.length === 0 && (
+                  <div className="border border-dashed border-border rounded-xl p-8 text-center">
+                    <Globe className="w-10 h-10 mx-auto text-muted-foreground/40 mb-3" />
+                    <p className="text-sm font-medium text-muted-foreground">No custom domains yet</p>
+                    <p className="text-xs text-muted-foreground/70 mt-1 mb-4">Connect your own domain for a fully branded store experience.</p>
+                    <Button variant="outline" size="sm" onClick={() => setWizardOpen(true)}>
+                      <Plus className="w-4 h-4 mr-1.5" />
+                      Add Your First Domain
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="border border-border rounded-xl p-6 text-center bg-muted/20">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-3">
+                  <Lock className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="text-sm font-semibold text-foreground mb-1">Custom Domains — Pro Only</h3>
+                <p className="text-xs text-muted-foreground mb-4 max-w-sm mx-auto">
+                  Upgrade to Seller Pro to connect your own custom domain and give your store a fully branded URL.
+                </p>
+                <Button size="sm" asChild>
+                  <a href="/seller/pro">
+                    <Crown className="w-4 h-4 mr-1.5" />
+                    Upgrade to Pro
+                  </a>
                 </Button>
               </div>
             )}
