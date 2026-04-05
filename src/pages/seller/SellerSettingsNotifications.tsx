@@ -408,14 +408,11 @@ export default function SellerSettingsNotifications() {
             </div>
           )}
           {/* How to Create Webhook */}
-          <Card className="border-muted">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Bell className="h-5 w-5" />
-                How to Create a Discord Webhook
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="border border-border rounded-xl overflow-hidden border-muted">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">How to Create a Discord Webhook</h3>
+            </div>
+            <div className="p-4">
               <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
                 <li>Open your Discord server settings</li>
                 <li>Go to <strong>Integrations</strong> → <strong>Webhooks</strong></li>
