@@ -53,6 +53,8 @@ export function ChatMessageActions({
   onRemoveReaction,
   onDelete,
   onReply,
+  onThread,
+  onPin,
   isOwnBubble = false,
   isPWA = false,
   isOpen,
