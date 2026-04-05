@@ -344,7 +344,7 @@ export function AppRoutes() {
         <Route path="/marketplace" element={<Products />} />
         <Route path="/stores" element={<AllStores />} />
         <Route path="/affiliate" element={<Affiliate />} />
-        <Route path="/recruiter" element={<Recruiter />} />
+        
         <Route path="/advertise" element={<Advertise />} />
         <Route path="/credits" element={<Credits />} />
         <Route path="/sell" element={<Sell />} />
