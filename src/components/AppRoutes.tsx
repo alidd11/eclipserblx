@@ -134,10 +134,6 @@ const AdminIPReports = lazyWithRetry(() => import("@/pages/admin/IPReports"));
 const AdminDeveloperSubmissions = lazyWithRetry(() => import("@/pages/admin/DeveloperSubmissions"));
 const AdminDeveloperPayments = lazyWithRetry(() => import("@/pages/admin/DeveloperPayments"));
 const AdminDeveloperPaymentDetail = lazyWithRetry(() => import("@/pages/admin/DeveloperPaymentDetail"));
-const AdminRecruiters = lazyWithRetry(() => import("@/pages/admin/Recruiters"));
-const AdminRecruiterApplications = lazyWithRetry(() => import("@/pages/admin/RecruiterApplications"));
-const AdminRecruiterPayouts = lazyWithRetry(() => import("@/pages/admin/RecruiterPayouts"));
-const AdminRecruiterCommissions = lazyWithRetry(() => import("@/pages/admin/RecruiterCommissions"));
 const AdminGDPRCompliance = lazyWithRetry(() => import("@/pages/admin/GDPRCompliance"));
 
 const AdminPortalBotSetup = lazyWithRetry(() => import("@/pages/admin/PortalBotSetup"));
@@ -167,8 +163,6 @@ const AdminAffiliateHub = lazyWithRetry(() => import("@/pages/admin/AffiliateHub
 const AdminPlatformLedger = lazyWithRetry(() => import("@/pages/admin/PlatformLedger"));
 const AdminCustomDomains = lazyWithRetry(() => import("@/pages/admin/CustomDomains"));
 
-// Recruiter page
-const Recruiter = lazyWithRetry(() => import("@/pages/Recruiter"));
 
 // Seller pages
 const SellerDashboard = lazyWithRetry(() => import("@/pages/seller/SellerDashboard"));
@@ -350,7 +344,7 @@ export function AppRoutes() {
         <Route path="/marketplace" element={<Products />} />
         <Route path="/stores" element={<AllStores />} />
         <Route path="/affiliate" element={<Affiliate />} />
-        <Route path="/recruiter" element={<Recruiter />} />
+        
         <Route path="/advertise" element={<Advertise />} />
         <Route path="/credits" element={<Credits />} />
         <Route path="/sell" element={<Sell />} />
@@ -502,10 +496,6 @@ export function AppRoutes() {
         <Route path="/admin/developer-submissions" element={<AdminDeveloperSubmissions />} />
         <Route path="/admin/developer-payments" element={<Navigate to="/admin/payouts?tab=developer" replace />} />
         <Route path="/admin/developer-payments/:id" element={<AdminDeveloperPaymentDetail />} />
-        <Route path="/admin/recruiters" element={<AdminRecruiters />} />
-        <Route path="/admin/recruiter-applications" element={<AdminRecruiterApplications />} />
-        <Route path="/admin/recruiter-payouts" element={<AdminRecruiterPayouts />} />
-        <Route path="/admin/recruiter-commissions" element={<AdminRecruiterCommissions />} />
         <Route path="/admin/gdpr-compliance" element={<AdminGDPRCompliance />} />
         <Route path="/admin/botghost-setup" element={<Navigate to="/bot/settings" replace />} />
         <Route path="/admin/portal-bot-setup" element={<AdminPortalBotSetup />} />

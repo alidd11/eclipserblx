@@ -239,7 +239,7 @@ var VALID_ROUTE_PATTERNS = [
   /^\\/marketplace$/,
   /^\\/stores$/,
   /^\\/affiliate$/,
-  /^\\/recruiter$/,
+  
   /^\\/advertise$/,
   /^\\/credits$/,
   /^\\/sell$/,

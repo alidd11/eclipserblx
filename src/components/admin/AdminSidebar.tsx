@@ -125,10 +125,6 @@ const navGroups: NavGroup[] = [
       { title: 'Job Channels', icon: Megaphone, href: '/admin/job-channels', permissions: ['view_job_channels'] },
       { title: 'Applications', icon: FileText, href: '/admin/applications', permissions: ['view_applications'] },
       { title: 'Archived', icon: Archive, href: '/admin/archived-applications', permissions: ['review_applications'] },
-      { title: 'Recruiters', icon: UserCheck, href: '/admin/recruiters', permissions: ['manage_staff'] },
-      { title: 'Recruiter Applications', icon: FileText, href: '/admin/recruiter-applications', permissions: ['review_applications'] },
-      { title: 'Recruiter Payouts', icon: TrendingUp, href: '/admin/recruiter-payouts', permissions: ['manage_staff'] },
-      { title: 'Recruiter Commissions', icon: DollarSign, href: '/admin/recruiter-commissions', permissions: ['manage_staff'] },
     ],
   },
   {
