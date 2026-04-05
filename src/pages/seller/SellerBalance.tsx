@@ -189,17 +189,15 @@ export default function SellerBalance() {
           )}
 
           {/* How Your Earnings Work - Breakdown Card */}
-          <Card className="mb-6 border-blue-500/30 bg-blue-500/5">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
+          <div className="mb-6 border border-blue-500/30 bg-blue-500/5 rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-blue-500/20 bg-blue-500/5">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
                 <Info className="h-4 w-4 text-blue-500" />
                 How Your Earnings Are Calculated
-              </CardTitle>
-              <CardDescription>
-                Here's what happens when a customer buys your product
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Here's what happens when a customer buys your product</p>
+            </div>
+            <div className="p-4 space-y-4">
               {/* Visual flow */}
               <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2 sm:gap-3">
                 <div className="bg-muted/50 rounded-lg p-3 text-center">
