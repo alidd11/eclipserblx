@@ -168,7 +168,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
             </div>
           </header>
         )}
-        showBreadcrumb={false}
+        
         showFooter={false}
         showFABs={false}
         wrapperClassName={cn(

@@ -244,7 +244,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
             </>
           )
         )}
-        showBreadcrumb={false}
+        
         showFooter={false}
         showFABs={false}
         chatMode={isChatPage}

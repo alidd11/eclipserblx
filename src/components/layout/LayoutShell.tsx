@@ -6,8 +6,6 @@ import { Header } from '@/components/layout/Header';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 // Lazy-load below-fold Footer to reduce initial bundle
 const Footer = lazy(() => import('@/components/layout/Footer').then(m => ({ default: m.Footer })));
-// Lazy-load breadcrumb — non-critical for initial paint
-const UniversalBreadcrumb = lazy(() => import('@/components/layout/UniversalBreadcrumb').then(m => ({ default: m.UniversalBreadcrumb })));
 import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
 import { useEdgeSwipe } from '@/hooks/useEdgeSwipe';
@@ -32,8 +30,6 @@ interface LayoutShellProps {
   };
   /** Completely replace the default Header with a custom element */
   customHeader?: (onMenuClick: () => void) => ReactNode;
-  /** Show the universal breadcrumb below the header (default: true) */
-  showBreadcrumb?: boolean;
   /** Show the footer at the bottom of main (default: true) */
   showFooter?: boolean;
   /** Show floating action buttons (default: true) */
@@ -62,7 +58,7 @@ function LayoutShellInner({
   mobileSidebar,
   headerProps = {},
   customHeader,
-  showBreadcrumb = true,
+  
   showFooter = true,
   showFABs = true,
   extra,
@@ -134,9 +130,6 @@ function LayoutShellInner({
               />
               <GlobalCategoryBar />
             </div>
-          )}
-          {showBreadcrumb && (
-            <Suspense fallback={null}><UniversalBreadcrumb /></Suspense>
           )}
           <main
             id="main-content"

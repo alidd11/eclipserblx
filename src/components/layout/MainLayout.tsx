@@ -8,12 +8,12 @@ import { safeStorage } from '@/lib/safeStorage';
 interface MainLayoutProps {
   children: ReactNode;
   showFooter?: boolean;
-  showBreadcrumb?: boolean;
+  
 }
 
 const COLLAPSE_KEY = 'sidebar-collapsed';
 
-function MainLayoutContent({ children, showFooter = true, showBreadcrumb = true }: MainLayoutProps) {
+function MainLayoutContent({ children, showFooter = true }: MainLayoutProps) {
   useDeferredScheduledReleaseCheck();
 
   const [collapsed, setCollapsed] = useState(() => safeStorage.getItem(COLLAPSE_KEY) === 'true');
@@ -41,7 +41,6 @@ function MainLayoutContent({ children, showFooter = true, showBreadcrumb = true 
       )}
       headerProps={{ mobileFixed: true, showDesktopNav: true }}
       showFooter={showFooter}
-      showBreadcrumb={showBreadcrumb}
       mainStyle={{ paddingBottom: 'calc(var(--chat-safe-bottom, var(--bottom-safe-area, 0px)) + var(--tab-bar-height, 0px))' }}
     >
       <PageTransition>{children}</PageTransition>
@@ -49,6 +48,6 @@ function MainLayoutContent({ children, showFooter = true, showBreadcrumb = true 
   );
 }
 
-export function MainLayout({ children, showFooter = true, showBreadcrumb = true }: MainLayoutProps) {
-  return <MainLayoutContent showFooter={showFooter} showBreadcrumb={showBreadcrumb}>{children}</MainLayoutContent>;
+export function MainLayout({ children, showFooter = true }: MainLayoutProps) {
+  return <MainLayoutContent showFooter={showFooter}>{children}</MainLayoutContent>;
 }
