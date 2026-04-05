@@ -1,60 +1,34 @@
 
 
-## Investigation Report: "Can't Access Orders or Support"
+## Polish Recovery & Guest Support to Enterprise Visual Standard
 
-### Root Cause Analysis
+### What Changes
 
-I traced the entire payment-to-order pipeline and found **three concrete failure points** that cause customers to lose access to their purchases and support:
+Align the three customer-facing recovery features with the site's established flattened enterprise aesthetic — bordered containers, muted headers, clean typography, no gradient buttons on utility pages.
 
----
+### Steps
 
-### Finding 1: Orphaned Orders (Critical)
+1. **RecoverOrder.tsx — Visual overhaul**
+   - Replace `Card`/`CardHeader` with flat bordered container (`border-border rounded-xl`) and `bg-muted/30` header area
+   - Replace `gradient-button` with standard primary button (utility page, not conversion)
+   - Add a step-by-step visual guide: "1. Check your email receipt → 2. Copy the reference starting with pi_ or cs_ → 3. Paste below"
+   - Remove "from Stripe" copy — replace with "from your payment confirmation email"
+   - Add the guest support form as a fallback in the unauthenticated state (instead of just "please sign in")
+   - Improve result states: success card with order details, error card with actionable next steps
 
-**4 out of 43 paid orders** have `user_id = NULL` **and** empty `customer_email`. These orders are invisible to the customer because:
+2. **GuestSupportForm.tsx — Polish**
+   - Add character counter on textarea (X/5000)
+   - Expose category dropdown (Downloads, Payments, Account, Other) — the edge function already supports it
+   - Add subtle info banner: "We typically respond within 24 hours"
+   - Match input styling to the flattened aesthetic
 
-- RLS policy on `orders` requires `auth.uid() = user_id` — NULL user_id means no match
-- The email fallback in MyPurchases (`.eq('customer_email', user.email).is('user_id', null)`) also fails because `customer_email` is blank
-
-**How it happens**: In `create-payment-intent`, line 60 calls `authenticateUser()`. If the JWT is expired/corrupt (which your auth system already guards against, but edge cases exist), `userId` comes back null. Line 63 allows checkout to proceed without auth (`type !== 'checkout'`). The metadata stores `user_id: ""`. When `verify-payment` or `webhook-payment-handler` processes this, they try a profile email lookup as fallback (line 78-82), but if that also fails (no profile row, email mismatch), both `user_id` and `customer_email` end up null/empty.
-
-**Impact**: Customer pays, gets a success page, but the order never appears in "My Purchases."
-
-### Finding 2: No Order Recovery Path
-
-There is **no self-service mechanism** for a customer to reclaim an orphaned order. The only option is contacting support via Discord — which is exactly the screenshot complaint.
-
-### Finding 3: Support Ticket RLS Gap
-
-The support ticket INSERT policy requires `auth.uid() = user_id`. This is correct. But if a customer is experiencing auth issues (session expired, corrupt JWT), they cannot even create a support ticket to report their problem. There is no unauthenticated fallback.
-
----
-
-### Enterprise Fix Plan
-
-#### Step 1: Order Reconciliation Trigger (Database)
-Create a database trigger that runs on every `orders` INSERT. If `user_id` is NULL but `customer_email` is not empty, auto-resolve the user from the `profiles` table and set `user_id`. This prevents future orphans from the webhook path.
-
-#### Step 2: Backfill Existing Orphaned Orders (Migration)
-Run a one-time migration to match the 4 orphaned orders to users via Stripe payment data (payment_id lookup).
-
-#### Step 3: Post-Purchase Health Check (Frontend)
-After `OrderSuccess` renders, add a silent verification query that checks whether the order actually exists and is linked to `auth.uid()`. If not, call a new edge function `claim-order` that:
-- Takes the `payment_id` from the URL/session
-- Verifies the Stripe payment belongs to the authenticated user (by email match)
-- Updates `user_id` on the order
-
-#### Step 4: Order Recovery Page (Frontend)
-Add a `/recover-order` page accessible from the Support page where customers can enter their payment email. The system queries Stripe for payments matching that email, cross-references with orphaned orders, and links them to the authenticated user.
-
-#### Step 5: Guest Support Fallback (Frontend + Edge Function)
-Add an unauthenticated contact form on the Support page that creates a `support_tickets` row via a new `guest-support-ticket` edge function (using service role), requiring only email + message. This ensures customers can always reach support even during auth failures.
+3. **Support.tsx — Integration fixes**
+   - Show guest support form for ALL users (not just logged-out) with a toggle/accordion "Having trouble signing in?" — this covers the exact edge case of auth-broken users
+   - Flatten the order recovery banner: remove `bg-primary/5`, use standard `bg-muted/30` with left border accent
+   - Add the recovery link to the "Payments & Orders" help topic articles list
 
 ### Files Changed
-- **Migration**: Reconciliation trigger + backfill orphaned orders
-- `supabase/functions/claim-order/index.ts` — New edge function for post-purchase self-healing
-- `supabase/functions/guest-support-ticket/index.ts` — New edge function for unauthenticated support
-- `src/pages/OrderSuccess.tsx` — Add silent order health check
-- `src/pages/Support.tsx` — Add guest contact form and order recovery link
-- `src/pages/RecoverOrder.tsx` — New self-service order recovery page
-- `src/App.tsx` — Add route for `/recover-order`
+- `src/pages/RecoverOrder.tsx` — Visual redesign + unauthenticated fallback
+- `src/components/support/GuestSupportForm.tsx` — Category selector, character counter, response time info
+- `src/pages/Support.tsx` — Show guest form for all users, flatten recovery banner
 
