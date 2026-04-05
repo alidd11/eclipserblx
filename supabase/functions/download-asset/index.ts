@@ -428,17 +428,68 @@ Deno.serve(async (req) => {
       }
     }
 
-    // === STANDARD (non-Lua) DOWNLOAD FLOW ===
-    const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
-      .from('product-assets')
-      .createSignedUrl(assetUrl, 300);
+    // === STANDARD (non-Lua) DOWNLOAD FLOW with binary fingerprinting ===
+    const watermarkId = generateWatermarkHash(
+      user.id,
+      ((userOrder as Record<string, unknown>).order_id as string) || userOrder.id,
+      productId
+    );
 
-    if (signedUrlError || !signedUrlData?.signedUrl) {
-      console.error("Error creating signed URL:", signedUrlError);
-      return new Response(
-        JSON.stringify({ error: "Failed to generate download link" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // Try binary fingerprinting for supported file types
+    let finalSignedUrl: string | null = null;
+    let tempFilePath: string | null = null;
+
+    const fingerprintableExts = ['.rbxm', '.rbxl', '.png', '.jpg', '.jpeg', '.webp', '.zip', '.rar', '.7z'];
+    const shouldFingerprint = fingerprintableExts.some(ext => fileExtension.toLowerCase() === ext);
+
+    if (shouldFingerprint) {
+      try {
+        console.log(`Fingerprinting ${fileExtension} file for user=${user.id}, watermark=${watermarkId}`);
+        const { data: fileData, error: dlErr } = await supabaseAdmin.storage
+          .from('product-assets')
+          .download(assetUrl);
+
+        if (!dlErr && fileData) {
+          const originalBytes = new Uint8Array(await fileData.arrayBuffer());
+          const fingerprinted = fingerprintBinaryFile(originalBytes, watermarkId, fileExtension);
+
+          const fpToken = generateToken();
+          const fpPath = `_watermarked/${user.id}/${fpToken}${fileExtension}`;
+
+          const { error: upErr } = await supabaseAdmin.storage
+            .from('product-assets')
+            .upload(fpPath, fingerprinted, { contentType: 'application/octet-stream', upsert: true });
+
+          if (!upErr) {
+            const { data: fpSigned, error: fpSignErr } = await supabaseAdmin.storage
+              .from('product-assets')
+              .createSignedUrl(fpPath, 300);
+
+            if (!fpSignErr && fpSigned?.signedUrl) {
+              finalSignedUrl = fpSigned.signedUrl;
+              tempFilePath = fpPath;
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Binary fingerprinting failed, falling back:", e);
+      }
+    }
+
+    // Fallback: use original signed URL if fingerprinting was skipped or failed
+    if (!finalSignedUrl) {
+      const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
+        .from('product-assets')
+        .createSignedUrl(assetUrl, 300);
+
+      if (signedUrlError || !signedUrlData?.signedUrl) {
+        console.error("Error creating signed URL:", signedUrlError);
+        return new Response(
+          JSON.stringify({ error: "Failed to generate download link" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      finalSignedUrl = signedUrlData.signedUrl;
     }
 
     const downloadToken = generateToken();
@@ -451,8 +502,10 @@ Deno.serve(async (req) => {
         user_id: user.id,
         product_id: productId,
         order_item_id: orderItemId || userOrder.id,
-        signed_url: signedUrlData.signedUrl,
+        signed_url: finalSignedUrl,
         expires_at: expiresAt.toISOString(),
+        creator_ip: clientIp,
+        ...(tempFilePath ? { temp_file_path: tempFilePath } : {}),
       });
 
     if (tokenError) {
