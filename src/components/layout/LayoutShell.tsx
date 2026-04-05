@@ -1,4 +1,5 @@
 import { ReactNode, useState, lazy, Suspense } from 'react';
+import { cn } from '@/lib/utils';
 import { GlobalCategoryBar } from '@/components/shop/GlobalCategoryBar';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Header } from '@/components/layout/Header';
@@ -51,6 +52,8 @@ interface LayoutShellProps {
   mainClassName?: string;
   /** CSS class applied to the inner column container (default: md-only height) */
   innerClassName?: string;
+  /** Enable flex height chain for chat/ticket pages (prevents black gap on mobile) */
+  chatMode?: boolean;
 }
 
 function LayoutShellInner({
@@ -69,6 +72,7 @@ function LayoutShellInner({
   wrapperStyle,
   mainClassName,
   innerClassName,
+  chatMode,
 }: LayoutShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
@@ -139,7 +143,7 @@ function LayoutShellInner({
             className={mainClassName ?? "flex-1 overflow-x-clip max-w-full min-w-0"}
             style={mainStyle ?? { paddingBottom: 'var(--bottom-safe-area, 0px)' }}
           >
-            <div className="w-full">
+            <div className={cn("w-full", chatMode && "flex-1 flex flex-col min-h-0 overflow-hidden")}>
               {contentClassName ? (
                 <div className={contentClassName}>{children}</div>
               ) : (
