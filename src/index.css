@@ -628,6 +628,15 @@
       overscroll-behavior: contain;
     }
   }
+
+  /* Prevent text selection on touch devices only — desktop needs selection for accessibility */
+  @media (hover: none) and (pointer: coarse) {
+    body {
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      user-select: none;
+    }
+  }
   
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Space Grotesk', sans-serif;
