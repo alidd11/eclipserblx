@@ -519,8 +519,8 @@ export default function SellerSettingsTeam() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Remove Member Dialog */}

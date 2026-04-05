@@ -567,8 +567,8 @@ export default function SellerSettingsPayments() {
                   {store?.created_at ? new Date(store.created_at).toLocaleDateString() : 'N/A'}
                 </span>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </SellerLayout>
