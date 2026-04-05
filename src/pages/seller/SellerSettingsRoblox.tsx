@@ -123,7 +123,7 @@ export default function SellerSettingsRoblox() {
     <SellerLayout>
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">Roblox Settings</h1>
+          <h1 className="text-2xl font-display font-bold">Roblox Settings</h1>
           <p className="text-muted-foreground">
             Configure Roblox integrations and customer rewards for your store
           </p>
