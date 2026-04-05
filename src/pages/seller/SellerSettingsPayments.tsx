@@ -271,17 +271,12 @@ export default function SellerSettingsPayments() {
 
         <div className="space-y-6">
           {/* Direct Payouts */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Direct Payouts
-              </CardTitle>
-              <CardDescription>
-                Connect your account to receive automatic payouts directly to your bank
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Direct Payouts</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Connect your account to receive automatic payouts directly to your bank</p>
+            </div>
+            <div className="p-4">
               {connectStatusLoading ? (
                 <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
                   <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
