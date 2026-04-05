@@ -1,20 +1,19 @@
 
 
-## Fix Grey Bar at Bottom of Mobile Sidebar
+## Make PWA Title Bar Enterprise-Level
 
-The grey strip visible at the bottom of the sidebar drawer is the `SheetContent` container's background (`bg-card`) showing through below the sidebar content. The sidebar itself uses `bg-sidebar` (near-black), but the Sheet wrapper uses `bg-card` (lighter grey) with safe-area bottom padding — creating a visible mismatch.
+The screenshot shows the iOS PWA status bar / title area. The issue is that the `theme_color` (`#151617`) doesn't perfectly match the app's actual background (`hsl(220, 8%, 6%)` ≈ `#0e0f11`), creating a subtle but noticeable disconnect. To make this feel seamless and enterprise-grade:
 
-### Fix — Single file: `LayoutShell.tsx`
+### Changes
 
-**Change the `SheetContent` background** from `bg-card` to `bg-sidebar` so the container matches the sidebar's own background color. This eliminates the color mismatch in the safe-area padding zone.
+1. **`public/manifest.webmanifest`** — Update `theme_color` and `background_color` from `#151617` to `#0e0f11` to match the app's dark background exactly. This makes the status bar blend seamlessly into the app.
 
-```
-// Current (line ~89)
-className="p-0 w-[280px] border-r-0 bg-card overflow-hidden ..."
+2. **`index.html`** — Update the `<meta name="theme-color">` tag from `#151617` to `#0e0f11` for the same reason.
 
-// Updated
-className="p-0 w-[280px] border-r-0 bg-sidebar overflow-hidden ..."
-```
+3. **`public/manifest-admin.json`** — Same update for consistency across all manifests (`#151617` → `#0e0f11`).
 
-One word change, one file.
+4. **`public/offline.html`** — Update `theme-color` meta from `#0a0a0f` to `#0e0f11` so the offline page matches too.
+
+### Result
+The iOS status bar, splash screen, and title bar will blend perfectly with the app background — no visible seam, fully cohesive. Users will need to re-add the PWA to home screen for the change to take effect.
 
