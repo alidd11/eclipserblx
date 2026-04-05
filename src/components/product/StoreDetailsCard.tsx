@@ -107,11 +107,6 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
             )}
           </div>
           
-          {/* Accent line */}
-          <div 
-            className="h-0.5 w-full rounded-full opacity-60"
-            style={{ backgroundColor: accentColor }}
-          />
         </div>
       </Card>
     </Link>

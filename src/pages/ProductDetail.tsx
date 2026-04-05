@@ -475,7 +475,7 @@ export default function ProductDetail() {
         />
       )}
       
-        <div className="container py-4 sm:py-8 space-y-6 pb-20 md:pb-8">
+        <div className="container py-4 sm:py-8 space-y-4 pb-20 md:pb-8">
         
         {/* Admin Preview Banner for Scheduled Products */}
         {isStaff && isScheduledProduct && (
@@ -794,7 +794,7 @@ export default function ProductDetail() {
                     </Button>
                     
                     {inCart && (
-                      <Button size="lg" asChild className="h-14">
+                     <Button size="lg" asChild className="h-12">
                         <Link to="/cart">View Cart</Link>
                       </Button>
                     )}
@@ -805,60 +805,56 @@ export default function ProductDetail() {
                     <RobuxPayButton />
                   )}
                 </div>
+                {/* Actions row */}
+                <div className="flex items-center gap-2 pt-3 border-t border-border">
+                  <SocialShareButtons
+                    url={`/products/${(product as any).product_number || productNumber}`}
+                    title={product.name}
+                    description={`Check out ${product.name} on Eclipse`}
+                  />
+                  {user && (
+                    <PriceAlertButton
+                      productId={product.id}
+                      currentPrice={product.price}
+                      className="h-9 px-3 text-xs"
+                    />
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 px-3 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowIPReportDialog(true)}
+                  >
+                    <Flag className="h-3.5 w-3.5" />
+                    Report
+                  </Button>
+                </div>
               </CardContent>
             </Card>
-
-
-            {/* Share + Price Alert + Report */}
-            <div className="rounded-2xl border border-border bg-card/60 p-3 space-y-3">
-              <SocialShareButtons
-                url={`/products/${(product as any).product_number || productNumber}`}
-                title={product.name}
-                description={`Check out ${product.name} on Eclipse`}
-              />
-              <div className={cn('grid gap-2', user ? 'grid-cols-2' : 'grid-cols-1')}>
-                {user && (
-                  <PriceAlertButton
-                    productId={product.id}
-                    currentPrice={product.price}
-                    className="h-11 w-full justify-start rounded-xl border border-border bg-background/60 px-4 text-sm hover:bg-accent hover:text-foreground"
-                  />
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-11 w-full justify-start rounded-xl border border-border bg-background/60 px-4 text-sm text-foreground hover:bg-accent hover:text-foreground"
-                  onClick={() => setShowIPReportDialog(true)}
-                >
-                  <Flag className="h-4 w-4 mr-2" />
-                  Report IP Violation
-                </Button>
-              </div>
-            </div>
           </div>
 
         {/* Reviews Section */}
-        <div ref={reviewSectionRef} id="reviews" className="scroll-mt-8">
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5" />
-                  Customer Reviews
-                </CardTitle>
-                {hasPurchased && !existingReview && user && (
-                  <Button 
-                    onClick={() => setShowReviewForm(!showReviewForm)}
-                    variant={showReviewForm ? "outline" : "default"}
-                    size="sm"
-                  >
-                    <Star className="h-4 w-4 mr-2" />
-                    {showReviewForm ? 'Cancel' : 'Write a Review'}
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
+        <section ref={reviewSectionRef} id="reviews" className="scroll-mt-8 border-t border-border pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="flex items-center gap-2 text-lg font-semibold">
+              <MessageSquare className="h-5 w-5" />
+              Customer Reviews
+              {productReviews && productReviews.length > 0 && (
+                <span className="text-sm font-normal text-muted-foreground">({productReviews.length})</span>
+              )}
+            </h2>
+            {hasPurchased && !existingReview && user && (
+              <Button 
+                onClick={() => setShowReviewForm(!showReviewForm)}
+                variant={showReviewForm ? "outline" : "default"}
+                size="sm"
+              >
+                <Star className="h-4 w-4 mr-2" />
+                {showReviewForm ? 'Cancel' : 'Write a Review'}
+              </Button>
+            )}
+          </div>
+          <div className="space-y-4">
               {/* Review Form - only show if user purchased and hasn't reviewed */}
               {showReviewForm && hasPurchased && !existingReview && user && (
                 <div className="border-b border-border pb-6">
@@ -936,7 +932,7 @@ export default function ProductDetail() {
                   {filteredReviews.map((review) => (
                     <div key={review.id} className="border-b border-border pb-4 last:border-0 last:pb-0">
                       <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                           {review.profile?.avatar_url ? (
                             <img 
                               src={review.profile.avatar_url} 
@@ -992,45 +988,40 @@ export default function ProductDetail() {
                   No reviews yet. Be the first to share your experience!
                 </p>
               )}
-            </CardContent>
-          </Card>
-        </div>
+          </div>
+        </section>
         </div>
 
         {relatedProducts && relatedProducts.length > 0 && (
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5" />
-                Related Products
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {relatedProducts.map((p) => (
-                  <Link 
-                    key={p.id} 
-                    to={`/products/${(p as any).product_number}`}
-                    className="group rounded-lg overflow-hidden bg-muted/30 hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="aspect-video bg-muted overflow-hidden">
-                      {p.images?.[0] ? (
-                        <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-3xl font-bold text-muted-foreground/30">{p.name.charAt(0)}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-3">
-                      <h3 className="font-semibold truncate group-hover:text-primary transition-colors">{p.name}</h3>
-                      <p className="text-primary font-bold">£{p.price.toFixed(2)}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <section className="border-t border-border pt-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Package className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold text-foreground">Related Products</h2>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {relatedProducts.map((p) => (
+                <Link 
+                  key={p.id} 
+                  to={`/products/${(p as any).product_number}`}
+                  className="group block rounded-lg border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
+                >
+                  <div className="aspect-square bg-muted overflow-hidden">
+                    {p.images?.[0] ? (
+                      <img src={p.images[0]} alt={p.name} loading="lazy" decoding="async" className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-lg font-bold text-muted-foreground/30">{p.name.charAt(0)}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-2">
+                    <p className="text-xs font-medium text-foreground truncate">{p.name}</p>
+                    <p className="text-xs font-bold text-muted-foreground">{formatPrice(p.price)}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
         )}
         <FrequentlyBoughtTogether productId={product.id} categoryId={product.category_id} storeId={product.store_id} />
         <SponsoredProductSection categoryId={product.category_id} />
