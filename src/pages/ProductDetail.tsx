@@ -988,9 +988,8 @@ export default function ProductDetail() {
                   No reviews yet. Be the first to share your experience!
                 </p>
               )}
-            </CardContent>
-          </Card>
-        </div>
+          </div>
+        </section>
         </div>
 
         {relatedProducts && relatedProducts.length > 0 && (
