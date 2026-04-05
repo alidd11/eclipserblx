@@ -1,23 +1,16 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Package, Search, Sparkles, Loader2,
-  Clock, X, TrendingUp, ArrowRight, Keyboard, Store
-} from 'lucide-react';
 import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from '@/components/ui/command';
+  Package, Search, Sparkles, Loader2,
+  Clock, X, TrendingUp, ArrowRight, ArrowLeft, Store
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { hapticTap } from '@/lib/haptics';
 import { useSmartSearch } from '@/hooks/useSmartSearch';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
+import { SearchCategoryChips } from './SearchCategoryChips';
+import { cn } from '@/lib/utils';
 
 interface Product {
   id: string;
@@ -25,6 +18,7 @@ interface Product {
   slug: string;
   price: number;
   images?: string[];
+  product_number?: string | number;
 }
 
 interface StoreResult {
@@ -43,15 +37,54 @@ interface SearchCommandPaletteProps {
 export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPaletteProps) {
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
+  const inputRef = useRef<HTMLInputElement>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [storeResults, setStoreResults] = useState<StoreResult[]>([]);
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [useAI, setUseAI] = useState(false);
-  const { searches: recentSearches, addSearch, removeSearch } = useRecentSearches();
-  
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const { searches: recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
+
   const { search: smartSearch, isSearching: isSmartSearching, results: smartResults } = useSmartSearch();
+
+  // Auto-focus input on open
+  useEffect(() => {
+    if (open) {
+      // Small delay for animation
+      const t = setTimeout(() => inputRef.current?.focus(), 100);
+      return () => clearTimeout(t);
+    } else {
+      setSearchQuery('');
+      setUseAI(false);
+      setStoreResults([]);
+      setCategoryFilter(null);
+    }
+  }, [open]);
+
+  // Escape key
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onOpenChange(false);
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open, onOpenChange]);
+
+  // Lock body scroll when open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
 
   // Fetch trending products on open
   useEffect(() => {
@@ -68,22 +101,15 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
 
       if (data) {
         const filtered = data.filter((p: any) => p.stores?.is_active === true);
-        setTrendingProducts(filtered.slice(0, 4));
+        setTrendingProducts(filtered.slice(0, 6));
       }
     };
     fetchTrending();
   }, [open, trendingProducts.length]);
 
-  // Fetch products when search query changes
+  // Search products
   useEffect(() => {
-    if (!open) {
-      setSearchQuery('');
-      setUseAI(false);
-      setStoreResults([]);
-      return;
-    }
-
-    if (useAI) return;
+    if (!open || useAI) return;
 
     const fetchProducts = async () => {
       if (searchQuery.length < 2) {
@@ -94,16 +120,21 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
 
       setIsLoading(true);
       try {
-        // Search products by name OR description, plus search stores
+        let productQuery = supabase
+          .from('products')
+          .select('id, name, slug, product_number, price, images, stores!inner (is_active), categories!inner (slug)')
+          .eq('is_active', true)
+          .eq('stores.is_active', true)
+          .or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)
+          .order('total_sales', { ascending: false })
+          .limit(8);
+
+        if (categoryFilter) {
+          productQuery = productQuery.eq('categories.slug', categoryFilter);
+        }
+
         const [productRes, storeRes] = await Promise.all([
-          supabase
-            .from('products')
-            .select('id, name, slug, product_number, price, images, stores!inner (is_active)')
-            .eq('is_active', true)
-            .eq('stores.is_active', true)
-            .or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)
-            .order('total_sales', { ascending: false })
-            .limit(8),
+          productQuery,
           supabase
             .from('stores')
             .select('id, name, slug, logo_url, is_verified')
@@ -114,7 +145,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
         ]);
 
         if (!productRes.error && productRes.data) {
-          setProducts(productRes.data.slice(0, 5));
+          setProducts(productRes.data.slice(0, 6));
         }
         if (!storeRes.error && storeRes.data) {
           setStoreResults(storeRes.data as StoreResult[]);
@@ -128,13 +159,12 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
 
     const debounce = setTimeout(fetchProducts, 150);
     return () => clearTimeout(debounce);
-  }, [searchQuery, open, useAI]);
+  }, [searchQuery, open, useAI, categoryFilter]);
 
   const displayProducts = useAI && smartResults.length > 0 ? smartResults : products;
   const displayLoading = useAI ? isSmartSearching : isLoading;
   const hasQuery = searchQuery.length >= 2;
 
-  // Highlight matching text in product names
   const highlightMatch = useCallback((text: string, query: string) => {
     if (!query || query.length < 2) return text;
     const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
@@ -153,59 +183,150 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
   }, [navigate, onOpenChange]);
 
   const handleViewAllResults = useCallback(() => {
-    if (searchQuery.trim()) {
-      addSearch(searchQuery.trim());
-    }
+    if (searchQuery.trim()) addSearch(searchQuery.trim());
     hapticTap();
     onOpenChange(false);
     navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
   }, [searchQuery, navigate, onOpenChange, addSearch]);
 
   const handleRecentSearchClick = useCallback((query: string) => {
+    hapticTap();
     setSearchQuery(query);
   }, []);
 
-  const resultCount = useMemo(() => displayProducts.length, [displayProducts]);
+  const handleClose = useCallback(() => {
+    hapticTap();
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  if (!open) return null;
 
   return (
-    <CommandDialog open={open} onOpenChange={onOpenChange}>
-      {/* Search Input Area */}
-      <div className="relative">
-        <CommandInput 
-          placeholder="Search products..." 
-          value={searchQuery}
-          onValueChange={(val) => {
-            setSearchQuery(val);
-            setUseAI(false);
-          }}
-        />
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-          {useAI && isSmartSearching && (
-            <div className="flex items-center gap-1.5 text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              <span className="font-medium">AI</span>
-            </div>
-          )}
-          {searchQuery.length >= 3 && !useAI && (
+    <div
+      className={cn(
+        "fixed inset-0 z-50 bg-background flex flex-col",
+        "animate-in fade-in duration-200",
+        "sm:slide-in-from-bottom-0",
+        "slide-in-from-bottom-4"
+      )}
+      style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
+      {/* ── Sticky header ── */}
+      <header className="sticky top-0 z-10 flex items-center gap-2 px-3 py-2.5 border-b border-border/50 bg-background">
+        <button
+          onClick={handleClose}
+          className="shrink-0 h-9 w-9 flex items-center justify-center rounded-lg hover:bg-muted active:scale-[0.97] transition-all touch-manipulation"
+        >
+          <ArrowLeft className="h-5 w-5 text-foreground" />
+        </button>
+
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <input
+            ref={inputRef}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setUseAI(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && hasQuery) handleViewAllResults();
+            }}
+            placeholder="Search assets..."
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            enterKeyHint="search"
+            className="w-full h-10 pl-9 pr-10 rounded-xl bg-muted/60 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+            style={{ WebkitUserSelect: 'text' }}
+          />
+          {searchQuery && (
             <button
-              type="button"
-              onClick={() => {
-                setUseAI(true);
-                smartSearch(searchQuery);
-              }}
-              className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors px-2 py-1 rounded-md hover:bg-primary/5 border border-transparent hover:border-primary/20"
+              onClick={() => { setSearchQuery(''); inputRef.current?.focus(); }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full bg-muted-foreground/20 hover:bg-muted-foreground/30 transition-colors"
             >
-              <Sparkles className="h-3 w-3" />
-              <span>AI</span>
+              <X className="h-3 w-3 text-foreground" />
             </button>
           )}
         </div>
-      </div>
 
-      <CommandList className="max-h-[min(60vh,420px)] scrollbar-thin">
-        <CommandEmpty>
-          {displayLoading ? (
-            <div className="flex flex-col items-center gap-3 py-10">
+        {/* AI toggle */}
+        {searchQuery.length >= 3 && !useAI && (
+          <button
+            onClick={() => {
+              hapticTap();
+              setUseAI(true);
+              smartSearch(searchQuery);
+            }}
+            className="shrink-0 flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-primary px-2.5 py-1.5 rounded-lg hover:bg-primary/5 transition-all active:scale-[0.97] touch-manipulation"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            AI
+          </button>
+        )}
+        {useAI && isSmartSearching && (
+          <div className="shrink-0 flex items-center gap-1.5 text-xs text-primary bg-primary/10 px-2.5 py-1.5 rounded-lg">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            <span className="font-medium">AI</span>
+          </div>
+        )}
+      </header>
+
+      {/* ── Scrollable content ── */}
+      <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="max-w-2xl mx-auto w-full px-4 py-4 space-y-6">
+
+          {/* Recent searches — horizontal pills */}
+          {!hasQuery && recentSearches.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-2.5">
+                <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">Recent</h3>
+                <button
+                  onClick={() => { hapticTap(); clearAll(); }}
+                  className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Clear all
+                </button>
+              </div>
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-0.5">
+                {recentSearches.map((query) => (
+                  <button
+                    key={query}
+                    onClick={() => handleRecentSearchClick(query)}
+                    className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-[0.97] touch-manipulation group"
+                  >
+                    <Clock className="h-3 w-3 text-muted-foreground/50" />
+                    <span>{query}</span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); hapticTap(); removeSearch(query); }}
+                      className="ml-0.5 opacity-0 group-hover:opacity-100 p-0.5 rounded-full hover:bg-background/50 transition-all"
+                    >
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Categories */}
+          {!hasQuery && (
+            <section>
+              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-2.5">Categories</h3>
+              <SearchCategoryChips selected={categoryFilter} onSelect={(slug) => { setCategoryFilter(slug); }} />
+            </section>
+          )}
+
+          {/* Category chips when searching */}
+          {hasQuery && (
+            <SearchCategoryChips selected={categoryFilter} onSelect={setCategoryFilter} />
+          )}
+
+          {/* Loading state */}
+          {displayLoading && (
+            <div className="flex flex-col items-center gap-3 py-12">
               <div className="relative">
                 <div className="h-10 w-10 rounded-full border-2 border-muted" />
                 <Loader2 className="h-10 w-10 animate-spin text-primary absolute inset-0" />
@@ -214,211 +335,153 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                 {useAI ? 'AI is searching...' : 'Searching...'}
               </span>
             </div>
-          ) : hasQuery ? (
-            <div className="py-10 text-center space-y-3">
+          )}
+
+          {/* No results */}
+          {!displayLoading && hasQuery && displayProducts.length === 0 && storeResults.length === 0 && (
+            <div className="py-12 text-center space-y-3">
               <div className="h-12 w-12 rounded-xl bg-muted/50 flex items-center justify-center mx-auto">
                 <Search className="h-5 w-5 text-muted-foreground/40" />
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">No results found</p>
-                <p className="text-xs text-muted-foreground mt-1">Try different keywords or browse all products</p>
+                <p className="text-xs text-muted-foreground mt-1">Try different keywords or browse categories</p>
               </div>
-              <button
-                onClick={handleViewAllResults}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                Search all products <ArrowRight className="h-3 w-3" />
-              </button>
-            </div>
-          ) : (
-            <div className="py-10 text-center">
-              <p className="text-xs text-muted-foreground">Type to search products...</p>
             </div>
           )}
-        </CommandEmpty>
 
-        {/* Recent Searches */}
-        {!hasQuery && recentSearches.length > 0 && (
-          <CommandGroup heading="RECENT">
-            {recentSearches.slice(0, 4).map((query) => (
-              <CommandItem
-                key={query}
-                value={`recent-${query}`}
-                onSelect={() => handleRecentSearchClick(query)}
-                className="cursor-pointer group"
-              >
-                <Clock className="mr-2.5 h-3.5 w-3.5 text-muted-foreground/50" />
-                <span className="flex-1 text-sm text-muted-foreground group-data-[selected=true]:text-foreground transition-colors">{query}</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeSearch(query);
-                  }}
-                  className="opacity-0 group-hover:opacity-100 group-data-[selected=true]:opacity-100 p-0.5 rounded hover:bg-muted transition-all"
-                >
-                  <X className="h-3 w-3 text-muted-foreground" />
-                </button>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        )}
+          {/* Trending — shown when no query */}
+          {!hasQuery && !displayLoading && trendingProducts.length > 0 && (
+            <section>
+              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-2.5">Trending</h3>
+              <div className="space-y-1">
+                {trendingProducts.map((product) => (
+                  <button
+                    key={product.id}
+                    onClick={() => handleSelect(`/products/${(product as any).product_number}`)}
+                    className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-muted/60 active:bg-muted transition-colors active:scale-[0.99] touch-manipulation text-left"
+                  >
+                    <TrendingUp className="h-3.5 w-3.5 text-primary/50 shrink-0" />
+                    <ProductRow product={product} formatPrice={formatPrice} />
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
 
-        {/* Trending */}
-        {!hasQuery && trendingProducts.length > 0 && (
-          <>
-            {recentSearches.length > 0 && <CommandSeparator />}
-            <CommandGroup heading="TRENDING">
-              {trendingProducts.map((product) => (
-                <CommandItem
-                  key={product.id}
-                  value={`trending-${product.name}`}
-                  onSelect={() => handleSelect(`/products/${(product as any).product_number}`)}
-                  className="cursor-pointer group"
-                >
-                  <TrendingUp className="mr-2.5 h-3.5 w-3.5 text-primary/50 group-data-[selected=true]:text-primary transition-colors" />
-                  <ProductThumb product={product} formatPrice={formatPrice} />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </>
-        )}
-
-        {/* Search Results */}
-        {displayProducts.length > 0 && (
-          <>
-            <CommandGroup heading={
-              <span className="flex items-center gap-2">
-                {useAI ? 'AI RESULTS' : 'PRODUCTS'}
-                <span className="text-[10px] font-normal text-muted-foreground/60 tabular-nums">
-                  {resultCount}
+          {/* Product results */}
+          {!displayLoading && displayProducts.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-2.5">
+                <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                  {useAI ? 'AI Results' : 'Products'}
+                </h3>
+                <span className="text-[10px] text-muted-foreground/50 tabular-nums">
+                  {displayProducts.length}
                 </span>
-              </span>
-            }>
-              {displayProducts.map((product) => (
-                <CommandItem
-                  key={product.id}
-                  value={product.name}
-                  onSelect={() => {
-                    addSearch(searchQuery);
-                    handleSelect(`/products/${(product as any).product_number}`);
-                  }}
-                  className="cursor-pointer group"
-                >
-                  {useAI && <Sparkles className="mr-2.5 h-3.5 w-3.5 text-primary/60 group-data-[selected=true]:text-primary shrink-0 transition-colors" />}
-                  <ProductThumb product={product} formatPrice={formatPrice} highlightMatch={hasQuery ? (text: string) => highlightMatch(text, searchQuery) : undefined} />
-                </CommandItem>
-              ))}
-            </CommandGroup>
+              </div>
+              <div className="space-y-1">
+                {displayProducts.map((product) => (
+                  <button
+                    key={product.id}
+                    onClick={() => {
+                      addSearch(searchQuery);
+                      handleSelect(`/products/${(product as any).product_number}`);
+                    }}
+                    className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-muted/60 active:bg-muted transition-colors active:scale-[0.99] touch-manipulation text-left"
+                  >
+                    {useAI && <Sparkles className="h-3.5 w-3.5 text-primary/50 shrink-0" />}
+                    <ProductRow
+                      product={product}
+                      formatPrice={formatPrice}
+                      highlightMatch={hasQuery ? (text: string) => highlightMatch(text, searchQuery) : undefined}
+                    />
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
 
-            {/* Store Results */}
-            {storeResults.length > 0 && (
-              <>
-                <CommandSeparator />
-                <CommandGroup heading="STORES">
-                  {storeResults.map((store) => (
-                    <CommandItem
-                      key={store.id}
-                      value={`store-${store.name}`}
-                      onSelect={() => handleSelect(`/store/${store.slug}`)}
-                      className="cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        {store.logo_url ? (
-                          <img src={store.logo_url} alt="" className="h-8 w-8 rounded-lg object-cover bg-muted shrink-0 ring-1 ring-border/50" loading="lazy" />
-                        ) : (
-                          <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0 ring-1 ring-border/50">
-                            <Store className="h-4 w-4 text-muted-foreground/40" />
-                          </div>
-                        )}
-                        <span className="text-sm truncate group-data-[selected=true]:text-foreground transition-colors">
-                          {highlightMatch(store.name, searchQuery)}
-                        </span>
-                        {store.is_verified && (
-                          <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full shrink-0">Verified</span>
-                        )}
+          {/* Store results */}
+          {!displayLoading && storeResults.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-2.5">
+                <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">Stores</h3>
+                <span className="text-[10px] text-muted-foreground/50 tabular-nums">{storeResults.length}</span>
+              </div>
+              <div className="space-y-1">
+                {storeResults.map((store) => (
+                  <button
+                    key={store.id}
+                    onClick={() => handleSelect(`/store/${store.slug}`)}
+                    className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-muted/60 active:bg-muted transition-colors active:scale-[0.99] touch-manipulation text-left"
+                  >
+                    {store.logo_url ? (
+                      <img src={store.logo_url} alt="" className="h-10 w-10 rounded-lg object-cover bg-muted shrink-0" loading="lazy" />
+                    ) : (
+                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                        <Store className="h-4 w-4 text-muted-foreground/40" />
                       </div>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </>
-            )}
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm truncate block">
+                        {highlightMatch(store.name, searchQuery)}
+                      </span>
+                    </div>
+                    {store.is_verified && (
+                      <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full shrink-0">Verified</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
 
-            <CommandSeparator />
-            <CommandGroup>
-              <CommandItem
-                value="view-all-search-results"
-                onSelect={handleViewAllResults}
-                className="cursor-pointer group"
-              >
-                <Search className="mr-2.5 h-3.5 w-3.5 text-muted-foreground/50" />
-                <span className="flex-1 text-sm text-muted-foreground group-data-[selected=true]:text-foreground transition-colors">
-                  View all results for "<span className="font-medium">{searchQuery}</span>"
-                </span>
-                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 group-data-[selected=true]:text-foreground transition-colors" />
-              </CommandItem>
-            </CommandGroup>
-          </>
-        )}
-      </CommandList>
-
-      {/* Footer */}
-      <div className="border-t border-border/50 px-3 py-2 flex items-center justify-between bg-muted/30">
-        <div className="flex items-center gap-3 text-[10px] text-muted-foreground/60">
-          <span className="flex items-center gap-1">
-            <kbd className="px-1 py-0.5 rounded bg-muted text-[10px] font-mono border border-border/50">↑↓</kbd>
-            navigate
-          </span>
-          <span className="flex items-center gap-1">
-            <kbd className="px-1 py-0.5 rounded bg-muted text-[10px] font-mono border border-border/50">↵</kbd>
-            select
-          </span>
-          <span className="flex items-center gap-1">
-            <kbd className="px-1 py-0.5 rounded bg-muted text-[10px] font-mono border border-border/50">esc</kbd>
-            close
-          </span>
+          {/* View all results CTA */}
+          {!displayLoading && hasQuery && (displayProducts.length > 0 || storeResults.length > 0) && (
+            <button
+              onClick={handleViewAllResults}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-muted/50 hover:bg-muted text-sm font-medium text-muted-foreground hover:text-foreground transition-all active:scale-[0.99] touch-manipulation"
+            >
+              View all results for "{searchQuery}"
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          )}
         </div>
-        {hasQuery && (
-          <button
-            onClick={handleViewAllResults}
-            className="text-[10px] font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
-          >
-            Full results <ArrowRight className="h-2.5 w-2.5" />
-          </button>
-        )}
       </div>
-    </CommandDialog>
+    </div>
   );
 }
 
-/* ── Product thumbnail sub-component ── */
-function ProductThumb({ product, formatPrice, highlightMatch }: { 
-  product: Product; 
+/* ── Product row sub-component ── */
+function ProductRow({ product, formatPrice, highlightMatch }: {
+  product: Product;
   formatPrice: (price: number) => string;
   highlightMatch?: (text: string) => React.ReactNode;
 }) {
   const img = product.images?.[0];
   return (
-    <div className="flex items-center gap-3 flex-1 min-w-0">
+    <>
       {img ? (
         <img
           src={img}
           alt=""
-          className="h-9 w-9 rounded-lg object-cover bg-muted shrink-0 ring-1 ring-border/50"
+          className="h-10 w-10 rounded-lg object-cover bg-muted shrink-0"
           loading="lazy"
         />
       ) : (
-        <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0 ring-1 ring-border/50">
+        <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
           <Package className="h-4 w-4 text-muted-foreground/40" />
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <span className="text-sm truncate block group-data-[selected=true]:text-foreground transition-colors">
+        <span className="text-sm truncate block">
           {highlightMatch ? highlightMatch(product.name) : product.name}
         </span>
       </div>
-      <span className="text-xs font-medium text-muted-foreground tabular-nums shrink-0 bg-muted/50 px-1.5 py-0.5 rounded">
+      <span className="text-xs font-medium text-muted-foreground tabular-nums shrink-0">
         {formatPrice(product.price)}
       </span>
-    </div>
+    </>
   );
 }
