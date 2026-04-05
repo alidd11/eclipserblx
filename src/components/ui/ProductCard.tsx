@@ -1,7 +1,7 @@
 import { memo, useCallback, useRef, forwardRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Check, Sparkles, BadgeCheck, Shield, Store, Star } from 'lucide-react';
+import { ShoppingCart, Check, Sparkles, BadgeCheck, Store, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BackgroundVideo } from '@/components/ui/BackgroundVideo';
 import { useCart } from '@/hooks/useCart';
@@ -66,12 +66,10 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
     setMediaIndex((prev) => (prev + 1 < mediaChain.length ? prev + 1 : mediaChain.length));
   }, [mediaChain.length]);
   
-  // Check if product is new (within last 7 days for stores, 3 days elsewhere)
   const isNew = showNewBadge !== undefined 
     ? showNewBadge 
     : createdAt ? (Date.now() - new Date(createdAt).getTime()) < 3 * 24 * 60 * 60 * 1000 : false;
   
-  // Always show member price for eligible products (not resellable, store opted in)
   const isEligible = isEligibleForDiscount(categoryId, isResellable, storeEclipseEnabled);
   const memberPrice = isEligible ? getMemberPrice(price, categoryId, isResellable) : price;
   const discountPercent = isEligible ? getDiscountPercent(categoryId, isResellable) : 0;
@@ -79,6 +77,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
 
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!inCart) {
       addItem({
         id,
@@ -98,12 +97,10 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
   const hoverTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handleMouseEnter = useCallback(() => {
-    // Prefetch product detail data on hover
     prefetchProduct(slug);
     if (videoRef.current && isVideo) {
       videoRef.current.play().catch(() => {});
     }
-    // Cycle images on hover (desktop only)
     if (mediaChain.length > 1 && !isVideo) {
       hoverTimerRef.current = setInterval(() => {
         setMediaIndex((prev) => (prev + 1) % mediaChain.length);
@@ -133,19 +130,19 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
       onTouchStart={() => prefetchProduct(slug)}
     >
       <div className={cn(
-        "overflow-hidden h-full flex flex-col rounded-lg border border-border/60 bg-card transition-all duration-300",
-        "hover:border-primary/30 hover:shadow-sm",
+        "overflow-hidden h-full flex flex-col rounded-xl bg-card transition-all duration-300",
+        "border border-transparent hover:border-border hover:shadow-md",
         isFeatured && "border-primary/20"
       )}>
-        {/* Image/Video */}
-        <div className="relative aspect-[4/3] bg-muted/30 overflow-hidden flex-shrink-0">
+        {/* Image */}
+        <div className="relative aspect-square bg-muted/40 overflow-hidden flex-shrink-0">
           {showMedia ? (
             isVideo ? (
               <BackgroundVideo
                 ref={videoRef}
                 src={currentMedia!}
                 onError={handleMediaError}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
               />
             ) : (
               <img
@@ -159,7 +156,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                   const img = e.currentTarget;
                   if (img.naturalWidth === 0) handleMediaError();
                 }}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
               />
             )
           ) : (
@@ -170,7 +167,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             </div>
           )}
           
-          {/* Quantis store product overlay */}
+          {/* Quantis overlay */}
           {storeSlug === 'quantis' && (
             <img
               src={quantisOverlay}
@@ -179,10 +176,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             />
           )}
 
-          {/* Hover overlay — desktop only */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none hidden lg:block z-[2]" />
-          
-          {/* Badges — single row */}
+          {/* Badges — Sale/Featured/New only */}
           <div className="absolute top-1.5 left-1.5 flex items-center gap-1 flex-wrap z-[3]">
             {hasMemberDiscount && (
               <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-destructive text-destructive-foreground rounded shadow-sm">
@@ -204,90 +198,123 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 New
               </div>
             )}
-            {category && (
-              <div className="px-1.5 py-0.5 text-[9px] font-medium bg-black/60 text-white rounded backdrop-blur-sm">
-                {category}
-              </div>
-            )}
           </div>
+
+          {/* Image dot indicators */}
+          {mediaChain.length > 1 && (
+            <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-[3]">
+              {mediaChain.map((_, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "w-1.5 h-1.5 rounded-full transition-colors",
+                    i === mediaIndex ? "bg-white" : "bg-white/40"
+                  )}
+                />
+              ))}
+            </div>
+          )}
           
-          {/* Wishlist button — always visible on mobile, hover on desktop */}
+          {/* Wishlist button */}
           <div className="absolute top-1.5 right-1.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-[3]">
             <WishlistButton productId={id} variant="icon" />
           </div>
         </div>
 
-        {/* Store strip — always visible with rating */}
-        <div className="h-7 flex items-center gap-1.5 px-2 xs:px-2.5 bg-muted/60 border-b border-border/50">
-          {storeLogo ? (
-            <img 
-              src={storeLogo} 
-              alt={storeName || ''}
-              className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0"
-            />
-          ) : (
-            <div className="h-3.5 w-3.5 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
-              <Store className="h-2.5 w-2.5 text-muted-foreground" />
-            </div>
-          )}
-          <span 
-            className="text-[10px] text-muted-foreground font-medium truncate hover:text-foreground transition-colors cursor-pointer"
-            onClick={(e) => {
-              if (storeSlug) {
-                e.preventDefault();
-                e.stopPropagation();
-                navigate(`/store/${storeSlug}`);
-              }
-            }}
-          >
-            {storeName || 'Eclipse'}
-          </span>
-          {isVerified && (
-            <span title="This seller has completed our identity and business verification process">
-              <BadgeCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
-            </span>
-          )}
-          {typeof averageRating === 'number' && averageRating > 0 && (
-            <span className="flex items-center gap-0.5 ml-auto text-muted-foreground">
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-              <span className="text-[10px] font-medium">{averageRating.toFixed(1)}</span>
-            </span>
-          )}
-        </div>
-
         {/* Content */}
-        <div className="relative p-2 xs:p-2.5 sm:p-3 flex flex-col flex-1 gap-1 xs:gap-1.5 overflow-hidden">
-          
-          {/* Content layer */}
-          
-          <h3 className="font-display font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug flex-1">
+        <div className="p-2.5 sm:p-3 flex flex-col flex-1 gap-1">
+          {/* Category label */}
+          {category && (
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+              {category}
+            </span>
+          )}
+
+          {/* Title */}
+          <h3 className="font-display font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
             {name}
           </h3>
 
-          {/* Price section */}
-          <div className="flex items-center gap-1.5 mt-auto pt-1">
-            {isPayWhatYouWant ? (
-              <span className="text-xs sm:text-sm font-bold whitespace-nowrap leading-none text-emerald-500">
-                {minPrice === 0 ? 'Free+' : `From ${formatPrice(minPrice || 0)}`}
-              </span>
-            ) : hasMemberDiscount ? (
-              <>
-                <span className="text-[10px] text-muted-foreground leading-none line-through">
-                  {formatPrice(price)}
-                </span>
-                <span className="text-xs sm:text-sm font-bold whitespace-nowrap leading-none text-amber-400">
-                  {formatPrice(memberPrice)}
-                </span>
-                <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-medium leading-none bg-amber-500/20 text-amber-400">
-                  <Sparkles className="h-2 w-2 flex-shrink-0" />
-                  {discountPercent}%
-                </span>
-              </>
+          {/* Store + verified — inline */}
+          <div className="flex items-center gap-1 mt-0.5">
+            {storeLogo ? (
+              <img 
+                src={storeLogo} 
+                alt={storeName || ''}
+                className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0"
+              />
             ) : (
-              <span className="text-xs sm:text-sm font-bold whitespace-nowrap leading-none text-foreground">
-                {formatPrice(price)}
+              <div className="h-3.5 w-3.5 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
+                <Store className="h-2.5 w-2.5 text-muted-foreground" />
+              </div>
+            )}
+            <span 
+              className="text-[10px] text-muted-foreground font-medium truncate hover:text-foreground transition-colors cursor-pointer"
+              onClick={(e) => {
+                if (storeSlug) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate(`/store/${storeSlug}`);
+                }
+              }}
+            >
+              {storeName || 'Eclipse'}
+            </span>
+            {isVerified && (
+              <span title="Verified seller">
+                <BadgeCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
               </span>
             )}
+          </div>
+
+          {/* Price row + rating + quick-add */}
+          <div className="flex items-center gap-1.5 mt-auto pt-1.5">
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              {isPayWhatYouWant ? (
+                <span className="text-sm sm:text-base font-bold whitespace-nowrap leading-none text-emerald-500">
+                  {minPrice === 0 ? 'Free+' : `From ${formatPrice(minPrice || 0)}`}
+                </span>
+              ) : hasMemberDiscount ? (
+                <>
+                  <span className="text-[10px] text-muted-foreground leading-none line-through">
+                    {formatPrice(price)}
+                  </span>
+                  <span className="text-sm sm:text-base font-bold whitespace-nowrap leading-none text-amber-400">
+                    {formatPrice(memberPrice)}
+                  </span>
+                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-medium leading-none bg-amber-500/20 text-amber-400">
+                    <Sparkles className="h-2 w-2 flex-shrink-0" />
+                    {discountPercent}%
+                  </span>
+                </>
+              ) : (
+                <span className="text-sm sm:text-base font-bold whitespace-nowrap leading-none text-foreground">
+                  {formatPrice(price)}
+                </span>
+              )}
+
+              {/* Rating next to price */}
+              {typeof averageRating === 'number' && averageRating > 0 && (
+                <span className="flex items-center gap-0.5 text-muted-foreground ml-auto">
+                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  <span className="text-[10px] font-medium">{averageRating.toFixed(1)}</span>
+                </span>
+              )}
+            </div>
+
+            {/* Quick-add cart button */}
+            <button
+              onClick={handleAddToCart}
+              className={cn(
+                "flex-shrink-0 h-7 w-7 rounded-lg flex items-center justify-center transition-colors",
+                inCart 
+                  ? "bg-emerald-500/20 text-emerald-500" 
+                  : "bg-muted hover:bg-primary hover:text-primary-foreground text-muted-foreground"
+              )}
+              aria-label={inCart ? "In cart" : "Add to cart"}
+            >
+              {inCart ? <Check className="h-3.5 w-3.5" /> : <ShoppingCart className="h-3.5 w-3.5" />}
+            </button>
           </div>
         </div>
       </div>
