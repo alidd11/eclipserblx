@@ -291,14 +291,12 @@ export default function SellerBalance() {
           </div>
 
           {/* Payout History */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Payout History</CardTitle>
-              <CardDescription>
-                Your past payout requests and their status
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Payout History</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Your past payout requests and their status</p>
+            </div>
+            <div className="p-4">
               {payoutsLoading ? (
                 <div className="space-y-3">
                   {[1, 2, 3].map(i => (
