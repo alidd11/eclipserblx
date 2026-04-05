@@ -423,17 +423,15 @@ export default function AdminDashboard() {
 
         {/* Assigned Tickets */}
         {assignedTickets && assignedTickets.length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium flex items-center gap-2">
-                  <Ticket className="h-4 w-4" />
-                  Your Assigned Tickets
-                </CardTitle>
-                <Badge variant="secondary" className="text-xs">{assignedTickets.length}</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0 space-y-2">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
+                <Ticket className="h-4 w-4 text-muted-foreground" />
+                Your Assigned Tickets
+              </h3>
+              <Badge variant="secondary" className="text-xs">{assignedTickets.length}</Badge>
+            </div>
+            <div className="p-4 space-y-2">
               {assignedTickets.map((ticket) => {
                 const statusColors: Record<string, string> = {
                   open: 'bg-yellow-500/20 text-yellow-500',
@@ -464,8 +462,8 @@ export default function AdminDashboard() {
                   </Link>
                 );
               })}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
 
