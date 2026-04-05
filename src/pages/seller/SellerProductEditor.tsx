@@ -178,6 +178,7 @@ export default function SellerProductEditor() {
         ip_ownership_confirmed: product.ip_ownership_confirmed ?? false,
         is_pay_what_you_want: product.is_pay_what_you_want ?? false,
         min_price: (product.min_price ?? 0).toString(),
+        max_downloads_per_purchase: (product as any).max_downloads_per_purchase?.toString() || '',
       });
     }
   }, [product]);
