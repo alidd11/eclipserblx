@@ -168,11 +168,11 @@ export default function SellerReviews() {
 
         {/* Rating Distribution */}
         {stats && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Rating Distribution</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm">Rating Distribution</h3>
+            </div>
+            <div className="p-4 space-y-3">
               {stats.distribution.map(({ rating, count, percent }) => (
                 <button
                   key={rating}
