@@ -308,11 +308,11 @@ export default function SellerCustomSections() {
         </div>
 
         {/* Add Section */}
-        <Card className="mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Add New Section</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="border border-border rounded-xl overflow-hidden mb-6">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="font-semibold text-sm">Add New Section</h3>
+          </div>
+          <div className="p-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
               {SECTION_TYPES.map(type => (
                 <Button
@@ -327,8 +327,8 @@ export default function SellerCustomSections() {
                 </Button>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Sections List */}
         {isLoading ? (
