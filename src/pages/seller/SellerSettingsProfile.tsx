@@ -178,7 +178,7 @@ export default function SellerSettingsProfile() {
     <SellerLayout>
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">Store Profile</h1>
+          <h1 className="text-2xl font-display font-bold">Store Profile</h1>
           <p className="text-muted-foreground">
             Manage your store's basic information and branding
           </p>
