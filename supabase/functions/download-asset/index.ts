@@ -625,6 +625,26 @@ async function handleTokenRedemption(token: string, req: Request): Promise<Respo
     );
   }
 
+  // IP verification: if token has a creator_ip, verify it matches the redeemer
+  if (tokenData.creator_ip && tokenData.creator_ip !== 'unknown') {
+    const redeemIp = getClientIp(req);
+    if (redeemIp !== tokenData.creator_ip && redeemIp !== 'unknown') {
+      console.warn(`IP mismatch on token redemption: creator=${tokenData.creator_ip}, redeemer=${redeemIp}, token=${token.slice(0, 8)}`);
+      return new Response(
+        `<!DOCTYPE html>
+        <html>
+          <head><title>Download Error</title></head>
+          <body style="font-family: system-ui; text-align: center; padding: 50px;">
+            <h1>\u26A0\uFE0F Security Check Failed</h1>
+            <p>This download link can only be used from the device that requested it.</p>
+            <p>Please request a new download link from your account.</p>
+          </body>
+        </html>`,
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "text/html" } }
+      );
+    }
+  }
+
   // Atomically claim the token — use .select() to check if any row was actually updated
   const { data: updatedRows, error: updateError } = await supabaseAdmin
     .from('download_tokens')
