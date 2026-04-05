@@ -26,13 +26,8 @@ import { LazySection } from '@/components/ui/LazySection';
 export default function Landing() {
   usePageMeta({ canonicalPath: '/' });
 
-  const handleRefresh = useCallback(async () => {
-    window.location.reload();
-  }, []);
-
   return (
     <MainLayout>
-      <PullToRefresh onRefresh={handleRefresh}>
       <OrganizationSchema />
       <WebsiteSearchSchema />
       <SiteNavigationSchema />
