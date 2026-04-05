@@ -80,8 +80,7 @@ const navGroups: NavGroup[] = [
        { title: 'Customer Tickets', icon: Ticket, href: '/admin/customer-tickets', permissions: ['view_live_chat'] },
       { title: 'Seller Tickets', icon: Ticket, href: '/admin/seller-tickets', permissions: ['view_seller_tickets'] },
       { title: 'Transcripts', icon: FileText, href: '/admin/transcripts', permissions: ['view_live_chat'], dividerAfter: true },
-      { title: 'Staff Messages', icon: MessageCircle, href: '/admin/staff-messages', permissions: [] },
-      { title: 'Admin Chat', icon: Shield, href: '/admin/admin-chat', permissions: ['view_admin_chat'] },
+      { title: 'Messages', icon: MessageCircle, href: '/admin/messages', permissions: [] },
     ],
   },
   {
@@ -290,12 +289,9 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
     let hasMention = false;
     let hasUnread = false;
     
-    if (item.href === '/admin/staff-messages') {
-      hasMention = chatNotifications.staffMessagesMention;
-      hasUnread = chatNotifications.staffMessagesUnread && !hasMention;
-    } else if (item.href === '/admin/admin-chat') {
-      hasMention = chatNotifications.adminChatMention;
-      hasUnread = chatNotifications.adminChatUnread && !hasMention;
+    if (item.href === '/admin/messages') {
+      hasMention = chatNotifications.staffMessagesMention || chatNotifications.adminChatMention;
+      hasUnread = (chatNotifications.staffMessagesUnread || chatNotifications.adminChatUnread) && !hasMention;
     }
 
     const NotificationDot = () => {

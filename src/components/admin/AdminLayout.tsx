@@ -32,8 +32,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
   const { hasAnyPermission, isLoading: permissionsLoading, isAuthExpired: permAuthExpired } = useUserPermissions({ enabled: permissionsRequired });
   const location = useLocation();
   const isChatPage =
-    location.pathname.startsWith('/admin/admin-chat') ||
-    location.pathname.startsWith('/admin/staff-messages') ||
+    location.pathname.startsWith('/admin/messages') ||
     location.pathname.startsWith('/admin/live-chat') ||
     location.pathname.startsWith('/admin/customer-tickets/');
   
