@@ -58,16 +58,7 @@ export function LandingHero() {
             Premium scripts, models, UI kits and game assets. Lower fees, instant delivery.
           </p>
 
-          {/* Search bar */}
-          <button
-            onClick={() => navigate('/search')}
-            className="w-full max-w-md flex items-center gap-2.5 px-4 py-2.5 rounded-lg border border-border/60 bg-muted/30 hover:bg-muted/50 hover:border-border transition-all mb-6"
-          >
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Search scripts, maps, bots...</span>
-          </button>
-
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 mt-2">
             <Link to="/products">
               <Button size="lg" className="h-11 px-7 text-sm font-semibold shadow-[0_0_24px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_36px_hsl(var(--primary)/0.45)] transition-shadow">
                 Browse Marketplace
