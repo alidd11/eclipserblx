@@ -181,6 +181,7 @@ const SellerTaxFeeSummary = lazyWithRetry(() => import("@/pages/seller/SellerTax
 const SellerStoreTabs = lazyWithRetry(() => import("@/pages/seller/SellerStoreTabs"));
 const SellerCategories = lazyWithRetry(() => import("@/pages/seller/SellerCategories"));
 const SellerDiscounts = lazyWithRetry(() => import("@/pages/seller/SellerDiscounts"));
+const SellerWebhooks = lazyWithRetry(() => import("@/pages/seller/SellerWebhooks"));
 
 const SellerAnnouncements = lazyWithRetry(() => import("@/pages/seller/SellerAnnouncements"));
 const SellerRefunds = lazyWithRetry(() => import("@/pages/seller/SellerRefunds"));
