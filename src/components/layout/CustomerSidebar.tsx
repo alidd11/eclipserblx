@@ -167,7 +167,7 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
   });
 
   useEffect(() => {
-    safeStorage.setItem(SIDEBAR_STORAGE_KEY, JSON.stringify(openGroups));
+    safeStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(openGroups));
   }, [openGroups]);
 
   // Auto-expand group containing current route
