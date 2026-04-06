@@ -1,7 +1,7 @@
  import { useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, 
-  ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
+  ChevronDown, MessageCircle, FileText, Star, 
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
   AlertTriangle, Tags, Ban, Gift, Inbox, LucideIcon, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Ticket, Bot, RotateCcw, Upload, Wallet, DollarSign,
   UserCheck, Link2, Code, Globe, Scale, Rss, FileCode, Twitter, ShieldCheck
@@ -222,7 +222,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
     requestAnimationFrame(() => {
       const nav = navRef.current;
       if (!nav) return;
-      const activeLink = nav.querySelector('a.bg-primary, a[aria-current="page"]') as HTMLElement;
+      const activeLink = nav.querySelector('a.border-l-2, a[aria-current="page"]') as HTMLElement;
       if (activeLink) {
         activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       }
@@ -316,7 +316,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
         <div className="relative shrink-0">
           <item.icon className={cn(
             "h-4 w-4 transition-colors",
-            isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
+            isActive ? "stroke-[2.25] text-primary" : "stroke-[1.75] text-muted-foreground group-hover:text-foreground"
           )} />
           <NotificationDot />
         </div>
@@ -333,7 +333,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
         ? "flex items-center justify-center p-2.5"
         : "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-[7px]",
       isActive
-        ? "bg-primary text-primary-foreground shadow-sm"
+        ? "border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none pl-[calc(0.625rem-2px)]"
         : "text-foreground/80 hover:text-foreground hover:bg-muted/60"
     );
 
@@ -422,7 +422,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
                     onClick={handleNavClick}
                     className={({ isActive }) => cn(
                       "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
-                      isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                      isActive ? "border-l-2 border-primary bg-muted/60 text-foreground" : "hover:bg-muted"
                     )}
                   >
                     <item.icon className="h-3.5 w-3.5" />
@@ -454,7 +454,6 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
                 : "text-muted-foreground/70 hover:text-muted-foreground"
             )}
           >
-            <group.icon className="h-3.5 w-3.5 shrink-0" />
             <span className="flex-1 text-left truncate">{group.title}</span>
             <ChevronDown 
               className={cn(
@@ -464,7 +463,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
             />
           </button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="ml-[13px] border-l border-border/40 pl-2 space-y-0.5 pt-0.5 pb-1">
+        <CollapsibleContent className="ml-3 space-y-px pt-px pb-0.5">
           {group.items.map((item, index) => renderNavItem(item, index))}
         </CollapsibleContent>
       </Collapsible>
@@ -489,8 +488,24 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="font-display font-bold text-sm text-foreground truncate">{SITE_NAME}</h1>
-              <p className="text-[11px] text-foreground/70 leading-none mt-0.5">Admin Dashboard</p>
+              <p className="text-[10px] text-primary/70 font-semibold uppercase tracking-wider leading-none mt-0.5">Admin Dashboard</p>
             </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive hover:bg-muted/60"
+                  onClick={() => {
+                    hapticTap();
+                    setShowSignOutDialog(true);
+                  }}
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Sign Out</TooltipContent>
+            </Tooltip>
           </div>
         )}
         {isCollapsed && (
@@ -540,46 +555,9 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
       </nav>
 
       {/* Footer */}
-      {!isMobileDrawer && (
-        <div className="border-t border-border/50 p-2 space-y-0.5">
-          {/* Collapse Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn(
-              "w-full text-foreground/80 hover:text-foreground hover:bg-muted/60",
-              isCollapsed ? "justify-center px-2" : "justify-start"
-            )}
-            onClick={onToggle}
-          >
-            {isCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <>
-                <ChevronLeft className="h-4 w-4 mr-2.5" />
-                Collapse
-              </>
-            )}
-          </Button>
-
-          {/* Sign Out */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "w-full text-muted-foreground hover:text-destructive hover:bg-muted/60",
-                  isCollapsed ? "justify-center px-2" : "justify-start"
-                )}
-                onClick={() => setShowSignOutDialog(true)}
-              >
-                <LogOut className="h-4 w-4 shrink-0" />
-                {!isCollapsed && <span className="ml-2.5">Sign Out</span>}
-              </Button>
-            </TooltipTrigger>
-            {isCollapsed && <TooltipContent side="right">Sign Out</TooltipContent>}
-          </Tooltip>
+      {!isMobileDrawer && !isCollapsed && (
+        <div className="border-t border-border/50 p-3">
+          <p className="text-[10px] text-muted-foreground/50 text-center">Eclipse Admin v4</p>
         </div>
       )}
 
