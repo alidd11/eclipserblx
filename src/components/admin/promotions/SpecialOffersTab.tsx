@@ -68,7 +68,7 @@ export function SpecialOffersTab() {
       }
     },
     onSuccess: () => { toast.success('Offer saved'); queryClient.invalidateQueries({ queryKey: ['admin-promotions'] }); setDialogOpen(false); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const deleteMutation = useMutation({
