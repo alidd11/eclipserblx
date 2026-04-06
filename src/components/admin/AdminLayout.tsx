@@ -204,7 +204,12 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
           />
         )}
         customHeader={(onMenuClick) => (
-          isImmersivePage ? null : (
+          isImmersivePage ? (
+            <div
+              className="w-full bg-transparent"
+              style={{ height: 'env(safe-area-inset-top, 0px)' }}
+            />
+          ) : (
             <>
               <header className="fixed top-0 left-0 right-0 z-40 border-b border-border bg-card px-3 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] flex items-center justify-between">
                 <div className="flex items-center gap-3">

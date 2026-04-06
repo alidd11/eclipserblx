@@ -131,7 +131,7 @@ export default function TwitterPosts() {
           {/* Main feed column */}
           <div className={`w-full lg:max-w-[600px] ${theme.border} lg:border-x min-h-screen`}>
             {/* Top header */}
-            <div className={`sticky top-0 z-20 backdrop-blur-xl ${theme.headerBg} ${theme.border} border-b`} style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+            <div className={`sticky top-0 z-20 backdrop-blur-xl ${theme.headerBg} ${theme.border} border-b`}>
               {/* Top row */}
               <div className="flex items-center justify-between px-4 h-[53px]">
                 {/* Mobile: avatar */}
