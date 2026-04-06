@@ -179,13 +179,13 @@ export default function ChangelogManager() {
                       {format(new Date(entry.created_at), 'MMM d, yyyy')}
                     </TableCell>
                     <TableCell className="text-right space-x-1">
-                      <Button variant="ghost" size="icon" aria-label="Hide" onClick={() => togglePublish.mutate({ id: entry.id, published: !!entry.published_at })} aria-label={entry.published_at ? 'Unpublish' : 'Publish'}>
+                      <Button variant="ghost" size="icon" aria-label={entry.published_at ? 'Unpublish' : 'Publish'} onClick={() => togglePublish.mutate({ id: entry.id, published: !!entry.published_at })}>
                         {entry.published_at ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
-                      <Button variant="ghost" size="icon" aria-label="Edit" onClick={() => openEdit(entry)} aria-label="Edit">
+                      <Button variant="ghost" size="icon" aria-label="Edit" onClick={() => openEdit(entry)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" aria-label="Delete" onClick={() => deleteMutation.mutate(entry.id)} aria-label="Delete">
+                      <Button variant="ghost" size="icon" aria-label="Delete" onClick={() => deleteMutation.mutate(entry.id)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </TableCell>

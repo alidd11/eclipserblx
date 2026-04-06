@@ -245,7 +245,7 @@ export default function SellerWebhooks() {
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
-                        size="icon" aria-label="Delete"
+                        size="icon"
                         onClick={() => deleteMutation.mutate(wh.id)}
                         aria-label="Delete webhook"
                       >
