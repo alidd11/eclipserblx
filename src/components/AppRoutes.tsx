@@ -463,6 +463,7 @@ export function AppRoutes() {
         <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
         <Route path="/admin/incidents" element={<AdminIncidents />} />
         <Route path="/admin/changelog" element={<AdminChangelogManager />} />
+        <Route path="/admin/rate-limits" element={<AdminRateLimitDashboard />} />
         <Route path="/admin/help" element={<AdminHelp />} />
         <Route path="/admin/subscribers" element={<AdminSubscribers />} />
         <Route path="/admin/ip-bans" element={<AdminIpBans />} />
