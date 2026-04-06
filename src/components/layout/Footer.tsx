@@ -79,7 +79,7 @@ export function Footer() {
     <footer className="border-t border-border/40 mt-auto" role="contentinfo" aria-label="Site footer">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Compact inline link grid */}
-        <div className="grid grid-cols-3 gap-4 sm:gap-8 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 mb-6">
           {columns.map((col) => (
             <div key={col.heading} className="flex flex-col gap-1.5">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-foreground/40 mb-0.5" id={`footer-${col.heading.toLowerCase()}`}>
