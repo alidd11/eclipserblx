@@ -150,6 +150,8 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     return () => mql.removeEventListener('change', handler);
   }, []);
 
+  const isSlowConnection = connectionQuality === 'slow-2g' || connectionQuality === '2g' || connectionQuality === '3g';
+
   const value = useMemo<DeviceState>(() => ({
     ...breakpoint,
     isStandalone: standalone,
@@ -158,7 +160,10 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     supportsGooglePay: platform.isAndroid,
     isKeyboardVisible,
     prefersReducedMotion,
-  }), [breakpoint, standalone, platform, isKeyboardVisible, prefersReducedMotion]);
+    connectionQuality,
+    isSlowConnection,
+    isLandscape,
+  }), [breakpoint, standalone, platform, isKeyboardVisible, prefersReducedMotion, connectionQuality, isSlowConnection, isLandscape]);
 
   return <DeviceContext.Provider value={value}>{children}</DeviceContext.Provider>;
 }
