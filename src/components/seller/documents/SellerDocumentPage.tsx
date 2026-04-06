@@ -1,5 +1,4 @@
-import { Link } from "react-router-dom";
-import { ArrowLeft, Printer } from "lucide-react";
+import { Printer } from "lucide-react";
 import { SellerLayout } from "@/components/seller/SellerLayout";
 import { Button } from "@/components/ui/button";
 import { ReactNode } from "react";
@@ -35,11 +34,6 @@ export function SellerDocumentPage({ title, subtitle, children }: SellerDocument
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 no-print">
           <div className="flex items-center gap-4">
-            <Link to="/seller/documents">
-              <Button variant="ghost" size="icon" aria-label="Go back">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
             <div>
               <h1 className="text-2xl font-bold">{title}</h1>
               <p className="text-muted-foreground">{subtitle}</p>

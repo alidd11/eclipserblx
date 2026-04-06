@@ -1,5 +1,4 @@
-import { Link } from "react-router-dom";
-import { ArrowLeft, Printer } from "lucide-react";
+import { Printer } from "lucide-react";
 import { SellerLayout } from "@/components/seller/SellerLayout";
 import { Button } from "@/components/ui/button";
 import { SellerInfoContent } from "@/components/seller/SellerInfoContent";
@@ -93,11 +92,6 @@ export default function SellerGuide() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 no-print">
           <div className="flex items-center gap-4">
-            <Link to="/seller/documents">
-              <Button variant="ghost" size="icon" aria-label="Go back">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
             <div>
               <h1 className="text-2xl font-bold">Seller Success Guide</h1>
               <p className="text-muted-foreground">
