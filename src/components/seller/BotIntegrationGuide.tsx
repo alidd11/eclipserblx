@@ -121,8 +121,8 @@ async function checkGuildLicense(guildId) {
 
  return (
  <div className="border border-border rounded-xl overflow-hidden border-primary/20">
- <CardHeader 
- className="cursor-pointer hover:bg-muted/50 transition-colors"
+ <div 
+ className="px-4 py-3 border-b border-border bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
  onClick={() => setIsExpanded(!isExpanded)}
  >
  <div className="flex items-center justify-between">

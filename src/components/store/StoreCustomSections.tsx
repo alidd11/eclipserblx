@@ -31,7 +31,7 @@ export function StoreCustomSections({ storeId, accentColor }: StoreCustomSection
  {sections.map((section: any) => (
  <div className="border border-border rounded-xl overflow-hidden" key={section.id}>
  <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
- <CardTitle className="text-lg" style={{ color: accentColor }}>
+ <h3 className="font-semibold text-sm text-lg" style={{ color: accentColor }}>
  {section.title}
  </h3>
  </div>
