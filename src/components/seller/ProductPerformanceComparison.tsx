@@ -88,7 +88,7 @@ export function ProductPerformanceComparison() {
  const productId = orderItemMap.get(s.order_item_id);
  return productId === id;
  }) || [];
- const productViews = views?.filter((v: any) => 
+ const productViews = views?.filter((v) => 
  v.page_path?.includes(product?.name?.toLowerCase().replace(/\s+/g, '-'))
  )?.length || 0;
  const revenue = productSales.reduce((sum: number, s: any) => sum + (s.net_amount || 0), 0);
