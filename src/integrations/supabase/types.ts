@@ -10790,6 +10790,97 @@ export type Database = {
           },
         ]
       }
+      seller_payouts_masked: {
+        Row: {
+          amount: number | null
+          auto_processed: boolean | null
+          completed_at: string | null
+          created_at: string | null
+          failure_reason: string | null
+          funding_requested_at: string | null
+          funding_status: string | null
+          id: string | null
+          notes: string | null
+          payout_method: string | null
+          paypal_email: string | null
+          processed_at: string | null
+          processed_by: string | null
+          seller_id: string | null
+          status: string | null
+          store_id: string | null
+          stripe_funding_payout_id: string | null
+          stripe_transfer_id: string | null
+          wise_quote_id: string | null
+          wise_transfer_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          auto_processed?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          failure_reason?: string | null
+          funding_requested_at?: string | null
+          funding_status?: string | null
+          id?: string | null
+          notes?: string | null
+          payout_method?: string | null
+          paypal_email?: never
+          processed_at?: string | null
+          processed_by?: string | null
+          seller_id?: string | null
+          status?: string | null
+          store_id?: string | null
+          stripe_funding_payout_id?: string | null
+          stripe_transfer_id?: string | null
+          wise_quote_id?: string | null
+          wise_transfer_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          auto_processed?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          failure_reason?: string | null
+          funding_requested_at?: string | null
+          funding_status?: string | null
+          id?: string | null
+          notes?: string | null
+          payout_method?: string | null
+          paypal_email?: never
+          processed_at?: string | null
+          processed_by?: string | null
+          seller_id?: string | null
+          status?: string | null
+          store_id?: string | null
+          stripe_funding_payout_id?: string | null
+          stripe_transfer_id?: string | null
+          wise_quote_id?: string | null
+          wise_transfer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_payouts_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "seller_payouts_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_payouts_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_domains_public: {
         Row: {
           domain: string | null
