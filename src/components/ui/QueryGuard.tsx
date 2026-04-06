@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { InlineLoading } from './InlineLoading';
-import { EmptyState, EmptyStateProps } from './EmptyState';
+import { EmptyState, type EmptyStateProps } from './EmptyState';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from './button';
 
