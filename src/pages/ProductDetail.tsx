@@ -299,7 +299,6 @@ export default function ProductDetail() {
     if (location.hash === '#reviews' && reviewSectionRef.current && product) {
       setTimeout(() => {
         reviewSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-        setShowReviewForm(true);
       }, 500);
     }
   }, [location.hash, product]);
