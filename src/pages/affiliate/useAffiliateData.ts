@@ -168,7 +168,7 @@ export function useAffiliateData() {
       const { error } = await supabase.from('user_payment_details').upsert(payload, { onConflict: 'user_id' });
       if (error) throw error;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['profile-referral', user?.id] }); toast.success("Payout settings updated"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['user-payment-details', user?.id] }); toast.success("Payout settings updated"); },
     onError: (error: Error) => { toast.error("Error", { description: error.message }); },
   });
 

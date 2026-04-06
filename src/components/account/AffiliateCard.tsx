@@ -177,8 +177,8 @@ export function AffiliateCard() {
  const totalPaid = (balance?.total_paid || 0) / 100;
  const hasPendingPayout = pendingPayouts?.some(p => p.status === 'pending');
 
- const canUseStripe = profile?.preferred_payout_method === 'stripe' && connectStatus?.canReceivePayments;
- const needsStripeOnboarding = profile?.preferred_payout_method === 'stripe' && !connectStatus?.canReceivePayments;
+ const canUseStripe = paymentDetails?.preferred_payout_method === 'stripe' && connectStatus?.canReceivePayments;
+ const needsStripeOnboarding = paymentDetails?.preferred_payout_method === 'stripe' && !connectStatus?.canReceivePayments;
 
  if (balanceLoading) {
   return (
