@@ -682,42 +682,42 @@ export default function SellerProducts() {
           {productsLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map(i => (
-                <Skeleton key={i} className="h-20" />
+                <Skeleton key={i} className="h-16" />
               ))}
             </div>
           ) : filteredProducts.length > 0 ? (
-            <div className="divide-y divide-border">
+            <div className="border border-border rounded-xl overflow-hidden divide-y divide-border">
               {filteredProducts.map((product: any) => {
                 const isLocked = isAdminManagedProduct(product);
                 return (
                   <div
                     key={product.id}
-                    className={`py-3 flex items-start gap-3 ${isLocked ? 'opacity-75' : 'cursor-pointer active:bg-muted/30'}`}
+                    className={`px-3 py-3 flex items-center gap-3 ${isLocked ? 'opacity-75' : 'cursor-pointer active:bg-muted/30'}`}
                     onClick={() => !isLocked && openEdit(product)}
                   >
                     {product.images?.[0] ? (
                       <img
                         src={product.images[0]}
                         alt={product.name}
-                        className="h-12 w-12 rounded-lg object-cover flex-shrink-0"
+                        className="h-11 w-11 rounded-lg object-cover flex-shrink-0"
                       />
                     ) : (
-                      <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                      <div className="h-11 w-11 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
                         <Package className="h-5 w-5 text-muted-foreground" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-medium truncate text-sm">{product.name}</p>
+                        <p className="font-medium truncate text-sm leading-tight">{product.name}</p>
                         {isLocked && (
-                          <Badge variant="secondary" className="gap-1 text-xs flex-shrink-0">
+                          <Badge variant="secondary" className="gap-1 text-[10px] px-1.5 py-0 flex-shrink-0">
                             <ShieldCheck className="h-3 w-3" />
                             Eclipse
                           </Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span className="text-sm font-medium">{formatCurrency(product.price)}</span>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-sm font-medium tabular-nums">{formatCurrency(product.price)}</span>
                         <span className="text-muted-foreground text-xs">·</span>
                         {getModerationBadge(product.moderation_status)}
                         {!product.is_active && (
@@ -726,16 +726,16 @@ export default function SellerProducts() {
                       </div>
                     </div>
                     {isLocked ? (
-                      <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
+                      <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     ) : (
-                      <Edit className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
+                      <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     )}
                   </div>
                 );
               })}
             </div>
           ) : (
-            <div className="text-center py-12">
+            <div className="text-center py-12 border border-border rounded-xl">
               <Package className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-50" />
               <h3 className="text-sm font-medium mb-1">No products yet</h3>
               <p className="text-xs text-muted-foreground mb-3">
