@@ -134,13 +134,13 @@ export function RevenueDashboard() {
  ...queryDefaults,
  });
 
- // Subscriptions
+ // Seller Pro Subscriptions
  const { data: subsData, isLoading: subsLoading } = useQuery({
- queryKey: ['admin-revenue-subs'],
+ queryKey: ['admin-revenue-seller-subs'],
  queryFn: async () => {
  const { data, error } = await supabase
- .from('subscriptions')
- .select('status, billing_period, created_at');
+ .from('seller_subscriptions')
+ .select('status, created_at');
  if (error) throw error;
  return data ?? [];
  },
