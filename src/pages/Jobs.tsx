@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Briefcase, MapPin, Loader2, ChevronDown } from 'lucide-react';
+import { Briefcase, MapPin, Loader2, ChevronDown, Copy, CheckCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { jobApplicationSchema, emailCheckSchema, validateWithSchema, isValidationError } from '@/lib/validationSchemas';
+import { jobApplicationSchema } from '@/lib/validationSchemas';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 import { usePageMeta } from '@/hooks/usePageMeta';
 
