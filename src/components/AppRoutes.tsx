@@ -47,6 +47,8 @@ const HelpCenterSellers = lazyWithRetry(() => import("@/pages/HelpCenterSellers"
 const Support = lazyWithRetry(() => import("@/pages/Support"));
 const Contact = lazyWithRetry(() => import("@/pages/Contact"));
 const Status = lazyWithRetry(() => import("@/pages/Status"));
+const SecurityPage = lazyWithRetry(() => import("@/pages/Security"));
+const BrandPage = lazyWithRetry(() => import("@/pages/Brand"));
 const Changelog = lazyWithRetry(() => import("@/pages/Changelog"));
 const BotInstallation = lazyWithRetry(() => import("@/pages/BotInstallation"));
 const BotDashboard = lazyWithRetry(() => import("@/pages/BotDashboard"));
@@ -347,6 +349,8 @@ export function AppRoutes() {
         <Route path="/support" element={<Support />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/status" element={<Status />} />
+        <Route path="/security" element={<SecurityPage />} />
+        <Route path="/brand" element={<BrandPage />} />
         <Route path="/changelog" element={<Changelog />} />
         <Route path="/bot-installation" element={<BotInstallation />} />
         <Route path="/bot-dashboard" element={<BotDashboard />} />
