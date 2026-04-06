@@ -318,11 +318,25 @@ export default function SellerLeakReports() {
         {isPro && scanResults && scanResults.length > 0 && (
           <div className="rounded-xl border border-destructive/30 bg-card">
             <div className="p-4 pb-2">
+            <div className="flex items-center justify-between">
               <h3 className="text-base font-medium flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-4 w-4" />
-                Auto-Detected Leaks
+                Auto-Detected Results
                 <Badge variant="destructive" className="text-xs">{scanResults.length}</Badge>
               </h3>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[140px] h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="ignored">Ignored</SelectItem>
+                  <SelectItem value="resolved">Resolved</SelectItem>
+                  <SelectItem value="false_positive">False Positive</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             </div>
             <div className="p-4 pt-2 space-y-2">
               {scanResults.map((result: any) => {
