@@ -132,7 +132,7 @@ export function StoreOwnerCard({ store, ownerProfile, onUnlockAccounts, onLockAc
           <Separator />
 
           {/* Discord Server Invite */}
-          {(store as Record<string, unknown>).discord_invite && (
+          {(store as any).discord_invite && (
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2 text-muted-foreground">
                 <Link2 className="h-4 w-4" />

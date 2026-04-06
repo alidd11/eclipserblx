@@ -122,7 +122,7 @@ export default function SellerNotifications() {
     },
   });
 
-  const handleClick = (notification: Record<string, unknown>) => {
+  const handleClick = (notification: any) => {
     if (!notification.read_at) {
       markAsRead.mutate(notification.id);
     }

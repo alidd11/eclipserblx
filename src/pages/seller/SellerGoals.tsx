@@ -43,7 +43,7 @@ export default function SellerGoals() {
       if (!goalsData?.length) return [];
 
       // Get current progress for each goal
-      const enriched = await Promise.all(goalsData.map(async (goal: Record<string, unknown>) => {
+      const enriched = await Promise.all(goalsData.map(async (goal: any) => {
         let currentAmount = 0;
         const since = goal.starts_at;
         const until = goal.ends_at;

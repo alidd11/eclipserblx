@@ -13,7 +13,7 @@ interface StepConfirmProps {
   setFormValues: (updates: Partial<SellerFormValues>) => void;
   verificationResults: VerificationResults;
   settings: any;
-  linkedAccounts: Record<string, unknown>;
+  linkedAccounts: any;
 }
 
 export function StepConfirm({ formValues, setFormValues, verificationResults, settings, linkedAccounts }: StepConfirmProps) {

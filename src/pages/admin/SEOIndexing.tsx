@@ -80,9 +80,9 @@ export default function SEOIndexing() {
  <span className="font-medium">{lastResult.totalUrls} URLs submitted</span>
  </div>
 
- {lastResult.results?.map((batch: Record<string, unknown>, i: number) => (
+ {lastResult.results?.map((batch: any, i: number) => (
  <div key={i} className="space-y-1">
- {(batch.submissions as Array<Record<string, unknown>>)?.map((sub: Record<string, unknown>, j: number) => (
+ {batch.submissions?.map((sub: any, j: number) => (
  <div key={j} className="flex items-center gap-2 text-sm">
  {sub.ok ? (
  <CheckCircle className="h-3.5 w-3.5 text-green-500" />

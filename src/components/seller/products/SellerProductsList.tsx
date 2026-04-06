@@ -23,7 +23,7 @@ import {
 import { ADMIN_MANAGED_STORES } from '@/lib/constants';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const isAdminManagedProduct = (product: Record<string, unknown>) =>
+const isAdminManagedProduct = (product: any) =>
   (ADMIN_MANAGED_STORES as readonly string[]).includes(product.store_id) && product.is_seller_product === false;
 
 const getModerationBadge = (status: string | null) => {
@@ -58,14 +58,14 @@ const formatCurrency = (amount: number) =>
 
 interface SellerProductsListProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  products: Record<string, unknown>[];
+  products: any[];
   totalCount: number;
   isLoading: boolean;
   storeId: string | undefined;
   selectedProductIds: string[];
   onSelectionChange: (ids: string[]) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onEdit: (product: Record<string, unknown>) => void;
+  onEdit: (product: any) => void;
   onDelete: (productId: string) => void;
   onCreateClick: () => void;
 }

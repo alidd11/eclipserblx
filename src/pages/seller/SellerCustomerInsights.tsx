@@ -166,7 +166,7 @@ export default function SellerCustomerInsights() {
                 <div className="p-4">
                   {data?.topCustomers?.length ? (
                     <div className="divide-y divide-border">
-                      {data.topCustomers.map((customer: Record<string, unknown>, i: number) => (
+                      {data.topCustomers.map((customer: any, i: number) => (
                         <div key={customer.id} className="flex items-center gap-3 py-2.5">
                           <span className="text-xs font-bold text-muted-foreground w-5">#{i + 1}</span>
                           <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
@@ -200,7 +200,7 @@ export default function SellerCustomerInsights() {
                   {data?.countries?.length ? (
                     <div className="space-y-2">
                       {data.countries.map((country) => {
-                        const total = data.countries.reduce((s: number, c: { count: number }) => s + c.count, 0);
+                        const total = data.countries.reduce((s: number, c: any) => s + c.count, 0);
                         const pct = total > 0 ? (country.count / total) * 100 : 0;
                         return (
                           <div key={country.name} className="space-y-1">

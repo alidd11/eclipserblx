@@ -136,7 +136,7 @@ export default function SellerBundles() {
     setSelectedProductIds([]);
   };
 
-  const openEdit = (bundle: Record<string, unknown>) => {
+  const openEdit = (bundle: any) => {
     setEditing(bundle);
     setForm({
       name: bundle.name, description: bundle.description || '',

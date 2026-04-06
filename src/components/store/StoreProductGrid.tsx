@@ -7,7 +7,7 @@ import { FollowButton } from '@/components/store/FollowButton';
 import { Link } from 'react-router-dom';
 
 interface StoreProductGridProps {
-  products: Record<string, unknown>[] | undefined;
+  products: any[] | undefined;
   isLoading: boolean;
   storeId: string;
   accentColor: string;

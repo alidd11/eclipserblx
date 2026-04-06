@@ -25,7 +25,7 @@ import { ChevronDown, Eye, EyeOff, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface BulkProductActionsProps {
-  products: Record<string, unknown>[];
+  products: any[];
   storeId: string;
   selectedIds: string[];
   onSelectionChange: (ids: string[]) => void;

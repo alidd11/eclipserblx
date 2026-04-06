@@ -35,7 +35,7 @@ function SslBadge({ status }: { status: string | null }) {
  return <Badge variant="outline" className="bg-muted text-muted-foreground border-border">No SSL</Badge>;
 }
 
-function HealthBadge({ healthCheck }: { healthCheck: Record<string, unknown> | null }) {
+function HealthBadge({ healthCheck }: { healthCheck: any }) {
  if (!healthCheck) return <span className="text-xs text-muted-foreground">No check</span>;
  const errorCode = healthCheck.error_code;
  if (!errorCode && healthCheck.http_reachable) {

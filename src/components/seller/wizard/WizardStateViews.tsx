@@ -118,7 +118,7 @@ export function ApplicationSubmittedView() {
   );
 }
 
-export function PendingApplicationView({ application }: { application: Record<string, unknown> }) {
+export function PendingApplicationView({ application }: { application: any }) {
   return (
     <div className="text-center space-y-6 py-8">
       <div className="mx-auto w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center">

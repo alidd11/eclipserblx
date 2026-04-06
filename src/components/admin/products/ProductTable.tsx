@@ -27,12 +27,12 @@ interface AdminProduct {
 }
 
 interface ProductTableProps {
-  products: AdminProduct[] | undefined;
+  products: any[] | undefined;
   isLoading: boolean;
   selectedProducts: Set<string>;
   onToggleSelection: (id: string) => void;
   onToggleSelectAll: () => void;
-  onEdit: (product: AdminProduct) => void;
+  onEdit: (product: any) => void;
   onDelete: (id: string) => void;
   isScheduledForFuture: (releaseAt: string | null) => boolean;
 }

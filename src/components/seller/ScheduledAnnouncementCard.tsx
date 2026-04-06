@@ -80,7 +80,7 @@ export function ScheduledAnnouncementCard() {
  const config = TYPE_CONFIG[formData.announcementType];
 
  const getEmbed = () => {
- const fields: Array<{ label: string; value: string }> = [];
+ const fields: any[] = [];
  if (formData.linkUrl) {
  fields.push({ name: '🔗 Link', value: `[Click here](${formData.linkUrl})`, inline: false });
  }
@@ -236,7 +236,7 @@ export function ScheduledAnnouncementCard() {
  <Label className="text-xs">Type</Label>
  <Select
  value={formData.announcementType}
- onValueChange={(value: string) => setFormData({ ...formData, announcementType: value })}
+ onValueChange={(value: any) => setFormData({ ...formData, announcementType: value })}
  >
  <SelectTrigger className="text-xs">
  <SelectValue />

@@ -128,9 +128,9 @@ function MasonryProductCard({
   isTall, 
   rank 
 }: { 
-  product: Record<string, unknown>; 
-  store: Record<string, unknown>; 
-  category: Record<string, unknown>; 
+  product: any; 
+  store: any; 
+  category: any; 
   isTall: boolean; 
   rank: number;
 }) {
