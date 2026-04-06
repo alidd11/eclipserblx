@@ -87,10 +87,10 @@ export function BotLicenseBundleSelector({
  const pricePerLicense = bundle.price_gbp / bundle.quantity;
  
  return (
- <div className="border border-border rounded-xl overflow-hidden" key={bundle.id}
+ <div key={bundle.id}
  onClick={() => onBundleSelect(bundle)}
  className={cn(
- "cursor-pointer transition-all relative overflow-hidden p-3",
+ "border border-border rounded-xl overflow-hidden cursor-pointer transition-all relative overflow-hidden p-3",
  isSelected
  ? "border-primary bg-primary/5 ring-1 ring-primary"
  : "border-border hover:border-primary/50 hover:bg-muted/50"

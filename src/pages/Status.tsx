@@ -328,9 +328,9 @@ export default function Status() {
  {/* Service Cards */}
  <div className="grid gap-4">
  {services.map((service) => (
- <div className="border border-border rounded-xl overflow-hidden" key={service.name} 
+ <div key={service.name} 
  className={cn(
- 'transition-all',
+ 'border border-border rounded-xl overflow-hidden transition-all',
  statusConfig[service.status].border
  )}
  >
