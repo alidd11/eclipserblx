@@ -345,7 +345,7 @@ export default function BotCommunity() {
  <div className="p-6 text-center text-foreground/40 text-sm">No scheduled messages. Create one from the bot commands.</div>
  ) : (
  <div className="divide-y divide-white/5">
- {scheduledMsgs.map((m: any) => (
+ {scheduledMsgs.map((m) => (
  <div key={m.id} className="px-4 py-3">
  <p className="text-sm text-foreground truncate">{m.content || 'Embed message'}</p>
  <p className="text-xs text-foreground/40">Channel: {m.channel_id} · {m.repeat ? 'Repeating' : 'One-time'} · {m.enabled ? 'Active' : 'Disabled'}</p>
