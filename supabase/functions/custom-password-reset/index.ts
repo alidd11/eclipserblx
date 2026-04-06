@@ -212,24 +212,16 @@ Deno.serve(async (req) => {
         )
       }
 
-      // Invalidate any existing codes for this email
-      await supabase
-        .from('password_reset_codes')
-        .update({ used: true })
-        .eq('email', normalizedEmail)
-        .eq('used', false)
-
       // Generate 6-digit code with crypto RNG
       const code = generateCode()
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
 
-      const { error: insertError } = await supabase
-        .from('password_reset_codes')
-        .insert({
-          email: normalizedEmail,
-          code,
-          expires_at: expiresAt.toISOString(),
-        })
+      // Store hashed code via RPC (invalidates existing codes too)
+      const { error: insertError } = await supabase.rpc('store_password_reset_code', {
+        p_email: normalizedEmail,
+        p_code: code,
+        p_expires_at: expiresAt.toISOString(),
+      })
 
       if (insertError) {
         console.error('Failed to store reset code:', insertError)
