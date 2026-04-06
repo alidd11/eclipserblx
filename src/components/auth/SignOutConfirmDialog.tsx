@@ -52,4 +52,4 @@ export const SignOutConfirmDialog = forwardRef<HTMLDivElement, SignOutConfirmDia
       </AlertDialogContent>
     </AlertDialog>
   );
-}
+});
