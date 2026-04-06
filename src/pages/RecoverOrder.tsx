@@ -105,7 +105,7 @@ export default function RecoverOrder() {
 
   return (
     <MainLayout>
-      <div className="container py-12 max-w-lg space-y-6">
+      <div className="container py-6 md:py-12 max-w-lg space-y-4 md:space-y-6">
         <Button variant="ghost" size="sm" asChild className="-ml-2">
           <Link to="/support"><ArrowLeft className="h-4 w-4 mr-1" /> Back to Support</Link>
         </Button>
