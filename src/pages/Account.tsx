@@ -33,6 +33,7 @@ import { MyPurchasesCard } from '@/components/account/MyPurchasesCard';
 import { SavedCardsCard } from '@/components/account/SavedCardsCard';
 import { BecomeSellerCard } from '@/components/account/BecomeSellerCard';
 import { CreditsCard } from '@/components/account/CreditsCard';
+import { DataExportButton } from '@/components/account/DataExportButton';
 
 import { usePageTracking } from '@/hooks/usePageTracking';
 
