@@ -87,7 +87,7 @@ export function ExportReportsCard() {
 
  // Group by date
  const dailyRevenue: Record<string, { sales: number; revenue: number; fees: number; refunds: number }> = {};
- (transactions || []).forEach((tx: any) => {
+ (transactions || []).forEach((tx) => {
  const date = format(new Date(tx.created_at), 'yyyy-MM-dd');
  if (!dailyRevenue[date]) {
  dailyRevenue[date] = { sales: 0, revenue: 0, fees: 0, refunds: 0 };
