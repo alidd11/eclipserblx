@@ -56,6 +56,15 @@ const queryClient = new QueryClient({
       retry: 1,
       // refetchInterval queries automatically pause when focusManager reports unfocused
     },
+    mutations: {
+      onError: (error) => {
+        // Global mutation error reporter — catches unhandled mutation failures
+        console.error('[QueryClient] Mutation failed:', error);
+        import('@/lib/sentry').then(({ captureException }) => {
+          captureException(error instanceof Error ? error : new Error(String(error)), { source: 'mutation' });
+        });
+      },
+    },
   },
 });
 
