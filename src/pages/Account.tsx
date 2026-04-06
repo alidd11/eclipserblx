@@ -81,6 +81,21 @@ function SectionHeader({ title }: { title: string }) {
   );
 }
 
+/* ─────────── Accordion Group Context ─────────── */
+const AccordionGroupContext = React.createContext<{
+  openId: string | null;
+  setOpenId: (id: string | null) => void;
+} | null>(null);
+
+function AccordionGroup({ children }: { children: React.ReactNode }) {
+  const [openId, setOpenId] = useState<string | null>(null);
+  return (
+    <AccordionGroupContext.Provider value={{ openId, setOpenId }}>
+      {children}
+    </AccordionGroupContext.Provider>
+  );
+}
+
 /* ─────────── Expandable Section ─────────── */
 function ExpandableSection({ icon: Icon, label, children, defaultOpen }: {
   icon: React.ElementType;
@@ -88,7 +103,19 @@ function ExpandableSection({ icon: Icon, label, children, defaultOpen }: {
   children: React.ReactNode;
   defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen ?? false);
+  const group = React.useContext(AccordionGroupContext);
+  const id = label; // Use label as unique ID within group
+  const isControlled = !!group;
+  const [localOpen, setLocalOpen] = useState(defaultOpen ?? false);
+
+  const open = isControlled ? group.openId === id : localOpen;
+  const setOpen = (val: boolean) => {
+    if (isControlled) {
+      group.setOpenId(val ? id : null);
+    } else {
+      setLocalOpen(val);
+    }
+  };
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
