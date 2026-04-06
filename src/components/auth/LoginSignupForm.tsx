@@ -147,7 +147,7 @@ export function LoginSignupForm({ mode, email, setEmail, onForgotPassword, onVer
   };
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-xl border border-border bg-card p-5 space-y-4">
+    <form onSubmit={handleSubmit} className="rounded-xl border border-border/60 bg-card p-6 space-y-4 shadow-lg">
       {mode === 'signup' && (
         <div className="space-y-2">
           <Label htmlFor="displayName">{t('auth.username')}</Label>
