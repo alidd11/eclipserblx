@@ -77,7 +77,7 @@ export default function TermsOfService() {
               <li>Provide accurate and complete registration information</li>
               <li>Maintain the security of your account credentials</li>
               <li>Accept responsibility for all activities under your account</li>
-              <li>Be at least 13 years old (or 16 in the EU/UK for GDPR purposes)</li>
+              <li>Be at least 13 years old (or 16 in the EU where applicable under GDPR)</li>
               <li>Have parental/guardian consent if under 18</li>
             </ul>
             <p className="text-muted-foreground mt-4">
