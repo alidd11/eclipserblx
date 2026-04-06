@@ -126,7 +126,7 @@ export function SavedCardsCard() {
  </div>
  <Button
  variant="ghost"
- size="icon"
+ size="icon" aria-label="Loading"
  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
  onClick={() => setCardToDelete(method)}
  disabled={deletingId === method.id}

@@ -375,7 +375,7 @@ export default function Checkout() {
                     </div>
                     <Button 
                       variant="ghost" 
-                      size="icon" 
+                      size="icon" aria-label="Close" 
                       className="h-8 w-8"
                       onClick={removeDiscount}
                     >

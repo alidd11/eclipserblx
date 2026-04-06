@@ -126,10 +126,10 @@ export function ProductTable({
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" onClick={() => onEdit(product)}>
+                  <Button variant="ghost" size="icon" aria-label="Edit" onClick={() => onEdit(product)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => onDelete(product.id)}>
+                  <Button variant="ghost" size="icon" aria-label="Delete" onClick={() => onDelete(product.id)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </TableCell>

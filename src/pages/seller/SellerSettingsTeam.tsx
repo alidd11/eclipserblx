@@ -445,7 +445,7 @@ export default function SellerSettingsTeam() {
                       </Select>
                       <Button
                         variant="ghost"
-                        size="icon"
+                        size="icon" aria-label="Delete"
                         className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={() => setMemberToRemove(member)}
                       >
@@ -491,7 +491,7 @@ export default function SellerSettingsTeam() {
                       </Badge>
                       <Button
                         variant="ghost"
-                        size="icon"
+                        size="icon" aria-label="Delete"
                         className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={() => setInviteToCancel(invite)}
                       >

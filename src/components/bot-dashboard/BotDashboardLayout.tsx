@@ -77,7 +77,7 @@ export function BotDashboardLayout({ children }: BotDashboardLayoutProps) {
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
-              size="icon"
+              size="icon" aria-label="Menu"
               className="lg:hidden text-foreground/70 hover:text-foreground hover:bg-background/10"
               onClick={() => setSidebarOpen(true)}
             >

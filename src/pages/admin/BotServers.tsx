@@ -233,7 +233,7 @@ export default function BotServers() {
                       </code>
                       <Button
                         variant="ghost"
-                        size="icon"
+                        size="icon" aria-label="Copy"
                         className="h-7 w-7 shrink-0"
                         onClick={() => handleCopy(install.guild_id!, 'Guild ID')}
                       >

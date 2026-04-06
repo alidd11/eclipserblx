@@ -150,7 +150,7 @@ export function ImageZoomModal({ src, alt, isOpen, onClose }: ImageZoomModalProp
         <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
           <Button
             variant="ghost"
-            size="icon"
+            size="icon" aria-label="Zoom out"
             onClick={handleZoomOut}
             disabled={scale <= MIN_SCALE}
             className="bg-foreground/50 hover:bg-foreground/70 text-foreground"
@@ -162,7 +162,7 @@ export function ImageZoomModal({ src, alt, isOpen, onClose }: ImageZoomModalProp
           </span>
           <Button
             variant="ghost"
-            size="icon"
+            size="icon" aria-label="Zoom in"
             onClick={handleZoomIn}
             disabled={scale >= MAX_SCALE}
             className="bg-foreground/50 hover:bg-foreground/70 text-foreground"
@@ -171,7 +171,7 @@ export function ImageZoomModal({ src, alt, isOpen, onClose }: ImageZoomModalProp
           </Button>
           <Button
             variant="ghost"
-            size="icon"
+            size="icon" aria-label="Undo"
             onClick={handleReset}
             disabled={scale === 1 && position.x === 0 && position.y === 0}
             className="bg-foreground/50 hover:bg-foreground/70 text-foreground"
@@ -180,7 +180,7 @@ export function ImageZoomModal({ src, alt, isOpen, onClose }: ImageZoomModalProp
           </Button>
           <Button
             variant="ghost"
-            size="icon"
+            size="icon" aria-label="Close"
             onClick={onClose}
             className="bg-foreground/50 hover:bg-foreground/70 text-foreground"
           >

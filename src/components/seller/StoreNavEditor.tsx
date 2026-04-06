@@ -153,7 +153,7 @@ export function StoreNavEditor({ storeId, storeSlug }: StoreNavEditorProps) {
  onCheckedChange={(v) => toggleVisible.mutate({ id: link.id, visible: v })}
  />
  <Button
- variant="ghost" size="icon" className="h-8 w-8 text-destructive shrink-0"
+ variant="ghost" size="icon" aria-label="Delete" className="h-8 w-8 text-destructive shrink-0"
  onClick={() => deleteLink.mutate(link.id)}
  >
  <Trash2 className="h-4 w-4" />

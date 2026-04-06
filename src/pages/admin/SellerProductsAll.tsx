@@ -318,7 +318,7 @@ export default function SellerProductsAll() {
                     <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
-                        size="icon"
+                        size="icon" aria-label="View"
                         className="h-8 w-8"
                         onClick={() => setViewProduct(product)}
                       >
@@ -326,7 +326,7 @@ export default function SellerProductsAll() {
                       </Button>
                       <Button
                         variant="ghost"
-                        size="icon"
+                        size="icon" aria-label="Edit"
                         className="h-8 w-8"
                         onClick={() => handleEditOpen(product)}
                       >

@@ -353,7 +353,7 @@ export default function ChatHistory() {
  <div className="flex items-center gap-3">
  <Button
  variant="ghost"
- size="icon"
+ size="icon" aria-label="Go back"
  onClick={clearSelection}
  className="h-8 w-8"
  >
@@ -453,7 +453,7 @@ export default function ChatHistory() {
  <div className="flex items-center gap-3">
  <Button
  variant="ghost"
- size="icon"
+ size="icon" aria-label="Go back"
  onClick={clearSelection}
  className="h-8 w-8"
  >
@@ -548,7 +548,7 @@ export default function ChatHistory() {
  <Button
  onClick={sendTicketReply}
  disabled={!replyMessage.trim() || isSending}
- size="icon"
+ size="icon" aria-label="Loading"
  >
  {isSending ? (
  <Loader2 className="h-4 w-4 animate-spin" />
@@ -576,7 +576,7 @@ export default function ChatHistory() {
  <MainLayout>
  <div className="container py-8 max-w-4xl">
  <div className="flex items-center gap-4 mb-6">
- <Button variant="ghost" size="icon" onClick={() => navigate('/account')}>
+ <Button variant="ghost" size="icon" aria-label="Go back" onClick={() => navigate('/account')}>
  <ArrowLeft className="h-5 w-5" />
  </Button>
  <div>

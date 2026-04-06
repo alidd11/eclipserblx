@@ -110,7 +110,7 @@ export function ChatMessageThread({
       {/* Chat Header */}
       <div className="p-3 lg:p-4 border-b border-border bg-muted/50 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <Button variant="ghost" size="icon" className="lg:hidden shrink-0 h-8 w-8" onClick={onBack}>
+          <Button variant="ghost" size="icon" aria-label="Go back" className="lg:hidden shrink-0 h-8 w-8" onClick={onBack}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="min-w-0 space-y-1">
@@ -285,7 +285,7 @@ export function ChatMessageThread({
           <div data-gesture-exempt="true" className="flex gap-1 lg:gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button type="button" size="icon" variant="ghost" title="Canned responses" className="h-9 w-9 lg:h-10 lg:w-10 shrink-0">
+                <Button type="button" size="icon" aria-label="Message" variant="ghost" title="Canned responses" className="h-9 w-9 lg:h-10 lg:w-10 shrink-0">
                   <MessageSquare className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -305,7 +305,7 @@ export function ChatMessageThread({
             </DropdownMenu>
             <Button
               type="button"
-              size="icon"
+              size="icon" aria-label="Loading"
               variant="ghost"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}

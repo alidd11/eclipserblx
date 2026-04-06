@@ -246,7 +246,7 @@ export default function IpBans() {
  <TableCell className="text-right">
  <AlertDialog>
  <AlertDialogTrigger asChild>
- <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+ <Button variant="ghost" size="icon" aria-label="Delete" className="text-destructive hover:text-destructive">
  <Trash2 className="h-4 w-4" />
  </Button>
  </AlertDialogTrigger>
@@ -343,7 +343,7 @@ export default function IpBans() {
  <TableCell className="text-right">
  <AlertDialog>
  <AlertDialogTrigger asChild>
- <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+ <Button variant="ghost" size="icon" aria-label="Delete" className="text-destructive hover:text-destructive">
  <Trash2 className="h-4 w-4" />
  </Button>
  </AlertDialogTrigger>

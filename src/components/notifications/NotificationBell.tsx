@@ -53,7 +53,7 @@ export function NotificationBell() {
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          size="icon"
+          size="icon" aria-label="Notifications"
           className="relative h-7 w-7 min-h-0 min-w-0 text-muted-foreground hover:text-foreground hover:bg-primary/10"
         >
           <Bell className="h-4 w-4" />

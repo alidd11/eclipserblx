@@ -146,7 +146,7 @@ export function DiscountCodesTab() {
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <code className="bg-muted px-2 py-1 rounded text-sm font-mono">{d.code}</code>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyCode(d.code)}>
+                    <Button variant="ghost" size="icon" aria-label="Confirm" className="h-6 w-6" onClick={() => copyCode(d.code)}>
                       {copiedCode === d.code ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
                     </Button>
                   </div>
@@ -158,8 +158,8 @@ export function DiscountCodesTab() {
                 <TableCell>{getStatusBadge(d)}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(d)}><Pencil className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => openDelete(d)}><Trash2 className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" aria-label="Edit" className="h-8 w-8" onClick={() => openEdit(d)}><Pencil className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" aria-label="Delete" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => openDelete(d)}><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -175,7 +175,7 @@ export function DiscountCodesTab() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <code className="bg-muted px-2 py-1 rounded text-sm font-mono font-medium">{d.code}</code>
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => copyCode(d.code)}>
+                <Button variant="ghost" size="icon" aria-label="Confirm" className="h-7 w-7" onClick={() => copyCode(d.code)}>
                   {copiedCode === d.code ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
                 </Button>
               </div>

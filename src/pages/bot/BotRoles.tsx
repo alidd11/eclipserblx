@@ -185,7 +185,7 @@ export default function BotRoles() {
                   </div>
                   <Button
                     variant="ghost"
-                    size="icon"
+                    size="icon" aria-label="Delete"
                     className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-500/10"
                     onClick={() => deleteRole.mutate(role.id)}
                   >

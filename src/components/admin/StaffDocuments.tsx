@@ -375,7 +375,7 @@ export function StaffDocuments({ staffUserId, currentUserId, isAdmin }: StaffDoc
  <div className="flex items-center gap-1">
  <Button
  variant="ghost"
- size="icon"
+ size="icon" aria-label="Download"
  className="h-8 w-8"
  onClick={() => handleDownload(doc)}
  >
@@ -383,7 +383,7 @@ export function StaffDocuments({ staffUserId, currentUserId, isAdmin }: StaffDoc
  </Button>
  <Button
  variant="ghost"
- size="icon"
+ size="icon" aria-label="Delete"
  className="h-8 w-8 text-muted-foreground hover:text-destructive"
  onClick={() => setDocumentToDelete(doc)}
  disabled={deleteMutation.isPending}

@@ -106,7 +106,7 @@ export default function SellerTermsOfService() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <Link to="/seller/documents">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" aria-label="Go back">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>

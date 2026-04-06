@@ -146,7 +146,7 @@ export function BotRolesCard() {
  />
  <Button
  variant="ghost"
- size="icon"
+ size="icon" aria-label="Delete"
  className="h-8 w-8 text-destructive"
  onClick={() => deleteRole.mutate(role.id)}
  >

@@ -293,7 +293,7 @@ export default function DiscordPolls() {
  <Button
  type="button"
  variant="ghost"
- size="icon"
+ size="icon" aria-label="Delete"
  onClick={() => removeOption(index)}
  className="shrink-0"
  >

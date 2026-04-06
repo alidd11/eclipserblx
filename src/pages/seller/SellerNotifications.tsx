@@ -199,7 +199,7 @@ export default function SellerNotifications() {
                     {isUnread && (
                       <Button
                         variant="ghost"
-                        size="icon"
+                        size="icon" aria-label="Confirm"
                         className="shrink-0 h-8 w-8"
                         onClick={(e) => { e.stopPropagation(); markAsRead.mutate(n.id); }}
                       >

@@ -429,7 +429,7 @@ export default function SellerBots() {
                     </code>
                     <Button
                       variant="outline"
-                      size="icon"
+                      size="icon" aria-label="Confirm"
                       onClick={() => copyToClipboard(selectedBot.discord_application_id, 'appId')}
                     >
                       {copiedField === 'appId' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}

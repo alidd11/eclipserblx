@@ -76,7 +76,7 @@ export default function SellerPromotions() {
       <SellerLayout>
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-2 mb-5">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowCreate(false)}>
+            <Button variant="ghost" size="icon" aria-label="Go back" className="h-8 w-8" onClick={() => setShowCreate(false)}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <h1 className="text-lg font-bold">Create Campaign</h1>

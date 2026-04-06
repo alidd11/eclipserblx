@@ -340,7 +340,7 @@ export default function SellerDiscounts() {
                         <span className="font-mono font-bold text-lg">{code.code}</span>
                         <Button 
                           variant="ghost" 
-                          size="icon" 
+                          size="icon" aria-label="Copy" 
                           className="h-6 w-6"
                           onClick={() => copyCode(code.code)}
                         >
@@ -397,7 +397,7 @@ export default function SellerDiscounts() {
                     </Button>
                     <Button 
                       variant="ghost" 
-                      size="icon"
+                      size="icon" aria-label="Delete"
                       onClick={() => setDeleteConfirmId(code.id)}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />

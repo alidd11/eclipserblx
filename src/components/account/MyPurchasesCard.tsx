@@ -226,7 +226,7 @@ export function MyPurchasesCard() {
  {(product.asset_file_url || (product.additional_asset_files && product.additional_asset_files.length > 0)) && (
  <Button
  asChild
- size="icon"
+ size="icon" aria-label="Download"
  variant="ghost"
  className="h-8 w-8"
  title={`Download (${1 + (product.additional_asset_files?.length || 0)} file${(product.additional_asset_files?.length || 0) > 0 ? 's' : ''})`}
@@ -238,7 +238,7 @@ export function MyPurchasesCard() {
  )}
  <Button
  asChild
- size="icon"
+ size="icon" aria-label="Open in new tab"
  variant="ghost"
  className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
  title="View Product"

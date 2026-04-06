@@ -238,7 +238,7 @@ export function WelcomeEmbedBuilder() {
  Inline
  </label>
  </div>
- <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={() => removeField(i)}>
+ <Button variant="ghost" size="icon" aria-label="Delete" className="h-8 w-8 shrink-0 text-destructive" onClick={() => removeField(i)}>
  <Trash2 className="h-3.5 w-3.5" />
  </Button>
  </div>

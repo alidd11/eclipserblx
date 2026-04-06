@@ -134,7 +134,7 @@ export default function BotReactionRoles() {
  <Input value={r.role_id} onChange={e => updateRole(i, 'role_id', e.target.value)} placeholder="Role ID" className="bg-background/5 border-white/10 text-foreground flex-1" />
  <Input value={r.role_name} onChange={e => updateRole(i, 'role_name', e.target.value)} placeholder="Role name" className="bg-background/5 border-white/10 text-foreground flex-1" />
  {roles.length > 1 && (
- <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400" onClick={() => removeRole(i)}>
+ <Button variant="ghost" size="icon" aria-label="Delete" className="h-8 w-8 text-red-400" onClick={() => removeRole(i)}>
  <Trash2 className="h-3.5 w-3.5" />
  </Button>
  )}
@@ -179,7 +179,7 @@ export default function BotReactionRoles() {
  ))}
  </div>
  </div>
- <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400" onClick={() => deleteMutation.mutate(panel.id)}>
+ <Button variant="ghost" size="icon" aria-label="Delete" className="h-8 w-8 text-red-400" onClick={() => deleteMutation.mutate(panel.id)}>
  <Trash2 className="h-4 w-4" />
  </Button>
  </div>

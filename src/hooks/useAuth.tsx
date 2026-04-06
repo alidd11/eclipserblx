@@ -81,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (refreshPromise.current) return refreshPromise.current;
 
       refreshPromise.current = (async () => {
-        console.log('[Auth] Attempting token refresh');
+        console.debug('[Auth] Attempting token refresh');
         const result = await withTimeout(supabase.auth.refreshSession(), 5000);
         if (!result || result.error || !result.data.session) {
           console.warn('[Auth] Refresh failed:', result?.error?.message ?? 'timeout');
@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.warn('[Auth] Refreshed token still invalid/stale');
           return null;
         }
-        console.log('[Auth] Refresh succeeded');
+        console.debug('[Auth] Refresh succeeded');
         return refreshed;
       })();
 
@@ -122,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Gate 2: token must not be expired/near-expiry
       if (!isSessionFresh(candidate)) {
-        console.log('[Auth] Token near-expiry, attempting refresh');
+        console.debug('[Auth] Token near-expiry, attempting refresh');
         const refreshed = await tryRefresh();
         if (refreshed) return refreshed;
 
@@ -144,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
      * Active session recovery — only runs if the listener hasn't fired.
      */
     const recoverSessionFromStorage = async () => {
-      console.log('[Auth] Safety recovery — listener did not fire in time');
+      console.debug('[Auth] Safety recovery — listener did not fire in time');
       try {
         const result = await withTimeout(supabase.auth.getSession(), 4000);
         if (!result) {
@@ -248,7 +248,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data: promoResult } = await supabase.functions.invoke('claim-signup-promotion');
       if (promoResult?.claimed) {
-        console.log(`Claimed signup promotion: ${promoResult.promotion} (${promoResult.days} bonus days)`);
+        console.debug(`Claimed signup promotion: ${promoResult.promotion} (${promoResult.days} bonus days)`);
       }
     } catch (e) {
       // Silent fail

@@ -46,14 +46,14 @@ export function MessageSearchBar({
         </span>
       )}
       <div className="flex items-center gap-0.5">
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleNav('up')} disabled={searchResults.length === 0}>
+        <Button variant="ghost" size="icon" aria-label="Navigate up" className="h-7 w-7" onClick={() => handleNav('up')} disabled={searchResults.length === 0}>
           <ChevronUp className="h-3.5 w-3.5" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleNav('down')} disabled={searchResults.length === 0}>
+        <Button variant="ghost" size="icon" aria-label="Navigate down" className="h-7 w-7" onClick={() => handleNav('down')} disabled={searchResults.length === 0}>
           <ChevronDown className="h-3.5 w-3.5" />
         </Button>
       </div>
-      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
+      <Button variant="ghost" size="icon" aria-label="Close" className="h-7 w-7" onClick={onClose}>
         <X className="h-3.5 w-3.5" />
       </Button>
     </div>

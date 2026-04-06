@@ -192,7 +192,7 @@ export default function StoreReviewsPage() {
  <div className="container py-6 px-4 max-w-4xl">
  {/* Header */}
  <div className="flex items-center gap-4 mb-6">
- <Button variant="ghost" size="icon" asChild>
+ <Button variant="ghost" size="icon" aria-label="Go back" asChild>
  <Link to={`/store/${storeSlug}`}>
  <ArrowLeft className="h-5 w-5" />
  </Link>

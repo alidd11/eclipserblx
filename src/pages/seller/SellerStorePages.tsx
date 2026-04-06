@@ -291,19 +291,19 @@ export default function SellerStorePages() {
                       {page.is_published ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                     </Button>
                     <Button
-                      variant="ghost" size="icon" className="h-8 w-8"
+                      variant="ghost" size="icon" aria-label="Open in new tab" className="h-8 w-8"
                       onClick={() => window.open(`/store/${store?.slug || store?.id}/page/${page.slug}`, '_blank')}
                     >
                       <ExternalLink className="h-4 w-4" />
                     </Button>
                     <Button
-                      variant="ghost" size="icon" className="h-8 w-8"
+                      variant="ghost" size="icon" aria-label="Edit" className="h-8 w-8"
                       onClick={() => setEditingPage(page)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
-                      variant="ghost" size="icon" className="h-8 w-8 text-destructive"
+                      variant="ghost" size="icon" aria-label="Delete" className="h-8 w-8 text-destructive"
                       onClick={() => setDeleteId(page.id)}
                     >
                       <Trash2 className="h-4 w-4" />

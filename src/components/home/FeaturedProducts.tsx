@@ -116,7 +116,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
               <>
                 <Button
                   variant="outline"
-                  size="icon"
+                  size="icon" aria-label="Go back"
                   className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full mr-4 z-10 hidden md:flex bg-background/80 backdrop-blur-sm"
                   onClick={goToPrev}
                 >
@@ -124,7 +124,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
                 </Button>
                 <Button
                   variant="outline"
-                  size="icon"
+                  size="icon" aria-label="Go forward"
                   className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full ml-4 z-10 hidden md:flex bg-background/80 backdrop-blur-sm"
                   onClick={goToNext}
                 >
@@ -171,14 +171,14 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
               <div className="flex justify-center gap-4 mt-4 md:hidden">
                 <Button
                   variant="outline"
-                  size="icon"
+                  size="icon" aria-label="Go back"
                   onClick={goToPrev}
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </Button>
                 <Button
                   variant="outline"
-                  size="icon"
+                  size="icon" aria-label="Go forward"
                   onClick={goToNext}
                 >
                   <ChevronRight className="h-5 w-5" />

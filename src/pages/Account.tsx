@@ -588,7 +588,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setShowSignOutDialog(true)}>
+                      <Button variant="ghost" size="icon" aria-label="Log out" className="h-9 w-9" onClick={() => setShowSignOutDialog(true)}>
                         <LogOut className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>

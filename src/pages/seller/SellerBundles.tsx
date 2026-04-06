@@ -223,7 +223,7 @@ export default function SellerBundles() {
                     <Button variant="ghost" size="icon" onClick={() => openEdit(bundle)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => setDeleteId(bundle.id)}>
+                    <Button variant="ghost" size="icon" aria-label="Delete" onClick={() => setDeleteId(bundle.id)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>

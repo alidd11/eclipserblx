@@ -443,7 +443,7 @@ export default function AdminProducts() {
               {form.asset_file_url ? (
                 <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/50">
                   <FileCheck className="h-5 w-5 text-success" /><span className="flex-1 text-sm truncate">{form.asset_file_url}</span>
-                  <Button type="button" variant="ghost" size="icon" onClick={removeAssetFile} className="h-8 w-8"><X className="h-4 w-4" /></Button>
+                  <Button type="button" variant="ghost" size="icon" aria-label="Close" onClick={removeAssetFile} className="h-8 w-8"><X className="h-4 w-4" /></Button>
                 </div>
               ) : (
                 <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="w-full">

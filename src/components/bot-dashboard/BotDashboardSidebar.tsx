@@ -57,7 +57,7 @@ export function BotDashboardSidebar({ onClose }: BotDashboardSidebarProps) {
         {onClose && (
           <Button
             variant="ghost"
-            size="icon"
+            size="icon" aria-label="Close"
             className="text-foreground/50 hover:text-foreground hover:bg-background/10 lg:hidden"
             onClick={onClose}
           >

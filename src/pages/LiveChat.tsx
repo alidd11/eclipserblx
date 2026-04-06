@@ -598,7 +598,7 @@ const LiveChatPage = () => {
     <MainLayout>
       <div className="container max-w-3xl py-4 sm:py-8">
         <div className="flex items-center gap-3 mb-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" aria-label="Go back" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -802,7 +802,7 @@ const LiveChatPage = () => {
                   />
                   <Button
                     variant="ghost"
-                    size="icon"
+                    size="icon" aria-label="Loading"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploading}
                   >
@@ -858,7 +858,7 @@ const LiveChatPage = () => {
                     className="flex-1"
                     disabled={isSending}
                   />
-                  <Button size="icon" onClick={sendMessage} disabled={!newMessage.trim() || isSending}>
+                  <Button size="icon" aria-label="Loading" onClick={sendMessage} disabled={!newMessage.trim() || isSending}>
                     {isSending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (

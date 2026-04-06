@@ -302,7 +302,7 @@ export default function AdminOrders() {
  <TableCell>£{order.total.toFixed(2)}</TableCell>
  <TableCell>{getStatusBadge(order.status)}</TableCell>
  <TableCell className="text-right">
- <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(order)}>
+ <Button variant="ghost" size="icon" aria-label="View" onClick={() => setSelectedOrder(order)}>
  <Eye className="h-4 w-4" />
  </Button>
  </TableCell>
@@ -399,7 +399,7 @@ export default function AdminOrders() {
  {isPrimaryAdmin && (
  <AlertDialog>
  <AlertDialogTrigger asChild>
- <Button variant="destructive" size="icon">
+ <Button variant="destructive" size="icon" aria-label="Delete">
  <Trash2 className="h-4 w-4" />
  </Button>
  </AlertDialogTrigger>
