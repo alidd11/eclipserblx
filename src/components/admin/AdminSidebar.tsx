@@ -555,46 +555,9 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
       </nav>
 
       {/* Footer */}
-      {!isMobileDrawer && (
-        <div className="border-t border-border/50 p-2 space-y-0.5">
-          {/* Collapse Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn(
-              "w-full text-foreground/80 hover:text-foreground hover:bg-muted/60",
-              isCollapsed ? "justify-center px-2" : "justify-start"
-            )}
-            onClick={onToggle}
-          >
-            {isCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <>
-                <ChevronLeft className="h-4 w-4 mr-2.5" />
-                Collapse
-              </>
-            )}
-          </Button>
-
-          {/* Sign Out */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "w-full text-muted-foreground hover:text-destructive hover:bg-muted/60",
-                  isCollapsed ? "justify-center px-2" : "justify-start"
-                )}
-                onClick={() => setShowSignOutDialog(true)}
-              >
-                <LogOut className="h-4 w-4 shrink-0" />
-                {!isCollapsed && <span className="ml-2.5">Sign Out</span>}
-              </Button>
-            </TooltipTrigger>
-            {isCollapsed && <TooltipContent side="right">Sign Out</TooltipContent>}
-          </Tooltip>
+      {!isMobileDrawer && !isCollapsed && (
+        <div className="border-t border-border/50 p-3">
+          <p className="text-[10px] text-muted-foreground/50 text-center">Eclipse Admin v4</p>
         </div>
       )}
 
