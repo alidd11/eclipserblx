@@ -66,7 +66,7 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
       setFieldErrors({});
       const validatedData = result.data;
 
-      const { error } = await supabase
+      const { data: inserted, error } = await supabase
         .from('job_applications')
         .insert([{
           position: validatedData.position,
@@ -76,13 +76,17 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
           portfolio_url: validatedData.portfolio_url || null,
           experience: validatedData.experience || null,
           message: validatedData.message,
-        }]);
+        }])
+        .select('access_token')
+        .single();
       
       if (error) {
         if (error.code === '23505') throw new Error('DUPLICATE_EMAIL');
         if (error.code === '42501' || error.message?.includes('check_rate_limit')) throw new Error('RATE_LIMITED');
         throw error;
       }
+
+      const accessToken = inserted?.access_token as string;
 
       await supabase.rpc('record_rate_limit', {
         p_identifier: validatedData.applicant_email,
@@ -94,10 +98,13 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
           applicant_name: validatedData.applicant_name,
           applicant_email: validatedData.applicant_email,
           position: validatedData.position,
+          access_token: accessToken,
         },
       }).catch((emailError) => {
         console.error('Failed to send confirmation email:', emailError);
       });
+
+      return accessToken;
     },
     onSuccess: () => {
       showSuccessNotification('Application Submitted!', 'Check your email for confirmation');
