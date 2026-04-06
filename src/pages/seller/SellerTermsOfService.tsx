@@ -160,8 +160,7 @@ export default function SellerTermsOfService() {
             <div className="prose prose-invert max-w-none space-y-8">
               {/* Introduction */}
               <section>
-                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-                  <FileText className="h-6 w-6 text-primary" />
+                <h2 className="font-display text-2xl font-bold mb-4">
                   Introduction
                 </h2>
                 <p className="text-muted-foreground">
@@ -177,8 +176,7 @@ export default function SellerTermsOfService() {
 
               {/* Seller Obligations */}
               <section>
-                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-                  <ShieldCheck className="h-6 w-6 text-primary" />
+                <h2 className="font-display text-2xl font-bold mb-4">
                   Seller Obligations
                 </h2>
                 <p className="text-muted-foreground mb-4">
@@ -197,8 +195,7 @@ export default function SellerTermsOfService() {
 
               {/* Product Standards */}
               <section>
-                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-                  <Package className="h-6 w-6 text-primary" />
+                <h2 className="font-display text-2xl font-bold mb-4">
                   Product Standards
                 </h2>
                 <p className="text-muted-foreground mb-4">
@@ -219,8 +216,7 @@ export default function SellerTermsOfService() {
 
               {/* Commission & Payments */}
               <section>
-                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-                  <DollarSign className="h-6 w-6 text-primary" />
+                <h2 className="font-display text-2xl font-bold mb-4">
                   Commission & Payments
                 </h2>
                 <p className="text-muted-foreground mb-4">
@@ -264,8 +260,7 @@ export default function SellerTermsOfService() {
 
               {/* Intellectual Property */}
               <section>
-                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-                  <Scale className="h-6 w-6 text-primary" />
+                <h2 className="font-display text-2xl font-bold mb-4">
                   Intellectual Property
                 </h2>
                 <p className="text-muted-foreground">
@@ -282,8 +277,7 @@ export default function SellerTermsOfService() {
 
               {/* Anti-Piracy & Watermarking */}
               <section>
-                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-                  <ShieldCheck className="h-6 w-6 text-primary" />
+                <h2 className="font-display text-2xl font-bold mb-4">
                   Anti-Piracy & Digital Watermarking
                 </h2>
                 <p className="text-muted-foreground">
@@ -310,8 +304,7 @@ export default function SellerTermsOfService() {
 
               {/* Prohibited Activities */}
               <section>
-                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-                  <Ban className="h-6 w-6 text-destructive" />
+                <h2 className="font-display text-2xl font-bold mb-4">
                   Prohibited Activities
                 </h2>
                 <p className="text-muted-foreground mb-4">
@@ -330,7 +323,7 @@ export default function SellerTermsOfService() {
 
               {/* Account Suspension */}
               <section>
-                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
+                <h2 className="font-display text-2xl font-bold mb-4">
                   <AlertTriangle className="h-6 w-6 text-amber-500" />
                   Account Suspension & Termination
                 </h2>
@@ -348,8 +341,7 @@ export default function SellerTermsOfService() {
 
               {/* Refunds & Disputes */}
               <section>
-                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-                  <CreditCard className="h-6 w-6 text-primary" />
+                <h2 className="font-display text-2xl font-bold mb-4">
                   Refunds & Disputes
                 </h2>
                 <p className="text-muted-foreground">
@@ -365,8 +357,7 @@ export default function SellerTermsOfService() {
 
               {/* Third-Party Platforms */}
               <section>
-                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-                  <Globe className="h-6 w-6 text-primary" />
+                <h2 className="font-display text-2xl font-bold mb-4">
                   Third-Party Platforms
                 </h2>
                 <p className="text-muted-foreground">
@@ -378,8 +369,7 @@ export default function SellerTermsOfService() {
 
               {/* Changes to Agreement */}
               <section>
-                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-                  <Clock className="h-6 w-6 text-primary" />
+                <h2 className="font-display text-2xl font-bold mb-4">
                   Changes to This Agreement
                 </h2>
                 <p className="text-muted-foreground">
@@ -391,8 +381,7 @@ export default function SellerTermsOfService() {
 
               {/* Contact */}
               <section>
-                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-                  <Mail className="h-6 w-6 text-primary" />
+                <h2 className="font-display text-2xl font-bold mb-4">
                   Contact Us
                 </h2>
                 <p className="text-muted-foreground">
