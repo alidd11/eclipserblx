@@ -1,106 +1,66 @@
 
 
-## Unified UX System — Enterprise Device Adaptation Layer
+## Enterprise Cleanup — Centralized Date Utils + God-File Splitting
 
-### Problem
-
-The codebase has **7+ independent device/platform detection mechanisms** scattered across 40+ files, each implementing its own logic inline:
-
-1. `useIsMobile()` — breakpoint-based (768px), used in ~20 files
-2. `usePlatform()` — UA-based device detection, used in 1 file
-3. `useIOSKeyboardFix()` — keyboard visibility, used in 2 files
-4. `useIOSChatKeyboard()` — chat-specific keyboard handling, used in 3 files
-5. `useNetworkQuality()` — connection speed, used in **0 files** (dead code)
-6. `useEdgeSwipe()` — touch gesture, used in 1 file
-7. `useSwipeGesture()` — another touch gesture, used in 1 file
-8. Inline `isStandalone` detection — copy-pasted in **6 files** (AdminLayout, SellerLayout, InstallPrompt, AdminInstallPrompt, NotificationSettingsCard, PWAAdminRedirect)
-9. Inline `isPWA` detection — copy-pasted in **2 more files** (StaffChatRoom, PWAWrapper)
-
-An enterprise company would have **one unified device context** that all components consume, not 9 ad-hoc detection patterns.
+Two phases, each verified with a full type-check before moving on.
 
 ---
 
-### What Changes
+### Phase 1: Centralized Date Utilities (Low Risk)
 
-#### 1. Create `useDevice()` — Single Source of Truth
-
-A new `src/hooks/useDevice.tsx` context provider that consolidates all device state into one place:
+**Create `src/lib/dateUtils.ts`** — a thin wrapper re-exporting the 24 date-fns functions actually used, plus two project-standard formatters:
 
 ```text
-useDevice() returns:
-├── isMobile        (breakpoint: <768px)
-├── isTablet        (breakpoint: 768-1024px)
-├── isDesktop       (breakpoint: >1024px)
-├── isStandalone    (PWA installed mode)
-├── isIOS / isAndroid / isSafari
-├── supportsApplePay / supportsGooglePay
-├── networkQuality  ('low' | 'medium' | 'high')
-├── prefersReducedMotion
-└── isKeyboardVisible
+formatDate(date)        → "Jan 5, 2025"
+formatDateTime(date)    → "Jan 5, 2025 2:30 PM"
+formatRelative(date)    → "3 hours ago"
 ```
 
-This replaces: `useIsMobile`, `usePlatform`, `useNetworkQuality`, `useReducedMotion` (partially), and all inline `isStandalone`/`isPWA` checks.
+**Step 1a** — Create `src/lib/dateUtils.ts` with re-exports and helpers.
 
-#### 2. Delete Dead Code
+**Step 1b** — Migrate the top-20 most-imported files (those using `format` or `formatDistanceToNow`) to import from `@/lib/dateUtils` instead of `date-fns` directly. Run type-check.
 
-- **`useNetworkQuality.ts`** — zero consumers, delete entirely
-- **`useIOSKeyboardFix.ts`** — merge into `useDevice` (only 2 consumers)
-- **`usePlatform.ts`** — merge into `useDevice` (only 1 consumer)
+**Step 1c** — Migrate remaining ~108 files in batches of ~25. Type-check after each batch.
 
-#### 3. Consolidate Gesture Hooks
-
-- **`useSwipeGesture.ts`** — only used in ProductDetail for image swiping, keep as-is (purpose-specific)
-- **`useEdgeSwipe.ts`** — only used in LayoutShell for drawer, keep as-is (purpose-specific)
-- These are correctly scoped; no consolidation needed
-
-#### 4. Migrate Consumers
-
-Replace all inline `isStandalone` detection in 6 files with `const { isStandalone } = useDevice()`:
-- `AdminLayout.tsx` — remove 8 lines of standalone detection
-- `SellerLayout.tsx` — remove 8 lines of standalone detection
-- `InstallPrompt.tsx` — remove `isStandalone()` function
-- `AdminInstallPrompt.tsx` — remove `isStandalone()` function
-- `NotificationSettingsCard.tsx` — remove inline `isPWA` check
-- `StaffChatRoom.tsx` — remove inline `isPWA` check
-
-Replace `useIsMobile()` imports in ~20 files with `const { isMobile } = useDevice()`.
-
-Replace `usePlatform()` in `PaymentMethodDisplay.tsx` with `useDevice()`.
-
-Replace `useIOSKeyboardFix()` in `StoreMessages.tsx` and `SellerMessages.tsx` with `useDevice()`.
-
-#### 5. Add `DeviceProvider` to App.tsx
-
-Wrap below `AuthProvider` so all components have access.
+This is purely mechanical — no logic changes, just import paths.
 
 ---
 
-### Steps
+### Phase 2: God-File Splitting (Moderate Risk — safest files first)
 
-1. **Create `src/hooks/useDevice.tsx`** — context provider combining breakpoint listener, UA detection, standalone detection, network quality, and keyboard visibility into one subscription
-2. **Delete** `useNetworkQuality.ts`, `useIOSKeyboardFix.ts`, `usePlatform.ts`
-3. **Keep** `use-mobile.tsx` as a thin re-export (`export const useIsMobile = () => useDevice().isMobile`) for backward compat during migration
-4. **Update 6 files** with inline `isStandalone` — replace with `useDevice()`
-5. **Update ~20 files** using `useIsMobile` — switch import to `useDevice`
-6. **Update `PaymentMethodDisplay.tsx`** — replace `usePlatform()` with `useDevice()`
-7. **Update `StoreMessages.tsx` and `SellerMessages.tsx`** — replace `useIOSKeyboardFix()` with `useDevice()`
-8. **Add `DeviceProvider`** to `App.tsx` provider tree
-9. **Verify build** passes with zero errors
+Split 6 files that exceed 1,000 lines, starting with the simplest (static content) and ending with the most complex (realtime state).
+
+**Step 2a — `PortalBotSetup.tsx` (2,267 lines)**
+This file is 90% static string constants (embedded bot source code). Extract `BOT_FILES` object into `src/data/portalBotFiles.ts`. The page file drops to ~300 lines. Type-check.
+
+**Step 2b — `Advertise.tsx` (1,095 lines)**
+Extract the ad tier pricing cards, the ad history table, and the slot picker form into sub-components under `src/components/ads/`. Type-check.
+
+**Step 2c — `BecomeSellerWizard.tsx` (1,008 lines)**
+Extract each wizard step (Store Info, Verification, Agreement, Confirmation) into separate components under `src/components/seller/wizard/`. Type-check.
+
+**Step 2d — `Analytics.tsx` (1,474 lines)**
+Extract each analytics card/section (traffic, revenue, top products, geo breakdown) into components under `src/components/admin/analytics/`. Type-check.
+
+**Step 2e — `Products.tsx` (1,579 lines)**
+Extract the product table, filters bar, bulk actions toolbar, and product row into components under `src/components/admin/products/`. Type-check.
+
+**Step 2f — `LiveChat.tsx` (1,093 lines)**
+Most complex — has realtime subscriptions and shared state. Extract the conversation list sidebar, message thread, and typing indicator into components under `src/components/admin/live-chat/`. Type-check.
+
+---
+
+### Verification Strategy
+
+After every step: `npx tsc --noEmit` (full type-check). If errors appear, fix before proceeding. No step depends on a later step, so any can be paused safely.
 
 ### Files Changed
-- **Create**: `src/hooks/useDevice.tsx`
-- **Delete**: `src/hooks/useNetworkQuality.ts`, `src/hooks/useIOSKeyboardFix.ts`, `src/hooks/usePlatform.ts`
-- **Edit**: `src/hooks/use-mobile.tsx` (thin re-export wrapper)
-- **Edit**: `src/App.tsx` (add DeviceProvider)
-- **Edit**: `src/components/admin/AdminLayout.tsx`, `src/components/seller/SellerLayout.tsx`, `src/components/pwa/InstallPrompt.tsx`, `src/components/pwa/AdminInstallPrompt.tsx`, `src/components/account/NotificationSettingsCard.tsx`, `src/components/chat/StaffChatRoom.tsx` (replace inline standalone)
-- **Edit**: `src/components/payments/PaymentMethodDisplay.tsx` (replace usePlatform)
-- **Edit**: `src/pages/StoreMessages.tsx`, `src/pages/seller/SellerMessages.tsx` (replace useIOSKeyboardFix)
-- **Edit**: ~15 additional files replacing `useIsMobile` imports
 
-### Impact
-- One device context subscription per app mount instead of 20+ independent listeners
-- Zero copy-pasted standalone detection
-- 3 dead/redundant hooks deleted
-- Every component gets consistent device state from the same source
-- Adding new device capabilities (e.g., `hasNotch`, `supportsHaptics`) is a one-line addition to the provider instead of a new hook
+**Phase 1:**
+- **Create**: `src/lib/dateUtils.ts`
+- **Edit**: ~128 files (import path changes only)
+
+**Phase 2:**
+- **Create**: `src/data/portalBotFiles.ts`, ~15 new sub-component files across `src/components/ads/`, `src/components/seller/wizard/`, `src/components/admin/analytics/`, `src/components/admin/products/`, `src/components/admin/live-chat/`
+- **Edit**: 6 god-files (dramatically reduced in size)
 
