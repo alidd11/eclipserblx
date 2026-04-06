@@ -1,42 +1,44 @@
 
 
-# Automated E2E Testing with Playwright
+# Admin Sidebar — Enterprise Polish
 
-## Overview
-Set up Playwright end-to-end testing against the live preview URL to validate critical user journeys automatically. This runs as a script in the sandbox — no changes to the React codebase itself.
+## Current State
+The admin sidebar is functional but has visual inconsistencies compared to the seller sidebar's more polished patterns:
+- Active state uses a filled `bg-primary` block (heavy, draws too much attention)
+- Group headers include an icon (adds visual noise unlike the seller sidebar which omits them)
+- No left-border active indicator (seller sidebar uses `border-l-2 border-primary` which is cleaner)
+- Collapsible content uses `border-l` indent — good, but styling differs from seller
+- Header lacks subtitle branding treatment (seller uses uppercase tracking-wider label)
+- Sign out button placement inconsistent between mobile/desktop
 
-## What Gets Tested
-Key customer-facing flows:
+## Plan
 
-1. **Homepage** — loads, hero visible, navigation works
-2. **Products page** — grid renders, filters visible
-3. **Product detail** — clicking a product loads detail page with images/price/buy button
-4. **Cart** — empty cart state, add-to-cart flow
-5. **Auth** — login/signup forms render, validation works
-6. **Search** — search bar functional, results display
-7. **Footer** — social links (Discord, X) present and correct
-8. **Help Center / FAQ** — pages load with content
-9. **Responsive** — all above at mobile (390px) and desktop (1366px) viewports
+### 1. Unify active state to left-border indicator
+Replace the heavy `bg-primary text-primary-foreground` active style with the seller pattern: `border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none` — subtler, more professional.
 
-## Technical Approach
+### 2. Clean up group headers
+Remove group icons from collapsible triggers (seller sidebar omits them). Keep just the uppercase label + chevron for a cleaner typographic hierarchy.
 
-1. **Install Playwright** in the sandbox (`npx playwright install --with-deps chromium`)
-2. **Create test suite** at `/tmp/e2e/` with a `playwright.config.ts` pointing at the preview URL (`https://id-preview--d330fb3c-8e4c-4ae9-8517-806e609eff0f.lovable.app`)
-3. **Write test files** covering each flow above — pure read-only tests (no destructive actions since we can't authenticate in the test runner)
-4. **Run tests** and report results with pass/fail summary
-5. **Save HTML report** to `/mnt/documents/e2e-report.html` for download
+### 3. Refine header branding
+Update the "Admin Dashboard" subtitle to match seller's uppercase tracking-wider style (`text-[10px] text-primary/70 font-semibold uppercase tracking-wider`).
 
-## Files Created (all temporary/artifact — no project changes)
+### 4. Standardise nav item sizing
+Align padding and font sizing with seller sidebar (`py-1.5`, `stroke-[2.25]` for active icons, `stroke-[1.75]` for inactive).
 
-| File | Purpose |
-|---|---|
-| `/tmp/e2e/playwright.config.ts` | Config pointing at preview URL |
-| `/tmp/e2e/tests/homepage.spec.ts` | Homepage & navigation tests |
-| `/tmp/e2e/tests/products.spec.ts` | Product listing & detail tests |
-| `/tmp/e2e/tests/auth.spec.ts` | Auth page form rendering tests |
-| `/tmp/e2e/tests/responsive.spec.ts` | Mobile viewport tests |
-| `/mnt/documents/e2e-report.html` | Downloadable test report |
+### 5. Consolidate sign out placement
+Move sign out into the header row (next to logo) matching seller pattern, remove the separate footer sign-out section on desktop.
 
-## No project code changes required
-All Playwright files live in `/tmp/` — the project codebase stays untouched.
+### 6. Remove collapse toggle
+Per the drawer-navigation architecture memory, persistent desktop sidebars are removed — the collapse/expand button in the footer is legacy. Remove it.
+
+### Technical Details
+
+**File:** `src/components/admin/AdminSidebar.tsx`
+- `renderNavItem`: Change active class from `bg-primary text-primary-foreground shadow-sm` → `border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none pl-[calc(0.625rem-2px)]`
+- `renderNavItem`: Add `stroke-[2.25]`/`stroke-[1.75]` to icon styling
+- `renderGroup`: Remove `<group.icon>` from CollapsibleTrigger, remove icon className
+- Header: Add `text-[10px] text-primary/70 font-semibold uppercase tracking-wider` to subtitle
+- Header: Add sign-out icon button inline with logo (matching seller)
+- Footer: Remove collapse toggle button and desktop sign-out section entirely
+- Collapsible content: Change from `ml-[13px] border-l border-border/40 pl-2` → `ml-3 space-y-px pt-px pb-0.5` (matching seller)
 
