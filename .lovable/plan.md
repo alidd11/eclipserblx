@@ -1,44 +1,46 @@
 
-## Full Codebase Sweep — Catch Every Legacy Pattern
 
-### What the audit found
+## Remove Eclipse+ from Edge Functions & Discord Bot Code
 
-**Zero type errors** ✅ — TypeScript is clean.
+### Scope
+~50 references across 16 edge functions and 4 bot files. All are user-facing text, comments, or logic tied to the removed Eclipse+ membership. Database column names (`eclipse_plus_discount_enabled`, `eclipse_plus_bonus_claimed`, `eclipse_plus_days`) are left as-is since they're DB schema — renaming columns is a separate migration.
 
-**Remaining issues across the codebase:**
+### Files & Changes
 
-| Issue | Count | Where |
-|-------|-------|-------|
-| `glass-card` class (legacy gaming aesthetic) | 38 uses | Legal pages, Jobs, Admin, 1 seller page |
-| `gaming-card` / `gaming-card-hover` | 2 uses | CategoryShowcase, Admin Login |
-| `gradient-button` (outside seller) | 225 uses in 30 files | Customer pages, Admin, Checkout, etc. |
-| Card imports in non-seller pages | 70+ files | Admin, customer, bot pages |
-| Hardcoded `text-white`/`bg-black` | ~50 uses | Store pages, Featured, Product Detail, Admin |
-| Stray `console.log` | 2 | BotIntegrationGuide |
+**Edge Functions (12 files):**
 
-### What we'll fix now (safe, no-breakage)
+| File | What changes |
+|------|-------------|
+| `discord-customer-bot/index.ts` | "Eclipse+ (Active)" → "Pro (Active)" in profile; role name refs "Eclipse+" → use generic; eligibility text "Subscribe to Eclipse+" removed |
+| `discord-global-guard-bot/index.ts` | "Upgrade to Eclipse+" → "Upgrade your plan"; "Eclipse+ • Priority Sync" → "Premium • Priority Sync"; "Eclipse+ Member" → "Premium Member"; pricing text remove Eclipse+ upsell |
+| `discord-oauth-callback/index.ts` | Comment "Eclipse+ subscription" → "Pro subscription"; role assignment label "Eclipse+" → role variable name only |
+| `botghost-customer-api/index.ts` | "Access Eclipse+ perks" → "Access member perks" |
+| `claim-signup-promotion/index.ts` | Update comments only (logic uses DB column names which stay) |
+| `create-payment-intent/index.ts` | Update comment text |
+| `notify-product-approved/index.ts` | "Eclipse+ members get early access!" → "Members get early access!"; footer "Eclipse+ Early Access" → "Early Access" |
+| `send-product-drop-webhook/index.ts` | Same early access text cleanup |
+| `send-promotion-discord-webhook/index.ts` | "days of Eclipse+ free!" → "days of Pro free!" |
+| `stripe-subscription-webhook/index.ts` | "Eclipse+ activated/deactivated" → "Subscription activated/deactivated" |
+| `og-proxy/index.ts` | Remove `/eclipse-plus` route and nav link |
+| `dynamic-sitemap/index.ts` | Remove `/eclipse-plus` URL entry |
+| `submit-indexnow/index.ts` | Remove `/eclipse-plus` from URL list |
+| `sync-discord-roles/index.ts` | Comment update "Eclipse+ role" → "subscription role" |
+| `sync-global-bans/index.ts` | "upgrade to Eclipse+" → "upgrade your plan" |
+| `verify-payment/index.ts` | Comment update only |
 
-**Priority 1 — Seller area final cleanup (1 file)**
-- Remove `glass-card` from `SellerTermsOfService.tsx` line 238
+**Eclipse Portal Bot (3 files):**
 
-**Priority 2 — Console.log cleanup (1 file)**
-- Remove 2 `console.log` statements from `BotIntegrationGuide.tsx`
+| File | What changes |
+|------|-------------|
+| `commands/profile.js` | "Eclipse+ (Active)" → "Pro (Active)" |
+| `commands/getrole.js` | "Eclipse+" role label → "Pro"; eligibility text updated |
+| `commands/update.js` | "Eclipse+" role label → "Pro" |
 
-**Priority 3 — Legacy `gaming-card` in public pages (2 files)**
-- `CategoryShowcase.tsx` — replace `gaming-card-hover` with enterprise container
-- Admin Login — replace `gaming-card` with flat containers
-
-**Priority 4 — `glass-card` in legal/public pages (4 files)**
-- `Jobs.tsx` — replace 4 `glass-card` uses
-- `PrivacyPolicy.tsx` — replace 5 `glass-card` uses
-- `RefundPolicy.tsx` — replace 6 `glass-card` uses
-- `TermsOfService.tsx` — replace 1 `glass-card` use
-
-### What we'll NOT touch (intentional / context-dependent)
-
-- **`gradient-button`** — This is the primary CTA style used across checkout, product pages, and the chat widget. Changing it site-wide is a visual redesign decision, not a bug fix. These 225 instances are intentional brand styling for conversion-critical buttons (Add to Cart, Checkout, etc.).
-- **`text-white`/`bg-black`** — Most are contextually correct (image overlays `bg-black/60`, dark store themes, Twitter/X preview component, badge colors). These aren't design token violations — they're semantic uses where the exact color matters regardless of theme.
-- **Card imports in admin/customer pages** — These are functional and visually consistent within their own sections. Migrating 70+ files would be a separate initiative.
+### What stays unchanged
+- Database column names (`eclipse_plus_days`, `eclipse_plus_discount_enabled`, etc.) — these are schema-level and would need a migration
+- The `eclipsePlusRoleId` config variable — it's the Discord role ID variable name, harmless internally
+- Frontend files querying those DB columns
 
 ### Risk
-Very low — removing dead classes and replacing decorative wrappers with the established flat pattern. No logic changes.
+Low — text and comment changes only. No logic changes except removing the dead `/eclipse-plus` sitemap/OG entries.
+
