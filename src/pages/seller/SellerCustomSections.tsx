@@ -42,12 +42,9 @@ type SectionType = typeof SECTION_TYPES[number]['id'];
 
 interface FaqItem { question: string; answer: string }
 interface TestimonialItem { name: string; text: string; rating: number }
-interface FaqContent { items: FaqItem[] }
-interface TestimonialContent { items: TestimonialItem[] }
-interface FeaturedCollectionContent { product_ids: string[]; description: string }
-interface TextBlockContent { body: string }
-interface GalleryContent { images: string[] }
-type SectionContent = FaqContent | TestimonialContent | FeaturedCollectionContent | TextBlockContent | GalleryContent;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SectionContent = Record<string, any>;
 
 interface CustomSection {
   id: string;
