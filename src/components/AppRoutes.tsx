@@ -349,6 +349,8 @@ export function AppRoutes() {
         <Route path="/support" element={<Support />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/status" element={<Status />} />
+        <Route path="/security" element={<SecurityPage />} />
+        <Route path="/brand" element={<BrandPage />} />
         <Route path="/changelog" element={<Changelog />} />
         <Route path="/bot-installation" element={<BotInstallation />} />
         <Route path="/bot-dashboard" element={<BotDashboard />} />
