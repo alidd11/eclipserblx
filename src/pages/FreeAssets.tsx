@@ -5,7 +5,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductCardSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { usePageMeta } from '@/hooks/usePageMeta';
-import { Gift } from 'lucide-react';
+
 import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 type SortOption = 'newest' | 'popular' | 'downloads';
