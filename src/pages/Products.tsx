@@ -72,6 +72,22 @@ export default function Products() {
     staleTime: 60000,
   });
 
+  // Category-aware SEO titles for better Google ranking on long-tail queries
+  const activeCategory = categories?.find((c: any) => c.slug === categorySlug);
+  const seoTitle = activeCategory
+    ? `Buy Roblox ${activeCategory.name} | Eclipse Marketplace`
+    : 'Browse Roblox Assets & Scripts | Eclipse Marketplace';
+  const seoDescription = activeCategory
+    ? `Shop premium Roblox ${activeCategory.name.toLowerCase()} on Eclipse. Instant delivery, lower fees, verified sellers. Browse ${activeCategory.name.toLowerCase()} now.`
+    : 'Browse premium Roblox scripts, vehicles, maps and game assets on Eclipse marketplace. Instant delivery, lower fees.';
+  
+  usePageMeta({
+    title: activeCategory ? `${activeCategory.name} - Roblox Assets` : 'Browse Products',
+    description: seoDescription,
+    canonicalPath: categorySlug ? `/products?category=${categorySlug}` : '/products',
+  });
+
+
   const isMobile = useIsMobile();
   const productsPerPage = isMobile ? PRODUCTS_PER_PAGE_MOBILE : PRODUCTS_PER_PAGE_DESKTOP;
 
