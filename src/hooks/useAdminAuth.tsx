@@ -66,7 +66,7 @@ export function useAdminAuth() {
     staleTime: 1000 * 60 * 5,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    retry: (failureCount, error: any) => {
+    retry: (failureCount, error: Error) => {
       if (failureCount >= 3) return false;
       return isJwtError(error);
     },

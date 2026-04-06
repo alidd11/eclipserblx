@@ -319,11 +319,11 @@ export default function AdminIncomeSources() {
   const trendData = useMemo(() => {
     const bucketCount = Math.min(periodDays, 30);
     const bucketMs = (new Date().getTime() - periodStart.getTime()) / bucketCount;
-    const buckets: Record<string, any>[] = [];
+    const buckets: Record<string, string | number>[] = [];
 
     for (let i = 0; i < bucketCount; i++) {
       const bucketDate = new Date(periodStart.getTime() + bucketMs * (i + 0.5));
-      const entry: any = { date: format(bucketDate, bucketCount > 14 ? 'MMM d' : 'EEE d') };
+      const entry: Record<string, string | number> = { date: format(bucketDate, bucketCount > 14 ? 'MMM d' : 'EEE d') };
       sourceKeys.forEach(k => { entry[k] = 0; });
       buckets.push(entry);
     }

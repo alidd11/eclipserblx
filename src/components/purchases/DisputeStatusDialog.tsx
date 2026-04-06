@@ -100,7 +100,7 @@ export function DisputeStatusDialog({ open, onOpenChange, disputeId }: DisputeSt
   });
 
   // Build timeline
-  const timeline: { label: string; time: string; icon: any; color: string }[] = [];
+  const timeline: { label: string; time: string; icon: React.ElementType; color: string }[] = [];
   if (dispute) {
     timeline.push({ label: 'Dispute filed', time: dispute.created_at, icon: AlertTriangle, color: 'text-destructive' });
     if (dispute.seller_responded_at) {

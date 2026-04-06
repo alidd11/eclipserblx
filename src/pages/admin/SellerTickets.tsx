@@ -298,7 +298,7 @@ export default function SellerTickets() {
  const applyLinkChange = useMutation({
  mutationFn: async () => {
  if (!selectedTicket?.user_id) throw new Error('No user ID');
- const updates: any = {};
+ const updates: Record<string, string> = {};
  if (selectedTicket.new_discord_username) updates.discord_username = selectedTicket.new_discord_username;
  if (selectedTicket.new_roblox_username) updates.roblox_username = selectedTicket.new_roblox_username;
  if (Object.keys(updates).length === 0) throw new Error('No changes to apply');

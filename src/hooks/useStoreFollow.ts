@@ -84,7 +84,7 @@ export const useStoreFollow = (storeId: string | undefined) => {
       queryClient.invalidateQueries({ queryKey: ['following-stores'] });
       toast.success('Unfollowed store');
     },
-    onError: (error: any, _, context) => {
+    onError: (error: Error, _, context) => {
       console.error('Unfollow error:', error);
       if (context?.previous !== undefined) {
         queryClient.setQueryData(['store-follow', storeId, user?.id], context.previous);

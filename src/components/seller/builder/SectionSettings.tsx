@@ -12,7 +12,7 @@ interface SectionSettingsProps {
 export function SectionSettings({ section, onUpdateConfig }: SectionSettingsProps) {
   const config = section.config || {};
 
-  const updateField = (key: string, value: any) => {
+  const updateField = (key: string, value: string | number | boolean) => {
     onUpdateConfig(section.id, { ...config, [key]: value });
   };
 
