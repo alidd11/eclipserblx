@@ -1,3 +1,5 @@
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
+
 /**
  * Normalizes a potential media URL value.
  */
@@ -53,11 +55,13 @@ export function isStaticImageUrl(url: string | null | undefined): boolean {
 
 /**
  * Gets the first static image URL from a media array (skips videos).
+ * Returns an optimized URL with long-cache headers via the image proxy.
  */
 export function getFirstImageUrl(media: string[] | null | undefined): string | null {
   const validMedia = getValidMediaUrls(media);
   const firstImage = validMedia.find((item) => !isVideoUrl(item));
-  return firstImage ?? null;
+  if (!firstImage) return null;
+  return optimizeImageUrl(firstImage);
 }
 
 /**
@@ -78,11 +82,12 @@ export function getFirstMediaPrioritizeVideo(media: string[] | null | undefined)
   if (validMedia.length === 0) return null;
 
   const firstVideo = validMedia.find(isVideoUrl);
-  return firstVideo ?? validMedia[0];
+  return firstVideo ?? optimizeImageUrl(validMedia[0]);
 }
 
 /**
  * Returns media candidates for product cards with image-first priority and video fallback.
+ * Static images are routed through the image proxy for long-term edge caching.
  */
 export function getCardMediaChain(
   media: string[] | null | undefined,
@@ -94,7 +99,7 @@ export function getCardMediaChain(
   ];
 
   const unique = Array.from(new Set(combined));
-  const images = unique.filter((item) => !isVideoUrl(item));
+  const images = unique.filter((item) => !isVideoUrl(item)).map((url) => optimizeImageUrl(url));
   const videos = unique.filter(isVideoUrl);
 
   return [...images, ...videos];
