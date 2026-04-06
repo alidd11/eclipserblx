@@ -342,6 +342,7 @@ export default function Jobs() {
   usePageMeta({ title: 'Careers — Eclipse', description: 'Join the Eclipse team. View open positions and apply to help build the best Roblox asset marketplace.', canonicalPath: '/jobs' });
   const [openDialog, setOpenDialog] = useState<string | null>(null);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
+  const [typeFilter, setTypeFilter] = useState<string | null>(null);
 
   const { data: jobOpenings = [], isLoading } = useQuery({
     queryKey: ['job-channels-public'],
@@ -356,6 +357,9 @@ export default function Jobs() {
       return data as JobChannel[];
     },
   });
+
+  const jobTypes = [...new Set(jobOpenings.map(j => j.type))];
+  const filteredJobs = typeFilter ? jobOpenings.filter(j => j.type === typeFilter) : jobOpenings;
 
   return (
     <MainLayout>
