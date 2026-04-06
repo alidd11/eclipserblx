@@ -53,7 +53,7 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
-    let accountId = profile?.stripe_account_id;
+    let accountId = paymentDetails?.stripe_account_id;
 
     // If no existing account, create one
     if (!accountId) {
