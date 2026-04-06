@@ -144,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
      * Active session recovery — only runs if the listener hasn't fired.
      */
     const recoverSessionFromStorage = async () => {
-      console.log('[Auth] Safety recovery — listener did not fire in time');
+      console.debug('[Auth] Safety recovery — listener did not fire in time');
       try {
         const result = await withTimeout(supabase.auth.getSession(), 4000);
         if (!result) {
