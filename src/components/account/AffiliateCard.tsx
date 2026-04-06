@@ -48,14 +48,14 @@ export function AffiliateCard() {
   enabled: !!user?.id,
  });
 
- // Get profile for payout preferences
+ // Get profile for referral code
  const { data: profile } = useQuery({
   queryKey: ['profile-referral', user?.id],
   queryFn: async () => {
    if (!user?.id) return null;
    const { data, error } = await supabase
     .from('profiles')
-    .select('referral_code, display_name, paypal_email, preferred_payout_method, stripe_account_id')
+    .select('referral_code, display_name')
     .eq('user_id', user.id)
     .single();
    if (error) throw error;
@@ -64,8 +64,24 @@ export function AffiliateCard() {
   enabled: !!user?.id,
  });
 
+ // Get payment details from dedicated table
+ const { data: paymentDetails } = useQuery({
+  queryKey: ['user-payment-details', user?.id],
+  queryFn: async () => {
+   if (!user?.id) return null;
+   const { data, error } = await supabase
+    .from('user_payment_details')
+    .select('preferred_payout_method, stripe_account_id')
+    .eq('user_id', user.id)
+    .maybeSingle();
+   if (error) throw error;
+   return data;
+  },
+  enabled: !!user?.id,
+ });
+
  const { data: connectStatus } = useAffiliateConnectStatus(
-  !!user?.id && profile?.preferred_payout_method === 'stripe'
+  !!user?.id && paymentDetails?.preferred_payout_method === 'stripe'
  );
 
  // Get recent commissions
