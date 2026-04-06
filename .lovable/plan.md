@@ -1,26 +1,22 @@
-# Remove Affiliate Applications System
 
-Since all members are auto-enrolled, the `affiliate_applications` table is unnecessary. 
 
-## Database Migration
-1. **Add payout columns to `profiles`**: `preferred_payout_method`, `bank_account_holder`, `bank_account_number`, `bank_swift_bic`, `bank_name`, `bank_country`, `bank_routing_number`
-2. **Migrate existing data** from `affiliate_applications` to `profiles` (63 records)
-3. **Drop** `affiliate_applications` table and `affiliate_applications_masked` view
-4. **Drop** the `auto_enroll_affiliate` trigger (no longer needed)
+# Footer — Enterprise Mobile Layout Fix
 
-## Code Changes
-- **Delete** `src/pages/admin/AffiliateApplications.tsx` — no more applications to review
-- **Update** `src/pages/admin/AffiliateHub.tsx` — remove "Applications" tab
-- **Update** `src/components/AppRoutes.tsx` — remove import and route
-- **Update** `src/components/account/AffiliateCard.tsx` — remove application form/check, show dashboard directly since all users are affiliates
-- **Update** `src/pages/affiliate/useAffiliateData.ts` — read payout settings from `profiles` instead of `affiliate_applications`
-- **Update** `src/pages/Account.tsx` — read affiliate_id from `profiles.referral_code` instead
-- **Update** `src/components/admin/CustomerProfileDialog.tsx` — remove affiliate_applications query
-- **Update** `supabase/functions/request-affiliate-payout/index.ts` — read payout settings from `profiles`
-- **Update** `supabase/functions/create-affiliate-connect-account/index.ts` — remove application check
+## Problem
+On mobile the footer renders as a 2-column grid with large text and excessive spacing, making it look unprofessional. The "Popular Categories" column has 6 links stacking tall.
 
-## What Stays
-- `affiliate_balances` — still tracks earnings
-- `affiliate_commissions` — still tracks commissions  
-- `affiliate_payouts` — still tracks payout history
-- `profiles.referral_code` — already used as the affiliate ID
+## Solution
+Collapse the footer on mobile into a single-column inline flow where each section's links run horizontally (inline, separated by middots), drastically reducing vertical height. On desktop (sm+), keep the current 4-column grid.
+
+## Changes
+
+**`src/components/layout/Footer.tsx`**
+
+1. Mobile layout (below `sm`): render each column as a compact block — heading on one line, links flowing inline horizontally with `·` separators, `text-[11px]` size
+2. Desktop layout (`sm+`): keep existing 4-column vertical grid unchanged
+3. Use a single responsive approach: `hidden sm:grid` for the desktop grid, `sm:hidden` for the mobile inline version
+4. Tighten mobile padding to `py-4 px-4`
+5. Bottom bar (copyright + trust signals) stays as-is — already handles responsive
+
+This gives a tight, enterprise-grade single-screen footer on mobile without changing the desktop experience.
+
