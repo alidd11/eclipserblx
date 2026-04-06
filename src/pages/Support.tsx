@@ -15,7 +15,7 @@ import {
   CreditCard,
   ShieldCheck,
   MessageCircle,
-  // Headphones removed — enterprise standard: no decorative heading icons
+  
   Package,
   ChevronDown,
 } from 'lucide-react';
