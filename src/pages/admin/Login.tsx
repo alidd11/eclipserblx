@@ -206,7 +206,7 @@ export default function AdminLogin() {
           </div>
 
           {canUseBiometric && (
-            <div className="gaming-card p-4">
+            <div className="border border-border rounded-xl p-4">
               <Button
                 onClick={handleBiometricLogin}
                 className="w-full h-14 text-lg"
