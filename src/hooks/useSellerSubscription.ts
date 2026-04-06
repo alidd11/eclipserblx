@@ -82,11 +82,15 @@ const PRO_LIMITS: SellerProLimits = {
   scheduledBanner: true,
 };
 
+const GRACE_PERIOD_DAYS = 7;
+
 interface SellerSubscriptionState {
   isPro: boolean;
   subscriptionEnd: string | null;
   status: string | null;
   isLoading: boolean;
+  isGracePeriod: boolean;
+  gracePeriodEndsAt: string | null;
 }
 
 export function useSellerSubscription() {
