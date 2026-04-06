@@ -98,7 +98,7 @@ export function ReviewForm({ productId, productName, isVerifiedPurchase = false,
               onClick={() => setFormData({ rating: star })}
               onMouseEnter={() => setHoveredRating(star)}
               onMouseLeave={() => setHoveredRating(0)}
-              className="p-1 transition-transform hover:scale-110"
+              className="p-1 transition-transform"
             >
               <Star
                 className={`h-6 w-6 transition-colors ${

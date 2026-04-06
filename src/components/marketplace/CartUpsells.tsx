@@ -90,7 +90,7 @@ export function CartUpsells() {
                       src={imgUrl}
                       alt={product.name}
                       loading="lazy"
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-contain transition-transform duration-300"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">

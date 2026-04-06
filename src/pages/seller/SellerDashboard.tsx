@@ -109,7 +109,7 @@ export default function SellerDashboard() {
       <div className="grid grid-cols-3 gap-1.5">
         {actions.map((action) => (
           <Link key={action.href} to={action.href}>
-            <div className={`flex flex-col items-center gap-1 p-2.5 rounded-lg transition-all text-center group cursor-pointer active:scale-[0.97] ${
+            <div className={`flex flex-col items-center gap-1 p-2.5 rounded-lg transition-all text-center group cursor-pointer ${
               'primary' in action && action.primary
                 ? 'bg-primary/10 border border-primary/20 hover:bg-primary/15'
                 : 'bg-muted/40 hover:bg-muted/60 border border-transparent hover:border-border/40'

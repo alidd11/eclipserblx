@@ -54,7 +54,7 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
                   height={180}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-full object-contain group-hover:scale-[1.02] transition-transform duration-500"
+                  className="w-full h-full object-contain transition-transform duration-500"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-muted">

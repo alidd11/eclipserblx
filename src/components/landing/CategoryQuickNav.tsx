@@ -36,7 +36,7 @@ export function CategoryQuickNav() {
                   key={cat.slug}
                   onClick={() => navigate(cat.slug ? `/products?category=${cat.slug}` : '/products')}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium active:scale-[0.97] transition-all whitespace-nowrap border",
+                    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border",
                     isActive
                       ? "bg-primary/15 text-primary border-primary/30"
                       : "text-foreground/70 hover:text-foreground hover:bg-muted/60 border-transparent hover:border-border/50"

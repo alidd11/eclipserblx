@@ -93,7 +93,7 @@ export function PromotionCarousel() {
         className={`group flex items-center justify-between gap-4 px-5 py-5 transition-all duration-300 bg-gradient-to-r ${promo.accent}`}
       >
         <div className="flex items-center gap-3.5 min-w-0">
-          <div className={`w-10 h-10 rounded-xl ${promo.iconBg} flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110`}>
+          <div className={`w-10 h-10 rounded-xl ${promo.iconBg} flex items-center justify-center shrink-0 transition-transform duration-300`}>
             <Icon className={`h-4.5 w-4.5 ${promo.iconColor}`} />
           </div>
           <div className="min-w-0">

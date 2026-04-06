@@ -38,7 +38,7 @@ export const CurrencySelector = React.forwardRef<HTMLDivElement, CurrencySelecto
                 "h-7 w-7 min-h-0 min-w-0 p-0 rounded justify-center",
                 "bg-transparent border-0",
                 "hover:bg-primary/10",
-                "active:scale-[0.95]"
+                ""
               ],
               className
             )}

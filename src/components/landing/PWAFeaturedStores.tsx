@@ -104,13 +104,13 @@ function SpotlightStoreCard({ store }: { store: FeaturedStore }) {
   return (
     <Link
       to={`/store/${store.slug}`}
-      className="group relative block rounded-lg overflow-hidden border bg-card transition-all duration-300 hover:shadow-xl active:scale-[0.99]"
+      className="group relative block rounded-lg overflow-hidden border bg-card transition-all duration-300"
       style={accentStyle}
     >
       {/* Cinematic Banner */}
       <div className="relative h-40 overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-500"
           style={{
             backgroundImage: store.banner_url
               ? `url(${store.banner_url})`
@@ -175,13 +175,13 @@ function CompactStoreCard({ store }: { store: FeaturedStore }) {
   return (
     <Link
       to={`/store/${store.slug}`}
-      className="group block rounded-lg overflow-hidden border bg-card transition-colors hover:border-primary/30 active:scale-[0.98]"
+      className="group block rounded-lg overflow-hidden border bg-card transition-colors hover:border-primary/30"
       style={accentBorder}
     >
       {/* Mini banner */}
       <div className="relative h-16 overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-500"
           style={{
             backgroundImage: store.banner_url
               ? `url(${store.banner_url})`

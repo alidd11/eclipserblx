@@ -473,7 +473,7 @@ export function StaffChatRoom({
                             isOwn
                               ? 'bg-primary text-primary-foreground rounded-br-md'
                               : 'bg-muted text-foreground rounded-bl-md',
-                            isPWA && 'cursor-pointer active:opacity-80 transition-opacity',
+                            isPWA && 'cursor-pointer transition-opacity',
                           )}
                         >
                           <RichMessageContent message={message.message} isOwn={isOwn} />

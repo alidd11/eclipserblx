@@ -26,12 +26,12 @@ export function PWADiscordBanner() {
       href={discordUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group block border border-[#5865F2]/20 bg-card hover:border-[#5865F2]/50 transition-all duration-300 rounded-lg overflow-hidden shadow-sm hover:shadow-[0_0_20px_rgba(88,101,242,0.15)] h-full"
+      className="group block border border-[#5865F2]/20 bg-card hover:border-[#5865F2]/50 transition-all duration-300 rounded-lg overflow-hidden shadow-sm h-full"
     >
       <div className="px-5 py-5 bg-gradient-to-r from-[#5865F2]/10 to-transparent h-full flex flex-col justify-center gap-4">
         {/* Header */}
         <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-[#5865F2]/15 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110">
+          <div className="w-10 h-10 rounded-xl bg-[#5865F2]/15 flex items-center justify-center shrink-0 transition-transform duration-300">
             <DiscordLogo className="h-5 w-5 text-[#5865F2]" />
           </div>
           <div className="min-w-0">

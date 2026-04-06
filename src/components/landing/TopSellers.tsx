@@ -80,7 +80,7 @@ export function TopSellers() {
               </div>
 
               {/* Desktop: card layout */}
-              <div className="hidden lg:block rounded-lg border border-border bg-card p-4 hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all duration-200">
+              <div className="hidden lg:block rounded-lg border border-border bg-card p-4 hover:border-primary/40 hover:shadow-primary/5 transition-all duration-200">
                 <div className="flex items-center gap-3">
                   <div className="relative h-12 w-12 rounded-full overflow-hidden bg-muted border-2 border-border flex-shrink-0">
                     {i < 3 && (

@@ -206,7 +206,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
 
     const linkClass = cn(
       "group rounded-md text-[13px] font-medium select-none transition-all duration-150 relative",
-      "active:scale-[0.98] active:opacity-90",
+      "",
       isCollapsed
         ? "flex items-center justify-center p-2"
         : "flex items-center gap-2.5 px-2.5 py-1.5",
@@ -253,7 +253,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
               <button
                 className={cn(
                   "w-full flex items-center justify-center p-2.5 rounded-md select-none",
-                  "transition-all duration-150 active:scale-[0.98]",
+                  "transition-all duration-150",
                   "focus:outline-none",
                   hasActiveItem
                     ? "bg-primary/10 text-primary"
@@ -300,7 +300,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
           <button
             className={cn(
               "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider select-none",
-              "transition-all duration-150 active:scale-[0.98]",
+              "transition-all duration-150",
               "focus:outline-none",
               hasActiveItem
                 ? "text-foreground"

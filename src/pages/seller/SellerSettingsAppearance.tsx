@@ -285,7 +285,7 @@ export default function SellerSettingsAppearance() {
                       className={`w-10 h-10 rounded-full border-2 transition-all ${
                         formData.accent_color === color.id
                           ? 'border-foreground scale-110 ring-2 ring-offset-2 ring-offset-background'
-                          : 'border-transparent hover:scale-105'
+                          : 'border-transparent'
                       }`}
                       style={{ backgroundColor: color.id }}
                       title={color.name}

@@ -41,7 +41,7 @@ export function SearchCategoryChips({ selected, onSelect }: SearchCategoryChipsP
           }}
           className={cn(
             "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150",
-            "active:scale-[0.97] touch-manipulation",
+            " touch-manipulation",
             selected === cat.slug
               ? "bg-primary text-primary-foreground"
               : "bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80"

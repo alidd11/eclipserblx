@@ -108,7 +108,7 @@ export function AdPricingView({
 
  return (
  <div key={tier.id} className={cn(
- "border border-border rounded-xl overflow-hidden relative overflow-hidden transition-all hover:shadow-lg",
+ "border border-border rounded-xl overflow-hidden relative overflow-hidden transition-all",
  tier.tier === 'pro' && "border-primary ring-1 ring-primary",
  tierColors[tier.tier]
  )}

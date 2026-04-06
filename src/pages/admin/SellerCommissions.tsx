@@ -207,7 +207,7 @@ export default function SellerCommissions() {
  onClick={() => navigate(`/admin/seller-commissions/${store.id}`)}
  className={cn(
  "flex items-center justify-between p-4 rounded-lg border bg-card cursor-pointer",
- "transition-all duration-150 active:scale-[0.99]",
+ "transition-all duration-150",
  "hover:bg-muted/50 hover:border-primary/30",
  !store.is_active && "opacity-60"
  )}

@@ -45,7 +45,7 @@ export const WishlistButton = forwardRef<HTMLButtonElement, WishlistButtonProps>
         disabled={isToggling}
         className={cn(
           "p-2 rounded-full transition-all duration-200",
-          "hover:scale-110 active:scale-95",
+          "",
           isInWishlist 
             ? "bg-red-500/20 text-red-500" 
             : "bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground",

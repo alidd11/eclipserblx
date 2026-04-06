@@ -115,11 +115,11 @@ function SpotlightCard({ store }: { store: StoreData }) {
   return (
     <Link
       to={`/store/${store.slug}`}
-      className="group relative block rounded-lg overflow-hidden border border-border bg-card transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.99]"
+      className="group relative block rounded-lg overflow-hidden border border-border bg-card transition-all duration-300"
     >
       <div className="relative h-36 sm:h-44 overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-500"
           style={{
             backgroundImage: store.banner_url
               ? `url(${store.banner_url})`
@@ -179,11 +179,11 @@ function StoreCard({ store }: { store: StoreData }) {
   return (
     <Link
       to={`/store/${store.slug}`}
-      className="group block rounded-lg overflow-hidden border border-border bg-card transition-all duration-200 hover:border-primary/30 hover:-translate-y-0.5 active:scale-[0.98]"
+      className="group block rounded-lg overflow-hidden border border-border bg-card transition-all duration-200 hover:border-primary/30"
     >
       <div className="relative h-20 overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-500"
           style={{
             backgroundImage: store.banner_url
               ? `url(${store.banner_url})`

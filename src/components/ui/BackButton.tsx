@@ -70,7 +70,7 @@ export function BackButton({ className, showLabel = true }: BackButtonProps) {
       onClick={handleBack}
       className={cn(
         'group flex items-center gap-0.5 text-primary transition-all duration-150',
-        'active:scale-95 active:opacity-70',
+        '',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 rounded-md',
         'touch-manipulation select-none',
         '-ml-1 py-1 pr-2',

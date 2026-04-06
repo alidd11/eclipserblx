@@ -162,7 +162,7 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
           {(() => {
             const imgUrl = getFirstImageUrl(product.images);
             return imgUrl ? (
-              <img src={optimizeImageUrl(imgUrl, 400, 300)} alt={product.name} width={400} height={300} loading="lazy" decoding="async" fetchPriority="low" className="w-full h-full object-contain group-hover:scale-[1.03] transition-transform duration-300" />
+              <img src={optimizeImageUrl(imgUrl, 400, 300)} alt={product.name} width={400} height={300} loading="lazy" decoding="async" fetchPriority="low" className="w-full h-full object-contain transition-transform duration-300" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-muted">
                 <span className="text-muted-foreground text-sm">No image</span>
@@ -413,7 +413,7 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
                               {(() => {
                                 const imgUrl = getFirstImageUrl(spotlight.images);
                                 return imgUrl ? (
-                                  <img src={optimizeImageUrl(imgUrl, 540, 300)} alt={spotlight.name} loading="lazy" decoding="async" className="w-full h-full object-contain group-hover:scale-[1.02] transition-transform duration-500" />
+                                  <img src={optimizeImageUrl(imgUrl, 540, 300)} alt={spotlight.name} loading="lazy" decoding="async" className="w-full h-full object-contain transition-transform duration-500" />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center bg-muted">
                                     <Package className="h-8 w-8 text-muted-foreground/30" />
