@@ -61,6 +61,8 @@ export function StaffChatRoom({
     window.matchMedia('(display-mode: standalone)').matches ||
     (window.navigator as any).standalone === true
   );
+  // Note: StaffChatRoom is rendered conditionally and deeply nested,
+  // keeping inline check to avoid dependency on mount order.
 
   // ── Mark as read ───────────────────────────────────────────────────────────
   useEffect(() => {

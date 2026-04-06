@@ -12,6 +12,7 @@ import { Loader2, Menu, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LayoutShell } from '@/components/layout/LayoutShell';
 import { useIOSChatKeyboard } from '@/hooks/useIOSChatKeyboard';
+import { useDevice } from '@/hooks/useDevice';
 import { EclipseLogo } from '@/components/ui/EclipseLogo';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -31,15 +32,8 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   // Detect chat/messaging pages for iOS keyboard handling
   const isChatPage = location.pathname === '/seller/messages' || location.pathname === '/seller/support';
 
-  const [isStandalone, setIsStandalone] = useState(false);
+  const { isStandalone } = useDevice();
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Check if running as PWA
-  useEffect(() => {
-    const standalone = window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true;
-    setIsStandalone(standalone);
-  }, []);
 
   // iOS PWA keyboard handling
   useIOSChatKeyboard(isChatPage, {

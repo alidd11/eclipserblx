@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CreditCard, Lock, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { usePlatform } from '@/hooks/usePlatform';
+import { useDevice } from '@/hooks/useDevice';
 import { useSavedPaymentMethods } from '@/hooks/useSavedPaymentMethods';
 import { StripeProvider } from './StripeProvider';
 import { PaymentRequestButton } from './PaymentRequestButton';
@@ -71,7 +71,7 @@ export function PaymentMethodDisplay({
   onProcessing,
   onCardCheckout,
 }: PaymentMethodDisplayProps) {
-  const platform = usePlatform();
+  const platform = useDevice();
   const { paymentMethods, isLoading: isLoadingMethods } = useSavedPaymentMethods();
   const [walletAvailable, setWalletAvailable] = useState<boolean | null>(null);
   const [showAllCards, setShowAllCards] = useState(false);

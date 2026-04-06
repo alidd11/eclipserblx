@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
-import { useIOSKeyboardFix } from '@/hooks/useIOSKeyboardFix';
+import { useDevice } from '@/hooks/useDevice';
 import { formatDistanceToNow, format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -48,7 +48,7 @@ const CONVERSATIONS_PER_PAGE = 10;
 export default function SellerMessages() {
   const { user } = useAuth();
   const { store, isSeller } = useSellerStatus();
-  const { isKeyboardVisible } = useIOSKeyboardFix();
+  const { isKeyboardVisible } = useDevice();
   const storeId = store?.id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Download, Smartphone, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useDevice } from '@/hooks/useDevice';
 import { safeStorage } from '@/lib/safeStorage';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -10,17 +10,12 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-function isIOS(): boolean {
+function isIOSDevice(): boolean {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 }
 
-function isStandalone(): boolean {
-  return window.matchMedia('(display-mode: standalone)').matches || 
-         (navigator as any).standalone === true;
-}
-
 export function AdminInstallPrompt() {
-  const isMobile = useIsMobile();
+  const { isMobile, isStandalone } = useDevice();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -28,9 +23,9 @@ export function AdminInstallPrompt() {
 
   useEffect(() => {
     if (!isMobile) return;
-    if (isStandalone()) { setIsInstalled(true); return; }
+    if (isStandalone) { setIsInstalled(true); return; }
 
-    setIsiOSDevice(isIOS());
+    setIsiOSDevice(isIOSDevice());
 
     const dismissedAt = safeStorage.getItem('admin-pwa-prompt-dismissed');
     if (dismissedAt) {
@@ -38,7 +33,7 @@ export function AdminInstallPrompt() {
       if (daysSinceDismissed < 3) return;
     }
 
-    if (isIOS()) {
+    if (isIOSDevice()) {
       setTimeout(() => setShowPrompt(true), 1500);
       return;
     }

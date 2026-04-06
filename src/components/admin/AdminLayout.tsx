@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect, useLayoutEffect } from 'react';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { useIOSChatKeyboard } from '@/hooks/useIOSChatKeyboard';
+import { useDevice } from '@/hooks/useDevice';
 import { Navigate, useLocation, Link } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminInstallPrompt } from './AdminInstallPrompt';
@@ -39,15 +40,8 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
   const isImmersivePage =
     location.pathname === '/admin/twitter-posts';
 
-  const [isStandalone, setIsStandalone] = useState(false);
+  const { isStandalone } = useDevice();
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Check if running as PWA
-  useEffect(() => {
-    const standalone = window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true;
-    setIsStandalone(standalone);
-  }, []);
 
   // iOS PWA: lock document scroll on chat pages to prevent rubber-banding
   useLayoutEffect(() => {

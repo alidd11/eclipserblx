@@ -4,6 +4,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useBackgroundPush } from '@/hooks/useBackgroundPush';
 import { useAuth } from '@/hooks/useAuth';
+import { useDevice } from '@/hooks/useDevice';
 import { toast } from 'sonner';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { safeStorage } from '@/lib/safeStorage';
@@ -24,8 +25,7 @@ export function NotificationSettingsCard() {
     return saved !== 'false';
   });
 
-  const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
-    (window.navigator as any).standalone === true;
+  const { isStandalone: isPWA } = useDevice();
 
   const handleTogglePush = async () => {
     if (!user) {
