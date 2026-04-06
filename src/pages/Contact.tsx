@@ -168,16 +168,12 @@ export default function Contact() {
  return (
  <MainLayout>
  <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
- <PageHeader
- title="Contact Us"
- description="Have a question or need help? We're here for you. Choose your preferred way to get in touch."
- centered
- badge={
- <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10">
- <Mail className="w-7 h-7 text-primary" />
+ <div className="mb-10">
+ <h1 className="text-2xl font-display font-bold">Contact Us</h1>
+ <p className="text-muted-foreground mt-1">
+ Have a question or need help? We're here for you. Choose your preferred way to get in touch.
+ </p>
  </div>
- }
- />
 
  <div className="grid lg:grid-cols-3 gap-8">
  {/* Contact Methods */}

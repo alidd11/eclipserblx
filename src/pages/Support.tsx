@@ -86,13 +86,10 @@ export default function Support() {
     <MainLayout>
       <div className="container mx-auto px-4 py-12">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6">
-            <Headphones className="w-8 h-8 text-primary" />
-          </div>
-          <h1 className="text-4xl font-display font-bold mb-4">Support Centre</h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Welcome to the {SITE_NAME} Support Centre. Find help articles, contact support, or browse our FAQ.
+        <div className="mb-10">
+          <h1 className="text-2xl font-display font-bold">Support Centre</h1>
+          <p className="text-muted-foreground mt-1">
+            Find help articles, contact support, or browse our FAQ.
           </p>
         </div>
 
