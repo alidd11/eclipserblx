@@ -207,7 +207,7 @@ export default function SupportTicketDetail() {
   if (!ticket) {
     return (
       <MainLayout>
-        <div className="container mx-auto px-4 py-12 text-center">
+        <div className="container mx-auto px-4 py-6 md:py-12 text-center">
           <h1 className="text-2xl font-bold mb-2">Ticket not found</h1>
           <Button variant="outline" onClick={() => navigate('/support/tickets')}>
             Back to Tickets

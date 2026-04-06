@@ -290,7 +290,7 @@ export default function FAQ() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-12 max-w-4xl">
+      <div className="container mx-auto px-4 py-6 md:py-12 max-w-4xl">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-display font-bold mb-4">{t('faq.title')}</h1>
           <p className="text-muted-foreground text-lg mb-8">

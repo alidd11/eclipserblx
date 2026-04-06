@@ -49,7 +49,7 @@ import { Plus, Ticket, MessageSquare, Clock, CheckCircle } from 'lucide-react';
    if (!user) {
      return (
        <MainLayout>
-         <div className="container mx-auto px-4 py-12 text-center">
+         <div className="container mx-auto px-4 py-6 md:py-12 text-center">
            <Ticket className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
            <h1 className="text-2xl font-bold mb-2">Sign in to view your tickets</h1>
            <p className="text-muted-foreground mb-4">You need to be signed in to access support tickets.</p>
