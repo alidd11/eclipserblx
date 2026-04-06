@@ -154,7 +154,7 @@ export function ExportReportsCard() {
 
  // Group by date and event type
  const dailyAnalytics: Record<string, Record<string, number>> = {};
- (analytics || []).forEach((event: any) => {
+ (analytics || []).forEach((event) => {
  const date = format(new Date(event.created_at), 'yyyy-MM-dd');
  if (!dailyAnalytics[date]) {
  dailyAnalytics[date] = {};
