@@ -165,7 +165,7 @@ export default function AdminSellerDocuments() {
       queryClient.invalidateQueries({ queryKey: ["admin-seller-documents"] });
       toast.success("Document deleted");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || "Failed to delete document");
     },
   });
@@ -184,7 +184,7 @@ export default function AdminSellerDocuments() {
       queryClient.invalidateQueries({ queryKey: ["admin-seller-documents"] });
       toast.success("Document status updated");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || "Failed to update document");
     },
   });

@@ -91,7 +91,7 @@ export default function AdminCustomDomains() {
  toast.error(`Issue: ${data.error_code || 'unknown'}`, { description: data.diagnosis || 'Health check complete' });
  }
  },
- onError: (err: any) => {
+ onError: (err: Error) => {
  toast.error('Health check failed', { description: err.message });
  },
  onSettled: () => setRunningHealthCheck(null),
@@ -118,7 +118,7 @@ export default function AdminCustomDomains() {
  toast.success(`${fixes} fix(es) applied`, { description: fixList || 'DNS may take 2-5 min to propagate.' });
  }
  },
- onError: (err: any) => {
+ onError: (err: Error) => {
  toast.error('Fix hostname failed', { description: err.message });
  },
  onSettled: () => setFixingHostname(null),

@@ -218,7 +218,7 @@ export function useChatMessages(config: ChatRoomConfig, enabled: boolean) {
       hapticTap();
       queryClient.invalidateQueries({ queryKey: messagesKey });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       hapticError();
       toast.error('Failed to send message', { description: error?.message || 'Please try again' });
     },

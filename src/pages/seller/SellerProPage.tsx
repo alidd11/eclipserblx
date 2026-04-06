@@ -102,7 +102,7 @@ export default function SellerProPage() {
     setIsSubscribing(true);
     try {
       await subscribe(billingPeriod);
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err?.message || 'Failed to start subscription');
     } finally {
       setIsSubscribing(false);

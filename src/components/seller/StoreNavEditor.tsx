@@ -85,7 +85,7 @@ export function StoreNavEditor({ storeId, storeSlug }: StoreNavEditorProps) {
  setNewUrl('');
  queryClient.invalidateQueries({ queryKey: ['store-nav-links', storeId] });
  },
- onError: (err: any) => toast.error(err.message),
+ onError: (err: Error) => toast.error(err.message),
  });
 
  const deleteLink = useMutation({

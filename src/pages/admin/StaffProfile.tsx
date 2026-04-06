@@ -350,7 +350,7 @@ export default function StaffProfile() {
  setNewRole('');
  toast.success('Role added');
  },
- onError: (error: any) => {
+ onError: (error: Error) => {
  if (error.message?.includes('hierarchy') || error.message?.includes('privilege')) {
  toast.error("You don't have permission to assign this role");
  } else {
@@ -382,7 +382,7 @@ export default function StaffProfile() {
  setRoleToRemove(null);
  toast.success('Role removed');
  },
- onError: (error: any) => {
+ onError: (error: Error) => {
  toast.error(error.message);
  },
  });

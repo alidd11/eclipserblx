@@ -119,7 +119,7 @@ export default function Contact() {
  if (user?.email) {
  setFormData({ email: user.email });
  }
- } catch (error: any) {
+ } catch (error) {
  console.error('Error submitting contact form:', error);
  // Handle rate limit error from RLS
  if (error?.code === '42501') {

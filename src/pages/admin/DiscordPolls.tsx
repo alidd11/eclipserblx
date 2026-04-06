@@ -130,7 +130,7 @@ export default function DiscordPolls() {
  } else {
  toast.error(data?.error || 'Failed to send poll');
  }
- } catch (err: any) {
+ } catch (err) {
  console.error('Poll error:', err);
  toast.error('Failed to send poll');
  } finally {

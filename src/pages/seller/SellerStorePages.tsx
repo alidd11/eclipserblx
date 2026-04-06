@@ -102,7 +102,7 @@ function PageEditor({
       queryClient.invalidateQueries({ queryKey: ['store-pages', storeId] });
       onClose();
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       if (err.message?.includes('duplicate')) {
         toast.error('A page with that slug already exists');
       } else {

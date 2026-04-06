@@ -77,7 +77,7 @@ export function SavedCardsCard() {
 
  showSuccessNotification('Card Removed', `Card ending in ${cardToDelete.last4} has been removed`);
  refetch();
- } catch (err: any) {
+ } catch (err) {
  console.error('Error deleting payment method:', err);
  showErrorNotification('Error', err.message || 'Failed to remove card');
  } finally {

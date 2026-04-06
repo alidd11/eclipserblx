@@ -32,7 +32,7 @@ export function ConfigurationTab({ formData, handleChange, testingWebhook, webho
       } else {
         toast.success(`${type === 'commands' ? 'Discord' : 'Fun Bot'} commands registered successfully!`);
       }
-    } catch (err: any) {
+    } catch (err) {
       const msg = err?.context?.details || err?.context?.error || err?.context?.body?.details || err?.context?.body?.error || err?.message || 'Failed to register commands';
       toast.error(String(msg));
     } finally {

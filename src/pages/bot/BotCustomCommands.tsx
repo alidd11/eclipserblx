@@ -40,7 +40,7 @@ export default function BotCustomCommands() {
  setShowAdd(false);
  setForm({ trigger: '', trigger_type: 'command', response: '', cooldown_seconds: 0, enabled: true });
  },
- onError: (e: any) => toast.error(e.message || 'Failed'),
+ onError: (e: Error) => toast.error(e.message || 'Failed'),
  });
 
  const toggleMutation = useMutation({

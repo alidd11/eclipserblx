@@ -43,7 +43,7 @@ export function UpgradeBanner({ currentServers = 0, maxServers = 2, variant = 'f
  if (data?.url) {
  window.open(data.url, '_blank');
  }
- } catch (err: any) {
+ } catch (err) {
  toast.error(err.message || 'Failed to start checkout');
  } finally {
  setIsLoading(false);

@@ -50,7 +50,7 @@ export default function BotReactionRoles() {
  setShowAdd(false);
  setRoles([{ emoji: '🎮', role_id: '', role_name: '' }]);
  },
- onError: (e: any) => toast.error(e.message || 'Failed to create'),
+ onError: (e: Error) => toast.error(e.message || 'Failed to create'),
  });
 
  const deleteMutation = useMutation({

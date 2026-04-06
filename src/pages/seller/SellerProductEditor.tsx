@@ -269,7 +269,7 @@ export default function SellerProductEditor() {
       if (newImages.length > 0) {
         toast.success(`${newImages.length} image(s) uploaded successfully`);
       }
-    } catch (error: any) {
+    } catch (error) {
       toast.error('Failed to upload images: ' + error.message);
     } finally {
       setUploading(false);
@@ -328,7 +328,7 @@ export default function SellerProductEditor() {
       }));
 
       toast.success('Asset file uploaded successfully');
-    } catch (error: any) {
+    } catch (error) {
       toast.error('Failed to upload asset: ' + error.message);
     } finally {
       setUploadingAsset(false);

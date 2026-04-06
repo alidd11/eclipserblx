@@ -89,7 +89,7 @@ export function AvatarUpload({ userId, currentAvatarUrl, discordAvatarUrl, displ
 
       onAvatarChange(publicUrl);
       showSuccessNotification('Profile Updated', 'Your profile picture has been changed');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Upload error:', error);
       showErrorNotification('Upload Failed', error.message || 'Failed to upload image');
     } finally {

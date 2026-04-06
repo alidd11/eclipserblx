@@ -56,7 +56,7 @@ export default function RecoverOrder() {
       } else {
         setResult({ success: false, message: data?.error || 'Could not recover this order.' });
       }
-    } catch (err: any) {
+    } catch (err) {
       const msg = err?.message || 'Something went wrong. Please contact support.';
       setResult({ success: false, message: msg });
     } finally {

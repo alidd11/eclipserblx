@@ -143,7 +143,7 @@ export default function GameNewsFeeds() {
  setPingRoleId('');
  setNewFeed({ name: '', feed_url: '', feed_type: 'rss', discord_channel_id: '', ping_role_id: '', check_interval_minutes: 10 });
  },
- onError: (err: any) => {
+ onError: (err: Error) => {
  console.error('[GameNewsFeeds] Add feed error:', err);
  toast.error(err?.message || err?.details || 'Failed to add feed');
  },

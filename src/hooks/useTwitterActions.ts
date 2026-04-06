@@ -33,7 +33,7 @@ export function useTwitterAction() {
       queryClient.invalidateQueries({ queryKey: ['twitter-mentions'] });
       queryClient.invalidateQueries({ queryKey: ['twitter-timeline'] });
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast.error(err.message || 'Twitter action failed');
     },
   });
