@@ -56,7 +56,7 @@ export default function BotAutoMod() {
  });
 
  const saveMutation = useMutation({
- mutationFn: async (rule: any) => {
+ mutationFn: async (rule: Record<string, unknown>) => {
  const { error } = await (supabase as any).from('bot_automod_rules').upsert(rule);
  if (error) throw error;
  },
