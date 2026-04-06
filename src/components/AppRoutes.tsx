@@ -369,8 +369,9 @@ export function AppRoutes() {
         <Route path="/account/ad-analytics" element={<AdAnalyticsPage />} />
         <Route path="/account/following" element={<FollowingPage />} />
         <Route path="/support/chat" element={<LiveChat />} />
-        {/* Legacy compatibility redirect */}
+        {/* Legacy compatibility redirects */}
         <Route path="/live-chat" element={<Navigate to="/support/chat" replace />} />
+        <Route path="/help" element={<Navigate to="/support" replace />} />
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/compare" element={<Compare />} />
         <Route path="/store-messages" element={<StoreMessages />} />
