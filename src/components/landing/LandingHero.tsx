@@ -50,7 +50,7 @@ export function LandingHero() {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20 relative z-10">
         {/* Desktop: centered layout */}
         <div className="hidden lg:flex lg:flex-col lg:items-center lg:text-center">
-          <h1 id="hero-heading" className="font-display text-2xl sm:text-3xl lg:text-5xl xl:text-6xl font-bold leading-[1.05] tracking-tight mb-4 max-w-4xl drop-shadow-md uppercase whitespace-nowrap">
+          <h1 id="hero-heading" className="font-display text-2xl sm:text-3xl lg:text-[clamp(2.5rem,4vw,3.75rem)] xl:text-6xl font-bold leading-[1.05] tracking-tight mb-4 max-w-4xl drop-shadow-md uppercase">
             The <span className="text-gradient-hero">Marketplace</span> For {wordRotator} Creators
           </h1>
 
