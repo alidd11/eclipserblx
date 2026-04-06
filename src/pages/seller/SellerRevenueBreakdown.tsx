@@ -73,7 +73,7 @@ export default function SellerRevenueBreakdown() {
     return Array.from(map, ([name, value]) => ({ name, value: Number(value.toFixed(2)) }));
   }, [transactions]);
 
-  const totalRevenue = transactions.reduce((sum: number, t: any) => sum + Number(t.net_amount || 0), 0);
+  const totalRevenue = transactions.reduce((sum: number, t) => sum + Number(t.net_amount || 0), 0);
   const avgOrderValue = transactions.length > 0 ? totalRevenue / transactions.length : 0;
 
   const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];

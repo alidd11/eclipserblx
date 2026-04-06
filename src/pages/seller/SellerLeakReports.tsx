@@ -653,7 +653,7 @@ export default function SellerLeakReports() {
               </div>
             ) : (
               <div className="space-y-3">
-                {reports.map((report: any) => {
+                {reports.map((report) => {
                   const status = statusConfig[report.status] || statusConfig.pending;
                   const StatusIcon = status.icon;
                   return (

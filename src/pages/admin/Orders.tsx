@@ -361,7 +361,7 @@ export default function AdminOrders() {
  <div>
  <p className="text-sm text-muted-foreground mb-2">Items</p>
  <div className="space-y-2">
- {selectedOrder.order_items?.map((item: any) => (
+ {selectedOrder.order_items?.map((item) => (
  <div key={item.id} className="flex justify-between items-start p-2 bg-muted/50 rounded">
  <div className="min-w-0">
  <span className="block">{item.product_name}</span>
