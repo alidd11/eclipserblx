@@ -96,8 +96,6 @@ export default function CustomerTicketDetail() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { responses: cannedResponses } = useCannedResponses();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // ── Ticket ────────────────────────────────────────────────────────────────
   const { data: ticket, isLoading: loadingTicket } = useQuery({
