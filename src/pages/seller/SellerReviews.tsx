@@ -80,7 +80,8 @@ export default function SellerReviews() {
       const { data, count, error } = await query.range(from, to);
       if (error) throw error;
 
-      const reviews = (data || []).map((r) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const reviews = (data || []).map((r: Record<string, any>) => ({
         ...r,
         product_name: productMap[r.product_id] || 'Unknown Product',
       }));
