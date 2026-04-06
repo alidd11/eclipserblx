@@ -211,7 +211,7 @@ export default function BotCommunity() {
  <div className="p-6 text-center text-foreground/40 text-sm">No giveaways yet.</div>
  ) : (
  <div className="divide-y divide-white/5">
- {giveaways.map((g: any) => (
+ {giveaways.map((g) => (
  <div key={g.id} className="px-4 py-3 flex items-center gap-3">
  <Gift className="h-4 w-4 text-[hsl(258,90%,66%)] shrink-0" />
  <div className="flex-1">
