@@ -3,7 +3,7 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -97,15 +97,12 @@ export default function SellerCampaigns() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-display font-bold flex items-center gap-2">
-              <Megaphone className="h-6 w-6" />
-              Discount Campaigns
-            </h1>
+            <h1 className="text-2xl font-display font-bold">Discount Campaigns</h1>
             <p className="text-muted-foreground text-sm">Schedule time-limited discounts across your store</p>
           </div>
           <Dialog open={showCreate} onOpenChange={setShowCreate}>
             <DialogTrigger asChild>
-              <Button className="gradient-button border-0">
+              <Button>
                 <Plus className="mr-2 h-4 w-4" />
                 New Campaign
               </Button>
@@ -159,7 +156,7 @@ export default function SellerCampaigns() {
                   <Label>Apply to all products</Label>
                 </div>
                 <Button
-                  className="w-full gradient-button border-0"
+                  className="w-full"
                   disabled={!newCampaign.name || !newCampaign.starts_at || !newCampaign.ends_at || createMutation.isPending}
                   onClick={() => createMutation.mutate()}
                 >

@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -160,7 +160,7 @@ export default function SellerNotifications() {
             {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-20" />)}
           </div>
         ) : notifications && notifications.length > 0 ? (
-          <div className="space-y-2">
+          <div className="border border-border rounded-xl overflow-hidden divide-y divide-border">
             {notifications.map((n: any) => {
               const Icon = NOTIFICATION_ICONS[n.type] || Bell;
               const colorClass = NOTIFICATION_COLORS[n.type] || 'text-muted-foreground';
@@ -176,7 +176,7 @@ export default function SellerNotifications() {
                   )}
                   onClick={() => handleClick(n)}
                 >
-                  <CardContent className="flex items-start gap-3 py-3 px-4">
+                  <div className="flex items-start gap-3 py-3 px-4">
                     <div className={cn('mt-0.5 shrink-0', colorClass)}>
                       <Icon className="h-5 w-5" />
                     </div>
@@ -206,7 +206,7 @@ export default function SellerNotifications() {
                         <Check className="h-4 w-4" />
                       </Button>
                     )}
-                  </CardContent>
+                  </div>
                 </div>
               );
             })}

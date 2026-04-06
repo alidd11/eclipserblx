@@ -121,7 +121,7 @@ export default function SellerWebhooks() {
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="gradient-button border-0">
+              <Button>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Webhook
               </Button>

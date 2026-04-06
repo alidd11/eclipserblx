@@ -130,15 +130,12 @@ export default function SellerGoals() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-display font-bold flex items-center gap-2">
-              <Target className="h-6 w-6" />
-              Sales Goals
-            </h1>
+            <h1 className="text-2xl font-display font-bold">Sales Goals</h1>
             <p className="text-muted-foreground text-sm">Set targets and track your progress</p>
           </div>
           <Dialog open={showCreate} onOpenChange={setShowCreate}>
             <DialogTrigger asChild>
-              <Button className="gradient-button border-0">
+              <Button>
                 <Plus className="mr-2 h-4 w-4" />
                 New Goal
               </Button>
@@ -189,7 +186,7 @@ export default function SellerGoals() {
                   />
                 </div>
                 <Button
-                  className="w-full gradient-button border-0"
+                  className="w-full"
                   disabled={!newGoal.title || createMutation.isPending}
                   onClick={() => createMutation.mutate()}
                 >
