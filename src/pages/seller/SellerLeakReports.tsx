@@ -266,7 +266,7 @@ export default function SellerLeakReports() {
     }
   };
 
-  const statusConfig: Record<string, { icon: any; color: string; label: string }> = {
+  const statusConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
     pending: { icon: Clock, color: 'text-warning', label: 'Pending' },
     confirmed: { icon: CheckCircle2, color: 'text-destructive', label: 'Confirmed Leak' },
     dismissed: { icon: XCircle, color: 'text-muted-foreground', label: 'Dismissed' },
