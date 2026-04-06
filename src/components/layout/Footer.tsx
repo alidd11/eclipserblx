@@ -7,6 +7,7 @@ import { Shield, Lock } from 'lucide-react';
 
 export function Footer() {
   const { t } = useTranslation();
+  const { discordUrl } = useDiscordUrl();
   const { isCustomStoreDomain, storeDomainData } = useStoreDomain();
 
   // Minimal footer for custom store domains — no Eclipse marketplace links
