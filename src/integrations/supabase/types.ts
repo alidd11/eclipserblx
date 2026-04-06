@@ -5500,6 +5500,7 @@ export type Database = {
         Row: {
           ai_verdict: string | null
           confidence: string
+          confidence_score: number | null
           created_at: string
           dismissed: boolean
           extracted_fingerprint: string | null
@@ -5517,6 +5518,7 @@ export type Database = {
         Insert: {
           ai_verdict?: string | null
           confidence?: string
+          confidence_score?: number | null
           created_at?: string
           dismissed?: boolean
           extracted_fingerprint?: string | null
@@ -5534,6 +5536,7 @@ export type Database = {
         Update: {
           ai_verdict?: string | null
           confidence?: string
+          confidence_score?: number | null
           created_at?: string
           dismissed?: boolean
           extracted_fingerprint?: string | null
