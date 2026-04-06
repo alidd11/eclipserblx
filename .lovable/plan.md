@@ -1,70 +1,82 @@
 
 
-## Enterprise Gaps — What's Missing
+## Enterprise Payment & Auth Audit — Findings & Fixes
 
-After auditing the full codebase against platforms like Shopify, Amazon Seller Central, and Stripe, here are the gaps ranked by business impact:
+### What I Checked
 
----
+I audited the full payment pipeline (PaymentIntent creation, Stripe webhook fulfillment, Checkout sessions, saved payment methods) and all authentication flows (email/password, Google, Apple, Discord, Roblox) against enterprise standards.
 
-### 1. Changelog / What's New Page (High Impact, Low Effort)
-Every enterprise platform (Stripe, Shopify, Linear) has a `/changelog` page showing platform updates. You have none. This builds trust, reduces support tickets ("where did X go?"), and signals active development.
+### Security Scan Results
 
-**What to build**: A `/changelog` page pulling from a `changelog_entries` table with title, description, category (Feature/Fix/Improvement), and date. Admin UI to create entries. Optional "New" badge on the sidebar when unread entries exist.
+The automated security scan surfaced **3 findings**:
 
----
-
-### 2. Seller Webhook Notifications (High Impact, Medium Effort)
-Enterprise seller platforms let sellers receive programmatic notifications when orders come in, disputes open, or payouts complete. Currently all notifications are in-app or Discord only — no way for sellers to integrate with their own systems.
-
-**What to build**: A `seller_webhooks` table where sellers register endpoint URLs. Fire webhooks on key events (new order, dispute opened, payout sent). Include HMAC signature verification. Pro-tier only feature.
+| Severity | Finding | Impact |
+|---|---|---|
+| **Critical** | Product-images storage bucket lets any seller delete/overwrite other sellers' images | Data integrity / vandalism risk |
+| **Critical** | No Realtime channel authorization — any authenticated user can subscribe to any topic | PII leakage (support tickets, push keys, chat) |
+| **Warning** | Extensions installed in the `public` schema | Best-practice hygiene |
 
 ---
 
-### 3. Data Export / Right to Portability (Medium Impact, Low Effort)
-GDPR Article 20 requires data portability. You have retention policies but no self-service export. Enterprise platforms always have a "Download my data" button.
+### Finding 1: Deleted Functions Still Called (Breaks Payout Flow)
 
-**What to build**: An account settings button that triggers an edge function to compile the user's orders, profile, reviews, and messages into a ZIP of JSON/CSV files, then emails a download link.
+The `stripe-webhook` handler (lines 146 and 160) still calls `check-wise-funding` and `check-paypal-funding` — both were **deleted** in the cleanup round. When a `payout.paid` event fires for Wise or PayPal funding, the webhook silently fails these fetch calls. While wrapped in try/catch so it doesn't crash, **the downstream funding status check never runs**.
 
----
-
-### 4. API Rate Limit Dashboard (Medium Impact, Low Effort)
-You have rate limiting on edge functions but no visibility for admins. Enterprise platforms show rate limit hits, top offenders, and blocked requests.
-
-**What to build**: A simple admin page reading from the existing rate limit logs showing top IPs, blocked request counts, and trends over 24h/7d.
+**Fix**: Remove the two dead `fetch()` calls from `stripe-webhook/index.ts`. The `wise_funding_requests` table status is already updated to `'paid'` on the lines above — the downstream check functions were redundant.
 
 ---
 
-### 5. Accessibility (a11y) Baseline (Medium Impact, Medium Effort)
-Enterprise marketplaces meet WCAG 2.1 AA. Common gaps: missing `aria-label` on icon-only buttons, insufficient color contrast in muted text, no skip-to-content link, focus trap issues in modals.
+### Finding 2: Orphaned `purchase-ad-pings` Function
 
-**What to build**: A systematic pass adding `aria-label` to all icon-only buttons, a skip-to-content link in the layout shell, and ensuring all interactive elements have visible focus rings.
+`purchase-ad-pings` is a legacy Stripe Checkout-based function with **zero frontend callers**. Ad ping purchases now go through `create-payment-intent` with `type: 'ad_pings'`. This function should be deleted — it duplicates pricing logic and adds maintenance/attack surface.
 
----
-
-### 6. Bulk Operations for Admin (Medium Impact, Medium Effort)
-Admin pages like Users, Orders, Products lack multi-select + bulk actions. Enterprise admin panels always have checkbox selection with bulk approve/reject/export.
-
-**What to build**: A reusable `BulkActionBar` component that appears when items are selected, with actions like bulk approve, bulk reject, bulk export CSV.
+**Fix**: Delete `supabase/functions/purchase-ad-pings/` and remove its config entry from `supabase/config.toml`.
 
 ---
 
-### 7. Scheduled Maintenance Notices (Low Impact, Low Effort)
-Your Status page shows incidents but has no way to announce *planned* maintenance windows in advance. Enterprise platforms show a banner site-wide before scheduled downtime.
+### Finding 3: Google/Apple OAuth Bypasses Lovable Cloud Bridge
 
-**What to build**: A `scheduled_maintenance` flag on the incidents table. When an upcoming maintenance window exists, show a subtle banner across the site.
+`SocialLoginButtons.tsx` calls `supabase.auth.signInWithOAuth()` directly for Google and Apple. The project has the Lovable Cloud auth bridge (`src/integrations/lovable/index.ts`) which should be used instead — it handles token exchange and session setting properly. Direct calls can cause session mismatches on custom domains.
+
+**Fix**: Update `SocialLoginButtons.tsx` to import from `@/integrations/lovable` and use `lovable.auth.signInWithOAuth('google')` / `lovable.auth.signInWithOAuth('apple')` instead of the direct Supabase call.
 
 ---
 
-### Recommendation
+### Finding 4: Product-Images Storage Bucket Missing Path-Ownership Check
 
-Tackle them in this order for maximum ROI:
-1. **Changelog** — instant trust signal, 1-2 hour build
-2. **Data Export** — GDPR compliance gap, 1-2 hour build  
-3. **Scheduled Maintenance banners** — quick win, 30 min
-4. **Bulk Admin Operations** — operational efficiency
-5. **Seller Webhooks** — differentiator for Pro tier
-6. **a11y Baseline** — legal/compliance
-7. **Rate Limit Dashboard** — admin visibility
+The `product-images` bucket RLS policies only verify the user owns *any* store, not that the file path belongs to *their* store. Any seller can overwrite or delete another seller's product images.
 
-Would you like me to build any or all of these?
+**Fix**: Add a path-ownership condition to the INSERT/UPDATE/DELETE policies:
+```sql
+(stores.id)::text = split_part(objects.name, '/', 1)
+```
+This matches the pattern already used on the `product-assets` bucket.
+
+---
+
+### Finding 5: No Realtime Channel Authorization
+
+The `realtime.messages` table has no RLS policies. Any authenticated user can subscribe to any channel, exposing data from `support_tickets`, `notifications`, `chat_messages`, and `push_subscriptions`.
+
+**Fix**: Add RLS policies on `realtime.messages` that scope channel access by topic pattern and `auth.uid()`.
+
+---
+
+### Summary
+
+| Priority | Fix | Effort |
+|---|---|---|
+| **P0 — Critical** | Fix product-images storage ownership check | Migration |
+| **P0 — Critical** | Add Realtime channel authorization | Migration |
+| **P1 — Breaking** | Remove dead `check-wise-funding` / `check-paypal-funding` calls from webhook | 2 lines |
+| **P1 — Cleanup** | Delete orphaned `purchase-ad-pings` function | Delete directory |
+| **P2 — Auth** | Switch Google/Apple OAuth to Lovable Cloud bridge | Edit 1 file |
+
+### Files Changed
+- `supabase/functions/stripe-webhook/index.ts` — Remove dead fetch calls to deleted functions
+- **Delete** `supabase/functions/purchase-ad-pings/` — Orphaned, replaced by `create-payment-intent`
+- `supabase/config.toml` — Remove `purchase-ad-pings` entry
+- `src/components/auth/SocialLoginButtons.tsx` — Use `lovable.auth.signInWithOAuth` for Google/Apple
+- **Migration** — Fix `product-images` bucket policies with path-ownership check
+- **Migration** — Add `realtime.messages` RLS policies for channel authorization
 
