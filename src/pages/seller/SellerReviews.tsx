@@ -80,7 +80,7 @@ export default function SellerReviews() {
       const { data, count, error } = await query.range(from, to);
       if (error) throw error;
 
-      const reviews = (data || []).map((r: any) => ({
+      const reviews = (data || []).map((r) => ({
         ...r,
         product_name: productMap[r.product_id] || 'Unknown Product',
       }));
