@@ -107,9 +107,8 @@ export function AdPricingView({
  const savingsPercent = calculateAdAnnualSavingsPercent(tier.monthly_price_gbp, tier.annual_price_gbp);
 
  return (
- <div className="border border-border rounded-xl overflow-hidden" key={tier.id}
- className={cn(
- "relative overflow-hidden transition-all hover:shadow-lg",
+ <div key={tier.id} className={cn(
+ "border border-border rounded-xl overflow-hidden relative overflow-hidden transition-all hover:shadow-lg",
  tier.tier === 'pro' && "border-primary ring-1 ring-primary",
  tierColors[tier.tier]
  )}

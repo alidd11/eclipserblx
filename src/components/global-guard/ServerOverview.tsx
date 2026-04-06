@@ -62,9 +62,8 @@ export function ServerOverview({ servers, isLoading, disabled }: ServerOverviewP
  return (
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
  {servers.map((server) => (
- <div className="border border-border rounded-xl overflow-hidden" key={server.guild_id} 
- className={cn(
- "bg-card border-border transition-colors",
+ <div key={server.guild_id} className={cn(
+ "border border-border rounded-xl overflow-hidden bg-card border-border transition-colors",
  disabled ? "opacity-60" : "hover:border-primary/30"
  )}
  >
