@@ -98,7 +98,7 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
   });
 
   const { unreadCount: unreadNotifications } = useNotifications();
-  const isCollapsed = isMobileDrawer ? false : collapsed;
+  const isCollapsed = false; // Always expanded in drawer mode
 
   // Build browse items: explore + resource categories merged
   const browseItems: NavItem[] = [
