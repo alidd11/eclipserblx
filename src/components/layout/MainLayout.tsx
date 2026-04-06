@@ -16,6 +16,7 @@ const COLLAPSE_KEY = 'sidebar-collapsed';
 
 function MainLayoutContent({ children, showFooter = true }: MainLayoutProps) {
   useDeferredScheduledReleaseCheck();
+  useAutoPageMeta();
 
   const [collapsed, setCollapsed] = useState(() => safeStorage.getItem(COLLAPSE_KEY) === 'true');
 
