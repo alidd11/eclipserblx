@@ -16,9 +16,9 @@ export function DataExportButton() {
         return;
       }
 
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/export-user-data`,
+        `${supabaseUrl}/functions/v1/export-user-data`,
         {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
