@@ -113,7 +113,7 @@ export default function SellerFlashSales() {
     setForm({ name: '', discount_type: 'percentage', discount_value: 20, apply_to_all: true, starts_at: '', ends_at: '', is_active: true });
   };
 
-  const openEdit = (sale: any) => {
+  const openEdit = (sale: Record<string, unknown>) => {
     setEditing(sale);
     setForm({
       name: sale.name, discount_type: sale.discount_type,
