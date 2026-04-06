@@ -284,7 +284,8 @@ export default function AdminProducts() {
 
   const isScheduledForFuture = (releaseAt: string | null) => releaseAt ? new Date(releaseAt) > new Date() : false;
 
-  const openEdit = (product: Record<string, unknown>) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const openEdit = (product: any) => {
     const hasSchedule = !!product.release_at && isScheduledForFuture(product.release_at);
     const hasEarlyAccess = product.early_access_hours !== null && product.early_access_hours !== undefined;
     setForm({
