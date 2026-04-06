@@ -37,8 +37,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
     location.pathname.startsWith('/admin/live-chat') ||
     location.pathname.startsWith('/admin/customer-tickets/');
   
-  const isImmersivePage =
-    location.pathname === '/admin/twitter-posts';
+  const isImmersivePage = false; // Reserved for future use
 
   const { isStandalone } = useDevice();
   const [isRefreshing, setIsRefreshing] = useState(false);
