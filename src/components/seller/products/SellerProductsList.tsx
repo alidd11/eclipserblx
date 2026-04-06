@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { ADMIN_MANAGED_STORES } from '@/lib/constants';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isAdminManagedProduct = (product: any) =>
   (ADMIN_MANAGED_STORES as readonly string[]).includes(product.store_id) && product.is_seller_product === false;
 
