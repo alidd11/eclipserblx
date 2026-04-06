@@ -10,6 +10,7 @@ interface SocialShareButtonsProps {
 }
 
 export function SocialShareButtons({ url, title, description }: SocialShareButtonsProps) {
+  const sharePath = url.startsWith('http') ? url : `https://eclipserblx.com/share${url}`;
   const fullUrl = url.startsWith('http') ? url : `https://eclipserblx.com${url}`;
   const text = description ? `${title} — ${description}` : title;
 
