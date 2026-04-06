@@ -111,7 +111,7 @@ export default function BotCommunity() {
 
  // Generic upsert mutation
  const upsertMutation = useMutation({
- mutationFn: async ({ table, data, key }: { table: string; data: any; key?: string }) => {
+ mutationFn: async ({ table, data, key }: { table: string; data: Record<string, unknown>; key?: string }) => {
  const { error } = await (supabase as any).from(table).upsert(data, key ? { onConflict: key } : undefined);
  if (error) throw error;
  },
