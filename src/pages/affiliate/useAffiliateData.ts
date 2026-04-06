@@ -91,7 +91,18 @@ export function useAffiliateData() {
     queryKey: ['profile-referral', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-      const { data, error } = await supabase.from('profiles').select('referral_code, display_name, paypal_email, preferred_payout_method, bank_account_holder, bank_account_number, bank_swift_bic, bank_name, bank_country, bank_routing_number').eq('user_id', user.id).single();
+      const { data, error } = await supabase.from('profiles').select('referral_code, display_name').eq('user_id', user.id).single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const { data: paymentDetails } = useQuery({
+    queryKey: ['user-payment-details', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase.from('user_payment_details').select('*').eq('user_id', user.id).maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -99,19 +110,19 @@ export function useAffiliateData() {
   });
 
   useEffect(() => {
-    if (profile) {
+    if (paymentDetails) {
       setPayoutSettings({
-        preferred_method: (profile.preferred_payout_method as PayoutSettings['preferred_method']) || 'stripe',
-        paypal_email: profile.paypal_email || '',
-        bank_account_holder: profile.bank_account_holder || '',
-        bank_account_number: profile.bank_account_number || '',
-        bank_swift_bic: profile.bank_swift_bic || '',
-        bank_name: profile.bank_name || '',
-        bank_country: profile.bank_country || '',
-        bank_routing_number: profile.bank_routing_number || '',
+        preferred_method: (paymentDetails.preferred_payout_method as PayoutSettings['preferred_method']) || 'stripe',
+        paypal_email: paymentDetails.paypal_email || '',
+        bank_account_holder: paymentDetails.bank_account_holder || '',
+        bank_account_number: paymentDetails.bank_account_number || '',
+        bank_swift_bic: paymentDetails.bank_swift_bic || '',
+        bank_name: paymentDetails.bank_name || '',
+        bank_country: paymentDetails.bank_country || '',
+        bank_routing_number: paymentDetails.bank_routing_number || '',
       });
     }
-  }, [profile]);
+  }, [paymentDetails]);
 
   const connectStripeMutation = useMutation({
     mutationFn: async () => {
