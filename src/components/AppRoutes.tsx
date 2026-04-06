@@ -469,6 +469,7 @@ export function AppRoutes() {
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/moderation-queue" element={<AdminModerationQueue />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
+        <Route path="/admin/canned-responses" element={<AdminCannedResponses />} />
         <Route path="/admin/discord-settings" element={<AdminDiscordSettings />} />
         <Route path="/admin/game-news-feeds" element={<AdminGameNewsFeeds />} />
         <Route path="/admin/roblox-settings" element={<AdminRobloxSettings />} />
