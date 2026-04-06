@@ -463,7 +463,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
             />
           </button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="ml-[13px] border-l border-border/40 pl-2 space-y-0.5 pt-0.5 pb-1">
+        <CollapsibleContent className="ml-3 space-y-px pt-px pb-0.5">
           {group.items.map((item, index) => renderNavItem(item, index))}
         </CollapsibleContent>
       </Collapsible>
