@@ -31,6 +31,12 @@ interface LayoutShellProps {
   };
   /** Completely replace the default Header with a custom element */
   customHeader?: (onMenuClick: () => void) => ReactNode;
+  /**
+   * When true (default when customHeader is provided), LayoutShell automatically
+   * renders a spacer after the header to prevent content from being hidden behind
+   * a fixed/sticky header + device safe-area. Set to false to opt out.
+   */
+  fixedHeaderSpacer?: boolean;
   /** Show the footer at the bottom of main (default: true) */
   showFooter?: boolean;
   /** Show floating action buttons (default: true) */
