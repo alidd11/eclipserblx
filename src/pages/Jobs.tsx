@@ -370,6 +370,8 @@ function ApplicationStatusCheck() {
 export default function Jobs() {
   usePageMeta({ title: 'Careers — Eclipse', description: 'Join the Eclipse team. View open positions and apply to help build the best Roblox asset marketplace.', canonicalPath: '/jobs' });
   const [openDialog, setOpenDialog] = useState<string | null>(null);
+  const [submittedToken, setSubmittedToken] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
 
