@@ -1741,6 +1741,36 @@ export type Database = {
         }
         Relationships: []
       }
+      canned_responses: {
+        Row: {
+          body: string
+          category: string | null
+          created_at: string
+          created_by: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          category?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          category?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -7694,6 +7724,7 @@ export type Database = {
           created_at: string
           description: string
           escalated_at: string | null
+          first_response_at: string | null
           id: string
           last_staff_response_at: string | null
           link_change_type: string | null
@@ -7703,6 +7734,7 @@ export type Database = {
           resolution_notes: string | null
           resolved_at: string | null
           resolved_by: string | null
+          snoozed_until: string | null
           status: string
           store_id: string | null
           subject: string
@@ -7717,6 +7749,7 @@ export type Database = {
           created_at?: string
           description: string
           escalated_at?: string | null
+          first_response_at?: string | null
           id?: string
           last_staff_response_at?: string | null
           link_change_type?: string | null
@@ -7726,6 +7759,7 @@ export type Database = {
           resolution_notes?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
+          snoozed_until?: string | null
           status?: string
           store_id?: string | null
           subject: string
@@ -7740,6 +7774,7 @@ export type Database = {
           created_at?: string
           description?: string
           escalated_at?: string | null
+          first_response_at?: string | null
           id?: string
           last_staff_response_at?: string | null
           link_change_type?: string | null
@@ -7749,6 +7784,7 @@ export type Database = {
           resolution_notes?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
+          snoozed_until?: string | null
           status?: string
           store_id?: string | null
           subject?: string
@@ -9939,9 +9975,12 @@ export type Database = {
           created_at: string
           customer_email: string
           escalated_at: string | null
+          first_response_at: string | null
           id: string
           last_staff_response_at: string | null
           priority: string | null
+          resolved_at: string | null
+          snoozed_until: string | null
           status: string
           subject: string
           ticket_number: string | null
@@ -9954,9 +9993,12 @@ export type Database = {
           created_at?: string
           customer_email: string
           escalated_at?: string | null
+          first_response_at?: string | null
           id?: string
           last_staff_response_at?: string | null
           priority?: string | null
+          resolved_at?: string | null
+          snoozed_until?: string | null
           status?: string
           subject: string
           ticket_number?: string | null
@@ -9969,9 +10011,12 @@ export type Database = {
           created_at?: string
           customer_email?: string
           escalated_at?: string | null
+          first_response_at?: string | null
           id?: string
           last_staff_response_at?: string | null
           priority?: string | null
+          resolved_at?: string | null
+          snoozed_until?: string | null
           status?: string
           subject?: string
           ticket_number?: string | null
@@ -10191,6 +10236,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ticket_satisfaction: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          ticket_id: string
+          ticket_type: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          ticket_id: string
+          ticket_type?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          ticket_id?: string
+          ticket_type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       twitter_hashtags: {
         Row: {
