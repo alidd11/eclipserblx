@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
           <a href="https://eclipserblx.com/seller" style="display: inline-block; background: #a855f7; color: #ffffff; padding: 12px 28px; text-decoration: none; font-weight: 600; font-size: 14px;">Review &amp; Consent</a>
           <p style="margin: 24px 0 0 0; font-size: 13px; color: #525252;">Your privacy matters. Eclipse staff cannot view your files without your explicit consent.</p>
         </td></tr>
-        <tr><td style="border-top: 1px solid #222; padding-top: 24px;"><p style="margin: 0; font-size: 11px; color: #404040;">Eclipse &middot; <a href="https://eclipserblx.com" style="color: #737373; text-decoration: none;">eclipserblx.com</a></p></td></tr>
+        <tr><td style="border-top: 1px solid #222; padding-top: 24px;"><p style="margin: 0 0 12px 0; font-size: 10px; color: #404040; line-height: 1.4;">This email is intended solely for the named addressee. If you have received this message in error, please notify the sender immediately and delete it. Do not copy, distribute, or take action based on its contents.</p><p style="margin: 0; font-size: 11px; color: #404040;">Eclipse &middot; <a href="https://eclipserblx.com" style="color: #737373; text-decoration: none;">eclipserblx.com</a></p></td></tr>
       </table>
     </td></tr>
   </table>
