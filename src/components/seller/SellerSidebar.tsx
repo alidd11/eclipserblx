@@ -41,6 +41,7 @@ const topLevelItems: NavItem[] = [
   { title: 'Store Builder', icon: Sparkles, href: '/seller/store-builder' },
   { title: 'Asset Protection', icon: Shield, href: '/seller/security' },
   { title: 'Account Health', icon: Activity, href: '/seller/account-health' },
+  { title: 'Eclipse Pro', icon: Crown, href: '/seller/pro' },
 ];
 
 const navGroups: NavGroup[] = [
