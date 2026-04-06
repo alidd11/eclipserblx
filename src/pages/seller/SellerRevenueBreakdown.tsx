@@ -63,7 +63,7 @@ export default function SellerRevenueBreakdown() {
 
   const byCategory = useMemo(() => {
     const map = new Map<string, number>();
-    transactions.forEach((t: any) => {
+    transactions.forEach((t) => {
       const orderItem = Array.isArray(t.order_items) ? t.order_items[0] : t.order_items;
       const product = orderItem ? (Array.isArray(orderItem.products) ? orderItem.products[0] : orderItem.products) : null;
       const category = product ? (Array.isArray(product.categories) ? product.categories[0] : product.categories) : null;
