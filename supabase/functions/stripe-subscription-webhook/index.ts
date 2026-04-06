@@ -295,9 +295,6 @@ serve(async (req) => {
       if (event.type === "customer.subscription.created" && subscription.status === "active") {
         discordEvent = "subscription_activated";
         isActive = true;
-        
-        // Grant Eclipse+ credit bonus on first subscription
-        await grantEclipsePlusCreditBonus(supabaseAdmin, userId);
       } else if (event.type === "customer.subscription.updated") {
         if (subscription.status === "active") {
           discordEvent = "subscription_activated";

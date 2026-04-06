@@ -1,12 +1,6 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
-// Eclipse+ discount constants - must match frontend
-export const BOT_CATEGORY_ID = "852838dc-adb6-4154-93fe-d1814fe46263";
-export const ECLIPSE_SAVERS_CATEGORY_ID = "26463de5-38f4-4203-a379-78f6f92be3c7";
-export const ECLIPSE_PLUS_DISCOUNT = 30;
-export const ECLIPSE_PLUS_BOT_DISCOUNT = 35;
-
 export function createStripeClient(): Stripe {
   const key = Deno.env.get("STRIPE_SECRET_KEY");
   if (!key) throw new Error("STRIPE_SECRET_KEY is not set");
@@ -19,31 +13,6 @@ export function createAdminSupabase(): SupabaseClient {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     { auth: { persistSession: false } }
   );
-}
-
-export function isEligibleForDiscount(
-  categoryId: string | null | undefined,
-  isResellable: boolean | null | undefined,
-  storeEclipseEnabled?: boolean
-): boolean {
-  if (storeEclipseEnabled === false) return false;
-  if (isResellable) return false;
-  return categoryId !== ECLIPSE_SAVERS_CATEGORY_ID;
-}
-
-export function calculateMemberPrice(
-  originalPrice: number,
-  categoryId: string | null | undefined,
-  isResellable: boolean | null | undefined,
-  storeEclipseEnabled?: boolean
-): number {
-  if (!isEligibleForDiscount(categoryId, isResellable, storeEclipseEnabled)) {
-    return originalPrice;
-  }
-  if (categoryId === BOT_CATEGORY_ID) {
-    return originalPrice * (1 - ECLIPSE_PLUS_BOT_DISCOUNT / 100);
-  }
-  return originalPrice * (1 - ECLIPSE_PLUS_DISCOUNT / 100);
 }
 
 export async function getOrCreateStripeCustomer(
