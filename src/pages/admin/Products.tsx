@@ -162,7 +162,7 @@ export default function AdminProducts() {
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file, { contentType: file.type });
+      const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file, { contentType: file.type, cacheControl: '31536000' });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(fileName);
       const isQuantisStore = form.marketplace_store === 'quantis';

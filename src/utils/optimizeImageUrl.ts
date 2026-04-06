@@ -1,17 +1,16 @@
 // Image optimization utility
-// /render/image/ endpoint is unavailable on this project.
-// This utility prepares URLs for future CDN integration and provides
-// connection-aware hints that can be consumed by <img> components.
+// Routes Supabase storage images through the image-proxy edge function
+// for enterprise-grade caching (1-year TTL vs Supabase's default 1-hour).
+// Also provides a stable API for future CDN integration.
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
+const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID || '';
 
 /**
- * Returns the image URL. Currently passes through unchanged since
- * server-side transforms are unavailable, but provides a stable API
- * for when a CDN (Cloudflare Images, imgproxy, etc.) is connected.
- *
- * @param url - original public URL
- * @param width - desired display width in CSS pixels
- * @param height - optional desired display height
- * @param resize - resize mode
+ * Returns an optimized image URL.
+ * - Supabase storage images are routed through the image-proxy edge function
+ *   which adds `Cache-Control: public, max-age=31536000, immutable`.
+ * - Other URLs pass through unchanged.
  */
 export function optimizeImageUrl(
   url: string | null | undefined,
@@ -20,6 +19,12 @@ export function optimizeImageUrl(
   _resize?: 'cover' | 'contain' | 'fill',
 ): string {
   if (!url) return '';
+
+  // Route Supabase storage public URLs through the image proxy for long caching
+  if (url.includes('.supabase.co/storage/v1/object/public/') && SUPABASE_URL && PROJECT_ID) {
+    return `${SUPABASE_URL}/functions/v1/image-proxy?url=${encodeURIComponent(url)}`;
+  }
+
   return url;
 }
 

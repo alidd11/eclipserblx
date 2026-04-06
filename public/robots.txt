@@ -1,14 +1,5 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
+# Eclipse — eclipserblx.com
+# Enterprise robots.txt
 
 User-agent: *
 Allow: /
@@ -30,6 +21,7 @@ Disallow: /global-guard/
 Disallow: /bot-dashboard
 Disallow: /order-success
 Disallow: /complete-profile
-Disallow: /search?*
+Disallow: /careers/portal
+Disallow: /search?
 
 Sitemap: https://eclipserblx.com/sitemap.xml
