@@ -53,6 +53,7 @@ const Changelog = lazyWithRetry(() => import("@/pages/Changelog"));
 const BotInstallation = lazyWithRetry(() => import("@/pages/BotInstallation"));
 const BotDashboard = lazyWithRetry(() => import("@/pages/BotDashboard"));
 const NotificationPreferences = lazyWithRetry(() => import("@/pages/NotificationPreferences"));
+const Unsubscribe = lazyWithRetry(() => import("@/pages/Unsubscribe"));
 
 
 const LiveChat = lazyWithRetry(() => import("@/pages/LiveChat"));
@@ -337,6 +338,7 @@ export function AppRoutes() {
         <Route path="/chat-history" element={<ChatHistory />} />
         <Route path="/support/tickets" element={<SupportTickets />} />
         <Route path="/support/tickets/:ticketId" element={<SupportTicketDetail />} />
+        <Route path="/unsubscribe" element={<Unsubscribe />} />
          <Route path="/jobs" element={<Jobs />} />
          <Route path="/careers/portal" element={<ApplicantPortal />} />
         <Route path="/refunds" element={<RefundPolicy />} />

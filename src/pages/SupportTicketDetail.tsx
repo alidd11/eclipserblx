@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { TicketCSATPrompt } from '@/components/tickets/TicketCSATPrompt';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -294,6 +295,13 @@ export default function SupportTicketDetail() {
             })
           )}
           <div ref={messagesEndRef} />
+
+          {/* CSAT prompt for resolved/closed tickets */}
+          {(ticket.status === 'resolved' || ticket.status === 'closed') && (
+            <div className="px-1">
+              <TicketCSATPrompt ticketId={ticket.id} ticketType="customer" />
+            </div>
+          )}
         </div>
 
         {/* Reply input - pinned at bottom */}

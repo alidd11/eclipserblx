@@ -29,11 +29,13 @@ import { useAuth } from '@/hooks/useAuth';
 import {
   ArrowLeft, Send, Clock, User, Headphones, Eye, Mail,
   Paperclip, X, Loader2, MessageSquare, ShoppingBag, ChevronDown,
-  Zap, AlertTriangle, UserCheck, History,
+  Zap, AlertTriangle, UserCheck, History, AlarmClock, Users,
 } from 'lucide-react';
 import { formatDistanceToNow, format } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useCannedResponses } from '@/components/tickets/useCannedResponses';
+import { useAgentCollision } from '@/components/tickets/useAgentCollision';
 
 interface TicketMessage {
   id: string;
@@ -77,15 +79,7 @@ const categoryLabels: Record<string, string> = {
   other: 'Other',
 };
 
-const CANNED_RESPONSES = [
-  { label: 'Greeting', text: 'Hi there! Thanks for reaching out. I\'d be happy to help you with this.' },
-  { label: 'Need more info', text: 'Thanks for your message. Could you please provide more details about the issue so we can assist you better?' },
-  { label: 'Order lookup', text: 'I\'m looking into your order now. Please give me a moment to review the details.' },
-  { label: 'Issue resolved', text: 'Great news! The issue has been resolved. Please let us know if you need anything else.' },
-  { label: 'Refund processing', text: 'Your refund has been initiated. It typically takes 5-10 business days to appear in your account.' },
-  { label: 'Escalating', text: 'I\'m escalating this to our senior support team for further investigation. You\'ll receive an update shortly.' },
-  { label: 'Follow up', text: 'Just checking in — were you able to resolve the issue? Let us know if you still need help!' },
-];
+// Canned responses are now loaded from DB via useCannedResponses hook
 
 const ATTACHMENT_BUCKET = 'support-ticket-attachments';
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -101,6 +95,7 @@ export default function CustomerTicketDetail() {
   const [showContext, setShowContext] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { responses: cannedResponses } = useCannedResponses();
 
   // ── Ticket ────────────────────────────────────────────────────────────────
   const { data: ticket, isLoading: loadingTicket } = useQuery({
@@ -199,7 +194,34 @@ export default function CustomerTicketDetail() {
     enabled: !!ticket?.assigned_to,
   });
 
-  // ── Realtime ──────────────────────────────────────────────────────────────
+  // ── Agent collision detection ─────────────────────────────────────────────
+  const myProfile = useQuery({
+    queryKey: ['my-profile-name', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from('profiles').select('display_name').eq('user_id', user!.id).single();
+      return data?.display_name || 'Staff';
+    },
+    enabled: !!user?.id,
+  });
+  const viewingAgents = useAgentCollision(ticketId, myProfile.data || undefined);
+
+  // ── Snooze ticket ─────────────────────────────────────────────────────────
+  const snoozeTicket = useMutation({
+    mutationFn: async (hours: number) => {
+      const snoozedUntil = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+      const { error } = await supabase
+        .from('support_tickets')
+        .update({ snoozed_until: snoozedUntil, updated_at: new Date().toISOString() } as Record<string, unknown>)
+        .eq('id', ticketId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Ticket snoozed');
+      queryClient.invalidateQueries({ queryKey: ['admin-ticket', ticketId] });
+    },
+    onError: () => toast.error('Failed to snooze ticket'),
+  });
+
   useEffect(() => {
     if (!ticketId) return;
     const channel = supabase
@@ -266,6 +288,22 @@ export default function CustomerTicketDetail() {
         .from('support_tickets')
         .update({ status: newStatus, updated_at: new Date().toISOString(), assigned_to: user.id })
         .eq('id', ticketId);
+
+      // Send email notification for non-internal replies
+      if (!isInternal && ticket?.customer_email) {
+        supabase.functions.invoke('send-transactional-email', {
+          body: {
+            templateName: 'ticket-reply',
+            to: ticket.customer_email,
+            templateData: {
+              ticketNumber: ticket.ticket_number || '',
+              subject: ticket.subject || 'Your support ticket',
+              staffMessage: message.trim().substring(0, 500),
+              ticketUrl: `https://roleplay-hub-shop.lovable.app/support/tickets/${ticketId}`,
+            },
+          },
+        }).catch(() => {}); // fire-and-forget
+      }
     },
     onSuccess: () => {
       setNewMessage('');
@@ -399,6 +437,14 @@ export default function CustomerTicketDetail() {
             {categoryLabel && <Badge variant="secondary" className="text-[10px] sm:text-xs h-5">{categoryLabel}</Badge>}
           </div>
 
+          {/* Agent collision banner */}
+          {viewingAgents.length > 0 && (
+            <div className="flex items-center gap-2 text-xs bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-1.5">
+              <Users className="h-3.5 w-3.5 text-yellow-500 shrink-0" />
+              <span className="text-yellow-600">{viewingAgents.map(a => a.name).join(', ')} {viewingAgents.length === 1 ? 'is' : 'are'} also viewing this ticket</span>
+            </div>
+          )}
+
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             {!ticket.assigned_to && (
               <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => claimTicket.mutate()} disabled={claimTicket.isPending}>
@@ -406,6 +452,23 @@ export default function CustomerTicketDetail() {
                 Claim
               </Button>
             )}
+            {/* Snooze dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="outline" className="h-7 text-xs">
+                  <AlarmClock className="h-3.5 w-3.5 sm:mr-1" />
+                  <span className="hidden sm:inline">Snooze</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuLabel>Snooze ticket for</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => snoozeTicket.mutate(1)}>1 hour</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => snoozeTicket.mutate(4)}>4 hours</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => snoozeTicket.mutate(24)}>24 hours</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => snoozeTicket.mutate(72)}>3 days</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Select value={ticket.priority || 'medium'} onValueChange={(v) => updatePriority.mutate(v)}>
               <SelectTrigger className="w-auto min-w-[90px] sm:min-w-[120px] h-7 sm:h-8 text-xs">
                 <SelectValue />
@@ -592,11 +655,11 @@ export default function CustomerTicketDetail() {
                       <DropdownMenuContent align="start" className="w-64">
                         <DropdownMenuLabel>Canned Responses</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        {CANNED_RESPONSES.map((resp) => (
-                          <DropdownMenuItem key={resp.label} onClick={() => insertCannedResponse(resp.text)}>
+                        {cannedResponses.map((resp) => (
+                          <DropdownMenuItem key={resp.id} onClick={() => insertCannedResponse(resp.body)}>
                             <div>
-                              <div className="font-medium text-sm">{resp.label}</div>
-                              <div className="text-xs text-muted-foreground truncate max-w-[220px]">{resp.text}</div>
+                              <div className="font-medium text-sm">{resp.title}</div>
+                              <div className="text-xs text-muted-foreground truncate max-w-[220px]">{resp.body}</div>
                             </div>
                           </DropdownMenuItem>
                         ))}
