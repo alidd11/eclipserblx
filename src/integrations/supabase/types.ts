@@ -615,29 +615,35 @@ export type Database = {
       audit_logs: {
         Row: {
           action: string
+          action_category: string | null
           created_at: string
           details: Json | null
           id: string
           ip_address: string | null
           resource: string
+          user_agent: string | null
           user_id: string | null
         }
         Insert: {
           action: string
+          action_category?: string | null
           created_at?: string
           details?: Json | null
           id?: string
           ip_address?: string | null
           resource: string
+          user_agent?: string | null
           user_id?: string | null
         }
         Update: {
           action?: string
+          action_category?: string | null
           created_at?: string
           details?: Json | null
           id?: string
           ip_address?: string | null
           resource?: string
+          user_agent?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -10432,6 +10438,53 @@ export type Database = {
           },
         ]
       }
+      webhook_delivery_logs: {
+        Row: {
+          attempt_number: number
+          created_at: string
+          error_message: string | null
+          event: string
+          id: string
+          latency_ms: number | null
+          payload_size_bytes: number | null
+          response_body: string | null
+          status_code: number | null
+          webhook_id: string
+        }
+        Insert: {
+          attempt_number?: number
+          created_at?: string
+          error_message?: string | null
+          event: string
+          id?: string
+          latency_ms?: number | null
+          payload_size_bytes?: number | null
+          response_body?: string | null
+          status_code?: number | null
+          webhook_id: string
+        }
+        Update: {
+          attempt_number?: number
+          created_at?: string
+          error_message?: string | null
+          event?: string
+          id?: string
+          latency_ms?: number | null
+          payload_size_bytes?: number | null
+          response_body?: string | null
+          status_code?: number | null
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_delivery_logs_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "seller_webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wise_funding_requests: {
         Row: {
           amount: number
@@ -11020,6 +11073,21 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      staff_performance_summary: {
+        Row: {
+          chats_claimed: number | null
+          chats_completed: number | null
+          display_name: string | null
+          duty_hours_30d: number | null
+          last_active_at: string | null
+          staff_id: string | null
+          tickets_claimed: number | null
+          tickets_resolved: number | null
+          total_actions: number | null
+          user_id: string | null
+        }
+        Relationships: []
       }
       store_credentials_safe: {
         Row: {
