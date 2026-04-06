@@ -30,7 +30,7 @@ export function ImportCompleteStep({ results, onReset, onRetryFailed }: ImportCo
  animate={{ scale: 1, opacity: 1 }}
  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
  >
- <div className="border border-border rounded-xl overflow-hidden" className={successCount > 0 ? 'border-green-500/30' : 'border-destructive/30'}>
+ <div className={cn("border border-border rounded-xl overflow-hidden", successCount > 0 ? 'border-green-500/30' : 'border-destructive/30'}>
  <div className="p-4 pt-6">
  <div className="flex items-center gap-4">
  {successCount > 0 ? (

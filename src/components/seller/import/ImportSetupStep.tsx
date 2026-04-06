@@ -90,7 +90,7 @@ export function ImportSetupStep({ onProductsFound }: ImportSetupStepProps) {
  return (
  <div className="space-y-5">
  {/* Ownership Confirmation */}
- <div className="border border-border rounded-xl overflow-hidden" className={`border-2 transition-colors ${ownershipConfirmed ? 'border-primary/30 bg-primary/5' : 'border-dashed'}`}>
+ <div className={cn("border border-border rounded-xl overflow-hidden", `border-2 transition-colors ${ownershipConfirmed ? 'border-primary/30 bg-primary/5' : 'border-dashed'}`}>
  <div className="p-4 pt-5">
  <div className="flex items-start gap-3">
  <Checkbox
