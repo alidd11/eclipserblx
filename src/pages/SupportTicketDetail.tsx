@@ -295,6 +295,13 @@ export default function SupportTicketDetail() {
             })
           )}
           <div ref={messagesEndRef} />
+
+          {/* CSAT prompt for resolved/closed tickets */}
+          {(ticket.status === 'resolved' || ticket.status === 'closed') && (
+            <div className="px-1">
+              <TicketCSATPrompt ticketId={ticket.id} ticketType="customer" />
+            </div>
+          )}
         </div>
 
         {/* Reply input - pinned at bottom */}
