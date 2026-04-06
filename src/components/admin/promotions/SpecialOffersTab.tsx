@@ -80,7 +80,7 @@ export function SpecialOffersTab() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const getStatusBadge = (p: any) => {
+  const getStatusBadge = (p: Record<string, unknown>) => {
     if (!p.is_active) return <Badge variant="secondary">Inactive</Badge>;
     const now = new Date();
     if (p.starts_at && new Date(p.starts_at) > now) return <Badge variant="outline">Scheduled</Badge>;
