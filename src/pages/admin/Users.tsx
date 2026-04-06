@@ -77,7 +77,7 @@ export default function AdminUsers() {
   const IP_REGEX = /^(\d{1,3}\.){3}\d{1,3}$/;
   const [deleteConfirmUser, setDeleteConfirmUser] = useState<any>(null);
   const [selfBanConfirmOpen, setSelfBanConfirmOpen] = useState(false);
-  const [grantEclipsePlusUser, setGrantEclipsePlusUser] = useState<any>(null);
+  
   const [selfBanCooldown, setSelfBanCooldown] = useState(0);
   const [viewProfileUser, setViewProfileUser] = useState<any>(null);
   const queryClient = useQueryClient();
