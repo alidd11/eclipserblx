@@ -25,9 +25,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { applicant_name, applicant_email, position }: ApplicationConfirmationRequest = await req.json();
+    const { applicant_name, applicant_email, position, access_token }: ApplicationConfirmationRequest = await req.json();
     
-    logStep("Received request", { applicant_name, applicant_email, position });
+    logStep("Received request", { applicant_name, applicant_email, position, has_token: !!access_token });
 
     if (!applicant_email || !applicant_name || !position) {
       throw new Error("Missing required fields: applicant_name, applicant_email, or position");
