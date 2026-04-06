@@ -86,6 +86,7 @@ const AdminOrders = lazyWithRetry(() => import("@/pages/admin/Orders"));
 const AdminUsers = lazyWithRetry(() => import("@/pages/admin/Users"));
 const AdminModerationQueue = lazyWithRetry(() => import("@/pages/admin/ModerationQueue"));
 const AdminSettings = lazyWithRetry(() => import("@/pages/admin/Settings"));
+const AdminCannedResponses = lazyWithRetry(() => import("@/pages/admin/CannedResponses"));
 const AdminDiscordSettings = lazyWithRetry(() => import("@/pages/admin/DiscordSettings"));
 const AdminGameNewsFeeds = lazyWithRetry(() => import("@/pages/admin/GameNewsFeeds"));
 const AdminRobloxSettings = lazyWithRetry(() => import("@/pages/admin/RobloxSettings"));
@@ -468,6 +469,7 @@ export function AppRoutes() {
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/moderation-queue" element={<AdminModerationQueue />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
+        <Route path="/admin/canned-responses" element={<AdminCannedResponses />} />
         <Route path="/admin/discord-settings" element={<AdminDiscordSettings />} />
         <Route path="/admin/game-news-feeds" element={<AdminGameNewsFeeds />} />
         <Route path="/admin/roblox-settings" element={<AdminRobloxSettings />} />

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, Clock, CheckCircle, Send, Link as LinkIcon, User, Store, AlertCircle, XCircle, AlertTriangle, Paperclip, X, ChevronDown, Zap, Loader2, ShoppingBag, History, UserCheck, Mail, Headphones } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, Send, Link as LinkIcon, User, Store, AlertCircle, XCircle, AlertTriangle, Paperclip, X, ChevronDown, Zap, Loader2, ShoppingBag, History, UserCheck, Mail, Headphones, Users } from 'lucide-react';
 import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { AdminStatCard } from '@/components/admin/AdminStatCard';
@@ -29,6 +29,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
+import { useCannedResponses } from '@/components/tickets/useCannedResponses';
+import { useAgentCollision } from '@/components/tickets/useAgentCollision';
 
 interface TicketMessage {
  id: string;
@@ -85,19 +87,12 @@ const CATEGORY_LABELS: Record<string, string> = {
  other: 'Other',
 };
 
-const CANNED_RESPONSES = [
- { label: 'Greeting', text: 'Hi there! Thanks for reaching out. I\'d be happy to help you with this.' },
- { label: 'Need more info', text: 'Could you please provide more details so we can investigate further?' },
- { label: 'Looking into it', text: 'I\'m looking into this now. Please give me a moment to review the details.' },
- { label: 'Payout info', text: 'Payouts are processed within 7 business days. You can track the status in your Seller Dashboard under Payouts.' },
- { label: 'Account change processed', text: 'Your account link change has been processed. Please verify your new account from the Settings page.' },
- { label: 'Issue resolved', text: 'The issue has been resolved. Please let us know if you need anything else!' },
- { label: 'Escalating', text: 'I\'m escalating this to our senior team for further review. You\'ll hear back shortly.' },
-];
+// Canned responses are now loaded from DB via useCannedResponses hook
 
 export default function SellerTickets() {
  const { user } = useAuth();
  const queryClient = useQueryClient();
+ const { responses: cannedResponses } = useCannedResponses();
 
  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
  const [newMessage, setNewMessage] = useState('');
@@ -107,6 +102,17 @@ export default function SellerTickets() {
  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
  const fileInputRef = useRef<HTMLInputElement>(null);
  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+ // ── Agent collision detection ─────────────────────────────────────────────
+ const myProfile = useQuery({
+   queryKey: ['my-profile-name', user?.id],
+   queryFn: async () => {
+     const { data } = await supabase.from('profiles').select('display_name').eq('user_id', user!.id).single();
+     return data?.display_name || 'Staff';
+   },
+   enabled: !!user?.id,
+ });
+ const viewingAgents = useAgentCollision(selectedTicket?.id, myProfile.data || undefined);
 
  // ── Realtime ──────────────────────────────────────────────────────────────
  useEffect(() => {
@@ -504,10 +510,18 @@ export default function SellerTickets() {
  </SelectContent>
  </Select>
  </div>
- <DrawerDescription className="sr-only">Ticket details</DrawerDescription>
+  <DrawerDescription className="sr-only">Ticket details</DrawerDescription>
 
- {/* Collapsible seller info */}
- <Collapsible>
+  {/* Agent collision banner */}
+  {viewingAgents.length > 0 && (
+    <div className="flex items-center gap-2 text-xs bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-1.5">
+      <Users className="h-3.5 w-3.5 text-yellow-500 shrink-0" />
+      <span className="text-yellow-600">{viewingAgents.map(a => a.name).join(', ')} {viewingAgents.length === 1 ? 'is' : 'are'} also viewing this ticket</span>
+    </div>
+  )}
+
+  {/* Collapsible seller info */}
+  <Collapsible>
  <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full">
  <Avatar className="h-5 w-5">
  <AvatarImage src={selectedTicket.profiles?.avatar_url || undefined} />
@@ -686,14 +700,14 @@ export default function SellerTickets() {
  <DropdownMenuContent align="start" className="w-64">
  <DropdownMenuLabel>Quick Replies</DropdownMenuLabel>
  <DropdownMenuSeparator />
- {CANNED_RESPONSES.map((resp) => (
- <DropdownMenuItem key={resp.label} onClick={() => insertCannedResponse(resp.text)}>
- <div>
- <div className="font-medium text-sm">{resp.label}</div>
- <div className="text-xs text-muted-foreground truncate max-w-[220px]">{resp.text}</div>
- </div>
- </DropdownMenuItem>
- ))}
+  {cannedResponses.map((resp) => (
+  <DropdownMenuItem key={resp.id} onClick={() => insertCannedResponse(resp.body)}>
+  <div>
+  <div className="font-medium text-sm">{resp.title}</div>
+  <div className="text-xs text-muted-foreground truncate max-w-[220px]">{resp.body}</div>
+  </div>
+  </DropdownMenuItem>
+  ))}
  </DropdownMenuContent>
  </DropdownMenu>
  <Input

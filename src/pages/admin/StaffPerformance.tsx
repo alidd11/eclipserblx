@@ -17,6 +17,9 @@ interface StaffPerf {
   total_actions: number;
   duty_hours_30d: number;
   last_active_at: string;
+  avg_csat: number;
+  avg_first_response_minutes: number;
+  avg_resolution_minutes: number;
 }
 
 export default function AdminStaffPerformance() {
@@ -69,12 +72,13 @@ export default function AdminStaffPerformance() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted/30">
+              <tr className="border-b border-border bg-muted/30">
                   <th className="text-left p-3 font-medium text-muted-foreground">Staff Member</th>
                   <th className="text-center p-3 font-medium text-muted-foreground">Tickets</th>
                   <th className="text-center p-3 font-medium text-muted-foreground">Chats</th>
+                  <th className="text-center p-3 font-medium text-muted-foreground">CSAT</th>
+                  <th className="text-center p-3 font-medium text-muted-foreground">Avg Response</th>
                   <th className="text-center p-3 font-medium text-muted-foreground">Duty Hours</th>
-                  <th className="text-center p-3 font-medium text-muted-foreground">Total Actions</th>
                   <th className="text-right p-3 font-medium text-muted-foreground">Last Active</th>
                 </tr>
               </thead>
@@ -87,12 +91,13 @@ export default function AdminStaffPerformance() {
                       <td className="p-3"><Skeleton className="h-4 w-12 mx-auto" /></td>
                       <td className="p-3"><Skeleton className="h-4 w-12 mx-auto" /></td>
                       <td className="p-3"><Skeleton className="h-4 w-12 mx-auto" /></td>
+                      <td className="p-3"><Skeleton className="h-4 w-12 mx-auto" /></td>
                       <td className="p-3"><Skeleton className="h-4 w-20 ml-auto" /></td>
                     </tr>
                   ))
                 ) : !staff?.length ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                    <td colSpan={7} className="p-8 text-center text-muted-foreground">
                       No staff activity in the last 30 days.
                     </td>
                   </tr>
@@ -111,11 +116,24 @@ export default function AdminStaffPerformance() {
                       <td className="p-3 text-center">
                         <Badge variant="outline" className="tabular-nums">{m.chats_completed}</Badge>
                       </td>
-                      <td className="p-3 text-center tabular-nums text-foreground">
-                        {m.duty_hours_30d.toFixed(1)}h
+                      <td className="p-3 text-center tabular-nums">
+                        {m.avg_csat > 0 ? (
+                          <span className={m.avg_csat >= 4 ? 'text-green-500' : m.avg_csat >= 3 ? 'text-yellow-500' : 'text-destructive'}>
+                            {m.avg_csat.toFixed(1)} ★
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-center tabular-nums text-foreground text-xs">
+                        {m.avg_first_response_minutes > 0 ? (
+                          m.avg_first_response_minutes < 60
+                            ? `${m.avg_first_response_minutes}m`
+                            : `${(m.avg_first_response_minutes / 60).toFixed(1)}h`
+                        ) : '—'}
                       </td>
                       <td className="p-3 text-center tabular-nums text-foreground">
-                        {m.total_actions}
+                        {m.duty_hours_30d.toFixed(1)}h
                       </td>
                       <td className="p-3 text-right text-muted-foreground text-xs">
                         {formatDistanceToNow(new Date(m.last_active_at), { addSuffix: true })}
