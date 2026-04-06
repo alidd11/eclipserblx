@@ -70,7 +70,7 @@ export default function AdminReferrals() {
  // Filter by search
  if (search) {
  const searchLower = search.toLowerCase();
- return enrichedData.filter((r: any) => 
+ return enrichedData.filter((r) => 
  r.referral_code?.toLowerCase().includes(searchLower) ||
  r.referrer?.display_name?.toLowerCase().includes(searchLower) ||
  r.referrer?.email?.toLowerCase().includes(searchLower) ||
