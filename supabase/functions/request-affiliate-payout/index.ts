@@ -97,15 +97,15 @@ serve(async (req) => {
 
     logStep("Balance check passed", { available: balance.available_balance, requested: amount });
 
-    // Get user's profile for payout method and details
-    const { data: profile, error: profileError } = await supabaseClient
-      .from('profiles')
+    // Get user's payment details from dedicated table
+    const { data: paymentDetails, error: paymentError } = await supabaseClient
+      .from('user_payment_details')
       .select('stripe_account_id, paypal_email, preferred_payout_method, bank_account_holder, bank_account_number, bank_swift_bic, bank_name')
       .eq('user_id', user.id)
       .single();
 
-    if (profileError || !profile) {
-      throw new Error("No profile found");
+    if (paymentError || !paymentDetails) {
+      throw new Error("No payment details found. Please configure your payout settings.");
     }
 
     // Determine which payout method to use

@@ -40,15 +40,15 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Check if user already has a stripe account in profiles
-    const { data: profile, error: profileError } = await supabaseClient
-      .from('profiles')
+    // Check if user already has a stripe account in user_payment_details
+    const { data: paymentDetails, error: paymentError } = await supabaseClient
+      .from('user_payment_details')
       .select('stripe_account_id')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
-    if (profileError && profileError.code !== 'PGRST116') {
-      throw new Error("Failed to fetch profile");
+    if (paymentError) {
+      throw new Error("Failed to fetch payment details");
     }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
