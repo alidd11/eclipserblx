@@ -523,7 +523,7 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
                     Badges ({badges.length})
                   </h3>
                   <div className="flex gap-2 flex-wrap">
-                    {badges.map((ub: any) => (
+                    {badges.map((ub) => (
                       <Badge
                         key={ub.badge_id}
                         variant="secondary"

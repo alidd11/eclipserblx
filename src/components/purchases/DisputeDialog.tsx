@@ -73,7 +73,7 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
     }
   }, [orderItems]);
 
-  const selectedItem = orderItems?.find((i: any) => i.id === selectedItemId);
+  const selectedItem = orderItems?.find((i) => i.id === selectedItemId);
   const storeId = (selectedItem?.products as any)?.store_id;
 
   const createDispute = useMutation({
@@ -237,7 +237,7 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
                   <SelectValue placeholder="Select the product" />
                 </SelectTrigger>
                 <SelectContent>
-                  {orderItems.map((item: any) => (
+                  {orderItems.map((item) => (
                     <SelectItem key={item.id} value={item.id}>
                       {item.product_name} — £{Number(item.price).toFixed(2)}
                     </SelectItem>

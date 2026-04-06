@@ -93,7 +93,7 @@ export default function CommunityAnnouncements() {
       } else {
         toast.error(data?.error || 'Failed to send announcement');
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Announcement error:', err);
       toast.error('Failed to send announcement');
     } finally {

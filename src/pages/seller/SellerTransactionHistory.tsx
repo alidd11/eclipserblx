@@ -50,12 +50,12 @@ export default function SellerTransactionHistory() {
   const totalPages = Math.ceil(totalCount / perPage);
 
   const filtered = search
-    ? transactions.filter((t: any) => t.description?.toLowerCase().includes(search.toLowerCase()) || t.id.includes(search))
+    ? transactions.filter((t) => t.description?.toLowerCase().includes(search.toLowerCase()) || t.id.includes(search))
     : transactions;
 
   const exportCSV = () => {
     const headers = ['Date', 'Type', 'Description', 'Gross', 'Platform Fee', 'Stripe Fee', 'Net Amount', 'Status'];
-    const rows = filtered.map((t: any) => [
+    const rows = filtered.map((t) => [
       format(new Date(t.created_at), 'yyyy-MM-dd HH:mm'),
       t.type, t.description || '', 
       t.gross_amount || t.amount, t.platform_fee || 0, t.stripe_fee || 0, t.net_amount || t.amount,
@@ -123,7 +123,7 @@ export default function SellerTransactionHistory() {
                   <TableRow><TableCell colSpan={7}><InlineLoading compact message="Loading transactions…" /></TableCell></TableRow>
                 ) : filtered.length === 0 ? (
                   <TableRow><TableCell colSpan={7}><InlineLoading compact message="No transactions found" /></TableCell></TableRow>
-                ) : filtered.map((t: any) => (
+                ) : filtered.map((t) => (
                   <TableRow key={t.id}>
                     <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{format(new Date(t.created_at), 'dd MMM yyyy HH:mm')}</TableCell>
                     <TableCell>

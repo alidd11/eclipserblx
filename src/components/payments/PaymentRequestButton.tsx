@@ -152,7 +152,7 @@ export function PaymentRequestButton({
         clearCart();
         showSuccessNotification('Payment Successful!', 'Your order is being processed');
         navigate(`/order-success?payment_intent=${data.paymentIntentId}`);
-      } catch (err: any) {
+      } catch (err) {
         console.error('Payment error:', err);
         showErrorNotification('Payment Failed', err.message || 'Please try again');
         event.complete('fail');

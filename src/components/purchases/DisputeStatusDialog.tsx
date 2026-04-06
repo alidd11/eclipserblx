@@ -229,7 +229,7 @@ export function DisputeStatusDialog({ open, onOpenChange, disputeId }: DisputeSt
                   <FileImage className="h-3.5 w-3.5" /> Evidence ({evidence.length})
                 </p>
                 <div className="space-y-2">
-                  {evidence.map((e: any) => (
+                  {evidence.map((e) => (
                     <div key={e.id} className="flex items-center gap-2 p-2 rounded-lg border bg-muted/30 text-sm">
                       <FileImage className="h-4 w-4 text-muted-foreground shrink-0" />
                       <span className="truncate flex-1">{e.file_name}</span>

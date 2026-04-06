@@ -9,6 +9,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { Check, X, Eye, Package, Trash2, AlertTriangle, ShieldAlert, Clock, Lock, ImageMinus, FileCheck, FileX, ChevronDown, ScanSearch, ChevronLeft, ChevronRight } from "lucide-react";
+
+interface ModerationFlags {
+  nsfw_flags?: string[];
+  lua_concerns?: string[];
+  lua_risk_level?: string;
+  has_roblox_files?: boolean;
+  file_names_sample?: string[];
+  total_files?: number;
+  scan_timestamp?: string;
+}
 import {
   AlertDialog,
   AlertDialogAction,
@@ -161,7 +171,7 @@ export default function SellerProducts() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (product: any) => {
+    mutationFn: async (product: { id: string; images?: string[]; asset_file_url?: string }) => {
       // Delete product images from storage first
       const images: string[] = product.images || [];
       if (images.length > 0) {
@@ -214,7 +224,7 @@ export default function SellerProducts() {
     },
   });
 
-  const handleDeleteClick = (product: any) => {
+  const handleDeleteClick = (product: { id: string; images?: string[]; asset_file_url?: string }) => {
     setProductToDelete(product);
     setDeleteStep(1);
   };
@@ -232,7 +242,7 @@ export default function SellerProducts() {
     setDeleteStep(1);
   };
 
-  const getStatusBadge = (status: string, product?: any) => {
+  const getStatusBadge = (status: string, product?: Record<string, unknown>) => {
     // Show consent status for flagged products
     if (status === 'pending' && product?.moderation_flags && product?.file_review_requested_at) {
       if (!product?.file_review_consented_at) {
@@ -261,6 +271,7 @@ export default function SellerProducts() {
   };
 
   // Render moderation flags if present
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderModerationFlags = (flags: any) => {
     if (!flags) return null;
     
@@ -327,7 +338,7 @@ export default function SellerProducts() {
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {products?.map((product: any) => (
+            {products?.map((product) => (
               <div key={product.id} className="overflow-hidden">
                 <div className="aspect-video relative bg-muted">
                   {product.images?.[0] ? (
@@ -409,28 +420,30 @@ export default function SellerProducts() {
                           No asset file uploaded — product is hidden from marketplace
                         </p>
                       )}
-                      {product.moderation_flags ? (
+                      {product.moderation_flags ? (() => {
+                        const mf = product.moderation_flags as unknown as ModerationFlags;
+                        return (
                         <div className="space-y-1 px-1">
-                          {product.moderation_flags.nsfw_flags?.length > 0 && (
+                          {mf.nsfw_flags && mf.nsfw_flags.length > 0 && (
                             <div className="flex items-start gap-1 text-[11px] text-destructive">
                               <ShieldAlert className="h-3 w-3 mt-0.5 shrink-0" />
-                              <span>NSFW: {product.moderation_flags.nsfw_flags.join(', ')}</span>
+                              <span>NSFW: {mf.nsfw_flags.join(', ')}</span>
                             </div>
                           )}
-                          {product.moderation_flags.lua_concerns?.length > 0 && (
+                          {mf.lua_concerns && mf.lua_concerns.length > 0 && (
                             <div className="flex items-start gap-1 text-[11px] text-amber-500">
                               <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
-                              <span>Lua ({product.moderation_flags.lua_risk_level}): {product.moderation_flags.lua_concerns.join(', ')}</span>
+                              <span>Lua ({mf.lua_risk_level}): {mf.lua_concerns.join(', ')}</span>
                             </div>
                           )}
-                          {product.moderation_flags.has_roblox_files === false && (
+                          {mf.has_roblox_files === false && (
                             <div className="flex items-start gap-1 text-[11px] text-amber-500">
                               <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
                               <span>No Roblox files detected (.rbxm/.rbxl)</span>
                             </div>
                           )}
                           {(() => {
-                            const fileNames: string[] = product.moderation_flags.file_names_sample || [];
+                            const fileNames: string[] = mf.file_names_sample || [];
                             const suspiciousExts = fileNames.filter((f: string) => /\.(rtf|exe|bat|cmd|ps1|vbs|dll|msi|scr)$/i.test(f));
                             if (suspiciousExts.length === 0) return null;
                             return (
@@ -440,26 +453,27 @@ export default function SellerProducts() {
                               </div>
                             );
                           })()}
-                          {product.moderation_flags.file_names_sample?.length > 0 && (
+                          {mf.file_names_sample && mf.file_names_sample.length > 0 && (
                             <div className="text-[10px] text-muted-foreground">
-                              <span className="font-medium">{product.moderation_flags.total_files || '?'} files:</span>
+                              <span className="font-medium">{mf.total_files || '?'} files:</span>
                               <ul className="list-disc list-inside mt-0.5 space-y-0.5">
-                                {product.moderation_flags.file_names_sample.map((f: string, i: number) => (
+                                {mf.file_names_sample.map((f: string, i: number) => (
                                   <li key={i} className="break-all">{f}</li>
                                 ))}
                               </ul>
                             </div>
                           )}
-                          {product.moderation_flags.scan_timestamp && (
+                          {mf.scan_timestamp && (
                             <p className="text-[10px] text-muted-foreground">
-                              Scanned {new Date(product.moderation_flags.scan_timestamp).toLocaleDateString()}
+                              Scanned {new Date(mf.scan_timestamp).toLocaleDateString()}
                             </p>
                           )}
-                          {!product.moderation_flags.nsfw_flags?.length && !product.moderation_flags.lua_concerns?.length && product.moderation_flags.has_roblox_files !== false && !(product.moderation_flags.file_names_sample || []).some((f: string) => /\.(rtf|exe|bat|cmd|ps1|vbs|dll|msi|scr)$/i.test(f)) && (
+                          {!mf.nsfw_flags?.length && !mf.lua_concerns?.length && mf.has_roblox_files !== false && !(mf.file_names_sample || []).some((f: string) => /\.(rtf|exe|bat|cmd|ps1|vbs|dll|msi|scr)$/i.test(f)) && (
                             <p className="text-[11px] text-green-500">✓ Clean — no issues detected</p>
                           )}
                         </div>
-                      ) : (
+                        );
+                      })() : (
                         <p className="text-[11px] text-muted-foreground px-1">No scan results available</p>
                       )}
                     </CollapsibleContent>

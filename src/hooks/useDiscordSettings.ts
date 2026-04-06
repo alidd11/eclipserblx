@@ -172,7 +172,7 @@ export function useDiscordSettings() {
       setWebhookTestResults((prev) => ({ ...prev, [type]: result }));
       if (result.success) toast.success(result.message);
       else toast.error(result.message);
-    } catch (err: any) {
+    } catch (err) {
       const result = { success: false, message: 'Request failed', details: err.message };
       setWebhookTestResults((prev) => ({ ...prev, [type]: result }));
       toast.error('Test failed');
@@ -275,7 +275,7 @@ export function useDiscordSettings() {
       if (error) toast.error(`${config.label} failed: ${error.message}`);
       else if (data?.success) toast.success(`${config.label} sent!`);
       else toast.error(data?.error || 'Failed');
-    } catch (err: any) {
+    } catch (err) {
       toast.error(`Failed: ${err.message}`);
     } finally {
       setIsSendingAnnouncement(null);

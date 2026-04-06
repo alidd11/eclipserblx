@@ -146,6 +146,7 @@ export default function SellerProductsAll() {
     },
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleEditOpen = (product: any) => {
     setEditProduct(product);
     setEditCategory(product.category_id || "");
@@ -220,7 +221,7 @@ export default function SellerProductsAll() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Stores</SelectItem>
-              {stores?.map((s: any) => (
+              {stores?.map((s) => (
                 <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
               ))}
             </SelectContent>
@@ -261,7 +262,7 @@ export default function SellerProductsAll() {
               <span>Actions</span>
             </div>
 
-            {filteredProducts?.map((product: any) => (
+            {filteredProducts?.map((product) => (
               <div key={product.id} className="overflow-hidden">
                 <div className="p-4 p-0">
                   <div className="grid grid-cols-1 md:grid-cols-[3fr_1.5fr_1fr_1fr_1fr_auto] gap-3 items-center px-4 py-3">
@@ -365,31 +366,39 @@ export default function SellerProductsAll() {
                         ) : (
                           <p className="text-destructive/80">No asset file uploaded</p>
                         )}
-                        {product.moderation_flags?.nsfw_flags?.length > 0 && (
-                          <div className="flex items-start gap-1 text-destructive">
-                            <ShieldAlert className="h-3 w-3 mt-0.5 shrink-0" />
-                            <span>NSFW: {product.moderation_flags.nsfw_flags.join(', ')}</span>
-                          </div>
-                        )}
-                        {product.moderation_flags?.lua_concerns?.length > 0 && (
-                          <div className="flex items-start gap-1 text-amber-500">
-                            <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
-                            <span>Lua ({product.moderation_flags.lua_risk_level}): {product.moderation_flags.lua_concerns.join(', ')}</span>
-                          </div>
-                        )}
-                        {product.moderation_flags?.file_names_sample?.length > 0 && (
-                          <div className="text-muted-foreground">
-                            <span className="font-medium">{product.moderation_flags.total_files || '?'} files:</span>
-                            <ul className="list-disc list-inside mt-0.5 space-y-0.5 ml-2">
-                              {product.moderation_flags.file_names_sample.slice(0, 5).map((f: string, i: number) => (
-                                <li key={i} className="break-all">{f}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        {product.moderation_flags && !product.moderation_flags.nsfw_flags?.length && !product.moderation_flags.lua_concerns?.length && (
-                          <p className="text-green-500">✓ Clean — no issues detected</p>
-                        )}
+                        {(() => {
+                          const mf = product.moderation_flags as unknown as { nsfw_flags?: string[]; lua_concerns?: string[]; lua_risk_level?: string; file_names_sample?: string[]; total_files?: number } | null;
+                          if (!mf) return null;
+                          return (
+                            <>
+                              {mf.nsfw_flags && mf.nsfw_flags.length > 0 && (
+                                <div className="flex items-start gap-1 text-destructive">
+                                  <ShieldAlert className="h-3 w-3 mt-0.5 shrink-0" />
+                                  <span>NSFW: {mf.nsfw_flags.join(', ')}</span>
+                                </div>
+                              )}
+                              {mf.lua_concerns && mf.lua_concerns.length > 0 && (
+                                <div className="flex items-start gap-1 text-amber-500">
+                                  <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
+                                  <span>Lua ({mf.lua_risk_level}): {mf.lua_concerns.join(', ')}</span>
+                                </div>
+                              )}
+                              {mf.file_names_sample && mf.file_names_sample.length > 0 && (
+                                <div className="text-muted-foreground">
+                                  <span className="font-medium">{mf.total_files || '?'} files:</span>
+                                  <ul className="list-disc list-inside mt-0.5 space-y-0.5 ml-2">
+                                    {mf.file_names_sample.slice(0, 5).map((f: string, i: number) => (
+                                      <li key={i} className="break-all">{f}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                              {!mf.nsfw_flags?.length && !mf.lua_concerns?.length && (
+                                <p className="text-green-500">✓ Clean — no issues detected</p>
+                              )}
+                            </>
+                          );
+                        })()}
                       </CollapsibleContent>
                     </Collapsible>
                   )}
@@ -465,7 +474,7 @@ export default function SellerProductsAll() {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories?.map((cat: any) => (
+                    {categories?.map((cat) => (
                       <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                     ))}
                   </SelectContent>

@@ -208,7 +208,7 @@ export default function SellerGoals() {
           </div>
         ) : (
           <div className="space-y-4">
-            {goals?.map((goal: any) => {
+            {goals?.map((goal) => {
               const progress = Math.min(100, (goal.current_amount / goal.target_amount) * 100);
               const daysLeft = Math.max(0, differenceInDays(new Date(goal.ends_at), new Date()));
               const achieved = goal.current_amount >= goal.target_amount;

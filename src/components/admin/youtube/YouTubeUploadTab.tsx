@@ -124,7 +124,7 @@ export function YouTubeUploadTab() {
  setVideoFile(null);
  setCategory('Education');
  setPrivacyStatus('public');
- } catch (err: any) {
+ } catch (err) {
  toast.error(err.message || 'Upload failed');
  } finally {
  setUploading(false);

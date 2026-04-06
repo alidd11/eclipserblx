@@ -82,7 +82,7 @@ export function BrandingImageUpload({
 
       onUpload(publicUrl);
       toast.success(`${type === 'logo' ? 'Logo' : 'Banner'} uploaded successfully`);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Upload error:', error);
       toast.error(`Failed to upload ${type}: ${error.message}`);
     } finally {

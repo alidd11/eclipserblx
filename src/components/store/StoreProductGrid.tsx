@@ -76,7 +76,7 @@ export function StoreProductGrid({
       </h2>
 
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-        {visibleProducts.map((product: any) => {
+        {visibleProducts.map((product) => {
           const isNewProduct = product.created_at
             ? Date.now() - new Date(product.created_at).getTime() < 7 * 24 * 60 * 60 * 1000
             : false;

@@ -164,7 +164,7 @@ export function StoreSidebar({
 
   // Navigation groups matching CustomerSidebar structure
   // On custom domains, hide Marketplace link, My Account, and Legal groups
-  const customLinkItems: NavItem[] = customNavLinks.map((link: any) => ({
+  const customLinkItems: NavItem[] = customNavLinks.map((link) => ({
     title: link.label,
     icon: FileText,
     href: link.url || undefined,
@@ -172,10 +172,10 @@ export function StoreSidebar({
   }));
 
   // Build page items from published store pages, deduplicating against custom nav links
-  const customLinkUrls = new Set(customNavLinks.map((l: any) => l.url));
+  const customLinkUrls = new Set(customNavLinks.map((l) => l.url));
   const pageItems: NavItem[] = storePages
-    .filter((page: any) => !customLinkUrls.has(`/store/${storeSlug}/page/${page.slug}`))
-    .map((page: any) => ({
+    .filter((page) => !customLinkUrls.has(`/store/${storeSlug}/page/${page.slug}`))
+    .map((page) => ({
       title: page.title,
       icon: FileText,
       href: `/store/${storeSlug}/page/${page.slug}`,

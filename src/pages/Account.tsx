@@ -418,11 +418,11 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   const totalSpent = useMemo(() => {
     if (!orders) return 0;
     return orders
-      .filter((o: any) => o.status === 'paid' || o.status === 'completed')
+      .filter((o) => o.status === 'paid' || o.status === 'completed')
       .reduce((sum: number, o: any) => sum + Number(o.total || 0), 0);
   }, [orders]);
 
-  const completedOrders = orders?.filter((o: any) => o.status === 'paid' || o.status === 'completed').length ?? 0;
+  const completedOrders = orders?.filter((o) => o.status === 'paid' || o.status === 'completed').length ?? 0;
 
   const handleSignOut = async () => {
     setIsSigningOut(true);

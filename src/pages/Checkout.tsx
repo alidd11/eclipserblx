@@ -215,7 +215,7 @@ export default function Checkout() {
       clearCart();
       showSuccessNotification(t('checkout.paymentSuccess'), 'Your free products are ready to download!');
       navigate(`/order-success?order_id=${data.orderId}&free=true`);
-    } catch (err: any) {
+    } catch (err) {
       showErrorNotification(t('common.error'), err.message || 'Failed to claim free products');
     } finally {
       setIsProcessing(false);

@@ -40,19 +40,25 @@ const SECTION_TYPES = [
 
 type SectionType = typeof SECTION_TYPES[number]['id'];
 
+interface FaqItem { question: string; answer: string }
+interface TestimonialItem { name: string; text: string; rating: number }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SectionContent = Record<string, any>;
+
 interface CustomSection {
   id: string;
   store_id: string;
   section_type: SectionType;
   title: string;
-  content: any;
+  content: SectionContent;
   display_order: number;
   is_visible: boolean;
   created_at: string;
   updated_at: string;
 }
 
-const DEFAULT_CONTENT: Record<SectionType, any> = {
+const DEFAULT_CONTENT: Record<SectionType, SectionContent> = {
   faq: { items: [{ question: '', answer: '' }] },
   testimonials: { items: [{ name: '', text: '', rating: 5 }] },
   featured_collection: { product_ids: [], description: '' },
@@ -149,20 +155,20 @@ export default function SellerCustomSections() {
     updateSection.mutate({ id: editingId, title: editForm.title, content: editForm.content });
   };
 
-  const renderContentEditor = (sectionType: SectionType, content: any, onChange: (c: any) => void) => {
+  const renderContentEditor = (sectionType: SectionType, content: SectionContent, onChange: (c: SectionContent) => void) => {
     switch (sectionType) {
       case 'faq': {
         const items = content?.items || [];
         return (
           <div className="space-y-3">
-            {items.map((item: any, i: number) => (
+            {items.map((item: FaqItem, i: number) => (
               <div key={i} className="space-y-2 p-3 border rounded-lg">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs">Question {i + 1}</Label>
                   {items.length > 1 && (
                     <Button
                       variant="ghost" size="icon" className="h-6 w-6"
-                      onClick={() => onChange({ items: items.filter((_: any, j: number) => j !== i) })}
+                      onClick={() => onChange({ items: items.filter((_: FaqItem, j: number) => j !== i) })}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
@@ -203,14 +209,14 @@ export default function SellerCustomSections() {
         const items = content?.items || [];
         return (
           <div className="space-y-3">
-            {items.map((item: any, i: number) => (
+            {items.map((item: TestimonialItem, i: number) => (
               <div key={i} className="space-y-2 p-3 border rounded-lg">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs">Testimonial {i + 1}</Label>
                   {items.length > 1 && (
                     <Button
                       variant="ghost" size="icon" className="h-6 w-6"
-                      onClick={() => onChange({ items: items.filter((_: any, j: number) => j !== i) })}
+                      onClick={() => onChange({ items: items.filter((_: TestimonialItem, j: number) => j !== i) })}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>

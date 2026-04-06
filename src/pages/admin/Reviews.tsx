@@ -205,7 +205,7 @@ export default function AdminReviews() {
  setExternalForm(emptyExternalForm);
  toast.success('External review added');
  },
- onError: (error: any) => {
+ onError: (error: Error) => {
  toast.error(error.message || 'Failed to add review');
  },
  });

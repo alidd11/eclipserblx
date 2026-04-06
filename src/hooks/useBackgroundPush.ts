@@ -221,7 +221,7 @@ export function useBackgroundPush() {
       setIsSubscribed(true);
       
       return { success: true };
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error subscribing to push:', error);
       
       // Handle specific error types

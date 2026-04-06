@@ -93,7 +93,7 @@ export default function PlatformLedger() {
   const totalPages = Math.ceil(totalCount / PER_PAGE);
 
   const filtered = search
-    ? transactions.filter((t: any) =>
+    ? transactions.filter((t) =>
         t.description?.toLowerCase().includes(search.toLowerCase()) ||
         t.id?.includes(search) ||
         t.order_id?.includes(search))
@@ -101,7 +101,7 @@ export default function PlatformLedger() {
 
   const exportCSV = () => {
     const headers = ['Date', 'Store', 'Type', 'Description', 'Gross', 'Commission', 'Stripe Fee', 'Seller Net', 'Status'];
-    const rows = filtered.map((t: any) => [
+    const rows = filtered.map((t) => [
       format(new Date(t.created_at), 'yyyy-MM-dd HH:mm'),
       (t.stores as any)?.name || 'Unknown',
       t.type,
@@ -249,7 +249,7 @@ export default function PlatformLedger() {
                         No transactions found
                       </TableCell>
                     </TableRow>
-                  ) : filtered.map((t: any) => (
+                  ) : filtered.map((t) => (
                     <TableRow key={t.id}>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                         {format(new Date(t.created_at), 'dd MMM yyyy HH:mm')}

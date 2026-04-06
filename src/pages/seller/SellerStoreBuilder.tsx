@@ -46,7 +46,7 @@ const DEFAULT_SECTIONS: StoreSection[] = [
 function parseSavedLayout(storeLayout: any): StoreSection[] | null {
   if (!storeLayout?.sections || !Array.isArray(storeLayout.sections)) return null;
   
-  return storeLayout.sections.map((s: any) => ({
+  return storeLayout.sections.map((s) => ({
     id: s.type,
     type: s.type,
     label: DEFAULT_SECTIONS.find(d => d.type === s.type)?.label || s.type,

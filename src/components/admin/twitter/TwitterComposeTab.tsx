@@ -77,7 +77,7 @@ export function TwitterComposeTab() {
 
  setContent('');
  setSelectedHashtags([]);
- } catch (err: any) {
+ } catch (err) {
  toast.error(err.message || 'Failed to send tweet');
  } finally {
  setSending(false);

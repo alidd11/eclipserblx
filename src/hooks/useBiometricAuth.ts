@@ -90,7 +90,7 @@ export function useBiometricAuth() {
       setIsEnrolled(true);
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error) {
       console.error('Biometric enrollment error:', error);
       return { success: false, error: error.message || 'Enrollment failed' };
     } finally {
@@ -139,7 +139,7 @@ export function useBiometricAuth() {
       }
 
       return { success: true, userId: credentialData.userId };
-    } catch (error: any) {
+    } catch (error) {
       console.error('Biometric authentication error:', error);
       if (error.name === 'NotAllowedError') {
         return { success: false, error: 'Authentication cancelled' };

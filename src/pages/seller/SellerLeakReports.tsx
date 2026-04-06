@@ -259,14 +259,14 @@ export default function SellerLeakReports() {
       setProductId('');
       setNotes('');
       refetch();
-    } catch (err: any) {
+    } catch (err) {
       toast.error(err.message || 'Failed to submit report');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const statusConfig: Record<string, { icon: any; color: string; label: string }> = {
+  const statusConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
     pending: { icon: Clock, color: 'text-warning', label: 'Pending' },
     confirmed: { icon: CheckCircle2, color: 'text-destructive', label: 'Confirmed Leak' },
     dismissed: { icon: XCircle, color: 'text-muted-foreground', label: 'Dismissed' },
@@ -339,7 +339,7 @@ export default function SellerLeakReports() {
             </div>
             </div>
             <div className="p-4 pt-2 space-y-2">
-              {scanResults.map((result: any) => {
+              {scanResults.map((result) => {
                 const confidenceBadge = result.confidence === 'confirmed'
                   ? { label: 'Confirmed', className: 'bg-destructive/15 text-destructive border-destructive/30' }
                   : result.confidence === 'high'
@@ -653,7 +653,7 @@ export default function SellerLeakReports() {
               </div>
             ) : (
               <div className="space-y-3">
-                {reports.map((report: any) => {
+                {reports.map((report) => {
                   const status = statusConfig[report.status] || statusConfig.pending;
                   const StatusIcon = status.icon;
                   return (

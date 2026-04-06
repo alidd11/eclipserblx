@@ -242,7 +242,7 @@ export function useSellerVerification() {
             role: data?.role?.name,
             rank: data?.role?.rank,
           };
-        } catch (err: any) {
+        } catch (err) {
           results.roblox_group = {
             in_group: false,
             error: err.message || 'Failed to verify group membership',
@@ -322,7 +322,7 @@ export function useSellerVerification() {
           verified_at: new Date().toISOString(),
         },
       }));
-    } catch (err: any) {
+    } catch (err) {
       setVerificationResults((prev) => ({
         ...prev,
         discord_server: {

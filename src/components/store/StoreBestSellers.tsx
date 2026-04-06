@@ -69,7 +69,7 @@ export function StoreBestSellers({
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {bestSellers?.map((product: any) => (
+          {bestSellers?.map((product) => (
             <ProductCard
               key={product.id}
               id={product.id}

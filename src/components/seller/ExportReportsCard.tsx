@@ -36,7 +36,7 @@ export function ExportReportsCard() {
 
  setIsExporting(true);
  try {
- let data: any[] = [];
+ let data: string[][] = [];
  let headers: string[] = [];
  let filename = '';
  const dateFilter = getDateFilter();
@@ -58,7 +58,7 @@ export function ExportReportsCard() {
  if (error) throw error;
 
  headers = ['Date', 'Order ID', 'Description', 'Amount', 'Platform Fee', 'Net Amount', 'Status'];
- data = (transactions || []).map((tx: any) => [
+ data = (transactions || []).map((tx) => [
  format(new Date(tx.created_at), 'yyyy-MM-dd HH:mm'),
  tx.order_id || '',
  tx.description || '',
@@ -87,7 +87,7 @@ export function ExportReportsCard() {
 
  // Group by date
  const dailyRevenue: Record<string, { sales: number; revenue: number; fees: number; refunds: number }> = {};
- (transactions || []).forEach((tx: any) => {
+ (transactions || []).forEach((tx) => {
  const date = format(new Date(tx.created_at), 'yyyy-MM-dd');
  if (!dailyRevenue[date]) {
  dailyRevenue[date] = { sales: 0, revenue: 0, fees: 0, refunds: 0 };
@@ -125,7 +125,7 @@ export function ExportReportsCard() {
  if (error) throw error;
 
  headers = ['Product Name', 'Price', 'Downloads', 'Category', 'Status', 'Active', 'Created Date'];
- data = (products || []).map((p: any) => [
+ data = (products || []).map((p) => [
  p.name,
  p.price?.toFixed(2) || '0.00',
  p.download_count?.toString() || '0',
@@ -154,7 +154,7 @@ export function ExportReportsCard() {
 
  // Group by date and event type
  const dailyAnalytics: Record<string, Record<string, number>> = {};
- (analytics || []).forEach((event: any) => {
+ (analytics || []).forEach((event) => {
  const date = format(new Date(event.created_at), 'yyyy-MM-dd');
  if (!dailyAnalytics[date]) {
  dailyAnalytics[date] = {};
@@ -201,9 +201,9 @@ export function ExportReportsCard() {
  URL.revokeObjectURL(url);
 
  toast.success(`Exported ${data.length} rows to ${filename}`);
- } catch (error: any) {
+ } catch (error) {
  console.error('Export error:', error);
- toast.error('Failed to export data: ' + error.message);
+ toast.error('Failed to export data: ' + (error instanceof Error ? error.message : 'Unknown error'));
  } finally {
  setIsExporting(false);
  }

@@ -40,7 +40,7 @@ export default function BotCustomCommands() {
  setShowAdd(false);
  setForm({ trigger: '', trigger_type: 'command', response: '', cooldown_seconds: 0, enabled: true });
  },
- onError: (e: any) => toast.error(e.message || 'Failed'),
+ onError: (e: Error) => toast.error(e.message || 'Failed'),
  });
 
  const toggleMutation = useMutation({
@@ -124,7 +124,7 @@ export default function BotCustomCommands() {
  <div className="p-8 text-center text-foreground/40">No custom commands yet.</div>
  ) : (
  <div className="divide-y divide-white/5">
- {commands.map((cmd: any) => (
+ {commands.map((cmd) => (
  <div key={cmd.id} className="px-4 py-3 flex items-center gap-3 hover:bg-background/[0.02]">
  {cmd.trigger_type === 'command' ? <Terminal className="h-4 w-4 text-[hsl(258,90%,66%)] shrink-0" /> : <MessageSquare className="h-4 w-4 text-blue-400 shrink-0" />}
  <div className="flex-1 min-w-0">

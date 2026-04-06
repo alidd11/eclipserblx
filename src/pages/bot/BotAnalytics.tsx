@@ -22,7 +22,7 @@ export default function BotAnalytics() {
 
  // Aggregate by command
  const commandCounts: Record<string, number> = {};
- usageData.forEach((u: any) => {
+ usageData.forEach((u) => {
  commandCounts[u.command_name] = (commandCounts[u.command_name] || 0) + 1;
  });
  const topCommands = Object.entries(commandCounts)
@@ -32,7 +32,7 @@ export default function BotAnalytics() {
 
  // Aggregate by day
  const dailyCounts: Record<string, number> = {};
- usageData.forEach((u: any) => {
+ usageData.forEach((u) => {
  const day = format(new Date(u.executed_at), 'MMM dd');
  dailyCounts[day] = (dailyCounts[day] || 0) + 1;
  });
@@ -42,7 +42,7 @@ export default function BotAnalytics() {
  .map(([day, count]) => ({ day, count }));
 
  const totalCommands = usageData.length;
- const uniqueCommands = new Set(usageData.map((u: any) => u.command_name)).size;
+ const uniqueCommands = new Set(usageData.map((u) => u.command_name)).size;
 
  return (
  <BotDashboardLayout>

@@ -188,7 +188,7 @@ export default function BotOverview() {
               Recent Errors
             </h3>
             <div className="space-y-2">
-              {errors.map((err: any) => (
+              {errors.map((err) => (
                 <div key={err.id} className="p-3 rounded-lg bg-red-500/5 border border-red-500/10">
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <Badge variant="outline" className="text-[10px] sm:text-xs text-red-400 border-red-500/30 bg-red-500/10">

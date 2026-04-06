@@ -17,11 +17,24 @@ import { toast } from 'sonner';
 import { format } from '@/lib/dateUtils';
 import { Zap, Plus, Trash2, Edit, Clock, Timer, Info } from 'lucide-react';
 
+interface FlashSale {
+  id: string;
+  name: string;
+  discount_type: string;
+  discount_value: number;
+  apply_to_all: boolean;
+  starts_at: string;
+  ends_at: string;
+  is_active: boolean;
+  store_id: string;
+  created_at: string;
+}
+
 export default function SellerFlashSales() {
   const queryClient = useQueryClient();
   const { store } = useSellerStatus();
   const [showDialog, setShowDialog] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<FlashSale | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '', discount_type: 'percentage', discount_value: 20,
@@ -113,7 +126,7 @@ export default function SellerFlashSales() {
     setForm({ name: '', discount_type: 'percentage', discount_value: 20, apply_to_all: true, starts_at: '', ends_at: '', is_active: true });
   };
 
-  const openEdit = (sale: any) => {
+  const openEdit = (sale: FlashSale) => {
     setEditing(sale);
     setForm({
       name: sale.name, discount_type: sale.discount_type,
@@ -130,9 +143,9 @@ export default function SellerFlashSales() {
     editing ? updateMutation.mutate() : createMutation.mutate();
   };
 
-  const isActive = (sale: any) => sale.is_active && new Date(sale.starts_at) <= new Date() && new Date(sale.ends_at) > new Date();
-  const isUpcoming = (sale: any) => sale.is_active && new Date(sale.starts_at) > new Date();
-  const isExpired = (sale: any) => new Date(sale.ends_at) <= new Date();
+  const isActive = (sale: FlashSale) => sale.is_active && new Date(sale.starts_at) <= new Date() && new Date(sale.ends_at) > new Date();
+  const isUpcoming = (sale: FlashSale) => sale.is_active && new Date(sale.starts_at) > new Date();
+  const isExpired = (sale: FlashSale) => new Date(sale.ends_at) <= new Date();
 
   return (
     <SellerLayout>
@@ -159,7 +172,7 @@ export default function SellerFlashSales() {
           {isLoading ? (
             [1,2].map(i => <Skeleton key={i} className="h-24" />)
           ) : flashSales && flashSales.length > 0 ? (
-            flashSales.map((sale: any) => (
+            flashSales.map((sale) => (
               <div key={sale.id} className={`border border-border rounded-xl p-4 flex items-center justify-between ${isExpired(sale) ? 'opacity-60' : ''}`}>
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-lg flex items-center justify-center bg-primary/10">

@@ -78,7 +78,7 @@ export default function AdminLiveChat() {
 
     const typingChannel = supabase.channel(`typing-${selectedConversation.id}`).on('presence', { event: 'sync' }, () => {
       const state = typingChannel.presenceState();
-      const isTyping = Object.values(state).some((presences: any) => presences.some((p: any) => p.typing && p.role === 'customer'));
+      const isTyping = Object.values(state).some((presences) => presences.some((p) => p.typing && p.role === 'customer'));
       setCustomerTyping(isTyping);
     }).subscribe();
 
@@ -159,7 +159,7 @@ export default function AdminLiveChat() {
       if (error) throw error;
       if (data) { hapticTap(); setMessages((prev) => prev.map((m) => (m._tempId === tempId ? { ...data, _status: 'sent' as const } : m))); }
       await supabase.from('chat_conversations').update({ updated_at: new Date().toISOString() }).eq('id', selectedConversation!.id);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error sending message:', error);
       hapticError();
       toast.error('Failed to send message', { description: error?.message || 'Please try again' });

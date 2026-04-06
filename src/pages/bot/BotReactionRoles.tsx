@@ -50,7 +50,7 @@ export default function BotReactionRoles() {
  setShowAdd(false);
  setRoles([{ emoji: '🎮', role_id: '', role_name: '' }]);
  },
- onError: (e: any) => toast.error(e.message || 'Failed to create'),
+ onError: (e: Error) => toast.error(e.message || 'Failed to create'),
  });
 
  const deleteMutation = useMutation({
@@ -162,7 +162,7 @@ export default function BotReactionRoles() {
  <div className="p-8 text-center text-foreground/40">No reaction role panels yet.</div>
  ) : (
  <div className="divide-y divide-white/5">
- {panels.map((panel: any) => {
+ {panels.map((panel) => {
  const panelRoles = (panel.roles as RoleMapping[]) || [];
  return (
  <div key={panel.id} className="px-4 py-3 flex items-start gap-3 hover:bg-background/[0.02]">

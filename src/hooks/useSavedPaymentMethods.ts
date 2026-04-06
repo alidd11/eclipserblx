@@ -35,7 +35,7 @@ export function useSavedPaymentMethods() {
       if (invokeError) throw invokeError;
 
       setPaymentMethods(data?.paymentMethods || []);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error fetching payment methods:', err);
       setError(err.message || 'Failed to fetch payment methods');
       setPaymentMethods([]);

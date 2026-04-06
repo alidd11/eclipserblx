@@ -70,7 +70,7 @@ export default function AdminReferrals() {
  // Filter by search
  if (search) {
  const searchLower = search.toLowerCase();
- return enrichedData.filter((r: any) => 
+ return enrichedData.filter((r) => 
  r.referral_code?.toLowerCase().includes(searchLower) ||
  r.referrer?.display_name?.toLowerCase().includes(searchLower) ||
  r.referrer?.email?.toLowerCase().includes(searchLower) ||
@@ -105,8 +105,8 @@ export default function AdminReferrals() {
  : { data: [] }
  ]);
  
- const profileMap = new Map<string, any>(profilesRes.data?.map(p => [p.user_id, p] as [string, any]) || []);
- const discountMap = new Map<string, any>(discountsRes.data?.map((d: any) => [d.id, d] as [string, any]) || []);
+  const profileMap = new Map(profilesRes.data?.map(p => [p.user_id, p] as const) || []);
+  const discountMap = new Map(discountsRes.data?.map((d) => [d.id, d] as const) || []);
  
  return data.map(r => ({
  ...r,
@@ -117,7 +117,7 @@ export default function AdminReferrals() {
  });
 
  const getStatusBadge = (status: string) => {
- const configs: Record<string, { color: string; icon: any }> = {
+ const configs: Record<string, { color: string; icon: React.ElementType }> = {
  pending: { color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30', icon: Clock },
  completed: { color: 'bg-green-500/10 text-green-500 border-green-500/30', icon: CheckCircle },
  };
@@ -246,7 +246,7 @@ export default function AdminReferrals() {
  </TableRow>
  </TableHeader>
  <TableBody>
- {referrals.map((referral: any) => (
+ {referrals.map((referral) => (
  <TableRow key={referral.id}>
  <TableCell>
  <div>
@@ -296,7 +296,7 @@ export default function AdminReferrals() {
  <div className="p-4">
  {rewards && rewards.length > 0 ? (
  <div className="space-y-3">
- {rewards.map((reward: any) => (
+ {rewards.map((reward) => (
  <div 
  key={reward.id} 
  className="flex items-center justify-between p-3 rounded-lg bg-muted/50"

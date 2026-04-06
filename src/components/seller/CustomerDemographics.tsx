@@ -32,7 +32,7 @@ export function CustomerDemographics() {
  .limit(200);
 
  const countryMap = new Map<string, number>();
- transactions?.forEach((t: any) => {
+ transactions?.forEach((t) => {
  const country = t.metadata?.country || t.metadata?.buyer_country || 'Unknown';
  countryMap.set(country, (countryMap.get(country) || 0) + 1);
  });
@@ -45,7 +45,7 @@ export function CustomerDemographics() {
  .not('country', 'is', null)
  .limit(200);
 
- visits?.forEach((v: any) => {
+ visits?.forEach((v) => {
  const country = v.country || 'Unknown';
  countryMap.set(country, (countryMap.get(country) || 0) + 1);
  });

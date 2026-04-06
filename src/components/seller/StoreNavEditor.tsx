@@ -85,7 +85,7 @@ export function StoreNavEditor({ storeId, storeSlug }: StoreNavEditorProps) {
  setNewUrl('');
  queryClient.invalidateQueries({ queryKey: ['store-nav-links', storeId] });
  },
- onError: (err: any) => toast.error(err.message),
+ onError: (err: Error) => toast.error(err.message),
  });
 
  const deleteLink = useMutation({
@@ -192,7 +192,7 @@ export function StoreNavEditor({ storeId, storeSlug }: StoreNavEditorProps) {
  <Select value={newUrl} onValueChange={setNewUrl}>
  <SelectTrigger><SelectValue placeholder="Select page" /></SelectTrigger>
  <SelectContent>
- {pages.map((p: any) => (
+ {pages.map((p) => (
  <SelectItem key={p.id} value={`/store/${storeSlug}/page/${p.slug}`}>
  {p.title}
  </SelectItem>

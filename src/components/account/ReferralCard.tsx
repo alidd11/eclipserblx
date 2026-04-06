@@ -203,7 +203,7 @@ export function ReferralCard() {
               Your Rewards ({rewards.length})
             </p>
             <div className="space-y-2">
-              {rewards.map((reward: any) => (
+              {rewards.map((reward) => (
                 <div 
                   key={reward.id} 
                   className="flex items-center justify-between p-3 bg-primary/10 border border-primary/20 rounded-lg"

@@ -68,7 +68,7 @@ export function SpecialOffersTab() {
       }
     },
     onSuccess: () => { toast.success('Offer saved'); queryClient.invalidateQueries({ queryKey: ['admin-promotions'] }); setDialogOpen(false); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const deleteMutation = useMutation({
@@ -77,9 +77,10 @@ export function SpecialOffersTab() {
       if (error) throw error;
     },
     onSuccess: () => { toast.success('Deleted'); queryClient.invalidateQueries({ queryKey: ['admin-promotions'] }); setDeleteDialogOpen(false); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getStatusBadge = (p: any) => {
     if (!p.is_active) return <Badge variant="secondary">Inactive</Badge>;
     const now = new Date();
@@ -94,7 +95,9 @@ export function SpecialOffersTab() {
   };
 
   const openCreate = () => { setForm(emptyForm); setDialogOpen(true); };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const openEdit = (p: any) => { setForm({ id: p.id, name: p.name, description: p.description || '', promotion_type: p.promotion_type, eclipse_plus_days: p.eclipse_plus_days, is_active: p.is_active, starts_at: p.starts_at?.split('T')[0] || null, ends_at: p.ends_at?.split('T')[0] || null, max_claims: p.max_claims, new_users_only: p.new_users_only ?? true }); setDialogOpen(true); };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const openDelete = (p: any) => { setSelected(p); setDeleteDialogOpen(true); };
 
   return (

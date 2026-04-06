@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { ADMIN_MANAGED_STORES } from '@/lib/constants';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isAdminManagedProduct = (product: any) =>
   (ADMIN_MANAGED_STORES as readonly string[]).includes(product.store_id) && product.is_seller_product === false;
 
@@ -56,12 +57,14 @@ const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(amount);
 
 interface SellerProductsListProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   products: any[];
   totalCount: number;
   isLoading: boolean;
   storeId: string | undefined;
   selectedProductIds: string[];
   onSelectionChange: (ids: string[]) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onEdit: (product: any) => void;
   onDelete: (productId: string) => void;
   onCreateClick: () => void;
@@ -106,7 +109,7 @@ export function SellerProductsList({
           </div>
         ) : products.length > 0 ? (
           <div className="border border-border rounded-xl overflow-hidden divide-y divide-border">
-            {products.map((product: any) => {
+            {products.map((product) => {
               const isLocked = isAdminManagedProduct(product);
               return (
                 <div
@@ -176,7 +179,7 @@ export function SellerProductsList({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {products.map((product: any) => {
+                {products.map((product) => {
                   const isLocked = isAdminManagedProduct(product);
                   return (
                     <TableRow key={product.id} className={isLocked ? 'opacity-75' : 'cursor-pointer hover:bg-muted/50'} onClick={() => !isLocked && onEdit(product)}>

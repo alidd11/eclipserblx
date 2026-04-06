@@ -110,7 +110,7 @@ export function SavedCardButton({
       } else {
         throw new Error(data?.error || 'Payment failed');
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Saved card payment error:', err);
       showErrorNotification('Payment Failed', err.message || 'Please try again or use a different payment method');
       onProcessing(false);

@@ -57,7 +57,7 @@ export function CloudflareCredentials({ storeId }: CloudflareCredentialsProps) {
       setZoneIdInput('');
       toast.success('Credentials saved');
     },
-    onError: (e: any) => toast.error('Error', { description: e.message }),
+    onError: (e: Error) => toast.error('Error', { description: e.message }),
   });
 
   const clearCreds = useMutation({
@@ -69,7 +69,7 @@ export function CloudflareCredentials({ storeId }: CloudflareCredentialsProps) {
       queryClient.invalidateQueries({ queryKey: ['cf-creds'] });
       toast.success('Credentials removed');
     },
-    onError: (e: any) => toast.error('Error', { description: e.message }),
+    onError: (e: Error) => toast.error('Error', { description: e.message }),
   });
 
   if (isLoading) return <Skeleton className="h-32 w-full" />;

@@ -170,7 +170,7 @@ export default function Subscribers() {
  setEmailSubject('');
  setEmailContent('');
  setEmailTarget('all');
- } catch (error: any) {
+ } catch (error) {
  console.error('Error sending emails:', error);
  toast.error('Send Failed', { description: error.message || 'Failed to send emails.' });
  } finally {

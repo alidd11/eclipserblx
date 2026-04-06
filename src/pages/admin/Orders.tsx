@@ -137,6 +137,7 @@ export default function AdminOrders() {
  enabled: orderUserIds.length > 0,
  });
  
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
  const getCustomerId = (order: any) => {
  if (order.user_id && customerProfiles?.[order.user_id]) {
  return customerProfiles[order.user_id];
@@ -153,7 +154,7 @@ export default function AdminOrders() {
  queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
  showSuccessNotification('Status Updated', 'Order status changed');
  },
- onError: (error: any) => {
+ onError: (error: Error) => {
  showErrorNotification('Update Failed', error.message);
  },
  });
@@ -176,7 +177,7 @@ export default function AdminOrders() {
  setSelectedOrder(null);
  showSuccessNotification('Order Deleted', 'Order has been removed');
  },
- onError: (error: any) => {
+ onError: (error: Error) => {
  showErrorNotification('Delete Failed', error.message);
  },
  });
@@ -360,7 +361,7 @@ export default function AdminOrders() {
  <div>
  <p className="text-sm text-muted-foreground mb-2">Items</p>
  <div className="space-y-2">
- {selectedOrder.order_items?.map((item: any) => (
+ {selectedOrder.order_items?.map((item) => (
  <div key={item.id} className="flex justify-between items-start p-2 bg-muted/50 rounded">
  <div className="min-w-0">
  <span className="block">{item.product_name}</span>

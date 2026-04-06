@@ -182,7 +182,7 @@ export default function SellerProducts() {
 
   const isScheduledForFuture = (releaseAt: string | null) => releaseAt ? new Date(releaseAt) > new Date() : false;
 
-  const openEdit = (product: any) => {
+  const openEdit = (product: NonNullable<typeof products>[number]) => {
     if (isAdminManagedProduct(product)) { toast.info('This product is managed by Eclipse admins.'); return; }
     hapticTap();
     const hasSchedule = !!product.release_at && isScheduledForFuture(product.release_at);
@@ -229,9 +229,9 @@ export default function SellerProducts() {
           {!productsLoading && (
             <div className="flex items-center gap-4 text-sm">
               <span className="text-muted-foreground"><span className="font-semibold text-foreground">{totalCount}</span> total</span>
-              <span className="text-muted-foreground"><span className="font-semibold text-green-500">{products.filter((p: any) => p.moderation_status === 'approved' && p.is_active).length}</span> live</span>
-              <span className="text-muted-foreground"><span className="font-semibold text-yellow-500">{products.filter((p: any) => p.moderation_status === 'pending').length}</span> pending</span>
-              <span className="text-muted-foreground"><span className="font-semibold text-muted-foreground">{products.filter((p: any) => !p.is_active).length}</span> inactive</span>
+              <span className="text-muted-foreground"><span className="font-semibold text-green-500">{products.filter((p) => p.moderation_status === 'approved' && p.is_active).length}</span> live</span>
+              <span className="text-muted-foreground"><span className="font-semibold text-yellow-500">{products.filter((p) => p.moderation_status === 'pending').length}</span> pending</span>
+              <span className="text-muted-foreground"><span className="font-semibold text-muted-foreground">{products.filter((p) => !p.is_active).length}</span> inactive</span>
             </div>
           )}
           <div className="relative">

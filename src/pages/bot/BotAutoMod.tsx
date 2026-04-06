@@ -56,7 +56,7 @@ export default function BotAutoMod() {
  });
 
  const saveMutation = useMutation({
- mutationFn: async (rule: any) => {
+ mutationFn: async (rule: Record<string, unknown>) => {
  const { error } = await (supabase as any).from('bot_automod_rules').upsert(rule);
  if (error) throw error;
  },
@@ -83,7 +83,7 @@ export default function BotAutoMod() {
  setNewRule({ name: '', rule_type: 'word_filter', action: 'delete', heat_points: 1, enabled: true, config: { words: '', threshold: 5, whitelist: '' } });
  };
 
- const toggleRule = (rule: any) => {
+ const toggleRule = (rule: Record<string, unknown>) => {
  saveMutation.mutate({ ...rule, enabled: !rule.enabled });
  };
 
@@ -177,7 +177,7 @@ export default function BotAutoMod() {
  <div className="p-8 text-center text-foreground/40">No auto-mod rules configured yet.</div>
  ) : (
  <div className="divide-y divide-white/5">
- {rules.map((rule: any) => {
+ {rules.map((rule) => {
  const ruleType = RULE_TYPES.find(t => t.value === rule.rule_type);
  const Icon = ruleType?.icon || ShieldAlert;
  return (
@@ -210,7 +210,7 @@ export default function BotAutoMod() {
  </div>
  <div className="p-4 p-0">
  <div className="divide-y divide-white/5">
- {heatData.map((h: any) => (
+ {heatData.map((h) => (
  <div key={h.id} className="px-4 py-2 flex items-center justify-between">
  <span className="text-sm text-foreground/70">{h.user_discord_id}</span>
  <Badge className={`${h.heat_points >= 7 ? 'bg-red-500/20 text-red-400' : h.heat_points >= 4 ? 'bg-orange-500/20 text-orange-400' : 'bg-yellow-500/20 text-yellow-400'}`}>

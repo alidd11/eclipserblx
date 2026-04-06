@@ -41,7 +41,7 @@ export default function SellerRevenueBreakdown() {
       const d = format(subDays(new Date(), i), 'MMM dd');
       map.set(d, 0);
     }
-    transactions.forEach((t: any) => {
+    transactions.forEach((t) => {
       const d = format(new Date(t.created_at), 'MMM dd');
       map.set(d, (map.get(d) || 0) + Number(t.net_amount || 0));
     });
@@ -50,7 +50,7 @@ export default function SellerRevenueBreakdown() {
 
   const byProduct = useMemo(() => {
     const map = new Map<string, number>();
-    transactions.forEach((t: any) => {
+    transactions.forEach((t) => {
       const orderItem = Array.isArray(t.order_items) ? t.order_items[0] : t.order_items;
       const product = orderItem ? (Array.isArray(orderItem.products) ? orderItem.products[0] : orderItem.products) : null;
       const name = product?.name || 'Unknown';
@@ -63,7 +63,7 @@ export default function SellerRevenueBreakdown() {
 
   const byCategory = useMemo(() => {
     const map = new Map<string, number>();
-    transactions.forEach((t: any) => {
+    transactions.forEach((t) => {
       const orderItem = Array.isArray(t.order_items) ? t.order_items[0] : t.order_items;
       const product = orderItem ? (Array.isArray(orderItem.products) ? orderItem.products[0] : orderItem.products) : null;
       const category = product ? (Array.isArray(product.categories) ? product.categories[0] : product.categories) : null;
@@ -73,7 +73,7 @@ export default function SellerRevenueBreakdown() {
     return Array.from(map, ([name, value]) => ({ name, value: Number(value.toFixed(2)) }));
   }, [transactions]);
 
-  const totalRevenue = transactions.reduce((sum: number, t: any) => sum + Number(t.net_amount || 0), 0);
+  const totalRevenue = transactions.reduce((sum: number, t) => sum + Number(t.net_amount || 0), 0);
   const avgOrderValue = transactions.length > 0 ? totalRevenue / transactions.length : 0;
 
   const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];

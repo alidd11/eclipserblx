@@ -19,6 +19,22 @@ import {
 import { format } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 
+interface EnrichedReview {
+  id: string;
+  product_id: string;
+  product_name: string;
+  rating: number;
+  title: string | null;
+  content: string | null;
+  is_external: boolean;
+  external_reviewer_name: string | null;
+  external_source: string | null;
+  seller_reply: string | null;
+  seller_replied_at: string | null;
+  created_at: string;
+  profiles: { display_name: string | null } | null;
+}
+
 const REVIEWS_PER_PAGE = 15;
 
 export default function SellerReviews() {
@@ -80,9 +96,9 @@ export default function SellerReviews() {
       const { data, count, error } = await query.range(from, to);
       if (error) throw error;
 
-      const reviews = (data || []).map((r: any) => ({
-        ...r,
-        product_name: productMap[r.product_id] || 'Unknown Product',
+      const reviews: EnrichedReview[] = (data || []).map((r) => ({
+        ...(r as unknown as EnrichedReview),
+        product_name: productMap[(r as unknown as EnrichedReview).product_id] || 'Unknown Product',
       }));
 
       return { reviews, totalCount: count || 0 };
@@ -130,11 +146,11 @@ export default function SellerReviews() {
 
   const stats = reviews.length ? {
     total: totalCount,
-    average: reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length,
+    average: reviews.reduce((sum: number, r) => sum + r.rating, 0) / reviews.length,
     distribution: [5, 4, 3, 2, 1].map(rating => ({
       rating,
-      count: reviews.filter((r: any) => r.rating === rating).length,
-      percent: reviews.length > 0 ? (reviews.filter((r: any) => r.rating === rating).length / reviews.length) * 100 : 0,
+      count: reviews.filter((r) => r.rating === rating).length,
+      percent: reviews.length > 0 ? (reviews.filter((r) => r.rating === rating).length / reviews.length) * 100 : 0,
     })),
   } : null;
 
@@ -237,7 +253,7 @@ export default function SellerReviews() {
               </div>
             ) : reviews.length > 0 ? (
               <div className="space-y-4">
-                {reviews.map((review: any) => (
+                {reviews.map((review) => (
                   <div key={review.id} className="p-4 border rounded-lg space-y-3">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3">
