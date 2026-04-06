@@ -112,7 +112,6 @@ export const OptimizedImage = memo(function OptimizedImage({
               priority ? 'opacity-100' : 'transition-opacity duration-300',
               !isLoaded && blur && !priority && 'opacity-0',
               isLoaded && 'opacity-100',
-            isLoaded && 'opacity-100',
             objectFit === 'contain' && 'object-contain',
             objectFit === 'cover' && 'object-cover',
             objectFit === 'fill' && 'object-fill',

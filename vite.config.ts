@@ -59,6 +59,14 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('@radix-ui')) {
             return 'radix';
           }
+          // Tiptap / ProseMirror — rich text editor, only used in seller/admin
+          if (id.includes('@tiptap') || id.includes('prosemirror')) {
+            return 'tiptap';
+          }
+          // Recharts — charting library, only used in analytics/admin
+          if (id.includes('recharts') || id.includes('d3-')) {
+            return 'recharts';
+          }
           // lucide-react - icons, tree-shaken per-route
           // NOT in manual chunks to allow per-component tree-shaking
         },
