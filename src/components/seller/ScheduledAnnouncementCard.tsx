@@ -80,7 +80,7 @@ export function ScheduledAnnouncementCard() {
  const config = TYPE_CONFIG[formData.announcementType];
 
  const getEmbed = () => {
- const fields: any[] = [];
+ const fields: { name: string; value: string; inline: boolean }[] = [];
  if (formData.linkUrl) {
  fields.push({ name: '🔗 Link', value: `[Click here](${formData.linkUrl})`, inline: false });
  }
