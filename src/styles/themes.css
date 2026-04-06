@@ -3,9 +3,8 @@
    Only imported when a non-default theme is active.
    ======================================== */
 
-@layer base {
-  /* Ocean theme - Light mode */
-  .theme-ocean {
+/* Ocean theme - Light mode */
+.theme-ocean {
     --background: 195 30% 97%;
     --foreground: 200 25% 10%;
     --card: 195 25% 100%;
