@@ -1,54 +1,79 @@
 
 
-# Permanent Fix: PWA Header Clipping on All Pages
+# Homepage Redesign — Enterprise-Grade Visual Overhaul
 
-## Problem
-Pages with `sticky top-0` headers inside containers that use `safe-area-page` (which adds `padding-top: env(safe-area-inset-top)`) work correctly — the sticky header sits below the safe-area padding. However, two patterns still cause the header to hide behind the device notch/status bar:
+## Current State
 
-1. **Immersive admin pages** — `AdminLayout` returns `null` for the header when `isImmersivePage` is true, leaving the page's own header without safe-area coverage. Currently only Twitter Posts is flagged, and it was patched individually. Any future immersive page would have the same bug.
+The homepage has the right structure but lacks visual impact. The hero section is plain text over a dim background with minimal contrast. The section flow (Trending → Promotions → Recent Releases → On Sale → Free Assets → Recently Viewed → For You → CTA) is functional but visually monotonous — every section uses the same pattern: icon + uppercase header + product grid/carousel on a flat dark background with no visual breaks.
 
-2. **SellerSetup** — Uses `safe-area-page` on the root container with a `sticky top-0` header inside. The sticky header sticks to `top: 0`, which is *inside* the safe-area padding, so this actually works. ✅
+## Design Philosophy
 
-3. **GlobalGuardLayout mobile header** — Root has `paddingTop: env(safe-area-inset-top)` and header is `sticky top-0` inside, which sticks correctly. ✅
+Inspired by Shopify, Gumroad, and ClearlyDev — create clear visual hierarchy through alternating section treatments, stronger hero presence, and subtle background variation to break up the vertical scroll into distinct "zones." The design must be device-agnostic and scale from 320px to ultrawide.
 
-**The only systemic risk is the `isImmersivePage` pattern in AdminLayout** — when the standard header is nulled out, the child page must handle its own safe-area padding, which is fragile.
+## Changes
 
-## Fix: Make `isImmersivePage` safe by default
+### 1. Hero Section — Stronger Visual Impact
+**File: `src/components/landing/LandingHero.tsx`**
+- Increase hero vertical padding on desktop (`lg:py-20`) for breathing room
+- Scale up the heading to `lg:text-6xl` with tighter letter-spacing
+- Add a subtle animated gradient text effect on "Marketplace" using CSS `background-clip: text`
+- Make the subtitle slightly larger (`lg:text-lg`) with improved line height
+- Add a secondary stat strip below the CTA buttons (e.g., "1,000+ Assets · 200+ Sellers · Instant Delivery") using real or approximate data — styled as muted pill badges
+- On mobile: keep compact but add the stat strip as a single scrollable row
 
-Instead of returning `null` for the header on immersive pages (forcing each page to self-patch), inject a minimal transparent safe-area spacer so the content area always starts below the notch.
+### 2. Hero Banner — Richer Backdrop
+**File: `src/components/landing/HeroBanner.tsx`**
+- Replace the flat `bg-background/50` overlay with a radial gradient that creates a spotlight effect behind the text: `radial-gradient(ellipse at 50% 40%, hsl(235 86% 65% / 0.08), transparent 70%)`
+- Add a very subtle animated CSS shimmer line at the bottom edge using a `@keyframes` rule — no JS, pure CSS
 
-### Changes
+### 3. Trending Section — Featured Hero Card
+**File: `src/components/landing/TrendingProducts.tsx`**
+- On desktop (`lg`+), render the #1 trending product as a larger featured card spanning 2 columns in the masonry, with a gradient overlay showing rank + name
+- Keep the remaining 7 products in the standard masonry layout
+- On mobile: no change (masonry columns already adapt)
 
-**File: `src/components/admin/AdminLayout.tsx`**
+### 4. Visual Section Separators
+**File: `src/pages/Landing.tsx`**
+- Add subtle `border-t border-border` dividers between major sections
+- Alternate: give every other section a slightly tinted background using `bg-muted/5` on a wrapper div — creates visual "bands" that guide the eye without heavy cards
 
-Replace the immersive branch of `customHeader`:
-```typescript
-// Before
-isImmersivePage ? null : ( ... )
+### 5. Section Headers — Refined Typography
+**Files: All section components (TrendingProducts, RecentReleases, OnSaleProducts, FreeAssetsTeaser)**
+- Standardize section headers: remove the colored icon backgrounds (the `p-1.5 rounded-lg bg-*/10` wrappers) and replace with a cleaner left-border accent pattern: `border-l-2 border-primary pl-3`
+- This creates a more editorial, enterprise feel vs. the current "badge + icon" pattern
 
-// After  
-isImmersivePage ? (
-  // Minimal safe-area spacer — immersive pages handle their own header
-  // but the notch area must still be reserved
-  <div 
-    className="w-full bg-transparent" 
-    style={{ height: 'env(safe-area-inset-top, 0px)' }} 
-  />
-) : ( ... )
-```
+### 6. Final CTA — More Compelling
+**File: `src/components/landing/FinalCTA.tsx`**
+- Add a subtle gradient border using CSS (`border-image` or pseudo-element) instead of the plain `border-border`
+- Add 2-3 trust signals below the CTA button (e.g., "No listing fees · Lower commission · Instant payouts") as muted text
 
-Then **remove** the manual `paddingTop` patch from `src/pages/admin/TwitterPosts.tsx` since the layout now handles it globally.
+### 7. Global CSS Additions
+**File: `src/index.css`**
+- Add a `@keyframes hero-shimmer` for the hero bottom-edge effect
+- Add `.text-gradient-hero` utility for the gradient text effect
+- Add `.section-band` utility for alternating section backgrounds
 
-**File: `src/pages/admin/TwitterPosts.tsx`**
+### 8. Responsive Consistency
+All changes use Tailwind responsive prefixes (`sm:`, `lg:`, `xl:`) so they automatically adapt. No separate mobile/tablet implementations needed — the same markup scales down gracefully through:
+- Reduced padding and font sizes on smaller breakpoints
+- Masonry columns reducing from 5→3→2
+- Horizontal scroll carousels on mobile, grids on desktop (already in place)
 
-Remove the inline `style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}` from the sticky header div — no longer needed.
+## Files Modified
+1. `src/components/landing/LandingHero.tsx` — hero layout + stat strip
+2. `src/components/landing/HeroBanner.tsx` — richer backdrop
+3. `src/components/landing/TrendingProducts.tsx` — featured #1 card
+4. `src/components/landing/RecentReleases.tsx` — header style
+5. `src/components/landing/OnSaleProducts.tsx` — header style
+6. `src/components/landing/FreeAssetsTeaser.tsx` — header style
+7. `src/components/landing/FinalCTA.tsx` — gradient border + trust signals
+8. `src/pages/Landing.tsx` — section band wrappers + dividers
+9. `src/index.css` — CSS utilities for gradient text, shimmer, section bands
 
-### Why this is permanent
-- Any page added to the `isImmersivePage` list in the future automatically gets safe-area protection without needing a per-page patch.
-- Zero risk to existing pages — non-immersive pages are untouched, and the spacer is transparent with zero height on non-notched devices.
-
-### Verification steps
-1. TypeScript compilation check (`npx tsc --noEmit`)
-2. Confirm Twitter Posts header renders below the notch
-3. Confirm all other admin pages are unaffected
+## What This Does NOT Change
+- No new dependencies or libraries
+- No structural changes to the layout shell, sidebar, or header
+- No database changes
+- Product card component untouched — only the container/section layouts improve
+- All existing responsive patterns preserved
 
