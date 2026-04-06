@@ -10722,6 +10722,33 @@ export type Database = {
           },
         ]
       }
+      discord_trivia_questions_safe: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          difficulty: string | null
+          id: string | null
+          question: string | null
+          wrong_answers: string[] | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          difficulty?: string | null
+          id?: string | null
+          question?: string | null
+          wrong_answers?: string[] | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          difficulty?: string | null
+          id?: string | null
+          question?: string | null
+          wrong_answers?: string[] | null
+        }
+        Relationships: []
+      }
       orders_seller_view: {
         Row: {
           created_at: string | null
