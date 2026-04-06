@@ -77,9 +77,36 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border/40 mt-auto" role="contentinfo" aria-label="Site footer">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Compact inline link grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 mb-6">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+
+        {/* Mobile: compact inline flow */}
+        <div className="sm:hidden flex flex-col gap-2.5 mb-4">
+          {columns.map((col) => (
+            <div key={col.heading}>
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-foreground/45 mb-0.5">
+                {col.heading}
+              </p>
+              <nav className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                {col.links.map((link, i) => (
+                  <span key={link.href} className="flex items-center">
+                    <Link
+                      to={link.href}
+                      className="text-[11px] text-foreground/55 hover:text-foreground transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                    {i < col.links.length - 1 && (
+                      <span className="text-foreground/25 mx-0.5 text-[11px]">·</span>
+                    )}
+                  </span>
+                ))}
+              </nav>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop: 4-column vertical grid */}
+        <div className="hidden sm:grid grid-cols-4 gap-8 mb-6">
           {columns.map((col) => (
             <div key={col.heading} className="flex flex-col gap-1.5">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-foreground/50 mb-1" id={`footer-${col.heading.toLowerCase()}`}>
@@ -101,22 +128,22 @@ export function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-border/30 mb-4" />
+        <div className="border-t border-border/30 mb-3 sm:mb-4" />
 
         {/* Bottom bar — copyright + trust signals */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <p className="text-[12px] text-foreground/50">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+          <p className="text-[11px] sm:text-[12px] text-foreground/50">
             © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
           </p>
 
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5 text-[11px] text-foreground/50">
-              <Lock className="h-3 w-3" />
+          <div className="flex items-center gap-3 sm:gap-4">
+            <span className="flex items-center gap-1 text-[10px] sm:text-[11px] text-foreground/50">
+              <Lock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               256-bit SSL
             </span>
             <span className="h-3 w-px bg-border/40" />
-            <span className="flex items-center gap-1.5 text-[11px] text-foreground/50">
-              <Shield className="h-3 w-3" />
+            <span className="flex items-center gap-1 text-[10px] sm:text-[11px] text-foreground/50">
+              <Shield className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               Payments by Stripe
             </span>
           </div>
