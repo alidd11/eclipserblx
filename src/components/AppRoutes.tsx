@@ -47,6 +47,8 @@ const HelpCenterSellers = lazyWithRetry(() => import("@/pages/HelpCenterSellers"
 const Support = lazyWithRetry(() => import("@/pages/Support"));
 const Contact = lazyWithRetry(() => import("@/pages/Contact"));
 const Status = lazyWithRetry(() => import("@/pages/Status"));
+const SecurityPage = lazyWithRetry(() => import("@/pages/Security"));
+const BrandPage = lazyWithRetry(() => import("@/pages/Brand"));
 const Changelog = lazyWithRetry(() => import("@/pages/Changelog"));
 const BotInstallation = lazyWithRetry(() => import("@/pages/BotInstallation"));
 const BotDashboard = lazyWithRetry(() => import("@/pages/BotDashboard"));
