@@ -159,7 +159,7 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
 
   // Initialize open groups from localStorage
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
-    const stored = safeStorage.getItem(SIDEBAR_STORAGE_KEY);
+    const stored = safeStorage.getItem(SIDEBAR_GROUPS_KEY);
     if (stored) {
       try { return JSON.parse(stored); } catch { return {}; }
     }
