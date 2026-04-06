@@ -72,14 +72,13 @@ serve(async (req) => {
       });
       accountId = account.id;
 
-      // Save to profiles table
+      // Save to user_payment_details table
       const { error: updateError } = await supabaseClient
-        .from('profiles')
-        .update({ stripe_account_id: accountId })
-        .eq('user_id', user.id);
+        .from('user_payment_details')
+        .upsert({ user_id: user.id, stripe_account_id: accountId }, { onConflict: 'user_id' });
 
       if (updateError) {
-        logStep("Warning: Failed to save stripe_account_id to profile", { error: updateError.message });
+        logStep("Warning: Failed to save stripe_account_id", { error: updateError.message });
       }
 
       logStep("Created Connect account", { accountId });
