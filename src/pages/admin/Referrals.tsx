@@ -105,8 +105,8 @@ export default function AdminReferrals() {
  : { data: [] }
  ]);
  
- const profileMap = new Map<string, any>(profilesRes.data?.map(p => [p.user_id, p] as [string, any]) || []);
- const discountMap = new Map<string, any>(discountsRes.data?.map((d: any) => [d.id, d] as [string, any]) || []);
+  const profileMap = new Map(profilesRes.data?.map(p => [p.user_id, p] as const) || []);
+  const discountMap = new Map(discountsRes.data?.map((d) => [d.id, d] as const) || []);
  
  return data.map(r => ({
  ...r,
