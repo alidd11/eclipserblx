@@ -36,7 +36,7 @@ interface ApplicationFormData {
   message: string;
 }
 
-function ApplicationForm({ position, onSuccess }: { position: string; onSuccess: () => void }) {
+function ApplicationForm({ position, onSuccess }: { position: string; onSuccess: (token: string) => void }) {
   const [formData, setFormData, clearFormData] = useFormPersistence<ApplicationFormData>(
     `job-application-${position.replace(/\s+/g, '-').toLowerCase()}`,
     {
