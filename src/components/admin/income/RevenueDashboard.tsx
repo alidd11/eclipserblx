@@ -6,7 +6,7 @@ import { useMemo, lazy, Suspense, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
  TrendingUp, Wallet, ArrowUpRight, ArrowDownRight,
- BarChart3, Percent, DollarSign, Clock, RefreshCw,
+ BarChart3, Percent, DollarSign, RefreshCw,
  Coins, Gamepad2, Store, ChevronDown, ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
