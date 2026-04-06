@@ -23,9 +23,9 @@ export function AdminInstallPrompt() {
 
   useEffect(() => {
     if (!isMobile) return;
-    if (isStandalone()) { setIsInstalled(true); return; }
+    if (isStandalone) { setIsInstalled(true); return; }
 
-    setIsiOSDevice(isIOS());
+    setIsiOSDevice(isIOSDevice());
 
     const dismissedAt = safeStorage.getItem('admin-pwa-prompt-dismissed');
     if (dismissedAt) {
