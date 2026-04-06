@@ -117,7 +117,7 @@ export default function AuthDiscordCallback() {
   }, [searchParams, navigate]);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center safe-area-page">
       <div className="text-center space-y-4">
         {error ? (
           <>

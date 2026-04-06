@@ -29,7 +29,7 @@ export default function StoreAbout() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center safe-area-page">
         <Skeleton className="h-32 w-64" />
       </div>
     );
@@ -37,7 +37,7 @@ export default function StoreAbout() {
 
   if (!store) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 safe-area-page">
         <h1 className="text-2xl font-bold">Store not found</h1>
         <Button asChild>
           <Link to="/products">Browse All Stores</Link>

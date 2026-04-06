@@ -133,7 +133,7 @@ export default function AcceptTeamInvite() {
  const signInUrl = `/auth?redirect=${encodeURIComponent(redirectPath)}`;
 
  return (
- <div className="min-h-screen flex items-center justify-center bg-background p-4">
+ <div className="min-h-screen flex items-center justify-center bg-background p-4 safe-area-page">
  <div className="border border-border rounded-xl overflow-hidden max-w-md w-full">
  <div className="px-4 py-3 border-b border-border bg-muted/30 text-center">
  <Users className="h-10 w-10 mx-auto text-primary mb-2" />

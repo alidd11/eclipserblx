@@ -289,7 +289,7 @@ export default function SellerStoreBuilder() {
           {previewPanel}
         </div>
       ) : (
-        <div className="h-[calc(100vh-8rem)] border border-border rounded-lg overflow-hidden bg-card">
+        <div className="h-[calc(100dvh-8rem)] border border-border rounded-lg overflow-hidden bg-card">
           <ResizablePanelGroup direction="horizontal">
             <ResizablePanel defaultSize={35} minSize={25} maxSize={50}>
               {sidePanel}
