@@ -154,7 +154,8 @@ export function useAffiliateData() {
   const updatePayoutSettingsMutation = useMutation({
     mutationFn: async (settings: PayoutSettings) => {
       if (!user?.id) throw new Error('Not authenticated');
-      const { error } = await supabase.from('profiles').update({
+      const payload = {
+        user_id: user.id,
         preferred_payout_method: settings.preferred_method,
         paypal_email: settings.paypal_email || null,
         bank_account_holder: settings.bank_account_holder || null,
@@ -163,7 +164,8 @@ export function useAffiliateData() {
         bank_name: settings.bank_name || null,
         bank_country: settings.bank_country || null,
         bank_routing_number: settings.bank_routing_number || null,
-      }).eq('user_id', user.id);
+      };
+      const { error } = await supabase.from('user_payment_details').upsert(payload, { onConflict: 'user_id' });
       if (error) throw error;
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['profile-referral', user?.id] }); toast.success("Payout settings updated"); },
