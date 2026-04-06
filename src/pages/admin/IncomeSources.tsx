@@ -333,7 +333,7 @@ export default function AdminIncomeSources() {
       const txDate = new Date(t.date);
       if (!isAfter(txDate, periodStart)) return;
       const idx = Math.min(bucketCount - 1, Math.floor((txDate.getTime() - periodStart.getTime()) / bucketMs));
-      buckets[idx][t.source] += t.amount;
+      buckets[idx][t.source] = (Number(buckets[idx][t.source]) || 0) + t.amount;
     });
 
     return buckets;

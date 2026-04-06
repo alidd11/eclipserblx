@@ -236,7 +236,7 @@ export function ScheduledAnnouncementCard() {
  <Label className="text-xs">Type</Label>
  <Select
  value={formData.announcementType}
- onValueChange={(value: string) => setFormData({ ...formData, announcementType: value })}
+ onValueChange={(value) => setFormData({ ...formData, announcementType: value as typeof formData.announcementType })}
  >
  <SelectTrigger className="text-xs">
  <SelectValue />
