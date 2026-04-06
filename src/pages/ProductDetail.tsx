@@ -59,8 +59,7 @@ export default function ProductDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [showSwipeHint, setShowSwipeHint] = useState(true);
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
+  const [showIPReportDialog, setShowIPReportDialog] = useState(false);
   const [showIPReportDialog, setShowIPReportDialog] = useState(false);
   const [pwywAmount, setPwywAmount] = useState<string>('');
   const [selectedBundle, setSelectedBundle] = useState<{
