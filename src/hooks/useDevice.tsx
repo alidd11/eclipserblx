@@ -87,6 +87,14 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     if (typeof window === 'undefined') return false;
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
+  const [connectionQuality, setConnectionQuality] = useState<ConnectionQuality>(() => {
+    if (typeof navigator === 'undefined') return 'unknown';
+    return ((navigator as any).connection?.effectiveType as ConnectionQuality) ?? 'unknown';
+  });
+  const [isLandscape, setIsLandscape] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(orientation: landscape)').matches;
+  });
 
   // Breakpoint listener
   useEffect(() => {
