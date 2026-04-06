@@ -97,10 +97,7 @@ export default function DMCA() {
  {/* How to Report */}
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2">
- <Mail className="h-5 w-5 text-primary" />
- How to Report a Violation
- </h3>
+ <h3 className="font-semibold text-sm">How to Report a Violation</h3>
  </div>
  <div className="p-4 space-y-4">
  <p className="text-muted-foreground">
