@@ -106,7 +106,7 @@ export default function SellerAnalytics() {
       if (productIds.length === 0) return {};
       const { data } = await supabase
         .from('products')
-        .select('id, name, price, image_url')
+        .select('id, name, price, images')
         .in('id', productIds);
       const map: Record<string, ProductInfo> = {};
       (data || []).forEach((p) => { map[p.id] = p; });
