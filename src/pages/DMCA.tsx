@@ -39,10 +39,7 @@ export default function DMCA() {
  {/* Overview */}
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2">
- <FileText className="h-5 w-5 text-primary" />
- Policy Overview
- </h3>
+ <h3 className="font-semibold text-sm">Policy Overview</h3>
  </div>
  <div className="p-4 prose prose-sm dark:prose-invert max-w-none">
  <p>
