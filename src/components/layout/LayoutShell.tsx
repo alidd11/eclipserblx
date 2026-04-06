@@ -1,4 +1,5 @@
 import { ReactNode, useState, lazy, Suspense } from 'react';
+import { MaintenanceBanner } from '@/components/layout/MaintenanceBanner';
 import { cn } from '@/lib/utils';
 import { GlobalCategoryBar } from '@/components/shop/GlobalCategoryBar';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -83,6 +84,7 @@ function LayoutShellInner({
   return (
     <>
       <ScrollProgressIndicator />
+      <MaintenanceBanner />
       {/* Skip to main content — accessibility */}
       <a
         href="#main-content"

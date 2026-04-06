@@ -1895,6 +1895,39 @@ export type Database = {
           },
         ]
       }
+      changelog_entries: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          published_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          published_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          published_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       chat_conversations: {
         Row: {
           assigned_to: string | null
@@ -4326,6 +4359,9 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_maintenance: boolean
+          maintenance_end: string | null
+          maintenance_start: string | null
           resolved_at: string | null
           severity: string
           started_at: string
@@ -4338,6 +4374,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_maintenance?: boolean
+          maintenance_end?: string | null
+          maintenance_start?: string | null
           resolved_at?: string | null
           severity?: string
           started_at?: string
@@ -4350,6 +4389,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_maintenance?: boolean
+          maintenance_end?: string | null
+          maintenance_start?: string | null
           resolved_at?: string | null
           severity?: string
           started_at?: string

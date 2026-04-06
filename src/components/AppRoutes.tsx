@@ -46,6 +46,7 @@ const HelpCenterSellers = lazyWithRetry(() => import("@/pages/HelpCenterSellers"
 const Support = lazyWithRetry(() => import("@/pages/Support"));
 const Contact = lazyWithRetry(() => import("@/pages/Contact"));
 const Status = lazyWithRetry(() => import("@/pages/Status"));
+const Changelog = lazyWithRetry(() => import("@/pages/Changelog"));
 const BotInstallation = lazyWithRetry(() => import("@/pages/BotInstallation"));
 const BotDashboard = lazyWithRetry(() => import("@/pages/BotDashboard"));
 const NotificationPreferences = lazyWithRetry(() => import("@/pages/NotificationPreferences"));
@@ -88,6 +89,7 @@ const AdminApplications = lazyWithRetry(() => import("@/pages/admin/Applications
 const AdminReviews = lazyWithRetry(() => import("@/pages/admin/Reviews"));
 const AdminAuditLogs = lazyWithRetry(() => import("@/pages/admin/AuditLogs"));
 const AdminIncidents = lazyWithRetry(() => import("@/pages/admin/Incidents"));
+const AdminChangelogManager = lazyWithRetry(() => import("@/pages/admin/ChangelogManager"));
 const AdminHelp = lazyWithRetry(() => import("@/pages/admin/Help"));
 const AdminSubscribers = lazyWithRetry(() => import("@/pages/admin/Subscribers"));
 const AdminIpBans = lazyWithRetry(() => import("@/pages/admin/IpBans"));
@@ -339,6 +341,7 @@ export function AppRoutes() {
         <Route path="/support" element={<Support />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/status" element={<Status />} />
+        <Route path="/changelog" element={<Changelog />} />
         <Route path="/bot-installation" element={<BotInstallation />} />
         <Route path="/bot-dashboard" element={<BotDashboard />} />
         <Route path="/notifications" element={<NotificationPreferences />} />
@@ -456,6 +459,7 @@ export function AppRoutes() {
         <Route path="/admin/reviews" element={<AdminReviews />} />
         <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
         <Route path="/admin/incidents" element={<AdminIncidents />} />
+        <Route path="/admin/changelog" element={<AdminChangelogManager />} />
         <Route path="/admin/help" element={<AdminHelp />} />
         <Route path="/admin/subscribers" element={<AdminSubscribers />} />
         <Route path="/admin/ip-bans" element={<AdminIpBans />} />
