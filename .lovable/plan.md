@@ -1,22 +1,43 @@
 
 
-# Footer — Enterprise Mobile Layout Fix
+# Remove Decorative Icons — Enterprise Cleanup
 
 ## Problem
-On mobile the footer renders as a 2-column grid with large text and excessive spacing, making it look unprofessional. The "Popular Categories" column has 6 links stacking tall.
+Multiple pages still use decorative icons in section headings, hero areas, and benefit cards. Enterprise companies like Stripe, Linear, and Vercel don't use these — they rely on typography and whitespace.
 
-## Solution
-Collapse the footer on mobile into a single-column inline flow where each section's links run horizontally (inline, separated by middots), drastically reducing vertical height. On desktop (sm+), keep the current 4-column grid.
+## Pages & Changes
 
-## Changes
+### 1. `src/pages/DMCA.tsx`
+- Remove the large centered Shield icon in the hero (lines 15-18)
+- Remove icons from all section heading bars (`FileText`, `AlertTriangle`, `Mail`, `Clock`, `XCircle`, `AlertTriangle`) — keep heading text only
+- Left-align the header like other enterprise pages (`text-2xl font-display font-bold`)
+- Clean up unused icon imports
 
-**`src/components/layout/Footer.tsx`**
+### 2. `src/pages/Jobs.tsx`
+- Remove icons from the "Why Work With Us?" benefit cards (`Clock`, `CheckCircle`, `AlertCircle`) — keep title + description only
+- Keep small inline metadata icons (`Briefcase`, `MapPin`) in job listings as those are functional, not decorative
+- Keep `Loader2` and `Send` as they are functional (spinner, button)
+- Clean up unused imports
 
-1. Mobile layout (below `sm`): render each column as a compact block — heading on one line, links flowing inline horizontally with `·` separators, `text-[11px]` size
-2. Desktop layout (`sm+`): keep existing 4-column vertical grid unchanged
-3. Use a single responsive approach: `hidden sm:grid` for the desktop grid, `sm:hidden` for the mobile inline version
-4. Tighten mobile padding to `py-4 px-4`
-5. Bottom bar (copyright + trust signals) stays as-is — already handles responsive
+### 3. `src/pages/FreeAssets.tsx`
+- Remove `Gift` icon from the page heading (line 72)
+- Clean up unused import
 
-This gives a tight, enterprise-grade single-screen footer on mobile without changing the desktop experience.
+### 4. `src/pages/RecoverOrder.tsx`
+- Remove `Package` icon from the section heading bars (lines 84, 119)
+- Clean up unused import
+
+### 5. `src/pages/NotificationPreferences.tsx`
+- Remove `Bell` icons from section heading bars (lines 205, 248)
+- Keep icons next to individual toggle items (Package, Tag, MessageCircle, Headphones) as those are functional list-item identifiers, not decorative headings
+
+### 6. `src/pages/Affiliate.tsx`
+- Remove large icon circles from benefit cards (line 58) — flatten to text-only layout
+
+## What stays
+- Loading spinners (`Loader2`) — functional
+- Button icons (`Send`) — functional
+- Small inline metadata (job type/location icons) — functional
+- Category page icons — functional navigation aids
+- Toggle-list item icons (notification prefs) — functional identifiers
 
