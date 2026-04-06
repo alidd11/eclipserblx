@@ -60,7 +60,6 @@ export default function ProductDetail() {
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [showSwipeHint, setShowSwipeHint] = useState(true);
   const [showIPReportDialog, setShowIPReportDialog] = useState(false);
-  const [showIPReportDialog, setShowIPReportDialog] = useState(false);
   const [pwywAmount, setPwywAmount] = useState<string>('');
   const [selectedBundle, setSelectedBundle] = useState<{
     id: string;
