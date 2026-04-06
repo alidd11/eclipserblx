@@ -106,10 +106,10 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
 
       return accessToken;
     },
-    onSuccess: () => {
+    onSuccess: (accessToken: string) => {
       showSuccessNotification('Application Submitted!', 'Check your email for confirmation');
       clearFormData();
-      onSuccess();
+      onSuccess(accessToken);
     },
     onError: (error: Error) => {
       if (error.message === 'DUPLICATE_EMAIL') {
