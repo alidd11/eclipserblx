@@ -31,7 +31,7 @@ const CURRENT_TOS_VERSION = "1.0";
 
 export default function SellerDashboard() {
   const { store } = useSellerStatus();
-  const { inFreePromo, freePromoEndsAt } = useSellerSubscription();
+  const { inFreePromo, freePromoEndsAt, isGracePeriod, gracePeriodEndsAt, openPortal } = useSellerSubscription();
 
   // Real-time order notifications
   useRealtimeOrders();
