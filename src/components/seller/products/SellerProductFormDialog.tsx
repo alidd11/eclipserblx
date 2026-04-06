@@ -176,8 +176,8 @@ export function SellerProductFormDialog({
 
       setForm(prev => ({ ...prev, asset_file_url: fileName }));
       toast.success('Asset file uploaded successfully');
-    } catch (error: any) {
-      toast.error('Failed to upload asset: ' + error.message);
+    } catch (error) {
+      toast.error('Failed to upload asset: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
