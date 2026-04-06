@@ -31,7 +31,7 @@ import {
   Paperclip, X, Loader2, MessageSquare, ShoppingBag, ChevronDown,
   Zap, AlertTriangle, UserCheck, History,
 } from 'lucide-react';
-import { formatDistanceToNow, format } from 'date-fns';
+import { formatDistanceToNow, format } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 

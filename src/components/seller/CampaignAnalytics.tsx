@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, subDays, eachDayOfInterval, parseISO } from 'date-fns';
+import { format, subDays, eachDayOfInterval, parseISO } from '@/lib/dateUtils';
 
 interface CampaignAnalyticsProps {
   campaignId: string;

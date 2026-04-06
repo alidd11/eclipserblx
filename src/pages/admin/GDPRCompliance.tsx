@@ -12,7 +12,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { Shield, FileText, Database, Globe, Clock, Users, AlertTriangle, Receipt, Building2, Landmark } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 

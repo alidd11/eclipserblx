@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { 
   Users, Gift, CheckCircle, Clock, Search, TrendingUp, 
   DollarSign, CreditCard, AlertCircle, ExternalLink, Loader2

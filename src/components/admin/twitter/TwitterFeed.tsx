@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow } from '@/lib/dateUtils';
 import { ExternalLink, Heart, Repeat2, BarChart2, Share, MoreHorizontal, MessageCircle, Trash2 } from 'lucide-react';
 import { useTwitterAction } from '@/hooks/useTwitterActions';
 import { useState } from 'react';

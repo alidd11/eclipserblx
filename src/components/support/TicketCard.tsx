@@ -2,7 +2,7 @@
  import { Card, CardContent } from '@/components/ui/card';
  import { Badge } from '@/components/ui/badge';
  import { ChevronRight, Clock, MessageSquare, Tag } from 'lucide-react';
- import { formatDistanceToNow } from 'date-fns';
+ import { formatDistanceToNow } from '@/lib/dateUtils';
  import { cn } from '@/lib/utils';
  
  interface TicketCardProps {

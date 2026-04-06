@@ -14,7 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { toast } from 'sonner';
-import { format, differenceInMinutes } from 'date-fns';
+import { format, differenceInMinutes } from '@/lib/dateUtils';
 import { Textarea } from '@/components/ui/textarea';
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';

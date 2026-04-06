@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';

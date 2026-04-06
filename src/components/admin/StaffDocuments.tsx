@@ -35,7 +35,7 @@ import {
   FileArchive,
   FileCode
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 import { performSecurityScan } from '@/lib/secureFileUpload';
 

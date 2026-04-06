@@ -22,7 +22,7 @@ import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useDropZone } from '@/hooks/useDropZone';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow, format } from 'date-fns';
+import { formatDistanceToNow, format } from '@/lib/dateUtils';
 import { hapticTap, hapticError } from '@/lib/haptics';
 import { CodeVerificationMessage } from '@/components/chat/CodeVerificationMessage';
 import { performSecurityScan } from '@/lib/secureFileUpload';

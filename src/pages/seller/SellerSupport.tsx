@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from '@/lib/dateUtils';
 
 const TICKET_CATEGORIES = [
   { value: 'account_link_change', label: 'Account Link Change', icon: LinkIcon, description: 'Request to update Discord or Roblox account' },

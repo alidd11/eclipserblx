@@ -1,5 +1,5 @@
 import { Package, Wallet, Calendar } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from '@/lib/dateUtils';
 import { useCurrency } from '@/hooks/useCurrency';
 
 interface AccountStatsBarProps {

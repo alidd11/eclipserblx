@@ -8,7 +8,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 
 interface BadgeCardProps {
   badge: BadgeType;

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Download, FileSpreadsheet, Loader2, Calendar } from 'lucide-react';
-import { format, subDays, subMonths } from 'date-fns';
+import { format, subDays, subMonths } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 
 type ReportType = 'orders' | 'revenue' | 'products' | 'analytics';

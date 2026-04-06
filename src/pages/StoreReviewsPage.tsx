@@ -17,7 +17,7 @@ import {
   TrendingUp,
   Filter
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import {
   Select,
   SelectContent,

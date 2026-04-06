@@ -14,7 +14,7 @@ import {
   Package, Store, Star, Upload, Clock, AlertTriangle,
   ShieldAlert, ExternalLink, ArrowRight
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from '@/lib/dateUtils';
 
 type QueueTab = 'all' | 'products' | 'stores' | 'reviews' | 'submissions';
 

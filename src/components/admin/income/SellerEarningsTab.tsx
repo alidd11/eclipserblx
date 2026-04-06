@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AdminStatCard } from '@/components/admin/AdminStatCard';
 import { supabase } from '@/integrations/supabase/client';
-import { subDays, format, isAfter, startOfDay, startOfWeek, startOfMonth } from 'date-fns';
+import { subDays, format, isAfter, startOfDay, startOfWeek, startOfMonth } from '@/lib/dateUtils';
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
 
 export function SellerEarningsTab() {

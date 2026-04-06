@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/dialog';
 import { Star, Check, X, Sparkles, Trash2, Plus, Globe, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 
 interface Review {
   id: string;

@@ -4,7 +4,7 @@ import { BotDashboardLayout } from '@/components/bot-dashboard/BotDashboardLayou
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3, TrendingUp, Hash, Clock } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { format, subDays } from 'date-fns';
+import { format, subDays } from '@/lib/dateUtils';
 
 export default function BotAnalytics() {
   const { data: usageData = [], isLoading } = useQuery({

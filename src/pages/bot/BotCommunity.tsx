@@ -16,7 +16,7 @@ import {
   Save, Plus, Trash2, Users
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 
 export default function BotCommunity() {
   const queryClient = useQueryClient();

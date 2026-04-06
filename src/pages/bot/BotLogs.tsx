@@ -5,7 +5,7 @@ import { BotDashboardLayout } from '@/components/bot-dashboard/BotDashboardLayou
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollText, Search, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 
 export default function BotLogs() {
   const [search, setSearch] = useState('');

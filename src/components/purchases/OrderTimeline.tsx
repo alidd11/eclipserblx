@@ -1,6 +1,6 @@
 import { CheckCircle, Clock, CreditCard, Package, Truck } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 
 interface OrderTimelineProps {
   status: string;

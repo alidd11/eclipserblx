@@ -12,7 +12,7 @@ import {
   Megaphone, Plus, ExternalLink, Monitor, Smartphone, Tablet,
   ArrowUpRight, Clock,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { Link, Navigate } from 'react-router-dom';
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
 import { useState } from 'react';

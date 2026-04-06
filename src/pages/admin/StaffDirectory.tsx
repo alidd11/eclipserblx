@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, Users, Clock, Shield, IdCard, ChevronRight, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Navigate, Link } from 'react-router-dom';
 

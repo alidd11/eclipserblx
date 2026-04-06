@@ -4,7 +4,7 @@
  import { ScrollArea } from '@/components/ui/scroll-area';
  import { Skeleton } from '@/components/ui/skeleton';
  import { cn } from '@/lib/utils';
- import { format } from 'date-fns';
+ import { format } from '@/lib/dateUtils';
  import { Banknote, Clock, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
  import { useAuth } from '@/hooks/useAuth';
  

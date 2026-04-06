@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X, Send, Paperclip, Loader2, ShieldCheck, Minimize2, Maximize2, Clock, Bot, User, CheckCircle, AlertCircle, HelpCircle, Ticket } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 import { SecureCodeInput } from './SecureCodeInput';
 import { CodeVerificationMessage } from './CodeVerificationMessage';

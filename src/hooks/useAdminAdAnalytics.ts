@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useMemo } from 'react';
-import { format, subDays, eachDayOfInterval, startOfMonth, endOfMonth } from 'date-fns';
+import { format, subDays, eachDayOfInterval, startOfMonth, endOfMonth } from '@/lib/dateUtils';
 
 interface Advertisement {
   id: string;

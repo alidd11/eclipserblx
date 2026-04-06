@@ -17,7 +17,7 @@ import {
   ExternalLink,
   Clock
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-GB', {

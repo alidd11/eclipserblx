@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { Slider } from '@/components/ui/slider';
 import { useRobloxSettings } from '@/hooks/useRobloxSettings';
 

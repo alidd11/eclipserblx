@@ -12,7 +12,7 @@ import {
   ChevronDown, ChevronUp, User, Calendar, Loader2, FileText
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 
 interface TranscriptMessage {

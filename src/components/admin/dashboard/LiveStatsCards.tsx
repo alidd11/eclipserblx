@@ -4,7 +4,7 @@ import { ShoppingCart, DollarSign, Ticket, Users, TrendingUp, TrendingDown } fro
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { startOfDay, subDays, startOfWeek } from 'date-fns';
+import { startOfDay, subDays, startOfWeek } from '@/lib/dateUtils';
 
 interface StatItem {
   label: string;

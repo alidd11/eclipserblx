@@ -16,7 +16,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
-import { format, subDays, startOfMonth, startOfYear, isAfter, differenceInDays } from 'date-fns';
+import { format, subDays, startOfMonth, startOfYear, isAfter, differenceInDays } from '@/lib/dateUtils';
 import { showSuccessNotification } from '@/lib/nativeNotification';
 import { cn } from '@/lib/utils';
 import { RevolutAreaChart } from '@/components/ui/revolut-chart';

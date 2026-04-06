@@ -22,7 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Search, ChevronLeft, ChevronRight, ShoppingCart, Download, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 
 const TRANSACTIONS_PER_PAGE = 20;
 
