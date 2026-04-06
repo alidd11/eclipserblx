@@ -191,9 +191,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
   return (
     <TooltipProvider delayDuration={0}>
       <LayoutShell
-        desktopSidebar={
-          <AdminSidebar collapsed={false} onToggle={() => {}} />
-        }
+        desktopSidebar={null}
         mobileSidebar={(onClose) => (
           <AdminSidebar
             collapsed={false}
