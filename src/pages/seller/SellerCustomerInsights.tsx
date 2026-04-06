@@ -51,7 +51,7 @@ export default function SellerCustomerInsights() {
 
       const totalCustomers = buyerMap.size;
       const repeatCustomers = Array.from(buyerMap.values()).filter(b => b.orders > 1).length;
-      const totalRevenue = (transactions as any[]).reduce((sum: number, tx: any) => sum + Number(tx.gross_amount || 0), 0);
+      const totalRevenue = transactions.reduce((sum: number, tx) => sum + Number(tx.gross_amount || 0), 0);
       const avgOrderValue = transactions.length > 0 ? totalRevenue / transactions.length : 0;
 
       const topCustomers = Array.from(buyerMap.entries())
