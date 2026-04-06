@@ -6,10 +6,12 @@ import { TwitterMentions } from '@/components/admin/twitter/TwitterMentions';
 import { TwitterHashtagPoolTab } from '@/components/admin/twitter/TwitterHashtagPoolTab';
 import { TwitterPostHistoryTab } from '@/components/admin/twitter/TwitterPostHistoryTab';
 import { TwitterScheduledPostsPanel } from '@/components/admin/twitter/TwitterScheduledPostsPanel';
-import { Sun, Moon, Bell, Search, MoreHorizontal, Home, Users, Mail, Bookmark, ListTodo, User } from 'lucide-react';
+import { TwitterAnalyticsBar } from '@/components/admin/twitter/TwitterAnalyticsBar';
+import { TwitterContentCalendar } from '@/components/admin/twitter/TwitterContentCalendar';
+import { Sun, Moon, Bell, Search, MoreHorizontal, Home, Users, Mail, Bookmark, ListTodo, User, Calendar } from 'lucide-react';
 import marketplaceLogo from '@/assets/marketplace-logo-icon-sm.webp';
 
-type Tab = 'for-you' | 'mentions' | 'posts' | 'hashtags';
+type Tab = 'for-you' | 'mentions' | 'posts' | 'hashtags' | 'calendar';
 
 export default function TwitterPosts() {
   const [activeTab, setActiveTab] = useState<Tab>('for-you');
@@ -65,6 +67,7 @@ export default function TwitterPosts() {
     { key: 'for-you', label: 'For you' },
     { key: 'mentions', label: 'Mentions' },
     { key: 'posts', label: 'Posts' },
+    { key: 'calendar', label: 'Calendar' },
     { key: 'hashtags', label: 'Hashtags' },
   ];
 
@@ -159,12 +162,12 @@ export default function TwitterPosts() {
               </div>
 
               {/* Tab bar */}
-              <div className="flex">
+              <div className="flex overflow-x-auto scrollbar-none">
                 {tabs.map((tab) => (
                   <button
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key)}
-                    className={`flex-1 relative py-3 text-[15px] font-medium transition-colors ${
+                    className={`flex-1 min-w-0 relative py-3 text-[15px] font-medium transition-colors whitespace-nowrap px-2 ${
                       activeTab === tab.key ? `${theme.tabActive} font-bold` : theme.tabInactive
                     } ${theme.hover}`}
                   >
@@ -179,22 +182,22 @@ export default function TwitterPosts() {
 
             {/* Content */}
             {activeTab === 'hashtags' ? (
-              <div className="p-4">
-                <TwitterHashtagPoolTab />
-              </div>
+              <TwitterHashtagPoolTab xTheme={theme} />
             ) : activeTab === 'mentions' ? (
               <TwitterMentions xTheme={theme} />
+            ) : activeTab === 'calendar' ? (
+              <TwitterContentCalendar xTheme={theme} />
             ) : activeTab === 'posts' ? (
-              <div className="p-4 lg:p-5">
+              <div>
                 <div className="lg:hidden">
                   <TwitterScheduledPostsPanel xTheme={theme} />
                 </div>
-                <div className="hidden lg:block">
-                  <TwitterPostHistoryTab />
-                </div>
+                <TwitterPostHistoryTab xTheme={theme} />
               </div>
             ) : (
               <>
+                {/* Analytics KPIs */}
+                <TwitterAnalyticsBar xTheme={theme} />
                 <div className={`sticky top-[101px] z-10 ${theme.bg}`}>
                   <TwitterComposer xTheme={theme} />
                 </div>
@@ -216,8 +219,13 @@ export default function TwitterPosts() {
                 />
               </div>
 
-              {/* Scheduled Posts / What's happening */}
+              {/* Scheduled Posts */}
               <TwitterScheduledPostsPanel xTheme={theme} />
+
+              {/* Mini Calendar */}
+              <div className={`rounded-2xl ${theme.trendBg} overflow-hidden`}>
+                <TwitterContentCalendar xTheme={theme} />
+              </div>
 
               {/* Who to follow */}
               <div className={`rounded-2xl ${theme.trendBg} overflow-hidden`}>
@@ -247,7 +255,7 @@ export default function TwitterPosts() {
                 {['Terms of Service', 'Privacy Policy', 'Cookie Policy', 'Accessibility', 'Ads info', 'More'].map((link) => (
                   <span key={link} className={`text-[13px] ${theme.textSecondary} hover:underline cursor-pointer`}>{link}</span>
                 ))}
-                <span className={`text-[13px] ${theme.textSecondary}`}>© 2026 Eclipse</span>
+                <span className={`text-[13px] ${theme.textSecondary}`}>&copy; 2026 Eclipse</span>
               </div>
             </div>
           </div>
