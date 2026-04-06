@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { lovable } from '@/integrations/lovable';
 
 interface SocialLoginButtonsProps {
   loading: boolean;
@@ -13,39 +14,19 @@ export function SocialLoginButtons({ loading, onError }: SocialLoginButtonsProps
   const [socialLoading, setSocialLoading] = useState(false);
   const disabled = socialLoading || loading;
 
-  const isCustomDomainAuth = () => {
-    const hostname = window.location.hostname;
-    return !hostname.endsWith('.lovable.app') && !hostname.endsWith('.lovableproject.com');
-  };
-
-  const isSafeOAuthRedirectUrl = (url: string) => {
-    try {
-      const parsed = new URL(url);
-      const backendHost = new URL(import.meta.env.VITE_SUPABASE_URL).hostname;
-      const allowedHosts = [backendHost, 'accounts.google.com', 'appleid.apple.com'];
-      return allowedHosts.includes(parsed.hostname) || parsed.hostname.endsWith('.supabase.co');
-    } catch {
-      return false;
-    }
-  };
-
   const handleOAuthSignIn = async (provider: 'google' | 'apple') => {
     const providerLabel = provider === 'google' ? 'Google' : 'Apple';
     setSocialLoading(true);
     try {
-      const shouldBypassBridge = isCustomDomainAuth();
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: window.location.origin,
-          ...(shouldBypassBridge ? ({ skipBrowserRedirect: true } as any) : {}),
-        },
+      const result = await lovable.auth.signInWithOAuth(provider, {
+        redirect_uri: window.location.origin,
       });
-      if (error) throw new Error(error.message || `Failed to sign in with ${providerLabel}`);
-      if (shouldBypassBridge) {
-        const oauthUrl = data?.url;
-        if (!oauthUrl || !isSafeOAuthRedirectUrl(oauthUrl)) throw new Error('Received an invalid sign-in URL. Please try again.');
-        window.location.assign(oauthUrl);
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      if (result.redirected) {
         return;
       }
     } catch (error) {

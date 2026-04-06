@@ -147,8 +147,6 @@ project_id = "qlnbergwjfrmgkjhrbkj"
     verify_jwt = false
   [functions.process-scheduled-ads]
     verify_jwt = false
-  [functions.purchase-ad-pings]
-    verify_jwt = false
   [functions.purchase-with-credits]
     verify_jwt = false
   [functions.quarantine-file]
