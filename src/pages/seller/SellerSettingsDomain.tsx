@@ -92,7 +92,7 @@ export default function SellerSettingsDomain() {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
       toast.success('Subdomain claimed!');
     },
-    onError: (e: any) => toast.error('Error', { description: e.message }),
+    onError: (e: Error) => toast.error('Error', { description: e.message }),
   });
 
   const requestCustom = useMutation({
@@ -109,7 +109,7 @@ export default function SellerSettingsDomain() {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
       toast.success('Domain connected! Follow the DNS instructions to verify.');
     },
-    onError: (e: any) => toast.error('Error', { description: e.message }),
+    onError: (e: Error) => toast.error('Error', { description: e.message }),
   });
 
   const runPreCheck = useCallback(async (domain: string) => {
@@ -137,7 +137,7 @@ export default function SellerSettingsDomain() {
         toast.error('Not verified yet', { description: data.message || 'DNS may still be propagating.' });
       }
     },
-    onError: (e: any) => toast.error('Error', { description: e.message }),
+    onError: (e: Error) => toast.error('Error', { description: e.message }),
   });
 
   const healthCheck = useMutation({
@@ -150,7 +150,7 @@ export default function SellerSettingsDomain() {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['store-domains'] }),
-    onError: (e: any) => toast.error('Health check failed', { description: e.message }),
+    onError: (e: Error) => toast.error('Health check failed', { description: e.message }),
   });
 
   const removeDomain = useMutation({
@@ -166,7 +166,7 @@ export default function SellerSettingsDomain() {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
       toast.success('Domain removed');
     },
-    onError: (e: any) => toast.error('Error', { description: e.message }),
+    onError: (e: Error) => toast.error('Error', { description: e.message }),
   });
 
   const autoFixDns = useMutation({
@@ -183,7 +183,7 @@ export default function SellerSettingsDomain() {
       if (data.success) toast.success('DNS auto-fix complete!', { description: data.message });
       else toast.error('Auto-fix had errors', { description: data.message });
     },
-    onError: (e: any) => toast.error('Auto-fix failed', { description: e.message }),
+    onError: (e: Error) => toast.error('Auto-fix failed', { description: e.message }),
   });
 
   const bulkHealthCheck = useMutation({
@@ -199,7 +199,7 @@ export default function SellerSettingsDomain() {
       queryClient.invalidateQueries({ queryKey: ['store-domains'] });
       toast.success('All health checks complete');
     },
-    onError: (e: any) => toast.error('Bulk check failed', { description: e.message }),
+    onError: (e: Error) => toast.error('Bulk check failed', { description: e.message }),
   });
 
   // ── Loading state ──

@@ -37,14 +37,14 @@ export default function SellerRefunds() {
         .order('created_at', { ascending: false });
       if (error) throw error;
 
-      const customerIds = [...new Set((data || []).map((r: any) => r.customer_id))];
+      const customerIds = [...new Set((data || []).map((r) => r.customer_id))];
       if (customerIds.length === 0) return data;
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, display_name, username')
         .in('user_id', customerIds);
       const profileMap = Object.fromEntries((profiles || []).map(p => [p.user_id, p]));
-      return (data || []).map((r: any) => ({ ...r, customer: profileMap[r.customer_id] || null }));
+      return (data || []).map((r) => ({ ...r, customer: profileMap[r.customer_id] || null }));
     },
     enabled: !!store?.id,
   });
@@ -90,10 +90,10 @@ export default function SellerRefunds() {
       setSelectedRequest(null);
       setResponse('');
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
-  const filtered = (refundRequests || []).filter((r: any) => 
+  const filtered = (refundRequests || []).filter((r) => 
     statusFilter === 'all' || r.status === statusFilter
   );
 
@@ -108,8 +108,8 @@ export default function SellerRefunds() {
     }
   };
 
-  const pendingCount = (refundRequests || []).filter((r: any) => r.status === 'pending').length;
-  const escalatedCount = (refundRequests || []).filter((r: any) => r.status === 'escalated').length;
+  const pendingCount = (refundRequests || []).filter((r) => r.status === 'pending').length;
+  const escalatedCount = (refundRequests || []).filter((r) => r.status === 'escalated').length;
 
   return (
     <SellerLayout>
@@ -167,7 +167,7 @@ export default function SellerRefunds() {
           </div>
         ) : filtered.length > 0 ? (
           <div className="border border-border rounded-xl overflow-hidden divide-y divide-border">
-            {filtered.map((r: any) => (
+            {filtered.map((r) => (
               <button
                 key={r.id}
                 className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors text-left"
@@ -223,7 +223,7 @@ export default function SellerRefunds() {
   );
 }
 
-function SellerDisputeDetail({ request, response, setResponse, respondMutation, getStatusBadge }: any) {
+function SellerDisputeDetail({ request, response, setResponse, respondMutation, getStatusBadge }: { request: Record<string, unknown>; response: string; setResponse: (v: string) => void; respondMutation: { mutate: (v: unknown) => void; isPending: boolean }; getStatusBadge: (s: string) => React.ReactNode }) {
   const { data: evidence } = useQuery({
     queryKey: ['dispute-evidence-seller', request.id],
     queryFn: async () => {
@@ -265,7 +265,7 @@ function SellerDisputeDetail({ request, response, setResponse, respondMutation, 
             <FileImage className="h-3.5 w-3.5" /> Customer Evidence ({evidence.length})
           </span>
           <div className="space-y-1">
-            {evidence.map((e: any) => (
+            {evidence.map((e: Error) => (
               <div key={e.id} className="flex items-center gap-2 py-1.5 text-sm">
                 <FileImage className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <span className="truncate flex-1">{e.file_name}</span>

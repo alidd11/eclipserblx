@@ -122,21 +122,21 @@ export function OrdersTab({ storeId }: OrdersTabProps) {
  const totalCount = ordersData?.totalCount || 0;
  const totalPages = Math.ceil(totalCount / ORDERS_PER_PAGE);
 
- const filteredOrders = orders.filter((o: any) => {
+ const filteredOrders = orders.filter((o) => {
  if (!searchQuery) return true;
  const q = searchQuery.toLowerCase();
  return o.customer_email?.toLowerCase().includes(q) ||
  o.id?.toLowerCase().includes(q) ||
- o.order_items?.some((i: any) => i.product_name?.toLowerCase().includes(q));
+ o.order_items?.some((i) => i.product_name?.toLowerCase().includes(q));
  });
 
  const exportCSV = () => {
  const headers = ['Order ID', 'Date', 'Customer', 'Items', 'Total', 'Status'];
- const rows = filteredOrders.map((o: any) => [
+ const rows = filteredOrders.map((o) => [
  o.id,
  format(new Date(o.created_at), 'yyyy-MM-dd HH:mm'),
  o.customer_email,
- (o.order_items || []).map((i: any) => i.product_name).join('; '),
+ (o.order_items || []).map((i) => i.product_name).join('; '),
  o.total,
  o.status,
  ]);
@@ -214,7 +214,7 @@ export function OrdersTab({ storeId }: OrdersTabProps) {
  </TableRow>
  </TableHeader>
  <TableBody>
- {filteredOrders.map((order: any) => (
+ {filteredOrders.map((order) => (
  <TableRow key={order.id}>
  <TableCell className="whitespace-nowrap">
  {format(new Date(order.created_at), 'dd MMM yyyy')}
@@ -222,7 +222,7 @@ export function OrdersTab({ storeId }: OrdersTabProps) {
  <TableCell className="max-w-[180px] truncate">{order.customer_email}</TableCell>
  <TableCell>
  <div className="space-y-0.5">
- {(order.order_items || []).slice(0, 2).map((item: any) => (
+ {(order.order_items || []).slice(0, 2).map((item) => (
  <p key={item.id} className="text-sm truncate max-w-[200px]">{item.product_name}</p>
  ))}
  {(order.order_items || []).length > 2 && (
@@ -306,7 +306,7 @@ export function OrdersTab({ storeId }: OrdersTabProps) {
  <div>
  <h4 className="font-medium mb-2">Items in this order</h4>
  <div className="space-y-2">
- {(selectedOrder.order_items || []).map((item: any) => (
+ {(selectedOrder.order_items || []).map((item) => (
  <div key={item.id} className="flex justify-between items-center p-2 rounded-md bg-muted/50">
  <div>
  <span className="text-sm">{item.product_name}</span>
@@ -324,7 +324,7 @@ export function OrdersTab({ storeId }: OrdersTabProps) {
  <div>
  <h4 className="font-medium mb-2">Your earnings from this order</h4>
  <div className="space-y-2">
- {orderDetail.map((tx: any) => (
+ {orderDetail.map((tx) => (
  <div key={tx.id} className="flex justify-between items-center p-2 rounded-md bg-muted/50 text-sm">
  <div>
  <p>{tx.description || 'Sale'}</p>

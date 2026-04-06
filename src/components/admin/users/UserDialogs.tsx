@@ -8,20 +8,44 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { CustomerProfileDialog } from '@/components/admin/CustomerProfileDialog';
 
+interface AdminUser {
+  user_id: string;
+  display_name: string | null;
+  email: string | null;
+  username: string | null;
+  avatar_url: string | null;
+  ip_address?: string | null;
+}
+
+interface CustomRole {
+  name: string;
+  color: string | null;
+  description: string | null;
+}
+
+interface UserRole {
+  role: string;
+}
+
+interface MutationObj {
+  mutate: (args: Record<string, unknown>) => void;
+  isPending: boolean;
+}
+
 interface UserDialogsProps {
-  selectedUser: any;
-  setSelectedUser: (u: any) => void;
+  selectedUser: AdminUser | null;
+  setSelectedUser: (u: AdminUser | null) => void;
   newRole: string;
   setNewRole: (r: string) => void;
-  customRoles: any[];
-  getUserRoles: (id: string) => any[];
-  availableRoles: (id: string) => any[];
+  customRoles: CustomRole[];
+  getUserRoles: (id: string) => UserRole[];
+  availableRoles: (id: string) => CustomRole[];
   canRemoveRole: (role: string) => boolean;
-  addRoleMutation: any;
-  removeRoleMutation: any;
+  addRoleMutation: MutationObj;
+  removeRoleMutation: MutationObj;
   // IP Ban
-  ipBanDialogUser: any;
-  setIpBanDialogUser: (u: any) => void;
+  ipBanDialogUser: AdminUser | null;
+  setIpBanDialogUser: (u: AdminUser | null) => void;
   ipAddress: string;
   setIpAddress: (v: string) => void;
   banReason: string;
@@ -29,7 +53,7 @@ interface UserDialogsProps {
   currentAdminIp: string | null;
   isSelfBan: boolean;
   IP_REGEX: RegExp;
-  ipBanMutation: any;
+  ipBanMutation: MutationObj;
   handleBanClick: () => void;
   // Self-ban
   selfBanConfirmOpen: boolean;
@@ -37,12 +61,12 @@ interface UserDialogsProps {
   selfBanCooldown: number;
   handleConfirmSelfBan: () => void;
   // Delete
-  deleteConfirmUser: any;
-  setDeleteConfirmUser: (u: any) => void;
-  deleteAccountMutation: any;
+  deleteConfirmUser: AdminUser | null;
+  setDeleteConfirmUser: (u: AdminUser | null) => void;
+  deleteAccountMutation: MutationObj;
   // Profile
-  viewProfileUser: any;
-  setViewProfileUser: (u: any) => void;
+  viewProfileUser: AdminUser | null;
+  setViewProfileUser: (u: AdminUser | null) => void;
 }
 
 export function UserDialogs(props: UserDialogsProps) {
@@ -57,7 +81,7 @@ export function UserDialogs(props: UserDialogsProps) {
   } = props;
 
   const getRoleBadge = (role: string) => {
-    const config = customRoles.find((r: any) => r.name === role);
+    const config = customRoles.find((r) => r.name === role);
     return (
       <Badge key={role} variant="outline" className={`${config?.color || 'bg-gray-500'} text-foreground border-transparent`}>
         {config?.display_name || role}
@@ -87,8 +111,8 @@ export function UserDialogs(props: UserDialogsProps) {
                   {getUserRoles(selectedUser.user_id).length === 0 ? (
                     <span className="text-sm text-muted-foreground">No roles assigned</span>
                   ) : (
-                    getUserRoles(selectedUser.user_id).map((r: any) => {
-                      const roleInfo = customRoles.find((role: any) => role.name === r.role);
+                    getUserRoles(selectedUser.user_id).map((r) => {
+                      const roleInfo = customRoles.find((cr) => cr.name === r.role);
                       return (
                         <Badge key={`${r.user_id}-${r.role}`} variant="outline" className={`gap-1 py-1.5 px-2 ${roleInfo?.color || ''} text-foreground border-transparent`}>
                           {roleInfo?.display_name || r.role}
@@ -112,7 +136,7 @@ export function UserDialogs(props: UserDialogsProps) {
                         <SelectValue placeholder="Select role" />
                       </SelectTrigger>
                       <SelectContent>
-                        {availableRoles(selectedUser.user_id).map((role: any) => (
+                        {availableRoles(selectedUser.user_id).map((role) => (
                           <SelectItem key={role.name} value={role.name} className="py-2.5">
                             {role.display_name}
                           </SelectItem>

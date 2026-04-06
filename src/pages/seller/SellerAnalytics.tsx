@@ -30,6 +30,32 @@ import {
   UserPlus
 } from 'lucide-react';
 
+interface AnalyticsEvent {
+  event_type: string;
+  product_id: string | null;
+  visitor_id: string | null;
+  device_type: string | null;
+  referrer: string | null;
+  country: string | null;
+  created_at: string;
+}
+
+interface ProductInfo {
+  id: string;
+  name: string;
+  price: number;
+  image_url: string | null;
+}
+
+interface ProductStat {
+  id: string;
+  views: number;
+  carts: number;
+  purchases: number;
+  conversionRate?: string;
+  cartRate?: string;
+}
+
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
 export default function SellerAnalytics() {
@@ -70,7 +96,7 @@ export default function SellerAnalytics() {
   // Fetch product names for product performance
   const productIds = useMemo(() => {
     if (!analyticsData) return [];
-    const ids = new Set(analyticsData.filter((e: any) => e.product_id).map((e: any) => e.product_id));
+    const ids = new Set(analyticsData.filter((e) => e.product_id).map((e) => e.product_id));
     return Array.from(ids) as string[];
   }, [analyticsData]);
 
@@ -82,8 +108,8 @@ export default function SellerAnalytics() {
         .from('products')
         .select('id, name, price, image_url')
         .in('id', productIds);
-      const map: Record<string, any> = {};
-      (data || []).forEach((p: any) => { map[p.id] = p; });
+      const map: Record<string, ProductInfo> = {};
+      (data || []).forEach((p) => { map[p.id] = p; });
       return map;
     },
     enabled: productIds.length > 0,
@@ -100,33 +126,33 @@ export default function SellerAnalytics() {
     const dailyData = days.map(day => {
       const dayStr = format(day, 'yyyy-MM-dd');
       const dayEvents = analyticsData.filter(
-        (e: any) => format(new Date(e.created_at), 'yyyy-MM-dd') === dayStr
+        (e) => format(new Date(e.created_at), 'yyyy-MM-dd') === dayStr
       );
       
       return {
         date: format(day, 'MMM d'),
-        views: dayEvents.filter((e: any) => e.event_type === 'store_view' || e.event_type === 'product_view').length,
-        addToCarts: dayEvents.filter((e: any) => e.event_type === 'add_to_cart').length,
-        purchases: dayEvents.filter((e: any) => e.event_type === 'purchase').length,
-        uniqueVisitors: new Set(dayEvents.map((e: any) => e.visitor_id)).size,
+        views: dayEvents.filter((e) => e.event_type === 'store_view' || e.event_type === 'product_view').length,
+        addToCarts: dayEvents.filter((e) => e.event_type === 'add_to_cart').length,
+        purchases: dayEvents.filter((e) => e.event_type === 'purchase').length,
+        uniqueVisitors: new Set(dayEvents.map((e) => e.visitor_id)).size,
       };
     });
 
     // Totals
     const totals = {
-      storeViews: analyticsData.filter((e: any) => e.event_type === 'store_view').length,
-      productViews: analyticsData.filter((e: any) => e.event_type === 'product_view').length,
-      addToCarts: analyticsData.filter((e: any) => e.event_type === 'add_to_cart').length,
-      purchases: analyticsData.filter((e: any) => e.event_type === 'purchase').length,
-      uniqueVisitors: new Set(analyticsData.map((e: any) => e.visitor_id)).size,
+      storeViews: analyticsData.filter((e) => e.event_type === 'store_view').length,
+      productViews: analyticsData.filter((e) => e.event_type === 'product_view').length,
+      addToCarts: analyticsData.filter((e) => e.event_type === 'add_to_cart').length,
+      purchases: analyticsData.filter((e) => e.event_type === 'purchase').length,
+      uniqueVisitors: new Set(analyticsData.map((e) => e.visitor_id)).size,
     };
 
     // Visitor analysis
-    const visitorEventCounts = analyticsData.reduce((acc: Record<string, number>, e: any) => {
+    const visitorEventCounts = analyticsData.reduce((acc: Record<string, number>, e: AnalyticsEvent) => {
       acc[e.visitor_id] = (acc[e.visitor_id] || 0) + 1;
       return acc;
     }, {});
-    const returningVisitors = Object.values(visitorEventCounts).filter((count: any) => count > 1).length;
+    const returningVisitors = Object.values(visitorEventCounts).filter((count) => count > 1).length;
     const newVisitors = totals.uniqueVisitors - returningVisitors;
 
     // Conversion rate
@@ -152,7 +178,7 @@ export default function SellerAnalytics() {
     });
 
     // Device breakdown
-    const deviceCounts = analyticsData.reduce((acc: any, event: any) => {
+    const deviceCounts = analyticsData.reduce((acc: Record<string, number>, event: AnalyticsEvent) => {
       const device = event.device_type || 'Unknown';
       acc[device] = (acc[device] || 0) + 1;
       return acc;
@@ -164,7 +190,7 @@ export default function SellerAnalytics() {
     }));
 
     // Top referrers
-    const referrerCounts = analyticsData.reduce((acc: any, event: any) => {
+    const referrerCounts = analyticsData.reduce((acc: Record<string, number>, event: AnalyticsEvent) => {
       if (event.referrer) {
         try {
           const url = new URL(event.referrer);
@@ -185,7 +211,7 @@ export default function SellerAnalytics() {
       .slice(0, 5);
 
     // Country breakdown
-    const countryCounts = analyticsData.reduce((acc: any, event: any) => {
+    const countryCounts = analyticsData.reduce((acc: Record<string, number>, event: AnalyticsEvent) => {
       const country = event.country || 'Unknown';
       acc[country] = (acc[country] || 0) + 1;
       return acc;
@@ -197,7 +223,7 @@ export default function SellerAnalytics() {
       .slice(0, 5);
 
     // Product performance
-    const productStats = analyticsData.reduce((acc: Record<string, any>, e: any) => {
+    const productStats = analyticsData.reduce((acc: Record<string, ProductStat>, e: AnalyticsEvent) => {
       if (!e.product_id) return acc;
       if (!acc[e.product_id]) {
         acc[e.product_id] = { id: e.product_id, views: 0, carts: 0, purchases: 0 };
@@ -209,12 +235,12 @@ export default function SellerAnalytics() {
     }, {});
 
     const productPerformance = Object.values(productStats)
-      .map((p: any) => ({
+      .map((p: ProductStat) => ({
         ...p,
         conversionRate: p.views > 0 ? ((p.purchases / p.views) * 100).toFixed(1) : '0.0',
         cartRate: p.views > 0 ? ((p.carts / p.views) * 100).toFixed(1) : '0.0',
       }))
-      .sort((a: any, b: any) => b.views - a.views)
+      .sort((a, b) => b.views - a.views)
       .slice(0, 10);
 
     return {
@@ -531,7 +557,7 @@ export default function SellerAnalytics() {
                           <div className="col-span-2 text-center">Purchases</div>
                           <div className="col-span-2 text-center">Conv. Rate</div>
                         </div>
-                        {processedData.productPerformance.map((product: any) => {
+                        {processedData.productPerformance.map((product) => {
                           const info = productsMap?.[product.id];
                           return (
                             <div key={product.id} className="grid grid-cols-12 gap-2 items-center px-2 py-2 rounded-lg hover:bg-muted/50 transition-colors">

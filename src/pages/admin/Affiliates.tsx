@@ -90,7 +90,7 @@ export default function AdminAffiliates() {
 
  if (search) {
  const searchLower = search.toLowerCase();
- enrichedData = enrichedData.filter((c: any) =>
+ enrichedData = enrichedData.filter((c) =>
  c.affiliate?.display_name?.toLowerCase().includes(searchLower) ||
  c.affiliate?.email?.toLowerCase().includes(searchLower) ||
  c.referred?.display_name?.toLowerCase().includes(searchLower) ||
@@ -153,7 +153,7 @@ export default function AdminAffiliates() {
  queryClient.invalidateQueries({ queryKey: ['admin-affiliate-payouts'] });
  queryClient.invalidateQueries({ queryKey: ['admin-affiliate-stats'] });
  },
- onError: (error: any) => {
+ onError: (error: Error) => {
  toast.error(error.message || 'Failed to process payout');
  },
  });
@@ -204,7 +204,7 @@ export default function AdminAffiliates() {
  queryClient.invalidateQueries({ queryKey: ['admin-affiliate-payouts'] });
  queryClient.invalidateQueries({ queryKey: ['admin-affiliate-stats'] });
  },
- onError: (error: any) => {
+ onError: (error: Error) => {
  toast.error(error.message || 'Failed to reject payout');
  },
  });
@@ -212,7 +212,7 @@ export default function AdminAffiliates() {
  const formatAmount = (pence: number) => `£${(pence / 100).toFixed(2)}`;
 
  const getCommissionStatusBadge = (status: string) => {
- const configs: Record<string, { color: string; icon: any }> = {
+ const configs: Record<string, { color: string; icon: React.ElementType }> = {
  pending: { color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30', icon: Clock },
  paid: { color: 'bg-green-500/10 text-green-500 border-green-500/30', icon: CheckCircle },
  };
@@ -228,7 +228,7 @@ export default function AdminAffiliates() {
  };
 
  const getPayoutStatusBadge = (status: string) => {
- const configs: Record<string, { color: string; icon: any }> = {
+ const configs: Record<string, { color: string; icon: React.ElementType }> = {
  pending: { color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30', icon: Clock },
  completed: { color: 'bg-green-500/10 text-green-500 border-green-500/30', icon: CheckCircle },
  rejected: { color: 'bg-red-500/10 text-red-500 border-red-500/30', icon: AlertCircle },
@@ -332,7 +332,7 @@ export default function AdminAffiliates() {
  </TableRow>
  </TableHeader>
  <TableBody>
- {payouts.map((payout: any) => (
+ {payouts.map((payout) => (
  <TableRow key={payout.id}>
  <TableCell>
  <div>
@@ -469,7 +469,7 @@ export default function AdminAffiliates() {
  </TableRow>
  </TableHeader>
  <TableBody>
- {commissions.map((commission: any) => (
+ {commissions.map((commission) => (
  <TableRow key={commission.id}>
  <TableCell>
  <div>
