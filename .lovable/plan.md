@@ -1,51 +1,47 @@
 
 
-## Database Table Audit — Can We Trim 225 Tables?
+## Enterprise Sign-In Page Refinement
 
-### The Short Answer
+### Current State
+The sign-in page works but lacks the polish of enterprise platforms like Stripe, Linear, or Vercel:
+- Small "E" logo badge feels generic
+- "Back to store" link is misaligned (top-left, no visual hierarchy)
+- Form card has low contrast borders that blend into the dark background
+- Social login buttons use a cramped 2x2 grid with small text
+- No visual hierarchy between primary (email) and secondary (social) auth methods
+- "Don't have an account? Sign Up" footer is cut off / below fold
+- Overall spacing feels tight and unrefined
 
-**225 tables is reasonable for your feature set**, but **~8 tables are genuinely dead** (zero rows AND zero code references). The rest are either actively used or support features that exist in the UI but haven't been used by sellers yet.
+### Changes
 
-For context: Shopify runs thousands of tables. Stripe has hundreds. 225 for a marketplace with a Discord bot, IP protection, affiliate system, and seller tools is within enterprise norms.
+**AuthLayout.tsx** — Elevate the shell
+- Replace the small "E" badge with the Eclipse brand wordmark or a larger, more confident logo lockup
+- Remove or restyle "Back to store" as a subtle top-left nav element with proper padding
+- Increase `max-w` from `420px` to `440px` for breathing room
+- Add a subtle gradient or pattern to the background for depth (like Stripe's auth pages)
+- Improve vertical spacing between logo block, form, and footer
 
-### What We Found
+**LoginSignupForm.tsx** — Clean up the form
+- Increase internal padding from `p-5` to `p-6`
+- Add subtle `shadow-lg` or `shadow-xl` to the card for depth and separation
+- Make the "Sign In" button taller (`h-12`) with bolder font weight
+- Style the divider ("OR CONTINUE WITH") with more whitespace above/below
+- Improve label typography (slightly heavier weight, better spacing)
+- Ensure "Forgot password?" link aligns cleanly with the Password label
 
-| Category | Count | Action |
-|---|---|---|
-| Actively used (have data) | 123 | Keep |
-| Empty but referenced in code (awaiting first use) | ~94 | Keep — these are features like bundles, campaigns, store pages, announcements |
-| **Truly dead** (0 rows, no code references anywhere) | **~8** | Safe to drop |
+**SocialLoginButtons.tsx** — Enterprise social login layout
+- Switch from 2x2 grid to a vertical stack (full-width buttons) — this is what Stripe, Linear, Vercel, and Notion all do
+- Increase button height to `h-11` for better touch targets
+- Add consistent icon sizing and spacing
+- Use outlined/ghost style for all social buttons instead of colored backgrounds (cleaner, more professional)
+- Or keep brand colors but use subtle variants (not full saturation)
 
-### Dead Tables (Safe to Remove)
+**Auth.tsx** — Footer refinement
+- Ensure the "Don't have an account?" toggle is always visible (not pushed below fold)
+- Add more bottom padding so footer text doesn't crowd the card edge
 
-These have zero rows AND are not referenced in any frontend component, hook, or edge function:
-
-1. `ip_shield_custom_plans` — planned IP Shield pricing, never built
-2. `ip_abuse_complaints` — planned abuse reporting, never wired
-3. `ip_email_messages` — planned IP email system, never wired
-4. `ip_email_threads` — planned IP email threading, never wired
-5. `ip_copy_detections` — planned copy detection, never wired
-6. `ip_detection_snapshots` — planned detection snapshots, never wired
-7. `promotion_analytics` — planned promo tracking, never wired
-8. `takedown_activity_log` — planned takedown logging, never wired
-
-### What This Saves
-
-- **Schema clarity** — 8 fewer tables in the types file and migration history
-- **Security surface** — 8 fewer tables that need RLS auditing
-- **Developer cognitive load** — cleaner schema when onboarding new team members
-
-### What We Will NOT Touch
-
-- Any table with data (even 1 row)
-- Any table referenced in frontend code, edge functions, or bot code
-- Any table that's part of a foreign key chain with active tables
-
-### Implementation
-
-**Single migration** that drops the 8 dead tables. No frontend changes needed since nothing references them.
-
-### Risk
-
-Very low — these tables are orphaned schema with no data and no code paths. The migration uses `IF EXISTS` and `CASCADE` to handle any leftover FK references cleanly.
+### Files Changed
+- `src/components/auth/AuthLayout.tsx` — spacing, logo, background
+- `src/components/auth/LoginSignupForm.tsx` — card elevation, button sizing, spacing
+- `src/components/auth/SocialLoginButtons.tsx` — vertical stack layout, refined button styles
 
