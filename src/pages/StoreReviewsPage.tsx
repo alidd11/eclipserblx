@@ -222,8 +222,8 @@ export default function StoreReviewsPage() {
  </div>
 
  {/* Stats Card */}
- <div className="border border-border rounded-xl overflow-hidden mb-6"> style={{ borderColor: `${accentColor}30` }}>
- <div className="p-4 p-4">
+ <div className="border border-border rounded-xl overflow-hidden mb-6" style={{ borderColor: `${accentColor}30` }}>
+ <div className="p-4">
  <div className="flex flex-col md:flex-row gap-6">
  {/* Average Rating */}
  <div className="flex items-center gap-4">
