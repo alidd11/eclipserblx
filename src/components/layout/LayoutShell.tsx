@@ -135,7 +135,7 @@ function LayoutShellInner({
           )}
           <main
             id="main-content"
-            className={mainClassName ?? "flex-1 overflow-x-clip max-w-full min-w-0 overscroll-y-contain"}
+            className={mainClassName ?? "flex-1 max-w-full min-w-0"}
             style={mainStyle ?? { paddingBottom: 'var(--bottom-safe-area, 0px)' }}
           >
             <div className={cn("w-full", chatMode && "flex-1 flex flex-col min-h-0 overflow-hidden")}>
