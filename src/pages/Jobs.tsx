@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Briefcase, MapPin, Send, Loader2 } from 'lucide-react';
+import { Briefcase, MapPin, Send, Loader2, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -182,7 +182,7 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
           maxLength={5000}
           required
         />
-        <p className="text-xs text-muted-foreground text-right">{formData.message.length}/5000</p>
+        <p className="text-xs text-muted-foreground text-right">{formData.message.length}/5,000</p>
       </div>
 
       <p className="text-xs text-muted-foreground">
@@ -287,7 +287,7 @@ function ApplicationStatusCheck() {
   return (
     <div className="border border-border rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-border bg-muted/30">
-        <h2 className="font-semibold text-sm">Check Your Application Status</h2>
+        <h2 className="font-semibold text-sm">Check Application Status</h2>
         <p className="text-xs text-muted-foreground mt-0.5">
           Enter your email to view your status and messages from our team.
         </p>
@@ -339,8 +339,9 @@ function ApplicationStatusCheck() {
 }
 
 export default function Jobs() {
-  usePageMeta({ title: 'Jobs', description: 'Join the Eclipse team. View open positions and apply to help build the best Roblox asset marketplace.', canonicalPath: '/jobs' });
+  usePageMeta({ title: 'Careers — Eclipse', description: 'Join the Eclipse team. View open positions and apply to help build the best Roblox asset marketplace.', canonicalPath: '/jobs' });
   const [openDialog, setOpenDialog] = useState<string | null>(null);
+  const [expandedJob, setExpandedJob] = useState<string | null>(null);
 
   const { data: jobOpenings = [], isLoading } = useQuery({
     queryKey: ['job-channels-public'],
@@ -358,101 +359,105 @@ export default function Jobs() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-12 max-w-4xl">
+      <div className="container mx-auto px-4 py-8 max-w-3xl">
         {/* Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-3xl sm:text-4xl font-display font-bold">Join Our Team</h1>
-          <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-            We're always looking for talented individuals to join our growing team. 
-            Check out our open positions below and apply if you think you'd be a great fit.
+        <div className="mb-8">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-display font-bold">Careers</h1>
+            {!isLoading && jobOpenings.length > 0 && (
+              <Badge variant="secondary" className="text-xs">
+                {jobOpenings.length} open {jobOpenings.length === 1 ? 'role' : 'roles'}
+              </Badge>
+            )}
+          </div>
+          <p className="text-muted-foreground text-sm mt-1">
+            We're building the leading marketplace for Roblox creators. Join us.
           </p>
-        </div>
-
-        {/* Application Status Check */}
-        <div className="mb-10">
-          <ApplicationStatusCheck />
         </div>
 
         {/* Job Listings */}
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : jobOpenings.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground">
-            <Briefcase className="h-10 w-10 mx-auto mb-3 opacity-40" />
-            <p className="font-medium">No open positions at the moment</p>
-            <p className="text-sm mt-1">Check back soon for new opportunities.</p>
+          <div className="border border-border rounded-xl p-8 text-center">
+            <p className="font-medium text-sm">No open positions at the moment</p>
+            <p className="text-sm text-muted-foreground mt-1">Check back soon for new opportunities.</p>
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2">
-            {jobOpenings.map((job) => (
-              <div key={job.id} className="border border-border rounded-xl overflow-hidden flex flex-col">
-                <div className="px-4 py-3 border-b border-border bg-muted/30">
-                  <h2 className="font-semibold text-lg">{job.title}</h2>
-                  <div className="flex items-center gap-4 mt-1.5 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Briefcase className="h-3.5 w-3.5" />
-                      {job.type}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5" />
-                      {job.location}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-4 space-y-4 flex-1 flex flex-col">
-                  <p className="text-sm text-muted-foreground">{job.description}</p>
-                  
-                  <div>
-                    <h3 className="font-medium text-sm mb-2">Requirements</h3>
-                    <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                      {job.requirements.map((req, i) => (
-                        <li key={i}>{req}</li>
-                      ))}
-                    </ul>
-                  </div>
+          <div className="border border-border rounded-xl overflow-hidden divide-y divide-border">
+            {jobOpenings.map((job) => {
+              const isExpanded = expandedJob === job.id;
+              return (
+                <div key={job.id}>
+                  {/* Job row */}
+                  <button
+                    onClick={() => setExpandedJob(isExpanded ? null : job.id)}
+                    className="w-full text-left px-4 py-3.5 flex items-center justify-between gap-4 hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="min-w-0">
+                      <h2 className="font-semibold text-sm">{job.title}</h2>
+                      <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Briefcase className="h-3 w-3" />
+                          {job.type}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {job.location}
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                  </button>
 
-                  <div className="mt-auto pt-2">
-                    <Dialog open={openDialog === job.title} onOpenChange={(open) => setOpenDialog(open ? job.title : null)}>
-                      <DialogTrigger asChild>
-                        <Button className="w-full h-12">Apply Now</Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Apply for {job.title}</DialogTitle>
-                          <DialogDescription>
-                            Fill out the form below to submit your application. We'll review it and get back to you.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <ApplicationForm 
-                          position={job.title} 
-                          onSuccess={() => setOpenDialog(null)} 
-                        />
-                      </DialogContent>
-                    </Dialog>
-                  </div>
+                  {/* Expanded details */}
+                  {isExpanded && (
+                    <div className="px-4 pb-4 space-y-4 border-t border-border bg-muted/10">
+                      <div className="pt-3">
+                        <p className="text-sm text-muted-foreground">{job.description}</p>
+                      </div>
+                      
+                      {job.requirements.length > 0 && (
+                        <div>
+                          <h3 className="font-medium text-xs uppercase tracking-wider text-muted-foreground mb-2">Requirements</h3>
+                          <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                            {job.requirements.map((req, i) => (
+                              <li key={i}>{req}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      <Dialog open={openDialog === job.title} onOpenChange={(open) => setOpenDialog(open ? job.title : null)}>
+                        <DialogTrigger asChild>
+                          <Button className="h-12 w-full sm:w-auto">Apply for this role</Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Apply — {job.title}</DialogTitle>
+                            <DialogDescription>
+                              Fill out the form below to submit your application. We'll review it and get back to you.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <ApplicationForm 
+                            position={job.title} 
+                            onSuccess={() => setOpenDialog(null)} 
+                          />
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
-        {/* Benefits Section */}
-        <div className="mt-16">
-          <h2 className="text-2xl font-display font-bold text-center mb-6">Why Work With Us?</h2>
-          <div className="grid gap-5 sm:grid-cols-3">
-            {[
-              { title: 'Flexible Hours', description: 'Work on your own schedule from anywhere in the world.' },
-              { title: 'Creative Freedom', description: 'Express your creativity and contribute to exciting projects.' },
-              { title: 'Growing Community', description: 'Join a passionate community of creators and developers.' },
-            ].map((benefit) => (
-              <div key={benefit.title} className="border border-border rounded-xl p-5">
-                <h3 className="font-semibold text-sm mb-1">{benefit.title}</h3>
-                <p className="text-sm text-muted-foreground">{benefit.description}</p>
-              </div>
-            ))}
-          </div>
+        {/* Application Status Check */}
+        <div className="mt-10">
+          <ApplicationStatusCheck />
         </div>
       </div>
     </MainLayout>
