@@ -117,7 +117,7 @@ export function FinancialOverview() {
     ...queryDefaults,
   });
 
-  // Subscriptions (Eclipse+)
+  // Subscriptions
   const { data: subsData, isLoading: subsLoading, isError: subsError, refetch: refetchSubs } = useQuery({
     queryKey: ['admin-financial-overview-subs'],
     queryFn: async () => {
