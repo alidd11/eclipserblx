@@ -4,7 +4,7 @@ import {
   ChevronDown, MessageCircle, FileText, Star, 
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
   AlertTriangle, Tags, Ban, Gift, Inbox, LucideIcon, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Ticket, Bot, RotateCcw, Upload, Wallet, DollarSign,
-  UserCheck, Link2, Code, Globe, Scale, Rss, FileCode, Twitter, ShieldCheck
+  UserCheck, Link2, Code, Globe, Scale, Rss, FileCode, Twitter, ShieldCheck, Zap
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
