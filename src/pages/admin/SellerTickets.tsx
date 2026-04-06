@@ -510,10 +510,18 @@ export default function SellerTickets() {
  </SelectContent>
  </Select>
  </div>
- <DrawerDescription className="sr-only">Ticket details</DrawerDescription>
+  <DrawerDescription className="sr-only">Ticket details</DrawerDescription>
 
- {/* Collapsible seller info */}
- <Collapsible>
+  {/* Agent collision banner */}
+  {viewingAgents.length > 0 && (
+    <div className="flex items-center gap-2 text-xs bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-1.5">
+      <Users className="h-3.5 w-3.5 text-yellow-500 shrink-0" />
+      <span className="text-yellow-600">{viewingAgents.map(a => a.name).join(', ')} {viewingAgents.length === 1 ? 'is' : 'are'} also viewing this ticket</span>
+    </div>
+  )}
+
+  {/* Collapsible seller info */}
+  <Collapsible>
  <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full">
  <Avatar className="h-5 w-5">
  <AvatarImage src={selectedTicket.profiles?.avatar_url || undefined} />
