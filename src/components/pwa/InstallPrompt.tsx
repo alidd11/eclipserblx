@@ -37,7 +37,7 @@ export function InstallPrompt() {
       if (daysSinceDismissed < 7) return;
     }
 
-    if (isIOS()) {
+    if (isIOSDevice()) {
       setTimeout(() => setShowPrompt(true), 2000);
       return;
     }

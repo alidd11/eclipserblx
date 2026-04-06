@@ -25,8 +25,7 @@ export function NotificationSettingsCard() {
     return saved !== 'false';
   });
 
-  const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
-    (window.navigator as any).standalone === true;
+  const { isStandalone: isPWA } = useDevice();
 
   const handleTogglePush = async () => {
     if (!user) {
