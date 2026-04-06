@@ -5,7 +5,7 @@ import {
   LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, Users,
   Tag, BarChart3, FileText, HelpCircle, MessageCircle, Star, Bot, Import,
   Gamepad2, Layers, TrendingUp, Receipt, LineChart, Megaphone,
-  RotateCcw, PackagePlus, Globe, Inbox, Sparkles, Calculator, Crown, Shield
+  RotateCcw, PackagePlus, Globe, Inbox, Sparkles, Calculator, Crown, Shield, Webhook
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -97,6 +97,7 @@ const navGroups: NavGroup[] = [
       { title: 'Discord', icon: MessageCircle, href: '/seller/discord' },
       { title: 'Discord Bots', icon: Bot, href: '/seller/bots' },
       { title: 'Roblox', icon: Gamepad2, href: '/seller/roblox' },
+      { title: 'Webhooks', icon: Webhook, href: '/seller/webhooks' },
     ],
   },
   {
