@@ -62,8 +62,8 @@ interface SellerProductFormDialogProps {
   onSubmit: (e: React.FormEvent) => void;
   isPending: boolean;
   storeId: string | undefined;
-  parentCats: any[];
-  childCatsMap: Map<string, any[]>;
+  parentCats: { id: string; name: string; parent_id: string | null }[];
+  childCatsMap: Map<string, { id: string; name: string; parent_id: string | null }[]>;
   limits: { maxProductFiles: number };
 }
 
