@@ -201,9 +201,9 @@ export function ExportReportsCard() {
  URL.revokeObjectURL(url);
 
  toast.success(`Exported ${data.length} rows to ${filename}`);
- } catch (error: any) {
+ } catch (error) {
  console.error('Export error:', error);
- toast.error('Failed to export data: ' + error.message);
+ toast.error('Failed to export data: ' + (error instanceof Error ? error.message : 'Unknown error'));
  } finally {
  setIsExporting(false);
  }

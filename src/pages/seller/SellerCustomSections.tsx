@@ -212,14 +212,14 @@ export default function SellerCustomSections() {
         const items = content?.items || [];
         return (
           <div className="space-y-3">
-            {items.map((item: any, i: number) => (
+            {items.map((item: TestimonialItem, i: number) => (
               <div key={i} className="space-y-2 p-3 border rounded-lg">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs">Testimonial {i + 1}</Label>
                   {items.length > 1 && (
                     <Button
                       variant="ghost" size="icon" className="h-6 w-6"
-                      onClick={() => onChange({ items: items.filter((_: any, j: number) => j !== i) })}
+                      onClick={() => onChange({ items: items.filter((_: TestimonialItem, j: number) => j !== i) })}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
