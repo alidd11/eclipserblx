@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { Plus, Trash2, Loader2, Eye, EyeOff, Copy, Clock } from 'lucide-react';
 import { useActiveStore } from '@/contexts/ActiveStoreContext';
 import { format, formatDistanceToNow } from '@/lib/dateUtils';
+import { WebhookDeliveryLogs } from '@/components/seller/WebhookDeliveryLogs';
 
 const AVAILABLE_EVENTS = [
   { value: 'order.created', label: 'New Order' },
@@ -193,7 +194,8 @@ export default function SellerWebhooks() {
               </TableHeader>
               <TableBody>
                 {webhooks.map((wh) => (
-                  <TableRow key={wh.id}>
+                  <React.Fragment key={wh.id}>
+                  <TableRow className="group">
                     <TableCell className="font-mono text-xs max-w-[200px] truncate">
                       {wh.url}
                     </TableCell>
@@ -253,6 +255,12 @@ export default function SellerWebhooks() {
                       </Button>
                     </TableCell>
                   </TableRow>
+                  <tr>
+                    <td colSpan={6} className="p-0">
+                      <WebhookDeliveryLogs webhookId={wh.id} />
+                    </td>
+                  </tr>
+                  </React.Fragment>
                 ))}
               </TableBody>
             </Table>
