@@ -160,31 +160,8 @@ export const buyerCategories: HelpCategory[] = [
       },
     ],
   },
-  {
-    id: 'eclipse-plus',
-    icon: Sparkles,
-    title: 'Eclipse+ Membership',
-    description: 'Premium perks and subscription info.',
-    color: 'text-amber-500',
-    articles: [
-      {
-        question: 'What is Eclipse+?',
-        answer: 'Eclipse+ is our premium membership that gives you exclusive perks including early access to new products, member-only discounts, priority support, and a special badge on your profile.',
-      },
-      {
-        question: 'How do I subscribe to Eclipse+?',
-        answer: 'Visit the Eclipse+ page from the navigation menu. Choose your preferred billing period (monthly or annual) and complete payment to activate your membership instantly.',
-      },
-      {
-        question: 'Can I cancel my Eclipse+ subscription?',
-        answer: 'Yes — you can cancel anytime from your Account settings. You\'ll retain benefits until the end of your current billing period.',
-      },
-      {
-        question: 'Do Discord boosters get Eclipse+?',
-        answer: 'Discord server boosters receive a complimentary Eclipse+ trial. Boost our server and link your Discord account to claim the perk automatically.',
-      },
-    ],
-  },
+
+
   {
     id: 'account-security',
     icon: Shield,

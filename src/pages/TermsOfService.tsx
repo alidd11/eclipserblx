@@ -174,18 +174,7 @@ export default function TermsOfService() {
               for your tax records.
             </p>
 
-            <h3 className="font-semibold text-lg mt-6 mb-3">Eclipse+ Membership Discounts</h3>
-            <p className="text-muted-foreground mb-4">
-              Eclipse+ members receive automatic discounts on eligible products (30% on standard products, 
-              35% on Bots). These discounts are applied at checkout and <strong>cannot be combined with 
-              promotional discount codes</strong>. When an Eclipse+ discount is applied, the discount code 
-              field will not be available. Products in the "Eclipse Savers" category are excluded from 
-              Eclipse+ discounts.
-            </p>
-            <p className="text-muted-foreground">
-              Eclipse+ members also receive one free product claim per month from eligible categories 
-              (excluding Bots and Eclipse Savers).
-            </p>
+
           </section>
 
           <div className="border-t border-border" />

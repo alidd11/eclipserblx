@@ -57,7 +57,7 @@ export default function PrivacyPolicy() {
               <li>Account credentials (securely hashed — we never store plaintext passwords)</li>
               <li>Purchase and order history</li>
               <li>Download records (including IP address, device information, and timestamps)</li>
-              <li>Subscription status (e.g., Eclipse+ membership)</li>
+              <li>Subscription status</li>
               <li>Discord username (if you choose to link your account)</li>
               <li>Support ticket content and correspondence</li>
               <li>Digital watermark identifiers embedded in downloaded product files for anti-piracy purposes</li>
