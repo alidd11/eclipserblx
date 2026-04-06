@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { sanitizeSearch } from '@/lib/searchUtils';
 import { useQuery } from '@tanstack/react-query';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { useAuth } from '@/hooks/useAuth';
@@ -610,7 +611,7 @@ function ConsentRecordsTab({ search, onSearchChange }: { search: string; onSearc
  .limit(200);
 
  if (search) {
- query = query.or(`visitor_id.ilike.%${search}%,action.ilike.%${search}%`);
+ query = query.or(`visitor_id.ilike.%${sanitizeSearch(search)}%,action.ilike.%${sanitizeSearch(search)}%`);
  }
 
  const { data, error } = await query;

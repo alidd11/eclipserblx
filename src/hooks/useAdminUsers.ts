@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { sanitizeSearch } from '@/lib/searchUtils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAuth } from '@/hooks/useAuth';
@@ -83,7 +84,7 @@ export function useAdminUsers() {
         .select('user_id, display_name, username, avatar_url, email, customer_id, staff_id, discord_id, discord_username, roblox_user_id, roblox_username, created_at')
         .order('created_at', { ascending: false });
       if (debouncedSearch) {
-        query = query.ilike('customer_id', `%${debouncedSearch}%`);
+        query = query.ilike('customer_id', `%${sanitizeSearch(debouncedSearch)}%`);
       }
       const { data, error } = await query;
       if (error) throw error;

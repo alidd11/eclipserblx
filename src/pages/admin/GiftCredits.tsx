@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { sanitizeSearch } from '@/lib/searchUtils';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Loader2, Gift, Search, UserPlus, Wallet, Check } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -37,7 +38,7 @@ export default function AdminGiftCredits() {
  const { data, error } = await supabase
  .from('profiles')
  .select('user_id, display_name, email, avatar_url, username, customer_id')
- .or(`display_name.ilike.%${debouncedSearch}%,email.ilike.%${debouncedSearch}%,username.ilike.%${debouncedSearch}%,customer_id.ilike.%${debouncedSearch}%`)
+ .or(`display_name.ilike.%${sanitizeSearch(debouncedSearch)}%,email.ilike.%${sanitizeSearch(debouncedSearch)}%,username.ilike.%${sanitizeSearch(debouncedSearch)}%,customer_id.ilike.%${sanitizeSearch(debouncedSearch)}%`)
  .limit(10);
  
  if (error) throw error;

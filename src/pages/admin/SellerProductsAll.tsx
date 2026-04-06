@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { sanitizeSearch } from '@/lib/searchUtils';
 import DOMPurify from "dompurify";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -87,7 +88,7 @@ export default function SellerProductsAll() {
         query = query.eq("store_id", filterStore);
       }
       if (debouncedSearch) {
-        query = query.ilike("name", `%${debouncedSearch}%`);
+        query = query.ilike("name", `%${sanitizeSearch(debouncedSearch)}%`);
       }
 
       const { data, error, count } = await query.range(from, to);

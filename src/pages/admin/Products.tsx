@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { sanitizeSearch } from '@/lib/searchUtils';
 import { submitProductUrl } from '@/lib/submitIndexNow';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, Upload, FileCheck, X, Loader2, ImagePlus, Video, Edit3, Clock, Calendar, Store, Crown } from 'lucide-react';
@@ -111,7 +112,7 @@ export default function AdminProducts() {
     queryKey: ['admin-products', search, filterCategory, filterStore, filterStatus],
     queryFn: async () => {
       let query = supabase.from('products').select(`*, categories(name)`).order('created_at', { ascending: false }).eq('is_seller_product', false);
-      if (search) query = query.ilike('name', `%${search}%`);
+      if (search) query = query.ilike('name', `%${sanitizeSearch(search)}%`);
       if (filterCategory && filterCategory !== 'all') query = query.eq('category_id', filterCategory);
       if (filterStore && filterStore !== 'all') { if (filterStore === 'none') query = query.is('store_id', null); else query = query.eq('store_id', filterStore); }
       if (filterStatus === 'active') query = query.eq('is_active', true);
