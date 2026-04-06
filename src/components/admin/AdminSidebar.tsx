@@ -222,7 +222,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
     requestAnimationFrame(() => {
       const nav = navRef.current;
       if (!nav) return;
-      const activeLink = nav.querySelector('a.bg-primary, a[aria-current="page"]') as HTMLElement;
+      const activeLink = nav.querySelector('a.border-l-2, a[aria-current="page"]') as HTMLElement;
       if (activeLink) {
         activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       }
