@@ -147,7 +147,7 @@ export default function SellerProductsAll() {
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleEditOpen = (product: any) => {
+  const handleEditOpen = (product: Record<string, unknown>) => {
     setEditProduct(product);
     setEditCategory(product.category_id || "");
     setEditPrice(product.price?.toString() || "");

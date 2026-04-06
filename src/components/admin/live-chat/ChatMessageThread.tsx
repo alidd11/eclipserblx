@@ -36,7 +36,7 @@ interface ChatMessageThreadProps {
   customerOrders: Array<{ id: string; total: number; status: string; created_at: string; items: Array<{ product_name: string; price: number }> }>;
   loadingOrders: boolean;
   isChatDragOver: boolean;
-  chatDragProps: any;
+  chatDragProps: Record<string, unknown>;
 }
 
 export function ChatMessageThread({

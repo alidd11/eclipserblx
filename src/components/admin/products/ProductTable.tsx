@@ -12,13 +12,27 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+
+interface AdminProduct {
+  id: string;
+  name: string;
+  price: number;
+  is_active: boolean;
+  images: unknown;
+  created_at: string;
+  release_at?: string | null;
+  categories?: { name: string } | null;
+  stores?: { name: string } | null;
+  [key: string]: unknown;
+}
+
 interface ProductTableProps {
-  products: any[] | undefined;
+  products: AdminProduct[] | undefined;
   isLoading: boolean;
   selectedProducts: Set<string>;
   onToggleSelection: (id: string) => void;
   onToggleSelectAll: () => void;
-  onEdit: (product: any) => void;
+  onEdit: (product: AdminProduct) => void;
   onDelete: (id: string) => void;
   isScheduledForFuture: (releaseAt: string | null) => boolean;
 }

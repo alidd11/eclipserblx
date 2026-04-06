@@ -98,7 +98,7 @@ export function DiscountCodesTab() {
   const isExpired = (d: string | null) => d ? new Date(d) < new Date() : false;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const getStatusBadge = (d: any) => {
+  const getStatusBadge = (d: Record<string, unknown>) => {
     if (!d.is_active) return <Badge variant="secondary">Inactive</Badge>;
     if (isExpired(d.expires_at)) return <Badge variant="destructive">Expired</Badge>;
     if (d.max_uses && (d.current_uses || 0) >= d.max_uses) return <Badge variant="secondary">Maxed Out</Badge>;
@@ -106,15 +106,15 @@ export function DiscountCodesTab() {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const getDisplay = (d: any) => d.discount_type === 'percentage' ? `${d.discount_value}%` : `£${d.discount_value.toFixed(2)}`;
+  const getDisplay = (d: Record<string, unknown>) => d.discount_type === 'percentage' ? `${d.discount_value}%` : `£${d.discount_value.toFixed(2)}`;
 
   const copyCode = (code: string) => { navigator.clipboard.writeText(code); setCopiedCode(code); setTimeout(() => setCopiedCode(null), 2000); };
 
   const openCreate = () => { setForm(emptyForm); setDialogOpen(true); };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const openEdit = (d: any) => { setForm({ id: d.id, code: d.code, discount_type: d.discount_type, discount_value: d.discount_value, min_order_amount: d.min_order_amount, max_uses: d.max_uses, expires_at: d.expires_at ? d.expires_at.split('T')[0] : null, is_active: d.is_active, store_id: d.store_id }); setDialogOpen(true); };
+  const openEdit = (d: Record<string, unknown>) => { setForm({ id: d.id, code: d.code, discount_type: d.discount_type, discount_value: d.discount_value, min_order_amount: d.min_order_amount, max_uses: d.max_uses, expires_at: d.expires_at ? d.expires_at.split('T')[0] : null, is_active: d.is_active, store_id: d.store_id }); setDialogOpen(true); };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const openDelete = (d: any) => { setSelected(d); setDeleteDialogOpen(true); };
+  const openDelete = (d: Record<string, unknown>) => { setSelected(d); setDeleteDialogOpen(true); };
 
   return (
     <div className="space-y-4">

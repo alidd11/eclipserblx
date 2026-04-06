@@ -271,7 +271,7 @@ function formatDownloads(count: number): string {
   return String(count);
 }
 
-function HeroProductCard({ product }: { product: any }) {
+function HeroProductCard({ product }: { product: Record<string, unknown> }) {
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const { formatPrice } = useCurrency();
   const displayMedia = getFirstMediaPrioritizeVideo(product.images);
@@ -284,7 +284,7 @@ function HeroProductCard({ product }: { product: any }) {
 
   return (
     <Link
-      to={`/products/${(product as any).product_number}`}
+      to={`/products/${(product as Record<string, unknown>).product_number}`}
       className="block group"
     >
       <div className="relative rounded-xl overflow-hidden border border-border bg-card">

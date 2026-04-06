@@ -224,7 +224,7 @@ export default function SellerRefunds() {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function SellerDisputeDetail({ request, response, setResponse, respondMutation, getStatusBadge }: { request: any; response: string; setResponse: (v: string) => void; respondMutation: { mutate: (v: unknown) => void; isPending: boolean }; getStatusBadge: (s: string) => React.ReactNode }) {
+function SellerDisputeDetail({ request, response, setResponse, respondMutation, getStatusBadge }: { request: Record<string, unknown>; response: string; setResponse: (v: string) => void; respondMutation: { mutate: (v: unknown) => void; isPending: boolean }; getStatusBadge: (s: string) => React.ReactNode }) {
   const { data: evidence } = useQuery({
     queryKey: ['dispute-evidence-seller', request.id],
     queryFn: async () => {

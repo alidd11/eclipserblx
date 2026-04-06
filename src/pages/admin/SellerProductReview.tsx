@@ -272,7 +272,7 @@ export default function SellerProducts() {
 
   // Render moderation flags if present
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const renderModerationFlags = (flags: any) => {
+  const renderModerationFlags = (flags: Record<string, unknown> | null) => {
     if (!flags) return null;
     
     const hasNsfw = flags.nsfw_flags?.length > 0;

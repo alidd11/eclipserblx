@@ -85,7 +85,7 @@ export default function SellerCampaigns() {
     },
   });
 
-  const getCampaignStatus = (campaign: any) => {
+  const getCampaignStatus = (campaign: Record<string, unknown>) => {
     if (!campaign.is_active) return { label: 'Paused', variant: 'secondary' as const };
     if (isFuture(new Date(campaign.starts_at))) return { label: 'Scheduled', variant: 'outline' as const };
     if (isPast(new Date(campaign.ends_at))) return { label: 'Ended', variant: 'secondary' as const };

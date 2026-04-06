@@ -13,7 +13,7 @@ const applicationSteps = [
   { key: 'setup', label: 'Store Setup' },
 ];
 
-function ApplicationTimeline({ application }: { application: any }) {
+function ApplicationTimeline({ application }: { application: Record<string, unknown> }) {
   const createdAt = application?.created_at ? new Date(application.created_at) : null;
   const daysSince = createdAt ? Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24)) : 0;
   const currentStepIndex = 1;

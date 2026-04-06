@@ -22,7 +22,7 @@ interface CustomDomainCardProps {
   isVerifying: boolean;
   isHealthChecking: boolean;
   isAutoFixing: boolean;
-  healthCheckData?: any;
+  healthCheckData?: Record<string, unknown>;
   hasCloudflareCredentials: boolean;
 }
 

@@ -5,6 +5,20 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { Pencil, Clock } from 'lucide-react';
 
+
+interface AdminProduct {
+  id: string;
+  name: string;
+  price: number;
+  is_active: boolean;
+  images: unknown;
+  created_at: string;
+  release_at?: string | null;
+  categories?: { name: string } | null;
+  stores?: { name: string } | null;
+  [key: string]: unknown;
+}
+
 interface ProductMobileCardsProps {
  products: any[] | undefined;
  isLoading: boolean;

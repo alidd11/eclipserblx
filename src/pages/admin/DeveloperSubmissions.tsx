@@ -24,7 +24,7 @@
    product_description: string | null;
    category_id: string | null;
    price: number;
-   files: any;
+   files: Record<string, unknown>;
    status: string;
    reviewer_id: string | null;
    reviewer_notes: string | null;

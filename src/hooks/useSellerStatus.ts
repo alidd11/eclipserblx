@@ -160,7 +160,7 @@ export function useSellerStatus() {
     queryFn: async () => {
       if (!user?.id) return null;
 
-      let storeData: any = null;
+      let storeData: Record<string, unknown> | null = null;
 
       // If an active store is selected, try to fetch it (owned OR team member)
       if (activeStoreId) {
