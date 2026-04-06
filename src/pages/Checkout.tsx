@@ -120,20 +120,18 @@ export default function Checkout() {
     setIsApplyingDiscount(true);
 
     try {
-      const { data: discount, error } = await supabase
-        .from('discount_codes')
-        .select('*')
-        .eq('code', discountCode.toUpperCase())
-        .eq('is_active', true)
-        .single();
+      const productIds = items.map(i => i.id);
+      const { data: discountRows, error } = await supabase
+        .rpc('validate_discount_code_for_checkout', {
+          p_code: discountCode.toUpperCase(),
+          p_product_ids: productIds,
+          p_subtotal: memberSubtotal,
+        });
+
+      const discount = discountRows?.[0] ?? null;
 
       if (error || !discount) {
         showErrorNotification(t('checkout.invalidCode'), t('checkout.invalidCode'));
-        return;
-      }
-
-      if (discount.restricted_to_user_id && discount.restricted_to_user_id !== user?.id) {
-        showErrorNotification(t('common.error'), 'This discount code is not available for your account.');
         return;
       }
 
