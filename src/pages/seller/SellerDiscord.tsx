@@ -7,7 +7,7 @@ import { DiscordServerOverview } from '@/components/seller/DiscordServerOverview
 import { DiscordNotificationsTab } from '@/components/seller/discord/DiscordNotificationsTab';
 import { CommandPermissionsTab } from '@/components/seller/discord/CommandPermissionsTab';
 import { WelcomeEmbedBuilder } from '@/components/seller/WelcomeEmbedBuilder';
-import { Card, CardContent } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

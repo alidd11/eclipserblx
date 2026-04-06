@@ -186,7 +186,7 @@ export default function SellerGoals() {
                   />
                 </div>
                 <Button
-                  className="w-full gradient-button border-0"
+                  className="w-full"
                   disabled={!newGoal.title || createMutation.isPending}
                   onClick={() => createMutation.mutate()}
                 >

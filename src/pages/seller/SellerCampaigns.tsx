@@ -156,7 +156,7 @@ export default function SellerCampaigns() {
                   <Label>Apply to all products</Label>
                 </div>
                 <Button
-                  className="w-full gradient-button border-0"
+                  className="w-full"
                   disabled={!newCampaign.name || !newCampaign.starts_at || !newCampaign.ends_at || createMutation.isPending}
                   onClick={() => createMutation.mutate()}
                 >

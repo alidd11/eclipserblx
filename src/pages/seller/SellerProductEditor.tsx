@@ -12,7 +12,7 @@ import { submitProductUrl } from '@/lib/submitIndexNow';
 import { QUANTIS_STORE_ID } from '@/lib/constants';
 import { EarlyAccessCard } from '@/components/seller/EarlyAccessCard';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
