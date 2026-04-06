@@ -97,12 +97,13 @@
  const from = (currentPage - 1) * TICKETS_PER_PAGE;
  const to = from + TICKETS_PER_PAGE - 1;
 
- let query = supabase
- .from('support_tickets')
- .select('id, ticket_number, user_id, customer_email, subject, status, priority, category, assigned_to, created_at, updated_at', { count: 'exact' })
- .not('status', 'in', '("resolved","closed")')
- .order('created_at', { ascending: false })
- .range(from, to);
+    let query = supabase
+      .from('support_tickets')
+      .select('id, ticket_number, user_id, customer_email, subject, status, priority, category, assigned_to, created_at, updated_at, snoozed_until', { count: 'exact' })
+      .not('status', 'in', '("resolved","closed")')
+      .or('snoozed_until.is.null,snoozed_until.lte.' + new Date().toISOString())
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
  if (statusFilter !== 'all') {
  query = query.eq('status', statusFilter);
