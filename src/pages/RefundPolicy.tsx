@@ -1,5 +1,4 @@
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Card, CardContent } from '@/components/ui/card';
 import { SITE_NAME } from '@/lib/constants';
 import { AlertCircle, CheckCircle, XCircle, Scale, Clock, Mail } from 'lucide-react';
 import { usePageTracking } from '@/hooks/usePageTracking';
@@ -12,51 +11,48 @@ export default function RefundPolicy() {
   usePageMeta({ title: 'Refund Policy', description: 'Eclipse refund policy. Learn about our digital product refund process, eligibility and timelines.', canonicalPath: '/refunds' });
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-12 max-w-4xl">
-        <h1 className="font-display text-4xl font-bold gradient-text mb-4 text-center">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 className="font-display text-4xl font-bold mb-4 text-center">
           Refund Policy
         </h1>
-        <p className="text-muted-foreground text-center mb-8">
+        <p className="text-muted-foreground text-center mb-10">
           Last updated: {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
 
         {/* Important Notice */}
-        <Card className="border border-primary/50 rounded-xl mb-8">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-4">
-              <Scale className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-              <div>
-                <h3 className="font-semibold mb-2">UK Consumer Rights for Digital Content</h3>
-                <p className="text-sm text-muted-foreground">
-                  This policy complies with the Consumer Rights Act 2015 and the Consumer Contracts 
-                  (Information, Cancellation and Additional Charges) Regulations 2013, which govern 
-                  digital content purchases in the United Kingdom.
-                </p>
-              </div>
+        <div className="border border-primary/30 rounded-xl p-5 mb-10 bg-primary/5">
+          <div className="flex items-start gap-4">
+            <Scale className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-semibold mb-1">UK Consumer Rights for Digital Content</h3>
+              <p className="text-sm text-muted-foreground">
+                This policy complies with the Consumer Rights Act 2015 and the Consumer Contracts 
+                (Information, Cancellation and Additional Charges) Regulations 2013, which govern 
+                digital content purchases in the United Kingdom.
+              </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Main Content Card */}
-        <Card className="bg-card border-border">
-          <CardContent className="pt-8 pb-8">
-            <div className="prose prose-invert max-w-none space-y-8">
-              {/* Digital Content Rights */}
-              <section>
-                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-                  <AlertCircle className="h-6 w-6 text-primary" />
-                  Digital Content and Your Rights
-                </h2>
-                <p className="text-muted-foreground mb-4">
-                  Under the Consumer Rights Act 2015, digital content (including digital downloads, scripts, 
-                  liveries, and other digital assets) must be:
-                </p>
-                <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                  <li><strong>Of satisfactory quality</strong> - Free from defects, safe, and durable</li>
-                  <li><strong>Fit for purpose</strong> - Suitable for any purpose you made known to us</li>
-                  <li><strong>As described</strong> - Match the description, sample, or model shown</li>
-                </ul>
-              </section>
+        <div className="prose prose-invert max-w-none space-y-10">
+          {/* Digital Content Rights */}
+          <section>
+            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
+              <AlertCircle className="h-6 w-6 text-primary" />
+              Digital Content and Your Rights
+            </h2>
+            <p className="text-muted-foreground mb-4">
+              Under the Consumer Rights Act 2015, digital content (including digital downloads, scripts, 
+              liveries, and other digital assets) must be:
+            </p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
+              <li><strong>Of satisfactory quality</strong> - Free from defects, safe, and durable</li>
+              <li><strong>Fit for purpose</strong> - Suitable for any purpose you made known to us</li>
+              <li><strong>As described</strong> - Match the description, sample, or model shown</li>
+            </ul>
+          </section>
+
+          <div className="border-t border-border" />
 
           {/* 14-Day Cancellation Right */}
           <section>
@@ -64,27 +60,27 @@ export default function RefundPolicy() {
               <Clock className="h-6 w-6 text-primary" />
               14-Day Cancellation Period
             </h2>
-            <Card className="border border-border rounded-xl mb-4">
-              <CardContent className="pt-6">
-                <p className="text-muted-foreground mb-4">
-                  Under the Consumer Contracts Regulations 2013, you normally have 14 days to cancel 
-                  a purchase made online. However, for digital content:
+            <div className="border border-border rounded-xl p-5 mb-4">
+              <p className="text-muted-foreground mb-4">
+                Under the Consumer Contracts Regulations 2013, you normally have 14 days to cancel 
+                a purchase made online. However, for digital content:
+              </p>
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+                <p className="text-sm font-medium text-destructive">
+                  <strong>Important:</strong> Once you download or access digital content, you lose 
+                  your right to cancel under the 14-day cooling-off period. By proceeding with a 
+                  download, you acknowledge and agree to this.
                 </p>
-                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
-                  <p className="text-sm font-medium text-destructive">
-                    <strong>Important:</strong> Once you download or access digital content, you lose 
-                    your right to cancel under the 14-day cooling-off period. By proceeding with a 
-                    download, you acknowledge and agree to this.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
             <p className="text-muted-foreground">
               Before purchasing, we ask you to expressly consent to the immediate supply of digital 
               content and acknowledge that you will lose your cancellation rights once the download 
               begins or access is granted.
             </p>
           </section>
+
+          <div className="border-t border-border" />
 
           {/* When We Will Refund */}
           <section>
@@ -96,45 +92,39 @@ export default function RefundPolicy() {
               You are entitled to a full or partial refund in the following circumstances:
             </p>
             <div className="space-y-4">
-              <Card className="border border-border rounded-xl">
-                <CardContent className="pt-6">
-                  <h4 className="font-semibold mb-2">Faulty Digital Content</h4>
-                  <p className="text-sm text-muted-foreground">
-                    If the digital content is faulty, corrupted, or doesn't work as described, you have 
-                    30 days from purchase to request a full refund. We may first attempt to provide a 
-                    replacement or repair.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="border border-border rounded-xl">
-                <CardContent className="pt-6">
-                  <h4 className="font-semibold mb-2">Content Not As Described</h4>
-                  <p className="text-sm text-muted-foreground">
-                    If the digital content significantly differs from its description or preview images, 
-                    you may request a refund within 30 days of purchase.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="border border-border rounded-xl">
-                <CardContent className="pt-6">
-                  <h4 className="font-semibold mb-2">Download Issues (Our Fault)</h4>
-                  <p className="text-sm text-muted-foreground">
-                    If you cannot access or download your purchased content due to issues on our end 
-                    that we cannot resolve within a reasonable timeframe, you are entitled to a full refund.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="border border-border rounded-xl">
-                <CardContent className="pt-6">
-                  <h4 className="font-semibold mb-2">Duplicate Purchase</h4>
-                  <p className="text-sm text-muted-foreground">
-                    If you accidentally purchase the same item twice, contact us within 7 days for a 
-                    refund on the duplicate purchase.
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="border border-border rounded-xl p-5">
+                <h4 className="font-semibold mb-2">Faulty Digital Content</h4>
+                <p className="text-sm text-muted-foreground">
+                  If the digital content is faulty, corrupted, or doesn't work as described, you have 
+                  30 days from purchase to request a full refund. We may first attempt to provide a 
+                  replacement or repair.
+                </p>
+              </div>
+              <div className="border border-border rounded-xl p-5">
+                <h4 className="font-semibold mb-2">Content Not As Described</h4>
+                <p className="text-sm text-muted-foreground">
+                  If the digital content significantly differs from its description or preview images, 
+                  you may request a refund within 30 days of purchase.
+                </p>
+              </div>
+              <div className="border border-border rounded-xl p-5">
+                <h4 className="font-semibold mb-2">Download Issues (Our Fault)</h4>
+                <p className="text-sm text-muted-foreground">
+                  If you cannot access or download your purchased content due to issues on our end 
+                  that we cannot resolve within a reasonable timeframe, you are entitled to a full refund.
+                </p>
+              </div>
+              <div className="border border-border rounded-xl p-5">
+                <h4 className="font-semibold mb-2">Duplicate Purchase</h4>
+                <p className="text-sm text-muted-foreground">
+                  If you accidentally purchase the same item twice, contact us within 7 days for a 
+                  refund on the duplicate purchase.
+                </p>
+              </div>
             </div>
           </section>
+
+          <div className="border-t border-border" />
 
           {/* When We Won't Refund */}
           <section>
@@ -155,6 +145,8 @@ export default function RefundPolicy() {
             </ul>
           </section>
 
+          <div className="border-t border-border" />
+
           {/* Eclipse+ Subscriptions */}
           <section>
             <h2 className="font-display text-2xl font-bold mb-4">Eclipse+ Membership Refunds</h2>
@@ -173,34 +165,26 @@ export default function RefundPolicy() {
             </p>
           </section>
 
+          <div className="border-t border-border" />
+
           {/* How to Request */}
           <section>
             <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
               <Mail className="h-6 w-6 text-primary" />
               How to Request a Refund
             </h2>
-            <Card className="border border-border rounded-xl">
-              <CardContent className="pt-6">
-                <ol className="list-decimal list-inside text-muted-foreground space-y-3">
-                  <li>
-                    Contact us via our Discord server or email within the applicable timeframe
-                  </li>
-                  <li>
-                    Provide your order number and email address used for the purchase
-                  </li>
-                  <li>
-                    Clearly explain the reason for your refund request with any supporting evidence
-                  </li>
-                  <li>
-                    We will review your request and respond within 5 business days
-                  </li>
-                  <li>
-                    If approved, refunds are processed within 14 days to your original payment method
-                  </li>
-                </ol>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-xl p-5">
+              <ol className="list-decimal list-inside text-muted-foreground space-y-3">
+                <li>Contact us via our Discord server or email within the applicable timeframe</li>
+                <li>Provide your order number and email address used for the purchase</li>
+                <li>Clearly explain the reason for your refund request with any supporting evidence</li>
+                <li>We will review your request and respond within 5 business days</li>
+                <li>If approved, refunds are processed within 14 days to your original payment method</li>
+              </ol>
+            </div>
           </section>
+
+          <div className="border-t border-border" />
 
           {/* Legal Rights */}
           <section>
@@ -216,45 +200,24 @@ export default function RefundPolicy() {
             </ul>
             <p className="text-muted-foreground mt-4">
               For more information about your consumer rights, visit{' '}
-              <a 
-                href="https://www.citizensadvice.org.uk/consumer/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                Citizens Advice
-              </a>
+              <a href="https://www.citizensadvice.org.uk/consumer/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Citizens Advice</a>
               {' '}or{' '}
-              <a 
-                href="https://www.gov.uk/consumer-protection-rights" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                GOV.UK Consumer Rights
-              </a>.
+              <a href="https://www.gov.uk/consumer-protection-rights" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">GOV.UK Consumer Rights</a>.
             </p>
           </section>
+
+          <div className="border-t border-border" />
 
           {/* Contact */}
           <section>
             <h2 className="font-display text-2xl font-bold mb-4">Contact Us</h2>
             <p className="text-muted-foreground">
               If you have any questions about this Refund Policy, please contact us through our{' '}
-              <a 
-                href={discordUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                Discord server
-              </a>
+              <a href={discordUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Discord server</a>
               {' '}or use the live chat feature on our website.
             </p>
-            </section>
-            </div>
-          </CardContent>
-        </Card>
+          </section>
+        </div>
       </div>
     </MainLayout>
   );
