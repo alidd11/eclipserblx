@@ -1,4 +1,8 @@
-import { corsHeaders } from '@supabase/supabase-js/cors'
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 const INDEXNOW_KEY = "eclipse-indexnow-key-2026";
 const SITE_URL = "https://eclipserblx.com";
