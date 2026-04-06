@@ -12,6 +12,7 @@ interface ApplicationConfirmationRequest {
   applicant_name: string;
   applicant_email: string;
   position: string;
+  access_token?: string;
 }
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
