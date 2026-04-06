@@ -182,7 +182,7 @@ async function handleLink(supabase: any, body: BotGhostRequest) {
       fields: [
         {
           name: "✨ Benefits",
-          value: "• View your profile & purchases\n• Download products directly\n• Access Eclipse+ perks",
+          value: "• View your profile & purchases\n• Download products directly\n• Access member perks",
           inline: false,
         },
       ],

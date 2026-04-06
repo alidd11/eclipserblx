@@ -15,7 +15,6 @@ const STATIC_PAGES: Record<string, { title: string; description: string }> = {
   "/stores": { title: "Browse Stores | Eclipse", description: "Discover verified Roblox asset stores on Eclipse marketplace." },
   "/categories": { title: "Categories | Eclipse", description: "Browse Roblox assets by category — scripts, vehicles, maps, tools and more." },
   "/featured": { title: "Featured Products | Eclipse", description: "Hand-picked featured Roblox assets and top sellers on Eclipse." },
-  "/eclipse-plus": { title: "Eclipse+ Membership | Eclipse", description: "Get exclusive perks, early access and discounts with Eclipse+ membership." },
   "/faq": { title: "FAQ | Eclipse", description: "Frequently asked questions about buying, selling and using Eclipse marketplace." },
   "/help-center": { title: "Help Centre | Eclipse", description: "Get help with your Eclipse account, orders, and more." },
   "/sell": { title: "Start Selling on Eclipse", description: "Sell your Roblox creations on Eclipse — lower fees, fast payouts, and a growing community." },
@@ -59,7 +58,6 @@ const NAV_HTML = `<nav aria-label="Main navigation"><ul>
 <li><a href="${SITE_URL}/stores">Browse Stores</a></li>
 <li><a href="${SITE_URL}/categories">Categories</a></li>
 <li><a href="${SITE_URL}/featured">Featured</a></li>
-<li><a href="${SITE_URL}/eclipse-plus">Eclipse+</a></li>
 <li><a href="${SITE_URL}/sell">Start Selling</a></li>
 <li><a href="${SITE_URL}/help-center">Help Centre</a></li>
 <li><a href="${SITE_URL}/contact">Contact</a></li>

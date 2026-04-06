@@ -116,7 +116,7 @@ serve(async (req) => {
     const images = product.images || [];
     const storeName = (product as any).stores?.name || 'Unknown Store';
     const color = isEarlyAccess ? 0x8B5CF6 : 0x00CED1;
-    const footerText = isEarlyAccess ? 'Eclipse Marketplace • Eclipse+ Early Access' : 'Eclipse Marketplace • Product Drop';
+    const footerText = isEarlyAccess ? 'Eclipse Marketplace • Early Access' : 'Eclipse Marketplace • Product Drop';
 
     let description = product.description
       ? product.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim()
@@ -128,7 +128,7 @@ serve(async (req) => {
     const embeds: any[] = [{
       title: isEarlyAccess ? '👑 Early Access Drop!' : '🎉 New Product Drop!',
       description: isEarlyAccess
-        ? `**${product.name}**\n\n*Eclipse+ members get early access!*${description ? `\n\n${description}` : ''}`
+        ? `**${product.name}**\n\n*Members get early access!*${description ? `\n\n${description}` : ''}`
         : `**${product.name}**${description ? `\n\n${description}` : ''}`,
       color,
       fields: [

@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
             data: {
               embeds: [{
                 title: "⏱️ Daily Limit Reached",
-                description: `You've used all **${FREE_TIER_LIMIT} commands** for today.\n\nUpgrade to **Eclipse+** for unlimited commands!`,
+                description: `You've used all **${FREE_TIER_LIMIT} commands** for today.\n\nUpgrade your plan for unlimited commands!`,
                 color: COLORS.WARNING,
                 footer: { text: "Limit resets in 24 hours" },
               }],
@@ -304,7 +304,7 @@ Deno.serve(async (req) => {
                 { name: "Reason", value: reason, inline: false },
               ],
               thumbnail: bannedAvatarUrl ? { url: bannedAvatarUrl } : undefined,
-              footer: { text: tierInfo.is_premium ? "Eclipse+ • Priority Sync" : "Global Guard • Free Tier" },
+              footer: { text: tierInfo.is_premium ? "Premium • Priority Sync" : "Global Guard • Free Tier" },
             }],
             flags: 64,
           },
@@ -428,7 +428,7 @@ Deno.serve(async (req) => {
                 title: "🛡️ Global Bans",
               description: "You have no active global bans.",
               color: COLORS.PRIMARY,
-              footer: { text: tierInfo.is_premium ? "Eclipse+ Member" : "Free Tier • 1 server max" },
+              footer: { text: tierInfo.is_premium ? "Premium Member" : "Free Tier • 1 server max" },
               }],
               flags: 64,
             },
@@ -454,7 +454,7 @@ Deno.serve(async (req) => {
               color: COLORS.PRIMARY,
               footer: { 
                 text: tierInfo.is_premium 
-                  ? `Eclipse+ • ${bans.length} active bans` 
+                  ? `Premium • ${bans.length} active bans` 
                   : `Free Tier • ${bans.length} active bans • 1 server max` 
               },
             }],
@@ -922,7 +922,7 @@ Deno.serve(async (req) => {
                 },
                 { 
                   name: "💰 Pricing", 
-                  value: "**£2.99/month** for 2 servers\n+£1.00/month per additional server\n\n*Or get **Eclipse+** for unlimited access!*", 
+                  value: "**£2.99/month** for 2 servers\n+£1.00/month per additional server\n\n*Or upgrade your plan for unlimited access!*", 
                   inline: false 
                 },
                 {
@@ -1090,7 +1090,7 @@ Deno.serve(async (req) => {
               ],
               footer: { 
                 text: tierInfo.is_premium 
-                  ? "Eclipse+ Member • Unlimited Commands" 
+                  ? "Premium Member • Unlimited Commands" 
                   : `Free Tier • ${FREE_TIER_LIMIT - 1} commands remaining today` 
               },
             }],

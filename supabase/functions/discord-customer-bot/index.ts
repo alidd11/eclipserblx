@@ -989,7 +989,7 @@ async function handleProfileCommand(
   if (!serverContext.store) {
     fields.push({
       name: "⭐ Membership",
-      value: subscription ? `Eclipse+ (Active)` : "Free",
+      value: subscription ? `Pro (Active)` : "Free",
       inline: true,
     });
     fields.push({
@@ -1623,7 +1623,7 @@ async function handleGetRoleCommand(
     const hasSubscription = !!subscriptionResult.data;
     const hasStore = !!storeResult.data;
 
-    console.log(`[discord-customer-bot] Main server - User ${profile.username}: ${purchaseCount} purchases, Eclipse+: ${hasSubscription}, Store: ${hasStore}`);
+    console.log(`[discord-customer-bot] Main server - User ${profile.username}: ${purchaseCount} purchases, Subscription: ${hasSubscription}, Store: ${hasStore}`);
 
     if (purchaseCount >= 5 && loyalCustomerRoleId) {
       rolesToAssign.push({ id: loyalCustomerRoleId, name: "Loyal Customer" });
@@ -1633,7 +1633,7 @@ async function handleGetRoleCommand(
     }
 
     if (hasSubscription && eclipsePlusRoleId) {
-      rolesToAssign.push({ id: eclipsePlusRoleId, name: "Eclipse+" });
+      rolesToAssign.push({ id: eclipsePlusRoleId, name: "Pro" });
     }
 
     if (hasStore && storeCreatorRoleId) {
@@ -1809,7 +1809,7 @@ async function handleGetRoleCommand(
     const count = ordersRes.count || 0;
     if (count === 0) eligibility.push("• Make a purchase → **Customer**");
     if (count > 0 && count < 5) eligibility.push(`• ${5 - count} more purchases → **Loyal Customer**`);
-    if (!subRes.data) eligibility.push("• Subscribe to Eclipse+ → **Eclipse+**");
+    if (!subRes.data) eligibility.push("• Subscribe to Pro → **Pro**");
     if (!storeRes.data) eligibility.push("• Create a store → **Store Creator**");
   } else if (serverContext.store && rolesAssigned.length === 0) {
     eligibility.push(`• Make purchases from ${serverContext.store.name} to earn roles!`);
@@ -3144,9 +3144,9 @@ async function handleUpdateRoleCommand(
 
       // Eclipse+
       if (hasSubscription && eclipsePlusRoleId) {
-        rolesToAssign.push({ id: eclipsePlusRoleId, name: "Eclipse+" });
+        rolesToAssign.push({ id: eclipsePlusRoleId, name: "Pro" });
       } else if (eclipsePlusRoleId) {
-        rolesToRemove.push({ id: eclipsePlusRoleId, name: "Eclipse+" });
+        rolesToRemove.push({ id: eclipsePlusRoleId, name: "Pro" });
       }
 
       // Store Creator

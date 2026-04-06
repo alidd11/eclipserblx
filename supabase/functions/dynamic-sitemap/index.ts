@@ -50,7 +50,6 @@ Deno.serve(async (req) => {
   <url><loc>${SITE_URL}/categories</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>${SITE_URL}/featured</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>${SITE_URL}/stores</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>${SITE_URL}/eclipse-plus</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>${SITE_URL}/sell</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>${SITE_URL}/changelog</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>${SITE_URL}/help-center</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
