@@ -6,10 +6,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useRealtimeOrders } from '@/hooks/useRealtimeOrders';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileReviewConsentBanner } from '@/components/seller/FileReviewConsentBanner';
 import { SellerHeroBanner } from '@/components/seller/SellerHeroBanner';
-import { StoreSetupChecklist } from '@/components/seller/StoreSetupChecklist';
 import { SellerOnboardingWizard } from '@/components/seller/SellerOnboardingWizard';
 import { RevenueChart } from '@/components/seller/RevenueChart';
 import { RevenueSummaryStats } from '@/components/seller/RevenueSummaryStats';
@@ -17,9 +15,9 @@ import { ProductHealthDonut } from '@/components/seller/ProductHealthDonut';
 import { RecentOrdersTable } from '@/components/seller/RecentOrdersTable';
 import { TosBanner, NonCompliantBanner, PendingReviewBanner } from '@/components/seller/banners';
 import { DashboardCardSkeleton } from '@/components/seller/DashboardSkeletons';
-import { Gift, Clock, Plus, Sparkles } from 'lucide-react';
+import { Gift, Clock, Sparkles } from 'lucide-react';
 import { 
-  Package, ShoppingCart, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone
+  Package, ShoppingCart, BarChart3, Tag, DollarSign, Megaphone
 } from 'lucide-react';
 
 
@@ -89,7 +87,6 @@ export default function SellerDashboard() {
   });
 
   const createActions = [
-    { title: 'New Product', href: '/seller/products/new', icon: Plus, description: 'Upload a listing', primary: true },
     { title: 'Store Builder', href: '/seller/store-builder', icon: Sparkles, description: 'Customize look' },
   ];
 
@@ -162,7 +159,6 @@ export default function SellerDashboard() {
         {/* ── Onboarding ── */}
         <SellerOnboardingWizard />
         <SellerHeroBanner />
-        <StoreSetupChecklist />
 
         {/* ── Revenue Summary Stats ── */}
         <RevenueSummaryStats />

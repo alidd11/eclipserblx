@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { useSellerOnboarding } from '@/hooks/useSellerOnboarding';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle2, Circle, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -11,17 +10,17 @@ export function StoreSetupChecklist() {
   if (isLoading || allComplete || steps.length === 0) return null;
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
+    <div className="rounded-xl border border-border/50 bg-card">
+      <div className="flex flex-col space-y-1.5 p-4 pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-medium">Store Setup</CardTitle>
+          <h3 className="text-base font-medium">Store Setup</h3>
           <span className="text-xs text-muted-foreground font-medium">
             {completedCount}/{totalSteps} complete
           </span>
         </div>
         <Progress value={progress} className="h-1.5 mt-2" />
-      </CardHeader>
-      <CardContent className="pt-0 space-y-1">
+      </div>
+      <div className="px-4 pb-4 space-y-1">
         {steps.map((item) => (
           <Link
             key={item.id}
@@ -47,7 +46,7 @@ export function StoreSetupChecklist() {
             )}
           </Link>
         ))}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

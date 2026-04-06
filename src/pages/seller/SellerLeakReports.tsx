@@ -3,7 +3,7 @@ import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -120,14 +120,14 @@ export default function SellerLeakReports() {
         </div>
 
         {/* Submit Report */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
+        <div className="rounded-xl border border-border/50 bg-card">
+          <div className="p-4 pb-2">
+            <h3 className="text-base font-medium flex items-center gap-2">
               <FileSearch className="h-4 w-4" />
               Report a Leaked File
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </h3>
+          </div>
+          <div className="p-4 pt-2 space-y-4">
             <div>
               <label className="text-sm font-medium mb-1.5 block">Product</label>
               <Select value={productId} onValueChange={setProductId}>
@@ -170,15 +170,15 @@ export default function SellerLeakReports() {
             <Button onClick={handleSubmit} disabled={isSubmitting || !file || !productId}>
               {isSubmitting ? 'Analyzing...' : 'Submit Report'}
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Reports List */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Report History</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="rounded-xl border border-border/50 bg-card">
+          <div className="p-4 pb-2">
+            <h3 className="text-base font-medium">Report History</h3>
+          </div>
+          <div className="p-4 pt-2">
             {!reports?.length ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Shield className="h-10 w-10 mx-auto mb-2 opacity-30" />
@@ -224,8 +224,8 @@ export default function SellerLeakReports() {
                 })}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </SellerLayout>
   );

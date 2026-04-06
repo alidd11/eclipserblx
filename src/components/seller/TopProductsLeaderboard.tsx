@@ -1,7 +1,6 @@
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -60,19 +59,17 @@ export function TopProductsLeaderboard() {
   });
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-medium flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            Top Products
-          </CardTitle>
-          <Link to="/seller/products" className="text-xs text-primary hover:underline">
-            View All
-          </Link>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-2">
+    <div className="rounded-xl border border-border/50 bg-card">
+      <div className="flex items-center justify-between p-4 pb-2">
+        <h3 className="text-base font-medium flex items-center gap-2">
+          <TrendingUp className="h-4 w-4" />
+          Top Products
+        </h3>
+        <Link to="/seller/products" className="text-xs text-primary hover:underline">
+          View All
+        </Link>
+      </div>
+      <div className="p-4 pt-0 space-y-2">
         {isLoading ? (
           <CardLoadingSkeleton rows={4} />
         ) : topProducts && topProducts.length > 0 ? (
@@ -104,7 +101,7 @@ export function TopProductsLeaderboard() {
         ) : (
           <CardEmptyState icon={TrendingUp} title="No products yet" subtitle="Products will rank here by sales" />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

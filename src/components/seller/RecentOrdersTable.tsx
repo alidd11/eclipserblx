@@ -1,7 +1,6 @@
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ShoppingCart } from 'lucide-react';
@@ -39,19 +38,17 @@ export function RecentOrdersTable() {
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-medium flex items-center gap-2">
-            <ShoppingCart className="h-4 w-4" />
-            Recent Orders
-          </CardTitle>
-          <Link to="/seller/orders" className="text-xs text-primary hover:underline">
-            View All
-          </Link>
-        </div>
-      </CardHeader>
-      <CardContent className="p-0">
+    <div className="rounded-xl border border-border/50 bg-card">
+      <div className="flex items-center justify-between p-4 pb-2">
+        <h3 className="text-base font-medium flex items-center gap-2">
+          <ShoppingCart className="h-4 w-4" />
+          Recent Orders
+        </h3>
+        <Link to="/seller/orders" className="text-xs text-primary hover:underline">
+          View All
+        </Link>
+      </div>
+      <div className="p-0">
         {isLoading ? (
           <div className="p-4">
             <CardLoadingSkeleton rows={3} />
@@ -115,7 +112,7 @@ export function RecentOrdersTable() {
         ) : (
           <CardEmptyState icon={ShoppingCart} title="No orders yet" subtitle="Orders will appear here as they come in" />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

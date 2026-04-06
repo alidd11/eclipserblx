@@ -1,7 +1,6 @@
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -142,29 +141,27 @@ export function StoreHealthScore() {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-medium">Store Health</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-xl border border-border/50 bg-card">
+        <div className="p-4 pb-2">
+          <h3 className="text-base font-medium">Store Health</h3>
+        </div>
+        <div className="p-4 pt-0">
           <CardLoadingSkeleton rows={4} />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-medium">Store Health</CardTitle>
-          <Badge className={cn('gap-1', statusColors[overallStatus])}>
-            <StatusIcon className="h-3 w-3" />
-            {overallScore}%
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="rounded-xl border border-border/50 bg-card">
+      <div className="flex items-center justify-between p-4 pb-2">
+        <h3 className="text-base font-medium">Store Health</h3>
+        <Badge className={cn('gap-1', statusColors[overallStatus])}>
+          <StatusIcon className="h-3 w-3" />
+          {overallScore}%
+        </Badge>
+      </div>
+      <div className="p-4 pt-0 space-y-4">
         {/* Overall Score */}
         <div className="text-center py-2">
           <div className="relative inline-flex items-center justify-center">
@@ -215,7 +212,7 @@ export function StoreHealthScore() {
             </div>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

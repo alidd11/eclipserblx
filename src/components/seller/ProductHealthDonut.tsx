@@ -1,7 +1,6 @@
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { CheckCircle } from 'lucide-react';
 import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
@@ -31,10 +30,6 @@ export function ProductHealthDonut() {
       const pending = products.filter(p => p.moderation_status === 'pending').length;
       const rejected = products.filter(p => p.moderation_status === 'rejected').length;
       const other = products.length - approved - pending - rejected;
-      const nonCompliant = products.filter(p => {
-        const plainDesc = (p.description || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
-        return plainDesc.length < 100 || !p.asset_file_url;
-      }).length;
 
       const chartData = [];
       if (approved > 0) chartData.push({ name: 'Approved', value: approved });
@@ -42,21 +37,19 @@ export function ProductHealthDonut() {
       if (rejected > 0) chartData.push({ name: 'Rejected', value: rejected });
       if (other > 0) chartData.push({ name: 'Other', value: other });
 
-      return { chartData, total: products.length, approved, pending, nonCompliant };
+      return { chartData, total: products.length, approved, pending };
     },
     enabled: !!store?.id,
     staleTime: 5 * 60 * 1000,
   });
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium flex items-center gap-2">
-          <CheckCircle className="h-4 w-4" />
-          Product Health
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="rounded-xl border border-border/50 bg-card">
+      <div className="flex items-center gap-2 p-4 pb-2">
+        <CheckCircle className="h-4 w-4" />
+        <h3 className="text-base font-medium">Product Health</h3>
+      </div>
+      <div className="p-4 pt-0">
         {isLoading ? (
           <CardLoadingSkeleton rows={3} />
         ) : data && data.chartData.length > 0 ? (
@@ -76,7 +69,7 @@ export function ProductHealthDonut() {
         ) : (
           <CardEmptyState icon={CheckCircle} title="No products yet" subtitle="Add products to see health status" />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
