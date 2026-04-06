@@ -131,12 +131,8 @@ Deno.serve(async (req) => {
           }
         };
 
-        // Eclipse+ — assign or remove
-        if (activeSubscribers.has(user_id)) {
-          await assign(eclipsePlusRoleId, "eclipsePlus", "Eclipse+");
-        } else {
-          await remove(eclipsePlusRoleId, "Eclipse+");
-        }
+        // Eclipse+ role removed — ensure it's stripped from all users
+        await remove(eclipsePlusRoleId, "Eclipse+");
 
         // Store Creator — assign or remove
         if (storeOwners.has(user_id)) {
