@@ -32,7 +32,8 @@ interface UserRole {
 }
 
 interface MutationObj {
-  mutate: (args: Record<string, unknown>) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mutate: (args: any) => void;
   isPending: boolean;
 }
 

@@ -177,7 +177,7 @@ export default function SellerRefunds() {
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className="text-xs font-mono text-primary">{r.dispute_number}</span>
                     <span className="text-sm font-medium">
-                      {r.customer?.display_name || 'Unknown Customer'}
+                      {(r as any).customer?.display_name || 'Unknown Customer'}
                     </span>
                     {getStatusBadge(r.status)}
                   </div>
