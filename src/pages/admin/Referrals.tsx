@@ -246,7 +246,7 @@ export default function AdminReferrals() {
  </TableRow>
  </TableHeader>
  <TableBody>
- {referrals.map((referral: any) => (
+ {referrals.map((referral) => (
  <TableRow key={referral.id}>
  <TableCell>
  <div>
