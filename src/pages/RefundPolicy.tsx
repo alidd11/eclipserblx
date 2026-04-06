@@ -37,8 +37,7 @@ export default function RefundPolicy() {
         <div className="prose prose-invert max-w-none space-y-10">
           {/* Digital Content Rights */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <AlertCircle className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               Digital Content and Your Rights
             </h2>
             <p className="text-muted-foreground mb-4">
@@ -56,8 +55,7 @@ export default function RefundPolicy() {
 
           {/* 14-Day Cancellation Right */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <Clock className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               14-Day Cancellation Period
             </h2>
             <div className="border border-border rounded-xl p-5 mb-4">
@@ -84,7 +82,7 @@ export default function RefundPolicy() {
 
           {/* When We Will Refund */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
+            <h2 className="font-display text-2xl font-bold mb-4">
               <CheckCircle className="h-6 w-6 text-green-500" />
               When You Are Entitled to a Refund
             </h2>
@@ -128,8 +126,7 @@ export default function RefundPolicy() {
 
           {/* When We Won't Refund */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <XCircle className="h-6 w-6 text-destructive" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               When Refunds Are Not Available
             </h2>
             <p className="text-muted-foreground mb-4">
@@ -150,8 +147,7 @@ export default function RefundPolicy() {
 
           {/* How to Request */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <Mail className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               How to Request a Refund
             </h2>
             <div className="border border-border rounded-xl p-5">

@@ -22,8 +22,7 @@ export default function TermsOfService() {
         <div className="prose prose-invert max-w-none space-y-10">
           {/* Introduction */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <FileText className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               Introduction
             </h2>
             <p className="text-muted-foreground">
@@ -66,8 +65,7 @@ export default function TermsOfService() {
 
           {/* Account Terms */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <ShieldCheck className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               Account Terms
             </h2>
             <p className="text-muted-foreground mb-4">
@@ -89,8 +87,7 @@ export default function TermsOfService() {
 
           {/* Digital Content Rights */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <Scale className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               Digital Content Rights (Consumer Rights Act 2015)
             </h2>
             <div className="border border-border rounded-xl p-5 mb-4">
@@ -149,8 +146,7 @@ export default function TermsOfService() {
 
           {/* Pricing and Payment */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <CreditCard className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               Pricing and Payment
             </h2>
             <p className="text-muted-foreground mb-4">
@@ -195,8 +191,7 @@ export default function TermsOfService() {
 
           {/* Prohibited Uses */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <Ban className="h-6 w-6 text-destructive" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               Prohibited Uses
             </h2>
             <p className="text-muted-foreground mb-4">
@@ -231,8 +226,7 @@ export default function TermsOfService() {
 
           {/* Limitation of Liability */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <AlertTriangle className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               Limitation of Liability
             </h2>
             <p className="text-muted-foreground mb-4">
@@ -253,8 +247,7 @@ export default function TermsOfService() {
 
           {/* Third-Party Platforms */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <Globe className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               Third-Party Platforms
             </h2>
             <p className="text-muted-foreground">
@@ -328,8 +321,7 @@ export default function TermsOfService() {
 
           {/* Contact */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <Mail className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               Contact Us
             </h2>
             <p className="text-muted-foreground">
