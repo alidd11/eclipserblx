@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { sanitizeSearch } from '@/lib/searchUtils';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Loader2, Gift, Search, UserPlus, Wallet, Check } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
