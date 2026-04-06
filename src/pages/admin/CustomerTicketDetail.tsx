@@ -79,15 +79,7 @@ const categoryLabels: Record<string, string> = {
   other: 'Other',
 };
 
-const CANNED_RESPONSES = [
-  { label: 'Greeting', text: 'Hi there! Thanks for reaching out. I\'d be happy to help you with this.' },
-  { label: 'Need more info', text: 'Thanks for your message. Could you please provide more details about the issue so we can assist you better?' },
-  { label: 'Order lookup', text: 'I\'m looking into your order now. Please give me a moment to review the details.' },
-  { label: 'Issue resolved', text: 'Great news! The issue has been resolved. Please let us know if you need anything else.' },
-  { label: 'Refund processing', text: 'Your refund has been initiated. It typically takes 5-10 business days to appear in your account.' },
-  { label: 'Escalating', text: 'I\'m escalating this to our senior support team for further investigation. You\'ll receive an update shortly.' },
-  { label: 'Follow up', text: 'Just checking in — were you able to resolve the issue? Let us know if you still need help!' },
-];
+// Canned responses are now loaded from DB via useCannedResponses hook
 
 const ATTACHMENT_BUCKET = 'support-ticket-attachments';
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
