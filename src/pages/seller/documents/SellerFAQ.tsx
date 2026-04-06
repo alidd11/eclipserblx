@@ -1,5 +1,5 @@
 import { SellerDocumentPage } from "@/components/seller/documents/SellerDocumentPage";
-import { Card, CardContent } from "@/components/ui/card";
+
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   HelpCircle, ShoppingCart, Wallet, Settings, Shield,

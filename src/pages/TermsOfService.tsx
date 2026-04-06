@@ -1,7 +1,6 @@
 import { MainLayout } from '@/components/layout/MainLayout';
 import { SITE_NAME } from '@/lib/constants';
 import { FileText, AlertTriangle, Scale, ShieldCheck, Ban, CreditCard, Globe, Mail } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { usePageMeta } from '@/hooks/usePageMeta';
@@ -12,34 +11,33 @@ export default function TermsOfService() {
   usePageMeta({ title: 'Terms of Service', description: 'Eclipse terms of service. Rules and conditions for using our Roblox asset marketplace.', canonicalPath: '/terms' });
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-12 max-w-4xl">
-        <h1 className="font-display text-4xl font-bold gradient-text mb-4 text-center">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 className="font-display text-4xl font-bold mb-4 text-center">
           Terms of Service
         </h1>
-        <p className="text-muted-foreground text-center mb-8">
+        <p className="text-muted-foreground text-center mb-10">
           Last updated: {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
 
-        {/* Main Content Card */}
-        <Card className="bg-card border-border">
-          <CardContent className="pt-8 pb-8">
-            <div className="prose prose-invert max-w-none space-y-8">
-              {/* Introduction */}
-              <section>
-                <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-                  <FileText className="h-6 w-6 text-primary" />
-                  Introduction
-                </h2>
-                <p className="text-muted-foreground">
-                  Welcome to {SITE_NAME}. These Terms of Service ("Terms") govern your use of our website 
-                  and the purchase of digital products from our platform. By accessing our website or 
-                  making a purchase, you agree to be bound by these Terms.
-                </p>
-                <p className="text-muted-foreground mt-4">
-                  These Terms are governed by the laws of England and Wales. If you are a consumer, you 
-                  will benefit from any mandatory provisions of the law of the country in which you are resident.
-                </p>
-              </section>
+        <div className="prose prose-invert max-w-none space-y-10">
+          {/* Introduction */}
+          <section>
+            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
+              <FileText className="h-6 w-6 text-primary" />
+              Introduction
+            </h2>
+            <p className="text-muted-foreground">
+              Welcome to {SITE_NAME}. These Terms of Service ("Terms") govern your use of our website 
+              and the purchase of digital products from our platform. By accessing our website or 
+              making a purchase, you agree to be bound by these Terms.
+            </p>
+            <p className="text-muted-foreground mt-4">
+              These Terms are governed by the laws of England and Wales. If you are a consumer, you 
+              will benefit from any mandatory provisions of the law of the country in which you are resident.
+            </p>
+          </section>
+
+          <div className="border-t border-border" />
 
           {/* About Us */}
           <section>
@@ -51,6 +49,8 @@ export default function TermsOfService() {
             </p>
           </section>
 
+          <div className="border-t border-border" />
+
           {/* Definitions */}
           <section>
             <h2 className="font-display text-2xl font-bold mb-4">Definitions</h2>
@@ -61,6 +61,8 @@ export default function TermsOfService() {
               <li><strong>"We/Us/Our"</strong> refers to {SITE_NAME}</li>
             </ul>
           </section>
+
+          <div className="border-t border-border" />
 
           {/* Account Terms */}
           <section>
@@ -83,29 +85,31 @@ export default function TermsOfService() {
             </p>
           </section>
 
+          <div className="border-t border-border" />
+
           {/* Digital Content Rights */}
           <section>
             <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
               <Scale className="h-6 w-6 text-primary" />
               Digital Content Rights (Consumer Rights Act 2015)
             </h2>
-            <Card className="border border-border rounded-xl mb-4">
-              <CardContent className="pt-6">
-                <p className="text-muted-foreground">
-                  Under the Consumer Rights Act 2015, digital content supplied must be:
-                </p>
-                <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4 mt-4">
-                  <li><strong>Of satisfactory quality</strong> - including being free from defects, safe, and durable</li>
-                  <li><strong>Fit for a particular purpose</strong> - suitable for any purpose we have agreed</li>
-                  <li><strong>As described</strong> - matching any description, sample, or demonstration</li>
-                </ul>
-              </CardContent>
-            </Card>
+            <div className="border border-border rounded-xl p-5 mb-4">
+              <p className="text-muted-foreground">
+                Under the Consumer Rights Act 2015, digital content supplied must be:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4 mt-4">
+                <li><strong>Of satisfactory quality</strong> - including being free from defects, safe, and durable</li>
+                <li><strong>Fit for a particular purpose</strong> - suitable for any purpose we have agreed</li>
+                <li><strong>As described</strong> - matching any description, sample, or demonstration</li>
+              </ul>
+            </div>
             <p className="text-muted-foreground">
               If digital content does not meet these standards, you may be entitled to a repair, 
               replacement, or refund. See our Refund Policy for details.
             </p>
           </section>
+
+          <div className="border-t border-border" />
 
           {/* Licence Grant */}
           <section>
@@ -140,6 +144,8 @@ export default function TermsOfService() {
               including account termination and legal proceedings.
             </p>
           </section>
+
+          <div className="border-t border-border" />
 
           {/* Pricing and Payment */}
           <section>
@@ -182,6 +188,8 @@ export default function TermsOfService() {
             </p>
           </section>
 
+          <div className="border-t border-border" />
+
           {/* Delivery */}
           <section>
             <h2 className="font-display text-2xl font-bold mb-4">Delivery of Digital Content</h2>
@@ -193,6 +201,8 @@ export default function TermsOfService() {
               that you will lose your 14-day cancellation right once the download begins.
             </p>
           </section>
+
+          <div className="border-t border-border" />
 
           {/* Prohibited Uses */}
           <section>
@@ -214,6 +224,8 @@ export default function TermsOfService() {
             </ul>
           </section>
 
+          <div className="border-t border-border" />
+
           {/* Intellectual Property */}
           <section>
             <h2 className="font-display text-2xl font-bold mb-4">Intellectual Property</h2>
@@ -225,6 +237,8 @@ export default function TermsOfService() {
               underlying intellectual property.
             </p>
           </section>
+
+          <div className="border-t border-border" />
 
           {/* Limitation of Liability */}
           <section>
@@ -246,6 +260,8 @@ export default function TermsOfService() {
             </p>
           </section>
 
+          <div className="border-t border-border" />
+
           {/* Third-Party Platforms */}
           <section>
             <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
@@ -260,6 +276,8 @@ export default function TermsOfService() {
             </p>
           </section>
 
+          <div className="border-t border-border" />
+
           {/* Termination */}
           <section>
             <h2 className="font-display text-2xl font-bold mb-4">Termination</h2>
@@ -270,6 +288,8 @@ export default function TermsOfService() {
               available for download subject to our refund policy.
             </p>
           </section>
+
+          <div className="border-t border-border" />
 
           {/* Dispute Resolution */}
           <section>
@@ -291,6 +311,8 @@ export default function TermsOfService() {
             </p>
           </section>
 
+          <div className="border-t border-border" />
+
           {/* Changes */}
           <section>
             <h2 className="font-display text-2xl font-bold mb-4">Changes to These Terms</h2>
@@ -300,6 +322,8 @@ export default function TermsOfService() {
               of the platform after changes constitutes acceptance of the modified Terms.
             </p>
           </section>
+
+          <div className="border-t border-border" />
 
           {/* Severability */}
           <section>
@@ -311,6 +335,8 @@ export default function TermsOfService() {
             </p>
           </section>
 
+          <div className="border-t border-border" />
+
           {/* Contact */}
           <section>
             <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
@@ -319,20 +345,11 @@ export default function TermsOfService() {
             </h2>
             <p className="text-muted-foreground">
               If you have any questions about these Terms of Service, please contact us through our{' '}
-              <a 
-                href={discordUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                Discord server
-              </a>
+              <a href={discordUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Discord server</a>
               {' '}or use the live chat feature on our website.
             </p>
-            </section>
-            </div>
-          </CardContent>
-        </Card>
+          </section>
+        </div>
       </div>
     </MainLayout>
   );
