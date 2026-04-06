@@ -42,7 +42,7 @@ export function StoreCustomSections({ storeId, accentColor }: StoreCustomSection
           <div className="p-4">
             {section.section_type === 'faq' && content?.items && (
  <div className="space-y-3">
- {section.content.items.filter((i) => i.question).map((item: any, idx: number) => (
+ {content.items.filter((i: any) => i.question).map((item: any, idx: number) => (
  <div key={idx} className="border-b border-border pb-3 last:border-0">
  <p className="font-medium text-sm mb-1">{item.question}</p>
  <p className="text-sm text-muted-foreground">{item.answer}</p>
