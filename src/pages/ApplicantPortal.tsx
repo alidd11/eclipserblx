@@ -118,9 +118,7 @@ function Dashboard({ token, onLogout }: { token: string; onLogout: () => void })
     const load = async () => {
       try {
         const { data: app, error: appErr } = await supabase
-          .from('job_applications')
-          .select('id, position, applicant_name, status, created_at, reviewed_at')
-          .eq('access_token', token)
+          .rpc('validate_applicant_token', { p_token: token })
           .single();
 
         if (appErr || !app) {
