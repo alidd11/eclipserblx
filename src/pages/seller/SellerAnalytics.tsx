@@ -44,7 +44,7 @@ interface ProductInfo {
   id: string;
   name: string;
   price: number;
-  image_url: string | null;
+  images?: string[] | null;
 }
 
 interface ProductStat {
