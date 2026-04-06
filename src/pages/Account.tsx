@@ -436,12 +436,11 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     queryKey: ['affiliate-status', user?.id],
     queryFn: async () => {
       const { data } = await supabase
-        .from('affiliate_applications')
-        .select('affiliate_id')
+        .from('profiles')
+        .select('referral_code')
         .eq('user_id', user!.id)
-        .eq('status', 'approved')
-        .maybeSingle();
-      return data;
+        .single();
+      return data ? { affiliate_id: data.referral_code } : null;
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 10,

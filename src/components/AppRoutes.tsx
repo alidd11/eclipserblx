@@ -483,7 +483,7 @@ export function AppRoutes() {
         <Route path="/admin/job-channels" element={<AdminJobChannels />} />
         <Route path="/admin/staff-directory" element={<AdminStaffDirectory />} />
         <Route path="/admin/staff/:userId" element={<AdminStaffProfile />} />
-        <Route path="/admin/affiliate-applications" element={<Navigate to="/admin/affiliate-hub?tab=applications" replace />} />
+        <Route path="/admin/affiliate-applications" element={<Navigate to="/admin/affiliate-hub" replace />} />
         <Route path="/admin/store-applications" element={<AdminStoreApplications />} />
         <Route path="/admin/seller-product-review" element={<AdminSellerProductReview />} />
         <Route path="/admin/seo-indexing" element={<AdminSEOIndexing />} />

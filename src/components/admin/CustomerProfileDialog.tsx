@@ -145,20 +145,22 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
     enabled: !!profile?.user_id && open,
   });
 
-  // Fetch affiliate status
+  // Fetch affiliate status - all users are auto-enrolled, use referral_code from profiles
   const { data: affiliateStatus } = useQuery({
     queryKey: ['customer-affiliate', profile?.user_id],
     queryFn: async () => {
       if (!profile?.user_id) return null;
-      const { data, error } = await supabase
-        .from('affiliate_applications')
-        .select('affiliate_id, status, created_at')
+      const { data: balanceData } = await supabase
+        .from('affiliate_balances')
+        .select('user_id')
         .eq('user_id', profile.user_id)
-        .order('created_at', { ascending: false })
-        .limit(1)
         .maybeSingle();
-      if (error) throw error;
-      return data;
+      if (!balanceData) return null;
+      return {
+        affiliate_id: profile.referral_code,
+        status: 'approved' as const,
+        created_at: profile.created_at,
+      };
     },
     enabled: !!profile?.user_id && open,
   });
