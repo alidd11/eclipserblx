@@ -638,7 +638,7 @@ export default function SellerProductEditor() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__none__" className="text-muted-foreground">No category</SelectItem>
-                      {categories?.map((cat: any) => (
+                      {categories?.map((cat) => (
                         <SelectItem key={cat.id} value={cat.id}>
                           {cat.name}
                         </SelectItem>

@@ -66,7 +66,7 @@ export function TransactionsTab({ storeId }: TransactionsTabProps) {
  const totalCount = transactionsData?.totalCount || 0;
  const totalPages = Math.ceil(totalCount / TRANSACTIONS_PER_PAGE);
 
- const filteredTransactions = transactions.filter((tx: any) => {
+ const filteredTransactions = transactions.filter((tx) => {
  const matchesSearch = !searchQuery || 
  tx.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
  tx.order_id?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -94,7 +94,7 @@ export function TransactionsTab({ storeId }: TransactionsTabProps) {
 
  const exportCSV = () => {
  const headers = ['Date', 'Type', 'Description', 'Amount', 'Platform Fee', 'Net Amount', 'Status'];
- const rows = filteredTransactions.map((tx: any) => [
+ const rows = filteredTransactions.map((tx) => [
  format(new Date(tx.created_at), 'yyyy-MM-dd HH:mm'),
  tx.type, tx.description || '', tx.amount, tx.platform_fee || 0, tx.net_amount || tx.amount, tx.status,
  ]);
@@ -166,7 +166,7 @@ export function TransactionsTab({ storeId }: TransactionsTabProps) {
  </TableRow>
  </TableHeader>
  <TableBody>
- {filteredTransactions.map((tx: any) => (
+ {filteredTransactions.map((tx) => (
  <TableRow key={tx.id}>
  <TableCell className="whitespace-nowrap">{format(new Date(tx.created_at), 'dd MMM yyyy')}</TableCell>
  <TableCell>{getTypeBadge(tx.type)}</TableCell>

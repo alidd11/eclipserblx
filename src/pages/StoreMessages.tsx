@@ -188,7 +188,7 @@ export default function StoreMessages() {
       const storeMap = new Map<string, PurchasedStore>();
       
       (data || []).forEach((order) => {
-        order.order_items?.forEach((item: any) => {
+        order.order_items?.forEach((item) => {
           const store = item.product?.store;
           if (!store) return;
           

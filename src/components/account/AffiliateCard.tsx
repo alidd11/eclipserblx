@@ -619,7 +619,7 @@ export function AffiliateCard() {
  <div className="space-y-2">
  <p className="text-sm font-medium">Payout History</p>
  <div className="space-y-2">
- {pendingPayouts.map((payout: any) => (
+ {pendingPayouts.map((payout) => (
  <div 
  key={payout.id} 
  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"

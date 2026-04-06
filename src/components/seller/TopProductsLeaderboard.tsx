@@ -40,7 +40,7 @@ export function TopProductsLeaderboard() {
         .in('id', salesData.map(s => s.order_item_id).filter(Boolean) as string[]);
 
       const salesMap = new Map<string, number>();
-      (orderItems || []).forEach((item: any) => {
+      (orderItems || []).forEach((item) => {
         if (item.product_id) {
           salesMap.set(item.product_id, (salesMap.get(item.product_id) || 0) + 1);
         }

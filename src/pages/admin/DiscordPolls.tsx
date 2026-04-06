@@ -349,7 +349,7 @@ export default function DiscordPolls() {
  <div className="text-center py-8 text-muted-foreground">Loading...</div>
  ) : polls && polls.length > 0 ? (
  <div className="space-y-3">
- {polls.map((poll: any) => (
+ {polls.map((poll) => (
  <div
  key={poll.id}
  className="p-4 border rounded-lg space-y-2"

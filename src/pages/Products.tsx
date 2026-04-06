@@ -72,7 +72,7 @@ export default function Products() {
  });
 
  // Category-aware SEO titles for better Google ranking on long-tail queries
- const activeCategory = categories?.find((c: any) => c.slug === categorySlug);
+ const activeCategory = categories?.find((c) => c.slug === categorySlug);
  const seoTitle = activeCategory
  ? `Buy Roblox ${activeCategory.name} | Eclipse Marketplace`
  : 'Browse Roblox Assets & Scripts | Eclipse Marketplace';

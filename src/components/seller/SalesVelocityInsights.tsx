@@ -41,7 +41,7 @@ export function SalesVelocityInsights() {
 
  const productMap = new Map<string, { current: number; previous: number; revenue: number }>();
 
- transactions.forEach((t: any) => {
+ transactions.forEach((t) => {
  const name = t.description?.replace(/^Sale: /, '').split(' — ')[0] || 'Unknown';
  if (!productMap.has(name)) {
  productMap.set(name, { current: 0, previous: 0, revenue: 0 });

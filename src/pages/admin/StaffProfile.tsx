@@ -253,7 +253,7 @@ export default function StaffProfile() {
  .select('permission_id, permissions!inner(name)')
  .in('role', roles);
  if (permErr) throw permErr;
- return (perms || []).map((rp: any) => rp.permissions?.name).filter(Boolean);
+ return (perms || []).map((rp) => rp.permissions?.name).filter(Boolean);
  },
  enabled: !!user?.id,
  });

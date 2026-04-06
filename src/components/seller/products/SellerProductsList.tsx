@@ -109,7 +109,7 @@ export function SellerProductsList({
           </div>
         ) : products.length > 0 ? (
           <div className="border border-border rounded-xl overflow-hidden divide-y divide-border">
-            {products.map((product: any) => {
+            {products.map((product) => {
               const isLocked = isAdminManagedProduct(product);
               return (
                 <div
@@ -179,7 +179,7 @@ export function SellerProductsList({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {products.map((product: any) => {
+                {products.map((product) => {
                   const isLocked = isAdminManagedProduct(product);
                   return (
                     <TableRow key={product.id} className={isLocked ? 'opacity-75' : 'cursor-pointer hover:bg-muted/50'} onClick={() => !isLocked && onEdit(product)}>

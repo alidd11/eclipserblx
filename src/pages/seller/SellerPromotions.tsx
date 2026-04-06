@@ -260,7 +260,7 @@ export default function SellerPromotions() {
                   <p className="text-sm text-muted-foreground text-center py-8">No ad spend transactions yet.</p>
                 ) : (
                   <div className="divide-y divide-border">
-                    {creditHistory.map((tx: any) => (
+                    {creditHistory.map((tx) => (
                       <div key={tx.id} className="flex items-center justify-between px-4 py-2.5">
                         <div>
                           <p className="text-sm">{tx.description}</p>

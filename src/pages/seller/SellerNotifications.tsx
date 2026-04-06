@@ -131,7 +131,7 @@ export default function SellerNotifications() {
     }
   };
 
-  const unreadCount = notifications?.filter((n: any) => !n.read_at).length || 0;
+  const unreadCount = notifications?.filter((n) => !n.read_at).length || 0;
 
   return (
     <SellerLayout>
@@ -161,7 +161,7 @@ export default function SellerNotifications() {
           </div>
         ) : notifications && notifications.length > 0 ? (
           <div className="border border-border rounded-xl overflow-hidden divide-y divide-border">
-            {notifications.map((n: any) => {
+            {notifications.map((n) => {
               const Icon = NOTIFICATION_ICONS[n.type] || Bell;
               const colorClass = NOTIFICATION_COLORS[n.type] || 'text-muted-foreground';
               const isUnread = !n.read_at;

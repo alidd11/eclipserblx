@@ -43,7 +43,7 @@ export function FrequentlyBoughtTogether({ productId, categoryId, storeId }: Pro
 
       // Step 3: Count frequency & deduplicate
       const freqMap = new Map<string, { name: string; price: number; count: number }>();
-      coItems.forEach((item: any) => {
+      coItems.forEach((item) => {
         if (!item.product_id) return;
         const existing = freqMap.get(item.product_id);
         if (existing) {
@@ -76,7 +76,7 @@ export function FrequentlyBoughtTogether({ productId, categoryId, storeId }: Pro
 
       // Maintain frequency ordering
       return productIds
-        .map(id => fullProducts.find((p: any) => p.id === id))
+        .map(id => fullProducts.find((p) => p.id === id))
         .filter(Boolean);
     },
     enabled: !!productId,
@@ -92,7 +92,7 @@ export function FrequentlyBoughtTogether({ productId, categoryId, storeId }: Pro
         <h3 className="text-sm font-semibold text-foreground">Frequently Bought Together</h3>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {products.map((product: any) => (
+        {products.map((product) => (
           <Link
             key={product.id}
             to={`/products/${(product as any).product_number}`}

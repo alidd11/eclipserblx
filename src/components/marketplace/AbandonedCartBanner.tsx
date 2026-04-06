@@ -13,7 +13,7 @@ export const AbandonedCartBanner = forwardRef<HTMLDivElement>(function Abandoned
   if (!showRecoveryBanner || !recoveryCart?.length) return null;
 
   const handleRestore = () => {
-    recoveryCart.forEach((item: any) => addItem(item));
+    recoveryCart.forEach((item) => addItem(item));
     markRecovered();
   };
 

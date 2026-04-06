@@ -60,7 +60,7 @@ export function ForYouSection() {
         <h2 className="text-lg font-display font-bold">Recommended For You</h2>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {recommendations.slice(0, 4).map((product: any) => (
+        {recommendations.slice(0, 4).map((product) => (
           <Link
             key={product.id}
             to={`/products/${product.product_number}`}

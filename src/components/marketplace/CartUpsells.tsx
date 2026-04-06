@@ -44,7 +44,7 @@ export function CartUpsells() {
 
       // Count frequency, exclude items already in cart
       const freqMap = new Map<string, { name: string; price: number; count: number }>();
-      coItems.forEach((item: any) => {
+      coItems.forEach((item) => {
         if (!item.product_id || cartProductIds.includes(item.product_id)) return;
         const existing = freqMap.get(item.product_id);
         if (existing) existing.count++;
@@ -79,7 +79,7 @@ export function CartUpsells() {
         <h3 className="text-sm font-semibold">Customers also bought</h3>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        {suggestions.map((product: any) => (
+        {suggestions.map((product) => (
           <div key={product.id} className="rounded-lg border border-border bg-card overflow-hidden group">
             <Link to={`/products/${product.product_number}`}>
               <div className="aspect-[4/3] bg-muted overflow-hidden">

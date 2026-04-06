@@ -178,7 +178,7 @@ export default function SellerCampaigns() {
           </div>
         ) : (
           <div className="space-y-3">
-            {campaigns?.map((campaign: any) => {
+            {campaigns?.map((campaign) => {
               const status = getCampaignStatus(campaign);
               const isLive = status.label === 'Active';
               return (

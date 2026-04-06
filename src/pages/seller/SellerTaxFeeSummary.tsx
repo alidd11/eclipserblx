@@ -31,7 +31,7 @@ export default function SellerTaxFeeSummary() {
 
   const summary = useMemo(() => {
     let totalGross = 0, totalPlatformFee = 0, totalStripeFee = 0, totalNet = 0, refundCount = 0;
-    transactions.forEach((t: any) => {
+    transactions.forEach((t) => {
       totalGross += Number(t.gross_amount || t.amount || 0);
       totalPlatformFee += Number(t.platform_fee || 0);
       totalStripeFee += Number(t.stripe_fee || 0);
@@ -43,7 +43,7 @@ export default function SellerTaxFeeSummary() {
   // Monthly breakdown for chart
   const monthlyData = useMemo(() => {
     const map = new Map<string, { month: string, gross: number, platformFee: number, stripeFee: number, net: number }>();
-    transactions.forEach((t: any) => {
+    transactions.forEach((t) => {
       const d = new Date(t.created_at);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       const label = d.toLocaleString('default', { month: 'short', year: '2-digit' });

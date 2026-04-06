@@ -846,7 +846,7 @@ export default function Affiliate() {
  <div className="p-4">
  {pendingPayouts && pendingPayouts.length > 0 ? (
  <div className="space-y-2">
- {pendingPayouts.map((payout: any) => (
+ {pendingPayouts.map((payout) => (
  <div 
  key={payout.id} 
  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"

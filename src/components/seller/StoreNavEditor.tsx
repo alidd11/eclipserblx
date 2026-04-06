@@ -192,7 +192,7 @@ export function StoreNavEditor({ storeId, storeSlug }: StoreNavEditorProps) {
  <Select value={newUrl} onValueChange={setNewUrl}>
  <SelectTrigger><SelectValue placeholder="Select page" /></SelectTrigger>
  <SelectContent>
- {pages.map((p: any) => (
+ {pages.map((p) => (
  <SelectItem key={p.id} value={`/store/${storeSlug}/page/${p.slug}`}>
  {p.title}
  </SelectItem>

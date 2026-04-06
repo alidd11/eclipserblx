@@ -28,7 +28,7 @@ export function StoreCustomSections({ storeId, accentColor }: StoreCustomSection
 
  return (
  <div className="space-y-6">
- {sections.map((section: any) => (
+ {sections.map((section) => (
  <div className="border border-border rounded-xl overflow-hidden" key={section.id}>
  <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
  <h3 className="font-semibold text-sm text-lg" style={{ color: accentColor }}>
@@ -38,7 +38,7 @@ export function StoreCustomSections({ storeId, accentColor }: StoreCustomSection
  <div className="p-4">
  {section.section_type === 'faq' && section.content?.items && (
  <div className="space-y-3">
- {section.content.items.filter((i: any) => i.question).map((item: any, idx: number) => (
+ {section.content.items.filter((i) => i.question).map((item: any, idx: number) => (
  <div key={idx} className="border-b border-border pb-3 last:border-0">
  <p className="font-medium text-sm mb-1">{item.question}</p>
  <p className="text-sm text-muted-foreground">{item.answer}</p>
@@ -49,7 +49,7 @@ export function StoreCustomSections({ storeId, accentColor }: StoreCustomSection
 
  {section.section_type === 'testimonials' && section.content?.items && (
  <div className="grid gap-4 sm:grid-cols-2">
- {section.content.items.filter((i: any) => i.text).map((item: any, idx: number) => (
+ {section.content.items.filter((i) => i.text).map((item: any, idx: number) => (
  <div key={idx} className="p-3 rounded-lg bg-muted/50">
  <div className="flex items-center gap-1 mb-2">
  {[...Array(5)].map((_, i) => (

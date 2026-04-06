@@ -251,8 +251,8 @@ const LiveChatPage = () => {
       .channel(`typing-${conversation.id}`)
       .on('presence', { event: 'sync' }, () => {
         const state = typingChannel.presenceState();
-        const isTyping = Object.values(state).some((presences: any) =>
-          presences.some((p: any) => p.typing && p.role === 'agent')
+        const isTyping = Object.values(state).some((presences) =>
+          presences.some((p) => p.typing && p.role === 'agent')
         );
         setIsAgentTyping(isTyping);
       })

@@ -45,7 +45,7 @@ export default function BotModeration() {
  },
  });
 
- const filtered = modActions.filter((a: any) =>
+ const filtered = modActions.filter((a) =>
  !search ||
  a.target_username?.toLowerCase().includes(search.toLowerCase()) ||
  a.moderator_username?.toLowerCase().includes(search.toLowerCase()) ||
@@ -117,7 +117,7 @@ export default function BotModeration() {
  </div>
  ) : (
  <div className="divide-y divide-white/5">
- {filtered.map((action: any) => {
+ {filtered.map((action) => {
  const Icon = ACTION_ICONS[action.action_type] || Gavel;
  const color = ACTION_COLORS[action.action_type] || 'text-foreground/60';
  return (

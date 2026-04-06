@@ -155,7 +155,7 @@ export function WelcomeEmbedBuilder() {
  <Select value={channelId} onValueChange={setChannelId}>
  <SelectTrigger><SelectValue placeholder="Select a channel..." /></SelectTrigger>
  <SelectContent>
- {channels.map((ch: any) => (
+ {channels.map((ch) => (
  <SelectItem key={ch.id} value={ch.id}>#{ch.name}</SelectItem>
  ))}
  </SelectContent>

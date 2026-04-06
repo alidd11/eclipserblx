@@ -86,7 +86,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
         .eq('is_featured', true)
         .limit(8);
       if (data) {
-        const filtered = data.filter((p: any) => p.stores?.is_active === true);
+        const filtered = data.filter((p) => p.stores?.is_active === true);
         setTrendingProducts(filtered.slice(0, 6));
       }
     };
@@ -124,7 +124,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
         ]);
 
         if (!rpcRes.error && rpcRes.data) {
-          setProducts(rpcRes.data.map((p: any) => ({
+          setProducts(rpcRes.data.map((p) => ({
             id: p.id,
             name: p.name,
             slug: p.slug,

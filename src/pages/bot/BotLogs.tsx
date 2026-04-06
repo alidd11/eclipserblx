@@ -24,7 +24,7 @@ export default function BotLogs() {
     },
   });
 
-  const filtered = logs.filter((l: any) =>
+  const filtered = logs.filter((l) =>
     !search ||
     l.context?.toLowerCase().includes(search.toLowerCase()) ||
     l.error_message?.toLowerCase().includes(search.toLowerCase())
@@ -63,7 +63,7 @@ export default function BotLogs() {
               <div className="p-8 text-center text-foreground/40">No errors logged. 🎉</div>
             ) : (
               <div className="divide-y divide-white/5">
-                {filtered.map((log: any) => {
+                {filtered.map((log) => {
                   const isExpanded = expandedId === log.id;
                   return (
                     <div key={log.id} className="hover:bg-background/[0.02]">

@@ -57,7 +57,7 @@ export function MyPurchasesCard() {
 
  if (!userError && userOrders) {
  userOrders.forEach(order => {
- order.order_items?.forEach((item: any) => {
+ order.order_items?.forEach((item) => {
  allItems.push({
  ...item,
  order_created_at: order.created_at,
@@ -95,7 +95,7 @@ export function MyPurchasesCard() {
 
  if (!emailError && emailOrders) {
  emailOrders.forEach(order => {
- order.order_items?.forEach((item: any) => {
+ order.order_items?.forEach((item) => {
  allItems.push({
  ...item,
  order_created_at: order.created_at,

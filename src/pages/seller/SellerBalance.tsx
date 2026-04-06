@@ -316,7 +316,7 @@ export default function SellerBalance() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {payouts.map((payout: any) => (
+                      {payouts.map((payout) => (
                         <TableRow key={payout.id}>
                           <TableCell>
                             {new Date(payout.created_at).toLocaleDateString()}
