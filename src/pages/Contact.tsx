@@ -9,7 +9,6 @@ import { SITE_NAME } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import {
- Mail,
  MessageCircle,
  Ticket,
  FileQuestion,
