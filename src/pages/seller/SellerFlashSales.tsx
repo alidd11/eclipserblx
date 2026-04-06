@@ -159,7 +159,7 @@ export default function SellerFlashSales() {
           {isLoading ? (
             [1,2].map(i => <Skeleton key={i} className="h-24" />)
           ) : flashSales && flashSales.length > 0 ? (
-            flashSales.map((sale: any) => (
+            flashSales.map((sale) => (
               <div key={sale.id} className={`border border-border rounded-xl p-4 flex items-center justify-between ${isExpired(sale) ? 'opacity-60' : ''}`}>
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-lg flex items-center justify-center bg-primary/10">

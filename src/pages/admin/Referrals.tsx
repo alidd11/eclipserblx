@@ -117,7 +117,7 @@ export default function AdminReferrals() {
  });
 
  const getStatusBadge = (status: string) => {
- const configs: Record<string, { color: string; icon: any }> = {
+ const configs: Record<string, { color: string; icon: React.ElementType }> = {
  pending: { color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30', icon: Clock },
  completed: { color: 'bg-green-500/10 text-green-500 border-green-500/30', icon: CheckCircle },
  };

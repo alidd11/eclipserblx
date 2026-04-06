@@ -237,7 +237,7 @@ export default function SellerReviews() {
               </div>
             ) : reviews.length > 0 ? (
               <div className="space-y-4">
-                {reviews.map((review: any) => (
+                {reviews.map((review) => (
                   <div key={review.id} className="p-4 border rounded-lg space-y-3">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3">
