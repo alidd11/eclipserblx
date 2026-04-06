@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { sanitizeSearch } from '@/lib/searchUtils';
 import { useQuery } from '@tanstack/react-query';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { useAuth } from '@/hooks/useAuth';
