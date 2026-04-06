@@ -75,6 +75,7 @@ function generateOtpEmailHtml(token: string, email_action_type: string): string 
           <tr>
             <td style="border-top: 1px solid #222; padding-top: 24px;">
               <p style="font-size: 13px; color: #525252; margin: 0 0 8px 0;">If you didn't request this, you can safely ignore it.</p>
+              <p style="font-size: 10px; color: #404040; line-height: 1.4; margin: 0 0 12px 0;">This email is intended solely for the named addressee. If you have received this message in error, please notify the sender immediately and delete it. Do not copy, distribute, or take action based on its contents.</p>
               <p style="font-size: 11px; color: #404040; margin: 0;">Eclipse &middot; <a href="https://eclipserblx.com" style="color: #737373; text-decoration: none;">eclipserblx.com</a></p>
             </td>
           </tr>

@@ -29,6 +29,9 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
           This code will expire shortly. If you didn't request this, you can
           safely ignore this email.
         </Text>
+        <Text style={disclaimer}>
+          This email is intended solely for the named addressee. If you have received this message in error, please notify the sender immediately and delete it. Do not copy, distribute, or take action based on its contents.
+        </Text>
       </Container>
     </Body>
   </Html>
@@ -58,3 +61,4 @@ const codeStyle = {
   margin: '0 0 30px',
 }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const disclaimer = { fontSize: '10px', color: '#b0b0b0', lineHeight: '1.4', margin: '20px 0 0', borderTop: '1px solid #e5e5e5', paddingTop: '12px' }

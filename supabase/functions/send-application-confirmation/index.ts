@@ -83,6 +83,7 @@ const handler = async (req: Request): Promise<Response> => {
           </tr>
           <tr>
             <td style="border-top: 1px solid #222; padding-top: 24px; margin-top: 32px;">
+              <p style="font-size: 10px; color: #404040; line-height: 1.4; margin: 0 0 12px 0;">This email is intended solely for the named addressee. If you have received this message in error, please notify the sender immediately and delete it. Do not copy, distribute, or take action based on its contents.</p>
               <p style="margin: 0; font-size: 11px; color: #404040;">Eclipse &middot; <a href="https://eclipserblx.com" style="color: #737373; text-decoration: none;">eclipserblx.com</a></p>
             </td>
           </tr>

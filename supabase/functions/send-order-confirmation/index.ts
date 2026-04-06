@@ -368,6 +368,7 @@ function generateEmailHtml(data: OrderConfirmationRequest, enrichedItems: Enrich
           <tr>
             <td style="border-top: 1px solid #1e1e2e; padding-top: 24px;">
               <p style="margin: 0 0 8px 0; font-size: 12px; color: #525252;">Need help? <a href="https://eclipserblx.com/support" style="color: #737373; text-decoration: none;">Contact support</a></p>
+              <p style="margin: 0 0 12px 0; font-size: 10px; color: #404040; line-height: 1.4;">This email is intended solely for the named addressee. If you have received this message in error, please notify the sender immediately and delete it. Do not copy, distribute, or take action based on its contents.</p>
               <p style="margin: 0 0 4px 0; font-size: 11px; color: #404040;"><a href="https://eclipserblx.com" style="color: #525252; text-decoration: none;">eclipserblx.com</a></p>
               <p style="margin: 0; font-size: 11px; color: #333;">&copy; ${year} Eclipse</p>
             </td>
