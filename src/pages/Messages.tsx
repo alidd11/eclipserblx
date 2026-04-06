@@ -1,15 +1,14 @@
-import { useState, useEffect } from 'react';
-import { Bell, Award, Tag, ShoppingCart, MessageCircle, Trophy, Percent, Check, CheckCheck, Inbox } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Bell, Award, Tag, ShoppingCart, MessageCircle, Trophy, Percent, CheckCheck, Inbox, Filter, ChevronRight, Shield } from 'lucide-react';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
-import { EclipseLogo } from '@/components/ui/EclipseLogo';
 import { hapticTap } from '@/lib/haptics';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
@@ -24,13 +23,51 @@ interface Notification {
   created_at: string;
 }
 
-const notificationIcons: Record<string, React.ReactNode> = {
-  badge_earned: <Award className="h-5 w-5 text-yellow-500" />,
-  discount_code: <Percent className="h-5 w-5 text-green-500" />,
-  milestone: <Trophy className="h-5 w-5 text-purple-500" />,
-  order_update: <ShoppingCart className="h-5 w-5 text-blue-500" />,
-  system: <MessageCircle className="h-5 w-5 text-muted-foreground" />,
+type FilterType = 'all' | 'unread' | 'orders' | 'system';
+
+const NOTIFICATION_CONFIG: Record<string, { icon: React.ReactNode; label: string }> = {
+  badge_earned: { icon: <Award className="h-4 w-4 text-yellow-500" />, label: 'Achievement' },
+  discount_code: { icon: <Percent className="h-4 w-4 text-green-500" />, label: 'Promotion' },
+  milestone: { icon: <Trophy className="h-4 w-4 text-purple-500" />, label: 'Milestone' },
+  order_update: { icon: <ShoppingCart className="h-4 w-4 text-blue-500" />, label: 'Order' },
+  new_product: { icon: <Tag className="h-4 w-4 text-primary" />, label: 'Product' },
+  leak_detected: { icon: <Shield className="h-4 w-4 text-destructive" />, label: 'Security' },
+  system: { icon: <MessageCircle className="h-4 w-4 text-muted-foreground" />, label: 'System' },
 };
+
+const FILTERS: { value: FilterType; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'unread', label: 'Unread' },
+  { value: 'orders', label: 'Orders' },
+  { value: 'system', label: 'System' },
+];
+
+function groupByDate(notifications: Notification[]): { label: string; items: Notification[] }[] {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today.getTime() - 86400000);
+  const weekAgo = new Date(today.getTime() - 7 * 86400000);
+
+  const groups: Record<string, Notification[]> = {};
+  const order: string[] = [];
+
+  for (const n of notifications) {
+    const d = new Date(n.created_at);
+    let label: string;
+    if (d >= today) label = 'Today';
+    else if (d >= yesterday) label = 'Yesterday';
+    else if (d >= weekAgo) label = 'This Week';
+    else label = 'Earlier';
+
+    if (!groups[label]) {
+      groups[label] = [];
+      order.push(label);
+    }
+    groups[label].push(n);
+  }
+
+  return order.map(label => ({ label, items: groups[label] }));
+}
 
 export default function Messages() {
   usePageMeta({ title: 'Notifications', description: 'View your Eclipse notifications, order updates and badge awards.', canonicalPath: '/messages' });
@@ -39,7 +76,9 @@ export default function Messages() {
   const { playSound } = useNotificationSound();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [filter, setFilter] = useState<FilterType>('all');
+
+  const unreadCount = useMemo(() => notifications.filter(n => !n.is_read).length, [notifications]);
 
   useEffect(() => {
     if (!user) {
@@ -49,21 +88,14 @@ export default function Messages() {
 
     fetchNotifications();
 
-    // Subscribe to realtime updates
     const channel = supabase
       .channel('messages-page-notifications')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`,
-        },
+        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
         () => {
           fetchNotifications();
           playSound();
-          // Push notification when window is hidden
           if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
             new Notification('New Message', {
               body: 'You have a new notification',
@@ -75,14 +107,11 @@ export default function Messages() {
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [user, navigate]);
 
   const fetchNotifications = async () => {
     if (!user) return;
-
     setIsLoading(true);
     const { data, error } = await supabase
       .from('notifications')
@@ -91,140 +120,171 @@ export default function Messages() {
       .order('created_at', { ascending: false })
       .limit(200);
 
-    if (!error && data) {
-      setNotifications(data);
-      setUnreadCount(data.filter((n) => !n.is_read).length);
-    }
+    if (!error && data) setNotifications(data);
     setIsLoading(false);
   };
 
   const markAsRead = async (id: string) => {
     hapticTap();
-    await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('id', id);
-
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
-    );
-    setUnreadCount((prev) => Math.max(0, prev - 1));
+    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
   };
 
   const markAllAsRead = async () => {
     if (!user) return;
     hapticTap();
-
-    await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('user_id', user.id)
-      .eq('is_read', false);
-
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-    setUnreadCount(0);
+    await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id).eq('is_read', false);
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
   };
 
   const handleNotificationClick = (notification: Notification) => {
     hapticTap();
-    if (!notification.is_read) {
-      markAsRead(notification.id);
-    }
+    if (!notification.is_read) markAsRead(notification.id);
     if (notification.link) {
-      // Redirect admin links to /account on customer site
       const isAdminLink = notification.link.startsWith('/admin');
-      const safeLink = isAdminLink ? '/account' : notification.link;
-      navigate(safeLink);
+      navigate(isAdminLink ? '/account' : notification.link);
     }
   };
+
+  const filtered = useMemo(() => {
+    switch (filter) {
+      case 'unread': return notifications.filter(n => !n.is_read);
+      case 'orders': return notifications.filter(n => n.type === 'order_update');
+      case 'system': return notifications.filter(n => ['system', 'milestone', 'badge_earned'].includes(n.type));
+      default: return notifications;
+    }
+  }, [notifications, filter]);
+
+  const grouped = useMemo(() => groupByDate(filtered), [filtered]);
 
   if (!user) return null;
 
   return (
     <MainLayout>
-      <div className="container max-w-2xl mx-auto px-4 py-6">
-        {/* iOS-style header */}
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <EclipseLogo size="sm" />
-          <h1 className="text-lg font-semibold">My Messages</h1>
-        </div>
-
-        {/* Actions bar */}
-        {unreadCount > 0 && (
-          <div className="flex justify-end mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={markAllAsRead}
-              className="text-primary hover:text-primary/80"
-            >
-              <CheckCheck className="h-4 w-4 mr-1.5" />
-              Mark all as read
-            </Button>
+      <div className="container max-w-2xl mx-auto px-4 py-6 space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-display font-bold">Notifications</h1>
+            <p className="text-sm text-muted-foreground">
+              {unreadCount > 0
+                ? <>{unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}</>
+                : 'You\u2019re all caught up'
+              }
+            </p>
           </div>
-        )}
-
-        {/* Notifications list */}
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mb-3" />
-              <p className="text-sm">Loading messages...</p>
-            </div>
-          ) : notifications.length === 0 ? (
-            <EmptyState
-              icon={Inbox}
-              title="No messages yet"
-              description="You'll receive notifications about orders, badges, discounts, and more here."
-              actionLabel="Browse Products"
-              actionTo="/products"
-            />
-          ) : (
-            <div className="divide-y divide-border">
-              {notifications.map((notification) => (
-                <button
-                  key={notification.id}
-                  onClick={() => handleNotificationClick(notification)}
-                  className={cn(
-                    'w-full px-4 py-4 text-left transition-colors hover:bg-muted/50 active:bg-muted',
-                    !notification.is_read && 'bg-primary/5'
-                  )}
-                >
-                  <div className="flex gap-3">
-                    <div className="flex-shrink-0 mt-0.5">
-                      {notificationIcons[notification.type] || (
-                        <Bell className="h-5 w-5 text-muted-foreground" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <p
-                          className={cn(
-                            'text-sm font-medium',
-                            !notification.is_read && 'text-primary'
-                          )}
-                        >
-                          {notification.title}
-                        </p>
-                        {!notification.is_read && (
-                          <span className="h-2.5 w-2.5 rounded-full bg-primary flex-shrink-0 mt-1.5" />
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-muted-foreground/70 mt-2">
-                        {formatDistanceToNow(new Date(notification.created_at), {
-                          addSuffix: true,
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
+          {unreadCount > 0 && (
+            <Button variant="outline" size="sm" onClick={markAllAsRead}>
+              <CheckCheck className="h-4 w-4 mr-1.5" />
+              Mark all read
+            </Button>
           )}
         </div>
+
+        {/* Filters */}
+        <div className="flex items-center gap-1.5">
+          {FILTERS.map(f => (
+            <button
+              key={f.value}
+              onClick={() => { hapticTap(); setFilter(f.value); }}
+              className={cn(
+                'px-3 py-1.5 text-xs font-medium rounded-full transition-colors',
+                filter === f.value
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              )}
+            >
+              {f.label}
+              {f.value === 'unread' && unreadCount > 0 && (
+                <span className="ml-1.5 tabular-nums">{unreadCount}</span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Notification List */}
+        {isLoading ? (
+          <div className="border border-border rounded-xl">
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent mb-3" />
+              <p className="text-sm">Loading notifications...</p>
+            </div>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="border border-border rounded-xl">
+            <EmptyState
+              icon={Inbox}
+              title={filter === 'all' ? 'No notifications yet' : `No ${filter} notifications`}
+              description={filter === 'all'
+                ? "You\u2019ll receive notifications about orders, badges, discounts, and more here."
+                : 'Try switching to a different filter.'
+              }
+              actionLabel={filter !== 'all' ? 'View All' : 'Browse Products'}
+              {...(filter !== 'all'
+                ? { actionOnClick: () => setFilter('all') }
+                : { actionTo: '/products' }
+              )}
+            />
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {grouped.map(group => (
+              <div key={group.label}>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 px-1">
+                  {group.label}
+                </p>
+                <div className="border border-border rounded-xl overflow-hidden divide-y divide-border">
+                  {group.items.map(notification => {
+                    const config = NOTIFICATION_CONFIG[notification.type] || NOTIFICATION_CONFIG.system;
+                    return (
+                      <button
+                        key={notification.id}
+                        onClick={() => handleNotificationClick(notification)}
+                        className={cn(
+                          'w-full px-4 py-3 text-left transition-colors hover:bg-muted/50 active:bg-muted flex items-center gap-3',
+                          !notification.is_read && 'bg-primary/[0.03]'
+                        )}
+                      >
+                        {/* Icon */}
+                        <div className={cn(
+                          'h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0',
+                          !notification.is_read ? 'bg-primary/10' : 'bg-muted/50'
+                        )}>
+                          {config.icon}
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className={cn(
+                              'text-sm truncate',
+                              !notification.is_read ? 'font-semibold text-foreground' : 'font-medium text-foreground/80'
+                            )}>
+                              {notification.title}
+                            </p>
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                            {notification.message}
+                          </p>
+                        </div>
+
+                        {/* Meta */}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="text-[11px] text-muted-foreground/60 tabular-nums whitespace-nowrap">
+                            {formatDistanceToNow(new Date(notification.created_at), { addSuffix: false })}
+                          </span>
+                          {!notification.is_read && (
+                            <span className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </MainLayout>
   );
