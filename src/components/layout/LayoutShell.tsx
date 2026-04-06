@@ -100,10 +100,7 @@ function LayoutShellInner({
         className={wrapperClassName ?? "min-h-[100dvh] flex w-full overflow-x-hidden relative max-w-full min-w-0"}
         style={wrapperStyle}
       >
-        {/* Desktop Sidebar */}
-        <div className="hidden lg:block flex-shrink-0">
-          {desktopSidebar}
-        </div>
+        {/* Desktop sidebar removed — drawer-only pattern */}
 
         {/* Mobile Sidebar Drawer */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
