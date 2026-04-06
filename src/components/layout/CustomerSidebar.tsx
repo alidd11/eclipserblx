@@ -131,6 +131,8 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
       icon: User,
       items: [
         { title: t('sidebar.profile'), icon: User, href: '/account' },
+        { title: 'My Orders', icon: ShoppingBag, href: '/orders' },
+        { title: 'Wishlist', icon: Heart, href: '/wishlist' },
         { title: t('sidebar.notifications'), icon: Bell, href: '/messages', showNotificationDot: true },
         { title: t('sidebar.cart'), icon: ShoppingCart, href: '/cart' },
       ],
