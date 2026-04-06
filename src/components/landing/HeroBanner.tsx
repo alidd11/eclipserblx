@@ -16,7 +16,6 @@ export function HeroBanner() {
           decoding="sync"
           className="absolute inset-0 w-full h-full object-cover"
         />
-        />
       </picture>
 
       {/* Radial spotlight overlay */}
