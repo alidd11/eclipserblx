@@ -56,7 +56,7 @@ interface PurchasedStore {
 
 export default function StoreMessages() {
   const { user } = useAuth();
-  const { isKeyboardVisible } = useIOSKeyboardFix();
+  const { isKeyboardVisible } = useDevice();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();

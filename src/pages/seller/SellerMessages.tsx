@@ -48,7 +48,7 @@ const CONVERSATIONS_PER_PAGE = 10;
 export default function SellerMessages() {
   const { user } = useAuth();
   const { store, isSeller } = useSellerStatus();
-  const { isKeyboardVisible } = useIOSKeyboardFix();
+  const { isKeyboardVisible } = useDevice();
   const storeId = store?.id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
