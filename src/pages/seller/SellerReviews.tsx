@@ -130,11 +130,11 @@ export default function SellerReviews() {
 
   const stats = reviews.length ? {
     total: totalCount,
-    average: reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length,
+    average: reviews.reduce((sum: number, r) => sum + r.rating, 0) / reviews.length,
     distribution: [5, 4, 3, 2, 1].map(rating => ({
       rating,
-      count: reviews.filter((r: any) => r.rating === rating).length,
-      percent: reviews.length > 0 ? (reviews.filter((r: any) => r.rating === rating).length / reviews.length) * 100 : 0,
+      count: reviews.filter((r) => r.rating === rating).length,
+      percent: reviews.length > 0 ? (reviews.filter((r) => r.rating === rating).length / reviews.length) * 100 : 0,
     })),
   } : null;
 
