@@ -15,7 +15,7 @@ import {
   Shield, Upload, AlertTriangle, CheckCircle2, Clock, XCircle,
   FileSearch, Radar, ExternalLink, X, Crown, FileWarning,
   Hash, User, Fingerprint, CalendarDays, File as FileIcon,
-  Loader2, ChevronDown, ChevronUp,
+  Loader2, ChevronDown, ChevronUp, MoreVertical, EyeOff, CheckCircle, Ban,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from '@/lib/dateUtils';
