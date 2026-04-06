@@ -105,6 +105,7 @@ export function DiscountCodesTab() {
     return <Badge variant="default">Active</Badge>;
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getDisplay = (d: any) => d.discount_type === 'percentage' ? `${d.discount_value}%` : `£${d.discount_value.toFixed(2)}`;
 
   const copyCode = (code: string) => { navigator.clipboard.writeText(code); setCopiedCode(code); setTimeout(() => setCopiedCode(null), 2000); };
