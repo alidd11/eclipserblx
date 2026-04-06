@@ -136,9 +136,7 @@ function LayoutShellInner({
               )}
             </>
           ) : (
-            <div
-              className="sticky top-0 z-50 transition-transform duration-300 ease-out"
-              style={{ transform: headerHidden ? 'translateY(-100%)' : 'translateY(0)' }}
+            <div className="sticky top-0 z-50">
             >
               <Header
                 showDesktopNav={false}
