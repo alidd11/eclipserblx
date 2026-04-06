@@ -36,7 +36,7 @@ export function ExportReportsCard() {
 
  setIsExporting(true);
  try {
- let data: any[] = [];
+ let data: string[][] = [];
  let headers: string[] = [];
  let filename = '';
  const dateFilter = getDateFilter();
