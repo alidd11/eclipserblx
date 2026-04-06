@@ -126,7 +126,20 @@ function LayoutShellInner({
         {/* Main Content */}
       <div className={innerClassName ?? "flex-1 flex flex-col min-w-0"}>
           {customHeader ? (
-            customHeader(() => setMobileOpen(true))
+            <>
+              {customHeader(() => setMobileOpen(true))}
+              {/* Auto-spacer: prevents content from hiding behind fixed custom headers.
+                  Height = safe-area-inset-top + header height (~3rem).
+                  On non-notched devices env() resolves to 0, so spacer = 3rem (header only).
+                  Opt out via fixedHeaderSpacer={false}. */}
+              {shouldRenderSpacer && (
+                <div
+                  className="shrink-0 lg:hidden"
+                  style={{ height: 'calc(env(safe-area-inset-top, 0px) + 3rem)' }}
+                  aria-hidden="true"
+                />
+              )}
+            </>
           ) : (
             <div
               className="sticky top-0 z-50 transition-transform duration-300 ease-out"
