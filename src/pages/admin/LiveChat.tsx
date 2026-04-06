@@ -223,7 +223,7 @@ export default function AdminLiveChat() {
         }
       )
       .subscribe((status) => {
-        console.log('AdminLiveChat conversations channel status:', status);
+        // conversations channel subscribed
       });
 
     return () => {
