@@ -1,1022 +1,266 @@
-import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
-import { format, parseISO } from '@/lib/dateUtils';
-import { ArrowLeft, Store, User, Calendar, Percent, Shield, Power, Trash2, ExternalLink, Package, TrendingUp, DollarSign, Mail, MessageCircle, Gamepad2, Lock, Unlock, Link2, Sparkles, PowerOff, ChevronDown, CheckCircle2, XCircle, BadgeCheck } from 'lucide-react';
+import { ArrowLeft, Shield, ExternalLink, Package, TrendingUp, DollarSign, User, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GenerateStoreBranding } from '@/components/admin/GenerateStoreBranding';
 import { ADMIN_MANAGED_STORES } from '@/lib/constants';
+import { StoreOwnerCard } from '@/components/admin/store-detail/StoreOwnerCard';
+import { StoreCommissionCard } from '@/components/admin/store-detail/StoreCommissionCard';
+import { StoreControlsCard } from '@/components/admin/store-detail/StoreControlsCard';
 
 export default function SellerStoreDetail() {
- const { storeId } = useParams<{ storeId: string }>();
- const navigate = useNavigate();
- const { user } = useAuth();
- const queryClient = useQueryClient();
- 
- const [customRate, setCustomRate] = useState('');
- const [expirationDate, setExpirationDate] = useState('');
- const [showDeleteDialog, setShowDeleteDialog] = useState(false);
- const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
- const [actionPassword, setActionPassword] = useState('');
- const [passwordError, setPasswordError] = useState(false);
- const [pendingAction, setPendingAction] = useState<'delete' | 'deactivate' | null>(null);
+  const { storeId } = useParams<{ storeId: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
- // Re-authenticate for destructive actions (server-side password verification)
- const isAdminManagedStore = storeId ? ADMIN_MANAGED_STORES.includes(storeId as any) : false;
+  const isAdminManagedStore = storeId ? ADMIN_MANAGED_STORES.includes(storeId as any) : false;
 
- // Fetch store details with owner info
- const { data: store, isLoading } = useQuery({
- queryKey: ['seller-store-detail', storeId],
- queryFn: async () => {
- const { data, error } = await supabase
- .from('stores')
- .select(`
- *,
- profiles:owner_id (
- display_name,
- username,
- email,
- avatar_url,
- discord_id,
- discord_username,
- roblox_user_id,
- roblox_username,
- customer_id,
- accounts_locked,
- accounts_locked_at
- )
- `)
- .eq('id', storeId)
- .single();
- 
- if (error) throw error;
- return data;
- },
- enabled: !!storeId,
- });
+  const { data: store, isLoading } = useQuery({
+    queryKey: ['seller-store-detail', storeId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('stores')
+        .select(`*, profiles:owner_id (display_name, username, email, avatar_url, discord_id, discord_username, roblox_user_id, roblox_username, customer_id, accounts_locked, accounts_locked_at)`)
+        .eq('id', storeId)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!storeId,
+  });
 
- // Fetch store payment details (Stripe Connect)
- const { data: paymentDetails } = useQuery({
- queryKey: ['store-payment-details', storeId],
- queryFn: async () => {
- const { data, error } = await supabase
- .from('store_payment_details')
- .select('stripe_account_id, payouts_enabled, details_submitted')
- .eq('store_id', storeId)
- .maybeSingle();
- if (error) throw error;
- return data;
- },
- enabled: !!storeId,
- });
+  const { data: paymentDetails } = useQuery({
+    queryKey: ['store-payment-details', storeId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('store_payment_details')
+        .select('stripe_account_id, payouts_enabled, details_submitted')
+        .eq('store_id', storeId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!storeId,
+  });
 
- // Fetch store statistics
- const { data: stats } = useQuery({
- queryKey: ['seller-store-stats', storeId],
- queryFn: async () => {
- // Get product count
- const { count: productCount } = await supabase
- .from('products')
- .select('*', { count: 'exact', head: true })
- .eq('store_id', storeId);
+  const { data: stats } = useQuery({
+    queryKey: ['seller-store-stats', storeId],
+    queryFn: async () => {
+      const { count: productCount } = await supabase.from('products').select('*', { count: 'exact', head: true }).eq('store_id', storeId);
+      const { data: orderItems } = await supabase.from('order_items').select('price, product:product_id (store_id)').not('product', 'is', null);
+      const storeOrderItems = orderItems?.filter(item => (item.product as any)?.store_id === storeId) || [];
+      const totalRevenue = storeOrderItems.reduce((sum, item) => sum + (item.price || 0), 0);
+      const { count: followerCount } = await supabase.from('store_follows').select('*', { count: 'exact', head: true }).eq('store_id', storeId);
+      const { data: balance } = await supabase.from('seller_balances').select('*').eq('store_id', storeId).maybeSingle();
+      return {
+        productCount: productCount || 0,
+        orderCount: storeOrderItems.length,
+        totalRevenue,
+        followerCount: followerCount || 0,
+        balance: balance || { available_balance: 0, pending_balance: 0, total_earned: 0, total_paid: 0 },
+      };
+    },
+    enabled: !!storeId,
+  });
 
- // Get order count and revenue
- const { data: orderItems } = await supabase
- .from('order_items')
- .select(`
- price,
- product:product_id (store_id)
- `)
- .not('product', 'is', null);
+  const { data: settings } = useQuery({
+    queryKey: ['commission-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('settings').select('key, value').in('key', ['marketplace_default_commission_rate', 'marketplace_eclipse_commission_rate']);
+      if (error) throw error;
+      return data.reduce((acc, s) => ({ ...acc, [s.key]: Number(s.value) || 0 }), {} as Record<string, number>);
+    },
+  });
 
- const storeOrderItems = orderItems?.filter(item => (item.product as any)?.store_id === storeId) || [];
- const totalRevenue = storeOrderItems.reduce((sum, item) => sum + (item.price || 0), 0);
+  const defaultRate = settings?.marketplace_default_commission_rate ?? 15;
 
- // Get follower count
- const { count: followerCount } = await supabase
- .from('store_follows')
- .select('*', { count: 'exact', head: true })
- .eq('store_id', storeId);
+  const updateRateMutation = useMutation({
+    mutationFn: async ({ rate, expiresAt }: { rate: number | null; expiresAt: string | null }) => {
+      const { error } = await supabase.from('stores').update({
+        custom_commission_rate: rate,
+        custom_rate_expires_at: expiresAt,
+        custom_rate_set_by: user?.id,
+        custom_rate_set_at: rate ? new Date().toISOString() : null,
+      }).eq('id', storeId);
+      if (error) throw error;
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['seller-store-detail', storeId] }); toast.success('Commission rate updated'); },
+    onError: (error) => { toast.error('Failed to update: ' + error.message); },
+  });
 
- // Get seller balance
- const { data: balance } = await supabase
- .from('seller_balances')
- .select('*')
- .eq('store_id', storeId)
- .maybeSingle();
+  const toggleActiveMutation = useMutation({
+    mutationFn: async (isActive: boolean) => {
+      const { error } = await supabase.from('stores').update({ is_active: isActive }).eq('id', storeId);
+      if (error) throw error;
+      try { await supabase.functions.invoke('send-admin-email', { body: { email_type: isActive ? 'store_reactivation' : 'store_deactivation', store_id: storeId } }); } catch {}
+    },
+    onSuccess: (_, isActive) => { queryClient.invalidateQueries({ queryKey: ['seller-store-detail', storeId] }); toast.success(isActive ? 'Store activated' : 'Store deactivated'); },
+    onError: (error) => { toast.error('Failed to update: ' + error.message); },
+  });
 
- return {
- productCount: productCount || 0,
- orderCount: storeOrderItems.length,
- totalRevenue,
- followerCount: followerCount || 0,
- balance: balance || { available_balance: 0, pending_balance: 0, total_earned: 0, total_paid: 0 },
- };
- },
- enabled: !!storeId,
- });
+  const deleteStoreMutation = useMutation({
+    mutationFn: async () => {
+      await supabase.from('store_follows').delete().eq('store_id', storeId);
+      await supabase.from('store_team_members').delete().eq('store_id', storeId);
+      await supabase.from('products').update({ is_active: false }).eq('store_id', storeId);
+      const { error } = await supabase.from('stores').delete().eq('id', storeId);
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success('Store deleted'); navigate('/admin/seller-commissions'); },
+    onError: (error) => { toast.error('Failed to delete: ' + error.message); },
+  });
 
- // Fetch default commission rate
- const { data: settings } = useQuery({
- queryKey: ['commission-settings'],
- queryFn: async () => {
- const { data, error } = await supabase
- .from('settings')
- .select('key, value')
- .in('key', ['marketplace_default_commission_rate', 'marketplace_eclipse_commission_rate']);
- 
- if (error) throw error;
- return data.reduce((acc, s) => ({ ...acc, [s.key]: Number(s.value) || 0 }), {} as Record<string, number>);
- },
- });
+  const unlockAccountsMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from('profiles').update({ accounts_locked: false, accounts_lock_reset_by: user?.id, accounts_lock_reset_at: new Date().toISOString() }).eq('user_id', store?.owner_id);
+      if (error) throw error;
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['seller-store-detail', storeId] }); toast.success('Account links unlocked.'); },
+    onError: (error) => { toast.error('Failed to unlock: ' + error.message); },
+  });
 
- const defaultRate = settings?.marketplace_default_commission_rate ?? 15;
+  const lockAccountsMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from('profiles').update({ accounts_locked: true, accounts_locked_at: new Date().toISOString() }).eq('user_id', store?.owner_id);
+      if (error) throw error;
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['seller-store-detail', storeId] }); toast.success('Account links locked.'); },
+    onError: (error) => { toast.error('Failed to lock: ' + error.message); },
+  });
 
- // Update custom rate mutation
- const updateRateMutation = useMutation({
- mutationFn: async ({ rate, expiresAt }: { rate: number | null; expiresAt: string | null }) => {
- const { error } = await supabase
- .from('stores')
- .update({
- custom_commission_rate: rate,
- custom_rate_expires_at: expiresAt,
- custom_rate_set_by: user?.id,
- custom_rate_set_at: rate ? new Date().toISOString() : null,
- })
- .eq('id', storeId);
- 
- if (error) throw error;
- },
- onSuccess: () => {
- queryClient.invalidateQueries({ queryKey: ['seller-store-detail', storeId] });
- toast.success('Commission rate updated');
- },
- onError: (error) => {
- toast.error('Failed to update: ' + error.message);
- },
- });
+  if (isLoading) {
+    return (
+      <AdminLayout requiredPermissions={['view_seller_stores']}>
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-48" />
+          <div className="grid gap-6 md:grid-cols-2"><Skeleton className="h-64" /><Skeleton className="h-64" /></div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
- // (Trusted seller toggle removed)
+  if (!store) {
+    return (
+      <AdminLayout requiredPermissions={['view_seller_stores']}>
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Store not found</p>
+          <Button variant="outline" onClick={() => navigate('/admin/seller-commissions')} className="mt-4">Back to Stores</Button>
+        </div>
+      </AdminLayout>
+    );
+  }
 
- // Toggle active mutation
- const toggleActiveMutation = useMutation({
- mutationFn: async (isActive: boolean) => {
- const { error } = await supabase
- .from('stores')
- .update({ is_active: isActive })
- .eq('id', storeId);
- 
- if (error) throw error;
+  const ownerProfile = store.profiles as any;
+  const statItems = [
+    { icon: Package, label: 'Products', value: stats?.productCount || 0 },
+    { icon: TrendingUp, label: 'Orders', value: stats?.orderCount || 0 },
+    { icon: DollarSign, label: 'Total Revenue', value: `£${(stats?.totalRevenue || 0).toFixed(2)}` },
+    { icon: User, label: 'Followers', value: stats?.followerCount || 0 },
+  ];
 
- // Send email notification
- const emailType = isActive ? 'store_reactivation' : 'store_deactivation';
- try {
- await supabase.functions.invoke('send-admin-email', { body: { email_type: emailType, store_id: storeId } });
- } catch (emailError) {
- console.error('Failed to send email:', emailError);
- }
- },
- onSuccess: (_, isActive) => {
- queryClient.invalidateQueries({ queryKey: ['seller-store-detail', storeId] });
- toast.success(isActive ? 'Store activated' : 'Store deactivated');
- },
- onError: (error) => {
- toast.error('Failed to update: ' + error.message);
- },
- });
+  return (
+    <AdminLayout requiredPermissions={['view_seller_stores']}>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/seller-commissions')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold">{store.name}</h1>
+              {store.is_verified && (
+                <Badge className="gap-1 bg-blue-500 text-foreground border-0"><Shield className="h-3 w-3" />Verified Seller</Badge>
+              )}
+              <Badge variant={store.is_active ? 'default' : 'secondary'}>{store.is_active ? 'Active' : 'Inactive'}</Badge>
+            </div>
+            <p className="text-muted-foreground text-sm">/{store.slug}</p>
+          </div>
+          <Button variant="outline" onClick={() => window.open(`/store/${store.slug}`, '_blank')}>
+            <ExternalLink className="h-4 w-4 mr-2" />View Store
+          </Button>
+        </div>
 
- // Delete store mutation
- const deleteStoreMutation = useMutation({
- mutationFn: async () => {
- await supabase.from('store_follows').delete().eq('store_id', storeId);
- await supabase.from('store_team_members').delete().eq('store_id', storeId);
- await supabase.from('products').update({ is_active: false }).eq('store_id', storeId);
- 
- const { error } = await supabase.from('stores').delete().eq('id', storeId);
- if (error) throw error;
- },
- onSuccess: () => {
- toast.success('Store deleted');
- navigate('/admin/seller-commissions');
- },
- onError: (error) => {
- toast.error('Failed to delete: ' + error.message);
- },
- });
+        {/* Stats */}
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
+          {statItems.map(({ icon: Icon, label, value }) => (
+            <div key={label} className="border border-border rounded-xl overflow-hidden min-w-[140px] flex-shrink-0 md:min-w-0">
+              <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
+                <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-2"><Icon className="h-4 w-4" />{label}</h3>
+              </div>
+              <div className="p-4"><p className="text-2xl font-bold">{value}</p></div>
+            </div>
+          ))}
+        </div>
 
- // Unlock accounts mutation
- const unlockAccountsMutation = useMutation({
- mutationFn: async () => {
- const { error } = await supabase
- .from('profiles')
- .update({
- accounts_locked: false,
- accounts_lock_reset_by: user?.id,
- accounts_lock_reset_at: new Date().toISOString(),
- })
- .eq('user_id', store?.owner_id);
- 
- if (error) throw error;
- },
- onSuccess: () => {
- queryClient.invalidateQueries({ queryKey: ['seller-store-detail', storeId] });
- toast.success('Account links unlocked. User can now update their linked accounts.');
- },
- onError: (error) => {
- toast.error('Failed to unlock: ' + error.message);
- },
- });
+        <div className="grid gap-6 lg:grid-cols-2">
+          <StoreOwnerCard
+            store={store}
+            ownerProfile={ownerProfile}
+            onUnlockAccounts={() => unlockAccountsMutation.mutate()}
+            onLockAccounts={() => lockAccountsMutation.mutate()}
+            isUnlocking={unlockAccountsMutation.isPending}
+            isLocking={lockAccountsMutation.isPending}
+          />
 
- // Lock accounts mutation
- const lockAccountsMutation = useMutation({
- mutationFn: async () => {
- const { error } = await supabase
- .from('profiles')
- .update({
- accounts_locked: true,
- accounts_locked_at: new Date().toISOString(),
- })
- .eq('user_id', store?.owner_id);
- 
- if (error) throw error;
- },
- onSuccess: () => {
- queryClient.invalidateQueries({ queryKey: ['seller-store-detail', storeId] });
- toast.success('Account links locked.');
- },
- onError: (error) => {
- toast.error('Failed to lock: ' + error.message);
- },
- });
+          <StoreCommissionCard
+            store={store}
+            defaultRate={defaultRate}
+            isAdminManaged={isAdminManagedStore}
+            onSaveRate={(rate, expiresAt) => updateRateMutation.mutate({ rate, expiresAt })}
+            onResetRate={() => updateRateMutation.mutate({ rate: null, expiresAt: null })}
+            isSaving={updateRateMutation.isPending}
+          />
 
- const handleSaveRate = () => {
- const rate = customRate ? parseFloat(customRate) : null;
- if (rate !== null && (rate < 0 || rate > 100)) {
- toast.error('Rate must be between 0 and 100');
- return;
- }
- const expiresAt = expirationDate ? new Date(expirationDate).toISOString() : null;
- updateRateMutation.mutate({ rate, expiresAt });
- };
+          {/* Balance */}
+          <div className="border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-muted/30">
+              <h3 className="font-semibold text-sm flex items-center gap-2"><DollarSign className="h-5 w-5" />Seller Balance</h3>
+            </div>
+            <div className="p-4">
+              <div className="grid gap-3 text-sm">
+                <div className="flex justify-between"><span className="text-muted-foreground">Available Balance</span><span className="font-medium text-green-500">£{(stats?.balance?.available_balance || 0).toFixed(2)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Pending Balance</span><span className="font-medium text-yellow-500">£{(stats?.balance?.pending_balance || 0).toFixed(2)}</span></div>
+                <Separator />
+                <div className="flex justify-between"><span className="text-muted-foreground">Total Earned</span><span className="font-medium">£{(stats?.balance?.total_earned || 0).toFixed(2)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Total Paid Out</span><span className="font-medium">£{(stats?.balance?.total_paid || 0).toFixed(2)}</span></div>
+              </div>
+            </div>
+          </div>
 
- const handleResetRate = () => {
- updateRateMutation.mutate({ rate: null, expiresAt: null });
- setCustomRate('');
- setExpirationDate('');
- };
+          {/* AI Branding */}
+          {isAdminManagedStore && (
+            <div className="border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/30">
+                <h3 className="font-semibold text-sm flex items-center gap-2"><Sparkles className="h-5 w-5" />AI Branding</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Generate logo and banner using AI</p>
+              </div>
+              <div className="p-4">
+                <GenerateStoreBranding storeId={storeId!} storeName={store.name} accentColor={store.accent_color || '#8b5cf6'} currentLogoUrl={store.logo_url || undefined} currentBannerUrl={store.banner_url || undefined} />
+              </div>
+            </div>
+          )}
 
- const getEffectiveRate = () => {
- if (!store) return defaultRate;
- // Admin-managed stores (Eclipse, Vino) have 0% commission
- if (ADMIN_MANAGED_STORES.includes(storeId as any)) {
- return 0;
- }
- if (store.custom_rate_expires_at && new Date(store.custom_rate_expires_at) <= new Date()) {
- return store.commission_rate ?? defaultRate;
- }
- return store.custom_commission_rate ?? store.commission_rate ?? defaultRate;
- };
-
- const isCustomRateActive = () => {
- if (!store?.custom_commission_rate) return false;
- if (store.custom_rate_expires_at && new Date(store.custom_rate_expires_at) <= new Date()) {
- return false;
- }
- return true;
- };
-
- // Initialize form when store loads
- if (store && !customRate && store.custom_commission_rate) {
- setCustomRate(store.custom_commission_rate.toString());
- if (store.custom_rate_expires_at) {
- setExpirationDate(store.custom_rate_expires_at.split('T')[0]);
- }
- }
-
- if (isLoading) {
- return (
- <AdminLayout requiredPermissions={['view_seller_stores']}>
- <div className="space-y-6">
- <Skeleton className="h-8 w-48" />
- <div className="grid gap-6 md:grid-cols-2">
- <Skeleton className="h-64" />
- <Skeleton className="h-64" />
- </div>
- </div>
- </AdminLayout>
- );
- }
-
- if (!store) {
- return (
- <AdminLayout requiredPermissions={['view_seller_stores']}>
- <div className="text-center py-12">
- <p className="text-muted-foreground">Store not found</p>
- <Button variant="outline" onClick={() => navigate('/admin/seller-commissions')} className="mt-4">
- Back to Stores
- </Button>
- </div>
- </AdminLayout>
- );
- }
-
- const ownerProfile = store.profiles as any;
-
- return (
- <AdminLayout requiredPermissions={['view_seller_stores']}>
- <div className="space-y-6">
- {/* Header */}
- <div className="flex items-center gap-4">
- <Button variant="ghost" size="icon" onClick={() => navigate('/admin/seller-commissions')}>
- <ArrowLeft className="h-4 w-4" />
- </Button>
- <div className="flex-1">
- <div className="flex items-center gap-3">
- <h1 className="text-2xl font-bold">{store.name}</h1>
- {store.is_verified && (
- <Badge className="gap-1 bg-blue-500 text-foreground border-0">
- <Shield className="h-3 w-3" />
- Verified Seller
- </Badge>
- )}
- <Badge variant={store.is_active ? 'default' : 'secondary'}>
- {store.is_active ? 'Active' : 'Inactive'}
- </Badge>
- </div>
- <p className="text-muted-foreground text-sm">/{store.slug}</p>
- </div>
- <Button variant="outline" onClick={() => window.open(`/store/${store.slug}`, '_blank')}>
- <ExternalLink className="h-4 w-4 mr-2" />
- View Store
- </Button>
- </div>
-
- {/* Stats Cards */}
- <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
- <div className="border border-border rounded-xl overflow-hidden min-w-[140px] flex-shrink-0 md:min-w-0">
- <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
- <h3 className="font-semibold text-sm text-sm text-muted-foreground flex items-center gap-2">
- <Package className="h-4 w-4" />
- Products
- </h3>
- </div>
- <div className="p-4">
- <p className="text-2xl font-bold">{stats?.productCount || 0}</p>
- </div>
- </div>
- <div className="border border-border rounded-xl overflow-hidden min-w-[140px] flex-shrink-0 md:min-w-0">
- <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
- <h3 className="font-semibold text-sm text-sm text-muted-foreground flex items-center gap-2">
- <TrendingUp className="h-4 w-4" />
- Orders
- </h3>
- </div>
- <div className="p-4">
- <p className="text-2xl font-bold">{stats?.orderCount || 0}</p>
- </div>
- </div>
- <div className="border border-border rounded-xl overflow-hidden min-w-[140px] flex-shrink-0 md:min-w-0">
- <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
- <h3 className="font-semibold text-sm text-sm text-muted-foreground flex items-center gap-2">
- <DollarSign className="h-4 w-4" />
- Total Revenue
- </h3>
- </div>
- <div className="p-4">
- <p className="text-2xl font-bold">£{(stats?.totalRevenue || 0).toFixed(2)}</p>
- </div>
- </div>
- <div className="border border-border rounded-xl overflow-hidden min-w-[140px] flex-shrink-0 md:min-w-0">
- <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
- <h3 className="font-semibold text-sm text-sm text-muted-foreground flex items-center gap-2">
- <User className="h-4 w-4" />
- Followers
- </h3>
- </div>
- <div className="p-4">
- <p className="text-2xl font-bold">{stats?.followerCount || 0}</p>
- </div>
- </div>
- </div>
-
- <div className="grid gap-6 lg:grid-cols-2">
- {/* Owner Information */}
- <div className="border border-border rounded-xl overflow-hidden">
- <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2">
- <User className="h-5 w-5" />
- Store Owner
- </h3>
- </div>
- <div className="p-4 space-y-4">
- <div className="flex items-center gap-4">
- {ownerProfile?.avatar_url ? (
- <img src={ownerProfile.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" />
- ) : (
- <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
- <User className="h-6 w-6 text-muted-foreground" />
- </div>
- )}
- <div>
- <p className="font-medium">{ownerProfile?.display_name || 'Unknown User'}</p>
- {ownerProfile?.username && (
- <p className="text-xs text-muted-foreground">@{ownerProfile.username}</p>
- )}
- <p className="text-sm text-muted-foreground">{ownerProfile?.email}</p>
- </div>
- </div>
- 
- <Separator />
- 
- <div className="grid gap-3 text-sm">
- {ownerProfile?.customer_id && (
- <div className="flex justify-between">
- <span className="text-muted-foreground">Customer ID</span>
- <span className="font-mono">{ownerProfile.customer_id}</span>
- </div>
- )}
- 
- <Separator />
- 
- {/* Linked Accounts */}
- <div className="space-y-2">
- <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Linked Accounts</p>
- 
- <div className="flex items-center justify-between">
- <span className="flex items-center gap-2 text-muted-foreground">
- <MessageCircle className="h-4 w-4" />
- Discord
- </span>
- {ownerProfile?.discord_username ? (
- <span className="flex items-center gap-2">
- <Badge variant="outline" className="bg-[#5865F2]/10 text-[#5865F2] border-[#5865F2]/30">
- {ownerProfile.discord_username}
- </Badge>
- {ownerProfile.discord_id && (
- <span className="text-xs text-muted-foreground font-mono">{ownerProfile.discord_id}</span>
- )}
- </span>
- ) : (
- <Badge variant="destructive">Not Linked</Badge>
- )}
- </div>
- 
- <div className="flex items-center justify-between">
- <span className="flex items-center gap-2 text-muted-foreground">
- <Gamepad2 className="h-4 w-4" />
- Roblox
- </span>
- {ownerProfile?.roblox_username ? (
- <span className="flex items-center gap-2">
- <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/30">
- {ownerProfile.roblox_username}
- </Badge>
- {ownerProfile.roblox_user_id && (
- <span className="text-xs text-muted-foreground font-mono">{ownerProfile.roblox_user_id}</span>
- )}
- </span>
- ) : (
- <Badge variant="destructive">Not Linked</Badge>
- )}
- </div>
- </div>
- 
- <Separator />
- 
- {/* Account Lock Status */}
- <div className="space-y-2">
- <div className="flex items-center justify-between">
- <span className="flex items-center gap-2 text-muted-foreground">
- {ownerProfile?.accounts_locked ? (
- <Lock className="h-4 w-4" />
- ) : (
- <Unlock className="h-4 w-4" />
- )}
- Account Links
- </span>
- {ownerProfile?.accounts_locked ? (
- <div className="flex items-center gap-2">
- <Badge variant="secondary">Locked</Badge>
- <Button
- variant="outline"
- size="sm"
- onClick={() => unlockAccountsMutation.mutate()}
- disabled={unlockAccountsMutation.isPending}
- >
- <Unlock className="h-3 w-3 mr-1" />
- Unlock
- </Button>
- </div>
- ) : (
- <div className="flex items-center gap-2">
- <Badge variant="outline" className="text-yellow-500 border-yellow-500/30">Unlocked</Badge>
- <Button
- variant="outline"
- size="sm"
- onClick={() => lockAccountsMutation.mutate()}
- disabled={lockAccountsMutation.isPending}
- >
- <Lock className="h-3 w-3 mr-1" />
- Lock
- </Button>
- </div>
- )}
- </div>
- <p className="text-xs text-muted-foreground">
- {ownerProfile?.accounts_locked 
- ? 'User cannot change their linked Discord/Roblox accounts.'
- : 'User can currently modify their linked accounts. Lock to prevent changes.'}
- </p>
- </div>
- 
- <Separator />
-
- {/* Discord Server Invite */}
- {(store as any).discord_invite && (
- <div className="flex items-center justify-between">
- <span className="flex items-center gap-2 text-muted-foreground">
- <Link2 className="h-4 w-4" />
- Discord Server
- </span>
- <a
- href={(store as any).discord_invite}
- target="_blank"
- rel="noopener noreferrer"
- className="text-sm text-primary hover:underline flex items-center gap-1"
- >
- Join Server
- <ExternalLink className="h-3 w-3" />
- </a>
- </div>
- )}
- 
- <Separator />
- 
- <div className="flex justify-between">
- <span className="text-muted-foreground">Store Created</span>
- <span>{format(parseISO(store.created_at), 'MMM d, yyyy')}</span>
- </div>
- </div>
- </div>
- </div>
-
- {/* Commission Settings - Hidden for admin-managed stores */}
- {!ADMIN_MANAGED_STORES.includes(storeId as any) ? (
- <div className="border border-border rounded-xl overflow-hidden">
- <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2">
- <Percent className="h-5 w-5" />
- Commission Settings
- </h3>
- <p className="text-xs text-muted-foreground mt-0.5">
- Current effective rate: <Badge>{getEffectiveRate()}%</Badge>
- </p>
- </div>
- <div className="p-4 space-y-4">
- <div className="grid gap-4">
- <div className="grid gap-2">
- <Label>Custom Commission Rate (%)</Label>
- <Input
- type="number"
- min="0"
- max="100"
- placeholder={`Default: ${defaultRate}%`}
- value={customRate}
- onChange={(e) => setCustomRate(e.target.value)}
- />
- </div>
- <div className="grid gap-2">
- <Label>Rate Expiration Date (Optional)</Label>
- <Input
- type="date"
- value={expirationDate}
- onChange={(e) => setExpirationDate(e.target.value)}
- />
- {store.custom_rate_expires_at && (
- <p className="text-xs text-muted-foreground">
- Current expiration: {format(parseISO(store.custom_rate_expires_at), 'MMM d, yyyy')}
- {new Date(store.custom_rate_expires_at) <= new Date() && (
- <Badge variant="destructive" className="ml-2 text-xs">Expired</Badge>
- )}
- </p>
- )}
- </div>
- </div>
- 
- <div className="flex gap-2">
- <Button onClick={handleSaveRate} disabled={updateRateMutation.isPending}>
- Save Rate
- </Button>
- {isCustomRateActive() && (
- <Button variant="outline" onClick={handleResetRate} disabled={updateRateMutation.isPending}>
- Reset to Default
- </Button>
- )}
- </div>
- </div>
- </div>
- ) : (
- <div className="border border-border rounded-xl overflow-hidden">
- <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2">
- <Percent className="h-5 w-5" />
- Commission Settings
- </h3>
- <p className="text-xs text-muted-foreground mt-0.5">
- Current effective rate: <Badge>0%</Badge>
- </p>
- </div>
- <div className="p-4">
- <p className="text-sm text-muted-foreground">
- This is a platform-managed store with a fixed 0% commission rate. Commission settings cannot be modified.
- </p>
- </div>
- </div>
- )}
-
- {/* Balance Information */}
- <div className="border border-border rounded-xl overflow-hidden">
- <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2">
- <DollarSign className="h-5 w-5" />
- Seller Balance
- </h3>
- </div>
- <div className="p-4">
- <div className="grid gap-3 text-sm">
- <div className="flex justify-between">
- <span className="text-muted-foreground">Available Balance</span>
- <span className="font-medium text-green-500">£{(stats?.balance?.available_balance || 0).toFixed(2)}</span>
- </div>
- <div className="flex justify-between">
- <span className="text-muted-foreground">Pending Balance</span>
- <span className="font-medium text-yellow-500">£{(stats?.balance?.pending_balance || 0).toFixed(2)}</span>
- </div>
- <Separator />
- <div className="flex justify-between">
- <span className="text-muted-foreground">Total Earned</span>
- <span className="font-medium">£{(stats?.balance?.total_earned || 0).toFixed(2)}</span>
- </div>
- <div className="flex justify-between">
- <span className="text-muted-foreground">Total Paid Out</span>
- <span className="font-medium">£{(stats?.balance?.total_paid || 0).toFixed(2)}</span>
- </div>
- </div>
- </div>
- </div>
-
- {/* AI Branding Generation - Only for admin-managed stores */}
- {ADMIN_MANAGED_STORES.includes(storeId as any) && (
- <div className="border border-border rounded-xl overflow-hidden">
- <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2">
- <Sparkles className="h-5 w-5" />
- AI Branding
- </h3>
- <p className="text-xs text-muted-foreground mt-0.5">
- Generate logo and banner using AI
- </p>
- </div>
- <div className="p-4">
- <GenerateStoreBranding
- storeId={storeId!}
- storeName={store.name}
- accentColor={store.accent_color || '#8b5cf6'}
- currentLogoUrl={store.logo_url || undefined}
- currentBannerUrl={store.banner_url || undefined}
- />
- </div>
- </div>
- )}
-
- {/* Store Controls */}
- <div className="border border-border rounded-xl overflow-hidden">
- <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2">
- <Store className="h-5 w-5" />
- Store Controls
- </h3>
- </div>
- <div className="p-4 space-y-4">
- <div className="flex items-center justify-between">
- <div>
- <p className="font-medium">Active Status</p>
- <p className="text-sm text-muted-foreground">Enable or disable the store</p>
- </div>
- <Switch
- checked={store.is_active}
- onCheckedChange={(checked) => toggleActiveMutation.mutate(checked)}
- disabled={toggleActiveMutation.isPending}
- />
- </div>
- 
- <Separator />
-
- <div className="flex items-center justify-between">
- <div className="flex items-center gap-2">
- <BadgeCheck className="h-4 w-4 text-muted-foreground" />
- <div>
- <p className="font-medium">Verified Seller</p>
- <p className="text-sm text-muted-foreground">
- Automatically granted when Stripe Connect onboarding is completed
- </p>
- </div>
- </div>
- <Badge 
- variant={store.is_verified ? "default" : "secondary"} 
- className={store.is_verified ? "bg-green-600 text-foreground border-0" : ""}
- >
- {store.is_verified ? "Verified" : "Not Verified"}
- </Badge>
- </div>
-
- <Collapsible>
- <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full">
- <ChevronDown className="h-4 w-4 transition-transform duration-200 [&[data-state=open]]:rotate-180" />
- Stripe Connect Details
- {paymentDetails?.stripe_account_id && (
- <a
- href={`https://dashboard.stripe.com/connect/accounts/${paymentDetails.stripe_account_id}`}
- target="_blank"
- rel="noopener noreferrer"
- className="ml-auto text-xs hover:text-foreground flex items-center gap-1"
- onClick={(e) => e.stopPropagation()}
- >
- <ExternalLink className="h-3 w-3" />
- Open in Stripe
- </a>
- )}
- </CollapsibleTrigger>
- <CollapsibleContent className="mt-3">
- {!paymentDetails?.stripe_account_id ? (
- <div className="rounded-md border border-dashed p-4 text-center text-sm space-y-3">
- <p className="text-muted-foreground">No Stripe Connect account linked yet</p>
- <p className="text-xs text-muted-foreground">
- The seller needs to complete Stripe Connect onboarding from their{' '}
- <span className="font-medium text-foreground">Seller Dashboard → Settings → Payments</span>{' '}
- page to get verified.
- </p>
- <div className="space-y-1.5 text-left">
- <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Required Steps</p>
- <div className="flex items-center gap-2 text-sm">
- <XCircle className="h-4 w-4 text-muted-foreground shrink-0" />
- <span>Create Stripe Connect Account</span>
- </div>
- <div className="flex items-center gap-2 text-sm">
- <XCircle className="h-4 w-4 text-muted-foreground shrink-0" />
- <span>Submit Identity / KYC Details</span>
- </div>
- <div className="flex items-center gap-2 text-sm">
- <XCircle className="h-4 w-4 text-muted-foreground shrink-0" />
- <span>Enable Payouts</span>
- </div>
- </div>
- </div>
- ) : (
- <div className="rounded-md border p-3 text-sm space-y-3">
- <div className="flex justify-between items-center">
- <span className="text-muted-foreground">Account ID</span>
- <span className="font-mono text-xs">{paymentDetails.stripe_account_id}</span>
- </div>
- <Separator />
- <div className="space-y-2">
- <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Onboarding Steps</p>
- <div className="flex items-center gap-2">
- <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
- <span>Account Created</span>
- </div>
- <div className="flex items-center gap-2">
- {paymentDetails.details_submitted ? (
- <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
- ) : (
- <XCircle className="h-4 w-4 text-destructive shrink-0" />
- )}
- <span>Details Submitted (KYC / Identity)</span>
- </div>
- <div className="flex items-center gap-2">
- {paymentDetails.payouts_enabled ? (
- <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
- ) : (
- <XCircle className="h-4 w-4 text-destructive shrink-0" />
- )}
- <span>Payouts Enabled</span>
- </div>
- </div>
- {(!paymentDetails.details_submitted || !paymentDetails.payouts_enabled) && (
- <div className="pt-2 border-t">
- <p className="text-xs text-muted-foreground">
- Seller needs to complete remaining steps from their{' '}
- <span className="font-medium text-foreground">Seller Dashboard → Settings → Payments</span>
- </p>
- </div>
- )}
- </div>
- )}
- </CollapsibleContent>
- </Collapsible>
- 
- <Separator />
- 
- {/* Deactivate button - for non-admin stores when active */}
- {!isAdminManagedStore && store.is_active && (
- <div className="pt-2">
- <Button 
- variant="outline" 
- className="w-full gap-2 border-amber-500/50 text-amber-600 hover:bg-amber-500/10"
- onClick={() => {
- setPendingAction('deactivate');
- setActionPassword('');
- setPasswordError(false);
- setShowDeactivateDialog(true);
- }}
- >
- <PowerOff className="h-4 w-4" />
- Deactivate Store
- </Button>
- <p className="text-xs text-muted-foreground mt-2">
- Temporarily disable the store. Products will be hidden but data preserved.
- </p>
- </div>
- )}
-
- {/* Delete button - only for non-admin stores */}
- {!isAdminManagedStore && (
- <>
- <Separator />
- <div className="pt-2">
- <Button 
- variant="destructive" 
- className="w-full gap-2"
- onClick={() => {
- setPendingAction('delete');
- setActionPassword('');
- setPasswordError(false);
- setShowDeleteDialog(true);
- }}
- >
- <Trash2 className="h-4 w-4" />
- Delete Store
- </Button>
- <p className="text-xs text-muted-foreground mt-2">
- This will deactivate all products and remove the store. Order history will be preserved.
- </p>
- </div>
- </>
- )}
- </div>
- </div>
- </div>
-
- {/* Deactivate Confirmation with Re-auth */}
- <AlertDialog open={showDeactivateDialog} onOpenChange={setShowDeactivateDialog}>
- <AlertDialogContent>
- <AlertDialogHeader>
- <AlertDialogTitle className="flex items-center gap-2">
- <Lock className="h-5 w-5" />
- Deactivate Store?
- </AlertDialogTitle>
- <AlertDialogDescription>
- This will temporarily disable "{store.name}". The store can be reactivated later.
- Enter your account password to confirm.
- </AlertDialogDescription>
- </AlertDialogHeader>
- <div className="space-y-4 py-4">
- <Input
- type="password"
- placeholder="Enter your account password"
- value={actionPassword}
- onChange={(e) => {
- setActionPassword(e.target.value);
- setPasswordError(false);
- }}
- onKeyDown={async (e) => {
- if (e.key === 'Enter' && user?.email) {
- const { error } = await supabase.auth.signInWithPassword({
- email: user.email,
- password: actionPassword,
- });
- if (!error) {
- toggleActiveMutation.mutate(false);
- setShowDeactivateDialog(false);
- setActionPassword('');
- } else {
- setPasswordError(true);
- }
- }
- }}
- className={passwordError ? 'border-destructive' : ''}
- />
- {passwordError && (
- <p className="text-sm text-destructive">Incorrect password. Please try again.</p>
- )}
- </div>
- <AlertDialogFooter>
- <AlertDialogCancel onClick={() => setActionPassword('')}>Cancel</AlertDialogCancel>
- <Button
- variant="outline"
- className="border-amber-500/50 text-amber-600 hover:bg-amber-500/10"
- onClick={async () => {
- if (!user?.email) return;
- const { error } = await supabase.auth.signInWithPassword({
- email: user.email,
- password: actionPassword,
- });
- if (!error) {
- toggleActiveMutation.mutate(false);
- setShowDeactivateDialog(false);
- setActionPassword('');
- } else {
- setPasswordError(true);
- }
- }}
- >
- Deactivate Store
- </Button>
- </AlertDialogFooter>
- </AlertDialogContent>
- </AlertDialog>
-
- {/* Delete Confirmation with Re-auth */}
- <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
- <AlertDialogContent>
- <AlertDialogHeader>
- <AlertDialogTitle className="flex items-center gap-2">
- <Lock className="h-5 w-5" />
- Delete Store?
- </AlertDialogTitle>
- <AlertDialogDescription>
- This will permanently delete "{store.name}" and deactivate all its products. 
- Order history will be preserved. This action cannot be undone.
- Enter your account password to confirm.
- </AlertDialogDescription>
- </AlertDialogHeader>
- <div className="space-y-4 py-4">
- <Input
- type="password"
- placeholder="Enter your account password"
- value={actionPassword}
- onChange={(e) => {
- setActionPassword(e.target.value);
- setPasswordError(false);
- }}
- onKeyDown={async (e) => {
- if (e.key === 'Enter' && user?.email) {
- const { error } = await supabase.auth.signInWithPassword({
- email: user.email,
- password: actionPassword,
- });
- if (!error) {
- deleteStoreMutation.mutate();
- setShowDeleteDialog(false);
- setActionPassword('');
- } else {
- setPasswordError(true);
- }
- }
- }}
- className={passwordError ? 'border-destructive' : ''}
- />
- {passwordError && (
- <p className="text-sm text-destructive">Incorrect password. Please try again.</p>
- )}
- </div>
- <AlertDialogFooter>
- <AlertDialogCancel onClick={() => setActionPassword('')}>Cancel</AlertDialogCancel>
- <Button
- variant="destructive"
- onClick={async () => {
- if (!user?.email) return;
- const { error } = await supabase.auth.signInWithPassword({
- email: user.email,
- password: actionPassword,
- });
- if (!error) {
- deleteStoreMutation.mutate();
- setShowDeleteDialog(false);
- setActionPassword('');
- } else {
- setPasswordError(true);
- }
- }}
- >
- Delete Store
- </Button>
- </AlertDialogFooter>
- </AlertDialogContent>
- </AlertDialog>
- </div>
- </AdminLayout>
- );
+          <StoreControlsCard
+            store={store}
+            paymentDetails={paymentDetails}
+            isAdminManaged={isAdminManagedStore}
+            userEmail={user?.email || ''}
+            onToggleActive={(active) => toggleActiveMutation.mutate(active)}
+            onDeleteStore={() => deleteStoreMutation.mutate()}
+            isToggling={toggleActiveMutation.isPending}
+            isDeleting={deleteStoreMutation.isPending}
+          />
+        </div>
+      </div>
+    </AdminLayout>
+  );
 }
