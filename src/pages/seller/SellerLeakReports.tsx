@@ -314,7 +314,9 @@ export default function SellerLeakReports() {
                   ? { label: 'Confirmed', className: 'bg-destructive/15 text-destructive border-destructive/30' }
                   : result.confidence === 'high'
                     ? { label: 'High', className: 'bg-warning/15 text-warning border-warning/30' }
-                    : { label: 'Medium', className: 'bg-warning/10 text-warning/80 border-warning/20' };
+                    : result.confidence === 'low'
+                      ? { label: 'Low', className: 'bg-muted text-muted-foreground border-border' }
+                      : { label: 'Medium', className: 'bg-warning/10 text-warning/80 border-warning/20' };
 
                 return (
                   <div key={result.id} className="flex items-start justify-between gap-3 p-3 rounded-lg border bg-card">
