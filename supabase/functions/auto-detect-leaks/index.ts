@@ -121,6 +121,65 @@ async function scrapeAndExtractFingerprint(
   }
 }
 
+// --- Multi-factor confidence scoring ---
+
+const SITE_TIERS: Record<string, number> = {
+  "v3rmillion.net": 90,
+  "robloxscripts.com": 90,
+  "rscripts.net": 90,
+  "scriptblox.com": 90,
+  "pastebin.com": 55,
+  "github.com": 55,
+};
+
+const LEAK_KEYWORDS = [
+  "free download", "leaked", "cracked", "get it here", "paste",
+  "script hub", "free script", "download free", "leaked script",
+  "free model", "rip", "stolen", "nulled", "bypass",
+];
+
+function calculateConfidenceScore(
+  productName: string,
+  snippet: string,
+  title: string,
+  domain: string
+): { score: number; factors: { uniqueness: number; relevance: number; reputation: number } } {
+  // 1. Product Name Uniqueness (0–100)
+  const words = productName.trim().split(/\s+/);
+  const hasSpecialChars = /[0-9\-_\.\/]/.test(productName);
+  const hasVersion = /v\d|ver|edition|mk\d|mod/i.test(productName);
+  let uniqueness = 15;
+  if (words.length === 2) uniqueness = 35;
+  if (words.length >= 3) uniqueness = 75;
+  if (hasSpecialChars || hasVersion) uniqueness = Math.max(uniqueness, 90);
+  if (words.length === 1 && productName.length > 12) uniqueness = Math.max(uniqueness, 50);
+
+  // 2. Snippet Relevance (0–100)
+  const lowerSnippet = snippet.toLowerCase();
+  const lowerTitle = title.toLowerCase();
+  const lowerName = productName.toLowerCase();
+  let relevance = 5;
+  if (lowerSnippet.includes(lowerName)) relevance += 40;
+  else if (lowerTitle.includes(lowerName)) relevance += 15;
+  const keywordHits = LEAK_KEYWORDS.filter(kw => lowerSnippet.includes(kw) || lowerTitle.includes(kw));
+  if (keywordHits.length > 0) relevance += Math.min(30, keywordHits.length * 10);
+  if (snippet.length > 50 && lowerSnippet.includes(lowerName)) relevance += 15;
+  relevance = Math.min(100, relevance);
+
+  // 3. Site Reputation (0–100)
+  const cleanDomain = domain.replace(/^www\./, "");
+  const reputation = Object.entries(SITE_TIERS).find(([d]) => cleanDomain.includes(d))?.[1] ?? 25;
+
+  const score = Math.round(uniqueness * 0.35 + relevance * 0.35 + reputation * 0.30);
+  return { score, factors: { uniqueness, relevance, reputation } };
+}
+
+function scoreToConfidence(score: number): string {
+  if (score >= 70) return "high";
+  if (score >= 40) return "medium";
+  return "low";
+}
+
 // --- AI-powered content verification ---
 
 async function verifyWithAI(
@@ -330,8 +389,14 @@ Deno.serve(async (req) => {
             // Suspicious results get recorded with low confidence, no notification
             const isSuspicious = aiVerdict.verdict === "suspicious";
 
+            // --- Multi-factor confidence scoring ---
+            const scoring = calculateConfidenceScore(product.name, snippet, title, domain);
+            let confidenceScore = isSuspicious ? Math.min(scoring.score, 39) : scoring.score;
+            let confidence = isSuspicious ? "low" : scoreToConfidence(confidenceScore);
+
+            console.log(`Score for ${result.url}: ${confidenceScore}/100 (U:${scoring.factors.uniqueness} R:${scoring.factors.relevance} S:${scoring.factors.reputation})`);
+
             // --- Fingerprint check (only for leak verdict) ---
-            let confidence = isSuspicious ? "low" : "medium";
             let extractedFingerprint: string | null = null;
             let matchedUserId: string | null = null;
             let matchedDisplayName: string | null = null;
@@ -347,6 +412,7 @@ Deno.serve(async (req) => {
                   matchedUserId = buyer.userId;
                   matchedDisplayName = buyer.displayName;
                   confidence = matchedUserId ? "confirmed" : "high";
+                  confidenceScore = matchedUserId ? 100 : Math.max(confidenceScore, 85);
                 }
 
                 await new Promise((r) => setTimeout(r, 2000));
@@ -364,6 +430,7 @@ Deno.serve(async (req) => {
                 matched_query: query,
                 snippet: snippet.substring(0, 500),
                 confidence,
+                confidence_score: confidenceScore,
                 extracted_fingerprint: extractedFingerprint,
                 matched_user_id: matchedUserId,
                 matched_display_name: matchedDisplayName,

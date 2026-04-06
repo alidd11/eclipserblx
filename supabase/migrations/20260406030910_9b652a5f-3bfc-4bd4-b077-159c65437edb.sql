@@ -1,0 +1,1 @@
+ALTER TABLE public.leak_scan_results ADD COLUMN confidence_score INTEGER;
