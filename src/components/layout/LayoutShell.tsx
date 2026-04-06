@@ -79,8 +79,6 @@ function LayoutShellInner({
   const shouldRenderSpacer = fixedHeaderSpacer ?? !!customHeader;
   const [mobileOpen, setMobileOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
-  const scrollDir = useScrollDirection(12);
-  const headerHidden = scrollDir === 'down';
 
   useEdgeSwipe({
     onSwipe: () => setMobileOpen(true),
