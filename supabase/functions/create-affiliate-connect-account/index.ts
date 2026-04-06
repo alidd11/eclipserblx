@@ -40,15 +40,6 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Verify user has an affiliate record (auto-created on signup)
-    const { data: application } = await supabaseClient
-      .from('affiliate_applications')
-      .select('id')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    logStep("Affiliate record check", { hasRecord: !!application });
-
     // Check if user already has a stripe account in profiles
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
@@ -75,10 +66,6 @@ serve(async (req) => {
           type: 'affiliate',
         },
         capabilities: {
-          // Stripe may require platforms to request card_payments alongside transfers unless
-          // the platform has special approval to request transfers-only.
-          // We are NOT charging cards on these affiliate accounts, but requesting this
-          // capability avoids the platform-level restriction.
           card_payments: { requested: true },
           transfers: { requested: true },
         },

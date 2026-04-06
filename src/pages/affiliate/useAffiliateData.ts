@@ -52,17 +52,6 @@ export function useAffiliateData() {
     }
   }, [searchParams, queryClient]);
 
-  const { data: application, isLoading: applicationLoading } = useQuery({
-    queryKey: ['affiliate-application', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data, error } = await supabase.from('affiliate_applications').select('*').eq('user_id', user.id).maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
   const { data: balance, isLoading: balanceLoading } = useQuery({
     queryKey: ['affiliate-balance', user?.id],
     queryFn: async () => {
@@ -102,7 +91,7 @@ export function useAffiliateData() {
     queryKey: ['profile-referral', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-      const { data, error } = await supabase.from('profiles').select('referral_code, display_name, paypal_email').eq('user_id', user.id).single();
+      const { data, error } = await supabase.from('profiles').select('referral_code, display_name, paypal_email, preferred_payout_method, bank_account_holder, bank_account_number, bank_swift_bic, bank_name, bank_country, bank_routing_number').eq('user_id', user.id).single();
       if (error) throw error;
       return data;
     },
@@ -110,19 +99,19 @@ export function useAffiliateData() {
   });
 
   useEffect(() => {
-    if (application) {
+    if (profile) {
       setPayoutSettings({
-        preferred_method: (application.preferred_payout_method as PayoutSettings['preferred_method']) || 'stripe',
-        paypal_email: application.paypal_email || '',
-        bank_account_holder: (application as Record<string, unknown>).bank_account_holder as string || '',
-        bank_account_number: (application as Record<string, unknown>).bank_account_number as string || '',
-        bank_swift_bic: (application as Record<string, unknown>).bank_swift_bic as string || '',
-        bank_name: (application as Record<string, unknown>).bank_name as string || '',
-        bank_country: (application as Record<string, unknown>).bank_country as string || '',
-        bank_routing_number: (application as Record<string, unknown>).bank_routing_number as string || '',
+        preferred_method: (profile.preferred_payout_method as PayoutSettings['preferred_method']) || 'stripe',
+        paypal_email: profile.paypal_email || '',
+        bank_account_holder: profile.bank_account_holder || '',
+        bank_account_number: profile.bank_account_number || '',
+        bank_swift_bic: profile.bank_swift_bic || '',
+        bank_name: profile.bank_name || '',
+        bank_country: profile.bank_country || '',
+        bank_routing_number: profile.bank_routing_number || '',
       });
     }
-  }, [application]);
+  }, [profile]);
 
   const connectStripeMutation = useMutation({
     mutationFn: async () => {
@@ -154,7 +143,7 @@ export function useAffiliateData() {
   const updatePayoutSettingsMutation = useMutation({
     mutationFn: async (settings: PayoutSettings) => {
       if (!user?.id) throw new Error('Not authenticated');
-      const { error: appError } = await supabase.from('affiliate_applications').update({
+      const { error } = await supabase.from('profiles').update({
         preferred_payout_method: settings.preferred_method,
         paypal_email: settings.paypal_email || null,
         bank_account_holder: settings.bank_account_holder || null,
@@ -163,13 +152,10 @@ export function useAffiliateData() {
         bank_name: settings.bank_name || null,
         bank_country: settings.bank_country || null,
         bank_routing_number: settings.bank_routing_number || null,
-      } as Record<string, unknown>).eq('user_id', user.id);
-      if (appError) throw appError;
-      if (settings.paypal_email) {
-        await supabase.from('profiles').update({ paypal_email: settings.paypal_email }).eq('id', user.id);
-      }
+      }).eq('user_id', user.id);
+      if (error) throw error;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['affiliate-application', user?.id] }); toast.success("Payout settings updated"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['profile-referral', user?.id] }); toast.success("Payout settings updated"); },
     onError: (error: Error) => { toast.error("Error", { description: error.message }); },
   });
 
@@ -181,7 +167,7 @@ export function useAffiliateData() {
   const hasPendingPayout = pendingPayouts?.some(p => p.status === 'pending');
   const canUseStripe = connectStatus?.canReceivePayments === true;
   const needsStripeOnboarding = !connectStatus?.canReceivePayments;
-  const isLoading = applicationLoading || balanceLoading || settingsLoading;
+  const isLoading = balanceLoading || settingsLoading;
 
   const handleRequestPayout = () => {
     const amount = parseFloat(payoutAmount);

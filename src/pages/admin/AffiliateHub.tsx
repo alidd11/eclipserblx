@@ -1,5 +1,5 @@
 import { useSearchParams } from 'react-router-dom';
-import { Gift, FileText, Link2 } from 'lucide-react';
+import { Gift, Link2 } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { AdminHubProvider } from '@/components/admin/AdminHubContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,12 +8,10 @@ import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const AffiliatesPage = lazy(() => import('@/pages/admin/Affiliates'));
-const AffiliateApplicationsPage = lazy(() => import('@/pages/admin/AffiliateApplications'));
 const ReferralsPage = lazy(() => import('@/pages/admin/Referrals'));
 
 const tabs = [
  { value: 'overview', label: 'Overview', icon: Gift },
- { value: 'applications', label: 'Applications', icon: FileText },
  { value: 'referrals', label: 'Referrals', icon: Link2 },
 ] as const;
 
@@ -33,14 +31,14 @@ export default function AffiliateHub() {
  <Gift className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
  Affiliates
  </h3>
- <p className="text-muted-foreground text-sm mt-1">Manage commissions, applications, and referral tracking</p>
+ <p className="text-muted-foreground text-sm mt-1">Manage commissions and referral tracking</p>
  </div>
  </div>
  </div>
  </div>
 
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
- <TabsList className="hidden sm:grid w-full max-w-xl grid-cols-3">
+ <TabsList className="hidden sm:grid w-full max-w-xl grid-cols-2">
  {tabs.map(t => (
  <TabsTrigger key={t.value} value={t.value} className="gap-2">
  <t.icon className="h-4 w-4" />
@@ -66,12 +64,6 @@ export default function AffiliateHub() {
  <TabsContent value="overview">
  <Suspense fallback={<Skeleton className="h-96 w-full" />}>
  <AffiliatesPage />
- </Suspense>
- </TabsContent>
-
- <TabsContent value="applications">
- <Suspense fallback={<Skeleton className="h-96 w-full" />}>
- <AffiliateApplicationsPage />
  </Suspense>
  </TabsContent>
 
