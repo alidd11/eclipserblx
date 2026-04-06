@@ -306,7 +306,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                       onClick={() => handleSelect(`/products/${(product as any).product_number}`)}
                       className="w-full flex items-center gap-3 py-2.5 text-left hover:bg-muted/30 active:bg-muted/50 transition-colors rounded-lg px-1 -mx-1 touch-manipulation"
                     >
-                      <TrendingUp className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
+                      <TrendingUp className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                       <ProductRow product={product} formatPrice={formatPrice} />
                       <ChevronRight className="h-4 w-4 text-muted-foreground/20 shrink-0" />
                     </button>
