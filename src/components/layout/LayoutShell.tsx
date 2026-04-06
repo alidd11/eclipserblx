@@ -65,7 +65,7 @@ function LayoutShellInner({
   mobileSidebar,
   headerProps = {},
   customHeader,
-  
+  fixedHeaderSpacer,
   showFooter = true,
   showFABs = true,
   extra,
@@ -77,6 +77,8 @@ function LayoutShellInner({
   innerClassName,
   chatMode,
 }: LayoutShellProps) {
+  // Default: auto-add spacer when customHeader is provided (fixed headers need it)
+  const shouldRenderSpacer = fixedHeaderSpacer ?? !!customHeader;
   const [mobileOpen, setMobileOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
   const scrollDir = useScrollDirection(12);
