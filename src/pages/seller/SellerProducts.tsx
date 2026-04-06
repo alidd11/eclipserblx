@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { sanitizeSearch } from '@/lib/searchUtils';
 import { Link } from 'react-router-dom';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useSellerSubscription } from '@/hooks/useSellerSubscription';
