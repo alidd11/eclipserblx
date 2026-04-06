@@ -38,6 +38,11 @@ export const PrefetchLink = forwardRef<HTMLAnchorElement, PrefetchLinkProps>(
       // Call custom prefetch function
       prefetchFn?.();
 
+      // Auto-prefetch route data (category, store, etc.)
+      if (autoRoutePrefetch && typeof props.to === 'string') {
+        prefetchForPath(props.to);
+      }
+
       // Prefetch the page chunk via dynamic import hint
       if (typeof props.to === 'string') {
         const link = document.createElement('link');
