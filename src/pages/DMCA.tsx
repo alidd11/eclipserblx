@@ -200,10 +200,7 @@ export default function DMCA() {
  {/* Counter-Notice */}
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2">
- <XCircle className="h-5 w-5 text-amber-500" />
- Counter-Notice Procedure
- </h3>
+ <h3 className="font-semibold text-sm">Counter-Notice Procedure</h3>
  </div>
  <div className="p-4 prose prose-sm dark:prose-invert max-w-none">
  <p>
