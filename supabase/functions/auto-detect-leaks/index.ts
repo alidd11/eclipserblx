@@ -27,11 +27,9 @@ const MAX_PRODUCTS_PER_STORE = 10;
 // --- Fingerprint extraction (ported from report-leak) ---
 
 function extractFingerprint(text: string): string | null {
-  // Binary fingerprint format
   const binMatch = text.match(/ECL_FP:(ECL-[A-Z0-9]{8})/);
   if (binMatch) return binMatch[1];
 
-  // Lua watermark format
   const luaMatch = text.match(/local _=string\.char\(([0-9,]+)\)/);
   if (luaMatch) {
     try {
@@ -123,6 +121,97 @@ async function scrapeAndExtractFingerprint(
   }
 }
 
+// --- AI-powered content verification ---
+
+async function verifyWithAI(
+  lovableApiKey: string,
+  productName: string,
+  sourceDomain: string,
+  title: string,
+  snippet: string
+): Promise<{ verdict: "leak" | "suspicious" | "legitimate"; reason: string }> {
+  try {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${lovableApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "system",
+            content: `You are a content moderation classifier for a Roblox asset marketplace. Your job is to determine whether a web page is sharing/redistributing a seller's product (a leak) or merely mentioning it legitimately.
+
+A "leak" means the page is distributing, sharing download links, or hosting the actual asset files (scripts, models, maps, etc.) without authorization.
+A "suspicious" result means the page might be a leak but there isn't enough evidence from the snippet alone.
+A "legitimate" result means the page is a review, tutorial, discussion, or the seller's own listing.
+
+Respond using the provided tool.`,
+          },
+          {
+            role: "user",
+            content: `Product name: "${productName}"
+Source domain: ${sourceDomain}
+Page title: "${title}"
+Snippet: "${snippet}"
+
+Is this page leaking the product, suspicious, or a legitimate mention?`,
+          },
+        ],
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "classify_result",
+              description: "Classify whether a search result represents a leak, is suspicious, or is legitimate.",
+              parameters: {
+                type: "object",
+                properties: {
+                  verdict: {
+                    type: "string",
+                    enum: ["leak", "suspicious", "legitimate"],
+                    description: "The classification of the search result.",
+                  },
+                  reason: {
+                    type: "string",
+                    description: "A one-sentence explanation for the classification.",
+                  },
+                },
+                required: ["verdict", "reason"],
+                additionalProperties: false,
+              },
+            },
+          },
+        ],
+        tool_choice: { type: "function", function: { name: "classify_result" } },
+      }),
+    });
+
+    if (!res.ok) {
+      console.error(`AI verification failed: ${res.status}`);
+      return { verdict: "leak", reason: "AI verification unavailable, defaulting to leak" };
+    }
+
+    const data = await res.json();
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+
+    if (toolCall?.function?.arguments) {
+      const parsed = JSON.parse(toolCall.function.arguments);
+      return {
+        verdict: parsed.verdict || "leak",
+        reason: parsed.reason || "",
+      };
+    }
+
+    return { verdict: "leak", reason: "Could not parse AI response, defaulting to leak" };
+  } catch (err) {
+    console.error("AI verification error:", err);
+    return { verdict: "leak", reason: "AI verification error, defaulting to leak" };
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -132,6 +221,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
+    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
 
     if (!firecrawlKey) {
       console.error("FIRECRAWL_API_KEY not configured");
@@ -218,30 +308,49 @@ Deno.serve(async (req) => {
 
             const domain = new URL(result.url).hostname.replace(/^www\./, "");
             const snippet = result.description || result.title || "";
+            const title = result.title || "";
 
-            // Determine if we should scrape for fingerprints
-            let confidence = "medium";
+            // --- AI Verification Step ---
+            let aiVerdict: { verdict: string; reason: string } = { verdict: "leak", reason: "" };
+
+            if (lovableApiKey) {
+              aiVerdict = await verifyWithAI(lovableApiKey, product.name, domain, title, snippet);
+              console.log(`AI verdict for ${result.url}: ${aiVerdict.verdict} — ${aiVerdict.reason}`);
+
+              // Skip legitimate results entirely
+              if (aiVerdict.verdict === "legitimate") {
+                console.log(`Skipping legitimate result: ${result.url}`);
+                continue;
+              }
+
+              // Rate limit between AI calls
+              await new Promise((r) => setTimeout(r, 1000));
+            }
+
+            // Suspicious results get recorded with low confidence, no notification
+            const isSuspicious = aiVerdict.verdict === "suspicious";
+
+            // --- Fingerprint check (only for leak verdict) ---
+            let confidence = isSuspicious ? "low" : "medium";
             let extractedFingerprint: string | null = null;
             let matchedUserId: string | null = null;
             let matchedDisplayName: string | null = null;
 
-            const isScrapable = SCRAPABLE_DOMAINS.some((d) => domain.includes(d));
+            if (!isSuspicious) {
+              const isScrapable = SCRAPABLE_DOMAINS.some((d) => domain.includes(d));
 
-            if (isScrapable) {
-              // Scrape page content and look for fingerprints
-              extractedFingerprint = await scrapeAndExtractFingerprint(firecrawlKey, result.url);
+              if (isScrapable) {
+                extractedFingerprint = await scrapeAndExtractFingerprint(firecrawlKey, result.url);
 
-              if (extractedFingerprint) {
-                // Cross-reference against download logs to identify buyer
-                const buyer = await identifyBuyer(supabase, extractedFingerprint, product.id);
-                matchedUserId = buyer.userId;
-                matchedDisplayName = buyer.displayName;
+                if (extractedFingerprint) {
+                  const buyer = await identifyBuyer(supabase, extractedFingerprint, product.id);
+                  matchedUserId = buyer.userId;
+                  matchedDisplayName = buyer.displayName;
+                  confidence = matchedUserId ? "confirmed" : "high";
+                }
 
-                confidence = matchedUserId ? "confirmed" : "high";
+                await new Promise((r) => setTimeout(r, 2000));
               }
-
-              // Rate limit between scrapes
-              await new Promise((r) => setTimeout(r, 2000));
             }
 
             // Insert result (deduplicate by unique constraint on source_url)
@@ -258,6 +367,7 @@ Deno.serve(async (req) => {
                 extracted_fingerprint: extractedFingerprint,
                 matched_user_id: matchedUserId,
                 matched_display_name: matchedDisplayName,
+                ai_verdict: aiVerdict.verdict,
               });
 
             if (insertErr) {
@@ -268,20 +378,22 @@ Deno.serve(async (req) => {
 
             totalNewResults++;
 
-            // Notification with confidence-appropriate message
-            const notifTitle = confidence === "confirmed"
-              ? `CONFIRMED leak: ${product.name} \u2014 buyer identified`
-              : confidence === "high"
-                ? `Likely leak detected: ${product.name} (fingerprint found)`
-                : `Potential leak detected: ${product.name}`;
+            // Only notify for actual leak verdicts (not suspicious)
+            if (!isSuspicious) {
+              const notifTitle = confidence === "confirmed"
+                ? `CONFIRMED leak: ${product.name} \u2014 buyer identified`
+                : confidence === "high"
+                  ? `Likely leak detected: ${product.name} (fingerprint found)`
+                  : `Potential leak detected: ${product.name}`;
 
-            await supabase.from("seller_notifications").insert({
-              user_id: store.owner_id,
-              type: "leak_detected",
-              title: notifTitle,
-              message: `Found on ${domain}: ${snippet.substring(0, 100)}`,
-              action_url: "/seller/security",
-            });
+              await supabase.from("seller_notifications").insert({
+                user_id: store.owner_id,
+                type: "leak_detected",
+                title: notifTitle,
+                message: `Found on ${domain}: ${snippet.substring(0, 100)}`,
+                action_url: "/seller/security",
+              });
+            }
           }
 
           // Rate limit between products

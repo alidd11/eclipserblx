@@ -5498,6 +5498,7 @@ export type Database = {
       }
       leak_scan_results: {
         Row: {
+          ai_verdict: string | null
           confidence: string
           created_at: string
           dismissed: boolean
@@ -5513,6 +5514,7 @@ export type Database = {
           store_id: string
         }
         Insert: {
+          ai_verdict?: string | null
           confidence?: string
           created_at?: string
           dismissed?: boolean
@@ -5528,6 +5530,7 @@ export type Database = {
           store_id: string
         }
         Update: {
+          ai_verdict?: string | null
           confidence?: string
           created_at?: string
           dismissed?: boolean
