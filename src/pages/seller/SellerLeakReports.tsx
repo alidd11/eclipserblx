@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useSellerSubscription } from '@/hooks/useSellerSubscription';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -6,23 +6,56 @@ import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Shield, Upload, AlertTriangle, CheckCircle2, Clock, XCircle, FileSearch, Radar, ExternalLink, X, Crown } from 'lucide-react';
+import {
+  Shield, Upload, AlertTriangle, CheckCircle2, Clock, XCircle,
+  FileSearch, Radar, ExternalLink, X, Crown, FileWarning,
+  Hash, User, Fingerprint, CalendarDays, File as FileIcon,
+  Loader2, ChevronDown, ChevronUp,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from '@/lib/dateUtils';
+
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+const ALLOWED_EXTENSIONS = ['.lua', '.rbxm', '.rbxl', '.rbxmx', '.rbxlx', '.zip', '.rar', '.txt', '.json', '.png', '.jpg', '.jpeg', '.gif', '.mp3', '.ogg', '.wav'];
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getFileExtension(name: string): string {
+  const dot = name.lastIndexOf('.');
+  return dot >= 0 ? name.slice(dot).toLowerCase() : '';
+}
+
+interface ForensicReport {
+  id: string;
+  fingerprint_found: boolean;
+  fingerprint: string | null;
+  buyer_identified: boolean;
+  matched_display_name: string | null;
+  file_hash: string;
+  status: string;
+}
 
 export default function SellerLeakReports() {
   const { store } = useSellerStatus();
   const { isPro } = useSellerSubscription();
   const queryClient = useQueryClient();
-  const [file, setFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [files, setFiles] = useState<File[]>([]);
   const [productId, setProductId] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [forensicResults, setForensicResults] = useState<ForensicReport[]>([]);
+  const [expandedReport, setExpandedReport] = useState<string | null>(null);
 
   const { data: products } = useQuery({
     queryKey: ['seller-products-for-leak', store?.id],
@@ -53,7 +86,6 @@ export default function SellerLeakReports() {
     enabled: !!store?.id,
   });
 
-  // Auto-scan results
   const { data: scanResults } = useQuery({
     queryKey: ['leak-scan-results', store?.id],
     queryFn: async () => {
@@ -69,7 +101,6 @@ export default function SellerLeakReports() {
     enabled: !!store?.id && isPro,
   });
 
-  // Toggle auto-scan
   const toggleScan = useMutation({
     mutationFn: async (enabled: boolean) => {
       if (!store?.id) throw new Error('No store');
@@ -86,7 +117,6 @@ export default function SellerLeakReports() {
     onError: () => toast.error('Failed to update auto-scan setting'),
   });
 
-  // Dismiss scan result
   const dismissResult = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await (supabase as any)
@@ -100,47 +130,116 @@ export default function SellerLeakReports() {
     },
   });
 
+  // --- File validation & handling ---
+
+  const validateFile = useCallback((file: File): string | null => {
+    if (file.size > MAX_FILE_SIZE) {
+      return `${file.name} exceeds 20MB limit (${formatFileSize(file.size)})`;
+    }
+    const ext = getFileExtension(file.name);
+    if (ext && !ALLOWED_EXTENSIONS.includes(ext)) {
+      return `${file.name} has unsupported format (${ext})`;
+    }
+    return null;
+  }, []);
+
+  const addFiles = useCallback((incoming: FileList | File[]) => {
+    const newFiles: File[] = [];
+    const errors: string[] = [];
+
+    Array.from(incoming).forEach((f) => {
+      const err = validateFile(f);
+      if (err) {
+        errors.push(err);
+      } else if (!files.some((existing) => existing.name === f.name && existing.size === f.size)) {
+        newFiles.push(f);
+      }
+    });
+
+    if (errors.length) toast.error(errors.join('\n'));
+    if (newFiles.length) setFiles((prev) => [...prev, ...newFiles]);
+  }, [files, validateFile]);
+
+  const removeFile = useCallback((index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+  }, [addFiles]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  }, []);
+
+  // --- Submit & forensic analysis ---
+
   const handleSubmit = async () => {
-    if (!file || !productId || !store?.id) {
-      toast.error('Please select a product and upload the leaked file');
+    if (!files.length || !productId || !store?.id) {
+      toast.error('Please select a product and upload at least one file');
       return;
     }
 
     setIsSubmitting(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('productId', productId);
-      formData.append('storeId', store.id);
-      if (notes) formData.append('notes', notes);
+    setForensicResults([]);
+    const results: ForensicReport[] = [];
 
+    try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const res = await fetch(
-        `${supabaseUrl}/functions/v1/report-leak`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: formData,
+
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('productId', productId);
+        formData.append('storeId', store.id);
+        if (notes) formData.append('notes', notes);
+
+        const res = await fetch(
+          `${supabaseUrl}/functions/v1/report-leak`,
+          {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${session.access_token}` },
+            body: formData,
+          }
+        );
+
+        const result = await res.json();
+        if (!res.ok) {
+          toast.error(`${file.name}: ${result.error || 'Analysis failed'}`);
+          continue;
         }
-      );
 
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || 'Failed to submit report');
-
-      if (result.report?.buyer_identified) {
-        toast.success(`Fingerprint matched! Buyer identified: ${result.report.matched_display_name || 'Unknown'}`);
-      } else if (result.report?.fingerprint_found) {
-        toast.info('Fingerprint found but could not match to a specific buyer');
-      } else {
-        toast.warning('No fingerprint found in the uploaded file. The file may not have been downloaded through our platform.');
+        results.push(result.report);
       }
 
-      setFile(null);
+      setForensicResults(results);
+
+      const confirmed = results.filter((r) => r.buyer_identified).length;
+      const fpFound = results.filter((r) => r.fingerprint_found && !r.buyer_identified).length;
+      const noFp = results.filter((r) => !r.fingerprint_found).length;
+
+      if (confirmed > 0) {
+        toast.success(`${confirmed} file(s) matched to a buyer`);
+      }
+      if (fpFound > 0) {
+        toast.info(`${fpFound} file(s) contain fingerprints but no buyer match`);
+      }
+      if (noFp > 0) {
+        toast.warning(`${noFp} file(s) had no detectable fingerprint`);
+      }
+
+      setFiles([]);
       setProductId('');
       setNotes('');
       refetch();
@@ -152,8 +251,8 @@ export default function SellerLeakReports() {
   };
 
   const statusConfig: Record<string, { icon: any; color: string; label: string }> = {
-    pending: { icon: Clock, color: 'text-yellow-500', label: 'Pending' },
-    confirmed: { icon: CheckCircle2, color: 'text-red-500', label: 'Confirmed Leak' },
+    pending: { icon: Clock, color: 'text-warning', label: 'Pending' },
+    confirmed: { icon: CheckCircle2, color: 'text-destructive', label: 'Confirmed Leak' },
     dismissed: { icon: XCircle, color: 'text-muted-foreground', label: 'Dismissed' },
   };
 
@@ -212,10 +311,10 @@ export default function SellerLeakReports() {
             <div className="p-4 pt-2 space-y-2">
               {scanResults.map((result: any) => {
                 const confidenceBadge = result.confidence === 'confirmed'
-                  ? { label: 'Confirmed', className: 'bg-red-500/15 text-red-500 border-red-500/30' }
+                  ? { label: 'Confirmed', className: 'bg-destructive/15 text-destructive border-destructive/30' }
                   : result.confidence === 'high'
-                    ? { label: 'High', className: 'bg-orange-500/15 text-orange-500 border-orange-500/30' }
-                    : { label: 'Medium', className: 'bg-yellow-500/15 text-yellow-500 border-yellow-500/30' };
+                    ? { label: 'High', className: 'bg-warning/15 text-warning border-warning/30' }
+                    : { label: 'Medium', className: 'bg-warning/10 text-warning/80 border-warning/20' };
 
                 return (
                   <div key={result.id} className="flex items-start justify-between gap-3 p-3 rounded-lg border bg-card">
@@ -233,13 +332,13 @@ export default function SellerLeakReports() {
                         </Badge>
                       </div>
                       {result.matched_display_name && (
-                        <p className="text-xs flex items-center gap-1 text-red-500 font-medium">
+                        <p className="text-xs flex items-center gap-1 text-destructive font-medium">
                           <Shield className="h-3 w-3" />
                           Buyer Identified: <span className="text-foreground">{result.matched_display_name}</span>
                         </p>
                       )}
                       {result.extracted_fingerprint && !result.matched_display_name && (
-                        <p className="text-xs font-mono text-orange-500">
+                        <p className="text-xs font-mono text-warning">
                           Fingerprint: {result.extracted_fingerprint}
                         </p>
                       )}
@@ -273,13 +372,100 @@ export default function SellerLeakReports() {
           </div>
         )}
 
-        {/* Submit Report */}
+        {/* Forensic Results — shown after analysis */}
+        {forensicResults.length > 0 && (
+          <div className="rounded-xl border border-primary/30 bg-card">
+            <div className="p-4 pb-2">
+              <h3 className="text-base font-medium flex items-center gap-2">
+                <Fingerprint className="h-4 w-4 text-primary" />
+                Forensic Analysis Results
+                <Badge variant="default" className="text-xs">{forensicResults.length} file(s)</Badge>
+              </h3>
+            </div>
+            <div className="p-4 pt-2 space-y-2">
+              {forensicResults.map((report) => (
+                <div key={report.id} className="rounded-lg border bg-card overflow-hidden">
+                  <button
+                    className="w-full p-3 flex items-center justify-between text-left hover:bg-muted/30 transition-colors"
+                    onClick={() => setExpandedReport(expandedReport === report.id ? null : report.id)}
+                  >
+                    <div className="flex items-center gap-2">
+                      {report.buyer_identified ? (
+                        <CheckCircle2 className="h-4 w-4 text-destructive" />
+                      ) : report.fingerprint_found ? (
+                        <Fingerprint className="h-4 w-4 text-warning" />
+                      ) : (
+                        <FileWarning className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      <span className="font-medium text-sm">
+                        {report.buyer_identified
+                          ? `Buyer Identified: ${report.matched_display_name}`
+                          : report.fingerprint_found
+                            ? 'Fingerprint Detected'
+                            : 'No Fingerprint Found'}
+                      </span>
+                    </div>
+                    {expandedReport === report.id ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </button>
+
+                  {expandedReport === report.id && (
+                    <div className="px-3 pb-3 border-t">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3">
+                        <div className="space-y-1">
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Fingerprint className="h-3 w-3" /> Fingerprint
+                          </p>
+                          <p className="text-sm font-mono">
+                            {report.fingerprint || <span className="text-muted-foreground italic">None detected</span>}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <User className="h-3 w-3" /> Matched Buyer
+                          </p>
+                          <p className="text-sm font-medium">
+                            {report.matched_display_name || <span className="text-muted-foreground italic">No match</span>}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Hash className="h-3 w-3" /> File Hash (SHA-256)
+                          </p>
+                          <p className="text-xs font-mono break-all text-muted-foreground">
+                            {report.file_hash}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Shield className="h-3 w-3" /> Status
+                          </p>
+                          <Badge variant={report.buyer_identified ? 'destructive' : 'outline'} className="text-xs">
+                            {report.buyer_identified ? 'Leak Confirmed' : report.fingerprint_found ? 'Fingerprint Only' : 'Inconclusive'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Submit Report — Enterprise Upload */}
         <div className="rounded-xl border border-border/50 bg-card">
           <div className="p-4 pb-2">
             <h3 className="text-base font-medium flex items-center gap-2">
               <FileSearch className="h-4 w-4" />
-              Report a Leaked File
+              Analyse Leaked Files
             </h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              Upload suspected leaked files for fingerprint extraction and buyer identification
+            </p>
           </div>
           <div className="p-4 pt-2 space-y-4">
             <div>
@@ -296,20 +482,67 @@ export default function SellerLeakReports() {
               </Select>
             </div>
 
+            {/* Drag & Drop Zone */}
             <div>
-              <label className="text-sm font-medium mb-1.5 block">Upload Leaked File</label>
-              <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
-                <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground mb-2">
-                  {file ? file.name : 'Drop the leaked file here or click to browse'}
-                </p>
-                <Input
+              <label className="text-sm font-medium mb-1.5 block">Upload Files</label>
+              <div
+                className={`
+                  relative border-2 border-dashed rounded-lg p-6 text-center transition-all cursor-pointer
+                  ${isDragOver
+                    ? 'border-primary bg-primary/5 scale-[1.01]'
+                    : 'border-border hover:border-primary/50 hover:bg-muted/20'
+                  }
+                `}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
                   type="file"
-                  className="max-w-xs mx-auto"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  multiple
+                  className="hidden"
+                  accept={ALLOWED_EXTENSIONS.join(',')}
+                  onChange={(e) => {
+                    if (e.target.files?.length) addFiles(e.target.files);
+                    e.target.value = '';
+                  }}
                 />
+                <Upload className={`h-8 w-8 mx-auto mb-2 transition-colors ${isDragOver ? 'text-primary' : 'text-muted-foreground'}`} />
+                <p className="text-sm font-medium">
+                  {isDragOver ? 'Drop files here' : 'Drag & drop files or click to browse'}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Supports .lua, .rbxm, .rbxl, .zip, images, audio — max 20MB per file
+                </p>
               </div>
             </div>
+
+            {/* File List */}
+            {files.length > 0 && (
+              <div className="space-y-1.5">
+                {files.map((f, i) => (
+                  <div key={`${f.name}-${i}`} className="flex items-center justify-between gap-2 p-2 rounded-lg border bg-muted/30">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <FileIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span className="text-sm truncate">{f.name}</span>
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        {formatFileSize(f.size)}
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 shrink-0"
+                      onClick={(e) => { e.stopPropagation(); removeFile(i); }}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div>
               <label className="text-sm font-medium mb-1.5 block">Notes (optional)</label>
@@ -321,8 +554,22 @@ export default function SellerLeakReports() {
               />
             </div>
 
-            <Button onClick={handleSubmit} disabled={isSubmitting || !file || !productId}>
-              {isSubmitting ? 'Analyzing...' : 'Submit Report'}
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting || !files.length || !productId}
+              className="w-full sm:w-auto"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Analysing {files.length} file(s)...
+                </>
+              ) : (
+                <>
+                  <Fingerprint className="h-4 w-4 mr-2" />
+                  Analyse {files.length || ''} File{files.length !== 1 ? 's' : ''}
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -356,20 +603,30 @@ export default function SellerLeakReports() {
                           </Badge>
                         </div>
                         <div className="text-xs text-muted-foreground space-y-0.5">
-                          <p>Submitted {format(new Date(report.created_at), 'MMM d, yyyy HH:mm')}</p>
+                          <p className="flex items-center gap-1">
+                            <CalendarDays className="h-3 w-3" />
+                            {format(new Date(report.created_at), 'MMM d, yyyy HH:mm')}
+                          </p>
                           {report.extracted_fingerprint && (
-                            <p className="font-mono">
-                              Fingerprint: <span className="text-primary">{report.extracted_fingerprint}</span>
+                            <p className="font-mono flex items-center gap-1">
+                              <Fingerprint className="h-3 w-3" />
+                              <span className="text-primary">{report.extracted_fingerprint}</span>
+                            </p>
+                          )}
+                          {report.file_hash && (
+                            <p className="font-mono flex items-center gap-1">
+                              <Hash className="h-3 w-3" />
+                              <span className="truncate max-w-[200px]">{report.file_hash}</span>
                             </p>
                           )}
                           {report.matched_display_name && (
-                            <p className="flex items-center gap-1">
-                              <AlertTriangle className="h-3 w-3 text-red-500" />
-                              Matched buyer: <span className="font-semibold text-foreground">{report.matched_display_name}</span>
+                            <p className="flex items-center gap-1 text-destructive font-medium">
+                              <User className="h-3 w-3" />
+                              Buyer: <span className="text-foreground">{report.matched_display_name}</span>
                             </p>
                           )}
                           {!report.extracted_fingerprint && (
-                            <p className="text-yellow-500">No fingerprint detected</p>
+                            <p className="text-warning">No fingerprint detected</p>
                           )}
                         </div>
                       </div>
