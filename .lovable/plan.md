@@ -1,47 +1,78 @@
 
 
-## Enterprise Sign-In Page Refinement
+## Enterprise Polish Pass — Seller Dashboard Pages
 
-### Current State
-The sign-in page works but lacks the polish of enterprise platforms like Stripe, Linear, or Vercel:
-- Small "E" logo badge feels generic
-- "Back to store" link is misaligned (top-left, no visual hierarchy)
-- Form card has low contrast borders that blend into the dark background
-- Social login buttons use a cramped 2x2 grid with small text
-- No visual hierarchy between primary (email) and secondary (social) auth methods
-- "Don't have an account? Sign Up" footer is cut off / below fold
-- Overall spacing feels tight and unrefined
+### What We Found
 
-### Changes
+Audited all 48 seller pages. Most follow the enterprise flat pattern well (Products, Orders, Finance, Analytics, Settings, Reviews, Discounts). However, **11 pages** still have legacy patterns that break visual consistency:
 
-**AuthLayout.tsx** — Elevate the shell
-- Replace the small "E" badge with the Eclipse brand wordmark or a larger, more confident logo lockup
-- Remove or restyle "Back to store" as a subtle top-left nav element with proper padding
-- Increase `max-w` from `420px` to `440px` for breathing room
-- Add a subtle gradient or pattern to the background for depth (like Stripe's auth pages)
-- Improve vertical spacing between logo block, form, and footer
+### Issues to Fix
 
-**LoginSignupForm.tsx** — Clean up the form
-- Increase internal padding from `p-5` to `p-6`
-- Add subtle `shadow-lg` or `shadow-xl` to the card for depth and separation
-- Make the "Sign In" button taller (`h-12`) with bolder font weight
-- Style the divider ("OR CONTINUE WITH") with more whitespace above/below
-- Improve label typography (slightly heavier weight, better spacing)
-- Ensure "Forgot password?" link aligns cleanly with the Password label
+**1. Legacy `Card`/`CardContent` wrappers (11 pages)**
+These pages still import and use Shadcn `Card` components instead of the standardized `border-border rounded-xl` flat containers:
+- `SellerCampaigns.tsx` — imports Card but doesn't actually render them (dead import)
+- `SellerNotifications.tsx` — uses `CardContent` for notification rows without a parent Card (broken semantics)
+- `SellerBundles.tsx` — imports Card (needs audit of actual usage)
+- `SellerRefunds.tsx` — imports Card (needs audit)
+- `SellerCustomerInsights.tsx` — uses `Card`/`CardHeader`/`CardTitle` wrappers
+- `SellerCustomSections.tsx` — uses Card wrappers
+- `SellerProductEditor.tsx` — uses Card wrappers
+- `SellerDiscord.tsx` — imports Card
+- `SellerTermsOfService.tsx` — imports Card
+- `SellerBundles.tsx` — imports Card
+- `AcceptTeamInvite.tsx` — uses Card (standalone page, acceptable)
 
-**SocialLoginButtons.tsx** — Enterprise social login layout
-- Switch from 2x2 grid to a vertical stack (full-width buttons) — this is what Stripe, Linear, Vercel, and Notion all do
-- Increase button height to `h-11` for better touch targets
-- Add consistent icon sizing and spacing
-- Use outlined/ghost style for all social buttons instead of colored backgrounds (cleaner, more professional)
-- Or keep brand colors but use subtle variants (not full saturation)
+**2. Decorative icons in page headings (3 pages)**
+Enterprise standard: no icons in `h1` titles. These pages violate that:
+- `SellerCampaigns.tsx` — `<Megaphone>` icon in h1
+- Possibly others using icon + h1 pattern
 
-**Auth.tsx** — Footer refinement
-- Ensure the "Don't have an account?" toggle is always visible (not pushed below fold)
-- Add more bottom padding so footer text doesn't crowd the card edge
+**3. `gradient-button` class (3 pages)**
+Legacy gaming aesthetic — should be replaced with standard `<Button>` primary variant:
+- `SellerCampaigns.tsx` — 2 instances
+- `SellerGoals.tsx` — 2 instances  
+- `SellerWebhooks.tsx` — 1 instance
+
+**4. Notification rows using `CardContent` without parent Card**
+`SellerNotifications.tsx` wraps each notification in `<CardContent>` inside a plain `<div>`, which applies card padding without the card border — inconsistent spacing.
+
+### Implementation
+
+**Step 1: Fix SellerCampaigns.tsx**
+- Remove `Card` import (dead)
+- Remove `<Megaphone>` icon from h1
+- Replace `gradient-button border-0` with standard Button (no class override)
+
+**Step 2: Fix SellerNotifications.tsx**
+- Remove `Card`/`CardContent` import
+- Replace `<CardContent>` wrapper with a plain `<div>` using `flex items-start gap-3 py-3 px-4`
+- Wrap notification list in `border border-border rounded-xl overflow-hidden divide-y divide-border`
+
+**Step 3: Fix SellerCustomerInsights.tsx**
+- Replace `Card`/`CardHeader`/`CardTitle` with flat `border-border rounded-xl` sections with `bg-muted/30` headers
+
+**Step 4: Fix SellerGoals.tsx**
+- Replace `gradient-button border-0` with standard Button
+
+**Step 5: Fix SellerWebhooks.tsx**
+- Replace `gradient-button border-0` with standard Button
+
+**Step 6: Fix remaining Card imports**
+- `SellerBundles.tsx`, `SellerRefunds.tsx`, `SellerDiscord.tsx`, `SellerTermsOfService.tsx`, `SellerCustomSections.tsx`, `SellerProductEditor.tsx` — replace Card wrappers with flat enterprise containers
 
 ### Files Changed
-- `src/components/auth/AuthLayout.tsx` — spacing, logo, background
-- `src/components/auth/LoginSignupForm.tsx` — card elevation, button sizing, spacing
-- `src/components/auth/SocialLoginButtons.tsx` — vertical stack layout, refined button styles
+- `src/pages/seller/SellerCampaigns.tsx`
+- `src/pages/seller/SellerNotifications.tsx`
+- `src/pages/seller/SellerCustomerInsights.tsx`
+- `src/pages/seller/SellerGoals.tsx`
+- `src/pages/seller/SellerWebhooks.tsx`
+- `src/pages/seller/SellerBundles.tsx`
+- `src/pages/seller/SellerRefunds.tsx`
+- `src/pages/seller/SellerDiscord.tsx`
+- `src/pages/seller/SellerTermsOfService.tsx`
+- `src/pages/seller/SellerCustomSections.tsx`
+- `src/pages/seller/SellerProductEditor.tsx`
+
+### Risk
+Low — purely visual. No logic, data, or API changes. All edits are CSS class and component wrapper swaps following the established pattern already used by Products, Orders, Finance, Analytics, and Settings pages.
 
