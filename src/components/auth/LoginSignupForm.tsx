@@ -255,14 +255,14 @@ export function LoginSignupForm({ mode, email, setEmail, onForgotPassword, onVer
         </div>
       )}
 
-      <Button type="submit" className="w-full" disabled={loading}>
+      <Button type="submit" className="w-full h-12 text-sm font-semibold" disabled={loading}>
         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {mode === 'login' ? t('common.signIn') : t('auth.createAccount')}
       </Button>
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
-        <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">{t('auth.orContinueWith')}</span></div>
+      <div className="relative my-1">
+        <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border/50" /></div>
+        <div className="relative flex justify-center text-xs uppercase tracking-wider"><span className="bg-card px-3 text-muted-foreground/70">{t('auth.orContinueWith')}</span></div>
       </div>
 
       <SocialLoginButtons loading={loading} onError={(msg) => setErrors({ social: msg })} />
