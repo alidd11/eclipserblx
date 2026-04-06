@@ -13,8 +13,6 @@ import { VideoThumbnail } from '@/components/ui/VideoThumbnail';
 import { ImageZoomModal } from '@/components/ui/ImageZoomModal';
 
 import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
-import { ReviewForm } from '@/components/reviews/ReviewForm';
-import { VerifiedPurchaseBadge } from '@/components/reviews/VerifiedPurchaseBadge';
 import { BotLicenseBundleSelector } from '@/components/bots/BotLicenseBundleSelector';
 import { StoreDetailsCard } from '@/components/product/StoreDetailsCard';
 import { ReportIPViolationDialog } from '@/components/product/ReportIPViolationDialog';
