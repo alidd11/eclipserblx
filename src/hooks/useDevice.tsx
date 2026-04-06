@@ -46,6 +46,9 @@ const defaults: DeviceState = {
   supportsGooglePay: false,
   isKeyboardVisible: false,
   prefersReducedMotion: false,
+  connectionQuality: 'unknown',
+  isSlowConnection: false,
+  isLandscape: false,
 };
 
 const DeviceContext = createContext<DeviceState>(defaults);
