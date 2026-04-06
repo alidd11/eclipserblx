@@ -1,72 +1,56 @@
 
-# Enterprise Polish — Full Improvement Plan
 
-## 1. Trust & Credibility
+# Discord Link Embeds — Audit & Enterprise Improvements
 
-### 1a. Public Status Page (`/status`)
-- Simple page showing system health (online/degraded/offline) using existing `useSystemStatus` hook
-- Display uptime indicator and last-checked timestamp
-- Clean, minimal layout matching enterprise aesthetic
+## Current State
 
-### 1b. Organization JSON-LD Schema
-- Add Organization structured data to the homepage for Google Knowledge Panel eligibility
-- Include company name, logo, social links, contact info
+Your Discord embed system is **fully functional** and well-architected:
 
-### 1c. Security & Privacy Page (`/security`)
-- Static page outlining data protection practices (encryption at rest, RLS, HTTPS, GDPR compliance)
-- Builds trust with enterprise buyers — standard for SaaS platforms
+1. **Cloudflare Worker** (`docs/cloudflare-worker-og.js`) intercepts bot user agents (Discordbot, Twitterbot, etc.) and routes them to the `og-proxy` edge function
+2. **`og-proxy` edge function** renders server-side HTML with full Open Graph tags for products, stores, categories, and static pages
+3. **WAF rule** bypasses Bot Fight Mode so crawlers aren't blocked
+4. **`/share/` prefix** serves OG tags unconditionally (no user-agent sniffing needed — useful as a fallback)
 
----
+When someone pastes `eclipserblx.com/products/12345` in Discord, it already shows the product name, description, price, store name, and product image as a rich embed.
 
-## 2. Conversion & UX
+## What Can Be Enterprised
 
-### 2a. Skeleton Loading States
-- Replace remaining spinner-based loading with skeleton placeholders across key pages (product grid, seller dashboard, order history)
-- Use existing `Skeleton` component consistently
+Despite the solid foundation, there are **5 improvements** to make the embeds look more polished and branded:
 
-### 2b. Smart Search Suggestions
-- Add recent searches and popular terms dropdown to the search input
-- Improves discoverability and reduces friction
+### 1. Add `theme-color` meta tag to OG responses
+Discord uses `<meta name="theme-color">` to color the left sidebar stripe on embeds. Currently missing from `og-proxy` — embeds show Discord's default grey. Adding Eclipse's brand purple (`#7c3aed`) makes every shared link instantly recognizable.
 
-### 2c. Tooltip Guidance on Complex Forms
-- Add contextual tooltips to seller product creation and payout forms
-- Explains fields like "SWIFT/BIC", "Webhook URL", commission rates
+### 2. Add oEmbed discovery for richer Discord embeds
+Discord supports oEmbed, which allows a custom provider name and author line in embeds. Adding a `<link rel="alternate" type="application/json+oembed">` tag lets Discord show "Eclipse Marketplace" as the provider with a link, rather than just the domain.
 
----
+### 3. Improve product embed descriptions
+Currently, product descriptions are raw-stripped HTML truncated to 200 chars. Improve by: cleaning up whitespace/entities after stripping tags, and appending price + store info in a structured format (e.g. "£4.99 · By StudioName · 127 reviews").
 
-## 3. Operational Maturity
+### 4. Add `og:image:alt` for accessibility
+Missing from all responses. Discord and Twitter use this for screen readers. Simple addition of `<meta property="og:image:alt" content="Product Name preview image">`.
 
-### 3a. Structured Error Codes
-- Define a `ERROR_CODES` map (e.g., `ERR_INSUFFICIENT_BALANCE`, `ERR_RATE_LIMITED`, `ERR_PRODUCT_UNAVAILABLE`)
-- Use in edge functions and surface user-friendly messages in toast notifications
+### 5. Enterprise the share buttons
+The current `SocialShareButtons` component uses `/products/X` paths. Using the `/share/products/X` prefix would guarantee OG tags work even if the Cloudflare Worker has issues — a more resilient approach.
 
-### 3b. Rate Limit Response Headers
-- Add `X-RateLimit-Remaining` and `X-RateLimit-Reset` headers to all edge function responses (already have the shared utility, just need to wire it into responses)
+## Technical Details
 
-### 3c. Brand Assets Page (`/brand`)
-- Public page with downloadable logos, color palette, and usage guidelines
-- Standard for enterprise companies; useful for partners and press
+### Files to modify
 
----
+**`supabase/functions/og-proxy/index.ts`** — `buildHtml()` function:
+- Add `<meta name="theme-color" content="#7c3aed"/>` to the head
+- Add `<meta property="og:image:alt" content="${esc(t)}"/>` after og:image
+- Add oEmbed discovery link pointing to a JSON endpoint
+- Improve description formatting in product handlers
 
-## 4. Technical Debt
+**`supabase/functions/og-proxy/index.ts`** — Add oEmbed JSON handler:
+- When `?format=oembed` is passed, return JSON instead of HTML
+- Include `provider_name`, `provider_url`, `author_name` (store name)
 
-### 4a. Consolidate Duplicate Utilities
-- Audit and merge duplicate formatting functions (date, currency, truncation helpers)
-- Single source of truth for shared logic
+**`src/components/product/SocialShareButtons.tsx`**:
+- Use `/share/` prefix for shared URLs to guarantee embed reliability
 
-### 4b. Component Consistency Audit
-- Scan for any remaining raw `Card` usage and convert to `border-border rounded-xl` pattern
-- Ensure all primary buttons are `h-12` consistently
+**`supabase/functions/product-og/index.ts`**:
+- Add matching `theme-color` and `og:image:alt` tags for consistency
 
----
+### No database changes required
 
-## Implementation Order
-1. JSON-LD Organization schema (quick SEO win)
-2. Status page + Security page (trust)
-3. Skeleton loading audit (UX)
-4. Structured error codes (operational)
-5. Brand page (credibility)
-6. Search suggestions, tooltips, utility consolidation, component audit (polish)
-
-**Estimated scope**: ~12 files modified, ~4 new files created. No database changes required.
