@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { MessageSquare, Loader2, Gift, Sparkles, ChevronDown, Megaphone, Settings, Bell, Zap } from 'lucide-react';
+import { MessageSquare, Loader2, Gift, ChevronDown, Megaphone, Settings, Bell, Zap } from 'lucide-react';
 import { useDiscordSettings } from '@/hooks/useDiscordSettings';
 import { GeneralTab } from '@/components/admin/discord-settings/GeneralTab';
 import { NotificationsTab } from '@/components/admin/discord-settings/NotificationsTab';
