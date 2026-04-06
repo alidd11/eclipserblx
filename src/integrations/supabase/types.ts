@@ -5511,6 +5511,7 @@ export type Database = {
           snippet: string | null
           source_domain: string
           source_url: string
+          status: string
           store_id: string
         }
         Insert: {
@@ -5527,6 +5528,7 @@ export type Database = {
           snippet?: string | null
           source_domain: string
           source_url: string
+          status?: string
           store_id: string
         }
         Update: {
@@ -5543,6 +5545,7 @@ export type Database = {
           snippet?: string | null
           source_domain?: string
           source_url?: string
+          status?: string
           store_id?: string
         }
         Relationships: [

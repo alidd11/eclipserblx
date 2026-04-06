@@ -8,13 +8,14 @@ import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import {
   Shield, Upload, AlertTriangle, CheckCircle2, Clock, XCircle,
   FileSearch, Radar, ExternalLink, X, Crown, FileWarning,
   Hash, User, Fingerprint, CalendarDays, File as FileIcon,
-  Loader2, ChevronDown, ChevronUp,
+  Loader2, ChevronDown, ChevronUp, MoreVertical, EyeOff, CheckCircle, Ban,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from '@/lib/dateUtils';
@@ -86,16 +87,23 @@ export default function SellerLeakReports() {
     enabled: !!store?.id,
   });
 
+  const [statusFilter, setStatusFilter] = useState<string>('active');
+
   const { data: scanResults } = useQuery({
-    queryKey: ['leak-scan-results', store?.id],
+    queryKey: ['leak-scan-results', store?.id, statusFilter],
     queryFn: async () => {
       if (!store?.id) return [];
-      const { data } = await (supabase as any)
+      let query = (supabase as any)
         .from('leak_scan_results')
         .select('*, products(name)')
         .eq('store_id', store.id)
-        .eq('dismissed', false)
         .order('created_at', { ascending: false });
+
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
+
+      const { data } = await query;
       return (data || []) as any[];
     },
     enabled: !!store?.id && isPro,
@@ -117,17 +125,25 @@ export default function SellerLeakReports() {
     onError: () => toast.error('Failed to update auto-scan setting'),
   });
 
-  const dismissResult = useMutation({
-    mutationFn: async (id: string) => {
+  const updateResultStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await (supabase as any)
         .from('leak_scan_results')
-        .update({ dismissed: true })
+        .update({ status, dismissed: status !== 'active' })
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, { status }) => {
+      const labels: Record<string, string> = {
+        ignored: 'Marked as ignored',
+        resolved: 'Marked as resolved',
+        false_positive: 'Marked as false positive',
+        active: 'Restored to active',
+      };
+      toast.success(labels[status] || 'Status updated');
       queryClient.invalidateQueries({ queryKey: ['leak-scan-results'] });
     },
+    onError: () => toast.error('Failed to update status'),
   });
 
   // --- File validation & handling ---
@@ -302,11 +318,25 @@ export default function SellerLeakReports() {
         {isPro && scanResults && scanResults.length > 0 && (
           <div className="rounded-xl border border-destructive/30 bg-card">
             <div className="p-4 pb-2">
+            <div className="flex items-center justify-between">
               <h3 className="text-base font-medium flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-4 w-4" />
-                Auto-Detected Leaks
+                Auto-Detected Results
                 <Badge variant="destructive" className="text-xs">{scanResults.length}</Badge>
               </h3>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[140px] h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="ignored">Ignored</SelectItem>
+                  <SelectItem value="resolved">Resolved</SelectItem>
+                  <SelectItem value="false_positive">False Positive</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             </div>
             <div className="p-4 pt-2 space-y-2">
               {scanResults.map((result: any) => {
@@ -329,6 +359,11 @@ export default function SellerLeakReports() {
                         <Badge variant="outline" className={`text-xs shrink-0 ${confidenceBadge.className}`}>
                           {confidenceBadge.label}
                         </Badge>
+                        {result.status && result.status !== 'active' && (
+                          <Badge variant="outline" className="text-xs shrink-0 capitalize">
+                            {result.status.replace('_', ' ')}
+                          </Badge>
+                        )}
                         <Badge variant="outline" className="text-xs shrink-0">
                           {result.source_domain}
                         </Badge>
@@ -364,14 +399,35 @@ export default function SellerLeakReports() {
                         </a>
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0 h-8 w-8"
-                      onClick={() => dismissResult.mutate(result.id)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {result.status !== 'active' && (
+                          <DropdownMenuItem onClick={() => updateResultStatus.mutate({ id: result.id, status: 'active' })}>
+                            <CheckCircle2 className="h-4 w-4 mr-2" /> Restore to Active
+                          </DropdownMenuItem>
+                        )}
+                        {result.status !== 'ignored' && (
+                          <DropdownMenuItem onClick={() => updateResultStatus.mutate({ id: result.id, status: 'ignored' })}>
+                            <EyeOff className="h-4 w-4 mr-2" /> Ignore
+                          </DropdownMenuItem>
+                        )}
+                        {result.status !== 'resolved' && (
+                          <DropdownMenuItem onClick={() => updateResultStatus.mutate({ id: result.id, status: 'resolved' })}>
+                            <CheckCircle className="h-4 w-4 mr-2" /> Mark Resolved
+                          </DropdownMenuItem>
+                        )}
+                        {result.status !== 'false_positive' && (
+                          <DropdownMenuItem onClick={() => updateResultStatus.mutate({ id: result.id, status: 'false_positive' })}>
+                            <Ban className="h-4 w-4 mr-2" /> False Positive
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 );
               })}
