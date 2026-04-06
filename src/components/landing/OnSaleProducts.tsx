@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tag, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
