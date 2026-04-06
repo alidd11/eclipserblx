@@ -97,39 +97,32 @@ serve(async (req) => {
 
     logStep("Balance check passed", { available: balance.available_balance, requested: amount });
 
-    // Get user's affiliate application to check payout method and details
-    const { data: application, error: appError } = await supabaseClient
-      .from('affiliate_applications')
-      .select('paypal_email, preferred_payout_method, bank_account_holder, bank_account_number, bank_swift_bic, bank_name')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (appError || !application) {
-      throw new Error("No affiliate record found");
-    }
-
-    // Determine which payout method to use
-    const payoutMethod = method || application.preferred_payout_method || 'paypal';
-    logStep("Payout method determined", { payoutMethod });
-
-    // Get user's profile for stripe_account_id
-    const { data: profile } = await supabaseClient
+    // Get user's profile for payout method and details
+    const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
-      .select('stripe_account_id')
+      .select('stripe_account_id, paypal_email, preferred_payout_method, bank_account_holder, bank_account_number, bank_swift_bic, bank_name')
       .eq('user_id', user.id)
       .single();
 
+    if (profileError || !profile) {
+      throw new Error("No profile found");
+    }
+
+    // Determine which payout method to use
+    const payoutMethod = method || profile.preferred_payout_method || 'paypal';
+    logStep("Payout method determined", { payoutMethod });
+
     // Validate based on payout method
     if (payoutMethod === 'stripe') {
-      if (!profile?.stripe_account_id) {
+      if (!profile.stripe_account_id) {
         throw new Error("Please connect your Stripe account first to receive automatic payouts.");
       }
     } else if (payoutMethod === 'bank_transfer') {
-      if (!application.bank_account_holder || !application.bank_account_number) {
+      if (!profile.bank_account_holder || !profile.bank_account_number) {
         throw new Error("Please add your bank details to receive bank transfer payouts.");
       }
     } else {
-      if (!application.paypal_email) {
+      if (!profile.paypal_email) {
         throw new Error("Please add your PayPal email to receive payouts. Update your payout settings.");
       }
     }
@@ -153,7 +146,7 @@ serve(async (req) => {
     logStep("Balance deducted", { previousBalance: balance.available_balance, newBalance, amount });
 
     // For Stripe payouts, attempt automatic transfer
-    if (payoutMethod === 'stripe' && profile?.stripe_account_id) {
+    if (payoutMethod === 'stripe' && profile.stripe_account_id) {
       try {
         const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
         if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
@@ -231,10 +224,10 @@ serve(async (req) => {
     };
     
     if (payoutMethod === 'paypal') {
-      payoutData.paypal_email = application.paypal_email;
+      payoutData.paypal_email = profile.paypal_email;
     }
     if (payoutMethod === 'bank_transfer') {
-      payoutData.notes = `Bank: ${application.bank_name || 'N/A'}, Holder: ${application.bank_account_holder}, Account: ${application.bank_account_number}, SWIFT: ${(application as any).bank_swift_bic || 'N/A'}`;
+      payoutData.notes = `Bank: ${profile.bank_name || 'N/A'}, Holder: ${profile.bank_account_holder}, Account: ${profile.bank_account_number}, SWIFT: ${profile.bank_swift_bic || 'N/A'}`;
     }
 
     const { data: payout, error: payoutError } = await supabaseClient
