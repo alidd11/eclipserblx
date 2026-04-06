@@ -24,19 +24,23 @@ export function StoreCustomSections({ storeId, accentColor }: StoreCustomSection
  staleTime: 5 * 60 * 1000, // 5 minutes - custom sections rarely change
  });
 
- if (!sections || sections.length === 0) return null;
+  if (!sections || sections.length === 0) return null;
 
- return (
- <div className="space-y-6">
- {sections.map((section) => (
- <div className="border border-border rounded-xl overflow-hidden" key={section.id}>
- <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
- <h3 className="font-semibold text-sm text-lg" style={{ color: accentColor }}>
- {section.title}
- </h3>
- </div>
- <div className="p-4">
- {section.section_type === 'faq' && section.content?.items && (
+  const getContent = (section: typeof sections[number]) => section.content as Record<string, any> | null;
+
+  return (
+    <div className="space-y-6">
+      {sections.map((section) => {
+        const content = getContent(section);
+        return (
+        <div className="border border-border rounded-xl overflow-hidden" key={section.id}>
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
+            <h3 className="font-semibold text-sm text-lg" style={{ color: accentColor }}>
+              {section.title}
+            </h3>
+          </div>
+          <div className="p-4">
+            {section.section_type === 'faq' && content?.items && (
  <div className="space-y-3">
  {section.content.items.filter((i) => i.question).map((item: any, idx: number) => (
  <div key={idx} className="border-b border-border pb-3 last:border-0">
