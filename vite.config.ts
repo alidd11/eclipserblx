@@ -80,8 +80,8 @@ export default defineConfig(({ mode }) => ({
       'react-dom',
       'react-router-dom',
       '@tanstack/react-query',
-      'lucide-react',
     ],
+    // lucide-react excluded — tree-shaken per-component, pre-bundling negates savings
     // framer-motion excluded — lazy-loaded per-component to reduce initial parse
   },
   plugins: [
