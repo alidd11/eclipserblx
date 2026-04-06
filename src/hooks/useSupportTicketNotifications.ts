@@ -53,13 +53,11 @@ export function useSupportTicketNotifications() {
 
           // Send background push notifications to all staff with push subscriptions
           try {
-            // Fetch all staff user IDs who have push subscriptions
-            const { data: subscriptions } = await supabase
-              .from('push_subscriptions')
-              .select('user_id');
+            const { data: staffRows } = await supabase
+              .rpc('list_push_subscribed_staff_user_ids');
             
-            if (subscriptions && subscriptions.length > 0) {
-              const staffUserIds = [...new Set(subscriptions.map(s => s.user_id))] as string[];
+            const staffUserIds = (staffRows ?? []).map((r: any) => r.user_id as string);
+            if (staffUserIds.length > 0) {
               await notifyNewSupportTicket(staffUserIds, {
                 id: newTicket.id,
                 subject: newTicket.subject,
