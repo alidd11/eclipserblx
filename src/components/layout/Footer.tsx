@@ -82,7 +82,7 @@ export function Footer() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 mb-6">
           {columns.map((col) => (
             <div key={col.heading} className="flex flex-col gap-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-foreground/40 mb-0.5" id={`footer-${col.heading.toLowerCase()}`}>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-foreground/50 mb-1" id={`footer-${col.heading.toLowerCase()}`}>
                 {col.heading}
               </p>
               <nav className="flex flex-col gap-1" aria-labelledby={`footer-${col.heading.toLowerCase()}`}>
@@ -90,7 +90,7 @@ export function Footer() {
                   <Link
                     key={link.href}
                     to={link.href}
-                    className="text-[12px] text-foreground/50 hover:text-foreground transition-colors leading-snug"
+                    className="text-[12px] text-foreground/55 hover:text-foreground transition-colors leading-relaxed"
                   >
                     {link.label}
                   </Link>
@@ -105,17 +105,17 @@ export function Footer() {
 
         {/* Bottom bar — copyright + trust signals */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <p className="text-[12px] text-foreground/40">
+          <p className="text-[12px] text-foreground/50">
             © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
           </p>
 
           <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5 text-[11px] text-foreground/35">
+            <span className="flex items-center gap-1.5 text-[11px] text-foreground/50">
               <Lock className="h-3 w-3" />
               256-bit SSL
             </span>
-            <span className="h-3 w-px bg-border/30" />
-            <span className="flex items-center gap-1.5 text-[11px] text-foreground/35">
+            <span className="h-3 w-px bg-border/40" />
+            <span className="flex items-center gap-1.5 text-[11px] text-foreground/50">
               <Shield className="h-3 w-3" />
               Payments by Stripe
             </span>

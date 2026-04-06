@@ -74,7 +74,10 @@ export function FreeAssetsTeaser() {
                         loading="lazy"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">No image</div>
+                      <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/50 gap-1.5">
+                        <Gift className="h-6 w-6" />
+                        <span className="text-[10px] font-medium">Free</span>
+                      </div>
                     )}
                   </div>
                   <p className="text-xs font-medium mt-1.5 truncate group-hover:text-primary transition-colors">{product.name}</p>
