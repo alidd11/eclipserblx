@@ -182,8 +182,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
             : 'p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
         )}
       >
-        {/* Spacer for the fixed custom header */}
-        <div className="h-[calc(env(safe-area-inset-top)+3rem)]" />
+        {/* fixedHeaderSpacer is auto-handled by LayoutShell — no manual spacer needed */}
         <PageTransition className={isChatPage ? 'flex-1 flex flex-col min-h-0 overflow-hidden' : undefined}>
           {children}
         </PageTransition>
