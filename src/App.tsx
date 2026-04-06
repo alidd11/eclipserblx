@@ -99,6 +99,7 @@ function App() {
                           <GlobalBackground />
                           <NavigationProgress />
                           <ScrollToTop />
+                          <RouteAnnouncer />
                           <IpBanCheck>
                             <PWAWrapper>
                               <AdminManifestHandler />
