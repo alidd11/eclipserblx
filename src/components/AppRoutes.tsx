@@ -105,7 +105,7 @@ const AdminArchivedApplications = lazyWithRetry(() => import("@/pages/admin/Arch
 const AdminJobChannels = lazyWithRetry(() => import("@/pages/admin/JobChannels"));
 const AdminStaffDirectory = lazyWithRetry(() => import("@/pages/admin/StaffDirectory"));
 const AdminStaffProfile = lazyWithRetry(() => import("@/pages/admin/StaffProfile"));
-const AdminAffiliateApplications = lazyWithRetry(() => import("@/pages/admin/AffiliateApplications"));
+
 const AdminStoreApplications = lazyWithRetry(() => import("@/pages/admin/StoreApplications"));
 const AdminSellerProductReview = lazyWithRetry(() => import("@/pages/admin/SellerProductReview"));
 const AdminSEOIndexing = lazyWithRetry(() => import("@/pages/admin/SEOIndexing"));
