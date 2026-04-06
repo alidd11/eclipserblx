@@ -412,6 +412,7 @@ export function AppRoutes() {
         <Route path="/seller/roblox" element={<SellerSettingsRoblox />} />
         <Route path="/seller/settings/domain" element={<SellerSettingsDomain />} />
         <Route path="/seller/support" element={<SellerSupport />} />
+        <Route path="/seller/account-health" element={<SellerAccountHealth />} />
         <Route path="/seller/webhooks" element={<SellerWebhooks />} />
         <Route path="/seller/messages" element={<SellerMessages />} />
         <Route path="/seller/reviews" element={<SellerReviews />} />
