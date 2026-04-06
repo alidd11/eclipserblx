@@ -297,17 +297,17 @@ export default function TermsOfService() {
             <p className="text-muted-foreground">
               If you have a dispute with us, please contact us first to try to resolve it. 
               If we cannot resolve the matter informally, disputes will be subject to the 
-              exclusive jurisdiction of the courts of England and Wales. If you are a consumer, 
-              you may also be able to submit disputes to the Online Dispute Resolution platform 
-              at{' '}
+              exclusive jurisdiction of the courts of England and Wales. If you are a consumer 
+              in the UK, you may also contact{' '}
               <a 
-                href="https://ec.europa.eu/consumers/odr" 
+                href="https://www.citizensadvice.org.uk/consumer/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >
-                ec.europa.eu/consumers/odr
-              </a>.
+                Citizens Advice
+              </a>{' '}
+              for guidance on alternative dispute resolution options.
             </p>
           </section>
 
