@@ -142,7 +142,7 @@ export function TwitterComposer({ xTheme }: { xTheme: XTheme }) {
                       variant={selectedHashtags.includes(h.tag) ? 'default' : 'outline'}
                       className={`cursor-pointer text-xs ${
                         selectedHashtags.includes(h.tag)
-                          ? 'bg-[#1d9bf0] text-white border-[#1d9bf0]'
+                          ? 'bg-[#1d9bf0] text-foreground border-[#1d9bf0]'
                           : `${xTheme.textSecondary} border-[#2f3336]`
                       }`}
                       onClick={() => toggleHashtag(h.tag)}
@@ -223,7 +223,7 @@ export function TwitterComposer({ xTheme }: { xTheme: XTheme }) {
               <button
                 onClick={handleSend}
                 disabled={sending || !content.trim() || charCount > 280}
-                className="bg-[#1d9bf0] hover:bg-[#1a8cd8] disabled:opacity-50 disabled:hover:bg-[#1d9bf0] text-white rounded-full px-5 py-[7px] text-[15px] font-bold transition-colors"
+                className="bg-[#1d9bf0] hover:bg-[#1a8cd8] disabled:opacity-50 disabled:hover:bg-[#1d9bf0] text-foreground rounded-full px-5 py-[7px] text-[15px] font-bold transition-colors"
               >
                 {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Post'}
               </button>

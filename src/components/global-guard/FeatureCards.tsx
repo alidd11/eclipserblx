@@ -49,7 +49,7 @@ export function FeatureCards() {
  <div className="p-4 p-4 md:p-5">
  <div className="flex items-start gap-3">
  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${feature.gradient} flex items-center justify-center shrink-0`}>
- <Icon className="w-5 h-5 text-white" />
+ <Icon className="w-5 h-5 text-foreground" />
  </div>
  <div className="min-w-0">
  <h4 className="font-semibold text-foreground text-sm md:text-base">{feature.title}</h4>

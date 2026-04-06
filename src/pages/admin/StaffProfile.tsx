@@ -517,7 +517,7 @@ export default function StaffProfile() {
  <Badge
  key={role}
  variant="outline"
- className={`${roleInfo.color} text-white border-transparent`}
+ className={`${roleInfo.color} text-foreground border-transparent`}
  >
  {roleInfo.displayName}
  </Badge>
@@ -677,7 +677,7 @@ export default function StaffProfile() {
  className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50"
  >
  <div className="flex items-center gap-3">
- <Badge variant="outline" className={`${roleInfo.color} text-white border-transparent`}>
+ <Badge variant="outline" className={`${roleInfo.color} text-foreground border-transparent`}>
  {roleInfo.displayName}
  </Badge>
  <span className="text-xs text-muted-foreground">

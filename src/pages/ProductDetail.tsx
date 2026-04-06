@@ -485,7 +485,7 @@ export default function ProductDetail() {
  {/* Images */}
  <div className="space-y-3 min-w-0">
  <div 
- className="aspect-[4/3] rounded-xl overflow-hidden select-none relative bg-black/20 cursor-zoom-in group w-full touch-pan-y border border-border/30"
+ className="aspect-[4/3] rounded-xl overflow-hidden select-none relative bg-foreground/20 cursor-zoom-in group w-full touch-pan-y border border-border/30"
  onContextMenu={(e) => e.preventDefault()}
  onClick={() => {
  const currentImg = images[selectedImage];
@@ -532,8 +532,8 @@ export default function ProductDetail() {
  {/* Zoom hint */}
  {images[selectedImage] && !isVideoUrl(images[selectedImage]) && (
  <div className="absolute top-3 right-3 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
- <div className="bg-black/60 rounded-full p-2">
- <ZoomIn className="h-5 w-5 text-white" />
+ <div className="bg-foreground/60 rounded-full p-2">
+ <ZoomIn className="h-5 w-5 text-foreground" />
  </div>
  </div>
  )}
@@ -549,7 +549,7 @@ export default function ProductDetail() {
  "w-2 h-2 rounded-full transition-all duration-200",
  selectedImage === i 
  ? "bg-primary w-4" 
- : "bg-white/50"
+ : "bg-background/50"
  )}
  />
  ))}
@@ -559,10 +559,10 @@ export default function ProductDetail() {
  {/* Swipe hint overlay - mobile only */}
  {isMobile && images.length > 1 && showSwipeHint && (
  <div 
- className="absolute inset-0 flex items-center justify-center bg-black/40 animate-fade-in pointer-events-none"
+ className="absolute inset-0 flex items-center justify-center bg-foreground/40 animate-fade-in pointer-events-none"
  onAnimationEnd={() => {}}
  >
- <div className="flex items-center gap-3 text-white/90">
+ <div className="flex items-center gap-3 text-foreground/90">
  <ChevronLeft className="h-6 w-6 animate-pulse" />
  <span className="text-sm font-medium">Swipe to browse</span>
  <ChevronLeft className="h-6 w-6 rotate-180 animate-pulse" />

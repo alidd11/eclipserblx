@@ -24,7 +24,7 @@ export function DiscordEmbedPreview({ title, description, color, linkUrl, footer
 
         <div className="bg-[#2f3136] p-3 flex-1 space-y-1.5 min-w-0">
           {/* Title */}
-          <p className="font-semibold text-white text-[15px] leading-snug">
+          <p className="font-semibold text-foreground text-[15px] leading-snug">
             {title || 'Announcement Title'}
           </p>
 

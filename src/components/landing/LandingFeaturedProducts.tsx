@@ -51,10 +51,10 @@ const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct; fe
                   <img 
                     src={product.stores.logo_url} 
                     alt={product.stores.name}
-                    className="h-5 w-5 rounded object-contain bg-white/10"
+                    className="h-5 w-5 rounded object-contain bg-background/10"
                   />
                 ) : null}
-                <span className="text-white text-xs font-medium truncate">
+                <span className="text-foreground text-xs font-medium truncate">
                   {product.stores?.name}
                 </span>
                 {product.stores?.is_verified && (

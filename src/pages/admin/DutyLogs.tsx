@@ -223,7 +223,7 @@ export default function DutyLogs() {
                             {formatDuration(log.duration_minutes)}
                           </Badge>
                         ) : (
-                          <Badge className="shrink-0 bg-green-500 text-white">On Duty</Badge>
+                          <Badge className="shrink-0 bg-green-500 text-foreground">On Duty</Badge>
                         )}
                       </div>
                     </div>

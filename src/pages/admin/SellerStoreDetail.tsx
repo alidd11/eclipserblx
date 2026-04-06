@@ -346,7 +346,7 @@ export default function SellerStoreDetail() {
  <div className="flex items-center gap-3">
  <h1 className="text-2xl font-bold">{store.name}</h1>
  {store.is_verified && (
- <Badge className="gap-1 bg-blue-500 text-white border-0">
+ <Badge className="gap-1 bg-blue-500 text-foreground border-0">
  <Shield className="h-3 w-3" />
  Verified Seller
  </Badge>
@@ -736,7 +736,7 @@ export default function SellerStoreDetail() {
  </div>
  <Badge 
  variant={store.is_verified ? "default" : "secondary"} 
- className={store.is_verified ? "bg-green-600 text-white border-0" : ""}
+ className={store.is_verified ? "bg-green-600 text-foreground border-0" : ""}
  >
  {store.is_verified ? "Verified" : "Not Verified"}
  </Badge>

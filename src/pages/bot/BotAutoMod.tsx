@@ -92,11 +92,11 @@ export default function BotAutoMod() {
  <div className="space-y-6">
  <div className="flex items-center justify-between">
  <div>
- <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+ <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
  <ShieldAlert className="h-6 w-6 text-[hsl(258,90%,66%)]" />
  Auto-Mod
  </h1>
- <p className="text-white/50 text-sm mt-1">Configure automated moderation with heat-based escalation.</p>
+ <p className="text-foreground/50 text-sm mt-1">Configure automated moderation with heat-based escalation.</p>
  </div>
  <Button onClick={() => setShowAdd(!showAdd)} className="bg-[hsl(258,90%,66%)] hover:bg-[hsl(258,90%,56%)]">
  <Plus className="h-4 w-4 mr-2" /> Add Rule
@@ -107,8 +107,8 @@ export default function BotAutoMod() {
  <div className="p-4 p-4 flex items-start gap-3">
  <Flame className="h-5 w-5 text-orange-400 shrink-0 mt-0.5" />
  <div>
- <p className="text-sm text-white/70"><strong>Heat System:</strong> Each rule adds heat points when triggered. As heat accumulates, actions escalate automatically. Heat decays over time.</p>
- <div className="flex gap-4 mt-2 text-xs text-white/50">
+ <p className="text-sm text-foreground/70"><strong>Heat System:</strong> Each rule adds heat points when triggered. As heat accumulates, actions escalate automatically. Heat decays over time.</p>
+ <div className="flex gap-4 mt-2 text-xs text-foreground/50">
  <span>1-3 pts: Warning</span>
  <span>4-6 pts: Timeout</span>
  <span>7-9 pts: Kick</span>
@@ -119,43 +119,43 @@ export default function BotAutoMod() {
  </div>
 
  {showAdd && (
- <div className="border border-border rounded-xl overflow-hidden bg-white/[0.03] border-white/10">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm text-white text-base">New Rule</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden bg-background/[0.03] border-white/10">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm text-foreground text-base">New Rule</h3></div>
  <div className="p-4 space-y-4">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div>
- <Label className="text-white/60 text-xs">Rule Name</Label>
- <Input value={newRule.name} onChange={e => setNewRule({ ...newRule, name: e.target.value })} placeholder="e.g. Block slurs" className="bg-white/5 border-white/10 text-white" />
+ <Label className="text-foreground/60 text-xs">Rule Name</Label>
+ <Input value={newRule.name} onChange={e => setNewRule({ ...newRule, name: e.target.value })} placeholder="e.g. Block slurs" className="bg-background/5 border-white/10 text-foreground" />
  </div>
  <div>
- <Label className="text-white/60 text-xs">Type</Label>
+ <Label className="text-foreground/60 text-xs">Type</Label>
  <Select value={newRule.rule_type} onValueChange={v => setNewRule({ ...newRule, rule_type: v })}>
- <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+ <SelectTrigger className="bg-background/5 border-white/10 text-foreground"><SelectValue /></SelectTrigger>
  <SelectContent>{RULE_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
  </Select>
  </div>
  <div>
- <Label className="text-white/60 text-xs">Action</Label>
+ <Label className="text-foreground/60 text-xs">Action</Label>
  <Select value={newRule.action} onValueChange={v => setNewRule({ ...newRule, action: v })}>
- <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+ <SelectTrigger className="bg-background/5 border-white/10 text-foreground"><SelectValue /></SelectTrigger>
  <SelectContent>{ACTIONS.map(a => <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>)}</SelectContent>
  </Select>
  </div>
  <div>
- <Label className="text-white/60 text-xs">Heat Points</Label>
- <Input type="number" min={1} max={10} value={newRule.heat_points} onChange={e => setNewRule({ ...newRule, heat_points: parseInt(e.target.value) || 1 })} className="bg-white/5 border-white/10 text-white" />
+ <Label className="text-foreground/60 text-xs">Heat Points</Label>
+ <Input type="number" min={1} max={10} value={newRule.heat_points} onChange={e => setNewRule({ ...newRule, heat_points: parseInt(e.target.value) || 1 })} className="bg-background/5 border-white/10 text-foreground" />
  </div>
  </div>
  {newRule.rule_type === 'word_filter' && (
  <div>
- <Label className="text-white/60 text-xs">Blocked Words (comma-separated)</Label>
- <Textarea value={newRule.config.words} onChange={e => setNewRule({ ...newRule, config: { ...newRule.config, words: e.target.value } })} placeholder="word1, word2, phrase..." className="bg-white/5 border-white/10 text-white min-h-[60px]" />
+ <Label className="text-foreground/60 text-xs">Blocked Words (comma-separated)</Label>
+ <Textarea value={newRule.config.words} onChange={e => setNewRule({ ...newRule, config: { ...newRule.config, words: e.target.value } })} placeholder="word1, word2, phrase..." className="bg-background/5 border-white/10 text-foreground min-h-[60px]" />
  </div>
  )}
  {newRule.rule_type === 'link_filter' && (
  <div>
- <Label className="text-white/60 text-xs">Whitelisted Domains (comma-separated)</Label>
- <Input value={newRule.config.whitelist} onChange={e => setNewRule({ ...newRule, config: { ...newRule.config, whitelist: e.target.value } })} placeholder="discord.com, youtube.com" className="bg-white/5 border-white/10 text-white" />
+ <Label className="text-foreground/60 text-xs">Whitelisted Domains (comma-separated)</Label>
+ <Input value={newRule.config.whitelist} onChange={e => setNewRule({ ...newRule, config: { ...newRule.config, whitelist: e.target.value } })} placeholder="discord.com, youtube.com" className="bg-background/5 border-white/10 text-foreground" />
  </div>
  )}
  <Button onClick={addRule} disabled={saveMutation.isPending} className="bg-[hsl(258,90%,66%)]">
@@ -165,31 +165,31 @@ export default function BotAutoMod() {
  </div>
  )}
 
- <div className="border border-border rounded-xl overflow-hidden bg-white/[0.03] border-white/10">
+ <div className="border border-border rounded-xl overflow-hidden bg-background/[0.03] border-white/10">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm text-white text-base">Active Rules</h3>
- <p className="text-sm text-muted-foreground text-white/40">{rules.length} rule{rules.length !== 1 ? 's' : ''} configured</p>
+ <h3 className="font-semibold text-sm text-foreground text-base">Active Rules</h3>
+ <p className="text-sm text-muted-foreground text-foreground/40">{rules.length} rule{rules.length !== 1 ? 's' : ''} configured</p>
  </div>
  <div className="p-4 p-0">
  {isLoading ? (
- <div className="p-8 text-center text-white/40">Loading...</div>
+ <div className="p-8 text-center text-foreground/40">Loading...</div>
  ) : rules.length === 0 ? (
- <div className="p-8 text-center text-white/40">No auto-mod rules configured yet.</div>
+ <div className="p-8 text-center text-foreground/40">No auto-mod rules configured yet.</div>
  ) : (
  <div className="divide-y divide-white/5">
  {rules.map((rule: any) => {
  const ruleType = RULE_TYPES.find(t => t.value === rule.rule_type);
  const Icon = ruleType?.icon || ShieldAlert;
  return (
- <div key={rule.id} className="px-4 py-3 flex items-center gap-3 hover:bg-white/[0.02]">
+ <div key={rule.id} className="px-4 py-3 flex items-center gap-3 hover:bg-background/[0.02]">
  <Icon className="h-5 w-5 text-[hsl(258,90%,66%)] shrink-0" />
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2">
- <span className="text-sm font-medium text-white">{rule.name}</span>
- <Badge variant="outline" className="text-[10px] border-white/20 text-white/60">{ruleType?.label}</Badge>
+ <span className="text-sm font-medium text-foreground">{rule.name}</span>
+ <Badge variant="outline" className="text-[10px] border-white/20 text-foreground/60">{ruleType?.label}</Badge>
  <Badge variant="outline" className="text-[10px] border-orange-500/30 text-orange-400">{rule.heat_points} heat</Badge>
  </div>
- <p className="text-xs text-white/40 mt-0.5">Action: {ACTIONS.find(a => a.value === rule.action)?.label}</p>
+ <p className="text-xs text-foreground/40 mt-0.5">Action: {ACTIONS.find(a => a.value === rule.action)?.label}</p>
  </div>
  <Switch checked={rule.enabled} onCheckedChange={() => toggleRule(rule)} />
  <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-300" onClick={() => deleteMutation.mutate(rule.id)}>
@@ -204,15 +204,15 @@ export default function BotAutoMod() {
  </div>
 
  {heatData.length > 0 && (
- <div className="border border-border rounded-xl overflow-hidden bg-white/[0.03] border-white/10">
+ <div className="border border-border rounded-xl overflow-hidden bg-background/[0.03] border-white/10">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm text-white text-base flex items-center gap-2"><Flame className="h-4 w-4 text-orange-400" /> Heat Leaderboard</h3>
+ <h3 className="font-semibold text-sm text-foreground text-base flex items-center gap-2"><Flame className="h-4 w-4 text-orange-400" /> Heat Leaderboard</h3>
  </div>
  <div className="p-4 p-0">
  <div className="divide-y divide-white/5">
  {heatData.map((h: any) => (
  <div key={h.id} className="px-4 py-2 flex items-center justify-between">
- <span className="text-sm text-white/70">{h.user_discord_id}</span>
+ <span className="text-sm text-foreground/70">{h.user_discord_id}</span>
  <Badge className={`${h.heat_points >= 7 ? 'bg-red-500/20 text-red-400' : h.heat_points >= 4 ? 'bg-orange-500/20 text-orange-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
  {h.heat_points} pts
  </Badge>

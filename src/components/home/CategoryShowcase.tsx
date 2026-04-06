@@ -58,7 +58,7 @@ export function CategoryShowcase() {
                   "w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-gradient-to-br",
                   category.gradient
                 )}>
-                  <category.icon className="h-6 w-6 text-white" />
+                  <category.icon className="h-6 w-6 text-foreground" />
                 </div>
                 
                 <h3 className="font-display text-lg font-semibold mb-2 group-hover:text-primary transition-colors">

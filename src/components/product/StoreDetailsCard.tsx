@@ -52,7 +52,7 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
  )}
  
  {/* Content area - dark background */}
- <div className="bg-black/95 px-3 py-2.5 space-y-2">
+ <div className="bg-foreground/95 px-3 py-2.5 space-y-2">
  {/* Store header */}
  <div className="flex items-center gap-3">
  {/* Store Logo - positioned to overlap banner slightly */}
@@ -60,17 +60,17 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
  <img 
  src={optimizeImageUrl(store.logo_url, 48, 48, 'contain')} 
  alt={store.name}
- className="h-12 w-12 rounded-lg object-contain bg-white/10 border border-white/10 flex-shrink-0 group-hover:border-primary/50 transition-colors"
+ className="h-12 w-12 rounded-lg object-contain bg-background/10 border border-white/10 flex-shrink-0 group-hover:border-primary/50 transition-colors"
  />
  ) : (
- <div className="h-12 w-12 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 border border-white/10">
- <Store className="h-5 w-5 text-white/60" />
+ <div className="h-12 w-12 rounded-lg bg-background/10 flex items-center justify-center flex-shrink-0 border border-white/10">
+ <Store className="h-5 w-5 text-foreground/60" />
  </div>
  )}
  
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-1.5 flex-wrap">
- <h3 className="font-display font-bold text-base text-white truncate group-hover:text-primary transition-colors">
+ <h3 className="font-display font-bold text-base text-foreground truncate group-hover:text-primary transition-colors">
  {store.name}
  </h3>
  {store.is_verified && (
@@ -82,7 +82,7 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
  </div>
  
  {store.description && (
- <p className="text-xs text-white/60 line-clamp-1 mt-0.5">
+ <p className="text-xs text-foreground/60 line-clamp-1 mt-0.5">
  {store.description}
  </p>
  )}
@@ -90,7 +90,7 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
  </div>
  
  {/* Store stats */}
- <div className="flex items-center gap-4 text-xs text-white/70">
+ <div className="flex items-center gap-4 text-xs text-foreground/70">
  {store.product_count !== undefined && store.product_count > 0 && (
  <div className="flex items-center gap-1.5">
  <Package className="h-3.5 w-3.5 text-primary" />

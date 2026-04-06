@@ -56,11 +56,11 @@ export default function BotModeration() {
  <BotDashboardLayout>
  <div className="space-y-6">
  <div>
- <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+ <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
  <Gavel className="h-6 w-6 text-[hsl(258,90%,66%)]" />
  Moderation
  </h1>
- <p className="text-white/50 text-sm mt-1">
+ <p className="text-foreground/50 text-sm mt-1">
  Local server moderation actions — bans, kicks, timeouts via bot commands.
  </p>
  </div>
@@ -68,7 +68,7 @@ export default function BotModeration() {
  {/* Info card */}
  <div className="border border-border rounded-xl overflow-hidden bg-[hsl(258,90%,66%)]/10 border-[hsl(258,90%,66%)]/20">
  <div className="p-4 p-4">
- <p className="text-sm text-white/70">
+ <p className="text-sm text-foreground/70">
  These are <strong>local server</strong> moderation actions executed via <code>/ban</code>, <code>/kick</code>, <code>/timeout</code>, and <code>/unban</code> commands.
  For cross-server bans, use <strong>Global Guard</strong>.
  </p>
@@ -78,16 +78,16 @@ export default function BotModeration() {
  {/* Filters */}
  <div className="flex flex-col sm:flex-row gap-3">
  <div className="relative flex-1">
- <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+ <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/30" />
  <Input
  placeholder="Search by user, moderator, or reason..."
  value={search}
  onChange={(e) => setSearch(e.target.value)}
- className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/30"
+ className="pl-10 bg-background/5 border-white/10 text-foreground placeholder:text-foreground/30"
  />
  </div>
  <Select value={filterAction} onValueChange={setFilterAction}>
- <SelectTrigger className="w-full sm:w-40 bg-white/5 border-white/10 text-white">
+ <SelectTrigger className="w-full sm:w-40 bg-background/5 border-white/10 text-foreground">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -101,46 +101,46 @@ export default function BotModeration() {
  </div>
 
  {/* Actions list */}
- <div className="border border-border rounded-xl overflow-hidden bg-white/[0.03] border-white/10">
+ <div className="border border-border rounded-xl overflow-hidden bg-background/[0.03] border-white/10">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm text-white text-base">Recent Actions</h3>
- <p className="text-sm text-muted-foreground text-white/40">
+ <h3 className="font-semibold text-sm text-foreground text-base">Recent Actions</h3>
+ <p className="text-sm text-muted-foreground text-foreground/40">
  {filtered.length} action{filtered.length !== 1 ? 's' : ''} recorded
  </p>
  </div>
  <div className="p-4 p-0">
  {isLoading ? (
- <div className="p-8 text-center text-white/40">Loading...</div>
+ <div className="p-8 text-center text-foreground/40">Loading...</div>
  ) : filtered.length === 0 ? (
- <div className="p-8 text-center text-white/40">
+ <div className="p-8 text-center text-foreground/40">
  No moderation actions recorded yet. Use <code>/ban</code>, <code>/kick</code>, <code>/timeout</code> in Discord.
  </div>
  ) : (
  <div className="divide-y divide-white/5">
  {filtered.map((action: any) => {
  const Icon = ACTION_ICONS[action.action_type] || Gavel;
- const color = ACTION_COLORS[action.action_type] || 'text-white/60';
+ const color = ACTION_COLORS[action.action_type] || 'text-foreground/60';
  return (
- <div key={action.id} className="px-4 py-3 flex items-start gap-3 hover:bg-white/[0.02]">
+ <div key={action.id} className="px-4 py-3 flex items-start gap-3 hover:bg-background/[0.02]">
  <Icon className={`h-5 w-5 mt-0.5 shrink-0 ${color}`} />
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2 flex-wrap">
- <span className="text-sm font-medium text-white">
+ <span className="text-sm font-medium text-foreground">
  {action.target_username || action.target_user_id}
  </span>
- <Badge variant="outline" className="text-[10px] border-white/20 text-white/60 uppercase">
+ <Badge variant="outline" className="text-[10px] border-white/20 text-foreground/60 uppercase">
  {action.action_type}
  </Badge>
  {action.duration && (
- <Badge variant="outline" className="text-[10px] border-white/20 text-white/40">
+ <Badge variant="outline" className="text-[10px] border-white/20 text-foreground/40">
  {action.duration}
  </Badge>
  )}
  </div>
  {action.reason && (
- <p className="text-xs text-white/40 mt-0.5 truncate">{action.reason}</p>
+ <p className="text-xs text-foreground/40 mt-0.5 truncate">{action.reason}</p>
  )}
- <p className="text-[11px] text-white/30 mt-0.5">
+ <p className="text-[11px] text-foreground/30 mt-0.5">
  by {action.moderator_username || action.moderator_id} · {format(new Date(action.created_at), 'dd MMM yyyy HH:mm')}
  </p>
  </div>

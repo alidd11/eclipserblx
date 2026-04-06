@@ -118,7 +118,7 @@ export function SystemAlerts() {
 
   const severityBadge = {
     critical: 'bg-destructive text-destructive-foreground',
-    warning: 'bg-orange-500 text-white',
+    warning: 'bg-orange-500 text-foreground',
     info: 'bg-primary/20 text-primary',
   };
 

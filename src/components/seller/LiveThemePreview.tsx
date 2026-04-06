@@ -44,7 +44,7 @@ export function LiveThemePreview({
 
  const getThemeBg = () => {
  switch (theme) {
- case 'dark': return 'bg-zinc-900 text-white';
+ case 'dark': return 'bg-zinc-900 text-foreground';
  case 'gradient': return 'bg-gradient-to-br from-card to-muted/50';
  case 'bold': return 'bg-card border-2';
  case 'minimal': return 'bg-background';
@@ -65,7 +65,7 @@ export function LiveThemePreview({
  {/* Announcement */}
  {announcementActive && announcementText && (
  <div 
- className="text-center text-xs py-1.5 px-2 text-white"
+ className="text-center text-xs py-1.5 px-2 text-foreground"
  style={{ backgroundColor: accentColor }}
  >
  {announcementText}
@@ -85,13 +85,13 @@ export function LiveThemePreview({
  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
  <div className="absolute bottom-2 left-3">
  <p 
- className="text-white text-sm font-bold truncate"
+ className="text-foreground text-sm font-bold truncate"
  style={{ fontFamily: headingFont }}
  >
  {heroTitle || 'Your Store'}
  </p>
  {heroSubtitle && (
- <p className="text-white/70 text-[10px] truncate" style={{ fontFamily: bodyFont }}>
+ <p className="text-foreground/70 text-[10px] truncate" style={{ fontFamily: bodyFont }}>
  {heroSubtitle}
  </p>
  )}

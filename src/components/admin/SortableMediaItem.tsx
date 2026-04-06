@@ -46,22 +46,22 @@ export function SortableMediaItem({ id, url, index, onRemove }: SortableMediaIte
       <div
         {...attributes}
         {...listeners}
-        className="absolute top-0 left-0 p-1 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 rounded-br"
+        className="absolute top-0 left-0 p-1 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity bg-foreground/40 rounded-br"
       >
-        <GripVertical className="h-3 w-3 text-white" />
+        <GripVertical className="h-3 w-3 text-foreground" />
       </div>
       
       {/* Remove button */}
       <button
         type="button"
         onClick={() => onRemove(index)}
-        className="absolute top-0 right-0 p-1 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-bl"
+        className="absolute top-0 right-0 p-1 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-bl"
       >
-        <X className="h-3 w-3 text-white" />
+        <X className="h-3 w-3 text-foreground" />
       </button>
       
       {/* Index badge */}
-      <div className="absolute bottom-0 left-0 px-1.5 py-0.5 bg-black/60 text-[10px] text-white rounded-tr">
+      <div className="absolute bottom-0 left-0 px-1.5 py-0.5 bg-foreground/60 text-[10px] text-foreground rounded-tr">
         {index + 1}
       </div>
     </div>

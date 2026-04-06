@@ -47,7 +47,7 @@ export function GlobalGuardAuth() {
  {/* Logo & Branding */}
  <div className="text-center space-y-3">
  <div className="mx-auto w-20 h-20 rounded-lg bg-primary/20 flex items-center justify-center shadow-lg">
- <Shield className="w-10 h-10 text-white" />
+ <Shield className="w-10 h-10 text-foreground" />
  </div>
  <h1 className="text-3xl font-bold text-foreground">Global Guard</h1>
  <p className="text-muted-foreground">Cross-Server Ban Management</p>
@@ -65,7 +65,7 @@ export function GlobalGuardAuth() {
  <Button
  onClick={handleDiscordLogin}
  disabled={isLoading}
- className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white h-12 text-base"
+ className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-foreground h-12 text-base"
  >
  {isLoading ? (
  <Loader2 className="w-5 h-5 mr-2 animate-spin" />

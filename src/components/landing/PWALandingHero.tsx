@@ -32,16 +32,16 @@ function StoreBannerStrip({ product, textSize = 'text-[11px]' }: { product: Scor
       } : undefined}
     >
       {product.stores?.banner_url && (
-        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-foreground/60" />
       )}
       {!product.stores?.banner_url && (
         <div className="absolute inset-0 bg-muted" />
       )}
       <div className="relative z-10 flex items-center gap-1.5 min-w-0">
         {product.stores?.logo_url && (
-          <img src={product.stores.logo_url} alt="" className="h-4 w-4 rounded object-contain bg-white/10 flex-shrink-0" />
+          <img src={product.stores.logo_url} alt="" className="h-4 w-4 rounded object-contain bg-background/10 flex-shrink-0" />
         )}
-        <span className={cn(textSize, "font-medium truncate", product.stores?.banner_url ? "text-white" : "text-foreground")}>{product.stores?.name}</span>
+        <span className={cn(textSize, "font-medium truncate", product.stores?.banner_url ? "text-foreground" : "text-foreground")}>{product.stores?.name}</span>
         {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
         {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
       </div>
@@ -81,7 +81,7 @@ function PWASpotlightCard({ product }: { product: ScoredProduct }) {
             </span>
           )}
           {product.is_featured && (
-            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-500/90 text-white text-[10px] font-bold">
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-500/90 text-foreground text-[10px] font-bold">
               ★ Featured
             </span>
           )}

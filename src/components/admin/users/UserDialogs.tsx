@@ -59,7 +59,7 @@ export function UserDialogs(props: UserDialogsProps) {
   const getRoleBadge = (role: string) => {
     const config = customRoles.find((r: any) => r.name === role);
     return (
-      <Badge key={role} variant="outline" className={`${config?.color || 'bg-gray-500'} text-white border-transparent`}>
+      <Badge key={role} variant="outline" className={`${config?.color || 'bg-gray-500'} text-foreground border-transparent`}>
         {config?.display_name || role}
       </Badge>
     );
@@ -90,7 +90,7 @@ export function UserDialogs(props: UserDialogsProps) {
                     getUserRoles(selectedUser.user_id).map((r: any) => {
                       const roleInfo = customRoles.find((role: any) => role.name === r.role);
                       return (
-                        <Badge key={`${r.user_id}-${r.role}`} variant="outline" className={`gap-1 py-1.5 px-2 ${roleInfo?.color || ''} text-white border-transparent`}>
+                        <Badge key={`${r.user_id}-${r.role}`} variant="outline" className={`gap-1 py-1.5 px-2 ${roleInfo?.color || ''} text-foreground border-transparent`}>
                           {roleInfo?.display_name || r.role}
                           {canRemoveRole(r.role) && (
                             <button onClick={() => removeRoleMutation.mutate({ userId: selectedUser.user_id, role: r.role, targetEmail: selectedUser.email })} className="ml-1 hover:text-destructive touch-manipulation">

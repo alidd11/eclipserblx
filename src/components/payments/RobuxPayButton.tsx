@@ -15,7 +15,7 @@ export function RobuxPayButton({ className }: RobuxPayButtonProps) {
   return (
     <Button
       size="lg"
-      className={`flex-1 h-14 text-lg bg-gradient-to-r from-[#00A67D] to-[#00D9A5] hover:from-[#00B88A] hover:to-[#00E6B0] text-white border-0 ${className}`}
+      className={`flex-1 h-14 text-lg bg-gradient-to-r from-[#00A67D] to-[#00D9A5] hover:from-[#00B88A] hover:to-[#00E6B0] text-foreground border-0 ${className}`}
       onClick={handleClick}
     >
       <svg

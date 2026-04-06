@@ -236,7 +236,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
           <Circle className={cn('h-2.5 w-2.5 fill-current shrink-0', statusConfig[systemStatus].color)} />
         )}
         {!isCollapsed && item.showNotificationDot && unreadNotifications > 0 && (
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white px-1.5">
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-foreground px-1.5">
             {unreadNotifications > 99 ? '99+' : unreadNotifications}
           </span>
         )}

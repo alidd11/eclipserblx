@@ -213,7 +213,7 @@ export function RoleManagementCard() {
  className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
  >
  <div className="flex items-center gap-3 min-w-0 flex-1">
- <div className={`p-1.5 rounded-md ${role.color} text-white shrink-0`}>
+ <div className={`p-1.5 rounded-md ${role.color} text-foreground shrink-0`}>
  <IconComponent className="h-4 w-4" />
  </div>
  <div className="min-w-0 flex-1">
@@ -225,7 +225,7 @@ export function RoleManagementCard() {
  System
  </Badge>
  )}
- <Badge className="text-[11px] px-2.5 py-0.5 h-auto font-medium bg-cyan-500 hover:bg-cyan-500 text-white rounded-full">
+ <Badge className="text-[11px] px-2.5 py-0.5 h-auto font-medium bg-cyan-500 hover:bg-cyan-500 text-foreground rounded-full">
  Level {role.hierarchy_level}
  </Badge>
  </div>

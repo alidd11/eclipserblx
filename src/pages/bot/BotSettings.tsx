@@ -11,8 +11,8 @@ const BotCodesContent = lazy(() => import('@/components/bot-dashboard/settings/B
 function TabLoader() {
   return (
     <div className="space-y-4 py-4">
-      <Skeleton className="h-8 w-48 bg-white/10" />
-      <Skeleton className="h-64 w-full bg-white/10 rounded-xl" />
+      <Skeleton className="h-8 w-48 bg-background/10" />
+      <Skeleton className="h-64 w-full bg-background/10 rounded-xl" />
     </div>
   );
 }
@@ -33,18 +33,18 @@ export default function BotSettings() {
   return (
     <BotDashboardLayout>
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-xl sm:text-2xl font-bold text-white mb-6 flex items-center gap-2">
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
           <Settings className="h-6 w-6 text-[hsl(258,90%,66%)]" />
           Settings
         </h1>
 
         <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="bg-white/5 border border-white/10 mb-6 flex-wrap h-auto gap-1 p-1">
+          <TabsList className="bg-background/5 border border-white/10 mb-6 flex-wrap h-auto gap-1 p-1">
             {tabs.map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
-                className="data-[state=active]:bg-[hsl(258,90%,66%)]/20 data-[state=active]:text-[hsl(258,90%,76%)] text-white/60 gap-1.5 text-xs sm:text-sm"
+                className="data-[state=active]:bg-[hsl(258,90%,66%)]/20 data-[state=active]:text-[hsl(258,90%,76%)] text-foreground/60 gap-1.5 text-xs sm:text-sm"
               >
                 <tab.icon className="h-3.5 w-3.5" />
                 {tab.label}

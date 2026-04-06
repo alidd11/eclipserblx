@@ -55,7 +55,7 @@ export function RoleSelector({
               <div className={cn(
                 "p-1 rounded-md flex-shrink-0",
                 selectedRoleInfo.color,
-                "text-white"
+                "text-foreground"
               )}>
                 <SelectedIcon className="h-3.5 w-3.5" />
               </div>
@@ -81,7 +81,7 @@ export function RoleSelector({
                 <div className={cn(
                   "p-1 rounded-md flex-shrink-0",
                   role.color,
-                  "text-white"
+                  "text-foreground"
                 )}>
                   <IconComponent className="h-3.5 w-3.5" />
                 </div>

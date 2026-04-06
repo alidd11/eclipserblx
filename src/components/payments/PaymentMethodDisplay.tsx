@@ -212,12 +212,12 @@ export function PaymentMethodDisplay({
         {/* Accepted Payment Icons - Show only relevant ones */}
         <div className="flex items-center justify-center gap-3 py-2">
           {platform.supportsApplePay && (
-            <div className="px-2 py-1 bg-black rounded flex items-center justify-center">
-              <ApplePayLogo className="h-4 w-auto text-white" />
+            <div className="px-2 py-1 bg-foreground rounded flex items-center justify-center">
+              <ApplePayLogo className="h-4 w-auto text-foreground" />
             </div>
           )}
           {platform.supportsGooglePay && (
-            <div className="px-2 py-1 bg-white border border-border rounded flex items-center justify-center">
+            <div className="px-2 py-1 bg-background border border-border rounded flex items-center justify-center">
               <GooglePayLogo className="h-4 w-auto" />
             </div>
           )}
@@ -225,7 +225,7 @@ export function PaymentMethodDisplay({
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="px-2 py-1 bg-[#0070ba] rounded flex items-center justify-center">
-            <span className="text-[10px] font-bold text-white">PayPal</span>
+            <span className="text-[10px] font-bold text-foreground">PayPal</span>
           </div>
         </div>
 

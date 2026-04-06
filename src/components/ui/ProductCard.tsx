@@ -184,7 +184,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
               </div>
             )}
             {showBestSellerBadge && (
-              <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded shadow-sm">
+              <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-gradient-to-r from-amber-500 to-orange-500 text-foreground rounded shadow-sm">
                 Best Seller
               </div>
             )}
@@ -194,7 +194,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
               </div>
             )}
             {isNew && !isFeatured && !showBestSellerBadge && (
-              <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-emerald-500 text-white rounded">
+              <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-emerald-500 text-foreground rounded">
                 New
               </div>
             )}
@@ -208,7 +208,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                   key={i}
                   className={cn(
                     "w-1.5 h-1.5 rounded-full transition-colors",
-                    i === mediaIndex ? "bg-white" : "bg-white/40"
+                    i === mediaIndex ? "bg-background" : "bg-background/40"
                   )}
                 />
               ))}

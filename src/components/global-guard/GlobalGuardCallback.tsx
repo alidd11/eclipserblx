@@ -93,7 +93,7 @@ export function GlobalGuardCallback() {
     <div className="min-h-[100dvh] bg-background flex items-center justify-center p-4">
       <div className="text-center space-y-4">
         <div className="mx-auto w-16 h-16 rounded-lg bg-primary/20 flex items-center justify-center animate-pulse">
-          <Shield className="w-8 h-8 text-white" />
+          <Shield className="w-8 h-8 text-foreground" />
         </div>
         <div className="flex items-center justify-center gap-2 text-muted-foreground">
           <Loader2 className="w-4 h-4 animate-spin" />

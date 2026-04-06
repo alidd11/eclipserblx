@@ -49,10 +49,10 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
               <img 
                 src={product.stores.logo_url} 
                 alt=""
-                className="h-5 w-5 rounded object-cover bg-white/10"
+                className="h-5 w-5 rounded object-cover bg-background/10"
               />
             )}
-            <span className="text-white text-xs truncate">{product.stores?.name}</span>
+            <span className="text-foreground text-xs truncate">{product.stores?.name}</span>
             {product.stores?.is_verified && (
               <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
             )}

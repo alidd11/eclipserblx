@@ -162,7 +162,7 @@ export function AddPortalBotCard() {
  <Button
  onClick={handleAddBot}
  disabled={isLoading}
- className="bg-[#5865F2] hover:bg-[#4752C4] text-white"
+ className="bg-[#5865F2] hover:bg-[#4752C4] text-foreground"
  >
  {isLoading ? (
  <Loader2 className="h-4 w-4 mr-2 animate-spin" />

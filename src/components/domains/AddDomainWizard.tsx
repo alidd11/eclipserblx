@@ -116,7 +116,7 @@ export function AddDomainWizard({ open, onOpenChange, onPreCheck, onConnect, isC
               <div className="flex flex-col items-center gap-1">
                 <div className={cn(
                   'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all',
-                  i < stepIndex ? 'bg-emerald-500 border-emerald-500 text-white' :
+                  i < stepIndex ? 'bg-emerald-500 border-emerald-500 text-foreground' :
                   i === stepIndex ? 'bg-primary border-primary text-primary-foreground' :
                   'bg-background border-border text-muted-foreground'
                 )}>

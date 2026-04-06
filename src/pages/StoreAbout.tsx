@@ -57,7 +57,7 @@ export default function StoreAbout() {
       onTabChange={() => {}}
       bio={store.bio}
     >
-      <div className={`min-h-[60vh] ${isDarkTheme ? 'text-white' : ''}`}>
+      <div className={`min-h-[60vh] ${isDarkTheme ? 'text-foreground' : ''}`}>
         {/* Hero Section with Banner Background */}
         <div className="relative rounded-2xl overflow-hidden mb-8">
           {/* Banner Background */}
@@ -73,7 +73,7 @@ export default function StoreAbout() {
             />
           )}
           {/* Dark overlay for readability */}
-          <div className="absolute inset-0 bg-black/60" />
+          <div className="absolute inset-0 bg-foreground/60" />
           
           {/* Content */}
           <div className="relative z-10 py-16 px-6 flex flex-col items-center justify-center text-center">
@@ -89,10 +89,10 @@ export default function StoreAbout() {
             )}
             
             {/* Store Name */}
-            <h1 className="text-3xl font-bold text-white mb-2">{store.name}</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-2">{store.name}</h1>
             
             {/* Back Button */}
-            <Button variant="outline" size="sm" asChild className="mt-4 bg-white/10 border-white/20 text-white hover:bg-white/20">
+            <Button variant="outline" size="sm" asChild className="mt-4 bg-background/10 border-white/20 text-foreground hover:bg-background/20">
               <Link to={`/store/${slug}`} className="gap-2">
                 <ChevronLeft className="h-4 w-4" />
                 Back to Store

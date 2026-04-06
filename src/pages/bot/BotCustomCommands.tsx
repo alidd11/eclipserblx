@@ -64,11 +64,11 @@ export default function BotCustomCommands() {
  <div className="space-y-6">
  <div className="flex items-center justify-between">
  <div>
- <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+ <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
  <Terminal className="h-6 w-6 text-[hsl(258,90%,66%)]" />
  Custom Commands
  </h1>
- <p className="text-white/50 text-sm mt-1">Create custom commands and auto-responses.</p>
+ <p className="text-foreground/50 text-sm mt-1">Create custom commands and auto-responses.</p>
  </div>
  <Button onClick={() => setShowAdd(!showAdd)} className="bg-[hsl(258,90%,66%)] hover:bg-[hsl(258,90%,56%)]">
  <Plus className="h-4 w-4 mr-2" /> New Command
@@ -76,14 +76,14 @@ export default function BotCustomCommands() {
  </div>
 
  {showAdd && (
- <div className="border border-border rounded-xl overflow-hidden bg-white/[0.03] border-white/10">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm text-white text-base">New Command</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden bg-background/[0.03] border-white/10">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm text-foreground text-base">New Command</h3></div>
  <div className="p-4 space-y-4">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div>
- <Label className="text-white/60 text-xs">Type</Label>
+ <Label className="text-foreground/60 text-xs">Type</Label>
  <Select value={form.trigger_type} onValueChange={v => setForm({ ...form, trigger_type: v })}>
- <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+ <SelectTrigger className="bg-background/5 border-white/10 text-foreground"><SelectValue /></SelectTrigger>
  <SelectContent>
  <SelectItem value="command">Slash Command (!trigger)</SelectItem>
  <SelectItem value="contains">Contains (auto-respond)</SelectItem>
@@ -93,17 +93,17 @@ export default function BotCustomCommands() {
  </Select>
  </div>
  <div>
- <Label className="text-white/60 text-xs">Trigger</Label>
- <Input value={form.trigger} onChange={e => setForm({ ...form, trigger: e.target.value })} placeholder={form.trigger_type === 'command' ? '!hello' : 'keyword'} className="bg-white/5 border-white/10 text-white" />
+ <Label className="text-foreground/60 text-xs">Trigger</Label>
+ <Input value={form.trigger} onChange={e => setForm({ ...form, trigger: e.target.value })} placeholder={form.trigger_type === 'command' ? '!hello' : 'keyword'} className="bg-background/5 border-white/10 text-foreground" />
  </div>
  </div>
  <div>
- <Label className="text-white/60 text-xs">Response</Label>
- <Textarea value={form.response} onChange={e => setForm({ ...form, response: e.target.value })} placeholder="Bot response text... Use {user} for mention, {server} for server name" className="bg-white/5 border-white/10 text-white min-h-[80px]" />
+ <Label className="text-foreground/60 text-xs">Response</Label>
+ <Textarea value={form.response} onChange={e => setForm({ ...form, response: e.target.value })} placeholder="Bot response text... Use {user} for mention, {server} for server name" className="bg-background/5 border-white/10 text-foreground min-h-[80px]" />
  </div>
  <div className="w-32">
- <Label className="text-white/60 text-xs">Cooldown (seconds)</Label>
- <Input type="number" min={0} value={form.cooldown_seconds} onChange={e => setForm({ ...form, cooldown_seconds: parseInt(e.target.value) || 0 })} className="bg-white/5 border-white/10 text-white" />
+ <Label className="text-foreground/60 text-xs">Cooldown (seconds)</Label>
+ <Input type="number" min={0} value={form.cooldown_seconds} onChange={e => setForm({ ...form, cooldown_seconds: parseInt(e.target.value) || 0 })} className="bg-background/5 border-white/10 text-foreground" />
  </div>
  <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="bg-[hsl(258,90%,66%)]">
  <Save className="h-4 w-4 mr-2" /> Create
@@ -112,29 +112,29 @@ export default function BotCustomCommands() {
  </div>
  )}
 
- <div className="border border-border rounded-xl overflow-hidden bg-white/[0.03] border-white/10">
+ <div className="border border-border rounded-xl overflow-hidden bg-background/[0.03] border-white/10">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm text-white text-base">Commands</h3>
- <p className="text-sm text-muted-foreground text-white/40">{commands.length} command{commands.length !== 1 ? 's' : ''}</p>
+ <h3 className="font-semibold text-sm text-foreground text-base">Commands</h3>
+ <p className="text-sm text-muted-foreground text-foreground/40">{commands.length} command{commands.length !== 1 ? 's' : ''}</p>
  </div>
  <div className="p-4 p-0">
  {isLoading ? (
- <div className="p-8 text-center text-white/40">Loading...</div>
+ <div className="p-8 text-center text-foreground/40">Loading...</div>
  ) : commands.length === 0 ? (
- <div className="p-8 text-center text-white/40">No custom commands yet.</div>
+ <div className="p-8 text-center text-foreground/40">No custom commands yet.</div>
  ) : (
  <div className="divide-y divide-white/5">
  {commands.map((cmd: any) => (
- <div key={cmd.id} className="px-4 py-3 flex items-center gap-3 hover:bg-white/[0.02]">
+ <div key={cmd.id} className="px-4 py-3 flex items-center gap-3 hover:bg-background/[0.02]">
  {cmd.trigger_type === 'command' ? <Terminal className="h-4 w-4 text-[hsl(258,90%,66%)] shrink-0" /> : <MessageSquare className="h-4 w-4 text-blue-400 shrink-0" />}
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2 flex-wrap">
- <code className="text-sm font-mono text-white">{cmd.trigger}</code>
- <Badge variant="outline" className="text-[10px] border-white/20 text-white/60">{cmd.trigger_type}</Badge>
- {cmd.cooldown_seconds > 0 && <Badge variant="outline" className="text-[10px] border-white/20 text-white/40">{cmd.cooldown_seconds}s cd</Badge>}
+ <code className="text-sm font-mono text-foreground">{cmd.trigger}</code>
+ <Badge variant="outline" className="text-[10px] border-white/20 text-foreground/60">{cmd.trigger_type}</Badge>
+ {cmd.cooldown_seconds > 0 && <Badge variant="outline" className="text-[10px] border-white/20 text-foreground/40">{cmd.cooldown_seconds}s cd</Badge>}
  {cmd.usage_count > 0 && <Badge variant="outline" className="text-[10px] border-green-500/30 text-green-400">{cmd.usage_count} uses</Badge>}
  </div>
- <p className="text-xs text-white/40 mt-0.5 truncate">{cmd.response}</p>
+ <p className="text-xs text-foreground/40 mt-0.5 truncate">{cmd.response}</p>
  </div>
  <Switch checked={cmd.enabled} onCheckedChange={() => toggleMutation.mutate(cmd)} />
  <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400" onClick={() => deleteMutation.mutate(cmd.id)}>

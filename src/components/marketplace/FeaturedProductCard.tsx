@@ -43,7 +43,7 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
       >
         <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
           {/* Product image */}
-          <div className="aspect-[2.5/1] sm:aspect-[3/1] relative overflow-hidden bg-black/20">
+          <div className="aspect-[2.5/1] sm:aspect-[3/1] relative overflow-hidden bg-foreground/20">
             {(() => {
               const imgUrl = getFirstImageUrl(displayProduct.images);
               return imgUrl ? (
@@ -74,25 +74,25 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
             {/* Content overlay */}
             <div className="absolute inset-0 flex flex-col justify-end p-3 sm:p-5">
               {displayProduct.categories?.name && (
-                <span className="text-[10px] font-medium uppercase tracking-wider text-white/50 mb-0.5">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-foreground/50 mb-0.5">
                   {displayProduct.categories.name}
                 </span>
               )}
-              <h3 className="text-white font-display font-bold text-sm sm:text-lg line-clamp-1 leading-tight">
+              <h3 className="text-foreground font-display font-bold text-sm sm:text-lg line-clamp-1 leading-tight">
                 {displayProduct.name}
               </h3>
               <div className="flex items-center gap-2 mt-1">
                 {hasMemberDiscount ? (
                   <>
                     <span className="text-amber-400 font-bold text-xs sm:text-sm">{formatPrice(memberPrice)}</span>
-                    <span className="text-white/40 text-[10px] sm:text-xs line-through">{formatPrice(displayProduct.price)}</span>
+                    <span className="text-foreground/40 text-[10px] sm:text-xs line-through">{formatPrice(displayProduct.price)}</span>
                     <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-amber-500/15 text-amber-400 text-[9px] sm:text-[10px] font-semibold">
                       <Crown className="h-2.5 w-2.5" />
                       -{discountPercent}%
                     </span>
                   </>
                 ) : (
-                  <span className="text-white font-bold text-xs sm:text-sm">{formatPrice(displayProduct.price)}</span>
+                  <span className="text-foreground font-bold text-xs sm:text-sm">{formatPrice(displayProduct.price)}</span>
                 )}
               </div>
             </div>

@@ -85,7 +85,7 @@ export default function BotRoles() {
       <div className="space-y-5 max-w-4xl mx-auto">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
               <Shield className="h-5 w-5 text-[hsl(258,90%,66%)] shrink-0" />
               <span className="truncate">Role Configs</span>
               {!isLoading && (
@@ -94,10 +94,10 @@ export default function BotRoles() {
                 </Badge>
               )}
             </h2>
-            <p className="text-xs sm:text-sm text-white/50 mt-1">Manage auto-assigned Discord roles</p>
+            <p className="text-xs sm:text-sm text-foreground/50 mt-1">Manage auto-assigned Discord roles</p>
           </div>
           <Button
-            className="bg-[hsl(258,90%,66%)] hover:bg-[hsl(258,90%,60%)] text-white shrink-0"
+            className="bg-[hsl(258,90%,66%)] hover:bg-[hsl(258,90%,60%)] text-foreground shrink-0"
             size="sm"
             onClick={() => setShowAdd(!showAdd)}
           >
@@ -107,34 +107,34 @@ export default function BotRoles() {
         </div>
 
         {showAdd && (
-          <div className="p-4 sm:p-5 rounded-xl bg-white/5 border border-[hsl(258,90%,66%)]/30 space-y-4">
+          <div className="p-4 sm:p-5 rounded-xl bg-background/5 border border-[hsl(258,90%,66%)]/30 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div>
-                <Label className="text-xs text-white/60">Role ID</Label>
+                <Label className="text-xs text-foreground/60">Role ID</Label>
                 <Input
                   placeholder="Discord Role ID"
                   value={newRole.role_id}
                   onChange={(e) => setNewRole({ ...newRole, role_id: e.target.value })}
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                  className="bg-background/5 border-white/10 text-foreground placeholder:text-foreground/30"
                 />
               </div>
               <div>
-                <Label className="text-xs text-white/60">Role Name</Label>
+                <Label className="text-xs text-foreground/60">Role Name</Label>
                 <Input
                   placeholder="e.g. Customer"
                   value={newRole.role_name}
                   onChange={(e) => setNewRole({ ...newRole, role_name: e.target.value })}
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                  className="bg-background/5 border-white/10 text-foreground placeholder:text-foreground/30"
                 />
               </div>
               <div>
-                <Label className="text-xs text-white/60">Min Orders</Label>
+                <Label className="text-xs text-foreground/60">Min Orders</Label>
                 <Input
                   type="number"
                   min={0}
                   value={newRole.min_order_count}
                   onChange={(e) => setNewRole({ ...newRole, min_order_count: parseInt(e.target.value) || 0 })}
-                  className="bg-white/5 border-white/10 text-white"
+                  className="bg-background/5 border-white/10 text-foreground"
                 />
               </div>
             </div>
@@ -142,7 +142,7 @@ export default function BotRoles() {
               size="sm"
               onClick={() => addRole.mutate()}
               disabled={!newRole.role_id || !newRole.role_name}
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-green-600 hover:bg-green-700 text-foreground"
             >
               <Save className="h-4 w-4 mr-1.5" /> Save Role
             </Button>
@@ -152,28 +152,28 @@ export default function BotRoles() {
         {isLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
+              <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-background/5 border border-white/10">
                 <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-24 bg-white/10" />
-                  <Skeleton className="h-3 w-40 bg-white/10" />
+                  <Skeleton className="h-4 w-24 bg-background/10" />
+                  <Skeleton className="h-3 w-40 bg-background/10" />
                 </div>
-                <Skeleton className="h-5 w-9 rounded-full bg-white/10" />
+                <Skeleton className="h-5 w-9 rounded-full bg-background/10" />
               </div>
             ))}
           </div>
         ) : !roles.length ? (
           <div className="text-center py-16">
-            <Shield className="h-10 w-10 mx-auto mb-3 text-white/20" />
-            <p className="text-sm text-white/40">No role configs yet. Add one above.</p>
+            <Shield className="h-10 w-10 mx-auto mb-3 text-foreground/20" />
+            <p className="text-sm text-foreground/40">No role configs yet. Add one above.</p>
           </div>
         ) : (
           <div className="space-y-2">
             {roles.map((role) => (
-              <div key={role.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/[0.07] transition-colors">
+              <div key={role.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-background/5 border border-white/10 hover:bg-background/[0.07] transition-colors">
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-white text-sm sm:text-base truncate">{role.role_name}</p>
-                  <p className="text-[10px] sm:text-xs text-white/40 font-mono truncate">{role.role_id}</p>
-                  <p className="text-[10px] sm:text-xs text-white/40">Min orders: {role.min_order_count}</p>
+                  <p className="font-semibold text-foreground text-sm sm:text-base truncate">{role.role_name}</p>
+                  <p className="text-[10px] sm:text-xs text-foreground/40 font-mono truncate">{role.role_id}</p>
+                  <p className="text-[10px] sm:text-xs text-foreground/40">Min orders: {role.min_order_count}</p>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                   <div className="text-center">
@@ -181,7 +181,7 @@ export default function BotRoles() {
                       checked={role.auto_assign_on_purchase}
                       onCheckedChange={(checked) => toggleAutoAssign.mutate({ id: role.id, enabled: checked })}
                     />
-                    <p className="text-[10px] text-white/30 mt-0.5">Auto</p>
+                    <p className="text-[10px] text-foreground/30 mt-0.5">Auto</p>
                   </div>
                   <Button
                     variant="ghost"

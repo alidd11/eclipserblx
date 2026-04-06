@@ -25,7 +25,7 @@ export default function AdminUsers() {
   const getRoleBadge = (role: string) => {
     const config = customRoles.find(r => r.name === role);
     return (
-      <Badge key={role} variant="outline" className={`${config?.color || 'bg-gray-500'} text-white border-transparent`}>
+      <Badge key={role} variant="outline" className={`${config?.color || 'bg-gray-500'} text-foreground border-transparent`}>
         {config?.display_name || role}
       </Badge>
     );

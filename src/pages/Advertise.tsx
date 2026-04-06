@@ -347,7 +347,7 @@ export default function Advertise() {
  <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
  <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3"><h3 className="font-semibold text-sm text-sm">Preview</h3></div>
  <div className="p-4">
- <div className="bg-[#2f3136] rounded-lg p-3 text-white text-sm space-y-2">
+ <div className="bg-[#2f3136] rounded-lg p-3 text-foreground text-sm space-y-2">
  <div className={cn("border-l-4 pl-3", subscription.tier === 'premium' ? 'border-yellow-500' : subscription.tier === 'pro' ? 'border-purple-500' : 'border-blue-500')}>
  <p className="font-semibold">📢 {adFormData.title || 'Your Title Here'}</p>
  <p className="text-gray-300 text-xs mt-1">{adFormData.description || 'Your description will appear here...'}</p>

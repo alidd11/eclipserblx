@@ -27,7 +27,7 @@ export function RecentlyViewedProducts({ currentProductId }: Props) {
             to={`/products/${product.slug}`} /* slug field stores product_number */
             className="group block rounded-lg border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
           >
-            <div className="aspect-square bg-black/10 overflow-hidden">
+            <div className="aspect-square bg-foreground/10 overflow-hidden">
               {product.image ? (
                 <img
                   src={product.image}

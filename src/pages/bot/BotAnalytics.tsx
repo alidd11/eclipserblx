@@ -48,37 +48,37 @@ export default function BotAnalytics() {
  <BotDashboardLayout>
  <div className="space-y-6">
  <div>
- <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+ <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
  <BarChart3 className="h-6 w-6 text-[hsl(258,90%,66%)]" />
  Analytics
  </h1>
- <p className="text-white/50 text-sm mt-1">Command usage statistics over the last 30 days.</p>
+ <p className="text-foreground/50 text-sm mt-1">Command usage statistics over the last 30 days.</p>
  </div>
 
  {/* Summary cards */}
  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
- <div className="border border-border rounded-xl overflow-hidden bg-white/[0.03] border-white/10">
+ <div className="border border-border rounded-xl overflow-hidden bg-background/[0.03] border-white/10">
  <div className="p-4 p-4">
- <div className="flex items-center gap-2 text-white/50 text-xs mb-1">
+ <div className="flex items-center gap-2 text-foreground/50 text-xs mb-1">
  <TrendingUp className="h-3.5 w-3.5" /> Total Executions
  </div>
- <p className="text-2xl font-bold text-white">{totalCommands}</p>
+ <p className="text-2xl font-bold text-foreground">{totalCommands}</p>
  </div>
  </div>
- <div className="border border-border rounded-xl overflow-hidden bg-white/[0.03] border-white/10">
+ <div className="border border-border rounded-xl overflow-hidden bg-background/[0.03] border-white/10">
  <div className="p-4 p-4">
- <div className="flex items-center gap-2 text-white/50 text-xs mb-1">
+ <div className="flex items-center gap-2 text-foreground/50 text-xs mb-1">
  <Hash className="h-3.5 w-3.5" /> Unique Commands
  </div>
- <p className="text-2xl font-bold text-white">{uniqueCommands}</p>
+ <p className="text-2xl font-bold text-foreground">{uniqueCommands}</p>
  </div>
  </div>
- <div className="border border-border rounded-xl overflow-hidden bg-white/[0.03] border-white/10">
+ <div className="border border-border rounded-xl overflow-hidden bg-background/[0.03] border-white/10">
  <div className="p-4 p-4">
- <div className="flex items-center gap-2 text-white/50 text-xs mb-1">
+ <div className="flex items-center gap-2 text-foreground/50 text-xs mb-1">
  <Clock className="h-3.5 w-3.5" /> Avg/Day
  </div>
- <p className="text-2xl font-bold text-white">
+ <p className="text-2xl font-bold text-foreground">
  {dailyData.length > 0 ? Math.round(totalCommands / Math.max(dailyData.length, 1)) : 0}
  </p>
  </div>
@@ -86,15 +86,15 @@ export default function BotAnalytics() {
  </div>
 
  {/* Daily usage chart */}
- <div className="border border-border rounded-xl overflow-hidden bg-white/[0.03] border-white/10">
+ <div className="border border-border rounded-xl overflow-hidden bg-background/[0.03] border-white/10">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm text-white text-base">Daily Usage</h3>
+ <h3 className="font-semibold text-sm text-foreground text-base">Daily Usage</h3>
  </div>
  <div className="p-4">
  {isLoading ? (
- <div className="h-64 flex items-center justify-center text-white/40">Loading...</div>
+ <div className="h-64 flex items-center justify-center text-foreground/40">Loading...</div>
  ) : dailyData.length === 0 ? (
- <div className="h-64 flex items-center justify-center text-white/40">No data yet</div>
+ <div className="h-64 flex items-center justify-center text-foreground/40">No data yet</div>
  ) : (
  <ResponsiveContainer width="100%" height={260}>
  <BarChart data={dailyData}>
@@ -112,22 +112,22 @@ export default function BotAnalytics() {
  </div>
 
  {/* Top commands */}
- <div className="border border-border rounded-xl overflow-hidden bg-white/[0.03] border-white/10">
+ <div className="border border-border rounded-xl overflow-hidden bg-background/[0.03] border-white/10">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm text-white text-base">Top Commands</h3>
+ <h3 className="font-semibold text-sm text-foreground text-base">Top Commands</h3>
  </div>
  <div className="p-4 p-0">
  {topCommands.length === 0 ? (
- <div className="p-8 text-center text-white/40">No command usage data yet.</div>
+ <div className="p-8 text-center text-foreground/40">No command usage data yet.</div>
  ) : (
  <div className="divide-y divide-white/5">
  {topCommands.map((cmd, i) => (
  <div key={cmd.name} className="px-4 py-3 flex items-center justify-between">
  <div className="flex items-center gap-3">
- <span className="text-xs text-white/30 w-5 text-right">#{i + 1}</span>
+ <span className="text-xs text-foreground/30 w-5 text-right">#{i + 1}</span>
  <code className="text-sm text-[hsl(258,90%,76%)]">{cmd.name}</code>
  </div>
- <span className="text-sm text-white/60">{cmd.count} uses</span>
+ <span className="text-sm text-foreground/60">{cmd.count} uses</span>
  </div>
  ))}
  </div>

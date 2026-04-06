@@ -222,7 +222,7 @@ export default function SellerCommissions() {
  </Badge>
  )}
  {hasEclipsePlus && (
- <Badge className="gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 text-xs shrink-0">
+ <Badge className="gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-foreground border-0 text-xs shrink-0">
  <Sparkles className="h-3 w-3" />
  Pro+
  </Badge>

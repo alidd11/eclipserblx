@@ -44,13 +44,13 @@ export function BotDashboardSidebar({ onClose }: BotDashboardSidebarProps) {
       <div className="p-5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(258,90%,66%)] to-[hsl(235,86%,60%)] flex items-center justify-center shadow-lg shadow-[hsl(258,90%,66%)]/20">
-            <Bot className="h-5 w-5 text-white" />
+            <Bot className="h-5 w-5 text-foreground" />
           </div>
           <div>
-            <h1 className="font-bold text-sm text-white">Eclipse Bot</h1>
+            <h1 className="font-bold text-sm text-foreground">Eclipse Bot</h1>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-xs text-white/50">Online</span>
+              <span className="text-xs text-foreground/50">Online</span>
             </div>
           </div>
         </div>
@@ -58,7 +58,7 @@ export function BotDashboardSidebar({ onClose }: BotDashboardSidebarProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="text-white/50 hover:text-white hover:bg-white/10 lg:hidden"
+            className="text-foreground/50 hover:text-foreground hover:bg-background/10 lg:hidden"
             onClick={onClose}
           >
             <X className="h-5 w-5" />
@@ -79,7 +79,7 @@ export function BotDashboardSidebar({ onClose }: BotDashboardSidebarProps) {
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
                 isActive(item.href)
                   ? 'bg-[hsl(258,90%,66%)]/15 text-[hsl(258,90%,76%)] shadow-sm'
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  : 'text-foreground/60 hover:text-foreground hover:bg-background/5'
               )}
             >
               <item.icon className={cn(
@@ -94,7 +94,7 @@ export function BotDashboardSidebar({ onClose }: BotDashboardSidebarProps) {
 
       {/* Footer */}
       <div className="p-4 border-t border-white/5 shrink-0">
-        <p className="text-xs text-white/30 text-center">Eclipse Portal Bot v2</p>
+        <p className="text-xs text-foreground/30 text-center">Eclipse Portal Bot v2</p>
       </div>
     </div>
   );

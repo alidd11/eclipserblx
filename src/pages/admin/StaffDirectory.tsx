@@ -315,7 +315,7 @@ export default function StaffDirectory() {
  <Badge
  key={role}
  variant="outline"
- className={`text-[10px] px-1.5 py-0 ${roleInfo?.color || 'bg-gray-500'} text-white border-transparent`}
+ className={`text-[10px] px-1.5 py-0 ${roleInfo?.color || 'bg-gray-500'} text-foreground border-transparent`}
  >
  {roleInfo?.display_name || role}
  </Badge>

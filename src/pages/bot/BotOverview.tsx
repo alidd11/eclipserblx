@@ -44,7 +44,7 @@ export default function BotOverview() {
   };
 
   const getPingColor = (ping?: number) => {
-    if (!ping || ping < 0) return 'text-white/50';
+    if (!ping || ping < 0) return 'text-foreground/50';
     if (ping < 100) return 'text-green-400';
     if (ping < 250) return 'text-yellow-400';
     return 'text-red-400';
@@ -55,13 +55,13 @@ export default function BotOverview() {
       <div className="space-y-5 max-w-6xl mx-auto">
         {/* Page title — mobile only since sidebar is hidden */}
         <div className="flex items-center justify-between lg:hidden">
-          <h1 className="text-lg font-bold text-white">Overview</h1>
+          <h1 className="text-lg font-bold text-foreground">Overview</h1>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="text-white/60 hover:text-white hover:bg-white/10 h-8 w-8"
+            className="text-foreground/60 hover:text-foreground hover:bg-background/10 h-8 w-8"
           >
             <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
           </Button>
@@ -72,7 +72,7 @@ export default function BotOverview() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-wrap">
               {isLoading ? (
-                <Skeleton className="h-7 w-24 bg-white/10 rounded-full" />
+                <Skeleton className="h-7 w-24 bg-background/10 rounded-full" />
               ) : health?.online ? (
                 <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-sm px-3 py-1">
                   <Wifi className="h-3.5 w-3.5 mr-1.5" /> Online
@@ -83,7 +83,7 @@ export default function BotOverview() {
                 </Badge>
               )}
               {health?.node && (
-                <span className="text-xs text-white/40 font-mono">{health.node}</span>
+                <span className="text-xs text-foreground/40 font-mono">{health.node}</span>
               )}
             </div>
             <Button
@@ -91,7 +91,7 @@ export default function BotOverview() {
               size="sm"
               onClick={() => refetch()}
               disabled={isFetching}
-              className="text-white/60 hover:text-white hover:bg-white/10 hidden lg:flex"
+              className="text-foreground/60 hover:text-foreground hover:bg-background/10 hidden lg:flex"
             >
               <RefreshCw className={`h-4 w-4 mr-1.5 ${isFetching ? 'animate-spin' : ''}`} />
               Refresh
@@ -103,9 +103,9 @@ export default function BotOverview() {
         {isLoading ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="rounded-xl bg-white/5 border border-white/10 p-4">
-                <Skeleton className="h-4 w-16 bg-white/10 mb-3" />
-                <Skeleton className="h-6 w-20 bg-white/10" />
+              <div key={i} className="rounded-xl bg-background/5 border border-white/10 p-4">
+                <Skeleton className="h-4 w-16 bg-background/10 mb-3" />
+                <Skeleton className="h-6 w-20 bg-background/10" />
               </div>
             ))}
           </div>
@@ -117,12 +117,12 @@ export default function BotOverview() {
               { label: 'Ping', value: health.ping && health.ping > 0 ? `${health.ping}ms` : 'N/A', icon: Gauge, color: getPingColor(health.ping) },
               { label: 'Memory', value: health.memory ? `${health.memory.heapUsed}/${health.memory.heapTotal}MB` : 'N/A', icon: Cpu },
             ].map((stat) => (
-              <div key={stat.label} className="rounded-xl bg-white/5 border border-white/10 p-4 hover:bg-white/[0.07] transition-colors">
+              <div key={stat.label} className="rounded-xl bg-background/5 border border-white/10 p-4 hover:bg-background/[0.07] transition-colors">
                 <div className="flex items-center gap-2 mb-2">
-                  <stat.icon className="h-4 w-4 text-white/40" />
-                  <span className="text-xs text-white/50">{stat.label}</span>
+                  <stat.icon className="h-4 w-4 text-foreground/40" />
+                  <span className="text-xs text-foreground/50">{stat.label}</span>
                 </div>
-                <p className={`text-base sm:text-lg font-bold truncate ${stat.color || 'text-white'}`}>{stat.value}</p>
+                <p className={`text-base sm:text-lg font-bold truncate ${stat.color || 'text-foreground'}`}>{stat.value}</p>
               </div>
             ))}
           </div>
@@ -136,10 +136,10 @@ export default function BotOverview() {
               { label: 'Errors', value: health.stats.errorsLogged || 0, icon: AlertTriangle, color: health.stats.errorsLogged > 0 ? 'text-red-400' : '' },
               { label: 'Reconnects', value: health.stats.reconnects || 0, icon: RefreshCw },
             ].map((stat) => (
-              <div key={stat.label} className="rounded-xl bg-white/5 border border-white/10 p-3 sm:p-4 text-center hover:bg-white/[0.07] transition-colors">
-                <stat.icon className="h-4 w-4 text-white/40 mx-auto mb-1.5" />
-                <p className={`text-lg sm:text-xl font-bold ${stat.color || 'text-white'}`}>{stat.value}</p>
-                <p className="text-[10px] sm:text-xs text-white/40 mt-0.5">{stat.label}</p>
+              <div key={stat.label} className="rounded-xl bg-background/5 border border-white/10 p-3 sm:p-4 text-center hover:bg-background/[0.07] transition-colors">
+                <stat.icon className="h-4 w-4 text-foreground/40 mx-auto mb-1.5" />
+                <p className={`text-lg sm:text-xl font-bold ${stat.color || 'text-foreground'}`}>{stat.value}</p>
+                <p className="text-[10px] sm:text-xs text-foreground/40 mt-0.5">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -148,7 +148,7 @@ export default function BotOverview() {
         {/* Quick Actions */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           <Button
-            className="bg-[hsl(258,90%,66%)] hover:bg-[hsl(258,90%,60%)] text-white h-auto py-3 text-xs sm:text-sm"
+            className="bg-[hsl(258,90%,66%)] hover:bg-[hsl(258,90%,60%)] text-foreground h-auto py-3 text-xs sm:text-sm"
             onClick={() => navigate('/bot/actions')}
           >
             <Zap className="h-4 w-4 mr-1.5 shrink-0" />
@@ -156,7 +156,7 @@ export default function BotOverview() {
           </Button>
           <Button
             variant="outline"
-            className="border-white/20 text-white hover:bg-white/10 h-auto py-3 text-xs sm:text-sm"
+            className="border-white/20 text-foreground hover:bg-background/10 h-auto py-3 text-xs sm:text-sm"
             onClick={() => navigate('/bot/servers')}
           >
             <Server className="h-4 w-4 mr-1.5 shrink-0" />
@@ -164,7 +164,7 @@ export default function BotOverview() {
           </Button>
           <Button
             variant="outline"
-            className="border-white/20 text-white hover:bg-white/10 h-auto py-3 text-xs sm:text-sm"
+            className="border-white/20 text-foreground hover:bg-background/10 h-auto py-3 text-xs sm:text-sm"
             onClick={() => navigate('/bot/commands')}
           >
             <Terminal className="h-4 w-4 mr-1.5 shrink-0" />
@@ -172,7 +172,7 @@ export default function BotOverview() {
           </Button>
           <Button
             variant="outline"
-            className="border-white/20 text-white hover:bg-white/10 h-auto py-3 text-xs sm:text-sm"
+            className="border-white/20 text-foreground hover:bg-background/10 h-auto py-3 text-xs sm:text-sm"
             onClick={() => navigate('/bot/settings')}
           >
             <AlertTriangle className="h-4 w-4 mr-1.5 shrink-0" />
@@ -182,8 +182,8 @@ export default function BotOverview() {
 
         {/* Recent Errors */}
         {errors.length > 0 && (
-          <div className="rounded-xl bg-white/5 border border-white/10 p-4 sm:p-5">
-            <h3 className="text-sm font-semibold text-white/80 mb-3 flex items-center gap-2">
+          <div className="rounded-xl bg-background/5 border border-white/10 p-4 sm:p-5">
+            <h3 className="text-sm font-semibold text-foreground/80 mb-3 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-red-400" />
               Recent Errors
             </h3>
@@ -194,11 +194,11 @@ export default function BotOverview() {
                     <Badge variant="outline" className="text-[10px] sm:text-xs text-red-400 border-red-500/30 bg-red-500/10">
                       {err.context}
                     </Badge>
-                    <span className="text-[10px] sm:text-xs text-white/30 shrink-0">
+                    <span className="text-[10px] sm:text-xs text-foreground/30 shrink-0">
                       {new Date(err.created_at).toLocaleString()}
                     </span>
                   </div>
-                  <p className="text-xs font-mono text-white/60 break-all line-clamp-2">{err.error_message}</p>
+                  <p className="text-xs font-mono text-foreground/60 break-all line-clamp-2">{err.error_message}</p>
                 </div>
               ))}
             </div>

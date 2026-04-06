@@ -37,9 +37,9 @@ export function BotDashboardLayout({ children }: BotDashboardLayoutProps) {
     return (
       <div className="min-h-[100dvh] bg-[hsl(228,15%,10%)] flex items-center justify-center">
         <div className="space-y-4 w-full max-w-md px-4">
-          <Skeleton className="h-8 w-3/4 mx-auto bg-white/10" />
-          <Skeleton className="h-4 w-1/2 mx-auto bg-white/10" />
-          <Skeleton className="h-64 w-full rounded-lg bg-white/10" />
+          <Skeleton className="h-8 w-3/4 mx-auto bg-background/10" />
+          <Skeleton className="h-4 w-1/2 mx-auto bg-background/10" />
+          <Skeleton className="h-64 w-full rounded-lg bg-background/10" />
         </div>
       </div>
     );
@@ -48,7 +48,7 @@ export function BotDashboardLayout({ children }: BotDashboardLayoutProps) {
   if (!isAdmin) return null;
 
   return (
-    <div className="h-[100dvh] bg-[hsl(228,15%,10%)] text-white flex overflow-hidden">
+    <div className="h-[100dvh] bg-[hsl(228,15%,10%)] text-foreground flex overflow-hidden">
       {/* Desktop sidebar */}
       <div className="hidden lg:flex shrink-0">
         <BotDashboardSidebar />
@@ -58,7 +58,7 @@ export function BotDashboardLayout({ children }: BotDashboardLayoutProps) {
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-foreground/60 backdrop-blur-sm transition-opacity"
             onClick={() => setSidebarOpen(false)}
           />
           <div className="relative w-64 h-full animate-in slide-in-from-left duration-200">
@@ -78,7 +78,7 @@ export function BotDashboardLayout({ children }: BotDashboardLayoutProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden text-white/70 hover:text-white hover:bg-white/10"
+              className="lg:hidden text-foreground/70 hover:text-foreground hover:bg-background/10"
               onClick={() => setSidebarOpen(true)}
             >
               <Menu className="h-5 w-5" />
@@ -86,7 +86,7 @@ export function BotDashboardLayout({ children }: BotDashboardLayoutProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="text-white/50 hover:text-white hover:bg-white/10 gap-1.5"
+              className="text-foreground/50 hover:text-foreground hover:bg-background/10 gap-1.5"
               onClick={() => navigate('/admin')}
             >
               <ArrowLeft className="h-4 w-4" />
@@ -96,7 +96,7 @@ export function BotDashboardLayout({ children }: BotDashboardLayoutProps) {
 
           <div className="flex items-center gap-3">
             {user?.email && (
-              <span className="text-xs text-white/50 hidden sm:block">{user.email}</span>
+              <span className="text-xs text-foreground/50 hidden sm:block">{user.email}</span>
             )}
             <div className="w-8 h-8 rounded-full bg-[hsl(258,90%,66%)] flex items-center justify-center text-xs font-bold">
               {user?.email?.charAt(0).toUpperCase() || 'A'}

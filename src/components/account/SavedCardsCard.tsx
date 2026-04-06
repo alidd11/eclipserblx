@@ -24,7 +24,7 @@ function CardBrandIcon({ brand }: { brand: string }) {
  if (brandLower === 'visa') {
  return (
  <div className="w-10 h-6 bg-[#1A1F71] rounded flex items-center justify-center">
- <span className="text-[10px] font-bold text-white italic">VISA</span>
+ <span className="text-[10px] font-bold text-foreground italic">VISA</span>
  </div>
  );
  }
@@ -43,7 +43,7 @@ function CardBrandIcon({ brand }: { brand: string }) {
  if (brandLower === 'amex' || brandLower === 'american_express') {
  return (
  <div className="w-10 h-6 bg-[#006FCF] rounded flex items-center justify-center">
- <span className="text-[8px] font-bold text-white">AMEX</span>
+ <span className="text-[8px] font-bold text-foreground">AMEX</span>
  </div>
  );
  }

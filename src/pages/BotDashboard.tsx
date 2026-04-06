@@ -327,7 +327,7 @@ export default function BotDashboard() {
  </div>
  <Button 
  asChild
- className="bg-blue-600 hover:bg-blue-700 text-white shrink-0"
+ className="bg-blue-600 hover:bg-blue-700 text-foreground shrink-0"
  >
  <Link to="/guard">
  Open Dashboard

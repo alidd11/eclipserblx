@@ -106,7 +106,7 @@ export function TwitterHashtagPoolTab({ xTheme }: { xTheme: XTheme }) {
           <button
             onClick={addHashtag}
             disabled={!newTag.trim()}
-            className="bg-[#1d9bf0] hover:bg-[#1a8cd8] disabled:opacity-50 text-white rounded-full p-2 transition-colors"
+            className="bg-[#1d9bf0] hover:bg-[#1a8cd8] disabled:opacity-50 text-foreground rounded-full p-2 transition-colors"
           >
             <Plus className="h-4 w-4" />
           </button>

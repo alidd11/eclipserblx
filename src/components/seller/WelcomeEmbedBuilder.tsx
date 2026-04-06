@@ -257,7 +257,7 @@ export function WelcomeEmbedBuilder() {
  {thumbnailUrl && (
  <img src={thumbnailUrl} alt="" className="w-12 h-12 rounded-full float-right ml-3" />
  )}
- <h3 className="text-white font-semibold text-sm">{title || 'Welcome!'}</h3>
+ <h3 className="text-foreground font-semibold text-sm">{title || 'Welcome!'}</h3>
  <p className="text-[#dcddde] text-sm mt-1 whitespace-pre-wrap">
  {(description || '').replace('{user}', '**NewMember**').replace('{server}', '**Server**')}
  </p>

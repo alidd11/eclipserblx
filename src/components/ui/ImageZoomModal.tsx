@@ -139,7 +139,7 @@ export function ImageZoomModal({ src, alt, isOpen, onClose }: ImageZoomModalProp
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent 
-        className="max-w-[95vw] max-h-[95vh] w-full h-full p-0 bg-black/95 border-none overflow-hidden"
+        className="max-w-[95vw] max-h-[95vh] w-full h-full p-0 bg-foreground/95 border-none overflow-hidden"
         onPointerDownOutside={(e) => e.preventDefault()}
         aria-describedby={undefined}
       >
@@ -153,11 +153,11 @@ export function ImageZoomModal({ src, alt, isOpen, onClose }: ImageZoomModalProp
             size="icon"
             onClick={handleZoomOut}
             disabled={scale <= MIN_SCALE}
-            className="bg-black/50 hover:bg-black/70 text-white"
+            className="bg-foreground/50 hover:bg-foreground/70 text-foreground"
           >
             <ZoomOut className="h-5 w-5" />
           </Button>
-          <span className="text-white text-sm font-medium min-w-[3rem] text-center">
+          <span className="text-foreground text-sm font-medium min-w-[3rem] text-center">
             {Math.round(scale * 100)}%
           </span>
           <Button
@@ -165,7 +165,7 @@ export function ImageZoomModal({ src, alt, isOpen, onClose }: ImageZoomModalProp
             size="icon"
             onClick={handleZoomIn}
             disabled={scale >= MAX_SCALE}
-            className="bg-black/50 hover:bg-black/70 text-white"
+            className="bg-foreground/50 hover:bg-foreground/70 text-foreground"
           >
             <ZoomIn className="h-5 w-5" />
           </Button>
@@ -174,7 +174,7 @@ export function ImageZoomModal({ src, alt, isOpen, onClose }: ImageZoomModalProp
             size="icon"
             onClick={handleReset}
             disabled={scale === 1 && position.x === 0 && position.y === 0}
-            className="bg-black/50 hover:bg-black/70 text-white"
+            className="bg-foreground/50 hover:bg-foreground/70 text-foreground"
           >
             <RotateCcw className="h-5 w-5" />
           </Button>
@@ -182,14 +182,14 @@ export function ImageZoomModal({ src, alt, isOpen, onClose }: ImageZoomModalProp
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="bg-black/50 hover:bg-black/70 text-white"
+            className="bg-foreground/50 hover:bg-foreground/70 text-foreground"
           >
             <X className="h-5 w-5" />
           </Button>
         </div>
 
         {/* Instructions */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 text-white/60 text-xs text-center pointer-events-none">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 text-foreground/60 text-xs text-center pointer-events-none">
           <span className="hidden md:inline">Scroll to zoom • Drag to pan • Double-click to reset</span>
           <span className="md:hidden">Pinch to zoom • Drag to pan • Double-tap to reset</span>
         </div>

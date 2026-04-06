@@ -72,11 +72,11 @@ export default function BotReactionRoles() {
  <div className="space-y-6">
  <div className="flex items-center justify-between">
  <div>
- <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+ <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
  <SmilePlus className="h-6 w-6 text-[hsl(258,90%,66%)]" />
  Reaction Roles
  </h1>
- <p className="text-white/50 text-sm mt-1">Create self-assign role panels with emoji reactions.</p>
+ <p className="text-foreground/50 text-sm mt-1">Create self-assign role panels with emoji reactions.</p>
  </div>
  <Button onClick={() => setShowAdd(!showAdd)} className="bg-[hsl(258,90%,66%)] hover:bg-[hsl(258,90%,56%)]">
  <Plus className="h-4 w-4 mr-2" /> New Panel
@@ -84,22 +84,22 @@ export default function BotReactionRoles() {
  </div>
 
  {showAdd && (
- <div className="border border-border rounded-xl overflow-hidden bg-white/[0.03] border-white/10">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm text-white text-base">Create Reaction Role Panel</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden bg-background/[0.03] border-white/10">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm text-foreground text-base">Create Reaction Role Panel</h3></div>
  <div className="p-4 space-y-4">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div>
- <Label className="text-white/60 text-xs">Title</Label>
- <Input value={title} onChange={e => setTitle(e.target.value)} className="bg-white/5 border-white/10 text-white" />
+ <Label className="text-foreground/60 text-xs">Title</Label>
+ <Input value={title} onChange={e => setTitle(e.target.value)} className="bg-background/5 border-white/10 text-foreground" />
  </div>
  <div>
- <Label className="text-white/60 text-xs">Channel ID</Label>
- <Input value={channelId} onChange={e => setChannelId(e.target.value)} placeholder="Paste channel ID" className="bg-white/5 border-white/10 text-white" />
+ <Label className="text-foreground/60 text-xs">Channel ID</Label>
+ <Input value={channelId} onChange={e => setChannelId(e.target.value)} placeholder="Paste channel ID" className="bg-background/5 border-white/10 text-foreground" />
  </div>
  <div>
- <Label className="text-white/60 text-xs">Type</Label>
+ <Label className="text-foreground/60 text-xs">Type</Label>
  <Select value={type} onValueChange={setType}>
- <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+ <SelectTrigger className="bg-background/5 border-white/10 text-foreground"><SelectValue /></SelectTrigger>
  <SelectContent>
  <SelectItem value="toggle">Toggle (add/remove)</SelectItem>
  <SelectItem value="unique">Unique (one role only)</SelectItem>
@@ -108,31 +108,31 @@ export default function BotReactionRoles() {
  </Select>
  </div>
  <div>
- <Label className="text-white/60 text-xs">Color</Label>
+ <Label className="text-foreground/60 text-xs">Color</Label>
  <div className="flex gap-2">
  <input type="color" value={color} onChange={e => setColor(e.target.value)} className="h-9 w-12 rounded cursor-pointer" />
- <Input value={color} onChange={e => setColor(e.target.value)} className="bg-white/5 border-white/10 text-white flex-1" />
+ <Input value={color} onChange={e => setColor(e.target.value)} className="bg-background/5 border-white/10 text-foreground flex-1" />
  </div>
  </div>
  </div>
  <div>
- <Label className="text-white/60 text-xs">Description</Label>
- <Textarea value={description} onChange={e => setDescription(e.target.value)} className="bg-white/5 border-white/10 text-white min-h-[60px]" />
+ <Label className="text-foreground/60 text-xs">Description</Label>
+ <Textarea value={description} onChange={e => setDescription(e.target.value)} className="bg-background/5 border-white/10 text-foreground min-h-[60px]" />
  </div>
 
  <div>
  <div className="flex items-center justify-between mb-2">
- <Label className="text-white/60 text-xs">Role Mappings</Label>
- <Button variant="outline" size="sm" onClick={addRole} className="border-white/10 text-white/60 h-7 text-xs">
+ <Label className="text-foreground/60 text-xs">Role Mappings</Label>
+ <Button variant="outline" size="sm" onClick={addRole} className="border-white/10 text-foreground/60 h-7 text-xs">
  <Plus className="h-3 w-3 mr-1" /> Add
  </Button>
  </div>
  <div className="space-y-2">
  {roles.map((r, i) => (
  <div key={i} className="flex gap-2 items-center">
- <Input value={r.emoji} onChange={e => updateRole(i, 'emoji', e.target.value)} placeholder="🎮" className="bg-white/5 border-white/10 text-white w-16 text-center" />
- <Input value={r.role_id} onChange={e => updateRole(i, 'role_id', e.target.value)} placeholder="Role ID" className="bg-white/5 border-white/10 text-white flex-1" />
- <Input value={r.role_name} onChange={e => updateRole(i, 'role_name', e.target.value)} placeholder="Role name" className="bg-white/5 border-white/10 text-white flex-1" />
+ <Input value={r.emoji} onChange={e => updateRole(i, 'emoji', e.target.value)} placeholder="🎮" className="bg-background/5 border-white/10 text-foreground w-16 text-center" />
+ <Input value={r.role_id} onChange={e => updateRole(i, 'role_id', e.target.value)} placeholder="Role ID" className="bg-background/5 border-white/10 text-foreground flex-1" />
+ <Input value={r.role_name} onChange={e => updateRole(i, 'role_name', e.target.value)} placeholder="Role name" className="bg-background/5 border-white/10 text-foreground flex-1" />
  {roles.length > 1 && (
  <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400" onClick={() => removeRole(i)}>
  <Trash2 className="h-3.5 w-3.5" />
@@ -150,32 +150,32 @@ export default function BotReactionRoles() {
  </div>
  )}
 
- <div className="border border-border rounded-xl overflow-hidden bg-white/[0.03] border-white/10">
+ <div className="border border-border rounded-xl overflow-hidden bg-background/[0.03] border-white/10">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm text-white text-base">Panels</h3>
- <p className="text-sm text-muted-foreground text-white/40">{panels.length} panel{panels.length !== 1 ? 's' : ''}</p>
+ <h3 className="font-semibold text-sm text-foreground text-base">Panels</h3>
+ <p className="text-sm text-muted-foreground text-foreground/40">{panels.length} panel{panels.length !== 1 ? 's' : ''}</p>
  </div>
  <div className="p-4 p-0">
  {isLoading ? (
- <div className="p-8 text-center text-white/40">Loading...</div>
+ <div className="p-8 text-center text-foreground/40">Loading...</div>
  ) : panels.length === 0 ? (
- <div className="p-8 text-center text-white/40">No reaction role panels yet.</div>
+ <div className="p-8 text-center text-foreground/40">No reaction role panels yet.</div>
  ) : (
  <div className="divide-y divide-white/5">
  {panels.map((panel: any) => {
  const panelRoles = (panel.roles as RoleMapping[]) || [];
  return (
- <div key={panel.id} className="px-4 py-3 flex items-start gap-3 hover:bg-white/[0.02]">
+ <div key={panel.id} className="px-4 py-3 flex items-start gap-3 hover:bg-background/[0.02]">
  <Hash className="h-5 w-5 text-[hsl(258,90%,66%)] shrink-0 mt-0.5" />
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2 flex-wrap">
- <span className="text-sm font-medium text-white">{panel.title}</span>
- <Badge variant="outline" className="text-[10px] border-white/20 text-white/60">{panel.type}</Badge>
- <Badge variant="outline" className="text-[10px] border-white/20 text-white/40">{panelRoles.length} roles</Badge>
+ <span className="text-sm font-medium text-foreground">{panel.title}</span>
+ <Badge variant="outline" className="text-[10px] border-white/20 text-foreground/60">{panel.type}</Badge>
+ <Badge variant="outline" className="text-[10px] border-white/20 text-foreground/40">{panelRoles.length} roles</Badge>
  </div>
  <div className="flex gap-1 mt-1 flex-wrap">
  {panelRoles.map((r: RoleMapping, i: number) => (
- <span key={i} className="text-xs text-white/40">{r.emoji} {r.role_name || r.role_id}</span>
+ <span key={i} className="text-xs text-foreground/40">{r.emoji} {r.role_name || r.role_id}</span>
  ))}
  </div>
  </div>
