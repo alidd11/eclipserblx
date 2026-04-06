@@ -54,6 +54,9 @@ export const EmailChangeEmail = ({
           If you didn't request this change, please secure your account
           immediately.
         </Text>
+        <Text style={disclaimer}>
+          This email is intended solely for the named addressee. If you have received this message in error, please notify the sender immediately and delete it. Do not copy, distribute, or take action based on its contents.
+        </Text>
       </Container>
     </Body>
   </Html>
