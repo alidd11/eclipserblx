@@ -158,20 +158,20 @@ export default function SellerCustomSections() {
     updateSection.mutate({ id: editingId, title: editForm.title, content: editForm.content });
   };
 
-  const renderContentEditor = (sectionType: SectionType, content: any, onChange: (c: any) => void) => {
+  const renderContentEditor = (sectionType: SectionType, content: SectionContent, onChange: (c: SectionContent) => void) => {
     switch (sectionType) {
       case 'faq': {
-        const items = content?.items || [];
+        const items = (content as FaqContent)?.items || [];
         return (
           <div className="space-y-3">
-            {items.map((item: any, i: number) => (
+            {items.map((item: FaqItem, i: number) => (
               <div key={i} className="space-y-2 p-3 border rounded-lg">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs">Question {i + 1}</Label>
                   {items.length > 1 && (
                     <Button
                       variant="ghost" size="icon" className="h-6 w-6"
-                      onClick={() => onChange({ items: items.filter((_: any, j: number) => j !== i) })}
+                      onClick={() => onChange({ items: items.filter((_: FaqItem, j: number) => j !== i) })}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
