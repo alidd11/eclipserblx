@@ -342,6 +342,7 @@ export default function Jobs() {
   usePageMeta({ title: 'Careers — Eclipse', description: 'Join the Eclipse team. View open positions and apply to help build the best Roblox asset marketplace.', canonicalPath: '/jobs' });
   const [openDialog, setOpenDialog] = useState<string | null>(null);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
+  const [typeFilter, setTypeFilter] = useState<string | null>(null);
 
   const { data: jobOpenings = [], isLoading } = useQuery({
     queryKey: ['job-channels-public'],
@@ -356,6 +357,9 @@ export default function Jobs() {
       return data as JobChannel[];
     },
   });
+
+  const jobTypes = [...new Set(jobOpenings.map(j => j.type))];
+  const filteredJobs = typeFilter ? jobOpenings.filter(j => j.type === typeFilter) : jobOpenings;
 
   return (
     <MainLayout>
@@ -375,19 +379,48 @@ export default function Jobs() {
           </p>
         </div>
 
+        {/* Type filter */}
+        {jobTypes.length > 1 && (
+          <div className="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 scrollbar-hide">
+            <button
+              onClick={() => setTypeFilter(null)}
+              className={`text-xs px-3 py-1.5 rounded-full border transition-colors flex-shrink-0 ${
+                !typeFilter
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/30'
+              }`}
+            >
+              All
+            </button>
+            {jobTypes.map((type) => (
+              <button
+                key={type}
+                onClick={() => setTypeFilter(type)}
+                className={`text-xs px-3 py-1.5 rounded-full border transition-colors flex-shrink-0 ${
+                  typeFilter === type
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/30'
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Job Listings */}
         {isLoading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
-        ) : jobOpenings.length === 0 ? (
+        ) : filteredJobs.length === 0 ? (
           <div className="border border-border rounded-xl p-8 text-center">
-            <p className="font-medium text-sm">No open positions at the moment</p>
-            <p className="text-sm text-muted-foreground mt-1">Check back soon for new opportunities.</p>
+            <p className="font-medium text-sm">{typeFilter ? 'No positions match this filter' : 'No open positions at the moment'}</p>
+            <p className="text-sm text-muted-foreground mt-1">{typeFilter ? 'Try selecting a different category.' : 'Check back soon for new opportunities.'}</p>
           </div>
         ) : (
           <div className="border border-border rounded-xl overflow-hidden divide-y divide-border">
-            {jobOpenings.map((job) => {
+            {filteredJobs.map((job) => {
               const isExpanded = expandedJob === job.id;
               return (
                 <div key={job.id}>

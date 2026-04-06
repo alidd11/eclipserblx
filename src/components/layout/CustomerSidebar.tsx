@@ -154,7 +154,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         { title: t('sidebar.myTickets'), icon: MessageSquareText, href: '/support/tickets' },
         { title: t('sidebar.faq'), icon: FileQuestion, href: '/faq' },
         { title: t('sidebar.advertise'), icon: Megaphone, href: '/advertise' },
-        { title: t('sidebar.jobs'), icon: Briefcase, href: '/jobs' },
+        { title: 'Careers', icon: Briefcase, href: '/jobs' },
         { title: t('sidebar.discord'), icon: DiscordIcon as unknown as LucideIcon, href: discordUrl, external: true },
       ],
     },
