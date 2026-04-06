@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
 import { useActiveStore } from '@/contexts/ActiveStoreContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

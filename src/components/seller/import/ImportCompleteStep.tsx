@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, RefreshCw, Package, Clock, Zap, Square } from 'lucide-react';
