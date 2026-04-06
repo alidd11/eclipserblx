@@ -104,6 +104,7 @@ function App() {
                 </CartProvider>
               </ActiveStoreProvider>
             </AuthProvider>
+            </DeviceProvider>
           </CurrencyProvider>
         </CookieConsentProvider>
       </QueryClientProvider>
