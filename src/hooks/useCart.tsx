@@ -11,7 +11,7 @@ export interface CartItem {
   image?: string;
   slug: string;
   category_slug?: string;
-  category_id?: string; // Added for Eclipse+ discount eligibility
+  category_id?: string; // Used for discount eligibility
   is_resellable?: boolean;
   quantity?: number; // For bundle purchases (e.g., 3-pack of bot licenses)
   bundle_id?: string; // Reference to the bundle if applicable
