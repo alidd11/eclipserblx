@@ -288,6 +288,22 @@ export default function CustomerTicketDetail() {
         .from('support_tickets')
         .update({ status: newStatus, updated_at: new Date().toISOString(), assigned_to: user.id })
         .eq('id', ticketId);
+
+      // Send email notification for non-internal replies
+      if (!isInternal && ticket?.customer_email) {
+        supabase.functions.invoke('send-transactional-email', {
+          body: {
+            templateName: 'ticket-reply',
+            to: ticket.customer_email,
+            templateData: {
+              ticketNumber: ticket.ticket_number || '',
+              subject: ticket.subject || 'Your support ticket',
+              staffMessage: message.trim().substring(0, 500),
+              ticketUrl: `https://roleplay-hub-shop.lovable.app/support/tickets/${ticketId}`,
+            },
+          },
+        }).catch(() => {}); // fire-and-forget
+      }
     },
     onSuccess: () => {
       setNewMessage('');
