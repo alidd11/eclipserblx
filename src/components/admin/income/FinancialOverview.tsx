@@ -116,13 +116,13 @@ export function FinancialOverview() {
  ...queryDefaults,
  });
 
- // Subscriptions
+ // Seller Pro Subscriptions
  const { data: subsData, isLoading: subsLoading, isError: subsError, refetch: refetchSubs } = useQuery({
- queryKey: ['admin-financial-overview-subs'],
+ queryKey: ['admin-financial-overview-seller-subs'],
  queryFn: async () => {
  const { data, error } = await supabase
- .from('subscriptions')
- .select('status, billing_period, created_at');
+ .from('seller_subscriptions')
+ .select('status, created_at');
  if (error) throw error;
  return data ?? [];
  },
