@@ -379,6 +379,35 @@ export default function Jobs() {
           </p>
         </div>
 
+        {/* Type filter */}
+        {jobTypes.length > 1 && (
+          <div className="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 scrollbar-hide">
+            <button
+              onClick={() => setTypeFilter(null)}
+              className={`text-xs px-3 py-1.5 rounded-full border transition-colors flex-shrink-0 ${
+                !typeFilter
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/30'
+              }`}
+            >
+              All
+            </button>
+            {jobTypes.map((type) => (
+              <button
+                key={type}
+                onClick={() => setTypeFilter(type)}
+                className={`text-xs px-3 py-1.5 rounded-full border transition-colors flex-shrink-0 ${
+                  typeFilter === type
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/30'
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Job Listings */}
         {isLoading ? (
           <div className="flex justify-center py-12">
