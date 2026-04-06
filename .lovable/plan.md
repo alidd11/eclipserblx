@@ -1,46 +1,40 @@
 
+## Enterprise Gap Closure Plan
 
-## Remove Eclipse+ from Edge Functions & Discord Bot Code
+### Phase 1: Admin Dashboard Refactor (Priority: High)
+**Problem:** `Dashboard.tsx` is a 474-line monolith using Shadcn `Card` components instead of the platform's `border-border rounded-xl` convention.
+- Extract stat cards, quick actions, system alerts, and clock-in/out into isolated widget components
+- Replace all `Card/CardHeader/CardTitle/CardContent` with flat `border-border rounded-xl` containers
+- Move to a folder structure: `src/components/admin/dashboard/`
 
-### Scope
-~50 references across 16 edge functions and 4 bot files. All are user-facing text, comments, or logic tied to the removed Eclipse+ membership. Database column names (`eclipse_plus_discount_enabled`, `eclipse_plus_bonus_claimed`, `eclipse_plus_days`) are left as-is since they're DB schema — renaming columns is a separate migration.
+### Phase 2: UI Consistency Audit (Priority: High)
+**Problem:** 75 admin files still import Shadcn Card components; auth buttons have inconsistent heights (h-11 vs h-12).
+- Standardize social login button heights to `h-12` (enterprise standard)
+- Audit and convert high-visibility admin pages (Dashboard, StaffProfile, Disputes) from Card to flat containers
+- Won't convert all 75 files at once — focus on the 10 most-visited admin pages
 
-### Files & Changes
+### Phase 3: Monolithic Page Splitting (Priority: Medium)
+**Problem:** 15+ pages exceed 400 lines, with 5 exceeding 1,000 lines.
+- Split `SellerProducts.tsx` (1,260 lines) into list/grid, filters, and bulk-action sub-components
+- Split `ProductDetail.tsx` (1,062 lines) into sections (hero, details, reviews, recently-viewed)
+- Split `Promotions.tsx` (1,034 lines) into promotion list, editor, and analytics widgets
+- Remaining large files deferred to a follow-up pass
 
-**Edge Functions (12 files):**
+### Phase 4: Test Coverage (Priority: Medium)
+**Problem:** Only 8 unit tests exist, all utility-focused. Zero component tests.
+- Add component tests for critical user flows: auth (login/signup), cart, checkout
+- Add tests for key admin components: stat cards, permission gates
+- Target: 15+ new test files covering core business logic
 
-| File | What changes |
-|------|-------------|
-| `discord-customer-bot/index.ts` | "Eclipse+ (Active)" → "Pro (Active)" in profile; role name refs "Eclipse+" → use generic; eligibility text "Subscribe to Eclipse+" removed |
-| `discord-global-guard-bot/index.ts` | "Upgrade to Eclipse+" → "Upgrade your plan"; "Eclipse+ • Priority Sync" → "Premium • Priority Sync"; "Eclipse+ Member" → "Premium Member"; pricing text remove Eclipse+ upsell |
-| `discord-oauth-callback/index.ts` | Comment "Eclipse+ subscription" → "Pro subscription"; role assignment label "Eclipse+" → role variable name only |
-| `botghost-customer-api/index.ts` | "Access Eclipse+ perks" → "Access member perks" |
-| `claim-signup-promotion/index.ts` | Update comments only (logic uses DB column names which stay) |
-| `create-payment-intent/index.ts` | Update comment text |
-| `notify-product-approved/index.ts` | "Eclipse+ members get early access!" → "Members get early access!"; footer "Eclipse+ Early Access" → "Early Access" |
-| `send-product-drop-webhook/index.ts` | Same early access text cleanup |
-| `send-promotion-discord-webhook/index.ts` | "days of Eclipse+ free!" → "days of Pro free!" |
-| `stripe-subscription-webhook/index.ts` | "Eclipse+ activated/deactivated" → "Subscription activated/deactivated" |
-| `og-proxy/index.ts` | Remove `/eclipse-plus` route and nav link |
-| `dynamic-sitemap/index.ts` | Remove `/eclipse-plus` URL entry |
-| `submit-indexnow/index.ts` | Remove `/eclipse-plus` from URL list |
-| `sync-discord-roles/index.ts` | Comment update "Eclipse+ role" → "subscription role" |
-| `sync-global-bans/index.ts` | "upgrade to Eclipse+" → "upgrade your plan" |
-| `verify-payment/index.ts` | Comment update only |
-
-**Eclipse Portal Bot (3 files):**
-
-| File | What changes |
-|------|-------------|
-| `commands/profile.js` | "Eclipse+ (Active)" → "Pro (Active)" |
-| `commands/getrole.js` | "Eclipse+" role label → "Pro"; eligibility text updated |
-| `commands/update.js` | "Eclipse+" role label → "Pro" |
+### Phase 5: Verification
+- Run `npx tsc --noEmit` after each phase
+- Run all tests after Phase 4
+- Visual spot-check on key pages (dashboard, product detail, seller dashboard)
 
 ### What stays unchanged
-- Database column names (`eclipse_plus_days`, `eclipse_plus_discount_enabled`, etc.) — these are schema-level and would need a migration
-- The `eclipsePlusRoleId` config variable — it's the Discord role ID variable name, harmless internally
-- Frontend files querying those DB columns
+- Database schema and RLS policies (separate concern)
+- Edge function code (already cleaned in previous pass)
+- Overall routing and navigation structure
 
 ### Risk
-Low — text and comment changes only. No logic changes except removing the dead `/eclipse-plus` sitemap/OG entries.
-
+Low-Medium — refactoring existing code with no logic changes. Each phase is independently deployable.
