@@ -317,7 +317,7 @@ export default function PrivacyPolicy() {
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 px-4">Seller earnings &amp; payout records</td>
-                    <td className="py-3 px-4">7 years</td>
+                    <td className="py-3 px-4">6 years</td>
                     <td className="py-3 px-4">Legal obligation (HMRC)</td>
                   </tr>
                   <tr className="border-b border-border/50">
