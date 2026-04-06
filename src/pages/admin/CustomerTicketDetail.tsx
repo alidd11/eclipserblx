@@ -60,6 +60,9 @@ interface SupportTicket {
   assigned_to: string | null;
   created_at: string;
   updated_at: string;
+  first_response_at: string | null;
+  resolved_at: string | null;
+  snoozed_until: string | null;
 }
 
 const statusConfig: Record<string, { label: string; color: string }> = {
