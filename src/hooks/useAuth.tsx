@@ -122,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Gate 2: token must not be expired/near-expiry
       if (!isSessionFresh(candidate)) {
-        console.log('[Auth] Token near-expiry, attempting refresh');
+        console.debug('[Auth] Token near-expiry, attempting refresh');
         const refreshed = await tryRefresh();
         if (refreshed) return refreshed;
 
