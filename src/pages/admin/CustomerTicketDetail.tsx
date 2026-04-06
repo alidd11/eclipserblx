@@ -29,11 +29,13 @@ import { useAuth } from '@/hooks/useAuth';
 import {
   ArrowLeft, Send, Clock, User, Headphones, Eye, Mail,
   Paperclip, X, Loader2, MessageSquare, ShoppingBag, ChevronDown,
-  Zap, AlertTriangle, UserCheck, History,
+  Zap, AlertTriangle, UserCheck, History, AlarmClock, Users,
 } from 'lucide-react';
 import { formatDistanceToNow, format } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useCannedResponses } from '@/components/tickets/useCannedResponses';
+import { useAgentCollision } from '@/components/tickets/useAgentCollision';
 
 interface TicketMessage {
   id: string;
