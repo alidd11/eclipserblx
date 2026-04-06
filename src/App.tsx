@@ -65,6 +65,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <CookieConsentProvider>
           <CurrencyProvider>
+            <DeviceProvider>
             <AuthProvider>
               <ActiveStoreProvider>
                 <CartProvider>
