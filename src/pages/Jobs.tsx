@@ -413,14 +413,14 @@ export default function Jobs() {
           <div className="flex justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
-        ) : jobOpenings.length === 0 ? (
+        ) : filteredJobs.length === 0 ? (
           <div className="border border-border rounded-xl p-8 text-center">
-            <p className="font-medium text-sm">No open positions at the moment</p>
-            <p className="text-sm text-muted-foreground mt-1">Check back soon for new opportunities.</p>
+            <p className="font-medium text-sm">{typeFilter ? 'No positions match this filter' : 'No open positions at the moment'}</p>
+            <p className="text-sm text-muted-foreground mt-1">{typeFilter ? 'Try selecting a different category.' : 'Check back soon for new opportunities.'}</p>
           </div>
         ) : (
           <div className="border border-border rounded-xl overflow-hidden divide-y divide-border">
-            {jobOpenings.map((job) => {
+            {filteredJobs.map((job) => {
               const isExpanded = expandedJob === job.id;
               return (
                 <div key={job.id}>
