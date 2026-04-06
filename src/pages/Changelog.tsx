@@ -41,7 +41,7 @@ export default function Changelog() {
   return (
     <MainLayout>
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
-        <PageHeader title="Changelog" subtitle="Latest updates, fixes, and improvements to the platform." />
+        <PageHeader title="Changelog" description="Latest updates, fixes, and improvements to the platform." />
 
         {isLoading ? (
           <div className="flex justify-center py-16">
