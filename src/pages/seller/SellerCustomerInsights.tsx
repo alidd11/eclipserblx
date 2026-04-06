@@ -37,7 +37,7 @@ export default function SellerCustomerInsights() {
       };
 
       const buyerMap = new Map<string, { orders: number; total: number; lastOrder: string }>();
-      transactions.forEach((tx: any) => {
+      transactions.forEach((tx) => {
         const id = tx.orders?.user_id || 'anonymous';
         const existing = buyerMap.get(id);
         if (existing) {
@@ -51,7 +51,7 @@ export default function SellerCustomerInsights() {
 
       const totalCustomers = buyerMap.size;
       const repeatCustomers = Array.from(buyerMap.values()).filter(b => b.orders > 1).length;
-      const totalRevenue = (transactions as any[]).reduce((sum: number, tx: any) => sum + Number(tx.gross_amount || 0), 0);
+      const totalRevenue = transactions.reduce((sum: number, tx) => sum + Number(tx.gross_amount || 0), 0);
       const avgOrderValue = transactions.length > 0 ? totalRevenue / transactions.length : 0;
 
       const topCustomers = Array.from(buyerMap.entries())
@@ -60,7 +60,7 @@ export default function SellerCustomerInsights() {
         .slice(0, 10);
 
       const topIds = topCustomers.map(([id]) => id);
-      let profiles: any[] = [];
+      let profiles: { user_id: string; display_name: string | null; username: string | null; avatar_url: string | null }[] = [];
       if (topIds.length > 0) {
         const { data: profileData } = await supabase
           .from('profiles')

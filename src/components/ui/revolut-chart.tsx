@@ -46,6 +46,7 @@ function useChartAnimationEnabled() {
 
 /* ── Integer ticks helper ── */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function useIntegerTicks(data: any[], seriesKeys: string[], maxTicks = 5): number[] {
   return useMemo(() => {
     if (!data || data.length === 0) return [0];
@@ -102,12 +103,14 @@ export interface RevolutAreaSeries {
 }
 
 interface RevolutAreaChartProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[];
   xKey: string;
   series: RevolutAreaSeries[];
   height?: number;
   yFormatter?: (v: number) => string;
   tooltipFormatter?: (value: number, name: string) => [string, string];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tooltipContent?: ReactNode | ((props: any) => ReactNode);
   showYAxis?: boolean;
   className?: string;
@@ -174,12 +177,14 @@ export interface RevolutLineSeries {
 }
 
 interface RevolutLineChartProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[];
   xKey: string;
   series: RevolutLineSeries[];
   height?: number;
   yFormatter?: (v: number) => string;
   tooltipFormatter?: (value: number, name: string) => [string, string];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tooltipContent?: ReactNode | ((props: any) => ReactNode);
   showYAxis?: boolean;
   className?: string;
@@ -240,6 +245,7 @@ export interface RevolutBarSeries {
 }
 
 interface RevolutBarChartProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[];
   xKey: string;
   series: RevolutBarSeries[];

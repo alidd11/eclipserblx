@@ -177,7 +177,7 @@ export default function SellerRefunds() {
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className="text-xs font-mono text-primary">{r.dispute_number}</span>
                     <span className="text-sm font-medium">
-                      {r.customer?.display_name || 'Unknown Customer'}
+                      {(r as any).customer?.display_name || 'Unknown Customer'}
                     </span>
                     {getStatusBadge(r.status)}
                   </div>
@@ -223,7 +223,8 @@ export default function SellerRefunds() {
   );
 }
 
-function SellerDisputeDetail({ request, response, setResponse, respondMutation, getStatusBadge }: { request: Record<string, unknown>; response: string; setResponse: (v: string) => void; respondMutation: { mutate: (v: unknown) => void; isPending: boolean }; getStatusBadge: (s: string) => React.ReactNode }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function SellerDisputeDetail({ request, response, setResponse, respondMutation, getStatusBadge }: { request: any; response: string; setResponse: (v: string) => void; respondMutation: { mutate: (v: unknown) => void; isPending: boolean }; getStatusBadge: (s: string) => React.ReactNode }) {
   const { data: evidence } = useQuery({
     queryKey: ['dispute-evidence-seller', request.id],
     queryFn: async () => {
@@ -265,7 +266,7 @@ function SellerDisputeDetail({ request, response, setResponse, respondMutation, 
             <FileImage className="h-3.5 w-3.5" /> Customer Evidence ({evidence.length})
           </span>
           <div className="space-y-1">
-            {evidence.map((e: Error) => (
+            {evidence.map((e) => (
               <div key={e.id} className="flex items-center gap-2 py-1.5 text-sm">
                 <FileImage className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <span className="truncate flex-1">{e.file_name}</span>

@@ -83,7 +83,7 @@ export function DiscountCodesTab() {
       }
     },
     onSuccess: () => { toast.success('Discount saved'); queryClient.invalidateQueries({ queryKey: ['admin-discounts'] }); setDialogOpen(false); },
-    onError: (e: any) => toast.error('Failed: ' + e.message),
+    onError: (e: Error) => toast.error('Failed: ' + e.message),
   });
 
   const deleteMutation = useMutation({
@@ -92,7 +92,7 @@ export function DiscountCodesTab() {
       if (error) throw error;
     },
     onSuccess: () => { toast.success('Deleted'); queryClient.invalidateQueries({ queryKey: ['admin-discounts'] }); setDeleteDialogOpen(false); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const isExpired = (d: string | null) => d ? new Date(d) < new Date() : false;

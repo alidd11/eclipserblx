@@ -56,7 +56,7 @@ const INITIAL_FORM: ProductForm = {
 
 const PRODUCTS_PER_PAGE = 20;
 
-const isAdminManagedProduct = (product: any) =>
+const isAdminManagedProduct = (product: { store_id: string; is_seller_product: boolean }) =>
   (ADMIN_MANAGED_STORES as readonly string[]).includes(product.store_id) && product.is_seller_product === false;
 
 export default function SellerProducts() {
@@ -90,9 +90,9 @@ export default function SellerProducts() {
     },
   });
 
-  const parentCats = categories?.filter((c: any) => !c.parent_id) || [];
-  const childCatsMap = new Map<string, any[]>();
-  categories?.forEach((c: any) => {
+  const parentCats = categories?.filter((c) => !c.parent_id) || [];
+  const childCatsMap = new Map<string, typeof parentCats>();
+  categories?.forEach((c) => {
     if (c.parent_id) {
       const arr = childCatsMap.get(c.parent_id) || [];
       arr.push(c);

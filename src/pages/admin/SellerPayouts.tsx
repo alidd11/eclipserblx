@@ -74,6 +74,8 @@ interface SellerPayout {
   payout_method: string | null;
   auto_processed: boolean | null;
   funding_requested_at: string | null;
+  paypal_email?: string | null;
+  failure_reason?: string | null;
   stores: PayoutStore | null;
   profiles: PayoutProfile | null;
 }

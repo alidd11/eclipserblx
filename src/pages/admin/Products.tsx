@@ -141,7 +141,7 @@ export default function AdminProducts() {
       if (uploadError) throw uploadError;
       setForm({ ...form, asset_file_url: fileName });
       toast.success('File uploaded successfully');
-    } catch (error: unknown) { toast.error(`Upload failed: ${error.message}`); }
+    } catch (error: unknown) { toast.error(`Upload failed: ${(error as Error).message}`); }
     finally { setIsUploading(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
   };
 
@@ -170,7 +170,7 @@ export default function AdminProducts() {
       cm.push(watermarkedUrl);
       setForm({ ...form, images: cm.join(', ') });
       toast.success(`${type === 'image' ? 'Image' : 'Video'} uploaded successfully`);
-    } catch (error: unknown) { toast.error(`Upload failed: ${error.message}`); }
+    } catch (error: unknown) { toast.error(`Upload failed: ${(error as Error).message}`); }
     finally {
       if (type === 'image') { setIsUploadingImage(false); if (imageInputRef.current) imageInputRef.current.value = ''; }
       else { setIsUploadingVideo(false); if (videoInputRef.current) videoInputRef.current.value = ''; }
@@ -284,7 +284,8 @@ export default function AdminProducts() {
 
   const isScheduledForFuture = (releaseAt: string | null) => releaseAt ? new Date(releaseAt) > new Date() : false;
 
-  const openEdit = (product: Record<string, unknown>) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const openEdit = (product: any) => {
     const hasSchedule = !!product.release_at && isScheduledForFuture(product.release_at);
     const hasEarlyAccess = product.early_access_hours !== null && product.early_access_hours !== undefined;
     setForm({

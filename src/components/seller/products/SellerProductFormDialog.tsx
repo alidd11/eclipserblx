@@ -62,8 +62,8 @@ interface SellerProductFormDialogProps {
   onSubmit: (e: React.FormEvent) => void;
   isPending: boolean;
   storeId: string | undefined;
-  parentCats: any[];
-  childCatsMap: Map<string, any[]>;
+  parentCats: { id: string; name: string; parent_id: string | null }[];
+  childCatsMap: Map<string, { id: string; name: string; parent_id: string | null }[]>;
   limits: { maxProductFiles: number };
 }
 
@@ -140,8 +140,8 @@ export function SellerProductFormDialog({
       } else {
         toast.warning('No images were uploaded — check the errors above');
       }
-    } catch (error: any) {
-      toast.error('Failed to upload images: ' + error.message);
+    } catch (error) {
+      toast.error('Failed to upload images: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setIsUploadingImage(false);
       if (imageInputRef.current) imageInputRef.current.value = '';
@@ -176,8 +176,8 @@ export function SellerProductFormDialog({
 
       setForm(prev => ({ ...prev, asset_file_url: fileName }));
       toast.success('Asset file uploaded successfully');
-    } catch (error: any) {
-      toast.error('Failed to upload asset: ' + error.message);
+    } catch (error) {
+      toast.error('Failed to upload asset: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -218,8 +218,8 @@ export function SellerProductFormDialog({
         additional_asset_files: [...prev.additional_asset_files, fileName],
       }));
       toast.success('Additional file uploaded successfully');
-    } catch (error: any) {
-      toast.error('Failed to upload file: ' + error.message);
+    } catch (error) {
+      toast.error('Failed to upload file: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setIsUploading(false);
       if (additionalFileInputRef.current) additionalFileInputRef.current.value = '';
@@ -282,13 +282,13 @@ export function SellerProductFormDialog({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__" className="text-muted-foreground">No category</SelectItem>
-                  {parentCats.map((parent: any) => {
+                  {parentCats.map((parent) => {
                     const children = childCatsMap.get(parent.id) || [];
                     if (children.length > 0) {
                       return (
                         <SelectGroup key={parent.id}>
                           <SelectLabel>{parent.name}</SelectLabel>
-                          {children.map((child: any) => (
+                          {children.map((child) => (
                             <SelectItem key={child.id} value={child.id} className="pl-6">
                               {child.name}
                             </SelectItem>

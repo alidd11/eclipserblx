@@ -44,7 +44,7 @@ interface ProductInfo {
   id: string;
   name: string;
   price: number;
-  image_url: string | null;
+  images?: string[] | null;
 }
 
 interface ProductStat {
@@ -106,7 +106,7 @@ export default function SellerAnalytics() {
       if (productIds.length === 0) return {};
       const { data } = await supabase
         .from('products')
-        .select('id, name, price, image_url')
+        .select('id, name, price, images')
         .in('id', productIds);
       const map: Record<string, ProductInfo> = {};
       (data || []).forEach((p) => { map[p.id] = p; });
@@ -562,8 +562,8 @@ export default function SellerAnalytics() {
                           return (
                             <div key={product.id} className="grid grid-cols-12 gap-2 items-center px-2 py-2 rounded-lg hover:bg-muted/50 transition-colors">
                               <div className="col-span-4 flex items-center gap-2 min-w-0">
-                                {info?.image_url ? (
-                                  <img src={info.image_url} alt="" className="h-8 w-8 rounded object-cover shrink-0" />
+                                {info?.images?.[0] ? (
+                                  <img src={info.images[0]} alt="" className="h-8 w-8 rounded object-cover shrink-0" />
                                 ) : (
                                   <div className="h-8 w-8 rounded bg-muted flex items-center justify-center shrink-0">
                                     <Package className="h-4 w-4 text-muted-foreground" />

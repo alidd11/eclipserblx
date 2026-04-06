@@ -14,21 +14,26 @@ interface AdminUser {
   email: string | null;
   username: string | null;
   avatar_url: string | null;
+  customer_id?: string | null;
   ip_address?: string | null;
+  created_at?: string;
 }
 
 interface CustomRole {
   name: string;
+  display_name?: string;
   color: string | null;
-  description: string | null;
+  description?: string | null;
 }
 
 interface UserRole {
   role: string;
+  user_id?: string;
 }
 
 interface MutationObj {
-  mutate: (args: Record<string, unknown>) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mutate: (args: any) => void;
   isPending: boolean;
 }
 
@@ -254,7 +259,8 @@ export function UserDialogs(props: UserDialogsProps) {
       </AlertDialog>
 
       {/* Customer Profile Dialog */}
-      <CustomerProfileDialog open={!!viewProfileUser} onOpenChange={() => setViewProfileUser(null)} profile={viewProfileUser} />
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      <CustomerProfileDialog open={!!viewProfileUser} onOpenChange={() => setViewProfileUser(null)} profile={viewProfileUser as any} />
     </>
   );
 }

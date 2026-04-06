@@ -88,8 +88,13 @@ interface RefundRequest {
   admin_resolved_at: string | null;
   admin_resolved_by: string | null;
   amount: number | null;
-  evidence: unknown[] | null;
   updated_at: string;
+  dispute_number?: string;
+  details?: string;
+  seller_response?: string;
+  escalation_reason?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  evidence?: any[] | null;
 }
 
 interface EnrichedDispute extends RefundRequest {
@@ -832,7 +837,7 @@ function DisputeEvidenceSection({ disputeId }: { disputeId: string }) {
  <FileImage className="h-3.5 w-3.5" /> Evidence Attachments ({evidence.length})
  </p>
  <div className="space-y-2">
- {evidence.map((e: Record<string, string>) => (
+ {evidence.map((e) => (
  <div key={e.id} className="flex items-center gap-2 p-2 rounded-lg border bg-muted/30 text-sm">
  <FileImage className="h-4 w-4 text-muted-foreground shrink-0" />
  <span className="truncate flex-1">{e.file_name}</span>

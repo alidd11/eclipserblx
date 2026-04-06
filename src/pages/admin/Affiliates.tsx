@@ -77,7 +77,7 @@ export default function AdminAffiliates() {
 
  const { data: profiles } = await supabase
  .from('profiles')
- .select('user_id, display_name, email')
+ .select('user_id, display_name, email, customer_id')
  .in('user_id', userIds);
 
  const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
@@ -123,7 +123,7 @@ export default function AdminAffiliates() {
 
  const { data: profiles } = await supabase
  .from('profiles')
- .select('user_id, display_name, email, stripe_account_id')
+ .select('user_id, display_name, email, stripe_account_id, customer_id')
  .in('user_id', userIds);
 
  const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
