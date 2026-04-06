@@ -38,11 +38,51 @@ const safeFmt = (dateStr: string | null | undefined, fmt_str: string) => {
  try { return format(new Date(dateStr), fmt_str); } catch { return '—'; }
 };
 
+
+interface PayoutStore {
+  name: string;
+  store_id: string;
+  payout_method: string | null;
+  store_payment_details: PaymentDetails | PaymentDetails[] | null;
+}
+
+interface PaymentDetails {
+  paypal_email: string | null;
+  bank_name: string | null;
+  bank_account_holder: string | null;
+  bank_account_number: string | null;
+  bank_swift_bic: string | null;
+  bank_country: string | null;
+  bank_routing_number: string | null;
+}
+
+interface PayoutProfile {
+  display_name: string | null;
+  email: string | null;
+}
+
+interface SellerPayout {
+  id: string;
+  seller_id: string;
+  store_id: string;
+  amount: number;
+  status: string;
+  notes: string | null;
+  created_at: string;
+  processed_at: string | null;
+  processed_by: string | null;
+  payout_method: string | null;
+  auto_processed: boolean | null;
+  funding_requested_at: string | null;
+  stores: PayoutStore | null;
+  profiles: PayoutProfile | null;
+}
+
 export default function SellerPayouts() {
  const isInsideHub = useIsInsideHub();
  const [searchParams] = useSearchParams();
  const queryClient = useQueryClient();
- const [selectedPayout, setSelectedPayout] = useState<any>(null);
+ const [selectedPayout, setSelectedPayout] = useState<SellerPayout | null>(null);
  const [notes, setNotes] = useState("");
  const [localFilterStatus, setLocalFilterStatus] = useState<string>("pending");
  const filterStatus = isInsideHub ? (searchParams.get("sellerStatus") || "pending") : localFilterStatus;
@@ -76,7 +116,7 @@ export default function SellerPayouts() {
  mutationFn: async ({ payoutId, status, notes }: { payoutId: string; status: string; notes: string }) => {
  const { data: { user } } = await supabase.auth.getUser();
  
- const payout = payouts?.find((p: any) => p.id === payoutId);
+ const payout = payouts?.find((p) => p.id === payoutId);
  
  const { error } = await supabase
  .from("seller_payouts")
@@ -167,7 +207,7 @@ export default function SellerPayouts() {
  },
  });
 
- const getStatusBadge = (status: string, payout?: any) => {
+ const getStatusBadge = (status: string, payout?: SellerPayout) => {
  const autoTag = payout?.auto_processed ? (
  <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-[10px] ml-1">Auto</Badge>
  ) : null;
@@ -194,7 +234,7 @@ export default function SellerPayouts() {
  }
  };
 
- const getPayoutMethodBadge = (payout: any) => {
+ const getPayoutMethodBadge = (payout: SellerPayout) => {
  const method = payout.payout_method || payout.stores?.payout_method;
  if (method === 'bank' || method === 'bank_transfer') {
  return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Bank Transfer</Badge>;
@@ -205,17 +245,17 @@ export default function SellerPayouts() {
  return <Badge variant="default">Stripe</Badge>;
  };
 
- const getPayoutMethod = (payout: any) => payout?.payout_method || payout?.stores?.payout_method;
+ const getPayoutMethod = (payout: SellerPayout) => payout?.payout_method || payout?.stores?.payout_method;
  const isBankMethod = (method: string | undefined) => method === 'bank' || method === 'bank_transfer';
 
  /** Safely access store_payment_details regardless of PostgREST returning object or array */
- const getPaymentDetails = (payout: any) => {
+ const getPaymentDetails = (payout: SellerPayout) => {
  const spd = payout?.stores?.store_payment_details;
  if (!spd) return null;
  return Array.isArray(spd) ? spd[0] : spd;
  };
 
- const getEstimatedArrival = (payout: any) => {
+ const getEstimatedArrival = (payout: SellerPayout) => {
  try {
  if (payout.funding_requested_at) {
  const requestedAt = new Date(payout.funding_requested_at);
@@ -282,7 +322,7 @@ export default function SellerPayouts() {
  </div>
  <div className="p-4 p-3 pt-0 md:p-6 md:pt-0">
  <div className="text-lg md:text-2xl font-bold">
- {payouts?.filter((p: any) => p.status === "pending").length || 0}
+ {payouts?.filter((p) => p.status === "pending").length || 0}
  </div>
  </div>
  </div>
@@ -340,7 +380,7 @@ export default function SellerPayouts() {
  </TableCell>
  </TableRow>
  ) : (
- payouts?.map((payout: any) => (
+ payouts?.map((payout: SellerPayout) => (
  <TableRow key={payout.id}>
  <TableCell>
  <div>
@@ -419,7 +459,7 @@ export default function SellerPayouts() {
  <div className="p-8 text-center text-muted-foreground">No payout requests found</div>
  ) : (
  <div className="divide-y divide-border">
- {payouts?.map((payout: any) => (
+ {payouts?.map((payout: SellerPayout) => (
  <div key={payout.id} className="p-4 space-y-2">
  <div className="flex items-start justify-between gap-2">
  <div className="min-w-0">

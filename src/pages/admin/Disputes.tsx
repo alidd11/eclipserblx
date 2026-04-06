@@ -44,6 +44,61 @@ import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 
+
+interface DisputeProfile {
+  user_id: string;
+  display_name: string | null;
+  username: string | null;
+  email: string | null;
+  customer_id: string | null;
+}
+
+interface DisputeStore {
+  id: string;
+  name: string;
+  store_id: string;
+}
+
+interface EscrowInfo {
+  order_id: string;
+  escrow_hold_until: string | null;
+  escrow_released_at: string | null;
+  escrow_frozen: boolean;
+}
+
+interface DisputeTicket {
+  id: string;
+  ticket_number: string;
+  subject: string;
+  status: string;
+  category: string;
+}
+
+interface RefundRequest {
+  id: string;
+  customer_id: string;
+  store_id: string | null;
+  order_id: string | null;
+  status: string;
+  created_at: string;
+  reason: string | null;
+  admin_response: string | null;
+  seller_responded_at: string | null;
+  escalated_at: string | null;
+  admin_resolved_at: string | null;
+  admin_resolved_by: string | null;
+  amount: number | null;
+  evidence: unknown[] | null;
+  updated_at: string;
+}
+
+interface EnrichedDispute extends RefundRequest {
+  customer: DisputeProfile | null;
+  store: DisputeStore | null;
+  escrow: EscrowInfo | null;
+  linkedTicket: DisputeTicket | null;
+}
+
 const SELLER_DEADLINE_HOURS = 48;
 const PAGE_SIZE = 20;
 
@@ -65,7 +120,7 @@ function getDeadlineInfo(createdAt: string) {
 }
 
 // Build a timeline from dispute fields
-function buildTimeline(d: any) {
+function buildTimeline(d: EnrichedDispute) {
  const events: { label: string; time: string; icon: typeof Clock; color: string }[] = [];
  
  events.push({ label: 'Dispute filed', time: d.created_at, icon: AlertTriangle, color: 'text-destructive' });
@@ -91,7 +146,7 @@ export default function Disputes() {
  const queryClient = useQueryClient();
  const [search, setSearch] = useState('');
  const [statusFilter, setStatusFilter] = useState<string>('all');
- const [selectedDispute, setSelectedDispute] = useState<any>(null);
+ const [selectedDispute, setSelectedDispute] = useState<EnrichedDispute | null>(null);
  const [adminResponse, setAdminResponse] = useState('');
  const [newStatus, setNewStatus] = useState('');
  const [page, setPage] = useState(0);
@@ -111,9 +166,9 @@ export default function Disputes() {
  const { data, error } = await query;
  if (error) throw error;
 
- const customerIds = [...new Set((data || []).map((r: any) => r.customer_id))];
- const storeIds = [...new Set((data || []).map((r: any) => r.store_id).filter(Boolean))];
- const orderIds = [...new Set((data || []).map((r: any) => r.order_id).filter(Boolean))];
+ const customerIds = [...new Set((data || []).map((r) => r.customer_id))];
+ const storeIds = [...new Set((data || []).map((r) => r.store_id).filter(Boolean))];
+ const orderIds = [...new Set((data || []).map((r) => r.order_id).filter(Boolean))];
 
  const [profilesRes, storesRes, escrowRes, ticketsRes] = await Promise.all([
  customerIds.length > 0
@@ -134,16 +189,16 @@ export default function Disputes() {
  : { data: [] },
  ]);
 
- const profileMap = Object.fromEntries((profilesRes.data || []).map((p: any) => [p.user_id, p]));
- const storeMap = Object.fromEntries((storesRes.data || []).map((s: any) => [s.id, s]));
- const escrowMap = Object.fromEntries((escrowRes.data || []).map((e: any) => [e.order_id, e]));
+ const profileMap = Object.fromEntries((profilesRes.data || []).map((p) => [p.user_id, p]));
+ const storeMap = Object.fromEntries((storesRes.data || []).map((s) => [s.id, s]));
+ const escrowMap = Object.fromEntries((escrowRes.data || []).map((e) => [e.order_id, e]));
  
  // Try to match tickets to disputes by customer + order reference in subject
- const ticketsBySubject = (ticketsRes.data || []) as any[];
+ const ticketsBySubject = (ticketsRes.data || []) as DisputeTicket[];
 
- return (data || []).map((r: any) => {
+ return (data || []).map((r) => {
  // Find matching ticket by checking if subject contains the order_id
- const linkedTicket = ticketsBySubject.find((t: any) => 
+ const linkedTicket = ticketsBySubject.find((t) => 
  t.subject?.includes(r.order_id?.substring(0, 8))
  );
  
@@ -160,7 +215,7 @@ export default function Disputes() {
 
  const updateDispute = useMutation({
  mutationFn: async ({ id, status, response, customerId }: { id: string; status: string; response: string; customerId?: string }) => {
- const updateData: any = {
+ const updateData: Record<string, unknown> = {
  status,
  admin_response: response || null,
  updated_at: new Date().toISOString(),
@@ -209,7 +264,7 @@ export default function Disputes() {
  onError: () => toast.error('Failed to update dispute'),
  });
 
- const filtered = disputes?.filter((d: any) => {
+ const filtered = disputes?.filter((d: EnrichedDispute) => {
  if (!search) return true;
  const s = search.toLowerCase();
  return (
@@ -228,17 +283,17 @@ export default function Disputes() {
 
  const stats = {
  total: disputes?.length ?? 0,
- pending: disputes?.filter((d: any) => d.status === 'pending').length ?? 0,
- escalated: disputes?.filter((d: any) => d.status === 'escalated').length ?? 0,
- resolved: disputes?.filter((d: any) => ['resolved', 'approved', 'denied'].includes(d.status)).length ?? 0,
- frozen: disputes?.filter((d: any) => d.escrow?.escrow_frozen).length ?? 0,
- overdue: disputes?.filter((d: any) => {
+ pending: disputes?.filter((d) => d.status === 'pending').length ?? 0,
+ escalated: disputes?.filter((d) => d.status === 'escalated').length ?? 0,
+ resolved: disputes?.filter((d) => ['resolved', 'approved', 'denied'].includes(d.status)).length ?? 0,
+ frozen: disputes?.filter((d) => d.escrow?.escrow_frozen).length ?? 0,
+ overdue: disputes?.filter((d: EnrichedDispute) => {
  if (d.status !== 'pending') return false;
  return getDeadlineInfo(d.created_at).isOverdue;
  }).length ?? 0,
  };
 
- const getEscrowBadge = (d: any) => {
+ const getEscrowBadge = (d: EnrichedDispute) => {
  if (!d.escrow) return null;
  if (d.escrow.escrow_frozen) {
  return (
@@ -269,7 +324,7 @@ export default function Disputes() {
  return null;
  };
 
- const getDeadlineBadge = (d: any) => {
+ const getDeadlineBadge = (d: EnrichedDispute) => {
  if (d.status !== 'pending') return null;
  const { hoursLeft, isOverdue } = getDeadlineInfo(d.created_at);
  if (isOverdue) {
@@ -406,7 +461,7 @@ export default function Disputes() {
  </TableRow>
  </TableHeader>
  <TableBody>
- {paginatedItems?.map((d: any) => {
+ {paginatedItems?.map((d: EnrichedDispute) => {
  const statusCfg = statusConfig[d.status] || statusConfig.pending;
  const StatusIcon = statusCfg.icon;
  const { isOverdue } = d.status === 'pending' ? getDeadlineInfo(d.created_at) : { isOverdue: false };
@@ -777,7 +832,7 @@ function DisputeEvidenceSection({ disputeId }: { disputeId: string }) {
  <FileImage className="h-3.5 w-3.5" /> Evidence Attachments ({evidence.length})
  </p>
  <div className="space-y-2">
- {evidence.map((e: any) => (
+ {evidence.map((e: Record<string, string>) => (
  <div key={e.id} className="flex items-center gap-2 p-2 rounded-lg border bg-muted/30 text-sm">
  <FileImage className="h-4 w-4 text-muted-foreground shrink-0" />
  <span className="truncate flex-1">{e.file_name}</span>
