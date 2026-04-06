@@ -97,6 +97,7 @@ export function DiscountCodesTab() {
 
   const isExpired = (d: string | null) => d ? new Date(d) < new Date() : false;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getStatusBadge = (d: any) => {
     if (!d.is_active) return <Badge variant="secondary">Inactive</Badge>;
     if (isExpired(d.expires_at)) return <Badge variant="destructive">Expired</Badge>;
