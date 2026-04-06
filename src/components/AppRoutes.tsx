@@ -165,6 +165,7 @@ const AdminAffiliateHub = lazyWithRetry(() => import("@/pages/admin/AffiliateHub
 const AdminPlatformLedger = lazyWithRetry(() => import("@/pages/admin/PlatformLedger"));
 const AdminCustomDomains = lazyWithRetry(() => import("@/pages/admin/CustomDomains"));
 const AdminRateLimitDashboard = lazyWithRetry(() => import("@/pages/admin/RateLimitDashboard"));
+const AdminComplianceDashboard = lazyWithRetry(() => import("@/pages/admin/ComplianceDashboard"));
 
 
 // Seller pages
