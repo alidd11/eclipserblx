@@ -194,7 +194,7 @@ export default function SellerWebhooks() {
               </TableHeader>
               <TableBody>
                 {webhooks.map((wh) => (
-                  <TableRow key={wh.id}>
+                  <TableRow key={wh.id} className="group">
                     <TableCell className="font-mono text-xs max-w-[200px] truncate">
                       {wh.url}
                     </TableCell>
@@ -254,6 +254,12 @@ export default function SellerWebhooks() {
                       </Button>
                     </TableCell>
                   </TableRow>
+                  {/* Delivery logs expandable row */}
+                  <tr key={`${wh.id}-logs`}>
+                    <td colSpan={6} className="p-0">
+                      <WebhookDeliveryLogs webhookId={wh.id} />
+                    </td>
+                  </tr>
                 ))}
               </TableBody>
             </Table>
