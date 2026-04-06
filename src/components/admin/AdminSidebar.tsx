@@ -488,8 +488,24 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="font-display font-bold text-sm text-foreground truncate">{SITE_NAME}</h1>
-              <p className="text-[11px] text-foreground/70 leading-none mt-0.5">Admin Dashboard</p>
+              <p className="text-[10px] text-primary/70 font-semibold uppercase tracking-wider leading-none mt-0.5">Admin Dashboard</p>
             </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive hover:bg-muted/60"
+                  onClick={() => {
+                    hapticTap();
+                    setShowSignOutDialog(true);
+                  }}
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Sign Out</TooltipContent>
+            </Tooltip>
           </div>
         )}
         {isCollapsed && (
