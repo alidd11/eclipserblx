@@ -23,6 +23,7 @@ import { ConnectionErrorBoundary } from "@/components/ConnectionErrorBoundary";
 import { PWARouteRestorer } from "@/hooks/usePWALastRoute";
 import { NavigationProgress } from "@/components/NavigationProgress";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { RouteAnnouncer } from "@/components/RouteAnnouncer";
 import { GlobalBackground } from "@/components/layout/GlobalBackground";
 import { SafeLazyWidget } from "@/components/SafeLazyWidget";
 const AppRoutes = lazy(() => import("@/components/AppRoutes").then(m => ({ default: m.AppRoutes })));
