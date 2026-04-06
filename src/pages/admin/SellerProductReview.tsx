@@ -161,7 +161,7 @@ export default function SellerProducts() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (product: any) => {
+    mutationFn: async (product: { id: string; images?: string[]; asset_file_url?: string }) => {
       // Delete product images from storage first
       const images: string[] = product.images || [];
       if (images.length > 0) {
