@@ -284,6 +284,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                         <button
                           onClick={(e) => { e.stopPropagation(); hapticTap(); removeSearch(query); }}
                           className="opacity-0 group-hover:opacity-100 sm:opacity-100 h-6 w-6 flex items-center justify-center rounded-md hover:bg-muted/60 transition-all shrink-0"
+                          aria-label={`Remove "${query}" from recent searches`}
                         >
                           <X className="h-3 w-3 text-muted-foreground/40" />
                         </button>
