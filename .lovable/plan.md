@@ -1,108 +1,64 @@
 
 
-## Automated Leak Detection for Pro Sellers
+## Fingerprint-Verified Leak Detection
 
-### What This Does
+### Problem
 
-An automated system that periodically scans the web for your sellers' products being shared on known leak/piracy sites. When a match is found, the seller gets an in-app notification and a pre-filled leak report — no manual upload needed.
+The current `auto-detect-leaks` function only does name-based string matching via Firecrawl — producing `medium` confidence results with no proof. Meanwhile, the existing `report-leak` and `download-asset` functions already have a complete fingerprint system (`ECL_FP:` markers + Lua watermarks) that can definitively identify the buyer who leaked a file. These two systems don't talk to each other.
 
----
-
-### How It Works
+### How It Will Work
 
 ```text
-┌─────────────────────┐
-│  Scheduled CRON job │  (every 6 hours)
-│  auto-detect-leaks  │
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────────────┐
-│ For each Pro seller's store │
-│ → Get active product names  │
-│ → Build search queries      │
-└────────┬────────────────────┘
-         │
-         ▼
-┌─────────────────────────────┐
-│ Firecrawl Search API        │
-│ Query: "{product name}      │
-│   site:v3rmillion.net OR    │
-│   site:robloxscripts.com    │
-│   OR site:pastebin.com ..." │
-└────────┬────────────────────┘
-         │
-         ▼
-┌─────────────────────────────┐
-│ Deduplicate against         │
-│ leak_scan_results table     │
-│ (already-seen URLs skipped) │
-└────────┬────────────────────┘
-         │  New matches only
-         ▼
-┌─────────────────────────────┐
-│ Create seller_notification  │
-│ + auto leak_report entry    │
-│ with source URL & snippet   │
-└─────────────────────────────┘
-```
+Current flow (name match only):
+  Firecrawl search → "medium" confidence → notification
 
----
+Enhanced flow (name match + fingerprint verification):
+  Firecrawl search → found URL →
+    ├─ Firecrawl scrape page content →
+    │   Extract code blocks / raw text →
+    │   Scan for ECL_FP or Lua watermark pattern →
+    │     ├─ Found → Cross-reference download_logs →
+    │     │   ├─ Buyer identified → "confirmed" + matched_user_id
+    │     │   └─ Pattern found but no match → "high"
+    │     └─ Not found → stays "medium"
+    └─ Insert into leak_scan_results with confidence + buyer info
+```
 
 ### Database Changes
 
-**New table: `leak_scan_results`**
-- `id`, `store_id`, `product_id`, `source_url`, `source_domain`, `matched_query`, `snippet`, `confidence`, `dismissed`, `created_at`
-- RLS: sellers see only their own store's results
+**Add columns to `leak_scan_results`:**
+- `extracted_fingerprint TEXT` — the ECL-XXXXXXXX code found in leaked content
+- `matched_user_id UUID` — the identified buyer (FK to profiles)
+- `matched_display_name TEXT` — cached display name for UI
 
-**New columns on `stores`:**
-- `leak_scan_enabled` (boolean, default false) — Pro sellers toggle this on
+### Edge Function Changes (`auto-detect-leaks/index.ts`)
 
----
+1. **Add fingerprint extraction functions** — port the `extractFingerprint` and `generateWatermarkHash` logic from `report-leak/index.ts` (same regex patterns for `ECL_FP` and Lua watermarks)
 
-### New Edge Function: `auto-detect-leaks`
+2. **After Firecrawl search finds a URL**, use Firecrawl's scrape endpoint to fetch the page content (markdown/text). Scan the scraped content for fingerprint patterns.
 
-Scheduled via pg_cron every 6 hours:
-1. Query all stores where `leak_scan_enabled = true` AND seller has active Pro subscription
-2. For each store, get active product names
-3. For each product, search Firecrawl with queries targeting known Roblox leak sites:
-   - `v3rmillion.net`, `robloxscripts.com`, `pastebin.com`, `scriptblox.com`, `rscripts.net`, `github.com` (public repos)
-4. Deduplicate results against `leak_scan_results` (by URL hash)
-5. For new matches: insert into `leak_scan_results`, create a `seller_notification` with type `leak_detected`
-6. Rate limit: max 10 products per store per scan cycle to stay within Firecrawl quotas
+3. **If fingerprint found**, cross-reference against `download_logs` + `order_items` for that product (same logic as `report-leak`) to identify the buyer.
 
----
+4. **Set confidence level based on evidence:**
+   - `"confirmed"` — fingerprint found AND buyer identified
+   - `"high"` — fingerprint pattern found but no buyer match (e.g., partial data)
+   - `"medium"` — name match only, no fingerprint in content
 
-### Seller UI Changes
+5. **Rate limiting**: Add a 2-second delay between scrape calls to respect Firecrawl limits. Only scrape results from text-heavy sites (pastebin, scriptblox, github) — skip forum listing pages.
 
-**Asset Protection page (`SellerLeakReports.tsx`):**
-- Add a "Auto-Scan" toggle (Pro-gated) at the top
-- New "Auto-Detected Leaks" section showing results from `leak_scan_results`
-- Each result shows: product name, source URL (linked), snippet preview, detected date, "Dismiss" button
-- Badge count on the sidebar for unread leak detections
+### UI Changes (`SellerLeakReports.tsx`)
 
-**Notification Center:**
-- New notification type `leak_detected` renders with a warning icon and links to the Asset Protection page
-
----
-
-### Pro Gating
-
-- Toggle only appears for Pro subscribers
-- Edge function skips stores without active Pro subscription
-- Free sellers continue using manual upload (existing flow unchanged)
-
----
+- Display confidence as color-coded badges: red "Confirmed", orange "High", yellow "Medium"
+- Show "Buyer Identified: [display_name]" when `matched_user_id` is present on confirmed results
+- Add a filter toggle for confirmed-only results
 
 ### Files Changed
 
-- **Migration**: Create `leak_scan_results` table + add `leak_scan_enabled` to `stores`
-- **Create**: `supabase/functions/auto-detect-leaks/index.ts`
-- **Edit**: `src/pages/seller/SellerLeakReports.tsx` — add auto-scan toggle + results section
-- **Edit**: `src/components/seller/NotificationCenter.tsx` — render `leak_detected` type
-- **pg_cron**: Schedule the function every 6 hours
+- **Migration**: Add 3 columns to `leak_scan_results`
+- **Edit**: `supabase/functions/auto-detect-leaks/index.ts` — add fingerprint extraction + scraping + buyer lookup
+- **Edit**: `src/pages/seller/SellerLeakReports.tsx` — confidence badges + buyer display
 
 ### Risk
 
-Low — no existing flows are modified. The manual report system stays intact. Firecrawl is already connected. The scan is additive and writes to a new table.
+Low — additive changes only. The existing name-match flow continues working. Fingerprint verification is an enhancement layer on top. Scraping is best-effort (if it fails, result stays "medium").
 
