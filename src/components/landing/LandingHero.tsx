@@ -1,6 +1,5 @@
-import { useNavigate } from 'react-router-dom';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
-import { ArrowRight, Store, Search } from 'lucide-react';
+import { ArrowRight, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HeroBanner } from './HeroBanner';
 
@@ -14,8 +13,9 @@ function StaticWord({ word }: { word: string }) {
   return <span className="absolute left-0">{word}</span>;
 }
 
+const STATS = ['1,000+ Assets', '200+ Sellers', 'Instant Delivery'];
+
 export function LandingHero() {
-  const navigate = useNavigate();
   const reducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
   const skipAnimation = reducedMotion || isMobile;
@@ -47,20 +47,20 @@ export function LandingHero() {
     <section aria-labelledby="hero-heading" className="relative overflow-hidden">
       <HeroBanner />
 
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 relative z-10">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20 relative z-10">
         {/* Desktop: centered layout */}
         <div className="hidden lg:flex lg:flex-col lg:items-center lg:text-center">
-          <h1 id="hero-heading" className="font-display text-3xl lg:text-5xl font-bold leading-[1.08] tracking-tight mb-4 max-w-2xl drop-shadow-md">
-            The Marketplace for {wordRotator} Creators
+          <h1 id="hero-heading" className="font-display text-3xl lg:text-5xl xl:text-6xl font-bold leading-[1.05] tracking-tight mb-4 max-w-3xl drop-shadow-md">
+            The <span className="text-gradient-hero">Marketplace</span> for {wordRotator} Creators
           </h1>
 
-          <p className="text-sm sm:text-base text-foreground/60 max-w-md mb-6 leading-relaxed">
+          <p className="text-sm sm:text-base lg:text-lg text-foreground/60 max-w-lg mb-6 leading-relaxed">
             Premium scripts, models, UI kits and game assets.<br className="hidden sm:block" /> Lower fees, instant delivery.
           </p>
 
           <div className="flex items-center gap-4 mt-2">
             <Link to="/products">
-              <Button size="lg" className="h-11 px-7 text-sm font-semibold transition-colors">
+              <Button size="lg" className="h-12 px-8 text-sm font-semibold transition-colors">
                 Browse Marketplace
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -73,12 +73,21 @@ export function LandingHero() {
               Start selling
             </Link>
           </div>
+
+          {/* Stat strip */}
+          <div className="flex items-center gap-3 mt-8">
+            {STATS.map((stat, i) => (
+              <span key={i} className="text-[11px] font-medium text-muted-foreground bg-muted/40 border border-border/50 px-3 py-1 rounded-full">
+                {stat}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Mobile: compact layout */}
         <div className="lg:hidden w-full flex flex-col items-center px-2">
           <h1 className="font-display text-xl sm:text-2xl font-bold leading-[1.15] tracking-tight mb-3 text-center">
-            The Marketplace for {wordRotator} Creators
+            The <span className="text-gradient-hero">Marketplace</span> for {wordRotator} Creators
           </h1>
 
           <div className="flex items-center gap-2.5 w-full max-w-sm mt-1">
@@ -94,6 +103,15 @@ export function LandingHero() {
                 Sell
               </Button>
             </Link>
+          </div>
+
+          {/* Stat strip - mobile */}
+          <div className="flex items-center gap-2 mt-4 overflow-x-auto scrollbar-hide">
+            {STATS.map((stat, i) => (
+              <span key={i} className="text-[10px] font-medium text-muted-foreground bg-muted/40 border border-border/50 px-2.5 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">
+                {stat}
+              </span>
+            ))}
           </div>
         </div>
       </div>

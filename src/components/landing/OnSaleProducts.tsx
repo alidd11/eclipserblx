@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tag, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
@@ -113,10 +113,9 @@ export function OnSaleProducts() {
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-red-500/10">
-              <Tag className="h-4 w-4 text-red-400" />
+            <div className="border-l-2 border-primary pl-3">
+              <h2 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight uppercase">On Sale</h2>
             </div>
-            <h2 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight uppercase">On Sale</h2>
             <span className="text-[10px] uppercase tracking-wider text-red-400/80 font-semibold bg-red-500/10 px-1.5 py-0.5 rounded">
               Sale!
             </span>

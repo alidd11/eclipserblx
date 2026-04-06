@@ -2,7 +2,6 @@ import { lazy, Suspense } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LandingHero } from '@/components/landing/LandingHero';
 
-
 // Eager-load above-the-fold sections (no lazy)
 import { TrendingProducts } from '@/components/landing/TrendingProducts';
 
@@ -13,7 +12,6 @@ const AbandonedCartBanner = lazy(() => import('@/components/marketplace/Abandone
 const RecentReleases = lazy(() => import('@/components/landing/RecentReleases').then(m => ({ default: m.RecentReleases })));
 const OnSaleProducts = lazy(() => import('@/components/landing/OnSaleProducts').then(m => ({ default: m.OnSaleProducts })));
 const FreeAssetsTeaser = lazy(() => import('@/components/landing/FreeAssetsTeaser').then(m => ({ default: m.FreeAssetsTeaser })));
-
 
 const FinalCTA = lazy(() => import('@/components/landing/FinalCTA').then(m => ({ default: m.FinalCTA })));
 const RecentlyViewedSection = lazy(() => import('@/components/landing/RecentlyViewedSection').then(m => ({ default: m.RecentlyViewedSection })));
@@ -37,7 +35,6 @@ export default function Landing() {
         <LandingHero />
       </SectionErrorBoundary>
 
-
       {/* Trending Products */}
       <SectionErrorBoundary section="trending" compact>
         <TrendingProducts />
@@ -54,13 +51,15 @@ export default function Landing() {
         <AbandonedCartBanner />
       </Suspense>
 
-      {/* Recent Releases */}
+      {/* Recent Releases — banded background */}
       <LazySection minHeight="200px" rootMargin="300px">
-        <SectionErrorBoundary section="recent-releases" compact>
-          <Suspense fallback={null}>
-            <RecentReleases />
-          </Suspense>
-        </SectionErrorBoundary>
+        <div className="section-band border-t border-border">
+          <SectionErrorBoundary section="recent-releases" compact>
+            <Suspense fallback={null}>
+              <RecentReleases />
+            </Suspense>
+          </SectionErrorBoundary>
+        </div>
       </LazySection>
 
       {/* On Sale Products */}
@@ -72,13 +71,15 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* Free Assets Teaser */}
+      {/* Free Assets Teaser — banded background */}
       <LazySection minHeight="200px" rootMargin="200px">
-        <SectionErrorBoundary section="free-assets" compact>
-          <Suspense fallback={null}>
-            <FreeAssetsTeaser />
-          </Suspense>
-        </SectionErrorBoundary>
+        <div className="section-band border-t border-border">
+          <SectionErrorBoundary section="free-assets" compact>
+            <Suspense fallback={null}>
+              <FreeAssetsTeaser />
+            </Suspense>
+          </SectionErrorBoundary>
+        </div>
       </LazySection>
 
       {/* Recently Viewed */}
@@ -90,15 +91,17 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* For You */}
+      {/* For You — banded background */}
       <LazySection minHeight="200px" rootMargin="200px">
-        <SectionErrorBoundary section="for-you" compact>
-          <Suspense fallback={null}>
-            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-              <ForYouSection />
-            </div>
-          </Suspense>
-        </SectionErrorBoundary>
+        <div className="section-band border-t border-border">
+          <SectionErrorBoundary section="for-you" compact>
+            <Suspense fallback={null}>
+              <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <ForYouSection />
+              </div>
+            </Suspense>
+          </SectionErrorBoundary>
+        </div>
       </LazySection>
 
       {/* Final CTA */}
