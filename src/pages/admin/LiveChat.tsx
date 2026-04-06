@@ -78,7 +78,7 @@ export default function AdminLiveChat() {
 
     const typingChannel = supabase.channel(`typing-${selectedConversation.id}`).on('presence', { event: 'sync' }, () => {
       const state = typingChannel.presenceState();
-      const isTyping = Object.values(state).some((presences) => presences.some((p) => p.typing && p.role === 'customer'));
+      const isTyping = Object.values(state).some((presences) => presences.some((p) => (p as any).typing && (p as any).role === 'customer'));
       setCustomerTyping(isTyping);
     }).subscribe();
 
