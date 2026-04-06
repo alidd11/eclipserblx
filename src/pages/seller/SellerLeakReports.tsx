@@ -174,11 +174,11 @@ export default function SellerLeakReports() {
         </div>
 
         {/* Reports List */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Report History</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="rounded-xl border border-border/50 bg-card">
+          <div className="p-4 pb-2">
+            <h3 className="text-base font-medium">Report History</h3>
+          </div>
+          <div className="p-4 pt-2">
             {!reports?.length ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Shield className="h-10 w-10 mx-auto mb-2 opacity-30" />
@@ -224,8 +224,8 @@ export default function SellerLeakReports() {
                 })}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </SellerLayout>
   );
