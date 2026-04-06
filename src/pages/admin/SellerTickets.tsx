@@ -248,7 +248,7 @@ export default function SellerTickets() {
  const updateStatus = useMutation({
  mutationFn: async (newStatus: string) => {
  if (!selectedTicket?.id) throw new Error('No ticket selected');
- const updateData: any = { status: newStatus };
+ const updateData: Record<string, string> = { status: newStatus };
  if (newStatus === 'in_progress' && !selectedTicket.assigned_to) updateData.assigned_to = user?.id;
  const { error } = await supabase.from('seller_support_tickets').update(updateData).eq('id', selectedTicket.id);
  if (error) throw error;
