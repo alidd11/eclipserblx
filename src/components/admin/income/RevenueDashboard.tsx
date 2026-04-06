@@ -353,9 +353,9 @@ export function RevenueDashboard() {
  isLoading={isLoading}
  />
  <KPICard
- label="Subscription MRR"
+ label="Seller Pro MRR"
  value={`£${metrics.mrr.toFixed(2)}`}
- subtitle={`${metrics.activeSubs} subscribers`}
+ subtitle={`${metrics.activeSubs} Pro sellers`}
  isLoading={isLoading}
  />
  </div>

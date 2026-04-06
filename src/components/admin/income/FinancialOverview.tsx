@@ -359,9 +359,9 @@ export function FinancialOverview() {
  isLoading={isLoading}
  />
  <MetricCard
- label="Subscription MRR"
+ label="Seller Pro MRR"
  value={`£${metrics.mrr.toFixed(2)}`}
- subtitle={`${metrics.activeSubs} active subscribers`}
+ subtitle={`${metrics.activeSubs} Pro sellers`}
  icon={PiggyBank}
  accentClass="text-amber-500"
  isLoading={isLoading}
