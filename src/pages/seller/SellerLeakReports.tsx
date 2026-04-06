@@ -359,6 +359,11 @@ export default function SellerLeakReports() {
                         <Badge variant="outline" className={`text-xs shrink-0 ${confidenceBadge.className}`}>
                           {confidenceBadge.label}
                         </Badge>
+                        {result.status && result.status !== 'active' && (
+                          <Badge variant="outline" className="text-xs shrink-0 capitalize">
+                            {result.status.replace('_', ' ')}
+                          </Badge>
+                        )}
                         <Badge variant="outline" className="text-xs shrink-0">
                           {result.source_domain}
                         </Badge>
