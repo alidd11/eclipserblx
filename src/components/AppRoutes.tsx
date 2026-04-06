@@ -53,6 +53,7 @@ const Changelog = lazyWithRetry(() => import("@/pages/Changelog"));
 const BotInstallation = lazyWithRetry(() => import("@/pages/BotInstallation"));
 const BotDashboard = lazyWithRetry(() => import("@/pages/BotDashboard"));
 const NotificationPreferences = lazyWithRetry(() => import("@/pages/NotificationPreferences"));
+const Unsubscribe = lazyWithRetry(() => import("@/pages/Unsubscribe"));
 
 
 const LiveChat = lazyWithRetry(() => import("@/pages/LiveChat"));
