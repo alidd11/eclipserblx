@@ -46,7 +46,7 @@ export const sellerCategories: HelpCategory[] = [
     articles: [
       {
         question: 'What are the commission rates?',
-        answer: 'Base sellers keep 85% of net earnings (after Stripe fees). Eclipse+ member sellers keep 90%. Commission is calculated AFTER payment processing fees, not on the gross amount.',
+        answer: 'Sellers keep 85% of net earnings (after Stripe fees). Pro+ member sellers keep 90%. Commission is calculated AFTER payment processing fees, not on the gross amount.',
       },
       {
         question: 'When can I request a payout?',
