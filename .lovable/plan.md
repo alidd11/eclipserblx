@@ -1,100 +1,70 @@
 
 
-## Edge Function Cleanup & Consolidation Plan
+## Enterprise Gaps — What's Missing
 
-You currently have **182 edge functions**. An enterprise company running this many functions is accumulating unnecessary cold-start overhead, deployment time, and invocation costs. Here's the breakdown.
-
----
-
-### Category 1: Dead Functions — Delete (15 functions)
-
-These have **zero frontend references** and are not called by any cron job, webhook, or other function. They are leftover from infrastructure experiments or deprecated features.
-
-| Function | Reason |
-|---|---|
-| `cloudflare-diagnose` | One-time infra debug tool, no references |
-| `cloudflare-dns-fix` | One-time fix, no references |
-| `cloudflare-emergency-fix` | One-time fix, no references |
-| `cloudflare-pro-optimize` | One-time setup, no references |
-| `fix-cloudflare-security` | One-time fix, no references |
-| `diagnose-worker` | Superseded by v2, no references |
-| `diagnose-worker-v2` | One-time debug tool, no references |
-| `restore-worker-routes` | One-time fix, no references |
-| `setup-bot-subdomains` | One-time setup, no references |
-| `setup-custom-hostnames` | One-time setup, no references |
-| `setup-wildcard-dns` | One-time setup, no references |
-| `setup-worker-custom-domains` | One-time setup, no references |
-| `test-worker-alive` | Dev-only test, no references |
-| `test-worker-bot` | Dev-only test, no references |
-| `ionos-dns-manager` | One-time DNS setup, no references |
-
-**Savings**: Eliminates 15 deployed functions from the runtime. Reduces deployment time and removes attack surface.
+After auditing the full codebase against platforms like Shopify, Amazon Seller Central, and Stripe, here are the gaps ranked by business impact:
 
 ---
 
-### Category 2: Dead Functions — Delete (6 more)
+### 1. Changelog / What's New Page (High Impact, Low Effort)
+Every enterprise platform (Stripe, Shopify, Linear) has a `/changelog` page showing platform updates. You have none. This builds trust, reduces support tickets ("where did X go?"), and signals active development.
 
-These also have no frontend or cron references:
-
-| Function | Reason |
-|---|---|
-| `check-dns-setup` | No frontend references |
-| `check-wise-funding` | No frontend references |
-| `check-paypal-funding` | No frontend references |
-| `deploy-cloudflare-worker` | No frontend references |
-| `purge-cloudflare-cache` | No frontend references |
-| `auto-post-tweet` | No references (superseded by `post-twitter-update`) |
+**What to build**: A `/changelog` page pulling from a `changelog_entries` table with title, description, category (Feature/Fix/Improvement), and date. Admin UI to create entries. Optional "New" badge on the sidebar when unread entries exist.
 
 ---
 
-### Category 3: Duplicate Functions — Merge (3 pairs → 3 functions)
+### 2. Seller Webhook Notifications (High Impact, Medium Effort)
+Enterprise seller platforms let sellers receive programmatic notifications when orders come in, disputes open, or payouts complete. Currently all notifications are in-app or Discord only — no way for sellers to integrate with their own systems.
 
-| Keep | Delete | Reason |
-|---|---|---|
-| `dynamic-sitemap` | `sitemap` | Both generate sitemaps; `dynamic-sitemap` is the newer, more complete version |
-| `send-discord-webhook` | `send-advertisement-discord-webhook` | Both send Discord embeds; the ad webhook is a specialized copy of the generic one — merge ad-specific logic into the generic function with an `type: 'advertisement'` parameter |
-| `send-product-drop-webhook` | `send-product-drop-embed` | Both handle new product Discord notifications; consolidate into one with a `format` parameter |
+**What to build**: A `seller_webhooks` table where sellers register endpoint URLs. Fire webhooks on key events (new order, dispute opened, payout sent). Include HMAC signature verification. Pro-tier only feature.
 
 ---
 
-### Category 4: Discord Stickies/Embeds — Merge into Single Handler (5 → 1)
+### 3. Data Export / Right to Portability (Medium Impact, Low Effort)
+GDPR Article 20 requires data portability. You have retention policies but no self-service export. Enterprise platforms always have a "Download my data" button.
 
-These five functions all do the same thing: send a static Discord embed to a configured channel. They should be one `send-discord-embed` function with a `template` parameter.
-
-- `send-ads-channel-sticky`
-- `send-partnership-sticky`
-- `send-free-products-rules`
-- `send-rules-embed`
-- `send-community-relations-embed`
-
-**None** have frontend references — they're triggered manually from admin panels or not at all.
+**What to build**: An account settings button that triggers an edge function to compile the user's orders, profile, reviews, and messages into a ZIP of JSON/CSV files, then emails a download link.
 
 ---
 
-### Category 5: Cron Frequency Tuning (Cost Reduction)
+### 4. API Rate Limit Dashboard (Medium Impact, Low Effort)
+You have rate limiting on edge functions but no visibility for admins. Enterprise platforms show rate limit hits, top offenders, and blocked requests.
 
-| Function | Current | Recommended | Reason |
-|---|---|---|---|
-| `poll-discord-audit-log` | Every 2 min | Every 10 min | Audit logs don't need near-real-time; reduces 720→144 invocations/day |
-| `auto-register-discord-commands` | Daily | Weekly or on-demand | Commands rarely change |
+**What to build**: A simple admin page reading from the existing rate limit logs showing top IPs, blocked request counts, and trends over 24h/7d.
 
 ---
 
-### Summary
+### 5. Accessibility (a11y) Baseline (Medium Impact, Medium Effort)
+Enterprise marketplaces meet WCAG 2.1 AA. Common gaps: missing `aria-label` on icon-only buttons, insufficient color contrast in muted text, no skip-to-content link, focus trap issues in modals.
 
-| Action | Count | Impact |
-|---|---|---|
-| Delete dead functions | **21** | Removes unused code, reduces deploy time and attack surface |
-| Merge duplicates | **6 → 3** | Eliminates redundant code and maintenance |
-| Consolidate stickies | **5 → 1** | One template-driven function instead of five copies |
-| Tune cron frequencies | **2** | ~580 fewer daily invocations |
-| **Net reduction** | **~28 fewer functions** | From 182 → ~154 deployed functions |
+**What to build**: A systematic pass adding `aria-label` to all icon-only buttons, a skip-to-content link in the layout shell, and ensuring all interactive elements have visible focus rings.
 
-### Files Changed
-- **Delete**: 28 function directories from `supabase/functions/`
-- **Edit**: `send-discord-webhook/index.ts` (add ad webhook capability)
-- **Edit**: `send-product-drop-webhook/index.ts` (absorb embed variant)
-- **Create**: `send-discord-embed/index.ts` (unified sticky/embed handler)
-- **Migration**: Update cron schedules for `poll-discord-audit-log` and `auto-register-discord-commands`
-- **Frontend**: Update any imports referencing merged function names (minimal — most merged functions have no frontend callers)
+---
+
+### 6. Bulk Operations for Admin (Medium Impact, Medium Effort)
+Admin pages like Users, Orders, Products lack multi-select + bulk actions. Enterprise admin panels always have checkbox selection with bulk approve/reject/export.
+
+**What to build**: A reusable `BulkActionBar` component that appears when items are selected, with actions like bulk approve, bulk reject, bulk export CSV.
+
+---
+
+### 7. Scheduled Maintenance Notices (Low Impact, Low Effort)
+Your Status page shows incidents but has no way to announce *planned* maintenance windows in advance. Enterprise platforms show a banner site-wide before scheduled downtime.
+
+**What to build**: A `scheduled_maintenance` flag on the incidents table. When an upcoming maintenance window exists, show a subtle banner across the site.
+
+---
+
+### Recommendation
+
+Tackle them in this order for maximum ROI:
+1. **Changelog** — instant trust signal, 1-2 hour build
+2. **Data Export** — GDPR compliance gap, 1-2 hour build  
+3. **Scheduled Maintenance banners** — quick win, 30 min
+4. **Bulk Admin Operations** — operational efficiency
+5. **Seller Webhooks** — differentiator for Pro tier
+6. **a11y Baseline** — legal/compliance
+7. **Rate Limit Dashboard** — admin visibility
+
+Would you like me to build any or all of these?
 
