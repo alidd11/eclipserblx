@@ -40,19 +40,28 @@ const SECTION_TYPES = [
 
 type SectionType = typeof SECTION_TYPES[number]['id'];
 
+interface FaqItem { question: string; answer: string }
+interface TestimonialItem { name: string; text: string; rating: number }
+interface FaqContent { items: FaqItem[] }
+interface TestimonialContent { items: TestimonialItem[] }
+interface FeaturedCollectionContent { product_ids: string[]; description: string }
+interface TextBlockContent { body: string }
+interface GalleryContent { images: string[] }
+type SectionContent = FaqContent | TestimonialContent | FeaturedCollectionContent | TextBlockContent | GalleryContent;
+
 interface CustomSection {
   id: string;
   store_id: string;
   section_type: SectionType;
   title: string;
-  content: any;
+  content: SectionContent;
   display_order: number;
   is_visible: boolean;
   created_at: string;
   updated_at: string;
 }
 
-const DEFAULT_CONTENT: Record<SectionType, any> = {
+const DEFAULT_CONTENT: Record<SectionType, SectionContent> = {
   faq: { items: [{ question: '', answer: '' }] },
   testimonials: { items: [{ name: '', text: '', rating: 5 }] },
   featured_collection: { product_ids: [], description: '' },
