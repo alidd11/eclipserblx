@@ -48,14 +48,11 @@ interface NavGroup {
 }
 
 interface CustomerSidebarProps {
-  collapsed: boolean;
-  onToggle: () => void;
   onNavigate?: () => void;
-  isMobileDrawer?: boolean;
   className?: string;
 }
 
-export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer = false, className }: CustomerSidebarProps) {
+export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps) {
   const { user, signOut } = useAuth();
   const { discordUrl } = useDiscordUrl();
   const { isSeller } = useSellerStatus();
