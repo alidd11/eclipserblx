@@ -22,8 +22,9 @@ export function useChatPresence(channelName: string, currentUserProfile: UserPro
 
         Object.values(state).forEach((presences) => {
           presences.forEach((presence) => {
-            if (presence.typing && presence.user_id !== user.id) {
-              typing.push({ user_id: presence.user_id, name: presence.name });
+            const p = presence as Record<string, unknown>;
+            if (p.typing && p.user_id !== user.id) {
+              typing.push({ user_id: p.user_id as string, name: p.name as string });
             }
           });
         });
