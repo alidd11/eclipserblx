@@ -380,7 +380,7 @@ export function DiscordRolePingsCard() {
             <div className="flex items-center justify-between">
               <div>
                 <Label className="text-xs">Requires subscription</Label>
-                <p className="text-[11px] text-muted-foreground">Only for Eclipse+ subscribers</p>
+                <p className="text-[11px] text-muted-foreground">Only for Pro+ subscribers</p>
               </div>
               <Switch
                 checked={newRole.requires_subscription}

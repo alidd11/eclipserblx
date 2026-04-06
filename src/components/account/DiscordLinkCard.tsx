@@ -158,7 +158,7 @@ export const DiscordLinkCard = ({
   const handleUnlink = async () => {
     setIsUnlinking(true);
     try {
-      // If user has Eclipse+, send deactivation webhook before unlinking
+      // If user has a membership, send deactivation webhook before unlinking
       if (hasEclipsePlus && currentDiscordId) {
         try {
           await supabase.functions.invoke("send-discord-webhook", {
