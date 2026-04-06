@@ -4,10 +4,8 @@ import { cn } from '@/lib/utils';
 import { GlobalCategoryBar } from '@/components/shop/GlobalCategoryBar';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Header } from '@/components/layout/Header';
-import { useScrollDirection } from '@/hooks/useScrollDirection';
 // Lazy-load below-fold Footer to reduce initial bundle
 const Footer = lazy(() => import('@/components/layout/Footer').then(m => ({ default: m.Footer })));
-import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
 import { useEdgeSwipe } from '@/hooks/useEdgeSwipe';
 
@@ -81,8 +79,6 @@ function LayoutShellInner({
   const shouldRenderSpacer = fixedHeaderSpacer ?? !!customHeader;
   const [mobileOpen, setMobileOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
-  const scrollDir = useScrollDirection(12);
-  const headerHidden = scrollDir === 'down';
 
   useEdgeSwipe({
     onSwipe: () => setMobileOpen(true),
@@ -91,7 +87,6 @@ function LayoutShellInner({
 
   return (
     <>
-      <ScrollProgressIndicator />
       <MaintenanceBanner />
       {/* Skip to main content — accessibility */}
       <a
@@ -141,10 +136,7 @@ function LayoutShellInner({
               )}
             </>
           ) : (
-            <div
-              className="sticky top-0 z-50 transition-transform duration-300 ease-out"
-              style={{ transform: headerHidden ? 'translateY(-100%)' : 'translateY(0)' }}
-            >
+            <div className="sticky top-0 z-50">
               <Header
                 showDesktopNav={false}
                 onMenuClick={() => setMobileOpen(true)}
