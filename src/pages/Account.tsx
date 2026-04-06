@@ -103,7 +103,7 @@ function ExpandableSection({ icon: Icon, label, children, defaultOpen }: {
   children: React.ReactNode;
   defaultOpen?: boolean;
 }) {
-  const group = React.useContext(AccordionGroupContext);
+  const group = useContext(AccordionGroupContext);
   const id = label; // Use label as unique ID within group
   const isControlled = !!group;
   const [localOpen, setLocalOpen] = useState(defaultOpen ?? false);
