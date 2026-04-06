@@ -11350,6 +11350,7 @@ export type Database = {
       auth_user_exists: { Args: { _user_id: string }; Returns: boolean }
       auto_escalate_all_tickets: { Args: never; Returns: Json }
       calculate_level_from_xp: { Args: { xp: number }; Returns: number }
+      can_access_realtime_topic: { Args: { _topic: string }; Returns: boolean }
       can_assign_role: {
         Args: { _assigner_id: string; _target_role: string }
         Returns: boolean
@@ -11486,6 +11487,7 @@ export type Database = {
         }[]
       }
       get_next_download_time: { Args: { _user_id: string }; Returns: string }
+      get_push_subscription_total: { Args: never; Returns: number }
       get_store_qualification_progress: {
         Args: { p_store_id: string }
         Returns: {
@@ -11554,6 +11556,12 @@ export type Database = {
         Returns: boolean
       }
       is_username_available: { Args: { username: string }; Returns: boolean }
+      list_push_subscribed_staff_user_ids: {
+        Args: never
+        Returns: {
+          user_id: string
+        }[]
+      }
       list_staff_members: {
         Args: never
         Returns: {
@@ -11755,6 +11763,20 @@ export type Database = {
       user_owns_order: {
         Args: { _order_id: string; _user_id: string }
         Returns: boolean
+      }
+      validate_discount_code_for_checkout: {
+        Args: { p_code: string; p_product_ids?: string[]; p_subtotal?: number }
+        Returns: {
+          code: string
+          current_uses: number
+          discount_type: string
+          discount_value: number
+          expires_at: string
+          id: string
+          max_uses: number
+          min_order_amount: number
+          store_id: string
+        }[]
       }
       validate_team_invite: {
         Args: { p_token: string; p_user_id: string }
