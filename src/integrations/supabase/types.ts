@@ -5417,7 +5417,7 @@ export type Database = {
       password_reset_codes: {
         Row: {
           attempts: number
-          code: string
+          code_hash: string | null
           created_at: string
           email: string
           expires_at: string
@@ -5426,7 +5426,7 @@ export type Database = {
         }
         Insert: {
           attempts?: number
-          code: string
+          code_hash?: string | null
           created_at?: string
           email: string
           expires_at: string
@@ -5435,7 +5435,7 @@ export type Database = {
         }
         Update: {
           attempts?: number
-          code?: string
+          code_hash?: string | null
           created_at?: string
           email?: string
           expires_at?: string
@@ -10625,6 +10625,50 @@ export type Database = {
           },
         ]
       }
+      affiliate_payouts_safe: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          id: string | null
+          notes: string | null
+          payout_method: string | null
+          paypal_email: string | null
+          processed_at: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          id?: string | null
+          notes?: string | null
+          payout_method?: string | null
+          paypal_email?: string | null
+          processed_at?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          id?: string | null
+          notes?: string | null
+          payout_method?: string | null
+          paypal_email?: string | null
+          processed_at?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_payouts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       orders_seller_view: {
         Row: {
           created_at: string | null
@@ -10898,6 +10942,163 @@ export type Database = {
           },
         ]
       }
+      seller_payouts_safe: {
+        Row: {
+          amount: number | null
+          auto_processed: boolean | null
+          completed_at: string | null
+          created_at: string | null
+          failure_reason: string | null
+          funding_requested_at: string | null
+          funding_status: string | null
+          id: string | null
+          notes: string | null
+          payout_method: string | null
+          paypal_email: string | null
+          processed_at: string | null
+          processed_by: string | null
+          seller_id: string | null
+          status: string | null
+          store_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          auto_processed?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          failure_reason?: string | null
+          funding_requested_at?: string | null
+          funding_status?: string | null
+          id?: string | null
+          notes?: string | null
+          payout_method?: string | null
+          paypal_email?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          seller_id?: string | null
+          status?: string | null
+          store_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          auto_processed?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          failure_reason?: string | null
+          funding_requested_at?: string | null
+          funding_status?: string | null
+          id?: string | null
+          notes?: string | null
+          payout_method?: string | null
+          paypal_email?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          seller_id?: string | null
+          status?: string | null
+          store_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_payouts_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "seller_payouts_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_payouts_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_credentials_safe: {
+        Row: {
+          cloudflare_api_token: string | null
+          cloudflare_zone_id: string | null
+          created_at: string | null
+          discord_bot_token: string | null
+          discord_guild_id: string | null
+          discord_role_id: string | null
+          discord_webhook_url: string | null
+          disputes_channel_id: string | null
+          early_product_drops_role_id: string | null
+          id: string | null
+          orders_channel_id: string | null
+          product_drops_role_id: string | null
+          product_feed_channel_id: string | null
+          refunds_channel_id: string | null
+          review_discord_webhook_url: string | null
+          sales_channel_id: string | null
+          store_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cloudflare_api_token?: never
+          cloudflare_zone_id?: string | null
+          created_at?: string | null
+          discord_bot_token?: never
+          discord_guild_id?: string | null
+          discord_role_id?: string | null
+          discord_webhook_url?: string | null
+          disputes_channel_id?: string | null
+          early_product_drops_role_id?: string | null
+          id?: string | null
+          orders_channel_id?: string | null
+          product_drops_role_id?: string | null
+          product_feed_channel_id?: string | null
+          refunds_channel_id?: string | null
+          review_discord_webhook_url?: string | null
+          sales_channel_id?: string | null
+          store_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cloudflare_api_token?: never
+          cloudflare_zone_id?: string | null
+          created_at?: string | null
+          discord_bot_token?: never
+          discord_guild_id?: string | null
+          discord_role_id?: string | null
+          discord_webhook_url?: string | null
+          disputes_channel_id?: string | null
+          early_product_drops_role_id?: string | null
+          id?: string | null
+          orders_channel_id?: string | null
+          product_drops_role_id?: string | null
+          product_feed_channel_id?: string | null
+          refunds_channel_id?: string | null
+          review_discord_webhook_url?: string | null
+          sales_channel_id?: string | null
+          store_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_credentials_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_credentials_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_domains_public: {
         Row: {
           domain: string | null
@@ -10985,6 +11186,75 @@ export type Database = {
           payout_method?: string | null
           payouts_enabled?: boolean | null
           paypal_email?: never
+          store_id?: string | null
+          stripe_account_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_payment_details_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_payment_details_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_payment_details_safe: {
+        Row: {
+          bank_account_holder: string | null
+          bank_account_number: string | null
+          bank_country: string | null
+          bank_name: string | null
+          bank_routing_number: string | null
+          bank_swift_bic: string | null
+          created_at: string | null
+          details_submitted: boolean | null
+          id: string | null
+          payout_method: string | null
+          payouts_enabled: boolean | null
+          paypal_email: string | null
+          store_id: string | null
+          stripe_account_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          bank_account_holder?: string | null
+          bank_account_number?: never
+          bank_country?: string | null
+          bank_name?: string | null
+          bank_routing_number?: never
+          bank_swift_bic?: never
+          created_at?: string | null
+          details_submitted?: boolean | null
+          id?: string | null
+          payout_method?: string | null
+          payouts_enabled?: boolean | null
+          paypal_email?: string | null
+          store_id?: string | null
+          stripe_account_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          bank_account_holder?: string | null
+          bank_account_number?: never
+          bank_country?: string | null
+          bank_name?: string | null
+          bank_routing_number?: never
+          bank_swift_bic?: never
+          created_at?: string | null
+          details_submitted?: boolean | null
+          id?: string | null
+          payout_method?: string | null
+          payouts_enabled?: boolean | null
+          paypal_email?: string | null
           store_id?: string | null
           stripe_account_id?: string | null
           updated_at?: string | null
@@ -11178,6 +11448,51 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      user_payment_details_safe: {
+        Row: {
+          bank_account_holder: string | null
+          bank_account_number: string | null
+          bank_country: string | null
+          bank_name: string | null
+          bank_routing_number: string | null
+          bank_swift_bic: string | null
+          created_at: string | null
+          paypal_email: string | null
+          preferred_payout_method: string | null
+          stripe_account_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          bank_account_holder?: string | null
+          bank_account_number?: never
+          bank_country?: string | null
+          bank_name?: string | null
+          bank_routing_number?: never
+          bank_swift_bic?: never
+          created_at?: string | null
+          paypal_email?: string | null
+          preferred_payout_method?: string | null
+          stripe_account_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          bank_account_holder?: string | null
+          bank_account_number?: never
+          bank_country?: string | null
+          bank_name?: string | null
+          bank_routing_number?: never
+          bank_swift_bic?: never
+          created_at?: string | null
+          paypal_email?: string | null
+          preferred_payout_method?: string | null
+          stripe_account_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {
