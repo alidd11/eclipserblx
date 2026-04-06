@@ -103,6 +103,17 @@ export default function SellerTickets() {
  const fileInputRef = useRef<HTMLInputElement>(null);
  const messagesEndRef = useRef<HTMLDivElement>(null);
 
+ // ── Agent collision detection ─────────────────────────────────────────────
+ const myProfile = useQuery({
+   queryKey: ['my-profile-name', user?.id],
+   queryFn: async () => {
+     const { data } = await supabase.from('profiles').select('display_name').eq('user_id', user!.id).single();
+     return data?.display_name || 'Staff';
+   },
+   enabled: !!user?.id,
+ });
+ const viewingAgents = useAgentCollision(selectedTicket?.id, myProfile.data || undefined);
+
  // ── Realtime ──────────────────────────────────────────────────────────────
  useEffect(() => {
  const channel = supabase
