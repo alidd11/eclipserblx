@@ -6039,12 +6039,6 @@ export type Database = {
           accounts_locked: boolean | null
           accounts_locked_at: string | null
           avatar_url: string | null
-          bank_account_holder: string | null
-          bank_account_number: string | null
-          bank_country: string | null
-          bank_name: string | null
-          bank_routing_number: string | null
-          bank_swift_bic: string | null
           created_at: string
           customer_id: string | null
           deleted_at: string | null
@@ -6056,13 +6050,10 @@ export type Database = {
           hide_from_leaderboard: boolean
           id: string
           last_seen: string | null
-          paypal_email: string | null
-          preferred_payout_method: string | null
           referral_code: string | null
           roblox_user_id: string | null
           roblox_username: string | null
           staff_id: string | null
-          stripe_account_id: string | null
           updated_at: string
           user_id: string
           username: string
@@ -6073,12 +6064,6 @@ export type Database = {
           accounts_locked?: boolean | null
           accounts_locked_at?: string | null
           avatar_url?: string | null
-          bank_account_holder?: string | null
-          bank_account_number?: string | null
-          bank_country?: string | null
-          bank_name?: string | null
-          bank_routing_number?: string | null
-          bank_swift_bic?: string | null
           created_at?: string
           customer_id?: string | null
           deleted_at?: string | null
@@ -6090,13 +6075,10 @@ export type Database = {
           hide_from_leaderboard?: boolean
           id?: string
           last_seen?: string | null
-          paypal_email?: string | null
-          preferred_payout_method?: string | null
           referral_code?: string | null
           roblox_user_id?: string | null
           roblox_username?: string | null
           staff_id?: string | null
-          stripe_account_id?: string | null
           updated_at?: string
           user_id: string
           username: string
@@ -6107,12 +6089,6 @@ export type Database = {
           accounts_locked?: boolean | null
           accounts_locked_at?: string | null
           avatar_url?: string | null
-          bank_account_holder?: string | null
-          bank_account_number?: string | null
-          bank_country?: string | null
-          bank_name?: string | null
-          bank_routing_number?: string | null
-          bank_swift_bic?: string | null
           created_at?: string
           customer_id?: string | null
           deleted_at?: string | null
@@ -6124,13 +6100,10 @@ export type Database = {
           hide_from_leaderboard?: boolean
           id?: string
           last_seen?: string | null
-          paypal_email?: string | null
-          preferred_payout_method?: string | null
           referral_code?: string | null
           roblox_user_id?: string | null
           roblox_username?: string | null
           staff_id?: string | null
-          stripe_account_id?: string | null
           updated_at?: string
           user_id?: string
           username?: string
@@ -10375,6 +10348,51 @@ export type Database = {
           created_at?: string
           id?: string
           ip_address?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_payment_details: {
+        Row: {
+          bank_account_holder: string | null
+          bank_account_number: string | null
+          bank_country: string | null
+          bank_name: string | null
+          bank_routing_number: string | null
+          bank_swift_bic: string | null
+          created_at: string
+          paypal_email: string | null
+          preferred_payout_method: string | null
+          stripe_account_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bank_account_holder?: string | null
+          bank_account_number?: string | null
+          bank_country?: string | null
+          bank_name?: string | null
+          bank_routing_number?: string | null
+          bank_swift_bic?: string | null
+          created_at?: string
+          paypal_email?: string | null
+          preferred_payout_method?: string | null
+          stripe_account_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bank_account_holder?: string | null
+          bank_account_number?: string | null
+          bank_country?: string | null
+          bank_name?: string | null
+          bank_routing_number?: string | null
+          bank_swift_bic?: string | null
+          created_at?: string
+          paypal_email?: string | null
+          preferred_payout_method?: string | null
+          stripe_account_id?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
