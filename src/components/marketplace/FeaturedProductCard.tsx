@@ -85,7 +85,7 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
                 {hasMemberDiscount ? (
                   <>
                     <span className="text-amber-400 font-bold text-xs sm:text-sm">{formatPrice(memberPrice)}</span>
-                    <span className="text-foreground/40 text-[10px] sm:text-xs line-through">{formatPrice(displayProduct.price)}</span>
+                    <span className="text-muted-foreground text-[10px] sm:text-xs line-through">{formatPrice(displayProduct.price)}</span>
                     <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-amber-500/15 text-amber-400 text-[9px] sm:text-[10px] font-semibold">
                       <Crown className="h-2.5 w-2.5" />
                       -{discountPercent}%
