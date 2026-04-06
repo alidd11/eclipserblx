@@ -15,7 +15,7 @@ import { ProductHealthDonut } from '@/components/seller/ProductHealthDonut';
 import { RecentOrdersTable } from '@/components/seller/RecentOrdersTable';
 import { TosBanner, NonCompliantBanner, PendingReviewBanner } from '@/components/seller/banners';
 import { DashboardCardSkeleton } from '@/components/seller/DashboardSkeletons';
-import { Gift, Clock, Plus, Sparkles } from 'lucide-react';
+import { Gift, Clock, Sparkles } from 'lucide-react';
 import { 
   Package, ShoppingCart, BarChart3, Tag, DollarSign, Megaphone
 } from 'lucide-react';

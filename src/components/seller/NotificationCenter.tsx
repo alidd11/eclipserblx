@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bell, CheckCircle } from 'lucide-react';
@@ -41,24 +40,22 @@ export function NotificationCenter() {
   const unreadCount = notifications?.filter(n => !n.read_at).length || 0;
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-medium flex items-center gap-2">
-            <Bell className="h-4 w-4" />
-            Activity
-            {unreadCount > 0 && (
-              <Badge variant="destructive" className="h-5 px-1.5 text-xs">
-                {unreadCount}
-              </Badge>
-            )}
-          </CardTitle>
-          <Link to="/seller/notifications" className="text-xs text-primary hover:underline">
-            View All
-          </Link>
-        </div>
-      </CardHeader>
-      <CardContent className="p-0">
+    <div className="rounded-xl border border-border/50 bg-card">
+      <div className="flex items-center justify-between p-4 pb-2">
+        <h3 className="text-base font-medium flex items-center gap-2">
+          <Bell className="h-4 w-4" />
+          Activity
+          {unreadCount > 0 && (
+            <Badge variant="destructive" className="h-5 px-1.5 text-xs">
+              {unreadCount}
+            </Badge>
+          )}
+        </h3>
+        <Link to="/seller/notifications" className="text-xs text-primary hover:underline">
+          View All
+        </Link>
+      </div>
+      <div className="p-0">
         <ScrollArea className="h-[300px]">
           <div className="p-2">
             {isLoading ? (
@@ -96,7 +93,7 @@ export function NotificationCenter() {
             )}
           </div>
         </ScrollArea>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

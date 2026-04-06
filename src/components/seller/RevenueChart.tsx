@@ -1,7 +1,6 @@
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useState } from 'react';
 import { RevolutAreaChart } from '@/components/ui/revolut-chart';
@@ -55,19 +54,17 @@ export function RevenueChart() {
   });
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-medium">Revenue</CardTitle>
-          <Tabs value={range} onValueChange={(v) => setRange(v as '7' | '30')}>
-            <TabsList className="h-7">
-              <TabsTrigger value="7" className="text-xs px-2 h-6">7d</TabsTrigger>
-              <TabsTrigger value="30" className="text-xs px-2 h-6">30d</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-      </CardHeader>
-      <CardContent className="p-0 pr-4 pb-4">
+    <div className="rounded-xl border border-border/50 bg-card">
+      <div className="flex items-center justify-between p-4 pb-2">
+        <h3 className="text-base font-medium">Revenue</h3>
+        <Tabs value={range} onValueChange={(v) => setRange(v as '7' | '30')}>
+          <TabsList className="h-7">
+            <TabsTrigger value="7" className="text-xs px-2 h-6">7d</TabsTrigger>
+            <TabsTrigger value="30" className="text-xs px-2 h-6">30d</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+      <div className="p-0 pr-4 pb-4">
         {isLoading ? (
           <div className="px-4">
             <CardLoadingSkeleton rows={3} />
@@ -82,7 +79,7 @@ export function RevenueChart() {
             tooltipFormatter={(v) => [formatPrice(v), 'Revenue']}
           />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
