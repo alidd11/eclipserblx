@@ -17,7 +17,8 @@ interface PrefetchLinkProps extends LinkProps {
  * into the viewport (critical for mobile where there's no hover).
  */
 export const PrefetchLink = forwardRef<HTMLAnchorElement, PrefetchLinkProps>(
-  function PrefetchLink({ prefetchKeys, prefetchFn, onMouseEnter, onFocus, ...props }, ref) {
+  function PrefetchLink({ prefetchKeys, prefetchFn, autoRoutePrefetch = true, onMouseEnter, onFocus, ...props }, ref) {
+    const { prefetchForPath } = usePrefetchRoute();
     const hasPrefetched = useRef(false);
     const internalRef = useRef<HTMLAnchorElement | null>(null);
 
