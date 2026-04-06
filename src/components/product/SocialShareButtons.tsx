@@ -10,21 +10,22 @@ interface SocialShareButtonsProps {
 }
 
 export function SocialShareButtons({ url, title, description }: SocialShareButtonsProps) {
+  const sharePath = url.startsWith('http') ? url : `https://eclipserblx.com/share${url}`;
   const fullUrl = url.startsWith('http') ? url : `https://eclipserblx.com${url}`;
   const text = description ? `${title} — ${description}` : title;
 
   const handleCopyForDiscord = () => {
-    navigator.clipboard.writeText(`🎮 **${title}**\n${fullUrl}`);
+    navigator.clipboard.writeText(`\uD83C\uDFAE **${title}**\n${sharePath}`);
     toast.success('Copied for Discord!');
   };
 
   const handleNativeShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title, text: description, url: fullUrl });
+        await navigator.share({ title, text: description, url: sharePath });
       } catch {}
     } else {
-      navigator.clipboard.writeText(fullUrl);
+      navigator.clipboard.writeText(sharePath);
       toast.success('Link copied!');
     }
   };
@@ -37,7 +38,7 @@ export function SocialShareButtons({ url, title, description }: SocialShareButto
           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
         </svg>
       ),
-      onClick: () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(fullUrl)}`, '_blank'),
+      onClick: () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(sharePath)}`, '_blank'),
     },
     {
       name: 'Discord',

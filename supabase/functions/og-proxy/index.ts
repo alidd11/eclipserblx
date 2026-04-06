@@ -6,6 +6,7 @@ const corsHeaders = {
 
 const SITE_URL = "https://eclipserblx.com";
 const SITE_NAME = "Eclipse";
+const BRAND_COLOR = "#7c3aed";
 const DEFAULT_IMAGE = "https://storage.googleapis.com/gpt-engineer-file-uploads/6XoLGVy9Aseup6dIxodIWS9uGsS2/social-images/social-1772684689417-IMG_0084.webp";
 const DEFAULT_DESCRIPTION = "Eclipse is the best Roblox asset marketplace. Buy premium roleplay scripts, vehicles, maps and game assets. Lower fees, instant delivery.";
 
@@ -63,7 +64,12 @@ const NAV_HTML = `<nav aria-label="Main navigation"><ul>
 <li><a href="${SITE_URL}/contact">Contact</a></li>
 </ul></nav>`;
 
-function buildHtml(t: string, d: string, img: string, url: string, type = "website", extra = "", bodyContent = ""): string {
+function buildOembedUrl(pageUrl: string): string {
+  const base = Deno.env.get("SUPABASE_URL") || "";
+  return `${base}/functions/v1/og-proxy?format=oembed&url=${encodeURIComponent(pageUrl)}`;
+}
+
+function buildHtml(t: string, d: string, img: string, url: string, type = "website", extra = "", bodyContent = "", authorName?: string): string {
   const jsonLd = type === "product" ? "" : `<script type="application/ld+json">${JSON.stringify({
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -73,19 +79,24 @@ function buildHtml(t: string, d: string, img: string, url: string, type = "websi
     "potentialAction": { "@type": "SearchAction", "target": `${SITE_URL}/products?q={search_term_string}`, "query-input": "required name=search_term_string" }
   })}</script>`;
 
+  const oembedUrl = buildOembedUrl(url);
+
   return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"/><title>${esc(t)}</title>
 <meta name="description" content="${esc(d)}"/>
 <link rel="canonical" href="${esc(url)}"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="${BRAND_COLOR}"/>
 <meta property="og:type" content="${type}"/>
 <meta property="og:site_name" content="${SITE_NAME}"/>
 <meta property="og:title" content="${esc(t)}"/>
 <meta property="og:description" content="${esc(d)}"/>
 <meta property="og:image" content="${esc(img)}"/>
+<meta property="og:image:alt" content="${esc(t)} preview"/>
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
 <meta property="og:url" content="${esc(url)}"/>
+<link rel="alternate" type="application/json+oembed" href="${esc(oembedUrl)}" title="${esc(t)}"/>
 ${extra}
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:site" content="@EclipseRblx"/>
@@ -187,6 +198,23 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const u = new URL(req.url);
+
+  // --- oEmbed JSON endpoint ---
+  if (u.searchParams.get("format") === "oembed") {
+    const pageUrl = u.searchParams.get("url") || SITE_URL;
+    const oembed = {
+      version: "1.0",
+      type: "link",
+      provider_name: "Eclipse Marketplace",
+      provider_url: SITE_URL,
+      title: SITE_NAME,
+      url: pageUrl,
+    };
+    return new Response(JSON.stringify(oembed), {
+      headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=3600", ...corsHeaders },
+    });
+  }
+
   const path = u.searchParams.get("path") || "/";
   const hostname = u.searchParams.get("hostname");
 
@@ -311,8 +339,10 @@ Deno.serve(async (req) => {
     if (!product) return new Response(null, { status: 302, headers: { Location: pageUrl, ...corsHeaders } });
 
     const storeName = product.stores?.name;
-    const rawDesc = product.description ? product.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Check out ${product.name} on Eclipse`;
-    const desc = storeName ? `By ${storeName} \u2014 ${rawDesc}` : rawDesc;
+    const rawDesc = product.description ? product.description.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, 160) : `Check out ${product.name} on Eclipse`;
+    const pricePart = product.price != null ? `\u00A3${Number(product.price).toFixed(2)}` : "";
+    const descParts = [pricePart, storeName ? `By ${storeName}` : "", rawDesc].filter(Boolean);
+    const desc = descParts.join(" \u00B7 ");
     const img = product.images?.[0] || DEFAULT_IMAGE;
     const priceExtra = product.price != null ? `<meta property="product:price:amount" content="${product.price}"/><meta property="product:price:currency" content="GBP"/>` : "";
     const body = buildProductBody(product, storeName);
@@ -336,8 +366,10 @@ Deno.serve(async (req) => {
     if (product) {
       const canonicalUrl = product.product_number ? `${SITE_URL}/products/${product.product_number}` : `${SITE_URL}/products/${encodeURIComponent(slugVal)}`;
       const storeName = product.stores?.name;
-      const rawDesc = product.description ? product.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Check out ${product.name} on Eclipse`;
-      const desc = storeName ? `By ${storeName} \u2014 ${rawDesc}` : rawDesc;
+      const rawDesc = product.description ? product.description.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, 160) : `Check out ${product.name} on Eclipse`;
+      const pricePart = product.price != null ? `\u00A3${Number(product.price).toFixed(2)}` : "";
+      const descParts = [pricePart, storeName ? `By ${storeName}` : "", rawDesc].filter(Boolean);
+      const desc = descParts.join(" \u00B7 ");
       const img = product.images?.[0] || DEFAULT_IMAGE;
       const priceExtra = product.price != null ? `<meta property="product:price:amount" content="${product.price}"/><meta property="product:price:currency" content="GBP"/>` : "";
       const body = buildProductBody(product, storeName);
