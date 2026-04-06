@@ -11178,6 +11178,9 @@ export type Database = {
       }
       staff_performance_summary: {
         Row: {
+          avg_csat: number | null
+          avg_first_response_minutes: number | null
+          avg_resolution_minutes: number | null
           chats_claimed: number | null
           chats_completed: number | null
           display_name: string | null
