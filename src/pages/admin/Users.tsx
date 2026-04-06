@@ -729,15 +729,6 @@ export default function AdminUsers() {
                             <Button 
                               variant="outline" 
                               size="icon"
-                              className="h-9 w-9 text-amber-500 border-amber-500/50 hover:bg-amber-500/10"
-                              onClick={() => setGrantEclipsePlusUser(profile)}
-                              title="Grant Eclipse+"
-                            >
-                              <Sparkles className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="icon"
                               className="h-9 w-9 text-orange-500 border-orange-500/50 hover:bg-orange-500/10"
                               onClick={() => setIpBanDialogUser(profile)}
                               title="IP Ban"
