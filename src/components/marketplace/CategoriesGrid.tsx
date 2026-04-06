@@ -113,6 +113,7 @@ export function CategoriesGrid() {
       }
 
       // Fallback: fetch a product from Eclipse/Vino for categories with no image
+      const catIds = cats.map(c => c.id);
       const catsNeedingFallback = catIds.filter(id => !bestPerCat[id]);
       let fallbackImage: string | null = null;
 
