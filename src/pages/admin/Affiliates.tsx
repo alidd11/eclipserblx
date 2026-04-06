@@ -383,7 +383,7 @@ export default function AdminAffiliates() {
  <Button
  size="sm"
  onClick={() => processPayoutMutation.mutate(payout.id)}
- disabled={processPayoutMutation.isPending || !payout.user?.stripe_account_id}
+ disabled={processPayoutMutation.isPending || !payout.paymentDetails?.stripe_account_id}
  >
  {processPayoutMutation.isPending ? (
  <Loader2 className="h-4 w-4 animate-spin" />
