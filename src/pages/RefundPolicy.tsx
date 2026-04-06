@@ -21,7 +21,7 @@ export default function RefundPolicy() {
         </p>
 
         {/* Important Notice */}
-        <Card className="glass-card border-primary/50 mb-8">
+        <Card className="border border-primary/50 rounded-xl mb-8">
           <CardContent className="pt-6">
             <div className="flex items-start gap-4">
               <Scale className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
@@ -64,7 +64,7 @@ export default function RefundPolicy() {
               <Clock className="h-6 w-6 text-primary" />
               14-Day Cancellation Period
             </h2>
-            <Card className="glass-card mb-4">
+            <Card className="border border-border rounded-xl mb-4">
               <CardContent className="pt-6">
                 <p className="text-muted-foreground mb-4">
                   Under the Consumer Contracts Regulations 2013, you normally have 14 days to cancel 
@@ -96,7 +96,7 @@ export default function RefundPolicy() {
               You are entitled to a full or partial refund in the following circumstances:
             </p>
             <div className="space-y-4">
-              <Card className="glass-card">
+              <Card className="border border-border rounded-xl">
                 <CardContent className="pt-6">
                   <h4 className="font-semibold mb-2">Faulty Digital Content</h4>
                   <p className="text-sm text-muted-foreground">
@@ -106,7 +106,7 @@ export default function RefundPolicy() {
                   </p>
                 </CardContent>
               </Card>
-              <Card className="glass-card">
+              <Card className="border border-border rounded-xl">
                 <CardContent className="pt-6">
                   <h4 className="font-semibold mb-2">Content Not As Described</h4>
                   <p className="text-sm text-muted-foreground">
@@ -115,7 +115,7 @@ export default function RefundPolicy() {
                   </p>
                 </CardContent>
               </Card>
-              <Card className="glass-card">
+              <Card className="border border-border rounded-xl">
                 <CardContent className="pt-6">
                   <h4 className="font-semibold mb-2">Download Issues (Our Fault)</h4>
                   <p className="text-sm text-muted-foreground">
@@ -124,7 +124,7 @@ export default function RefundPolicy() {
                   </p>
                 </CardContent>
               </Card>
-              <Card className="glass-card">
+              <Card className="border border-border rounded-xl">
                 <CardContent className="pt-6">
                   <h4 className="font-semibold mb-2">Duplicate Purchase</h4>
                   <p className="text-sm text-muted-foreground">
@@ -179,7 +179,7 @@ export default function RefundPolicy() {
               <Mail className="h-6 w-6 text-primary" />
               How to Request a Refund
             </h2>
-            <Card className="glass-card">
+            <Card className="border border-border rounded-xl">
               <CardContent className="pt-6">
                 <ol className="list-decimal list-inside text-muted-foreground space-y-3">
                   <li>

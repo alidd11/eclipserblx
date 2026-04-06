@@ -144,7 +144,7 @@ export default function PrivacyPolicy() {
                   We use your personal data for the following purposes:
                 </p>
                 <div className="grid gap-4">
-                  <Card className="glass-card">
+                  <Card className="border border-border rounded-xl">
                     <CardContent className="pt-6">
                       <h4 className="font-semibold mb-2">Order Fulfilment</h4>
                       <p className="text-sm text-muted-foreground">
@@ -153,7 +153,7 @@ export default function PrivacyPolicy() {
                       </p>
                     </CardContent>
                   </Card>
-                  <Card className="glass-card">
+                  <Card className="border border-border rounded-xl">
                     <CardContent className="pt-6">
                       <h4 className="font-semibold mb-2">Account Management</h4>
                       <p className="text-sm text-muted-foreground">
@@ -161,7 +161,7 @@ export default function PrivacyPolicy() {
                       </p>
                     </CardContent>
                   </Card>
-                  <Card className="glass-card">
+                  <Card className="border border-border rounded-xl">
                     <CardContent className="pt-6">
                       <h4 className="font-semibold mb-2">Communication</h4>
                       <p className="text-sm text-muted-foreground">
@@ -170,7 +170,7 @@ export default function PrivacyPolicy() {
                       </p>
                     </CardContent>
                   </Card>
-                  <Card className="glass-card">
+                  <Card className="border border-border rounded-xl">
                     <CardContent className="pt-6">
                       <h4 className="font-semibold mb-2">Service Improvement</h4>
                       <p className="text-sm text-muted-foreground">
@@ -179,7 +179,7 @@ export default function PrivacyPolicy() {
                       </p>
                     </CardContent>
                   </Card>
-                  <Card className="glass-card">
+                  <Card className="border border-border rounded-xl">
                     <CardContent className="pt-6">
                       <h4 className="font-semibold mb-2">Security &amp; Fraud Prevention</h4>
                       <p className="text-sm text-muted-foreground">
