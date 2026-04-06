@@ -22,8 +22,7 @@ export default function PrivacyPolicy() {
         <div className="prose prose-invert max-w-none space-y-10">
           {/* Introduction */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <Shield className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               Introduction
             </h2>
             <p className="text-muted-foreground">
@@ -42,8 +41,7 @@ export default function PrivacyPolicy() {
 
           {/* Data We Collect */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <Database className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               Information We Collect
             </h2>
             
@@ -92,8 +90,7 @@ export default function PrivacyPolicy() {
 
           {/* Legal Bases */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <Scale className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               Legal Bases for Processing (Article 6 UK GDPR)
             </h2>
             <p className="text-muted-foreground mb-4">
@@ -138,8 +135,7 @@ export default function PrivacyPolicy() {
 
           {/* How We Use Data */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <UserCheck className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               How We Use Your Information
             </h2>
             <p className="text-muted-foreground mb-4">
@@ -187,8 +183,7 @@ export default function PrivacyPolicy() {
 
           {/* Cookies */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <Cookie className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               Cookies &amp; Consent Management
             </h2>
             <p className="text-muted-foreground mb-4">
@@ -227,8 +222,7 @@ export default function PrivacyPolicy() {
 
           {/* Data Sharing & Sub-processors */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <Globe className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               Data Sharing &amp; Sub-Processors
             </h2>
             <p className="text-muted-foreground mb-4">
@@ -288,8 +282,7 @@ export default function PrivacyPolicy() {
 
           {/* Data Retention */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <Clock className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               Data Retention Schedule
             </h2>
             <p className="text-muted-foreground mb-4">
@@ -469,8 +462,7 @@ export default function PrivacyPolicy() {
 
           {/* International Transfers */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <Server className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               International Data Transfers
             </h2>
             <p className="text-muted-foreground">
@@ -521,8 +513,7 @@ export default function PrivacyPolicy() {
 
           {/* Contact */}
           <section>
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <Mail className="h-6 w-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold mb-4">
               Contact Us
             </h2>
             <p className="text-muted-foreground">
