@@ -154,7 +154,7 @@ export function DiscordNotificationsTab() {
  const isConfigured = !!value.trim();
 
  return (
- <div className="border border-border rounded-xl overflow-hidden" key={channel.key} className="border-border/50">
+ <div key={channel.key} className="border-border/50">
  <div className="p-4 p-4">
  <div className="flex flex-col sm:flex-row sm:items-start gap-3">
  <div className="flex items-start gap-3 flex-1 min-w-0">

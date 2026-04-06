@@ -343,7 +343,7 @@ export default function StoreReviewsPage() {
  ) : filteredReviews.length > 0 ? (
  <div className="space-y-4">
  {filteredReviews.map((review) => (
- <div className="border border-border rounded-xl overflow-hidden" key={review.id} className="overflow-hidden">
+ <div key={review.id} className="overflow-hidden">
  <div className="p-4 p-4">
  <div className="flex items-start gap-3">
  <Avatar className="h-10 w-10">

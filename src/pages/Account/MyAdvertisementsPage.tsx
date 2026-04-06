@@ -119,7 +119,7 @@ export default function MyAdvertisementsPage() {
  ) : (
  <div className="space-y-4">
  {advertisements?.map((ad) => (
- <div className="border border-border rounded-xl overflow-hidden" key={ad.id} className="bg-card border-border">
+ <div key={ad.id} className="bg-card border-border">
  <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
  <div className="flex items-start justify-between">
  <div className="space-y-1">

@@ -636,7 +636,7 @@ export default function ChatHistory() {
  </div>
  ) : (
  conversations.map((conv) => (
- <div className="border border-border rounded-xl overflow-hidden" key={conv.id}
+ <div key={conv.id}
  className="cursor-pointer hover:bg-muted/50 transition-colors"
  onClick={() => handleSelectConversation(conv)}
  >
@@ -681,7 +681,7 @@ export default function ChatHistory() {
  </div>
  ) : (
  tickets.map((ticket) => (
- <div className="border border-border rounded-xl overflow-hidden" key={ticket.id}
+ <div key={ticket.id}
  className="cursor-pointer hover:bg-muted/50 transition-colors"
  onClick={() => handleSelectTicket(ticket)}
  >

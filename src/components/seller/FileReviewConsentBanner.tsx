@@ -82,7 +82,7 @@ export function FileReviewConsentBanner() {
  <>
  <div className="space-y-3">
  {flaggedProducts.map((product) => (
- <div className="border border-border rounded-xl overflow-hidden" key={product.id} className="border-amber-500/50 bg-amber-500/5">
+ <div key={product.id} className="border-amber-500/50 bg-amber-500/5">
  <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 py-4">
  <div className="flex items-center gap-3 flex-1">
  <div className="p-2 rounded-lg bg-amber-500/10">

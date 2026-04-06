@@ -210,7 +210,7 @@ export function CommandPermissionsTab() {
  const isRestricted = cmdRoles.length > 0;
 
  return (
- <div className="border border-border rounded-xl overflow-hidden" key={cmd.name} className="border-border/50">
+ <div key={cmd.name} className="border-border/50">
  <div className="p-4 p-4 space-y-3">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">

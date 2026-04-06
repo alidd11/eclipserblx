@@ -45,7 +45,7 @@ export function FeatureCards() {
  {features.map((feature) => {
  const Icon = feature.icon;
  return (
- <div className="border border-border rounded-xl overflow-hidden" key={feature.title} className="bg-card border-border hover:border-primary/30 transition-colors">
+ <div key={feature.title} className="bg-card border-border hover:border-primary/30 transition-colors">
  <div className="p-4 p-4 md:p-5">
  <div className="flex items-start gap-3">
  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${feature.gradient} flex items-center justify-center shrink-0`}>

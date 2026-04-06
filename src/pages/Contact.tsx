@@ -183,7 +183,7 @@ export default function Contact() {
  {/* Contact Methods */}
  <div className="lg:col-span-1 space-y-4">
  {contactMethods.map((method, index) => (
- <div className="border border-border rounded-xl overflow-hidden" key={index} className="bg-card border-border">
+ <div key={index} className="bg-card border-border">
  <div className="p-4 p-4">
  {method.action ? (
  <button onClick={method.action} className="w-full text-left">

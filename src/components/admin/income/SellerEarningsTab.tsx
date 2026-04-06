@@ -193,7 +193,7 @@ export function SellerEarningsTab() {
  <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
  {isLoading ? (
  Array.from({ length: 5 }).map((_, i) => (
- <div className="border border-border rounded-xl overflow-hidden" key={i} className="p-4"><Skeleton className="h-16 w-full" /></div>
+ <div key={i} className="p-4"><Skeleton className="h-16 w-full" /></div>
  ))
  ) : (
  <>

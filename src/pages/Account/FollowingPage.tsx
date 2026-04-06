@@ -105,7 +105,7 @@ export function FollowingPage() {
  const accentColor = store.accent_color || 'hsl(var(--primary))';
  
  return (
- <div className="border border-border rounded-xl overflow-hidden" key={follow.id} className="overflow-hidden border-border bg-card hover:border-primary/40 transition-colors duration-200 group">
+ <div key={follow.id} className="overflow-hidden border-border bg-card hover:border-primary/40 transition-colors duration-200 group">
  {store.banner_url ? (
  <div className="relative h-20 overflow-hidden">
  <img src={store.banner_url} alt="" className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105" />

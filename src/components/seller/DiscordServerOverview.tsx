@@ -54,7 +54,7 @@ export function DiscordServerOverview() {
  return (
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
  {statItems.map((item) => (
- <div className="border border-border rounded-xl overflow-hidden" key={item.label} className="border-border/50">
+ <div key={item.label} className="border-border/50">
  <div className="p-4 p-3 flex flex-col gap-1.5">
  <div className="flex items-center gap-2">
  <item.icon className="h-4 w-4 text-muted-foreground" />

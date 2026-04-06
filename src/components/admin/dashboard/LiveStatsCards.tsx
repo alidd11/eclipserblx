@@ -74,7 +74,7 @@ export function LiveStatsCards() {
  return (
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
  {[...Array(4)].map((_, i) => (
- <div className="border border-border rounded-xl overflow-hidden" key={i} className="p-4">
+ <div key={i} className="p-4">
  <Skeleton className="h-4 w-20 mb-2" />
  <Skeleton className="h-8 w-16 mb-1" />
  <Skeleton className="h-3 w-24" />
@@ -121,7 +121,7 @@ export function LiveStatsCards() {
  return (
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
  {stats.map((stat) => (
- <div className="border border-border rounded-xl overflow-hidden" key={stat.label} className="p-4 hover:shadow-md transition-shadow">
+ <div key={stat.label} className="p-4 hover:shadow-md transition-shadow">
  <div className="flex items-center justify-between mb-2">
  <span className="text-xs text-muted-foreground font-medium">{stat.label}</span>
  <div className={cn('p-1.5 rounded-lg', stat.iconBg)}>
