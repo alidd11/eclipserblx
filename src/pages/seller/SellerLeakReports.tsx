@@ -339,7 +339,7 @@ export default function SellerLeakReports() {
             </div>
             </div>
             <div className="p-4 pt-2 space-y-2">
-              {scanResults.map((result: any) => {
+              {scanResults.map((result) => {
                 const confidenceBadge = result.confidence === 'confirmed'
                   ? { label: 'Confirmed', className: 'bg-destructive/15 text-destructive border-destructive/30' }
                   : result.confidence === 'high'
