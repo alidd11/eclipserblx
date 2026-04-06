@@ -1,11 +1,14 @@
 import { forwardRef, useCallback, useRef, useEffect } from 'react';
 import { Link, LinkProps } from 'react-router-dom';
+import { usePrefetchRoute } from '@/hooks/usePrefetchRoute';
 
 interface PrefetchLinkProps extends LinkProps {
   /** Query keys to prefetch on hover (optional — also warms the browser cache) */
   prefetchKeys?: string[][];
   /** Prefetch functions to call on hover */
   prefetchFn?: () => void;
+  /** Auto-prefetch route data based on the `to` path (default: true) */
+  autoRoutePrefetch?: boolean;
 }
 
 /**
@@ -14,7 +17,8 @@ interface PrefetchLinkProps extends LinkProps {
  * into the viewport (critical for mobile where there's no hover).
  */
 export const PrefetchLink = forwardRef<HTMLAnchorElement, PrefetchLinkProps>(
-  function PrefetchLink({ prefetchKeys, prefetchFn, onMouseEnter, onFocus, ...props }, ref) {
+  function PrefetchLink({ prefetchKeys, prefetchFn, autoRoutePrefetch = true, onMouseEnter, onFocus, ...props }, ref) {
+    const { prefetchForPath } = usePrefetchRoute();
     const hasPrefetched = useRef(false);
     const internalRef = useRef<HTMLAnchorElement | null>(null);
 
@@ -33,6 +37,11 @@ export const PrefetchLink = forwardRef<HTMLAnchorElement, PrefetchLinkProps>(
 
       // Call custom prefetch function
       prefetchFn?.();
+
+      // Auto-prefetch route data (category, store, etc.)
+      if (autoRoutePrefetch && typeof props.to === 'string') {
+        prefetchForPath(props.to);
+      }
 
       // Prefetch the page chunk via dynamic import hint
       if (typeof props.to === 'string') {
