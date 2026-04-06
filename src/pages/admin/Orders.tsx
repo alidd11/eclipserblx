@@ -154,7 +154,7 @@ export default function AdminOrders() {
  queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
  showSuccessNotification('Status Updated', 'Order status changed');
  },
- onError: (error: any) => {
+ onError: (error: Error) => {
  showErrorNotification('Update Failed', error.message);
  },
  });
