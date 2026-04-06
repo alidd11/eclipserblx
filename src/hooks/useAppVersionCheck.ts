@@ -41,7 +41,7 @@ function isCircuitBreakerOpen(): boolean {
 
     // Runtime fallback (survives storage failures, cleared on full page unload)
     if (window.__lastUpdateTimestamp && now - window.__lastUpdateTimestamp < CIRCUIT_BREAKER_WINDOW) {
-      console.log('[AppVersionCheck] Circuit breaker OPEN (runtime)');
+      console.debug('[AppVersionCheck] Circuit breaker OPEN (runtime)');
       return true;
     }
 
@@ -51,7 +51,7 @@ function isCircuitBreakerOpen(): boolean {
       if (ts) {
         const elapsed = now - parseInt(ts, 10);
         if (!isNaN(elapsed) && elapsed < CIRCUIT_BREAKER_WINDOW) {
-          console.log('[AppVersionCheck] Circuit breaker OPEN (storage)');
+          console.debug('[AppVersionCheck] Circuit breaker OPEN (storage)');
           return true;
         }
       }
@@ -151,7 +151,7 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
         safeStorage.setItem(LOCAL_VERSION_KEY, pendingVersion);
         safeSessionStorage.setItem(LOCAL_VERSION_KEY, pendingVersion);
         setInIndexedDB(LOCAL_VERSION_KEY, pendingVersion).catch(() => {});
-        console.log('[AppVersionCheck] Bootstrapped version from URL:', pendingVersion);
+        console.debug('[AppVersionCheck] Bootstrapped version from URL:', pendingVersion);
       }
       if (updateTime) setUpdateTimestamp(updateTime);
 
@@ -231,7 +231,7 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
 
   const checkForUpdate = useCallback(async () => {
     if (wasRecentlyUpdated() || isCircuitBreakerOpen()) {
-      console.log('[AppVersionCheck] Skipping check (recently updated or circuit breaker)');
+      console.debug('[AppVersionCheck] Skipping check (recently updated or circuit breaker)');
       return;
     }
     try {
@@ -246,16 +246,16 @@ export function useAppVersionCheck(options: UseAppVersionCheckOptions = {}) {
 
       // First run: no local version stored yet — just store it silently, never force reload
       if (localVersion === null) {
-        console.log('[AppVersionCheck] First run, storing version:', serverVersion.version);
+        console.debug('[AppVersionCheck] First run, storing version:', serverVersion.version);
         await setLocalVersion(serverVersion.version);
         return;
       }
 
       if (serverVersion.force_update && serverVersion.version !== localVersion) {
-        console.log('[AppVersionCheck] Force update:', localVersion, '->', serverVersion.version);
+        console.debug('[AppVersionCheck] Force update:', localVersion, '->', serverVersion.version);
         await forceAppUpdate(serverVersion.version);
       } else if (serverVersion.version !== localVersion) {
-        console.log('[AppVersionCheck] Silent version update:', localVersion, '->', serverVersion.version);
+        console.debug('[AppVersionCheck] Silent version update:', localVersion, '->', serverVersion.version);
         await setLocalVersion(serverVersion.version);
       }
     } catch {}

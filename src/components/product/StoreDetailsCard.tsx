@@ -35,7 +35,7 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
  <div className="relative h-20 overflow-hidden">
  <img 
  src={store.banner_url} 
- alt=""
+ alt={`${store.name} banner`}
  className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
  />
  {/* Gradient blend into black area */}

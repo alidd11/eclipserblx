@@ -217,7 +217,7 @@ export default function GlobalGuardPermissions() {
  {guild.icon ? (
  <img 
  src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
- alt=""
+ alt={guild.name || 'Discord server'}
  className="w-5 h-5 rounded-full"
  />
  ) : (
@@ -326,7 +326,7 @@ export default function GlobalGuardPermissions() {
  {guild?.icon ? (
  <img 
  src={`https://cdn.discordapp.com/icons/${guildId}/${guild.icon}.png`}
- alt=""
+ alt={guild?.name || 'Discord server'}
  className="w-5 h-5 rounded-full"
  />
  ) : (

@@ -48,7 +48,7 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
             {product.stores?.logo_url && (
               <img 
                 src={product.stores.logo_url} 
-                alt=""
+                alt={`${product.stores?.name} logo`}
                 className="h-5 w-5 rounded object-cover bg-background/10"
               />
             )}

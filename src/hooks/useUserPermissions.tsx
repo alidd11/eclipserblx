@@ -87,7 +87,7 @@ export function useUserPermissions(options: UseUserPermissionsOptions = {}) {
         return await fetchPermissions();
       } catch (error) {
         if (isJwtError(error)) {
-          console.log('[Permissions] JWT error, refreshing session...');
+          console.debug('[Permissions] JWT error, refreshing session...');
           const refreshResult = await withTimeout(supabase.auth.refreshSession(), 5000);
           if (!refreshResult || refreshResult.error) {
             console.warn('[Permissions] Session refresh failed:', refreshResult?.error?.message ?? 'timeout');

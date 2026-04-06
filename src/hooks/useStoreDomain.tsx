@@ -66,7 +66,7 @@ export function StoreDomainProvider({ children }: { children: ReactNode }) {
 
     const resolve = async () => {
       const hn = hostname.toLowerCase();
-      console.log('[StoreDomain] Resolving hostname:', hn);
+      console.debug('[StoreDomain] Resolving hostname:', hn);
 
       // ── Attempt 1: Direct Supabase client query ──
       try {
@@ -77,7 +77,7 @@ export function StoreDomainProvider({ children }: { children: ReactNode }) {
           .eq('status', 'active')
           .maybeSingle();
 
-        console.log('[StoreDomain] Direct query:', { data, error: error?.message });
+        console.debug('[StoreDomain] Direct query:', { data, error: error?.message });
 
         if (!cancelled && data?.store_id) {
           setStoreDomainData(data as unknown as StoreDomainData);
@@ -93,7 +93,7 @@ export function StoreDomainProvider({ children }: { children: ReactNode }) {
         const { data, error } = await supabase.functions.invoke('store-domain-manager', {
           body: { action: 'resolve-hostname', hostname: hn },
         });
-        console.log('[StoreDomain] Edge fn:', { data, error: error?.message, type: typeof data });
+        console.debug('[StoreDomain] Edge fn:', { data, error: error?.message, type: typeof data });
 
         let parsed = data;
         if (typeof data === 'string') {
@@ -121,7 +121,7 @@ export function StoreDomainProvider({ children }: { children: ReactNode }) {
           },
         });
         const arr = await res.json();
-        console.log('[StoreDomain] Raw fetch:', arr);
+        console.debug('[StoreDomain] Raw fetch:', arr);
         if (!cancelled && Array.isArray(arr) && arr.length > 0 && arr[0].store_id) {
           setStoreDomainData(arr[0] as unknown as StoreDomainData);
           setLoading(false);
