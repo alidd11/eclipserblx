@@ -32,7 +32,7 @@ export default function SellerWebhooks() {
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
   const [revealedSecrets, setRevealedSecrets] = useState<Set<string>>(new Set());
 
-  const storeId = activeStore?.id;
+  const storeId = activeStoreId;
 
   const { data: webhooks, isLoading } = useQuery({
     queryKey: ['seller-webhooks', storeId],
