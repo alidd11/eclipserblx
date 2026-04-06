@@ -123,7 +123,6 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
       icon: Home,
       items: [
         { title: t('sidebar.home'), icon: Home, href: '/' },
-        ...(isStaff ? [{ title: 'Admin Dashboard', icon: Shield, href: '/admin' }] : []),
       ],
     },
     {
@@ -421,19 +420,31 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
             </div>
           </div>
 
-          {/* Seller Dashboard — subtle enterprise CTA */}
-          {isSeller && (
-            <a
-              href="/seller"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={handleNavClick}
-              className="flex items-center justify-center gap-2 w-full rounded-lg bg-primary/10 text-primary border border-primary/20 py-2 text-[13px] font-semibold transition-colors hover:bg-primary/15"
-            >
-              <Zap className="h-3.5 w-3.5" />
-              Seller Dashboard
-            </a>
-          )}
+          {/* Dashboard CTAs — enterprise style */}
+          <div className="flex flex-col gap-1.5">
+            {isSeller && (
+              <a
+                href="/seller"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleNavClick}
+                className="flex items-center justify-center gap-2 w-full rounded-lg bg-primary/10 text-primary border border-primary/20 py-2 text-[13px] font-semibold transition-colors hover:bg-primary/15"
+              >
+                <Zap className="h-3.5 w-3.5" />
+                Seller Dashboard
+              </a>
+            )}
+            {isStaff && (
+              <a
+                href="/admin"
+                onClick={handleNavClick}
+                className="flex items-center justify-center gap-2 w-full rounded-lg bg-muted/50 text-foreground/70 border border-border py-2 text-[13px] font-semibold transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <Shield className="h-3.5 w-3.5" />
+                Admin Dashboard
+              </a>
+            )}
+          </div>
         </div>
       )}
 
