@@ -259,7 +259,8 @@ export function UserDialogs(props: UserDialogsProps) {
       </AlertDialog>
 
       {/* Customer Profile Dialog */}
-      <CustomerProfileDialog open={!!viewProfileUser} onOpenChange={() => setViewProfileUser(null)} profile={viewProfileUser} />
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      <CustomerProfileDialog open={!!viewProfileUser} onOpenChange={() => setViewProfileUser(null)} profile={viewProfileUser as any} />
     </>
   );
 }
