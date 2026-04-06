@@ -54,8 +54,8 @@ export function LandingHero() {
             The Marketplace for {wordRotator} Creators
           </h1>
 
-          <p className="text-sm text-foreground/60 max-w-md mb-6 leading-relaxed">
-            Premium scripts, models, UI kits and game assets. Lower fees, instant delivery.
+          <p className="text-sm sm:text-base text-foreground/60 max-w-md mb-6 leading-relaxed">
+            Premium scripts, models, UI kits and game assets.<br className="hidden sm:block" /> Lower fees, instant delivery.
           </p>
 
           <div className="flex items-center gap-4 mt-2">
