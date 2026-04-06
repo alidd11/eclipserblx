@@ -5501,8 +5501,11 @@ export type Database = {
           confidence: string
           created_at: string
           dismissed: boolean
+          extracted_fingerprint: string | null
           id: string
+          matched_display_name: string | null
           matched_query: string
+          matched_user_id: string | null
           product_id: string
           snippet: string | null
           source_domain: string
@@ -5513,8 +5516,11 @@ export type Database = {
           confidence?: string
           created_at?: string
           dismissed?: boolean
+          extracted_fingerprint?: string | null
           id?: string
+          matched_display_name?: string | null
           matched_query: string
+          matched_user_id?: string | null
           product_id: string
           snippet?: string | null
           source_domain: string
@@ -5525,8 +5531,11 @@ export type Database = {
           confidence?: string
           created_at?: string
           dismissed?: boolean
+          extracted_fingerprint?: string | null
           id?: string
+          matched_display_name?: string | null
           matched_query?: string
+          matched_user_id?: string | null
           product_id?: string
           snippet?: string | null
           source_domain?: string
