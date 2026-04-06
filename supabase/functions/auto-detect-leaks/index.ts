@@ -58,9 +58,8 @@ Deno.serve(async (req) => {
       const { data: sub } = await supabase
         .from("seller_subscriptions")
         .select("id")
-        .eq("seller_id", store.owner_id)
+        .eq("user_id", store.owner_id)
         .eq("status", "active")
-        .eq("plan_type", "pro")
         .maybeSingle();
 
       if (sub) proStores.push(store);

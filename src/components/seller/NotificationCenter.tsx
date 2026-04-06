@@ -15,6 +15,7 @@ const TYPE_STYLES: Record<string, string> = {
   payout: 'text-green-500 bg-green-500/10',
   refund_request: 'text-destructive bg-destructive/10',
   moderation: 'text-orange-500 bg-orange-500/10',
+  leak_detected: 'text-red-500 bg-red-500/10',
 };
 
 export function NotificationCenter() {
