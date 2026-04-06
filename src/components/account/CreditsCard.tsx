@@ -41,8 +41,8 @@ export function CreditsCard() {
               <span className="text-xs font-bold text-primary">+</span>
             </div>
             <div>
-              <p className="font-medium text-sm">Bonus credits with Eclipse+</p>
-              <p className="text-xs text-muted-foreground">Subscribers get extra credits on every top-up</p>
+              <p className="font-medium text-sm">Bonus credits on select offers</p>
+              <p className="text-xs text-muted-foreground">Extra credits may apply during special promotions</p>
             </div>
           </div>
         </div>

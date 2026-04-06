@@ -185,10 +185,6 @@ const faqCategories: FAQCategory[] = [
         answer: 'Yes! You retain 100% intellectual property ownership of all products you create and sell on Eclipse. We never claim rights to your work.',
       },
       {
-        question: 'What is Eclipse+ Early Access?',
-        answer: 'Eclipse+ subscribers get early access to new products from participating sellers. This helps drive initial sales and build momentum for your launches.',
-      },
-      {
         question: 'How do I get paid?',
         answer: 'Seller payouts are processed regularly. You can set up your preferred payout method in your seller dashboard under payment settings.',
       },
@@ -275,7 +271,7 @@ export default function FAQ() {
   usePageTracking({ pagePath: '/faq' });
   usePageMeta({
     title: 'FAQ',
-    description: 'Find answers to frequently asked questions about Eclipse marketplace — buying, selling, payments, Eclipse+ membership and more.',
+    description: 'Find answers to frequently asked questions about Eclipse marketplace — buying, selling, payments, and support.',
     canonicalPath: '/faq',
   });
   const { t } = useTranslation();

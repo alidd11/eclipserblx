@@ -673,19 +673,6 @@ export default function SellerProductEditor() {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Eclipse+ Free Claim</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Allow Eclipse+ members to claim this product for free
-                  </p>
-                </div>
-                <Switch
-                  checked={formData.eclipse_free_eligible}
-                  onCheckedChange={(checked) => setFormData({ ...formData, eclipse_free_eligible: checked })}
-                />
-              </div>
-
               {/* Pay What You Want */}
               <div className="space-y-4 pt-4 border-t">
                 {!store?.pwyw_enabled ? (

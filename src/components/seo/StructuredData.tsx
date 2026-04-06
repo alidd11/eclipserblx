@@ -219,7 +219,6 @@ export function SiteNavigationSchema() {
       { name: 'Categories', url: 'https://eclipserblx.com/categories' },
       { name: 'Featured Products', url: 'https://eclipserblx.com/featured' },
       { name: 'Stores', url: 'https://eclipserblx.com/stores' },
-      { name: 'Eclipse+ Membership', url: 'https://eclipserblx.com/eclipse-plus' },
       { name: 'FAQ', url: 'https://eclipserblx.com/faq' },
       { name: 'Support', url: 'https://eclipserblx.com/support' },
       { name: 'Contact', url: 'https://eclipserblx.com/contact' },

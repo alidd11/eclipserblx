@@ -40,7 +40,7 @@ interface UnifiedTransaction {
 
 const sourceConfig: Record<Exclude<IncomeSource, 'all'>, { label: string; icon: typeof ShoppingCart; color: string; chartColor: string; badgeVariant: string }> = {
   orders: { label: 'Product Sales', icon: ShoppingCart, color: 'text-emerald-500', chartColor: 'hsl(152, 69%, 53%)', badgeVariant: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
-  subscriptions: { label: 'Eclipse+', icon: Crown, color: 'text-amber-500', chartColor: 'hsl(38, 92%, 50%)', badgeVariant: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
+  subscriptions: { label: 'Subscriptions', icon: Crown, color: 'text-amber-500', chartColor: 'hsl(38, 92%, 50%)', badgeVariant: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
   ads: { label: 'Advertising', icon: Megaphone, color: 'text-blue-500', chartColor: 'hsl(217, 91%, 60%)', badgeVariant: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
   credits: { label: 'Credit Purchases', icon: CreditCard, color: 'text-purple-500', chartColor: 'hsl(262, 100%, 71%)', badgeVariant: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
   robux: { label: 'Robux', icon: Gamepad2, color: 'text-red-500', chartColor: 'hsl(0, 84%, 60%)', badgeVariant: 'bg-red-500/10 text-red-500 border-red-500/20' },
@@ -209,7 +209,7 @@ export default function AdminIncomeSources() {
       const price = s.billing_period === 'annual' ? eclipsePricing.annual : eclipsePricing.monthly;
       txns.push({
         id: s.id, source: 'subscriptions',
-        description: `Eclipse+ ${(s.tier ?? 'plus')} (${s.billing_period ?? 'monthly'})`,
+        description: `Subscription ${(s.tier ?? 'plus')} (${s.billing_period ?? 'monthly'})`,
         amount: price, currency: '£', status: s.status, date: s.created_at,
         metadata: s.stripe_subscription_id ?? undefined,
       });

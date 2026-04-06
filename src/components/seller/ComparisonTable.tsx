@@ -26,7 +26,7 @@ const comparisonData: ComparisonFeature[] = [
   },
   {
     feature: "Commission Rate",
-    eclipse: "15% (10% Eclipse+) on NET",
+    eclipse: "15% (10% Pro+) on NET",
     clearlyDev: "Service fees vary",
     kwStudio: "Varies by license",
     robloxStore: "30% flat rate",

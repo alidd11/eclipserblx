@@ -61,7 +61,7 @@ export default function SellerCommissions() {
     },
   });
 
-  // Fetch Eclipse+ subscriptions for store owners
+  // Fetch Pro+ subscriptions for store owners
   const { data: ownerSubscriptions } = useQuery({
     queryKey: ['store-owner-subscriptions', stores?.map(s => s.owner_id)],
     queryFn: async () => {
@@ -144,7 +144,7 @@ export default function SellerCommissions() {
                 <span className="font-medium">{defaultRate}%</span>
               </div>
               <div className="flex items-center gap-2">
-                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500">Eclipse+</Badge>
+                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500">Pro+</Badge>
                 <span className="font-medium">{eclipseRate}%</span>
               </div>
             </div>
@@ -225,7 +225,7 @@ export default function SellerCommissions() {
                           {hasEclipsePlus && (
                             <Badge className="gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 text-xs shrink-0">
                               <Sparkles className="h-3 w-3" />
-                              Eclipse+
+                              Pro+
                             </Badge>
                           )}
                           {store.eclipse_plus_discount_enabled === false ? (

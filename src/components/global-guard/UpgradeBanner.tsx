@@ -95,7 +95,7 @@ export function UpgradeBanner({ currentServers = 0, maxServers = 2, variant = 'f
             <div>
               <span className="font-medium">Base Plan</span>
               <span className="text-xs text-muted-foreground ml-2">
-                ({includedServers} servers included{isSubscribed && ' - Eclipse+ bonus'})
+                ({includedServers} servers included)
               </span>
             </div>
             <span className="font-semibold">£{basePrice.toFixed(2)}/mo</span>
@@ -105,7 +105,7 @@ export function UpgradeBanner({ currentServers = 0, maxServers = 2, variant = 'f
             <div className="flex items-center gap-2">
               <span className="font-medium">Additional Servers</span>
               <span className="text-xs text-muted-foreground">
-                (£{additionalPrice.toFixed(2)} each{isSubscribed && ' - Eclipse+ discount'})
+                (£{additionalPrice.toFixed(2)} each)
               </span>
             </div>
             <div className="flex items-center gap-2">

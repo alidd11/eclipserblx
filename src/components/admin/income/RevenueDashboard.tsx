@@ -275,7 +275,7 @@ export function RevenueDashboard() {
       { name: 'Product Sales', value: Math.round(allTimeGross) },
       { name: 'Commission', value: Math.round(totalCommission) },
       { name: 'Advertising', value: Math.round(totalAdRevenue) },
-      { name: 'Eclipse+', value: Math.round(mrr * 12) },
+      { name: 'Subscriptions', value: Math.round(mrr * 12) },
       { name: 'Credits', value: Math.round(totalCredits) },
       { name: 'Robux (est.)', value: Math.round(totalRobuxGBP) },
     ].filter(c => c.value > 0);
@@ -361,7 +361,7 @@ export function RevenueDashboard() {
               isLoading={isLoading}
             />
             <KPICard
-              label="MRR (Eclipse+)"
+              label="Subscription MRR"
               value={`£${metrics.mrr.toFixed(2)}`}
               subtitle={`${metrics.activeSubs} subscribers`}
               isLoading={isLoading}

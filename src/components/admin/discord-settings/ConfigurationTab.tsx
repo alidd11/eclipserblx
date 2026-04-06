@@ -48,7 +48,7 @@ export function ConfigurationTab({ formData, handleChange, testingWebhook, webho
           <div className="p-1.5 rounded bg-blue-500/20"><UserCheck className="h-4 w-4 text-blue-400" /></div>
           <div>
             <h4 className="font-medium text-sm">Discord Role Integration</h4>
-            <p className="text-xs text-muted-foreground">Auto-assign roles to Eclipse+ subscribers</p>
+            <p className="text-xs text-muted-foreground">Auto-assign roles to subscribers</p>
           </div>
         </div>
         <div className="bg-muted/50 p-3 rounded text-xs text-muted-foreground space-y-1">

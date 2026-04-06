@@ -36,15 +36,15 @@ const earningsBreakdown = [
   { label: "Customer pays", value: "£10.00", type: "neutral" },
   { label: "Platform commission (15%)", value: "-£1.50", type: "fee" },
   { label: "Your earnings", value: "£8.50", type: "earning" },
-  { label: "Eclipse+ seller commission (10%)", value: "-£1.00", type: "fee" },
-  { label: "Your earnings (Eclipse+ seller)", value: "£9.00", type: "highlight" },
+  { label: "Pro+ seller commission (10%)", value: "-£1.00", type: "fee" },
+  { label: "Your earnings (Pro+ seller)", value: "£9.00", type: "highlight" },
 ];
 
 const importantNotes = [
   {
     icon: Info,
-    title: "Eclipse+ Buyer Discounts",
-    description: "When an Eclipse+ member buys your product at a discounted price, the platform absorbs the discount. You always earn based on the full listing price.",
+    title: "Discounted Purchases",
+    description: "When a customer buys your product at a discounted price, the platform absorbs the discount. You always earn based on the full listing price.",
   },
   {
     icon: Calculator,
@@ -86,7 +86,7 @@ export default function PayoutsFinanceGuide() {
             </div>
             <div className="border border-border rounded-xl overflow-hidden border-primary/50 bg-primary/5">
               <div className="p-4 pt-6 text-center">
-                <Badge className="mb-3 bg-gradient-to-r from-amber-500 to-yellow-500">Eclipse+ Seller</Badge>
+                <Badge className="mb-3 bg-gradient-to-r from-amber-500 to-yellow-500">Pro+ Seller</Badge>
                 <p className="text-4xl font-bold text-primary">90%</p>
                 <p className="text-sm text-muted-foreground mt-2">of net earnings (10% commission)</p>
               </div>

@@ -133,7 +133,7 @@ export const ActiveOffersCard = forwardRef<HTMLDivElement>(function ActiveOffers
       if (error) throw error;
 
       if (data?.claimed) {
-        toast.success(`Claimed ${data.days} days of Eclipse+!`);
+        toast.success('Claimed your offer!');
         // Refresh claims and subscription data
         queryClient.invalidateQueries({ queryKey: ['user-promotion-claims'] });
         queryClient.invalidateQueries({ queryKey: ['subscription'] });

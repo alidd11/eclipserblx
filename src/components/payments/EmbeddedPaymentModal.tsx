@@ -340,7 +340,7 @@ export function EmbeddedPaymentModal({
     switch (paymentType) {
       case 'checkout': return 'Complete Purchase';
       case 'credits': return 'Add Credits';
-      case 'subscription': return 'Subscribe to Eclipse+';
+      case 'subscription': return 'Complete Subscription';
       case 'ad_pings': return 'Purchase Ad Pings';
       default: return 'Payment';
     }
@@ -350,7 +350,7 @@ export function EmbeddedPaymentModal({
     switch (paymentType) {
       case 'checkout': return 'Enter your payment details to complete your order.';
       case 'credits': return `Add £${amount?.toFixed(2)} to your account balance.`;
-      case 'subscription': return `Subscribe to Eclipse+ ${tier} (${billingPeriod}).`;
+      case 'subscription': return `Start subscription ${tier} (${billingPeriod}).`;
       case 'ad_pings': return 'Purchase additional pings for your advertisements.';
       default: return 'Complete your payment securely.';
     }

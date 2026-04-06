@@ -13,7 +13,7 @@ export default function HelpCenterBuyers() {
   usePageTracking({ pagePath: '/help-center/buyers' });
   usePageMeta({
     title: 'Buyer Help Center',
-    description: `Find answers about purchasing, downloads, payments, refunds, Discord bots, Eclipse+ membership, and account security on ${SITE_NAME}.`,
+    description: `Find answers about purchasing, downloads, payments, refunds, Discord bots, and account security on ${SITE_NAME}.`,
     canonicalPath: '/help-center/buyers',
   });
 

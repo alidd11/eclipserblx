@@ -109,7 +109,7 @@ export const DiscordLinkCard = ({
                   granted_by_admin: false,
                 },
               });
-              toast.success("Eclipse+ Role Requested", { description: "Your Eclipse+ role should be assigned shortly." });
+              toast.success("Role Requested", { description: "Your subscriber role should be assigned shortly." });
             } catch (webhookError) {
               console.error("Webhook error:", webhookError);
             }
@@ -229,7 +229,7 @@ export const DiscordLinkCard = ({
           )}
         </div>
         <CardDescription>
-          Link your Discord to receive the Eclipse+ role automatically
+          Link your Discord to enable automatic role syncing
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -273,11 +273,6 @@ export const DiscordLinkCard = ({
               </p>
             )}
             
-            {!hasEclipsePlus && !accountsLocked && (
-              <p className="text-sm text-muted-foreground text-center">
-                Subscribe to Eclipse+ to get the special Discord role!
-              </p>
-            )}
           </div>
         ) : (
           <div className="space-y-4">
