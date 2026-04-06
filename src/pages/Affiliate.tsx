@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { 
   DollarSign, TrendingUp, Loader2, CheckCircle,
-  ArrowUpRight, Clock, Users, Gift, Zap, Copy, ExternalLink,
+  ArrowUpRight, Clock, Users, Copy, ExternalLink,
   CreditCard, BadgePercent, Star, Construction, MousePointerClick, UserPlus,
   Link as LinkIcon, Wallet
 } from 'lucide-react';

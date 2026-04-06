@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bell, Tag, Package, MessageCircle, ArrowLeft, Loader2, BellOff, Save, Send, Headphones } from 'lucide-react';
+import { Tag, Package, MessageCircle, ArrowLeft, Loader2, BellOff, Save, Send, Headphones } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
