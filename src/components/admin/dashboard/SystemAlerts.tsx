@@ -129,17 +129,15 @@ export function SystemAlerts() {
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base font-medium">
-          <AlertTriangle className="h-4 w-4 text-orange-500" />
-          Needs Attention
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {alerts.length} {alerts.length === 1 ? 'item' : 'items'}
-          </Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
+    <div className="border border-border rounded-xl overflow-hidden">
+      <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
+        <AlertTriangle className="h-4 w-4 text-orange-500" />
+        <h3 className="font-semibold text-sm">Needs Attention</h3>
+        <Badge variant="secondary" className="ml-auto text-xs">
+          {alerts.length} {alerts.length === 1 ? 'item' : 'items'}
+        </Badge>
+      </div>
+      <div className="p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {alerts.map((alert) => (
             <Link key={alert.id} to={alert.href}>
@@ -158,7 +156,7 @@ export function SystemAlerts() {
             </Link>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
