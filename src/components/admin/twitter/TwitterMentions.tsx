@@ -158,7 +158,7 @@ export function TwitterMentions({ xTheme }: { xTheme: XTheme }) {
                             <button
                               onClick={() => handleReply(tweet.id)}
                               disabled={!replyText.trim() || twitterAction.isPending}
-                              className="bg-[#1d9bf0] hover:bg-[#1a8cd8] disabled:opacity-50 text-white rounded-full px-4 py-1.5 text-[13px] font-bold transition-colors"
+                              className="bg-[#1d9bf0] hover:bg-[#1a8cd8] disabled:opacity-50 text-foreground rounded-full px-4 py-1.5 text-[13px] font-bold transition-colors"
                             >
                               Reply
                             </button>

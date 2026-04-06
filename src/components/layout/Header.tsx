@@ -202,7 +202,7 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Button className="h-9 px-3 text-sm rounded-md bg-[#5865F2] hover:bg-[#4752C4] text-white border-0 gap-1.5">
+              <Button className="h-9 px-3 text-sm rounded-md bg-[#5865F2] hover:bg-[#4752C4] text-foreground border-0 gap-1.5">
                 <svg
                   className="h-4 w-4"
                   viewBox="0 0 24 24"

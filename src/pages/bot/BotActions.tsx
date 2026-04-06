@@ -81,29 +81,29 @@ export default function BotActions() {
     <BotDashboardLayout>
       <div className="space-y-5 max-w-4xl mx-auto">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
             <Zap className="h-5 w-5 text-[hsl(258,90%,66%)]" />
             Bot Actions
           </h2>
-          <p className="text-xs sm:text-sm text-white/50 mt-1">Send messages and embeds to Discord channels</p>
+          <p className="text-xs sm:text-sm text-foreground/50 mt-1">Send messages and embeds to Discord channels</p>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[1fr,320px]">
           {/* Message Builder */}
-          <div className="rounded-xl bg-white/5 border border-white/10 p-4 sm:p-5 space-y-4">
+          <div className="rounded-xl bg-background/5 border border-white/10 p-4 sm:p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-white text-sm">Message Builder</h3>
+              <h3 className="font-semibold text-foreground text-sm">Message Builder</h3>
               <div className="flex items-center gap-2">
-                <Label className="text-xs text-white/50">Embed</Label>
+                <Label className="text-xs text-foreground/50">Embed</Label>
                 <Switch checked={useEmbed} onCheckedChange={setUseEmbed} />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs text-white/60 mb-1.5 block">Server</Label>
+                <Label className="text-xs text-foreground/60 mb-1.5 block">Server</Label>
                 <Select value={selectedGuild} onValueChange={(v) => { setSelectedGuild(v); setSelectedChannel(''); }}>
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                  <SelectTrigger className="bg-background/5 border-white/10 text-foreground">
                     <SelectValue placeholder="Select server" />
                   </SelectTrigger>
                   <SelectContent>
@@ -114,9 +114,9 @@ export default function BotActions() {
                 </Select>
               </div>
               <div>
-                <Label className="text-xs text-white/60 mb-1.5 block">Channel</Label>
+                <Label className="text-xs text-foreground/60 mb-1.5 block">Channel</Label>
                 <Select value={selectedChannel} onValueChange={setSelectedChannel} disabled={!selectedGuild || loadingChannels}>
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                  <SelectTrigger className="bg-background/5 border-white/10 text-foreground">
                     <SelectValue placeholder={loadingChannels ? 'Loading...' : 'Select channel'} />
                   </SelectTrigger>
                   <SelectContent>
@@ -131,27 +131,27 @@ export default function BotActions() {
             {useEmbed && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs text-white/60 mb-1.5 block">Embed Title</Label>
+                  <Label className="text-xs text-foreground/60 mb-1.5 block">Embed Title</Label>
                   <Input
                     placeholder="Announcement title..."
                     value={embedTitle}
                     onChange={(e) => setEmbedTitle(e.target.value)}
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                    className="bg-background/5 border-white/10 text-foreground placeholder:text-foreground/30"
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-white/60 mb-1.5 block">Color</Label>
+                  <Label className="text-xs text-foreground/60 mb-1.5 block">Color</Label>
                   <div className="flex gap-2">
                     <Input
                       type="color"
                       value={embedColor}
                       onChange={(e) => setEmbedColor(e.target.value)}
-                      className="w-12 h-9 p-1 cursor-pointer bg-white/5 border-white/10 shrink-0"
+                      className="w-12 h-9 p-1 cursor-pointer bg-background/5 border-white/10 shrink-0"
                     />
                     <Input
                       value={embedColor}
                       onChange={(e) => setEmbedColor(e.target.value)}
-                      className="font-mono text-xs bg-white/5 border-white/10 text-white"
+                      className="font-mono text-xs bg-background/5 border-white/10 text-foreground"
                     />
                   </div>
                 </div>
@@ -159,18 +159,18 @@ export default function BotActions() {
             )}
 
             <div>
-              <Label className="text-xs text-white/60 mb-1.5 block">{useEmbed ? 'Description' : 'Message'}</Label>
+              <Label className="text-xs text-foreground/60 mb-1.5 block">{useEmbed ? 'Description' : 'Message'}</Label>
               <Textarea
                 placeholder={useEmbed ? 'Embed description...' : 'Type your message...'}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={5}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none"
+                className="bg-background/5 border-white/10 text-foreground placeholder:text-foreground/30 resize-none"
               />
             </div>
 
             <Button
-              className="bg-[hsl(258,90%,66%)] hover:bg-[hsl(258,90%,60%)] text-white w-full sm:w-auto"
+              className="bg-[hsl(258,90%,66%)] hover:bg-[hsl(258,90%,60%)] text-foreground w-full sm:w-auto"
               onClick={() => sendMessage.mutate()}
               disabled={!selectedChannel || !message.trim() || sendMessage.isPending}
             >
@@ -181,18 +181,18 @@ export default function BotActions() {
 
           {/* Live Preview */}
           {useEmbed && (
-            <div className="rounded-xl bg-white/5 border border-white/10 p-4 sm:p-5 lg:sticky lg:top-4 self-start">
-              <h3 className="font-semibold text-white text-sm mb-3 flex items-center gap-2">
-                <Eye className="h-4 w-4 text-white/40" />
+            <div className="rounded-xl bg-background/5 border border-white/10 p-4 sm:p-5 lg:sticky lg:top-4 self-start">
+              <h3 className="font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
+                <Eye className="h-4 w-4 text-foreground/40" />
                 Embed Preview
               </h3>
               <div
                 className="rounded-md p-3 sm:p-4 border-l-4"
                 style={{ borderColor: embedColor, backgroundColor: 'rgba(255,255,255,0.03)' }}
               >
-                {embedTitle && <p className="font-bold text-white text-sm mb-1">{embedTitle}</p>}
-                <p className="text-sm text-white/70 whitespace-pre-wrap break-words">{message || 'Your description here...'}</p>
-                <p className="text-[10px] text-white/30 mt-3">{new Date().toLocaleString()}</p>
+                {embedTitle && <p className="font-bold text-foreground text-sm mb-1">{embedTitle}</p>}
+                <p className="text-sm text-foreground/70 whitespace-pre-wrap break-words">{message || 'Your description here...'}</p>
+                <p className="text-[10px] text-foreground/30 mt-3">{new Date().toLocaleString()}</p>
               </div>
             </div>
           )}

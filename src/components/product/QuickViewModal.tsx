@@ -63,7 +63,7 @@ export function QuickViewModal({ productId, onClose }: QuickViewModalProps) {
                 <button
                   key={i}
                   onClick={() => setImgIndex(i)}
-                  className={`h-1.5 w-1.5 rounded-full transition-colors ${i === imgIndex ? 'bg-primary' : 'bg-white/50'}`}
+                  className={`h-1.5 w-1.5 rounded-full transition-colors ${i === imgIndex ? 'bg-primary' : 'bg-background/50'}`}
                 />
               ))}
             </div>

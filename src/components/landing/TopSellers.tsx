@@ -60,7 +60,7 @@ export function TopSellers() {
               <div className="lg:hidden flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 hover:border-primary/40 transition-colors">
                 <div className="relative h-7 w-7 rounded-full overflow-hidden bg-muted border border-border flex-shrink-0">
                   {i < 3 && (
-                    <div className={`absolute -top-0.5 -right-0.5 z-10 h-4 w-4 rounded-full flex items-center justify-center text-[8px] font-bold text-white shadow-sm ${
+                    <div className={`absolute -top-0.5 -right-0.5 z-10 h-4 w-4 rounded-full flex items-center justify-center text-[8px] font-bold text-foreground shadow-sm ${
                       i === 0 ? 'bg-amber-500' : i === 1 ? 'bg-gray-400' : 'bg-amber-700'
                     }`}>
                       {i + 1}
@@ -84,7 +84,7 @@ export function TopSellers() {
                 <div className="flex items-center gap-3">
                   <div className="relative h-12 w-12 rounded-full overflow-hidden bg-muted border-2 border-border flex-shrink-0">
                     {i < 3 && (
-                      <div className={`absolute -top-1 -right-1 z-10 h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-md ${
+                      <div className={`absolute -top-1 -right-1 z-10 h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold text-foreground shadow-md ${
                         i === 0 ? 'bg-amber-500' : i === 1 ? 'bg-gray-400' : 'bg-amber-700'
                       }`}>
                         {i + 1}

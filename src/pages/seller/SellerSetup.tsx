@@ -194,7 +194,7 @@ export default function SellerSetup() {
                             'h-11 w-11 rounded-xl flex items-center justify-center bg-gradient-to-br',
                             isActive ? colorClass : 'from-muted to-muted'
                           )}>
-                            <Icon className={cn('h-5 w-5', isActive ? 'text-white' : 'text-muted-foreground')} />
+                            <Icon className={cn('h-5 w-5', isActive ? 'text-foreground' : 'text-muted-foreground')} />
                           </div>
                         )}
                         {step.required && !step.completed && (

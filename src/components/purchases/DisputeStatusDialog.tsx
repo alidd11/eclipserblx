@@ -266,7 +266,7 @@ export function DisputeStatusDialog({ open, onOpenChange, disputeId }: DisputeSt
                 </div>
                 <Button
                   onClick={() => setShowEscalateForm(true)}
-                  className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-foreground"
                 >
                   <ArrowUpRight className="h-4 w-4 mr-2" />
                   Escalate to Eclipse
@@ -297,7 +297,7 @@ export function DisputeStatusDialog({ open, onOpenChange, disputeId }: DisputeSt
                   <Button
                     onClick={() => escalateMutation.mutate()}
                     disabled={escalateMutation.isPending || !escalationReason.trim()}
-                    className="flex-1 bg-amber-600 hover:bg-amber-700 text-white"
+                    className="flex-1 bg-amber-600 hover:bg-amber-700 text-foreground"
                   >
                     {escalateMutation.isPending ? (
                       <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Escalating...</>

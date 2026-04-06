@@ -330,23 +330,23 @@ function HeroProductCard({ product }: { product: any }) {
         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] text-white/60 font-medium uppercase tracking-wider mb-1">
+              <p className="text-[10px] text-foreground/60 font-medium uppercase tracking-wider mb-1">
                 {product.categories?.name || 'Featured'}
               </p>
-              <h2 className="font-display text-lg md:text-2xl font-bold text-white truncate group-hover:text-primary transition-colors">
+              <h2 className="font-display text-lg md:text-2xl font-bold text-foreground truncate group-hover:text-primary transition-colors">
                 {product.name}
               </h2>
               {product.stores?.name && (
-                <p className="text-xs text-white/60 mt-0.5">by {product.stores.name}</p>
+                <p className="text-xs text-foreground/60 mt-0.5">by {product.stores.name}</p>
               )}
             </div>
 
             <div className="flex items-center gap-3 shrink-0">
               <div className="text-right">
                 {isEligible && (
-                  <p className="text-xs text-white/40 line-through">{formatPrice(Number(product.price))}</p>
+                  <p className="text-xs text-foreground/40 line-through">{formatPrice(Number(product.price))}</p>
                 )}
-                <p className="text-xl md:text-2xl font-bold text-white">
+                <p className="text-xl md:text-2xl font-bold text-foreground">
                   {isEligible ? formatPrice(memberPrice) : formatPrice(Number(product.price))}
                 </p>
                 {isEligible && (

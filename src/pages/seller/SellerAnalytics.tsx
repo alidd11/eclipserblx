@@ -460,7 +460,7 @@ export default function SellerAnalytics() {
                                     opacity: 0.85,
                                   }}
                                 >
-                                  <span className="text-sm font-bold text-white">
+                                  <span className="text-sm font-bold text-foreground">
                                     {step.value.toLocaleString()}
                                   </span>
                                 </div>

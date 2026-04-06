@@ -129,7 +129,7 @@ function SpotlightCard({ store }: { store: StoreData }) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
         <div className="absolute top-3 right-3 flex items-center gap-1.5">
           {store.is_verified && (
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500 text-white text-[11px] font-semibold" title="This seller has completed our identity and business verification process">
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500 text-foreground text-[11px] font-semibold" title="This seller has completed our identity and business verification process">
               <ShieldCheck className="h-3.5 w-3.5" />Verified Seller
             </span>
           )}
@@ -145,20 +145,20 @@ function SpotlightCard({ store }: { store: StoreData }) {
             )}
           </div>
           <div className="min-w-0 pb-1">
-            <h3 className="font-bold text-lg text-white truncate">{store.name}</h3>
+            <h3 className="font-bold text-lg text-foreground truncate">{store.name}</h3>
             <div className="flex items-center gap-3 mt-0.5">
               {store.average_rating ? (
-                <span className="text-sm text-white/80">
+                <span className="text-sm text-foreground/80">
                   <span className="text-amber-400">★</span> {store.average_rating.toFixed(1)}
                 </span>
               ) : null}
               {(store.follower_count ?? 0) > 0 && (
-                <span className="flex items-center gap-1 text-sm text-white/60">
+                <span className="flex items-center gap-1 text-sm text-foreground/60">
                   <Users className="h-3.5 w-3.5" />{store.follower_count}
                 </span>
               )}
               {(store.product_count ?? 0) > 0 && (
-                <span className="flex items-center gap-1 text-sm text-white/60">
+                <span className="flex items-center gap-1 text-sm text-foreground/60">
                   <Package className="h-3.5 w-3.5" />{store.product_count}
                 </span>
               )}
@@ -204,7 +204,7 @@ function StoreCard({ store }: { store: StoreData }) {
               </div>
             )}
           </div>
-          <h4 className="font-semibold text-sm text-white truncate pb-0.5">{store.name}</h4>
+          <h4 className="font-semibold text-sm text-foreground truncate pb-0.5">{store.name}</h4>
         </div>
       </div>
       <div className="px-3 py-2 flex items-center justify-between">

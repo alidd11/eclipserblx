@@ -34,19 +34,19 @@ const SpotlightCard = memo(function SpotlightCard({ product }: { product: Scored
           })()}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
           <div className="absolute bottom-0 inset-x-0 p-3 sm:p-4">
-            <h4 className="text-white font-bold text-sm sm:text-base line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h4>
+            <h4 className="text-foreground font-bold text-sm sm:text-base line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h4>
             <div className="flex items-center gap-2 mt-1">
               {hasMemberDiscount ? (
                 <>
                   <span className="text-amber-500 font-bold text-sm">{formatPrice(memberPrice)}</span>
-                  <span className="text-white/50 text-xs line-through">{formatPrice(product.price)}</span>
+                  <span className="text-foreground/50 text-xs line-through">{formatPrice(product.price)}</span>
                   <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[10px] font-bold">
                     <Crown className="h-2.5 w-2.5" />
                     {discountPercent}%
                   </span>
                 </>
               ) : (
-                <span className="text-white font-bold text-sm">{formatPrice(product.price)}</span>
+                <span className="text-foreground font-bold text-sm">{formatPrice(product.price)}</span>
               )}
             </div>
           </div>

@@ -55,7 +55,7 @@ const StoreCard = memo(forwardRef<HTMLAnchorElement, { store: StoreData; showTes
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
           {showTestingBadge && store.is_testing && (
             <div className="absolute top-2 right-2">
-              <Badge className="bg-orange-500/90 text-white border-0 text-[10px] gap-1">
+              <Badge className="bg-orange-500/90 text-foreground border-0 text-[10px] gap-1">
                 <FlaskConical className="h-2.5 w-2.5" />
                 Testing
               </Badge>
@@ -230,14 +230,14 @@ function SpotlightPrice({ product }: { product: { price: number; category_id: st
       {hasMemberDiscount ? (
         <>
           <span className="text-amber-500 font-bold text-sm">{formatPrice(memberPrice)}</span>
-          <span className="text-white/50 text-xs line-through">{formatPrice(product.price)}</span>
+          <span className="text-foreground/50 text-xs line-through">{formatPrice(product.price)}</span>
           <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[10px] font-bold">
             <Crown className="h-2.5 w-2.5" />
             {discountPercent}%
           </span>
         </>
       ) : (
-        <span className="text-white font-bold text-sm">{formatPrice(product.price)}</span>
+        <span className="text-foreground font-bold text-sm">{formatPrice(product.price)}</span>
       )}
     </div>
   );
@@ -422,7 +422,7 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
                               })()}
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                               <div className="absolute bottom-0 inset-x-0 p-2.5 sm:p-4">
-                                <h4 className="text-white font-bold text-xs sm:text-base line-clamp-1 group-hover:text-primary transition-colors">{spotlight.name}</h4>
+                                <h4 className="text-foreground font-bold text-xs sm:text-base line-clamp-1 group-hover:text-primary transition-colors">{spotlight.name}</h4>
                                 <SpotlightPrice product={spotlight} />
                               </div>
                             </div>

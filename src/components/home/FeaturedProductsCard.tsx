@@ -303,7 +303,7 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
         
         {/* HOT Badge */}
         {product.is_featured && (
-          <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-amber-500 text-[10px] font-bold text-black">
+          <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-amber-500 text-[10px] font-bold text-foreground">
             HOT
           </div>
         )}

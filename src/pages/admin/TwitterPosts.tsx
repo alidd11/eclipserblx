@@ -19,19 +19,19 @@ export default function TwitterPosts() {
 
   const theme = xDark
     ? {
-        bg: 'bg-black',
+        bg: 'bg-foreground',
         text: 'text-[#e7e9ea]',
         textSecondary: 'text-[#71767b]',
         border: 'border-[#2f3336]',
         hover: 'hover:bg-[#181818]',
-        headerBg: 'bg-black/80',
+        headerBg: 'bg-foreground/80',
         accent: 'text-[#1d9bf0]',
         accentBg: 'bg-[#1d9bf0]',
         tabActive: 'text-[#e7e9ea]',
         tabInactive: 'text-[#71767b]',
         tabIndicator: 'bg-[#1d9bf0]',
         inputBg: 'bg-[#202327]',
-        cardBg: 'bg-black',
+        cardBg: 'bg-foreground',
         sidebarText: 'text-[#e7e9ea]',
         sidebarHover: 'hover:bg-[#181818]',
         searchBg: 'bg-[#202327]',
@@ -41,19 +41,19 @@ export default function TwitterPosts() {
         trendBg: 'bg-[#16181c]',
       }
     : {
-        bg: 'bg-white',
+        bg: 'bg-background',
         text: 'text-[#0f1419]',
         textSecondary: 'text-[#536471]',
         border: 'border-[#eff3f4]',
         hover: 'hover:bg-[#f7f9f9]',
-        headerBg: 'bg-white/80',
+        headerBg: 'bg-background/80',
         accent: 'text-[#1d9bf0]',
         accentBg: 'bg-[#1d9bf0]',
         tabActive: 'text-[#0f1419]',
         tabInactive: 'text-[#536471]',
         tabIndicator: 'bg-[#1d9bf0]',
         inputBg: 'bg-[#eff3f4]',
-        cardBg: 'bg-white',
+        cardBg: 'bg-background',
         sidebarText: 'text-[#0f1419]',
         sidebarHover: 'hover:bg-[#f7f9f9]',
         searchBg: 'bg-[#eff3f4]',
@@ -112,7 +112,7 @@ export default function TwitterPosts() {
               </nav>
 
               {/* Post button */}
-              <button className="mt-4 w-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white rounded-full py-3 text-[17px] font-bold transition-colors">
+              <button className="mt-4 w-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-foreground rounded-full py-3 text-[17px] font-bold transition-colors">
                 Post
               </button>
 
@@ -240,7 +240,7 @@ export default function TwitterPosts() {
                       <p className={`text-[15px] font-bold ${theme.text} truncate`}>{user.name}</p>
                       <p className={`text-[15px] ${theme.textSecondary} truncate`}>{user.handle}</p>
                     </div>
-                    <button className={`${xDark ? 'bg-[#eff3f4] text-[#0f1419]' : 'bg-[#0f1419] text-white'} rounded-full px-4 py-1.5 text-[13px] font-bold`}>
+                    <button className={`${xDark ? 'bg-[#eff3f4] text-[#0f1419]' : 'bg-[#0f1419] text-foreground'} rounded-full px-4 py-1.5 text-[13px] font-bold`}>
                       Follow
                     </button>
                   </div>

@@ -78,7 +78,7 @@ function CompactProductCard({ product, index }: { product: HeroProduct; index: n
               <img 
                 src={product.stores.logo_url} 
                 alt={product.stores.name}
-                className="h-3.5 w-3.5 rounded object-contain bg-white/10"
+                className="h-3.5 w-3.5 rounded object-contain bg-background/10"
               />
             ) : (
               <Store className="h-3 w-3 text-muted-foreground" />

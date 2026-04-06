@@ -123,7 +123,7 @@ function SpotlightStoreCard({ store }: { store: FeaturedStore }) {
         {/* Badges top-right */}
         <div className="absolute top-3 right-3 flex items-center gap-1.5">
           {store.is_verified && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500 text-white text-[10px] font-semibold shadow" title="This seller has completed our identity and business verification process">
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500 text-foreground text-[10px] font-semibold shadow" title="This seller has completed our identity and business verification process">
               <ShieldCheck className="h-3 w-3" />{t('landing.verified')} Seller
             </span>
           )}
@@ -141,26 +141,26 @@ function SpotlightStoreCard({ store }: { store: FeaturedStore }) {
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-base text-white truncate leading-tight">{store.name}</h3>
+            <h3 className="font-bold text-base text-foreground truncate leading-tight">{store.name}</h3>
             <div className="flex items-center gap-2 mt-0.5">
               {(store.follower_count ?? 0) > 0 && (
-                <span className="flex items-center gap-1 text-[11px] text-white/60">
+                <span className="flex items-center gap-1 text-[11px] text-foreground/60">
                   <Users className="h-3 w-3" />{store.follower_count}
                 </span>
               )}
               {(store.product_count ?? 0) > 0 && (
-                <span className="flex items-center gap-1 text-[11px] text-white/60">
+                <span className="flex items-center gap-1 text-[11px] text-foreground/60">
                   <Package className="h-3 w-3" />{store.product_count} products
                 </span>
               )}
               {store.average_rating ? (
-                <span className="text-[11px] text-white/60">
+                <span className="text-[11px] text-foreground/60">
                   <span className="text-amber-400">★</span> {store.average_rating.toFixed(1)}
                 </span>
               ) : null}
             </div>
           </div>
-          <span className="flex items-center gap-0.5 text-[11px] text-white/80 font-medium group-hover:text-white transition-colors flex-shrink-0">
+          <span className="flex items-center gap-0.5 text-[11px] text-foreground/80 font-medium group-hover:text-foreground transition-colors flex-shrink-0">
             {t('landing.viewStore')}<ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </span>
         </div>
@@ -204,7 +204,7 @@ function CompactStoreCard({ store }: { store: FeaturedStore }) {
               </div>
             )}
           </div>
-          <h4 className="font-medium text-xs text-white truncate pb-0.5">{store.name}</h4>
+          <h4 className="font-medium text-xs text-foreground truncate pb-0.5">{store.name}</h4>
         </div>
       </div>
       {/* Stats */}

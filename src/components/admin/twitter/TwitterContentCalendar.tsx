@@ -133,7 +133,7 @@ export function TwitterContentCalendar({ xTheme }: { xTheme: XTheme }) {
             >
               <span className={`text-[13px] leading-6 ${
                 isToday
-                  ? 'bg-[#1d9bf0] text-white rounded-full w-6 h-6 flex items-center justify-center font-bold'
+                  ? 'bg-[#1d9bf0] text-foreground rounded-full w-6 h-6 flex items-center justify-center font-bold'
                   : `${xTheme.text}`
               }`}>
                 {day.getDate()}

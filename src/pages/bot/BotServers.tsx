@@ -34,7 +34,7 @@ export default function BotServers() {
       <div className="space-y-5 max-w-4xl mx-auto">
         <div className="flex items-center justify-between">
           <div className="min-w-0">
-            <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
               <Server className="h-5 w-5 text-[hsl(258,90%,66%)] shrink-0" />
               <span className="truncate">Connected Servers</span>
               {guilds && (
@@ -43,14 +43,14 @@ export default function BotServers() {
                 </Badge>
               )}
             </h2>
-            <p className="text-xs sm:text-sm text-white/50 mt-1">All Discord servers the bot is connected to</p>
+            <p className="text-xs sm:text-sm text-foreground/50 mt-1">All Discord servers the bot is connected to</p>
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="text-white/60 hover:text-white hover:bg-white/10 shrink-0 h-8 w-8"
+            className="text-foreground/60 hover:text-foreground hover:bg-background/10 shrink-0 h-8 w-8"
           >
             <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
           </Button>
@@ -59,37 +59,37 @@ export default function BotServers() {
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
-                <Skeleton className="w-12 h-12 rounded-full bg-white/10 shrink-0" />
+              <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-background/5 border border-white/10">
+                <Skeleton className="w-12 h-12 rounded-full bg-background/10 shrink-0" />
                 <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-32 bg-white/10" />
-                  <Skeleton className="h-3 w-48 bg-white/10" />
+                  <Skeleton className="h-4 w-32 bg-background/10" />
+                  <Skeleton className="h-3 w-48 bg-background/10" />
                 </div>
               </div>
             ))}
           </div>
         ) : !guilds?.length ? (
           <div className="text-center py-16">
-            <Server className="h-10 w-10 mx-auto mb-3 text-white/20" />
-            <p className="text-sm text-white/40">No servers found</p>
+            <Server className="h-10 w-10 mx-auto mb-3 text-foreground/20" />
+            <p className="text-sm text-foreground/40">No servers found</p>
           </div>
         ) : (
           <div className="grid gap-2 sm:gap-3">
             {guilds.map((guild) => (
-              <div key={guild.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/[0.07] transition-colors active:scale-[0.99]">
+              <div key={guild.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-background/5 border border-white/10 hover:bg-background/[0.07] transition-colors active:scale-[0.99]">
                 {getIconUrl(guild) ? (
                   <img src={getIconUrl(guild)!} alt={guild.name} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full shrink-0" />
                 ) : (
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                    <Server className="h-4 w-4 sm:h-5 sm:w-5 text-white/40" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-background/10 flex items-center justify-center shrink-0">
+                    <Server className="h-4 w-4 sm:h-5 sm:w-5 text-foreground/40" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-white text-sm sm:text-base truncate">{guild.name}</p>
-                  <p className="text-[10px] sm:text-xs text-white/40 font-mono truncate">{guild.id}</p>
+                  <p className="font-semibold text-foreground text-sm sm:text-base truncate">{guild.name}</p>
+                  <p className="text-[10px] sm:text-xs text-foreground/40 font-mono truncate">{guild.id}</p>
                 </div>
                 {(guild.approximate_member_count || guild.member_count) && (
-                  <div className="flex items-center gap-1 text-xs sm:text-sm text-white/50 shrink-0">
+                  <div className="flex items-center gap-1 text-xs sm:text-sm text-foreground/50 shrink-0">
                     <Users className="h-3.5 w-3.5" />
                     {(guild.approximate_member_count || guild.member_count)?.toLocaleString()}
                   </div>

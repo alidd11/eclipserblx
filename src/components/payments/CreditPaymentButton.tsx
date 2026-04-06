@@ -86,7 +86,7 @@ export function CreditPaymentButton({
         disabled={isDisabled}
         className={`w-full h-14 font-semibold text-base ${
           canAfford 
-            ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white border-0' 
+            ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-foreground border-0' 
             : 'bg-muted text-muted-foreground cursor-not-allowed'
         }`}
       >
