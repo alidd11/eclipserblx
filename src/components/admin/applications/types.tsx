@@ -31,6 +31,7 @@ export interface JobApplication {
   notes: string | null;
   reviewed_by: string | null;
   reviewed_at: string | null;
+  access_token: string;
   created_at: string;
   updated_at: string;
 }
