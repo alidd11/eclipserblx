@@ -125,7 +125,7 @@ export function ExportReportsCard() {
  if (error) throw error;
 
  headers = ['Product Name', 'Price', 'Downloads', 'Category', 'Status', 'Active', 'Created Date'];
- data = (products || []).map((p: any) => [
+ data = (products || []).map((p) => [
  p.name,
  p.price?.toFixed(2) || '0.00',
  p.download_count?.toString() || '0',
