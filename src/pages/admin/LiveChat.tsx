@@ -223,7 +223,7 @@ export default function AdminLiveChat() {
         }
       )
       .subscribe((status) => {
-        console.log('AdminLiveChat conversations channel status:', status);
+        // conversations channel subscribed
       });
 
     return () => {
@@ -289,7 +289,7 @@ export default function AdminLiveChat() {
         }
       )
       .subscribe((status) => {
-        console.log('AdminLiveChat messagesChannel status:', status);
+        // messages channel subscribed
       });
 
     // Typing indicator channel
@@ -303,7 +303,7 @@ export default function AdminLiveChat() {
         setCustomerTyping(isTyping);
       })
       .subscribe((status) => {
-        console.log('AdminLiveChat typingChannel status:', status);
+        // typing channel subscribed
       });
 
     // Reuse this single presence channel for outgoing typing events

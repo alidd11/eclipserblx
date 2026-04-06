@@ -39,7 +39,7 @@ export function BotLicenseBundleSelector({
         .maybeSingle();
 
       if (botError || !botProduct) {
-        console.log('No bot product found for:', productId);
+        // No bot product found for this product
         return [];
       }
 

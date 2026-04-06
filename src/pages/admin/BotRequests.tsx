@@ -77,7 +77,7 @@ export default function AdminBotRequests() {
           table: 'bot_installation_codes'
         },
         (payload) => {
-          console.log('New bot code received:', payload);
+          // New bot code received
           toast.info('New Bot Request', {
             description: `New installation request for ${payload.new.product_name}`,
           });

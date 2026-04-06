@@ -435,7 +435,7 @@ export default function AdminProducts() {
             if (result.error) {
               console.error('Failed to notify subscribers:', result.error);
             } else {
-              console.log('New product notifications sent:', result.data);
+              // Notifications sent successfully
             }
           });
         }
