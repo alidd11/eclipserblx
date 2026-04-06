@@ -30,27 +30,45 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
   useEffect(() => {
     const root = document.documentElement;
     const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    const vv = window.visualViewport;
 
-    const syncBottomSafeArea = () => {
+    const syncViewportEnvironment = () => {
       const isStandalone = mediaQuery.matches || (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+      const viewportHeight = vv?.height ?? window.innerHeight;
+
+      root.style.setProperty('--app-vh', `${viewportHeight}px`);
       root.style.setProperty('--bottom-safe-area', isStandalone ? 'env(safe-area-inset-bottom)' : '0px');
     };
 
-    syncBottomSafeArea();
+    syncViewportEnvironment();
+    window.addEventListener('resize', syncViewportEnvironment);
+    window.addEventListener('orientationchange', syncViewportEnvironment);
+    vv?.addEventListener('resize', syncViewportEnvironment);
+    vv?.addEventListener('scroll', syncViewportEnvironment);
 
     if (typeof mediaQuery.addEventListener === 'function') {
-      mediaQuery.addEventListener('change', syncBottomSafeArea);
+      mediaQuery.addEventListener('change', syncViewportEnvironment);
 
       return () => {
-        mediaQuery.removeEventListener('change', syncBottomSafeArea);
+        window.removeEventListener('resize', syncViewportEnvironment);
+        window.removeEventListener('orientationchange', syncViewportEnvironment);
+        vv?.removeEventListener('resize', syncViewportEnvironment);
+        vv?.removeEventListener('scroll', syncViewportEnvironment);
+        mediaQuery.removeEventListener('change', syncViewportEnvironment);
+        root.style.removeProperty('--app-vh');
         root.style.removeProperty('--bottom-safe-area');
       };
     }
 
-    mediaQuery.addListener(syncBottomSafeArea);
+    mediaQuery.addListener(syncViewportEnvironment);
 
     return () => {
-      mediaQuery.removeListener(syncBottomSafeArea);
+      window.removeEventListener('resize', syncViewportEnvironment);
+      window.removeEventListener('orientationchange', syncViewportEnvironment);
+      vv?.removeEventListener('resize', syncViewportEnvironment);
+      vv?.removeEventListener('scroll', syncViewportEnvironment);
+      mediaQuery.removeListener(syncViewportEnvironment);
+      root.style.removeProperty('--app-vh');
       root.style.removeProperty('--bottom-safe-area');
     };
   }, []);

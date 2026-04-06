@@ -258,7 +258,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
             ? 'flex-1 flex flex-col min-h-0 overflow-hidden p-0'
             : isImmersivePage
               ? 'p-0'
-              : 'p-4 md:p-6 lg:p-8 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
+              : 'p-4 md:p-6 lg:p-8'
         )}
         extra={<AdminInstallPrompt />}
       >

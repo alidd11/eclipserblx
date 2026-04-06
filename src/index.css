@@ -140,6 +140,7 @@
   html {
     @apply bg-background text-foreground;
     --bottom-safe-area: 0px;
+    --app-vh: 100dvh;
     overscroll-behavior: none;
     overflow-x: hidden;
     width: 100%;
@@ -157,8 +158,8 @@
     overflow-x: hidden;
     width: 100%;
     max-width: 100%;
-    min-height: 100dvh;
     min-height: -webkit-fill-available;
+    min-height: var(--app-vh, 100dvh);
     position: relative;
     isolation: isolate;
     overscroll-behavior: none;
@@ -170,8 +171,8 @@
   #root {
     width: 100%;
     max-width: 100%;
-    min-height: 100dvh;
     min-height: -webkit-fill-available;
+    min-height: var(--app-vh, 100dvh);
     background-color: hsl(var(--background));
   }
   
