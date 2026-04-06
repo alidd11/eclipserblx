@@ -213,10 +213,10 @@ export default function SellerWebhooks() {
                             ? wh.secret
                             : '••••••••••••'}
                         </code>
-                        <Button variant="ghost" size="icon" aria-label="Hide" className="h-6 w-6" onClick={() => toggleSecret(wh.id)} aria-label="Toggle secret visibility">
+                        <Button variant="ghost" size="icon" aria-label="Toggle secret visibility" className="h-6 w-6" onClick={() => toggleSecret(wh.id)}>
                           {revealedSecrets.has(wh.id) ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                         </Button>
-                        <Button variant="ghost" size="icon" aria-label="Copy" className="h-6 w-6" onClick={() => copySecret(wh.secret)} aria-label="Copy secret">
+                        <Button variant="ghost" size="icon" aria-label="Copy secret" className="h-6 w-6" onClick={() => copySecret(wh.secret)}>
                           <Copy className="h-3 w-3" />
                         </Button>
                       </div>
