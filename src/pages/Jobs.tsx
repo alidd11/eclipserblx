@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Briefcase, MapPin, Clock, Send, CheckCircle, AlertCircle, Mail, MessageSquare, Loader2 } from 'lucide-react';
+import { Briefcase, MapPin, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -443,12 +443,11 @@ export default function Jobs() {
           <h2 className="text-2xl font-display font-bold text-center mb-6">Why Work With Us?</h2>
           <div className="grid gap-5 sm:grid-cols-3">
             {[
-              { title: 'Flexible Hours', description: 'Work on your own schedule from anywhere in the world.', icon: Clock },
-              { title: 'Creative Freedom', description: 'Express your creativity and contribute to exciting projects.', icon: CheckCircle },
-              { title: 'Growing Community', description: 'Join a passionate community of creators and developers.', icon: AlertCircle },
+              { title: 'Flexible Hours', description: 'Work on your own schedule from anywhere in the world.' },
+              { title: 'Creative Freedom', description: 'Express your creativity and contribute to exciting projects.' },
+              { title: 'Growing Community', description: 'Join a passionate community of creators and developers.' },
             ].map((benefit) => (
-              <div key={benefit.title} className="border border-border rounded-xl p-5 text-center">
-                <benefit.icon className="h-7 w-7 mx-auto mb-3 text-primary" />
+              <div key={benefit.title} className="border border-border rounded-xl p-5">
                 <h3 className="font-semibold text-sm mb-1">{benefit.title}</h3>
                 <p className="text-sm text-muted-foreground">{benefit.description}</p>
               </div>

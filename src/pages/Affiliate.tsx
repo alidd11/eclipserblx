@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { 
   DollarSign, TrendingUp, Loader2, CheckCircle,
-  ArrowUpRight, Clock, Users, Gift, Zap, Copy, ExternalLink,
+  ArrowUpRight, Clock, Users, Copy, ExternalLink,
   CreditCard, BadgePercent, Star, Construction, MousePointerClick, UserPlus,
   Link as LinkIcon, Wallet
 } from 'lucide-react';
@@ -53,20 +53,20 @@ export default function Affiliate() {
       <div className="grid md:grid-cols-2 gap-4">
        {benefits.map((benefit, index) => (
         <motion.div key={benefit.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
-         <div className="border border-border rounded-xl overflow-hidden bg-card/50 border-border h-full">
-          <div className="p-4 pt-6"><div className="flex gap-4">
-           <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><benefit.icon className="h-6 w-6 text-primary" /></div>
-           <div><h3 className="font-semibold">{benefit.title}</h3><p className="text-sm text-muted-foreground">{benefit.description}</p></div>
-          </div></div>
+          <div className="border border-border rounded-xl overflow-hidden bg-card/50 h-full">
+           <div className="p-5">
+            <h3 className="font-semibold mb-1">{benefit.title}</h3>
+            <p className="text-sm text-muted-foreground">{benefit.description}</p>
+           </div>
          </div>
         </motion.div>
        ))}
       </div>
-      <div className="border border-border rounded-xl overflow-hidden bg-muted/30 border-border">
-       <div className="p-4 py-8 text-center space-y-4">
-        <Gift className="h-12 w-12 text-primary mx-auto" /><h2 className="text-2xl font-bold">Ready to Start Earning?</h2>
-        <p className="text-muted-foreground">Sign up or log in to access your affiliate dashboard and referral link.</p>
-        <Button asChild size="lg" className="gradient-button"><Link to="/auth">Get Started<ArrowUpRight className="h-4 w-4 ml-2" /></Link></Button>
+       <div className="border border-border rounded-xl overflow-hidden bg-muted/30">
+        <div className="p-4 py-8 text-center space-y-4">
+         <h2 className="text-2xl font-bold">Ready to Start Earning?</h2>
+         <p className="text-muted-foreground">Sign up or log in to access your affiliate dashboard and referral link.</p>
+         <Button asChild size="lg" className="gradient-button"><Link to="/auth">Get Started<ArrowUpRight className="h-4 w-4 ml-2" /></Link></Button>
        </div>
       </div>
      </motion.div>
@@ -159,7 +159,7 @@ export default function Affiliate() {
      {/* Referral Link */}
      <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
       <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
-       <h3 className="font-semibold text-sm text-lg flex items-center gap-2"><Zap className="h-5 w-5 text-primary" />Your Referral Link</h3>
+       <h3 className="font-semibold text-lg">Your Referral Link</h3>
        <p className="text-sm text-muted-foreground">Share this link to earn {d.affiliateSettings.commissionRate}% on every sale</p>
       </div>
       <div className="p-4"><div className="flex gap-2">

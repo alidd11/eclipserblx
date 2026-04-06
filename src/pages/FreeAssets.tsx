@@ -5,7 +5,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductCardSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { usePageMeta } from '@/hooks/usePageMeta';
-import { Gift } from 'lucide-react';
+
 import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 type SortOption = 'newest' | 'popular' | 'downloads';
@@ -68,10 +68,7 @@ export default function FreeAssets() {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center gap-2">
-            <Gift className="h-5 w-5 text-primary" />
-            <h1 className="text-xl font-display font-bold tracking-wide uppercase">Free Assets</h1>
-          </div>
+          <h1 className="text-xl font-display font-bold tracking-wide uppercase">Free Assets</h1>
         </div>
 
         {/* Filters */}
@@ -157,7 +154,6 @@ export default function FreeAssets() {
           </div>
         ) : (
           <div className="text-center py-16">
-            <Gift className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
             <p className="text-sm text-muted-foreground">No free assets found in this category.</p>
           </div>
         )}

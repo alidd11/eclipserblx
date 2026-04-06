@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bell, Tag, Package, MessageCircle, ArrowLeft, Loader2, BellOff, Save, Send, Headphones } from 'lucide-react';
+import { Tag, Package, MessageCircle, ArrowLeft, Loader2, BellOff, Save, Send, Headphones } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -200,15 +200,12 @@ export default function NotificationPreferences() {
  {/* Push Notifications Card */}
  {pushSupported && (
  <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2 text-lg">
- <Bell className="h-5 w-5 text-primary" />
- Push Notifications
- </h3>
- <p className="text-sm text-muted-foreground">
- Receive instant notifications on your device
- </p>
- </div>
+  <div className="px-4 py-3 border-b border-border bg-muted/30">
+  <h3 className="font-semibold text-lg">Push Notifications</h3>
+  <p className="text-sm text-muted-foreground">
+  Receive instant notifications on your device
+  </p>
+  </div>
  <div className="p-4 space-y-4">
  <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
  <div>
@@ -243,14 +240,11 @@ export default function NotificationPreferences() {
 
  {/* Alert Preferences Card */}
  <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2 text-lg">
- <Bell className="h-5 w-5 text-primary" />
- Alert Preferences
- </h3>
- <p className="text-sm text-muted-foreground">
- Control which types of alerts you receive
- </p>
+  <div className="px-4 py-3 border-b border-border bg-muted/30">
+  <h3 className="font-semibold text-lg">Alert Preferences</h3>
+  <p className="text-sm text-muted-foreground">
+  Control which types of alerts you receive
+  </p>
  </div>
  <div className="p-4 space-y-4">
  {/* Product Alerts */}

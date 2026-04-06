@@ -1,6 +1,6 @@
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { Shield, Mail, AlertTriangle, FileText, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const SITE_NAME = 'Eclipse';
@@ -12,12 +12,9 @@ export default function DMCA() {
  <div className="container py-8 max-w-4xl">
  <div className="space-y-8">
  {/* Header */}
- <div className="text-center space-y-4">
- <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-4">
- <Shield className="h-8 w-8 text-primary" />
- </div>
- <h1 className="text-4xl font-display font-bold">DMCA & IP Policy</h1>
- <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+ <div className="space-y-2">
+ <h1 className="text-2xl font-display font-bold">DMCA & IP Policy</h1>
+ <p className="text-muted-foreground">
  {SITE_NAME} respects the intellectual property rights of others and expects our users to do the same.
  </p>
  </div>
@@ -42,10 +39,7 @@ export default function DMCA() {
  {/* Overview */}
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2">
- <FileText className="h-5 w-5 text-primary" />
- Policy Overview
- </h3>
+ <h3 className="font-semibold text-sm">Policy Overview</h3>
  </div>
  <div className="p-4 prose prose-sm dark:prose-invert max-w-none">
  <p>
@@ -65,10 +59,7 @@ export default function DMCA() {
  {/* What We Consider Violations */}
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2">
- <AlertTriangle className="h-5 w-5 text-destructive" />
- Types of Violations
- </h3>
+ <h3 className="font-semibold text-sm">Types of Violations</h3>
  <p className="text-sm text-muted-foreground">
  The following are considered intellectual property violations on our platform
  </p>
@@ -106,10 +97,7 @@ export default function DMCA() {
  {/* How to Report */}
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2">
- <Mail className="h-5 w-5 text-primary" />
- How to Report a Violation
- </h3>
+ <h3 className="font-semibold text-sm">How to Report a Violation</h3>
  </div>
  <div className="p-4 space-y-4">
  <p className="text-muted-foreground">
@@ -157,10 +145,7 @@ export default function DMCA() {
  {/* Our Process */}
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2">
- <Clock className="h-5 w-5 text-primary" />
- Our Review Process
- </h3>
+ <h3 className="font-semibold text-sm">Our Review Process</h3>
  </div>
  <div className="p-4">
  <div className="space-y-4">
@@ -215,10 +200,7 @@ export default function DMCA() {
  {/* Counter-Notice */}
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2">
- <XCircle className="h-5 w-5 text-amber-500" />
- Counter-Notice Procedure
- </h3>
+ <h3 className="font-semibold text-sm">Counter-Notice Procedure</h3>
  </div>
  <div className="p-4 prose prose-sm dark:prose-invert max-w-none">
  <p>
@@ -242,10 +224,7 @@ export default function DMCA() {
  {/* Repeat Offenders */}
  <div className="border border-border rounded-xl overflow-hidden border-destructive/30">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2 text-destructive">
- <AlertTriangle className="h-5 w-5" />
- Repeat Infringer Policy
- </h3>
+ <h3 className="font-semibold text-sm text-destructive">Repeat Infringer Policy</h3>
  </div>
  <div className="p-4 prose prose-sm dark:prose-invert max-w-none">
  <p>
