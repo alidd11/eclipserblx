@@ -82,7 +82,7 @@ function SectionHeader({ title }: { title: string }) {
 }
 
 /* ─────────── Accordion Group Context ─────────── */
-const AccordionGroupContext = React.createContext<{
+const AccordionGroupContext = createContext<{
   openId: string | null;
   setOpenId: (id: string | null) => void;
 } | null>(null);
