@@ -24,19 +24,19 @@ function renderWithProviders(ui: React.ReactElement) {
 
 describe('RelatedProductsSection', () => {
   it('renders nothing when products array is empty', () => {
-    const { container } = renderWithRouter(<RelatedProductsSection products={[]} />);
+    const { container } = renderWithProviders(<RelatedProductsSection products={[]} />);
     expect(container.innerHTML).toBe('');
   });
 
   it('renders products when provided', () => {
-    renderWithRouter(<RelatedProductsSection products={mockProducts} />);
+    renderWithProviders(<RelatedProductsSection products={mockProducts} />);
     expect(screen.getByText('Related Products')).toBeInTheDocument();
     expect(screen.getByText('Test Product')).toBeInTheDocument();
     expect(screen.getByText('Another Product')).toBeInTheDocument();
   });
 
   it('renders fallback initial when no image', () => {
-    renderWithRouter(<RelatedProductsSection products={[mockProducts[1]]} />);
+    renderWithProviders(<RelatedProductsSection products={[mockProducts[1]]} />);
     expect(screen.getByText('A')).toBeInTheDocument();
   });
 });
