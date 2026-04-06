@@ -67,11 +67,13 @@ Deno.serve(async (req) => {
   <meta name="description" content="${description}" />
 
   <!-- Open Graph -->
+  <meta name="theme-color" content="#7c3aed" />
   <meta property="og:type" content="product" />
   <meta property="og:site_name" content="${SITE_NAME}" />
   <meta property="og:title" content="${title}" />
   <meta property="og:description" content="${description}" />
   <meta property="og:image" content="${escapeHtml(ogImage)}" />
+  <meta property="og:image:alt" content="${title} preview" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:url" content="${escapeHtml(productUrl)}" />
