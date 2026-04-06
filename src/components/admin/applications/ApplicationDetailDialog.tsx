@@ -140,6 +140,10 @@ export function ApplicationDetailDialog({ application, onClose }: ApplicationDet
                 <Label className="text-muted-foreground">Status</Label>
                 <div>{getApplicationStatusBadge(application.status)}</div>
               </div>
+              <div className="space-y-1">
+                <Label className="text-muted-foreground">Access Token</Label>
+                <p className="font-mono text-xs break-all select-all">{application.access_token}</p>
+              </div>
               {application.discord_username && (
                 <div className="space-y-1">
                   <Label className="text-muted-foreground">Discord</Label>

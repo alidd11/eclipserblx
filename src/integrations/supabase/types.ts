@@ -4805,6 +4805,7 @@ export type Database = {
       }
       job_applications: {
         Row: {
+          access_token: string
           applicant_email: string
           applicant_name: string
           created_at: string
@@ -4822,6 +4823,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          access_token?: string
           applicant_email: string
           applicant_name: string
           created_at?: string
@@ -4839,6 +4841,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          access_token?: string
           applicant_email?: string
           applicant_name?: string
           created_at?: string

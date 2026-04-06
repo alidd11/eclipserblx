@@ -35,6 +35,7 @@ const ChatHistory = lazyWithRetry(() => import("@/pages/ChatHistory"));
 const SupportTickets = lazyWithRetry(() => import("@/pages/SupportTickets"));
 const SupportTicketDetail = lazyWithRetry(() => import("@/pages/SupportTicketDetail"));
 const Jobs = lazyWithRetry(() => import("@/pages/Jobs"));
+const ApplicantPortal = lazyWithRetry(() => import("@/pages/ApplicantPortal"));
 const RefundPolicy = lazyWithRetry(() => import("@/pages/RefundPolicy"));
 const PrivacyPolicy = lazyWithRetry(() => import("@/pages/PrivacyPolicy"));
 const TermsOfService = lazyWithRetry(() => import("@/pages/TermsOfService"));
@@ -333,7 +334,8 @@ export function AppRoutes() {
         <Route path="/chat-history" element={<ChatHistory />} />
         <Route path="/support/tickets" element={<SupportTickets />} />
         <Route path="/support/tickets/:ticketId" element={<SupportTicketDetail />} />
-        <Route path="/jobs" element={<Jobs />} />
+         <Route path="/jobs" element={<Jobs />} />
+         <Route path="/careers/portal" element={<ApplicantPortal />} />
         <Route path="/refunds" element={<RefundPolicy />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />

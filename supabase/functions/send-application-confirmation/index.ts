@@ -12,6 +12,7 @@ interface ApplicationConfirmationRequest {
   applicant_name: string;
   applicant_email: string;
   position: string;
+  access_token?: string;
 }
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
@@ -24,9 +25,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { applicant_name, applicant_email, position }: ApplicationConfirmationRequest = await req.json();
+    const { applicant_name, applicant_email, position, access_token }: ApplicationConfirmationRequest = await req.json();
     
-    logStep("Received request", { applicant_name, applicant_email, position });
+    logStep("Received request", { applicant_name, applicant_email, position, has_token: !!access_token });
 
     if (!applicant_email || !applicant_name || !position) {
       throw new Error("Missing required fields: applicant_name, applicant_email, or position");
@@ -59,11 +60,18 @@ const handler = async (req: Request): Promise<Response> => {
                 We've got your application for the <strong style="color: #e4e4e7;">${position}</strong> position. Our team will take a look and get back to you.
               </p>
               <p style="margin: 0 0 4px 0; color: #737373; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">What happens next</p>
-              <ul style="margin: 0 0 20px 0; padding-left: 20px; color: #a3a3a3; font-size: 14px; line-height: 1.8;">
-                <li>Our recruiting team reviews your application</li>
-                <li>You may get messages from us with updates</li>
-                <li>Check your status on the <a href="https://eclipserblx.com/jobs" style="color: #a855f7; text-decoration: none;">Jobs page</a></li>
-              </ul>
+                <ul style="margin: 0 0 20px 0; padding-left: 20px; color: #a3a3a3; font-size: 14px; line-height: 1.8;">
+                  <li>Our recruiting team reviews your application</li>
+                  <li>You may get messages from us with updates</li>
+                  <li>Check your status on the <a href="https://eclipserblx.com/careers/portal" style="color: #a855f7; text-decoration: none;">Applicant Portal</a></li>
+                </ul>
+                ${access_token ? `
+                <div style="margin: 0 0 20px 0; padding: 16px; background-color: #111118; border: 1px solid #222; border-radius: 8px;">
+                  <p style="margin: 0 0 8px 0; font-size: 12px; color: #737373; text-transform: uppercase; letter-spacing: 0.5px;">Your Access Code</p>
+                  <p style="margin: 0; font-size: 13px; color: #e4e4e7; font-family: monospace; word-break: break-all;">${access_token}</p>
+                  <p style="margin: 8px 0 0 0; font-size: 11px; color: #525252;">Use this code at <a href="https://eclipserblx.com/careers/portal" style="color: #a855f7; text-decoration: none;">eclipserblx.com/careers/portal</a> to check your status and messages.</p>
+                </div>
+                ` : ''}
               <p style="margin: 0 0 20px 0; font-size: 14px; color: #a3a3a3; line-height: 1.6;">
                 If we need more info, we'll reach out to this email. Please allow up to 7 business days.
               </p>
