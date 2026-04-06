@@ -234,12 +234,9 @@ export function RevenueDashboard() {
  (s, a) => s + (Number(a.price_paid) || 0) + (Number(a.ping_price_paid) || 0), 0
  );
 
- // MRR
+ // Seller Pro MRR (£7.99/mo per active sub)
  const activeSubs = (subsData ?? []).filter(s => s.status === 'active');
- const mrr = activeSubs.reduce((s, sub) => {
- if (sub.billing_period === 'annual') return s + 49.99 / 12;
- return s + 4.99;
- }, 0);
+ const mrr = activeSubs.length * 7.99;
 
  // Credits & Robux
  const totalCredits = (creditPurchases ?? []).reduce((s, c) => s + (Number(c.amount) || 0), 0);
