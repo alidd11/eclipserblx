@@ -366,8 +366,10 @@ Deno.serve(async (req) => {
     if (product) {
       const canonicalUrl = product.product_number ? `${SITE_URL}/products/${product.product_number}` : `${SITE_URL}/products/${encodeURIComponent(slugVal)}`;
       const storeName = product.stores?.name;
-      const rawDesc = product.description ? product.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Check out ${product.name} on Eclipse`;
-      const desc = storeName ? `By ${storeName} \u2014 ${rawDesc}` : rawDesc;
+      const rawDesc = product.description ? product.description.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, 160) : `Check out ${product.name} on Eclipse`;
+      const pricePart = product.price != null ? `\u00A3${Number(product.price).toFixed(2)}` : "";
+      const descParts = [pricePart, storeName ? `By ${storeName}` : "", rawDesc].filter(Boolean);
+      const desc = descParts.join(" \u00B7 ");
       const img = product.images?.[0] || DEFAULT_IMAGE;
       const priceExtra = product.price != null ? `<meta property="product:price:amount" content="${product.price}"/><meta property="product:price:currency" content="GBP"/>` : "";
       const body = buildProductBody(product, storeName);
