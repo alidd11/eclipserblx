@@ -57,14 +57,29 @@ export function CategoriesGrid() {
       if (catError) throw catError;
       if (!cats?.length) return [];
 
-      const catIds = cats.map(c => c.id);
+      // Fetch all subcategories to aggregate product counts under parents
+      const { data: children } = await supabase
+        .from('categories')
+        .select('id, parent_id')
+        .not('parent_id', 'is', null);
+
+      const childMap: Record<string, string[]> = {};
+      for (const c of children || []) {
+        if (c.parent_id) {
+          if (!childMap[c.parent_id]) childMap[c.parent_id] = [];
+          childMap[c.parent_id].push(c.id);
+        }
+      }
+
+      // Build list of all category IDs (parents + their children)
+      const allCatIds = cats.flatMap(c => [c.id, ...(childMap[c.id] || [])]);
       const now = new Date().toISOString();
 
       // Fetch active products with download_count for ranking
       const { data: products, error: prodError } = await supabase
         .from('products')
         .select('category_id, images, download_count, store_id')
-        .in('category_id', catIds)
+        .in('category_id', allCatIds)
         .eq('is_active', true)
         .not('store_id', 'is', null)
         .or(`release_at.is.null,release_at.lte.${now}`)
@@ -72,15 +87,25 @@ export function CategoriesGrid() {
 
       if (prodError) throw prodError;
 
-      // Pick the best image per category: highest download_count with a valid image
+      // Map each product's category_id to its parent for aggregation
+      const childToParent: Record<string, string> = {};
+      for (const cat of cats) {
+        childToParent[cat.id] = cat.id;
+        for (const childId of childMap[cat.id] || []) {
+          childToParent[childId] = cat.id;
+        }
+      }
+
+      // Pick the best image per parent category
       const bestPerCat: Record<string, { image: string; count: number }> = {};
       const countPerCat: Record<string, number> = {};
 
       for (const p of products || []) {
-        countPerCat[p.category_id] = (countPerCat[p.category_id] || 0) + 1;
+        const parentId = childToParent[p.category_id] || p.category_id;
+        countPerCat[parentId] = (countPerCat[parentId] || 0) + 1;
         const categoryImage = Array.isArray(p.images) ? getFirstImageUrl(p.images as string[]) : null;
-        if (!bestPerCat[p.category_id] && categoryImage) {
-          bestPerCat[p.category_id] = {
+        if (!bestPerCat[parentId] && categoryImage) {
+          bestPerCat[parentId] = {
             image: categoryImage,
             count: p.download_count ?? 0,
           };
