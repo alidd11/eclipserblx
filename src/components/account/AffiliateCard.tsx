@@ -48,14 +48,14 @@ export function AffiliateCard() {
   enabled: !!user?.id,
  });
 
- // Get profile for payout preferences
+ // Get profile for referral code
  const { data: profile } = useQuery({
   queryKey: ['profile-referral', user?.id],
   queryFn: async () => {
    if (!user?.id) return null;
    const { data, error } = await supabase
     .from('profiles')
-    .select('referral_code, display_name, paypal_email, preferred_payout_method, stripe_account_id')
+    .select('referral_code, display_name')
     .eq('user_id', user.id)
     .single();
    if (error) throw error;
@@ -64,8 +64,24 @@ export function AffiliateCard() {
   enabled: !!user?.id,
  });
 
+ // Get payment details from dedicated table
+ const { data: paymentDetails } = useQuery({
+  queryKey: ['user-payment-details', user?.id],
+  queryFn: async () => {
+   if (!user?.id) return null;
+   const { data, error } = await supabase
+    .from('user_payment_details')
+    .select('preferred_payout_method, stripe_account_id')
+    .eq('user_id', user.id)
+    .maybeSingle();
+   if (error) throw error;
+   return data;
+  },
+  enabled: !!user?.id,
+ });
+
  const { data: connectStatus } = useAffiliateConnectStatus(
-  !!user?.id && profile?.preferred_payout_method === 'stripe'
+  !!user?.id && paymentDetails?.preferred_payout_method === 'stripe'
  );
 
  // Get recent commissions
@@ -121,7 +137,7 @@ export function AffiliateCard() {
  // Request payout
  const requestPayoutMutation = useMutation({
   mutationFn: async (amount: number) => {
-   const method = profile?.preferred_payout_method === 'stripe' && connectStatus?.canReceivePayments
+   const method = paymentDetails?.preferred_payout_method === 'stripe' && connectStatus?.canReceivePayments
     ? 'stripe'
     : 'paypal';
    
@@ -161,8 +177,8 @@ export function AffiliateCard() {
  const totalPaid = (balance?.total_paid || 0) / 100;
  const hasPendingPayout = pendingPayouts?.some(p => p.status === 'pending');
 
- const canUseStripe = profile?.preferred_payout_method === 'stripe' && connectStatus?.canReceivePayments;
- const needsStripeOnboarding = profile?.preferred_payout_method === 'stripe' && !connectStatus?.canReceivePayments;
+ const canUseStripe = paymentDetails?.preferred_payout_method === 'stripe' && connectStatus?.canReceivePayments;
+ const needsStripeOnboarding = paymentDetails?.preferred_payout_method === 'stripe' && !connectStatus?.canReceivePayments;
 
  if (balanceLoading) {
   return (

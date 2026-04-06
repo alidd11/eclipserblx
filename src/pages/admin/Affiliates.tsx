@@ -121,17 +121,24 @@ export default function AdminAffiliates() {
  // Get user profiles
  const userIds = [...new Set(data.map(p => p.user_id))];
 
- const { data: profiles } = await supabase
- .from('profiles')
- .select('user_id, display_name, email, stripe_account_id, customer_id')
- .in('user_id', userIds);
+  const { data: profiles } = await supabase
+  .from('profiles')
+  .select('user_id, display_name, email, customer_id')
+  .in('user_id', userIds);
 
- const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+  const { data: paymentDetailsList } = await supabase
+  .from('user_payment_details')
+  .select('user_id, stripe_account_id')
+  .in('user_id', userIds);
 
- return data.map(p => ({
- ...p,
- user: profileMap.get(p.user_id),
- }));
+  const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+  const paymentMap = new Map(paymentDetailsList?.map(pd => [pd.user_id, pd]) || []);
+
+  return data.map(p => ({
+  ...p,
+  user: profileMap.get(p.user_id),
+  paymentDetails: paymentMap.get(p.user_id),
+  }));
  },
  });
 
@@ -376,7 +383,7 @@ export default function AdminAffiliates() {
  <Button
  size="sm"
  onClick={() => processPayoutMutation.mutate(payout.id)}
- disabled={processPayoutMutation.isPending || !payout.user?.stripe_account_id}
+ disabled={processPayoutMutation.isPending || !payout.paymentDetails?.stripe_account_id}
  >
  {processPayoutMutation.isPending ? (
  <Loader2 className="h-4 w-4 animate-spin" />

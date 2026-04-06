@@ -40,20 +40,20 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Check if user already has a stripe account in profiles
-    const { data: profile, error: profileError } = await supabaseClient
-      .from('profiles')
+    // Check if user already has a stripe account in user_payment_details
+    const { data: paymentDetails, error: paymentError } = await supabaseClient
+      .from('user_payment_details')
       .select('stripe_account_id')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
-    if (profileError && profileError.code !== 'PGRST116') {
-      throw new Error("Failed to fetch profile");
+    if (paymentError) {
+      throw new Error("Failed to fetch payment details");
     }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
-    let accountId = profile?.stripe_account_id;
+    let accountId = paymentDetails?.stripe_account_id;
 
     // If no existing account, create one
     if (!accountId) {
@@ -72,14 +72,13 @@ serve(async (req) => {
       });
       accountId = account.id;
 
-      // Save to profiles table
+      // Save to user_payment_details table
       const { error: updateError } = await supabaseClient
-        .from('profiles')
-        .update({ stripe_account_id: accountId })
-        .eq('user_id', user.id);
+        .from('user_payment_details')
+        .upsert({ user_id: user.id, stripe_account_id: accountId }, { onConflict: 'user_id' });
 
       if (updateError) {
-        logStep("Warning: Failed to save stripe_account_id to profile", { error: updateError.message });
+        logStep("Warning: Failed to save stripe_account_id", { error: updateError.message });
       }
 
       logStep("Created Connect account", { accountId });
