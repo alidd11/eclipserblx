@@ -141,7 +141,7 @@ export default function AdminProducts() {
       if (uploadError) throw uploadError;
       setForm({ ...form, asset_file_url: fileName });
       toast.success('File uploaded successfully');
-    } catch (error: unknown) { toast.error(`Upload failed: ${error.message}`); }
+    } catch (error: unknown) { toast.error(`Upload failed: ${(error as Error).message}`); }
     finally { setIsUploading(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
   };
 
