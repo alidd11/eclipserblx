@@ -300,10 +300,6 @@ export function RevenueDashboard() {
  <p className="text-sm text-muted-foreground mt-0.5">Financial performance & earnings</p>
  </div>
  <div className="flex items-center gap-2">
- <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
- <Clock className="h-3 w-3" />
- <span>10m timeout</span>
- </div>
  <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading} className="gap-1.5 h-8">
  <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
  Refresh
