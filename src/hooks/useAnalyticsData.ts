@@ -177,7 +177,7 @@ export function useAnalyticsData(range: '7d' | '14d' | '30d') {
   const { data: recentVisits } = useQuery({
     queryKey: ['admin-recent-visits'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('page_visits').select('*').order('created_at', { ascending: false }).limit(100);
+      const { data, error } = await supabase.from('page_visits').select('id, page_path, referrer, country, created_at, visitor_id').order('created_at', { ascending: false }).limit(100);
       if (error) throw error;
       return data;
     },
