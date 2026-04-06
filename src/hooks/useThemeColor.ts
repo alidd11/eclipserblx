@@ -17,6 +17,14 @@ const THEME_CLASS_MAP: Record<string, string> = {
   'theme-mono': 'mono',
 };
 
+let themeCssLoaded = false;
+
+function loadThemeCSS() {
+  if (themeCssLoaded) return;
+  themeCssLoaded = true;
+  import('../styles/themes.css');
+}
+
 function getActiveStaffTheme(html: HTMLElement): string | null {
   for (const [cls, theme] of Object.entries(THEME_CLASS_MAP)) {
     if (html.classList.contains(cls)) {
@@ -43,6 +51,13 @@ function upsertMetaTag(name: string, content: string) {
 }
 
 function syncBrowserTheme(html: HTMLElement) {
+  const staffTheme = getActiveStaffTheme(html);
+  
+  // Lazy-load theme CSS only when a non-default theme is active
+  if (staffTheme) {
+    loadThemeCSS();
+  }
+
   const themeColor = getResolvedThemeColor(html);
 
   upsertMetaTag('theme-color', themeColor);
