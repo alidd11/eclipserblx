@@ -422,7 +422,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
                     onClick={handleNavClick}
                     className={({ isActive }) => cn(
                       "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
-                      isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                      isActive ? "border-l-2 border-primary bg-muted/60 text-foreground" : "hover:bg-muted"
                     )}
                   >
                     <item.icon className="h-3.5 w-3.5" />
