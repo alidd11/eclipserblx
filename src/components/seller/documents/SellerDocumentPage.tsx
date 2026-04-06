@@ -35,11 +35,6 @@ export function SellerDocumentPage({ title, subtitle, children }: SellerDocument
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 no-print">
           <div className="flex items-center gap-4">
-            <Link to="/seller/documents">
-              <Button variant="ghost" size="icon" aria-label="Go back">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
             <div>
               <h1 className="text-2xl font-bold">{title}</h1>
               <p className="text-muted-foreground">{subtitle}</p>
