@@ -35,7 +35,7 @@ export function BotDashboardLayout({ children }: BotDashboardLayoutProps) {
 
   if (loading) {
     return (
-      <div className="min-h-[100dvh] bg-[hsl(228,15%,10%)] flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-[hsl(228,15%,10%)] flex items-center justify-center" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="space-y-4 w-full max-w-md px-4">
           <Skeleton className="h-8 w-3/4 mx-auto bg-background/10" />
           <Skeleton className="h-4 w-1/2 mx-auto bg-background/10" />
@@ -48,7 +48,10 @@ export function BotDashboardLayout({ children }: BotDashboardLayoutProps) {
   if (!isAdmin) return null;
 
   return (
-    <div className="h-[100dvh] bg-[hsl(228,15%,10%)] text-foreground flex overflow-hidden">
+    <div
+      className="h-[100dvh] bg-[hsl(228,15%,10%)] text-foreground flex overflow-hidden"
+      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+    >
       {/* Desktop sidebar */}
       <div className="hidden lg:flex shrink-0">
         <BotDashboardSidebar />
@@ -72,7 +75,6 @@ export function BotDashboardLayout({ children }: BotDashboardLayoutProps) {
         {/* Top header — sticky within this column */}
         <header
           className="shrink-0 h-14 border-b border-white/10 flex items-center justify-between px-4 bg-[hsl(228,15%,12%)]/95 backdrop-blur-md z-30"
-          style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
         >
           <div className="flex items-center gap-3">
             <Button

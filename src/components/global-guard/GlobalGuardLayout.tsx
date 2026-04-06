@@ -36,7 +36,7 @@ export function GlobalGuardLayout({ children }: GlobalGuardLayoutProps) {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background flex">
+    <div className="min-h-[100dvh] bg-background flex" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       {/* Desktop Sidebar */}
       <GlobalGuardSidebar className="hidden md:flex" />
       
