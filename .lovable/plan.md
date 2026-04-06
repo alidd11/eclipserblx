@@ -1,79 +1,64 @@
 
 
-# Homepage Redesign — Enterprise-Grade Visual Overhaul
+# Performance & Speed Optimization — Enterprise Audit Fix
 
-## Current State
+## Findings Summary
 
-The homepage has the right structure but lacks visual impact. The hero section is plain text over a dim background with minimal contrast. The section flow (Trending → Promotions → Recent Releases → On Sale → Free Assets → Recently Viewed → For You → CTA) is functional but visually monotonous — every section uses the same pattern: icon + uppercase header + product grid/carousel on a flat dark background with no visual breaks.
+Based on browser performance profiling and code audit:
 
-## Design Philosophy
+- **FCP: 1180ms** — good but improvable
+- **Full Page Load: 3301ms** — needs reduction  
+- **CLS: 0.0006** — excellent
+- **155 resources loaded**, 1456KB total JS
+- **CSS: 1108 lines**, ~500 lines of dead theme code shipping to every user
 
-Inspired by Shopify, Gumroad, and ClearlyDev — create clear visual hierarchy through alternating section treatments, stronger hero presence, and subtle background variation to break up the vertical scroll into distinct "zones." The design must be device-agnostic and scale from 320px to ultrawide.
+## Critical Issues Found
 
-## Changes
+### 1. Font Declaration Mismatch (HIGH IMPACT)
+The CSS body uses `font-family: 'Manrope'` and headings use `font-family: 'Space Grotesk'` — but neither font is self-hosted or loaded anywhere. The actual fonts are `Sora` (display) and `Source Sans 3` (body), which are preloaded in `index.html` and configured in `tailwind.config.ts`. This means the browser tries to find Manrope/Space Grotesk, fails, falls back to system fonts, and the preloaded Sora/Source Sans 3 fonts go unused in CSS — wasting bandwidth and causing a font mismatch.
 
-### 1. Hero Section — Stronger Visual Impact
-**File: `src/components/landing/LandingHero.tsx`**
-- Increase hero vertical padding on desktop (`lg:py-20`) for breathing room
-- Scale up the heading to `lg:text-6xl` with tighter letter-spacing
-- Add a subtle animated gradient text effect on "Marketplace" using CSS `background-clip: text`
-- Make the subtitle slightly larger (`lg:text-lg`) with improved line height
-- Add a secondary stat strip below the CTA buttons (e.g., "1,000+ Assets · 200+ Sellers · Instant Delivery") using real or approximate data — styled as muted pill badges
-- On mobile: keep compact but add the stat strip as a single scrollable row
+**Fix**: Change `index.css` body font to `'Source Sans 3'` and heading font to `'Sora'` to match the actual self-hosted fonts.
 
-### 2. Hero Banner — Richer Backdrop
-**File: `src/components/landing/HeroBanner.tsx`**
-- Replace the flat `bg-background/50` overlay with a radial gradient that creates a spotlight effect behind the text: `radial-gradient(ellipse at 50% 40%, hsl(235 86% 65% / 0.08), transparent 70%)`
-- Add a very subtle animated CSS shimmer line at the bottom edge using a `@keyframes` rule — no JS, pure CSS
+### 2. ~500 Lines of Unused Theme CSS (HIGH IMPACT)
+Theme variants (Ocean, Ember, Forest, Mono — lines 136-610) ship ~500 lines of CSS custom properties to every user. These are only used when a user explicitly selects a theme via `useThemeColor`. This is dead weight for 99% of page loads.
 
-### 3. Trending Section — Featured Hero Card
-**File: `src/components/landing/TrendingProducts.tsx`**
-- On desktop (`lg`+), render the #1 trending product as a larger featured card spanning 2 columns in the masonry, with a gradient overlay showing rank + name
-- Keep the remaining 7 products in the standard masonry layout
-- On mobile: no change (masonry columns already adapt)
+**Fix**: Extract theme variant CSS into a separate file (`src/styles/themes.css`) and lazy-load it only when a non-default theme is active, using a dynamic `<link>` tag. For the initial load, only the default dark theme ships.
 
-### 4. Visual Section Separators
-**File: `src/pages/Landing.tsx`**
-- Add subtle `border-t border-border` dividers between major sections
-- Alternate: give every other section a slightly tinted background using `bg-muted/5` on a wrapper div — creates visual "bands" that guide the eye without heavy cards
+### 3. Destructive `all: unset` Hover Guard (MEDIUM IMPACT)
+Lines 1080-1103 use `all: unset` inside `@media (hover: none)` to disable hover effects on touch devices. `all: unset` resets ALL properties including layout, display, position, and box model — breaking button sizes, link styling, and card layouts on mobile. This is likely the root cause of past mobile visual bugs.
 
-### 5. Section Headers — Refined Typography
-**Files: All section components (TrendingProducts, RecentReleases, OnSaleProducts, FreeAssetsTeaser)**
-- Standardize section headers: remove the colored icon backgrounds (the `p-1.5 rounded-lg bg-*/10` wrappers) and replace with a cleaner left-border accent pattern: `border-l-2 border-primary pl-3`
-- This creates a more editorial, enterprise feel vs. the current "badge + icon" pattern
+**Fix**: Replace `all: unset` with targeted property resets that only undo visual hover effects: `background-color: inherit; color: inherit; opacity: inherit; text-decoration: inherit; box-shadow: inherit; border-color: inherit; transform: none;`
 
-### 6. Final CTA — More Compelling
-**File: `src/components/landing/FinalCTA.tsx`**
-- Add a subtle gradient border using CSS (`border-image` or pseudo-element) instead of the plain `border-border`
-- Add 2-3 trust signals below the CTA button (e.g., "No listing fees · Lower commission · Instant payouts") as muted text
+### 4. Unnecessary Paint Layers (LOW-MEDIUM IMPACT)
+- `body::before` creates a fixed pseudo-element just to set a background color that's already set on `body` itself — wastes a compositor layer
+- `transition: background-color 0.3s` on `html` and `body` forces the browser to check for transitions every frame — unnecessary for a dark-only app
 
-### 7. Global CSS Additions
-**File: `src/index.css`**
-- Add a `@keyframes hero-shimmer` for the hero bottom-edge effect
-- Add `.text-gradient-hero` utility for the gradient text effect
-- Add `.section-band` utility for alternating section backgrounds
+**Fix**: Remove `body::before` entirely. Remove `transition` on html/body since the app is dark-only.
 
-### 8. Responsive Consistency
-All changes use Tailwind responsive prefixes (`sm:`, `lg:`, `xl:`) so they automatically adapt. No separate mobile/tablet implementations needed — the same markup scales down gracefully through:
-- Reduced padding and font sizes on smaller breakpoints
-- Masonry columns reducing from 5→3→2
-- Horizontal scroll carousels on mobile, grids on desktop (already in place)
+### 5. Duplicate/Redundant CSS Declarations (LOW IMPACT)
+- `padding-bottom: 0` declared twice on `body`
+- `overscroll-behavior` set on html, body, and in PWA media query redundantly
+- `min-height` set 4 times with different units on body (100vh, 100svh, 100dvh, -webkit-fill-available)
+
+**Fix**: Deduplicate — keep only `100dvh` with `-webkit-fill-available` fallback.
+
+### 6. `inline critical CSS` in index.html Drift
+The inline `<style>` in `index.html` (line 46) sets `--primary: 235 86% 60%` but `index.css` sets `--primary: 235 86% 65%` — a 5% lightness mismatch causing a flash of wrong-color primary on initial load.
+
+**Fix**: Sync the inline critical CSS primary value to match `index.css`.
 
 ## Files Modified
-1. `src/components/landing/LandingHero.tsx` — hero layout + stat strip
-2. `src/components/landing/HeroBanner.tsx` — richer backdrop
-3. `src/components/landing/TrendingProducts.tsx` — featured #1 card
-4. `src/components/landing/RecentReleases.tsx` — header style
-5. `src/components/landing/OnSaleProducts.tsx` — header style
-6. `src/components/landing/FreeAssetsTeaser.tsx` — header style
-7. `src/components/landing/FinalCTA.tsx` — gradient border + trust signals
-8. `src/pages/Landing.tsx` — section band wrappers + dividers
-9. `src/index.css` — CSS utilities for gradient text, shimmer, section bands
 
-## What This Does NOT Change
-- No new dependencies or libraries
-- No structural changes to the layout shell, sidebar, or header
-- No database changes
-- Product card component untouched — only the container/section layouts improve
-- All existing responsive patterns preserved
+1. **`src/index.css`** — Fix font families, remove body::before, remove transitions, deduplicate declarations, fix hover guard, extract themes to lazy-loaded file
+2. **`src/styles/themes.css`** (NEW) — Contains Ocean/Ember/Forest/Mono theme CSS, loaded on demand
+3. **`src/hooks/useThemeColor.ts`** — Add dynamic CSS import when non-default theme is selected
+4. **`index.html`** — Fix inline critical CSS primary color value
+
+## Impact
+
+- **~500 lines removed from critical CSS path** (themes moved to lazy file)
+- **Font rendering fixed** — preloaded fonts actually used instead of falling back
+- **Mobile layout stability** — no more `all: unset` destroying layouts
+- **~1 fewer compositor layer** — body::before removed
+- **Estimated FCP improvement**: 100-200ms from reduced CSS parse + correct font loading
 
