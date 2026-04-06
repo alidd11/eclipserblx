@@ -235,138 +235,6 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
   );
 }
 
-function ApplicationStatusCheck() {
-  const [email, setEmail] = useState('');
-  const [isChecking, setIsChecking] = useState(false);
-  const [applicationData, setApplicationData] = useState<{
-    status: string;
-    messages: Array<{ id: string; subject: string; message: string; created_at: string; is_read: boolean }>;
-  } | null>(null);
-
-  const checkStatus = async () => {
-    const validation = validateWithSchema(emailCheckSchema, { email });
-    if (isValidationError(validation)) {
-      showErrorNotification('Invalid Email', validation.error);
-      return;
-    }
-
-    const validatedEmail = validation.data.email;
-
-    setIsChecking(true);
-    try {
-      const { data: application, error: appError } = await supabase
-        .from('job_applications')
-        .select('id, status')
-        .eq('applicant_email', validatedEmail)
-        .maybeSingle();
-
-      if (appError) throw appError;
-
-      if (!application) {
-        showErrorNotification('Not Found', 'No application found for this email');
-        setApplicationData(null);
-        return;
-      }
-
-      const { data: messages, error: msgError } = await supabase
-        .from('applicant_messages')
-        .select('id, subject, message, created_at, is_read')
-        .eq('application_id', application.id)
-        .order('created_at', { ascending: false });
-
-      if (msgError) throw msgError;
-
-      setApplicationData({
-        status: application.status,
-        messages: messages || [],
-      });
-
-      if (messages && messages.length > 0) {
-        const unreadIds = messages.filter(m => !m.is_read).map(m => m.id);
-        if (unreadIds.length > 0) {
-          await supabase
-            .from('applicant_messages')
-            .update({ is_read: true })
-            .in('id', unreadIds);
-        }
-      }
-    } catch (error) {
-      console.error('Error checking status:', error);
-      showErrorNotification('Check Failed', 'Could not verify application status');
-    } finally {
-      setIsChecking(false);
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400">Pending Review</Badge>;
-      case 'reviewing':
-        return <Badge variant="secondary" className="bg-blue-500/20 text-blue-400">Under Review</Badge>;
-      case 'accepted':
-        return <Badge variant="secondary" className="bg-green-500/20 text-green-400">Accepted</Badge>;
-      case 'rejected':
-        return <Badge variant="secondary" className="bg-red-500/20 text-red-400">Not Selected</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
-
-  return (
-    <div className="border border-border rounded-xl overflow-hidden">
-      <div className="px-4 py-3 border-b border-border bg-muted/30">
-        <h2 className="font-semibold text-sm">Check Application Status</h2>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          Enter your email to view your status and messages from our team.
-        </p>
-      </div>
-      <div className="p-4 space-y-4">
-        <div className="flex gap-2">
-          <Input
-            type="email"
-            placeholder="Enter your email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="flex-1"
-          />
-          <Button onClick={checkStatus} disabled={isChecking} className="h-12">
-            {isChecking ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Check'}
-          </Button>
-        </div>
-
-        {applicationData && (
-          <div className="space-y-4 pt-4 border-t border-border">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Status:</span>
-              {getStatusBadge(applicationData.status)}
-            </div>
-
-            {applicationData.messages.length > 0 ? (
-              <div className="space-y-3">
-                <h3 className="font-medium text-sm">Messages from our team</h3>
-                {applicationData.messages.map((msg) => (
-                  <div key={msg.id} className="p-3 rounded-lg bg-muted/50 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">{msg.subject}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(msg.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{msg.message}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No messages yet. We'll reach out if we need more information.</p>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function Jobs() {
   usePageMeta({ title: 'Careers — Eclipse', description: 'Join the Eclipse team. View open positions and apply to help build the best Roblox asset marketplace.', canonicalPath: '/jobs' });
   const [openDialog, setOpenDialog] = useState<string | null>(null);
@@ -392,23 +260,64 @@ export default function Jobs() {
   const jobTypes = [...new Set(jobOpenings.map(j => j.type))];
   const filteredJobs = typeFilter ? jobOpenings.filter(j => j.type === typeFilter) : jobOpenings;
 
+  const handleCopyToken = async () => {
+    if (!submittedToken) return;
+    await navigator.clipboard.writeText(submittedToken);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-8 max-w-3xl">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-display font-bold">Careers</h1>
-            {!isLoading && jobOpenings.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {jobOpenings.length} open {jobOpenings.length === 1 ? 'role' : 'roles'}
-              </Badge>
-            )}
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-display font-bold">Careers</h1>
+                {!isLoading && jobOpenings.length > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    {jobOpenings.length} open {jobOpenings.length === 1 ? 'role' : 'roles'}
+                  </Badge>
+                )}
+              </div>
+              <p className="text-muted-foreground text-sm mt-1">
+                We're building the leading marketplace for Roblox creators. Join us.
+              </p>
+            </div>
+            <Link to="/careers/portal">
+              <Button variant="outline" size="sm" className="text-xs">
+                Check Status
+              </Button>
+            </Link>
           </div>
-          <p className="text-muted-foreground text-sm mt-1">
-            We're building the leading marketplace for Roblox creators. Join us.
-          </p>
         </div>
+
+        {/* Token success banner */}
+        {submittedToken && (
+          <div className="mb-6 border border-border rounded-xl p-4 bg-muted/30 space-y-3">
+            <div>
+              <h2 className="font-semibold text-sm">Application submitted</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Save this access code — you'll need it to check your status. It's also in your confirmation email.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 text-xs font-mono bg-background border border-border rounded-lg px-3 py-2.5 select-all break-all">
+                {submittedToken}
+              </code>
+              <Button variant="outline" size="sm" onClick={handleCopyToken} className="shrink-0">
+                {copied ? <CheckCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </Button>
+            </div>
+            <Link to="/careers/portal" className="inline-block">
+              <Button variant="link" size="sm" className="px-0 text-xs h-auto">
+                Go to Applicant Portal →
+              </Button>
+            </Link>
+          </div>
+        )}
 
         {/* Type filter */}
         {jobTypes.length > 1 && (
@@ -455,7 +364,6 @@ export default function Jobs() {
               const isExpanded = expandedJob === job.id;
               return (
                 <div key={job.id}>
-                  {/* Job row */}
                   <button
                     onClick={() => setExpandedJob(isExpanded ? null : job.id)}
                     className="w-full text-left px-4 py-3.5 flex items-center justify-between gap-4 hover:bg-muted/30 transition-colors"
@@ -476,7 +384,6 @@ export default function Jobs() {
                     <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                   </button>
 
-                  {/* Expanded details */}
                   {isExpanded && (
                     <div className="px-4 pb-4 space-y-4 border-t border-border bg-muted/10">
                       <div className="pt-3">
@@ -507,7 +414,10 @@ export default function Jobs() {
                           </DialogHeader>
                           <ApplicationForm 
                             position={job.title} 
-                            onSuccess={() => setOpenDialog(null)} 
+                            onSuccess={(token) => {
+                              setOpenDialog(null);
+                              setSubmittedToken(token);
+                            }} 
                           />
                         </DialogContent>
                       </Dialog>
@@ -518,11 +428,6 @@ export default function Jobs() {
             })}
           </div>
         )}
-
-        {/* Application Status Check */}
-        <div className="mt-10">
-          <ApplicationStatusCheck />
-        </div>
       </div>
     </MainLayout>
   );
