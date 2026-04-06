@@ -51,9 +51,9 @@ export function StoreCustomSections({ storeId, accentColor }: StoreCustomSection
  </div>
  )}
 
- {section.section_type === 'testimonials' && section.content?.items && (
- <div className="grid gap-4 sm:grid-cols-2">
- {section.content.items.filter((i) => i.text).map((item: any, idx: number) => (
+          {section.section_type === 'testimonials' && content?.items && (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {content.items.filter((i: any) => i.text).map((item: any, idx: number) => (
  <div key={idx} className="p-3 rounded-lg bg-muted/50">
  <div className="flex items-center gap-1 mb-2">
  {[...Array(5)].map((_, i) => (
