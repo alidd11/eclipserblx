@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { safeStorage } from '@/lib/safeStorage';
 import { useLocation } from 'react-router-dom';
+import { useDevice } from '@/hooks/useDevice';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
