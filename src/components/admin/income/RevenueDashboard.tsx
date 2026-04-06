@@ -6,7 +6,7 @@ import { useMemo, lazy, Suspense, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
  TrendingUp, Wallet, ArrowUpRight, ArrowDownRight,
- BarChart3, Percent, DollarSign, Clock, RefreshCw,
+ BarChart3, Percent, DollarSign, RefreshCw,
  Coins, Gamepad2, Store, ChevronDown, ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -134,13 +134,13 @@ export function RevenueDashboard() {
  ...queryDefaults,
  });
 
- // Subscriptions
+ // Seller Pro Subscriptions
  const { data: subsData, isLoading: subsLoading } = useQuery({
- queryKey: ['admin-revenue-subs'],
+ queryKey: ['admin-revenue-seller-subs'],
  queryFn: async () => {
  const { data, error } = await supabase
- .from('subscriptions')
- .select('status, billing_period, created_at');
+ .from('seller_subscriptions')
+ .select('status, created_at');
  if (error) throw error;
  return data ?? [];
  },
@@ -234,12 +234,9 @@ export function RevenueDashboard() {
  (s, a) => s + (Number(a.price_paid) || 0) + (Number(a.ping_price_paid) || 0), 0
  );
 
- // MRR
+ // Seller Pro MRR (£7.99/mo per active sub)
  const activeSubs = (subsData ?? []).filter(s => s.status === 'active');
- const mrr = activeSubs.reduce((s, sub) => {
- if (sub.billing_period === 'annual') return s + 49.99 / 12;
- return s + 4.99;
- }, 0);
+ const mrr = activeSubs.length * 7.99;
 
  // Credits & Robux
  const totalCredits = (creditPurchases ?? []).reduce((s, c) => s + (Number(c.amount) || 0), 0);
@@ -303,10 +300,6 @@ export function RevenueDashboard() {
  <p className="text-sm text-muted-foreground mt-0.5">Financial performance & earnings</p>
  </div>
  <div className="flex items-center gap-2">
- <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
- <Clock className="h-3 w-3" />
- <span>10m timeout</span>
- </div>
  <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading} className="gap-1.5 h-8">
  <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
  Refresh
@@ -360,9 +353,9 @@ export function RevenueDashboard() {
  isLoading={isLoading}
  />
  <KPICard
- label="Subscription MRR"
+ label="Seller Pro MRR"
  value={`£${metrics.mrr.toFixed(2)}`}
- subtitle={`${metrics.activeSubs} subscribers`}
+ subtitle={`${metrics.activeSubs} Pro sellers`}
  isLoading={isLoading}
  />
  </div>
