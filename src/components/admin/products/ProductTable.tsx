@@ -12,6 +12,20 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+
+interface AdminProduct {
+  id: string;
+  name: string;
+  price: number;
+  is_active: boolean;
+  images: unknown;
+  created_at: string;
+  release_at?: string | null;
+  categories?: { name: string } | null;
+  stores?: { name: string } | null;
+  [key: string]: unknown;
+}
+
 interface ProductTableProps {
   products: any[] | undefined;
   isLoading: boolean;

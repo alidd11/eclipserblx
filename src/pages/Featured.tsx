@@ -284,7 +284,7 @@ function HeroProductCard({ product }: { product: any }) {
 
   return (
     <Link
-      to={`/products/${(product as any).product_number}`}
+      to={`/products/${product.product_number}`}
       className="block group"
     >
       <div className="relative rounded-xl overflow-hidden border border-border bg-card">

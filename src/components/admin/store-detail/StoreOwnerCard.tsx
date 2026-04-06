@@ -139,7 +139,7 @@ export function StoreOwnerCard({ store, ownerProfile, onUnlockAccounts, onLockAc
                 Discord Server
               </span>
               <a
-                href={(store as any).discord_invite}
+                href={(store as Record<string, unknown>).discord_invite}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm text-primary hover:underline flex items-center gap-1"
