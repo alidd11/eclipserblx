@@ -240,7 +240,7 @@ export interface RevolutBarSeries {
 }
 
 interface RevolutBarChartProps {
-  data: any[];
+  data: Record<string, unknown>[];
   xKey: string;
   series: RevolutBarSeries[];
   height?: number;

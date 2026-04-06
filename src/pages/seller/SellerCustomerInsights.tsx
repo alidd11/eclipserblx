@@ -60,7 +60,7 @@ export default function SellerCustomerInsights() {
         .slice(0, 10);
 
       const topIds = topCustomers.map(([id]) => id);
-      let profiles: any[] = [];
+      let profiles: { user_id: string; display_name: string | null; username: string | null; avatar_url: string | null }[] = [];
       if (topIds.length > 0) {
         const { data: profileData } = await supabase
           .from('profiles')

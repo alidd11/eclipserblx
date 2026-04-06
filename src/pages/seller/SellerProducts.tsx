@@ -90,9 +90,9 @@ export default function SellerProducts() {
     },
   });
 
-  const parentCats = categories?.filter((c: any) => !c.parent_id) || [];
-  const childCatsMap = new Map<string, any[]>();
-  categories?.forEach((c: any) => {
+  const parentCats = categories?.filter((c) => !c.parent_id) || [];
+  const childCatsMap = new Map<string, typeof parentCats>();
+  categories?.forEach((c) => {
     if (c.parent_id) {
       const arr = childCatsMap.get(c.parent_id) || [];
       arr.push(c);

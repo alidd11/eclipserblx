@@ -282,13 +282,13 @@ export function SellerProductFormDialog({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__" className="text-muted-foreground">No category</SelectItem>
-                  {parentCats.map((parent: any) => {
+                  {parentCats.map((parent) => {
                     const children = childCatsMap.get(parent.id) || [];
                     if (children.length > 0) {
                       return (
                         <SelectGroup key={parent.id}>
                           <SelectLabel>{parent.name}</SelectLabel>
-                          {children.map((child: any) => (
+                          {children.map((child) => (
                             <SelectItem key={child.id} value={child.id} className="pl-6">
                               {child.name}
                             </SelectItem>
