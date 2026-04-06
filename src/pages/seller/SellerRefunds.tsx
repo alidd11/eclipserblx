@@ -266,7 +266,7 @@ function SellerDisputeDetail({ request, response, setResponse, respondMutation, 
             <FileImage className="h-3.5 w-3.5" /> Customer Evidence ({evidence.length})
           </span>
           <div className="space-y-1">
-            {evidence.map((e: Error) => (
+            {evidence.map((e) => (
               <div key={e.id} className="flex items-center gap-2 py-1.5 text-sm">
                 <FileImage className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <span className="truncate flex-1">{e.file_name}</span>

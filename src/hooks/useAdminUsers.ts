@@ -267,7 +267,7 @@ export function useAdminUsers() {
   const stats = useMemo(() => ({
     total: customerProfiles.length,
     staff: staffProfiles.length,
-    eclipsePlus: customerProfiles.filter(p => getUserRoles(p.user_id).some(r => r.role === 'eclipse_plus_member')).length,
+    eclipsePlus: customerProfiles.filter(p => getUserRoles(p.user_id as string).some(r => r.role === 'eclipse_plus_member')).length,
   }), [customerProfiles, staffProfiles, userRoles]);
 
   const handleBanClick = () => {

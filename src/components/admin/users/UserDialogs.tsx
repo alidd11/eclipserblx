@@ -23,7 +23,7 @@ interface CustomRole {
   name: string;
   display_name?: string;
   color: string | null;
-  description: string | null;
+  description?: string | null;
 }
 
 interface UserRole {
