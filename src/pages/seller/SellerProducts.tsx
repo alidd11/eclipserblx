@@ -882,8 +882,8 @@ export default function SellerProducts() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-4">
-            <p className="text-xs text-muted-foreground">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground tabular-nums">
               {((currentPage - 1) * PRODUCTS_PER_PAGE) + 1}–{Math.min(currentPage * PRODUCTS_PER_PAGE, totalCount)} of {totalCount}
             </p>
             <div className="flex items-center gap-2">
@@ -895,7 +895,7 @@ export default function SellerProducts() {
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-xs font-medium px-1">
+              <span className="text-xs font-medium tabular-nums px-1">
                 {currentPage}/{totalPages}
               </span>
               <Button
@@ -910,8 +910,8 @@ export default function SellerProducts() {
           </div>
         )}
 
-        <p className="flex items-center gap-1.5 text-xs text-muted-foreground mt-4">
-          <AlertCircle className="h-3.5 w-3.5" />
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
           All new products are reviewed within 24-48 hours before going live.
         </p>
 
