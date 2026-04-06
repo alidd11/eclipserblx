@@ -111,7 +111,7 @@ export default function SellerTaxSummary() {
       if (!store?.id) return [];
 
       const { data, error } = await supabase
-        .from('seller_payouts')
+        .from('seller_payouts_safe' as any)
         .select('amount, status, created_at, completed_at')
         .eq('store_id', store.id)
         .eq('status', 'completed')

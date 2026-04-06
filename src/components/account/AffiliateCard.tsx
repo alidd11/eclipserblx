@@ -106,8 +106,8 @@ export function AffiliateCard() {
   queryKey: ['affiliate-payouts', user?.id],
   queryFn: async () => {
    if (!user?.id) return [];
-   const { data, error } = await supabase
-    .from('affiliate_payouts')
+    const { data, error } = await supabase
+     .from('affiliate_payouts_safe' as any)
     .select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })

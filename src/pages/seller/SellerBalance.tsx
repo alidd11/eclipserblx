@@ -61,7 +61,7 @@ export default function SellerBalance() {
       if (!store?.id) return [];
       
       const { data, error } = await supabase
-        .from('seller_payouts')
+        .from('seller_payouts_safe' as any)
         .select('id, amount, status, created_at, processed_at, notes')
         .eq('store_id', store.id)
         .order('created_at', { ascending: false })
