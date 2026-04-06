@@ -136,10 +136,10 @@ function Dashboard({ token, onLogout }: { token: string; onLogout: () => void })
         // Mark unread messages as read
         const unread = (msgs || []).filter(m => !m.is_read).map(m => m.id);
         if (unread.length > 0) {
-          await supabase
-            .from('applicant_messages')
-            .update({ is_read: true })
-            .in('id', unread);
+          await supabase.rpc('mark_applicant_messages_read', { 
+            p_token: token, 
+            p_message_ids: unread 
+          });
         }
       } catch {
         onLogout();
