@@ -164,7 +164,7 @@ export function StoreSidebar({
 
   // Navigation groups matching CustomerSidebar structure
   // On custom domains, hide Marketplace link, My Account, and Legal groups
-  const customLinkItems: NavItem[] = customNavLinks.map((link: any) => ({
+  const customLinkItems: NavItem[] = customNavLinks.map((link) => ({
     title: link.label,
     icon: FileText,
     href: link.url || undefined,
