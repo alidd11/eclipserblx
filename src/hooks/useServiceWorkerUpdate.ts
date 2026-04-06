@@ -59,7 +59,7 @@ export const useServiceWorkerUpdate = (options: UseServiceWorkerUpdateOptions = 
     if (!('serviceWorker' in navigator)) return;
 
     const handleMessage = (event: MessageEvent) => {
-      console.log('[App] SW message received:', event.data);
+      console.debug('[App] SW message received:', event.data);
 
       if (event.data?.type === 'SW_UPDATED' && showNotifications) {
         // Show native notification for app update
@@ -83,7 +83,7 @@ export const useServiceWorkerUpdate = (options: UseServiceWorkerUpdateOptions = 
 
     // Listen for controller change (SW activated) - no auto-reload
     const handleControllerChange = () => {
-      console.log('[App] SW controller changed - update available');
+      console.debug('[App] SW controller changed - update available');
 
       // Auto-reload (PWA) to ensure new bundles/assets are used immediately.
       if (autoReloadOnUpdate && !didReloadRef.current) {

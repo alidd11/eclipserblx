@@ -133,7 +133,7 @@ function isAutoRecoveryAllowed(): boolean {
 // ── Recovery entry points ──────────────────────────────────────────
 
 function logDiagnostics(source: string, reason: string, error?: Error | null) {
-  console.log(`[ChunkRecovery] source=${source} reason="${reason}"`, {
+  console.debug(`[ChunkRecovery] source=${source} reason="${reason}"`, {
     pathname: window.location.pathname,
     search: window.location.search,
     errorName: error?.name,

@@ -52,7 +52,7 @@ export function useAdminAuth() {
         if (!isJwtError(error)) throw error;
 
         // Token may be stale — force a refresh and retry once
-        console.log('[AdminAuth] JWT error on roles query, refreshing session...');
+        console.debug('[AdminAuth] JWT error on roles query, refreshing session...');
         const refreshResult = await withTimeout(supabase.auth.refreshSession(), 5000);
         if (!refreshResult || refreshResult.error) {
           console.warn('[AdminAuth] Session refresh failed:', refreshResult?.error?.message ?? 'timeout');

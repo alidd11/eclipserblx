@@ -271,7 +271,7 @@ export async function performSecurityScan(
   } = options;
 
   const fileName = file.name;
-  console.log(`Starting security scan for: ${fileName}`);
+  console.debug(`Starting security scan for: ${fileName}`);
 
   // Step 0: Check for blocked extensions
   if (isBlockedExtension(fileName)) {
