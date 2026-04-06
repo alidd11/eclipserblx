@@ -5496,6 +5496,74 @@ export type Database = {
           },
         ]
       }
+      leak_scan_results: {
+        Row: {
+          confidence: string
+          created_at: string
+          dismissed: boolean
+          id: string
+          matched_query: string
+          product_id: string
+          snippet: string | null
+          source_domain: string
+          source_url: string
+          store_id: string
+        }
+        Insert: {
+          confidence?: string
+          created_at?: string
+          dismissed?: boolean
+          id?: string
+          matched_query: string
+          product_id: string
+          snippet?: string | null
+          source_domain: string
+          source_url: string
+          store_id: string
+        }
+        Update: {
+          confidence?: string
+          created_at?: string
+          dismissed?: boolean
+          id?: string
+          matched_query?: string
+          product_id?: string
+          snippet?: string | null
+          source_domain?: string
+          source_url?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leak_scan_results_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leak_scan_results_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leak_scan_results_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leak_scan_results_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loyalty_points: {
         Row: {
           created_at: string
@@ -10000,6 +10068,7 @@ export type Database = {
           is_trusted: boolean | null
           is_verified: boolean | null
           layout_style: string | null
+          leak_scan_enabled: boolean
           logo_url: string | null
           name: string
           owner_id: string
@@ -10074,6 +10143,7 @@ export type Database = {
           is_trusted?: boolean | null
           is_verified?: boolean | null
           layout_style?: string | null
+          leak_scan_enabled?: boolean
           logo_url?: string | null
           name: string
           owner_id: string
@@ -10148,6 +10218,7 @@ export type Database = {
           is_trusted?: boolean | null
           is_verified?: boolean | null
           layout_style?: string | null
+          leak_scan_enabled?: boolean
           logo_url?: string | null
           name?: string
           owner_id?: string
