@@ -25,7 +25,7 @@ const AVAILABLE_EVENTS = [
 ];
 
 export default function SellerWebhooks() {
-  const { activeStore } = useActiveStore();
+  const { activeStoreId } = useActiveStore();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [url, setUrl] = useState('');
