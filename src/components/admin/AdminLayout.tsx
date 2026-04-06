@@ -239,8 +239,6 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
             </header>
           )
         )}
-        {/* fixedHeaderSpacer is auto-handled by LayoutShell — no manual spacer needed */}
-        
         showFooter={false}
         showFABs={false}
         chatMode={isChatPage}
