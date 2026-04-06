@@ -48,7 +48,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { GrantEclipsePlusDialog } from '@/components/admin/GrantEclipsePlusDialog';
+
 import { CustomerProfileDialog } from '@/components/admin/CustomerProfileDialog';
 
 // Note: Roles are now text-based, fetched from custom_roles table
