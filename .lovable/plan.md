@@ -1,135 +1,108 @@
 
 
-## Seller Dashboard Enterprise Visual & UX Audit
+## Automated Leak Detection for Pro Sellers
 
-### Findings
+### What This Does
 
-After auditing all 48 seller pages and 35+ seller components, here are the issues:
-
----
-
-### Issue 1: Card Components Still Used in 10 Dashboard Widgets
-
-The project's enterprise standard (per memory) is flattened `div` containers with `border-border rounded-xl`, but these dashboard components still use Shadcn `<Card>`, `<CardHeader>`, `<CardContent>`, `<CardTitle>`:
-
-| Component | Lines |
-|-----------|-------|
-| `RevenueChart.tsx` | 88 |
-| `ProductHealthDonut.tsx` | 82 |
-| `RecentOrdersTable.tsx` | 121 |
-| `TopProductsLeaderboard.tsx` | 110 |
-| `NotificationCenter.tsx` | 102 |
-| `StoreHealthScore.tsx` | 221 |
-| `StoreSetupChecklist.tsx` | 53 |
-| `DashboardSkeletons.tsx` | 39 |
-| `DashboardPlaceholders.tsx` | 41 (CardEmptyState h-[200px] hardcoded) |
-
-**Fix**: Replace all `<Card>` with `<div className="rounded-xl border border-border/50 bg-card">`, `<CardHeader>` with a `div` header, `<CardContent>` with `<div className="p-4">`. Update `DashboardCardSkeleton` and `StatRowSkeleton` similarly.
+An automated system that periodically scans the web for your sellers' products being shared on known leak/piracy sites. When a match is found, the seller gets an in-app notification and a pre-filled leak report — no manual upload needed.
 
 ---
 
-### Issue 2: Card Components in 10+ Seller Pages
+### How It Works
 
-These pages import and use Card wrappers:
-
-- `SellerBalance.tsx` (397 lines)
-- `SellerGoals.tsx` (272 lines)
-- `SellerAnalytics.tsx` (643 lines)
-- `SellerTaxFeeSummary.tsx` (139 lines)
-- `SellerRevenueBreakdown.tsx` (166 lines)
-- `SellerCategories.tsx`
-- `SellerStoreTabs.tsx`
-- `SellerSettingsAppearance.tsx`
-- `SellerLeakReports.tsx`
-- `SellerTaxSummary.tsx`
-- `SellerTransactionHistory.tsx`
-- `SellerFlashSales.tsx`
-
-**Fix**: Same Card-to-div migration across all pages.
-
----
-
-### Issue 3: Unused Import in SellerDashboard.tsx
-
-Line 9 imports `Card, CardContent, CardHeader, CardTitle` but **none are used** in the JSX — all dashboard sections either use flattened divs or delegate to child components. Dead import.
-
-**Fix**: Remove the unused import.
-
----
-
-### Issue 4: Duplicate "New Product" CTA
-
-The dashboard has TWO "New Product" buttons visible simultaneously:
-1. Inside `SellerHeroBanner` (line 87-90) — a primary button in the hero
-2. Inside the Command Center grid (line 92) — "New Product" as the first action tile
-
-**Fix**: Remove "New Product" from the Command Center `createActions` array since the hero banner already prominently features it.
-
----
-
-### Issue 5: Duplicate Onboarding Components
-
-Three onboarding/setup components render sequentially (lines 163-165):
-1. `SellerOnboardingWizard` — a dialog-based wizard
-2. `SellerHeroBanner` — always visible greeting banner
-3. `StoreSetupChecklist` — checklist card (uses Card wrapper)
-
-The wizard and checklist show overlapping information (same `useSellerOnboarding` hook, same steps). A new seller sees BOTH the wizard dialog AND the checklist underneath.
-
-**Fix**: Remove `StoreSetupChecklist` from the dashboard — the wizard already covers the same steps. If the wizard is dismissed, the checklist is redundant since the hero banner action buttons cover the key actions.
+```text
+┌─────────────────────┐
+│  Scheduled CRON job │  (every 6 hours)
+│  auto-detect-leaks  │
+└────────┬────────────┘
+         │
+         ▼
+┌─────────────────────────────┐
+│ For each Pro seller's store │
+│ → Get active product names  │
+│ → Build search queries      │
+└────────┬────────────────────┘
+         │
+         ▼
+┌─────────────────────────────┐
+│ Firecrawl Search API        │
+│ Query: "{product name}      │
+│   site:v3rmillion.net OR    │
+│   site:robloxscripts.com    │
+│   OR site:pastebin.com ..." │
+└────────┬────────────────────┘
+         │
+         ▼
+┌─────────────────────────────┐
+│ Deduplicate against         │
+│ leak_scan_results table     │
+│ (already-seen URLs skipped) │
+└────────┬────────────────────┘
+         │  New matches only
+         ▼
+┌─────────────────────────────┐
+│ Create seller_notification  │
+│ + auto leak_report entry    │
+│ with source URL & snippet   │
+└─────────────────────────────┘
+```
 
 ---
 
-### Issue 6: Redundant `LayoutGrid` Import
+### Database Changes
 
-Line 22 imports `LayoutGrid` but it's never used anywhere in the file.
+**New table: `leak_scan_results`**
+- `id`, `store_id`, `product_id`, `source_url`, `source_domain`, `matched_query`, `snippet`, `confidence`, `dismissed`, `created_at`
+- RLS: sellers see only their own store's results
+
+**New columns on `stores`:**
+- `leak_scan_enabled` (boolean, default false) — Pro sellers toggle this on
 
 ---
 
-### Implementation Plan
+### New Edge Function: `auto-detect-leaks`
 
-**Phase 1: Dashboard cleanup (low risk)**
-- Remove unused imports (`Card`, `LayoutGrid`) from `SellerDashboard.tsx`
-- Remove duplicate "New Product" from Command Center
-- Remove `StoreSetupChecklist` from dashboard render
+Scheduled via pg_cron every 6 hours:
+1. Query all stores where `leak_scan_enabled = true` AND seller has active Pro subscription
+2. For each store, get active product names
+3. For each product, search Firecrawl with queries targeting known Roblox leak sites:
+   - `v3rmillion.net`, `robloxscripts.com`, `pastebin.com`, `scriptblox.com`, `rscripts.net`, `github.com` (public repos)
+4. Deduplicate results against `leak_scan_results` (by URL hash)
+5. For new matches: insert into `leak_scan_results`, create a `seller_notification` with type `leak_detected`
+6. Rate limit: max 10 products per store per scan cycle to stay within Firecrawl quotas
 
-**Phase 2: Flatten dashboard widgets (medium, 9 files)**
-- Convert all 9 dashboard component files from Card to enterprise-standard `div` containers
-- Update `DashboardSkeletons.tsx` and `DashboardPlaceholders.tsx`
+---
 
-**Phase 3: Flatten seller pages (medium, 12 files)**
-- Migrate all remaining seller pages from Card wrappers to flattened divs
-- Each file: remove Card imports, replace JSX wrappers
+### Seller UI Changes
 
-**Verification**: Full `npx tsc --noEmit` after each phase.
+**Asset Protection page (`SellerLeakReports.tsx`):**
+- Add a "Auto-Scan" toggle (Pro-gated) at the top
+- New "Auto-Detected Leaks" section showing results from `leak_scan_results`
+- Each result shows: product name, source URL (linked), snippet preview, detected date, "Dismiss" button
+- Badge count on the sidebar for unread leak detections
+
+**Notification Center:**
+- New notification type `leak_detected` renders with a warning icon and links to the Asset Protection page
+
+---
+
+### Pro Gating
+
+- Toggle only appears for Pro subscribers
+- Edge function skips stores without active Pro subscription
+- Free sellers continue using manual upload (existing flow unchanged)
+
+---
 
 ### Files Changed
 
-**Phase 1** (3 edits):
-- `src/pages/seller/SellerDashboard.tsx`
+- **Migration**: Create `leak_scan_results` table + add `leak_scan_enabled` to `stores`
+- **Create**: `supabase/functions/auto-detect-leaks/index.ts`
+- **Edit**: `src/pages/seller/SellerLeakReports.tsx` — add auto-scan toggle + results section
+- **Edit**: `src/components/seller/NotificationCenter.tsx` — render `leak_detected` type
+- **pg_cron**: Schedule the function every 6 hours
 
-**Phase 2** (9 edits):
-- `src/components/seller/RevenueChart.tsx`
-- `src/components/seller/ProductHealthDonut.tsx`
-- `src/components/seller/RecentOrdersTable.tsx`
-- `src/components/seller/TopProductsLeaderboard.tsx`
-- `src/components/seller/NotificationCenter.tsx`
-- `src/components/seller/StoreHealthScore.tsx`
-- `src/components/seller/StoreSetupChecklist.tsx`
-- `src/components/seller/DashboardSkeletons.tsx`
-- `src/components/seller/DashboardPlaceholders.tsx`
+### Risk
 
-**Phase 3** (12 edits):
-- `src/pages/seller/SellerBalance.tsx`
-- `src/pages/seller/SellerGoals.tsx`
-- `src/pages/seller/SellerAnalytics.tsx`
-- `src/pages/seller/SellerTaxFeeSummary.tsx`
-- `src/pages/seller/SellerRevenueBreakdown.tsx`
-- `src/pages/seller/SellerCategories.tsx`
-- `src/pages/seller/SellerStoreTabs.tsx`
-- `src/pages/seller/SellerSettingsAppearance.tsx`
-- `src/pages/seller/SellerLeakReports.tsx`
-- `src/pages/seller/SellerTaxSummary.tsx`
-- `src/pages/seller/SellerTransactionHistory.tsx`
-- `src/pages/seller/SellerFlashSales.tsx`
+Low — no existing flows are modified. The manual report system stays intact. Firecrawl is already connected. The scan is additive and writes to a new table.
 
