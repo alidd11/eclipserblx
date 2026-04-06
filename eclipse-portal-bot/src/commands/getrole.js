@@ -40,7 +40,7 @@ export async function handleGetRole(interaction, serverContext) {
     } else if (purchaseCount >= 1 && config.customerRoleId) {
       rolesToAssign.push({ id: config.customerRoleId, name: 'Customer' });
     }
-    if (subscriptionResult.data && config.eclipsePlusRoleId) rolesToAssign.push({ id: config.eclipsePlusRoleId, name: 'Eclipse+' });
+    if (subscriptionResult.data && config.eclipsePlusRoleId) rolesToAssign.push({ id: config.eclipsePlusRoleId, name: 'Pro' });
     if (storeResult.data && config.storeCreatorRoleId) rolesToAssign.push({ id: config.storeCreatorRoleId, name: 'Store Creator' });
   } else if (serverContext.store) {
     const [roleConfigsResult, ordersResult] = await Promise.all([
