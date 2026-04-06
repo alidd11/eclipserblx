@@ -8,30 +8,19 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { useAdTiers, useAdSubscription, useAdSubscriptionCheckout, calculateAdAnnualSavingsPercent, AdTier, AdBillingPeriod } from '@/hooks/useAdSubscription';
-import { Megaphone, Loader2, CheckCircle, ExternalLink, Image as ImageIcon, Link2, AtSign, Sparkles, AlertCircle, Crown, Zap, Star, Bell, Users, Plus, Minus, ShoppingCart, History, Calendar } from 'lucide-react';
+import { useAdTiers, useAdSubscription, useAdSubscriptionCheckout, AdTier, AdBillingPeriod } from '@/hooks/useAdSubscription';
+import { Megaphone, Loader2, ExternalLink, Image as ImageIcon, Link2, AtSign, Sparkles, AlertCircle, Crown, Zap, Star, Bell, Users, History, Calendar } from 'lucide-react';
 import { format } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { AdSlotPicker, SelectedSlot } from '@/components/ads/AdSlotPicker';
+import { AdPingPurchase } from '@/components/ads/AdPingPurchase';
+import { AdPricingView } from '@/components/ads/AdPricingView';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
-import { EmbeddedPaymentModal } from '@/components/payments/EmbeddedPaymentModal';
 import { usePageMeta } from '@/hooks/usePageMeta';
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-  }).format(amount);
-};
-
-const formatRobux = (amount: number) => {
-  return new Intl.NumberFormat('en-US').format(amount) + ' R$';
-};
 
 const tierIcons: Record<string, React.ReactNode> = {
   basic: <Zap className="h-5 w-5" />,
@@ -49,7 +38,7 @@ export default function Advertise() {
   usePageMeta({ title: 'Advertise', description: 'Promote your products and Discord server on Eclipse. Reach thousands of Roblox roleplay enthusiasts.', canonicalPath: '/advertise' });
   const { user, loading: authLoading, session } = useAuth();
   const [searchParams] = useSearchParams();
-  
+
   const [adFormData, setAdFormData, clearAdFormData] = useFormPersistence('advertise-form', {
     title: '',
     description: '',
@@ -57,41 +46,24 @@ export default function Advertise() {
     linkUrl: '',
     discordUsername: '',
   });
-  
+
   const [selectedPing, setSelectedPing] = useState<'none' | 'here' | 'everyone'>('none');
   const [isOpeningPortal, setIsOpeningPortal] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<AdBillingPeriod>('monthly');
-  
-  // Scheduling state — slot-based
   const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null);
-  // Ping purchase quantities for checkout
   const [herePingsToAdd, setHerePingsToAdd] = useState(0);
   const [everyonePingsToAdd, setEveryonePingsToAdd] = useState(0);
-  
-  // Separate ping purchase modal state
-  const [showPingPurchase, setShowPingPurchase] = useState(false);
-  const [herePingsToBuy, setHerePingsToBuy] = useState(5);
-  const [everyonePingsToBuy, setEveryonePingsToBuy] = useState(5);
-  
-  // Embedded payment modal state for ad pings
-  const [pingPaymentModalOpen, setPingPaymentModalOpen] = useState(false);
-  const [isPurchasingPings, setIsPurchasingPings] = useState(false);
-  
+
   const subscriptionSuccess = searchParams.get('subscription_success') === 'true';
   const subscriptionCancelled = searchParams.get('subscription_cancelled') === 'true';
   const pingsPurchased = searchParams.get('pings_purchased') === 'true';
   const pingsCancelled = searchParams.get('pings_cancelled') === 'true';
 
-  // Check if user has Discord linked
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['profile-discord-status', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('discord_id, discord_username')
-        .eq('user_id', user.id)
-        .single();
+      const { data, error } = await supabase.from('profiles').select('discord_id, discord_username').eq('user_id', user.id).single();
       if (error) throw error;
       return data;
     },
@@ -100,19 +72,11 @@ export default function Advertise() {
 
   const hasDiscordLinked = !!profile?.discord_id;
 
-  // Fetch last posted advertisement
   const { data: lastAd, isLoading: lastAdLoading } = useQuery({
     queryKey: ['last-advertisement', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-      const { data, error } = await supabase
-        .from('discord_advertisements')
-        .select('title, description, image_url, link_url, discord_username')
-        .eq('user_id', user.id)
-        .eq('status', 'posted')
-        .order('posted_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const { data, error } = await supabase.from('discord_advertisements').select('title, description, image_url, link_url, discord_username').eq('user_id', user.id).eq('status', 'posted').order('posted_at', { ascending: false }).limit(1).maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -132,79 +96,44 @@ export default function Advertise() {
     }
   };
 
-  // Admin testing bypass - grant full access without payment (role-based)
   const { roles } = useAdminAuth();
   const isAdminTester = !!user && roles?.includes('admin');
 
   const { data: tiers, isLoading: tiersLoading } = useAdTiers();
   const { data: realSubscription, isLoading: subLoading, refetch: refetchSubscription } = useAdSubscription();
-  
-  // Fetch Robux prices for each tier
+
   const { data: robuxPrices } = useQuery({
     queryKey: ['robux-ad-prices'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('settings')
-        .select('key, value')
-        .in('key', ['robux_ad_basic_robux_price', 'robux_ad_pro_robux_price', 'robux_ad_premium_robux_price']);
-      
+      const { data, error } = await supabase.from('settings').select('key, value').in('key', ['robux_ad_basic_robux_price', 'robux_ad_pro_robux_price', 'robux_ad_premium_robux_price']);
       if (error) throw error;
-      
       const prices: Record<string, number> = {};
-      data?.forEach((setting) => {
-        const tier = setting.key.replace('robux_ad_', '').replace('_robux_price', '');
-        prices[tier] = parseInt(setting.value as string) || 0;
-      });
+      data?.forEach((s) => { const tier = s.key.replace('robux_ad_', '').replace('_robux_price', ''); prices[tier] = parseInt(s.value as string) || 0; });
       return prices;
     },
   });
-  
-  // For admin tester, simulate a premium subscription if they don't have one
-  const subscription = isAdminTester && !realSubscription?.subscribed 
-    ? {
-        subscribed: true,
-        tier: 'premium' as const,
-        tier_name: 'Premium (Test Mode)',
-        ads_per_month: 999,
-        ads_remaining: 999,
-        billing_period: 'monthly' as const,
-        here_pings_balance: 99,
-        everyone_pings_balance: 99,
-      }
-    : realSubscription;
 
-  // Check if scheduling is available (Pro+ tiers)
-  const canSchedule = subscription?.tier === 'pro' || subscription?.tier === 'premium';
+  const subscription = isAdminTester && !realSubscription?.subscribed
+    ? { subscribed: true, tier: 'premium' as const, tier_name: 'Premium (Test Mode)', ads_per_month: 999, ads_remaining: 999, billing_period: 'monthly' as const, here_pings_balance: 99, everyone_pings_balance: 99 }
+    : realSubscription;
 
   const checkoutMutation = useAdSubscriptionCheckout();
 
   useEffect(() => {
-    if (subscriptionSuccess) {
-      toast.success('Subscription activated! You can now post ads.');
-      refetchSubscription();
-    }
-    if (subscriptionCancelled) {
-      toast.error('Subscription checkout was cancelled');
-    }
+    if (subscriptionSuccess) { toast.success('Subscription activated! You can now post ads.'); refetchSubscription(); }
+    if (subscriptionCancelled) { toast.error('Subscription checkout was cancelled'); }
     if (pingsPurchased) {
-      const herePurchased = searchParams.get('here') || '0';
-      const everyonePurchased = searchParams.get('everyone') || '0';
-      toast.success(`Ping credits added! ${herePurchased} @here, ${everyonePurchased} @everyone`);
+      const h = searchParams.get('here') || '0';
+      const e = searchParams.get('everyone') || '0';
+      toast.success(`Ping credits added! ${h} @here, ${e} @everyone`);
       refetchSubscription();
     }
-    if (pingsCancelled) {
-      toast.error('Ping purchase was cancelled');
-    }
+    if (pingsCancelled) { toast.error('Ping purchase was cancelled'); }
   }, [subscriptionSuccess, subscriptionCancelled, pingsPurchased, pingsCancelled]);
 
-  // Post ad mutation (for subscribers)
   const postAdMutation = useMutation({
     mutationFn: async () => {
-      if (!session?.access_token) {
-        throw new Error('Please sign in to post an advertisement');
-      }
-
-      // Build scheduled_for from selected slot
+      if (!session?.access_token) throw new Error('Please sign in to post an advertisement');
       let scheduledFor: string | null = null;
       let slotId: string | null = null;
       if (selectedSlot) {
@@ -214,23 +143,10 @@ export default function Advertise() {
         scheduledFor = scheduled.toISOString();
         slotId = selectedSlot.slotId;
       }
-
       const { data, error } = await supabase.functions.invoke('post-subscription-ad', {
-        body: { 
-          title: adFormData.title, 
-          description: adFormData.description, 
-          imageUrls: adFormData.imageUrls?.filter(u => u.trim()) || [],
-          linkUrl: adFormData.linkUrl || null,
-          discordUsername: adFormData.discordUsername || null,
-          pingType: selectedPing === 'none' ? null : selectedPing,
-          scheduledFor,
-          slotId,
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+        body: { title: adFormData.title, description: adFormData.description, imageUrls: adFormData.imageUrls?.filter(u => u.trim()) || [], linkUrl: adFormData.linkUrl || null, discordUsername: adFormData.discordUsername || null, pingType: selectedPing === 'none' ? null : selectedPing, scheduledFor, slotId },
+        headers: { Authorization: `Bearer ${session.access_token}` },
       });
-
       if (error) throw error;
       if (data.error) throw new Error(data.error);
       return data;
@@ -240,121 +156,46 @@ export default function Advertise() {
       setSelectedPing('none');
       setSelectedSlot(null);
       refetchSubscription();
-      if (data?.scheduled) {
-        toast.success('Advertisement scheduled successfully!');
-      } else {
-        toast.success('Advertisement posted successfully!');
-      }
+      toast.success(data?.scheduled ? 'Advertisement scheduled successfully!' : 'Advertisement posted successfully!');
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to post advertisement');
-    },
+    onError: (error: Error) => { toast.error(error.message || 'Failed to post advertisement'); },
   });
 
   const handlePostAd = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!user) {
-      toast.error('Please sign in to post an advertisement');
-      return;
-    }
-
-    if (!adFormData.title.trim()) {
-      toast.error('Please enter a title');
-      return;
-    }
-
-    if (!adFormData.description.trim()) {
-      toast.error('Please enter a description');
-      return;
-    }
-
+    if (!user) { toast.error('Please sign in to post an advertisement'); return; }
+    if (!adFormData.title.trim()) { toast.error('Please enter a title'); return; }
+    if (!adFormData.description.trim()) { toast.error('Please enter a description'); return; }
     postAdMutation.mutate();
   };
 
   const handleSubscribe = (tier: AdTier) => {
-    if (!user) {
-      toast.error('Please sign in to subscribe');
-      return;
-    }
-    if (!hasDiscordLinked) {
-      toast.error('Please link your Discord account first to purchase advertising services');
-      return;
-    }
-    checkoutMutation.mutate({ 
-      tier, 
-      billingPeriod,
-      herePings: herePingsToAdd,
-      everyonePings: everyonePingsToAdd,
-    });
-  };
-
-  const handlePurchasePings = () => {
-    if (!user) {
-      toast.error('Please sign in to purchase pings');
-      return;
-    }
-    if (!hasDiscordLinked) {
-      toast.error('Please link your Discord account first to purchase pings');
-      return;
-    }
-    if (herePingsToBuy === 0 && everyonePingsToBuy === 0) {
-      toast.error('Please select at least one ping to purchase');
-      return;
-    }
-    // Open embedded payment modal
-    setPingPaymentModalOpen(true);
-  };
-
-  const handlePingPaymentSuccess = () => {
-    toast.success(`Ping credits added! ${herePingsToBuy} @here, ${everyonePingsToBuy} @everyone`);
-    refetchSubscription();
-    setPingPaymentModalOpen(false);
-    setShowPingPurchase(false);
-    setHerePingsToBuy(5);
-    setEveryonePingsToBuy(5);
-  };
-
-  const handlePingPaymentError = (error: string) => {
-    toast.error(error);
+    if (!user) { toast.error('Please sign in to subscribe'); return; }
+    if (!hasDiscordLinked) { toast.error('Please link your Discord account first to purchase advertising services'); return; }
+    checkoutMutation.mutate({ tier, billingPeriod, herePings: herePingsToAdd, everyonePings: everyonePingsToAdd });
   };
 
   const handleManageSubscription = async () => {
-    if (!user || !session?.access_token) {
-      toast.error('Please sign in to manage your subscription');
-      return;
-    }
-
+    if (!user || !session?.access_token) { toast.error('Please sign in to manage your subscription'); return; }
     setIsOpeningPortal(true);
     try {
-      const { data, error } = await supabase.functions.invoke('customer-portal', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-      
+      const { data, error } = await supabase.functions.invoke('customer-portal', { headers: { Authorization: `Bearer ${session.access_token}` } });
       if (error) throw error;
       if (data.error) throw new Error(data.error);
-      
-      if (data.url) {
-        const { openExternalUrl } = await import('@/lib/externalBrowser');
-        await openExternalUrl(data.url);
-      }
+      if (data.url) { const { openExternalUrl } = await import('@/lib/externalBrowser'); await openExternalUrl(data.url); }
     } catch (error) {
       console.error('Portal error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to open subscription management');
-    } finally {
-      setIsOpeningPortal(false);
-    }
+    } finally { setIsOpeningPortal(false); }
   };
 
   const isLoading = tiersLoading || subLoading || authLoading || profileLoading;
 
-  // If user has active subscription, show the ad posting form
+  // Subscriber view
   if (subscription?.subscribed) {
     const herePingsAvailable = subscription.here_pings_balance || 0;
     const everyonePingsAvailable = subscription.everyone_pings_balance || 0;
-    
+
     return (
       <MainLayout>
         <div className="container max-w-4xl py-8 space-y-8">
@@ -366,26 +207,13 @@ export default function Advertise() {
                   {tierIcons[subscription.tier || 'basic']}
                   <div>
                     <p className="font-semibold">{subscription.tier_name} Subscriber</p>
-                    <p className="text-sm text-muted-foreground">
-                      {subscription.ads_remaining} of {subscription.ads_per_month} ads remaining this month
-                    </p>
+                    <p className="text-sm text-muted-foreground">{subscription.ads_remaining} of {subscription.ads_per_month} ads remaining this month</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary">
-                    {subscription.billing_period === 'annual' ? 'Annual' : 'Monthly'}
-                  </Badge>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleManageSubscription}
-                    disabled={isOpeningPortal}
-                  >
-                    {isOpeningPortal ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                    )}
+                  <Badge variant="secondary">{subscription.billing_period === 'annual' ? 'Annual' : 'Monthly'}</Badge>
+                  <Button variant="outline" size="sm" onClick={handleManageSubscription} disabled={isOpeningPortal}>
+                    {isOpeningPortal ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4 mr-2" />}
                     {isOpeningPortal ? 'Loading...' : 'Manage'}
                   </Button>
                 </div>
@@ -393,229 +221,22 @@ export default function Advertise() {
             </CardContent>
           </Card>
 
-          {/* Ping Balance Card */}
-          <Card className="border-border bg-card">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Bell className="h-5 w-5" />
-                  Ping Credits
-                </CardTitle>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowPingPurchase(!showPingPurchase)}
-                >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Buy More
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30 text-center">
-                  <p className="text-2xl font-bold text-green-500">{herePingsAvailable}</p>
-                  <p className="text-sm text-muted-foreground">@here pings</p>
-                </div>
-                <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-center">
-                  <p className="text-2xl font-bold text-yellow-500">{everyonePingsAvailable}</p>
-                  <p className="text-sm text-muted-foreground">@everyone pings</p>
-                </div>
-              </div>
+          {/* Ping Purchase */}
+          <AdPingPurchase
+            herePingsAvailable={herePingsAvailable}
+            everyonePingsAvailable={everyonePingsAvailable}
+            hasDiscordLinked={hasDiscordLinked}
+            userId={user?.id}
+            onPurchaseSuccess={() => refetchSubscription()}
+          />
 
-              {showPingPurchase && (
-                <div className="pt-4 border-t border-border space-y-4">
-                  {/* Bulk Discount Banner */}
-                  <div className="p-3 rounded-lg bg-muted/50 border border-border">
-                    <p className="text-sm font-medium text-primary mb-2">🎉 Bulk Discounts Available!</p>
-                    <div className="grid grid-cols-4 gap-2 text-xs">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setHerePingsToBuy(5);
-                          setEveryonePingsToBuy(0);
-                        }}
-                        className="text-center p-1.5 rounded bg-background/50 hover:bg-background/80 transition-colors cursor-pointer border border-transparent hover:border-green-500/50"
-                      >
-                        <p className="font-bold text-green-500">5%</p>
-                        <p className="text-muted-foreground">5+ pings</p>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setHerePingsToBuy(10);
-                          setEveryonePingsToBuy(0);
-                        }}
-                        className="text-center p-1.5 rounded bg-background/50 hover:bg-background/80 transition-colors cursor-pointer border border-transparent hover:border-green-500/50"
-                      >
-                        <p className="font-bold text-green-500">10%</p>
-                        <p className="text-muted-foreground">10+ pings</p>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setHerePingsToBuy(25);
-                          setEveryonePingsToBuy(0);
-                        }}
-                        className="text-center p-1.5 rounded bg-background/50 hover:bg-background/80 transition-colors cursor-pointer border border-transparent hover:border-green-500/50"
-                      >
-                        <p className="font-bold text-green-500">20%</p>
-                        <p className="text-muted-foreground">25+ pings</p>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setHerePingsToBuy(50);
-                          setEveryonePingsToBuy(0);
-                        }}
-                        className="text-center p-1.5 rounded bg-background/50 hover:bg-background/80 transition-colors cursor-pointer border border-transparent hover:border-green-500/50"
-                      >
-                        <p className="font-bold text-green-500">30%</p>
-                        <p className="text-muted-foreground">50+ pings</p>
-                      </button>
-                    </div>
-                  </div>
-
-                  <p className="text-sm text-muted-foreground">Purchase ping credits to use on your ads</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <Label className="text-sm whitespace-nowrap">@here pings</Label>
-                        <div className="flex items-center gap-2">
-                          {herePingsToBuy >= 5 && (
-                            <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-500 shrink-0">
-                              {herePingsToBuy >= 50 ? '30%' : herePingsToBuy >= 25 ? '20%' : herePingsToBuy >= 10 ? '10%' : '5%'} off
-                            </Badge>
-                          )}
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {herePingsToBuy >= 5 
-                              ? `£${(0.79 * (1 - (herePingsToBuy >= 50 ? 0.30 : herePingsToBuy >= 25 ? 0.20 : herePingsToBuy >= 10 ? 0.10 : 0.05))).toFixed(2)} each`
-                              : '£0.79 each'
-                            }
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => setHerePingsToBuy(Math.max(0, herePingsToBuy - 1))}
-                          className="shrink-0"
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                        <Input
-                          type="number"
-                          value={herePingsToBuy}
-                          onChange={(e) => setHerePingsToBuy(Math.max(0, Math.min(100, parseInt(e.target.value) || 0)))}
-                          className="w-full text-center"
-                        />
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => setHerePingsToBuy(Math.min(100, herePingsToBuy + 1))}
-                          className="shrink-0"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <Label className="text-sm whitespace-nowrap">@everyone pings</Label>
-                        <div className="flex items-center gap-2">
-                          {everyonePingsToBuy >= 5 && (
-                            <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-500 shrink-0">
-                              {everyonePingsToBuy >= 50 ? '30%' : everyonePingsToBuy >= 25 ? '20%' : everyonePingsToBuy >= 10 ? '10%' : '5%'} off
-                            </Badge>
-                          )}
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {everyonePingsToBuy >= 5 
-                              ? `£${(1.49 * (1 - (everyonePingsToBuy >= 50 ? 0.30 : everyonePingsToBuy >= 25 ? 0.20 : everyonePingsToBuy >= 10 ? 0.10 : 0.05))).toFixed(2)} each`
-                              : '£1.49 each'
-                            }
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => setEveryonePingsToBuy(Math.max(0, everyonePingsToBuy - 1))}
-                          className="shrink-0"
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                        <Input
-                          type="number"
-                          value={everyonePingsToBuy}
-                          onChange={(e) => setEveryonePingsToBuy(Math.max(0, Math.min(100, parseInt(e.target.value) || 0)))}
-                          className="w-full text-center"
-                        />
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => setEveryonePingsToBuy(Math.min(100, everyonePingsToBuy + 1))}
-                          className="shrink-0"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
-                    <div>
-                      {(() => {
-                        const hereDiscount = herePingsToBuy >= 50 ? 0.30 : herePingsToBuy >= 25 ? 0.20 : herePingsToBuy >= 10 ? 0.10 : herePingsToBuy >= 5 ? 0.05 : 0;
-                        const everyoneDiscount = everyonePingsToBuy >= 50 ? 0.30 : everyonePingsToBuy >= 25 ? 0.20 : everyonePingsToBuy >= 10 ? 0.10 : everyonePingsToBuy >= 5 ? 0.05 : 0;
-                        const originalTotal = herePingsToBuy * 0.79 + everyonePingsToBuy * 1.49;
-                        const discountedTotal = herePingsToBuy * 0.79 * (1 - hereDiscount) + everyonePingsToBuy * 1.49 * (1 - everyoneDiscount);
-                        const savings = originalTotal - discountedTotal;
-                        
-                        return (
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-sm font-medium whitespace-nowrap">
-                              Total: {formatCurrency(discountedTotal)}
-                            </p>
-                            {savings > 0 && (
-                              <span className="text-xs text-muted-foreground line-through whitespace-nowrap">
-                                {formatCurrency(originalTotal)}
-                              </span>
-                            )}
-                            {savings > 0.01 && (
-                              <span className="text-xs text-green-500 whitespace-nowrap">
-                                You save {formatCurrency(savings)}!
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })()}
-                    </div>
-                    <Button 
-                      onClick={handlePurchasePings}
-                      disabled={isPurchasingPings || (herePingsToBuy === 0 && everyonePingsToBuy === 0)}
-                      className="w-full sm:w-auto shrink-0"
-                    >
-                      {isPurchasingPings ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : null}
-                      Purchase Pings
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Hero Section */}
+          {/* Hero */}
           <div className="text-center space-y-4">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
               <Megaphone className="h-8 w-8 text-primary" />
             </div>
             <h1 className="text-3xl font-bold">Post an Advertisement</h1>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              Your ad will be posted to our Discord community instantly.
-            </p>
+            <p className="text-muted-foreground max-w-xl mx-auto">Your ad will be posted to our Discord community instantly.</p>
           </div>
 
           {subscription.ads_remaining === 0 ? (
@@ -623,9 +244,7 @@ export default function Advertise() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
                   <AlertCircle className="h-5 w-5 text-yellow-500" />
-                  <p className="text-yellow-500">
-                    You've used all your ads for this month. Upgrade your plan or wait until next month.
-                  </p>
+                  <p className="text-yellow-500">You've used all your ads for this month. Upgrade your plan or wait until next month.</p>
                 </div>
               </CardContent>
             </Card>
@@ -638,21 +257,11 @@ export default function Advertise() {
                     <div className="flex items-center justify-between">
                       <div>
                         <CardTitle>Create Your Advertisement</CardTitle>
-                        <CardDescription>
-                          Fill out the form below to post your Discord advertisement
-                        </CardDescription>
+                        <CardDescription>Fill out the form below to post your Discord advertisement</CardDescription>
                       </div>
                       {lastAd && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={loadLastAd}
-                          disabled={lastAdLoading}
-                          className="shrink-0"
-                        >
-                          <History className="h-4 w-4 mr-2" />
-                          Load Last Ad
+                        <Button type="button" variant="outline" size="sm" onClick={loadLastAd} disabled={lastAdLoading} className="shrink-0">
+                          <History className="h-4 w-4 mr-2" />Load Last Ad
                         </Button>
                       )}
                     </div>
@@ -660,209 +269,74 @@ export default function Advertise() {
                   <CardContent>
                     <form onSubmit={handlePostAd} className="space-y-6">
                       <div className="space-y-2">
-                        <Label htmlFor="title">
-                          Title <span className="text-destructive">*</span>
-                        </Label>
-                        <Input
-                          id="title"
-                          placeholder="Your catchy headline"
-                          value={adFormData.title}
-                          onChange={(e) => setAdFormData({ title: e.target.value })}
-                          maxLength={100}
-                        />
+                        <Label htmlFor="title">Title <span className="text-destructive">*</span></Label>
+                        <Input id="title" placeholder="Your catchy headline" value={adFormData.title} onChange={(e) => setAdFormData({ title: e.target.value })} maxLength={100} />
                         <p className="text-xs text-muted-foreground">{adFormData.title.length}/100 characters</p>
                       </div>
-
                       <div className="space-y-2">
-                        <Label htmlFor="description">
-                          Description <span className="text-destructive">*</span>
-                        </Label>
-                        <Textarea
-                          id="description"
-                          placeholder="Describe what you're advertising..."
-                          value={adFormData.description}
-                          onChange={(e) => setAdFormData({ description: e.target.value })}
-                          rows={4}
-                        />
+                        <Label htmlFor="description">Description <span className="text-destructive">*</span></Label>
+                        <Textarea id="description" placeholder="Describe what you're advertising..." value={adFormData.description} onChange={(e) => setAdFormData({ description: e.target.value })} rows={4} />
                         <p className="text-xs text-muted-foreground">{adFormData.description.length} characters</p>
                       </div>
-
                       <div className="space-y-2">
                         <Label className="flex items-center gap-2">
-                          <ImageIcon className="h-4 w-4" />
-                          Image URLs (optional)
-                          <span className="text-xs text-muted-foreground font-normal">
-                            — up to {tiers?.find(t => t.tier === subscription?.tier)?.max_images ?? 1}
-                          </span>
+                          <ImageIcon className="h-4 w-4" />Image URLs (optional)
+                          <span className="text-xs text-muted-foreground font-normal">— up to {tiers?.find(t => t.tier === subscription?.tier)?.max_images ?? 1}</span>
                         </Label>
                         {Array.from({ length: tiers?.find(t => t.tier === subscription?.tier)?.max_images ?? 1 }).map((_, i) => (
-                          <Input
-                            key={i}
-                            type="url"
-                            placeholder={`https://example.com/image${i + 1}.png`}
-                            value={(adFormData.imageUrls ?? [])[i] ?? ''}
-                            onChange={(e) => {
-                              const updated = [...(adFormData.imageUrls ?? ['', '', ''])];
-                              updated[i] = e.target.value;
-                              setAdFormData({ imageUrls: updated });
-                            }}
-                          />
+                          <Input key={i} type="url" placeholder={`https://example.com/image${i + 1}.png`} value={(adFormData.imageUrls ?? [])[i] ?? ''} onChange={(e) => { const updated = [...(adFormData.imageUrls ?? ['', '', ''])]; updated[i] = e.target.value; setAdFormData({ imageUrls: updated }); }} />
                         ))}
                         <p className="text-xs text-muted-foreground flex items-start gap-1">
                           <AlertCircle className="h-3 w-3 mt-0.5 shrink-0 text-yellow-500" />
-                          <span>
-                            Image URLs <strong>must end with a file extension</strong> (e.g. <code className="text-xs bg-muted px-1 rounded">.jpg</code>, <code className="text-xs bg-muted px-1 rounded">.png</code>, <code className="text-xs bg-muted px-1 rounded">.gif</code>) to display in Discord. Use the <strong>direct image link</strong>, not a short link or page URL.
-                          </span>
+                          <span>Image URLs <strong>must end with a file extension</strong> (e.g. <code className="text-xs bg-muted px-1 rounded">.jpg</code>, <code className="text-xs bg-muted px-1 rounded">.png</code>, <code className="text-xs bg-muted px-1 rounded">.gif</code>) to display in Discord.</span>
                         </p>
                       </div>
-
                       <div className="space-y-2">
-                        <Label htmlFor="linkUrl" className="flex items-center gap-2">
-                          <Link2 className="h-4 w-4" />
-                          Link URL (optional)
-                        </Label>
-                        <Input
-                          id="linkUrl"
-                          type="url"
-                          placeholder="https://discord.gg/your-server"
-                          value={adFormData.linkUrl}
-                          onChange={(e) => setAdFormData({ linkUrl: e.target.value })}
-                        />
+                        <Label htmlFor="linkUrl" className="flex items-center gap-2"><Link2 className="h-4 w-4" />Link URL (optional)</Label>
+                        <Input id="linkUrl" type="url" placeholder="https://discord.gg/your-server" value={adFormData.linkUrl} onChange={(e) => setAdFormData({ linkUrl: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="discordUsername" className="flex items-center gap-2"><AtSign className="h-4 w-4" />Discord Username (optional)</Label>
+                        <Input id="discordUsername" placeholder="YourName#1234" value={adFormData.discordUsername} onChange={(e) => setAdFormData({ discordUsername: e.target.value })} />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="discordUsername" className="flex items-center gap-2">
-                          <AtSign className="h-4 w-4" />
-                          Discord Username (optional)
-                        </Label>
-                        <Input
-                          id="discordUsername"
-                          placeholder="YourName#1234"
-                          value={adFormData.discordUsername}
-                          onChange={(e) => setAdFormData({ discordUsername: e.target.value })}
-                        />
-                      </div>
-
-                      {/* Ping Options - Use purchased credits */}
+                      {/* Ping Options */}
                       <div className="space-y-3">
-                        <Label className="flex items-center gap-2">
-                          <Bell className="h-4 w-4" />
-                          Use Ping Credit
-                        </Label>
+                        <Label className="flex items-center gap-2"><Bell className="h-4 w-4" />Use Ping Credit</Label>
                         <div className="grid grid-cols-3 gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedPing('none')}
-                            className={cn(
-                              "p-3 rounded-lg border text-sm transition-all",
-                              selectedPing === 'none'
-                                ? "border-primary bg-primary/10 text-foreground"
-                                : "border-border bg-card text-muted-foreground hover:border-primary/50"
-                            )}
-                          >
-                            <span className="font-medium">None</span>
-                            <p className="text-xs mt-1">Default</p>
+                          <button type="button" onClick={() => setSelectedPing('none')} className={cn("p-3 rounded-lg border text-sm transition-all", selectedPing === 'none' ? "border-primary bg-primary/10 text-foreground" : "border-border bg-card text-muted-foreground hover:border-primary/50")}>
+                            <span className="font-medium">None</span><p className="text-xs mt-1">Default</p>
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => herePingsAvailable > 0 && setSelectedPing('here')}
-                            disabled={herePingsAvailable === 0}
-                            className={cn(
-                              "p-3 rounded-lg border text-sm transition-all",
-                              selectedPing === 'here'
-                                ? "border-green-500 bg-green-500/10 text-foreground"
-                                : herePingsAvailable === 0
-                                  ? "border-border bg-muted/50 text-muted-foreground cursor-not-allowed opacity-50"
-                                  : "border-border bg-card text-muted-foreground hover:border-green-500/50"
-                            )}
-                          >
-                            <span className="font-medium flex items-center justify-center gap-1">
-                              <Users className="h-3 w-3" />
-                              @here
-                            </span>
-                            <p className="text-xs mt-1 text-green-500">
-                              {herePingsAvailable} available
-                            </p>
+                          <button type="button" onClick={() => herePingsAvailable > 0 && setSelectedPing('here')} disabled={herePingsAvailable === 0} className={cn("p-3 rounded-lg border text-sm transition-all", selectedPing === 'here' ? "border-green-500 bg-green-500/10 text-foreground" : herePingsAvailable === 0 ? "border-border bg-muted/50 text-muted-foreground cursor-not-allowed opacity-50" : "border-border bg-card text-muted-foreground hover:border-green-500/50")}>
+                            <span className="font-medium flex items-center justify-center gap-1"><Users className="h-3 w-3" />@here</span>
+                            <p className="text-xs mt-1 text-green-500">{herePingsAvailable} available</p>
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => everyonePingsAvailable > 0 && setSelectedPing('everyone')}
-                            disabled={everyonePingsAvailable === 0}
-                            className={cn(
-                              "p-3 rounded-lg border text-sm transition-all",
-                              selectedPing === 'everyone'
-                                ? "border-yellow-500 bg-yellow-500/10 text-foreground"
-                                : everyonePingsAvailable === 0
-                                  ? "border-border bg-muted/50 text-muted-foreground cursor-not-allowed opacity-50"
-                                  : "border-border bg-card text-muted-foreground hover:border-yellow-500/50"
-                            )}
-                          >
-                            <span className="font-medium flex items-center justify-center gap-1">
-                              <Megaphone className="h-3 w-3" />
-                              @everyone
-                            </span>
-                            <p className="text-xs mt-1 text-yellow-500">
-                              {everyonePingsAvailable} available
-                            </p>
+                          <button type="button" onClick={() => everyonePingsAvailable > 0 && setSelectedPing('everyone')} disabled={everyonePingsAvailable === 0} className={cn("p-3 rounded-lg border text-sm transition-all", selectedPing === 'everyone' ? "border-yellow-500 bg-yellow-500/10 text-foreground" : everyonePingsAvailable === 0 ? "border-border bg-muted/50 text-muted-foreground cursor-not-allowed opacity-50" : "border-border bg-card text-muted-foreground hover:border-yellow-500/50")}>
+                            <span className="font-medium flex items-center justify-center gap-1"><Megaphone className="h-3 w-3" />@everyone</span>
+                            <p className="text-xs mt-1 text-yellow-500">{everyonePingsAvailable} available</p>
                           </button>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          {herePingsAvailable === 0 && everyonePingsAvailable === 0 
-                            ? "No ping credits available. Purchase more above!" 
-                            : "Select a ping to use one of your purchased credits"}
+                          {herePingsAvailable === 0 && everyonePingsAvailable === 0 ? "No ping credits available. Purchase more above!" : "Select a ping to use one of your purchased credits"}
                         </p>
                       </div>
 
-                      {/* Scheduling — slot picker for all tiers */}
+                      {/* Scheduling */}
                       <div className="space-y-3 p-4 rounded-lg border border-border bg-muted/20">
                         <Label className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-primary" />
-                          Schedule Your Ad
-                          {subscription?.tier === 'basic' && (
-                            <span className="text-xs text-muted-foreground font-normal">(same-day or next-day)</span>
-                          )}
-                          {subscription?.tier === 'pro' && (
-                            <span className="text-xs text-muted-foreground font-normal">(up to 3 days ahead)</span>
-                          )}
-                          {subscription?.tier === 'premium' && (
-                            <span className="text-xs text-muted-foreground font-normal">(up to 7 days ahead)</span>
-                          )}
+                          <Calendar className="h-4 w-4 text-primary" />Schedule Your Ad
+                          {subscription?.tier === 'basic' && <span className="text-xs text-muted-foreground font-normal">(same-day or next-day)</span>}
+                          {subscription?.tier === 'pro' && <span className="text-xs text-muted-foreground font-normal">(up to 3 days ahead)</span>}
+                          {subscription?.tier === 'premium' && <span className="text-xs text-muted-foreground font-normal">(up to 7 days ahead)</span>}
                         </Label>
-                        <AdSlotPicker
-                          tier={(subscription?.tier as 'basic' | 'pro' | 'premium') ?? 'basic'}
-                          userId={user?.id ?? ''}
-                          value={selectedSlot}
-                          onChange={setSelectedSlot}
-                        />
-                        {!selectedSlot && (
-                          <p className="text-xs text-muted-foreground">
-                            No slot selected — your ad will be posted immediately upon submission.
-                          </p>
-                        )}
+                        <AdSlotPicker tier={(subscription?.tier as 'basic' | 'pro' | 'premium') ?? 'basic'} userId={user?.id ?? ''} value={selectedSlot} onChange={setSelectedSlot} />
+                        {!selectedSlot && <p className="text-xs text-muted-foreground">No slot selected — your ad will be posted immediately upon submission.</p>}
                       </div>
 
-                      <Button
-                        type="submit"
-                        className="w-full"
-                        size="lg"
-                        disabled={postAdMutation.isPending}
-                      >
-                        {postAdMutation.isPending ? (
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        ) : selectedSlot ? (
-                          <Calendar className="h-4 w-4 mr-2" />
-                        ) : (
-                          <Sparkles className="h-4 w-4 mr-2" />
-                        )}
-                        {selectedSlot
-                          ? `Schedule Advertisement (${subscription.ads_remaining} remaining)`
-                          : `Post Advertisement (${subscription.ads_remaining} remaining)`
-                        }
-                        {selectedPing !== 'none' && (
-                          <span className="ml-1 text-xs opacity-75">
-                            with @{selectedPing} ping
-                          </span>
-                        )}
+                      <Button type="submit" className="w-full" size="lg" disabled={postAdMutation.isPending}>
+                        {postAdMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : selectedSlot ? <Calendar className="h-4 w-4 mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                        {selectedSlot ? `Schedule Advertisement (${subscription.ads_remaining} remaining)` : `Post Advertisement (${subscription.ads_remaining} remaining)`}
+                        {selectedPing !== 'none' && <span className="ml-1 text-xs opacity-75">with @{selectedPing} ping</span>}
                       </Button>
                     </form>
                   </CardContent>
@@ -872,32 +346,15 @@ export default function Advertise() {
               {/* Preview */}
               <div className="space-y-4">
                 <Card className="bg-card border-border">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Preview</CardTitle>
-                  </CardHeader>
+                  <CardHeader className="pb-3"><CardTitle className="text-sm">Preview</CardTitle></CardHeader>
                   <CardContent>
                     <div className="bg-[#2f3136] rounded-lg p-3 text-white text-sm space-y-2">
-                      <div className={cn(
-                        "border-l-4 pl-3",
-                        subscription.tier === 'premium' ? 'border-yellow-500' : 
-                        subscription.tier === 'pro' ? 'border-purple-500' : 'border-blue-500'
-                      )}>
-                        <p className="font-semibold">
-                          📢 {adFormData.title || 'Your Title Here'}
-                        </p>
-                        <p className="text-gray-300 text-xs mt-1">
-                          {adFormData.description || 'Your description will appear here...'}
-                        </p>
-                        {adFormData.linkUrl && (
-                          <p className="text-blue-400 text-xs mt-2 flex items-center gap-1">
-                            <ExternalLink className="h-3 w-3" />
-                            Learn More
-                          </p>
-                        )}
+                      <div className={cn("border-l-4 pl-3", subscription.tier === 'premium' ? 'border-yellow-500' : subscription.tier === 'pro' ? 'border-purple-500' : 'border-blue-500')}>
+                        <p className="font-semibold">📢 {adFormData.title || 'Your Title Here'}</p>
+                        <p className="text-gray-300 text-xs mt-1">{adFormData.description || 'Your description will appear here...'}</p>
+                        {adFormData.linkUrl && <p className="text-blue-400 text-xs mt-2 flex items-center gap-1"><ExternalLink className="h-3 w-3" />Learn More</p>}
                       </div>
-                      <p className="text-gray-500 text-xs">
-                        Sponsored • {adFormData.discordUsername ? `@${adFormData.discordUsername}` : 'Eclipse Ads'} • {subscription.tier_name}
-                      </p>
+                      <p className="text-gray-500 text-xs">Sponsored • {adFormData.discordUsername ? `@${adFormData.discordUsername}` : 'Eclipse Ads'} • {subscription.tier_name}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -909,186 +366,21 @@ export default function Advertise() {
     );
   }
 
-  // Show subscription tiers for non-subscribers
+  // Non-subscriber pricing view
   return (
     <MainLayout>
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Hero Section */}
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-            <Megaphone className="h-8 w-8 text-primary" />
-          </div>
-          <h1 className="text-3xl font-bold">Advertise on Discord</h1>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            Promote your server, project, or services to our active Discord community. 
-            Choose a plan that fits your advertising needs.
-          </p>
-        </div>
-
-        {/* Billing Toggle */}
-        <div className="flex justify-center">
-          <div className="inline-flex items-center rounded-lg bg-muted p-1">
-            <button
-              onClick={() => setBillingPeriod('monthly')}
-              className={cn(
-                "px-4 py-2 rounded-md text-sm font-medium transition-colors",
-                billingPeriod === 'monthly' 
-                  ? "bg-background text-foreground shadow-sm" 
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setBillingPeriod('annual')}
-              className={cn(
-                "px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2",
-                billingPeriod === 'annual' 
-                  ? "bg-background text-foreground shadow-sm" 
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Annual
-              <Badge variant="secondary" className="text-xs">Save up to 17%</Badge>
-            </button>
-          </div>
-        </div>
-
-        {/* Pricing Cards */}
-        {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-3 gap-6">
-            {tiers?.map((tier) => {
-              const price = billingPeriod === 'annual' ? tier.annual_price_gbp : tier.monthly_price_gbp;
-              const savingsPercent = calculateAdAnnualSavingsPercent(tier.monthly_price_gbp, tier.annual_price_gbp);
-              
-              return (
-                <Card 
-                  key={tier.id} 
-                  className={cn(
-                    "relative overflow-hidden transition-all hover:shadow-lg",
-                    tier.tier === 'pro' && "border-primary ring-1 ring-primary",
-                    tierColors[tier.tier]
-                  )}
-                >
-                  {tier.tier === 'pro' && (
-                    <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-medium rounded-bl-lg">
-                      Popular
-                    </div>
-                  )}
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      {tierIcons[tier.tier]}
-                      <CardTitle>{tier.name}</CardTitle>
-                    </div>
-                    <CardDescription>{tier.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div>
-                      {billingPeriod === 'annual' ? (
-                        <>
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-3xl font-bold">
-                              {formatCurrency(tier.annual_price_gbp / 12)}
-                            </span>
-                            <span className="text-muted-foreground">/month</span>
-                          </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-sm text-muted-foreground line-through">
-                              {formatCurrency(tier.monthly_price_gbp)}/mo
-                            </span>
-                            {savingsPercent > 0 && (
-                              <Badge className="bg-green-500/10 text-green-600 dark:text-green-400 border-0">
-                                Save {savingsPercent}%
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            {formatCurrency(tier.annual_price_gbp)} billed annually
-                          </p>
-                        </>
-                      ) : (
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-3xl font-bold">{formatCurrency(price)}</span>
-                          <span className="text-muted-foreground">/month</span>
-                        </div>
-                      )}
-                      
-                      {/* Robux Price Display */}
-                      {robuxPrices?.[tier.tier] && robuxPrices[tier.tier] > 0 && (
-                        <div className="mt-3 pt-3 border-t border-border/50">
-                          <div className="flex items-center gap-2 text-sm">
-                            <span className="text-muted-foreground">or</span>
-                            <span className="font-bold text-green-500">{formatRobux(robuxPrices[tier.tier])}</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm">
-                        <ImageIcon className="h-4 w-4 text-primary shrink-0" />
-                        <span className="font-medium">Up to {tier.max_images} images per ad</span>
-                      </div>
-                      {tier.features.map((feature, index) => (
-                        <div key={index} className="flex items-center gap-2 text-sm">
-                          <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
-                          <span>{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <Button
-                      className="w-full"
-                      variant={tier.tier === 'pro' ? 'default' : 'outline'}
-                      onClick={() => handleSubscribe(tier.tier)}
-                      disabled={checkoutMutation.isPending || !user || (user && !hasDiscordLinked)}
-                    >
-                      {checkoutMutation.isPending ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : null}
-                      {!user ? 'Sign in to Subscribe' : !hasDiscordLinked ? 'Link Discord to Subscribe' : 'Subscribe'}
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-
-        {user && !hasDiscordLinked && !profileLoading && (
-          <Alert className="border-yellow-500/50 bg-yellow-500/10">
-            <AlertCircle className="h-4 w-4 text-yellow-500" />
-            <AlertDescription className="text-yellow-500">
-              You need to link your Discord account before purchasing advertising services.{' '}
-              <Link to="/account" className="underline hover:no-underline font-medium">
-                Link Discord in Account Settings
-              </Link>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {!user && !authLoading && (
-          <div className="text-center">
-            <p className="text-muted-foreground">
-              <a href="/auth" className="text-primary hover:underline">Sign in</a> to subscribe to an advertising plan.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Embedded Payment Modal for Ad Pings */}
-      <EmbeddedPaymentModal
-        open={pingPaymentModalOpen}
-        onOpenChange={setPingPaymentModalOpen}
-        paymentType="ad_pings"
-        herePings={herePingsToBuy}
-        everyonePings={everyonePingsToBuy}
-        onSuccess={handlePingPaymentSuccess}
-        onError={handlePingPaymentError}
+      <AdPricingView
+        tiers={tiers}
+        isLoading={isLoading}
+        billingPeriod={billingPeriod}
+        setBillingPeriod={setBillingPeriod}
+        robuxPrices={robuxPrices}
+        user={user}
+        hasDiscordLinked={hasDiscordLinked}
+        profileLoading={profileLoading}
+        authLoading={authLoading}
+        checkoutMutation={checkoutMutation}
+        onSubscribe={handleSubscribe}
       />
     </MainLayout>
   );
