@@ -141,6 +141,11 @@ export default function SellerDashboard() {
         <FileReviewConsentBanner />
         <NonCompliantBanner count={productStats?.nonCompliant || 0} />
 
+        {/* ── Grace Period Warning ── */}
+        {isGracePeriod && gracePeriodEndsAt && (
+          <GracePeriodBanner gracePeriodEndsAt={gracePeriodEndsAt} onUpdatePayment={openPortal} />
+        )}
+
         {/* ── Free Commission Promo Banner ── */}
         {inFreePromo && freePromoEndsAt && (
           <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-3 flex items-center gap-3">
