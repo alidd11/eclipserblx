@@ -89,7 +89,7 @@ export default function TermsOfService() {
               <Scale className="h-6 w-6 text-primary" />
               Digital Content Rights (Consumer Rights Act 2015)
             </h2>
-            <Card className="glass-card mb-4">
+            <Card className="border border-border rounded-xl mb-4">
               <CardContent className="pt-6">
                 <p className="text-muted-foreground">
                   Under the Consumer Rights Act 2015, digital content supplied must be:

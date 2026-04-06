@@ -158,7 +158,7 @@ export default function AdminLogin() {
               </p>
             </div>
 
-            <div className="gaming-card p-6 space-y-4">
+            <div className="border border-border rounded-xl p-6 space-y-4">
               <div className="flex items-start gap-3 text-sm text-muted-foreground">
                 <Smartphone className="h-5 w-5 text-primary mt-0.5" />
                 <p>Your biometric data never leaves your device. We only store a secure key.</p>
@@ -206,7 +206,7 @@ export default function AdminLogin() {
           </div>
 
           {canUseBiometric && (
-            <div className="gaming-card p-4">
+            <div className="border border-border rounded-xl p-4">
               <Button
                 onClick={handleBiometricLogin}
                 className="w-full h-14 text-lg"
@@ -231,7 +231,7 @@ export default function AdminLogin() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="gaming-card p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="border border-border rounded-xl p-6 space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input

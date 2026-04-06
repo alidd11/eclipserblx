@@ -97,19 +97,19 @@ export default function AdminArchivedApplications() {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="border border-border rounded-xl overflow-hidden glass-card">
+          <div className="border border-border rounded-xl overflow-hidden">
             <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold">{stats.total}</p>
               <p className="text-sm text-muted-foreground">Total Archived</p>
             </div>
           </div>
-          <div className="border border-border rounded-xl overflow-hidden glass-card">
+          <div className="border border-border rounded-xl overflow-hidden">
             <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold text-green-400">{stats.accepted}</p>
               <p className="text-sm text-muted-foreground">Accepted</p>
             </div>
           </div>
-          <div className="border border-border rounded-xl overflow-hidden glass-card">
+          <div className="border border-border rounded-xl overflow-hidden">
             <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold text-red-400">{stats.rejected}</p>
               <p className="text-sm text-muted-foreground">Rejected</p>
@@ -118,7 +118,7 @@ export default function AdminArchivedApplications() {
         </div>
 
         {/* Search */}
-        <div className="border border-border rounded-xl overflow-hidden glass-card">
+        <div className="border border-border rounded-xl overflow-hidden">
           <div className="p-4 pt-6">
             <div className="relative w-full max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -133,7 +133,7 @@ export default function AdminArchivedApplications() {
         </div>
 
         {/* Applications Table */}
-        <div className="border border-border rounded-xl overflow-hidden glass-card">
+        <div className="border border-border rounded-xl overflow-hidden">
           <div className="px-4 py-3 border-b border-border bg-muted/30">
             <h3 className="font-semibold text-sm flex items-center gap-2">
               <FileText className="h-5 w-5" />

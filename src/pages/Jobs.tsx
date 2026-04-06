@@ -297,7 +297,7 @@ function ApplicationStatusCheck() {
   };
 
   return (
-    <Card className="glass-card">
+    <Card className="border border-border rounded-xl">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Mail className="h-5 w-5" />
@@ -419,7 +419,7 @@ export default function Jobs() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 + 0.2 }}
             >
-              <Card className="glass-card h-full">
+              <Card className="border border-border rounded-xl h-full">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
@@ -484,21 +484,21 @@ export default function Jobs() {
         >
           <h2 className="text-2xl font-bold mb-8">Why Work With Us?</h2>
           <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
-            <Card className="glass-card">
+            <Card className="border border-border rounded-xl">
               <CardContent className="pt-6 text-center">
                 <Clock className="h-8 w-8 mx-auto mb-4 text-primary" />
                 <h3 className="font-semibold mb-2">Flexible Hours</h3>
                 <p className="text-sm text-muted-foreground">Work on your own schedule from anywhere in the world.</p>
               </CardContent>
             </Card>
-            <Card className="glass-card">
+            <Card className="border border-border rounded-xl">
               <CardContent className="pt-6 text-center">
                 <CheckCircle className="h-8 w-8 mx-auto mb-4 text-green-500" />
                 <h3 className="font-semibold mb-2">Creative Freedom</h3>
                 <p className="text-sm text-muted-foreground">Express your creativity and contribute to exciting projects.</p>
               </CardContent>
             </Card>
-            <Card className="glass-card">
+            <Card className="border border-border rounded-xl">
               <CardContent className="pt-6 text-center">
                 <AlertCircle className="h-8 w-8 mx-auto mb-4 text-blue-500" />
                 <h3 className="font-semibold mb-2">Growing Community</h3>

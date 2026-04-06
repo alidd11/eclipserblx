@@ -295,31 +295,31 @@ export default function AdminApplications() {
 
         {/* Stats */}
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-5 md:overflow-visible">
-          <div className="border border-border rounded-xl overflow-hidden glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
+          <div className="border border-border rounded-xl overflow-hidden min-w-[140px] flex-shrink-0 md:min-w-0">
             <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold">{stats.total}</p>
               <p className="text-sm text-muted-foreground">Total</p>
             </div>
           </div>
-          <div className="border border-border rounded-xl overflow-hidden glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
+          <div className="border border-border rounded-xl overflow-hidden min-w-[140px] flex-shrink-0 md:min-w-0">
             <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold text-yellow-400">{stats.pending}</p>
               <p className="text-sm text-muted-foreground">Pending</p>
             </div>
           </div>
-          <div className="border border-border rounded-xl overflow-hidden glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
+          <div className="border border-border rounded-xl overflow-hidden min-w-[140px] flex-shrink-0 md:min-w-0">
             <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold text-blue-400">{stats.reviewing}</p>
               <p className="text-sm text-muted-foreground">Reviewing</p>
             </div>
           </div>
-          <div className="border border-border rounded-xl overflow-hidden glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
+          <div className="border border-border rounded-xl overflow-hidden min-w-[140px] flex-shrink-0 md:min-w-0">
             <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold text-green-400">{stats.accepted}</p>
               <p className="text-sm text-muted-foreground">Accepted</p>
             </div>
           </div>
-          <div className="border border-border rounded-xl overflow-hidden glass-card min-w-[140px] flex-shrink-0 md:min-w-0">
+          <div className="border border-border rounded-xl overflow-hidden min-w-[140px] flex-shrink-0 md:min-w-0">
             <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold text-red-400">{stats.rejected}</p>
               <p className="text-sm text-muted-foreground">Rejected</p>
@@ -328,7 +328,7 @@ export default function AdminApplications() {
         </div>
 
         {/* Filters */}
-        <div className="border border-border rounded-xl overflow-hidden glass-card">
+        <div className="border border-border rounded-xl overflow-hidden">
           <div className="p-4 pt-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
@@ -358,7 +358,7 @@ export default function AdminApplications() {
         </div>
 
         {/* Applications Table */}
-        <div className="border border-border rounded-xl overflow-hidden glass-card">
+        <div className="border border-border rounded-xl overflow-hidden">
           <div className="px-4 py-3 border-b border-border bg-muted/30">
             <h3 className="font-semibold text-sm flex items-center gap-2">
               <FileText className="h-5 w-5" />

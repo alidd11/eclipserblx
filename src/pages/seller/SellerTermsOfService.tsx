@@ -235,7 +235,7 @@ export default function SellerTermsOfService() {
                   payment information and ensuring your Stripe account remains in good standing. Payouts are 
                   processed according to Stripe's standard payout schedule.
                 </p>
-                <div className="border border-border rounded-xl overflow-hidden glass-card mt-4">
+                <div className="border border-border rounded-xl overflow-hidden mt-4">
                   <div className="p-4 pt-4">
                     <p className="text-sm text-muted-foreground">
                       <strong>Earnings Formula:</strong> (Sale Price - UK Stripe Fee) × (1 - Commission Rate)

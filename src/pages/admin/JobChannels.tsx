@@ -317,19 +317,19 @@ export default function JobChannels() {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="border border-border rounded-xl overflow-hidden glass-card">
+          <div className="border border-border rounded-xl overflow-hidden">
             <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold">{stats.total}</p>
               <p className="text-sm text-muted-foreground">Total</p>
             </div>
           </div>
-          <div className="border border-border rounded-xl overflow-hidden glass-card">
+          <div className="border border-border rounded-xl overflow-hidden">
             <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold text-green-400">{stats.active}</p>
               <p className="text-sm text-muted-foreground">Active</p>
             </div>
           </div>
-          <div className="border border-border rounded-xl overflow-hidden glass-card">
+          <div className="border border-border rounded-xl overflow-hidden">
             <div className="p-4 pt-6 text-center">
               <p className="text-2xl font-bold text-muted-foreground">{stats.inactive}</p>
               <p className="text-sm text-muted-foreground">Inactive</p>
@@ -338,7 +338,7 @@ export default function JobChannels() {
         </div>
 
         {/* Channels List */}
-        <div className="border border-border rounded-xl overflow-hidden glass-card">
+        <div className="border border-border rounded-xl overflow-hidden">
           <div className="px-4 py-3 border-b border-border bg-muted/30">
             <h3 className="font-semibold text-sm flex items-center gap-2">
               <Briefcase className="h-5 w-5" />
