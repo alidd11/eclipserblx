@@ -421,7 +421,7 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
           </div>
 
           {/* Dashboard CTAs — enterprise style */}
-          <div className="flex flex-col gap-1.5">
+          <div className={cn("grid gap-1.5", isSeller && isStaff ? "grid-cols-2" : "grid-cols-1")}>
             {isSeller && (
               <a
                 href="/seller"
@@ -431,7 +431,7 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
                 className="flex items-center justify-center gap-2 w-full rounded-lg bg-primary/10 text-primary border border-primary/20 py-2 text-[13px] font-semibold transition-colors hover:bg-primary/15"
               >
                 <Zap className="h-3.5 w-3.5" />
-                Seller Dashboard
+                Seller
               </a>
             )}
             {isStaff && (
@@ -441,7 +441,7 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
                 className="flex items-center justify-center gap-2 w-full rounded-lg bg-muted/50 text-foreground/70 border border-border py-2 text-[13px] font-semibold transition-colors hover:bg-muted hover:text-foreground"
               >
                 <Shield className="h-3.5 w-3.5" />
-                Admin Dashboard
+                Admin
               </a>
             )}
           </div>
