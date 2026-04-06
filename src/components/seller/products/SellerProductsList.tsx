@@ -57,12 +57,14 @@ const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(amount);
 
 interface SellerProductsListProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   products: any[];
   totalCount: number;
   isLoading: boolean;
   storeId: string | undefined;
   selectedProductIds: string[];
   onSelectionChange: (ids: string[]) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onEdit: (product: any) => void;
   onDelete: (productId: string) => void;
   onCreateClick: () => void;

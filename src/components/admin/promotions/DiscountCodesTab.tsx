@@ -111,7 +111,9 @@ export function DiscountCodesTab() {
   const copyCode = (code: string) => { navigator.clipboard.writeText(code); setCopiedCode(code); setTimeout(() => setCopiedCode(null), 2000); };
 
   const openCreate = () => { setForm(emptyForm); setDialogOpen(true); };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const openEdit = (d: any) => { setForm({ id: d.id, code: d.code, discount_type: d.discount_type, discount_value: d.discount_value, min_order_amount: d.min_order_amount, max_uses: d.max_uses, expires_at: d.expires_at ? d.expires_at.split('T')[0] : null, is_active: d.is_active, store_id: d.store_id }); setDialogOpen(true); };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const openDelete = (d: any) => { setSelected(d); setDeleteDialogOpen(true); };
 
   return (
