@@ -9,6 +9,7 @@ import { SellerLayout } from '@/components/seller/SellerLayout';
 import { FileReviewConsentBanner } from '@/components/seller/FileReviewConsentBanner';
 import { SellerHeroBanner } from '@/components/seller/SellerHeroBanner';
 import { SellerOnboardingWizard } from '@/components/seller/SellerOnboardingWizard';
+import { GracePeriodBanner } from '@/components/seller/GracePeriodBanner';
 import { RevenueChart } from '@/components/seller/RevenueChart';
 import { RevenueSummaryStats } from '@/components/seller/RevenueSummaryStats';
 import { ProductHealthDonut } from '@/components/seller/ProductHealthDonut';
