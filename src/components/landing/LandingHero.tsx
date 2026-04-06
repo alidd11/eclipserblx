@@ -44,43 +44,40 @@ export function LandingHero() {
   );
 
   return (
-    <section aria-labelledby="hero-heading" className="relative overflow-hidden min-h-[220px] sm:min-h-[280px] lg:min-h-[380px]">
+    <section aria-labelledby="hero-heading" className="relative overflow-hidden min-h-[180px] sm:min-h-[200px] lg:min-h-[200px]">
       <HeroBanner />
 
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20 relative z-10">
-        {/* Desktop: centered layout */}
-        <div className="hidden lg:flex lg:flex-col lg:items-center lg:text-center">
-          <h1 id="hero-heading" className="font-display text-2xl sm:text-3xl lg:text-[clamp(2.5rem,4vw,3.75rem)] xl:text-6xl font-bold leading-[1.05] tracking-tight mb-4 max-w-4xl drop-shadow-md uppercase">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 relative z-10">
+        {/* Desktop: horizontal strip layout */}
+        <div className="hidden lg:flex lg:items-center lg:justify-between lg:gap-8">
+          <h1 id="hero-heading" className="font-display text-4xl xl:text-5xl font-bold leading-[1.05] tracking-tight drop-shadow-md uppercase whitespace-nowrap">
             The <span className="text-gradient-hero">Marketplace</span> For {wordRotator} Creators
           </h1>
 
-          <p className="text-sm sm:text-base lg:text-lg text-foreground/60 max-w-lg mb-6 leading-relaxed">
-            Premium scripts, models, UI kits and game assets.<br className="hidden sm:block" /> Lower fees, instant delivery.
-          </p>
+          <div className="flex flex-col items-end gap-3 flex-shrink-0">
+            <div className="flex items-center gap-4">
+              <Link to="/products">
+                <Button size="lg" className="h-12 px-8 text-sm font-semibold transition-colors">
+                  Browse Marketplace
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Link
+                to="/sell"
+                className="text-xs font-medium text-foreground/60 hover:text-foreground transition-colors flex items-center gap-1.5"
+              >
+                <Store className="h-3.5 w-3.5" />
+                Start selling
+              </Link>
+            </div>
 
-          <div className="flex items-center gap-4 mt-2">
-            <Link to="/products">
-              <Button size="lg" className="h-12 px-8 text-sm font-semibold transition-colors">
-                Browse Marketplace
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-            <Link
-              to="/sell"
-              className="text-xs font-medium text-foreground/60 hover:text-foreground transition-colors flex items-center gap-1.5"
-            >
-              <Store className="h-3.5 w-3.5" />
-              Start selling
-            </Link>
-          </div>
-
-          {/* Stat strip */}
-          <div className="flex items-center gap-3 mt-8">
-            {STATS.map((stat, i) => (
-              <span key={i} className="text-[11px] font-medium text-muted-foreground bg-muted/40 border border-border/50 px-3 py-1 rounded-full">
-                {stat}
-              </span>
-            ))}
+            <div className="flex items-center gap-2">
+              {STATS.map((stat, i) => (
+                <span key={i} className="text-[11px] font-medium text-muted-foreground bg-muted/40 border border-border/50 px-3 py-1 rounded-full">
+                  {stat}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -105,8 +102,7 @@ export function LandingHero() {
             </Link>
           </div>
 
-          {/* Stat strip - mobile */}
-          <div className="flex items-center gap-2 mt-4 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-2 mt-3 overflow-x-auto scrollbar-hide">
             {STATS.map((stat, i) => (
               <span key={i} className="text-[10px] font-medium text-muted-foreground bg-muted/40 border border-border/50 px-2.5 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">
                 {stat}
