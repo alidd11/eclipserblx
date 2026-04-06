@@ -40,6 +40,8 @@ import { ReviewSchema } from '@/components/seo/ReviewSchema';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { RecentlyViewedProducts } from '@/components/product/RecentlyViewedProducts';
 import { FrequentlyBoughtTogether } from '@/components/product/FrequentlyBoughtTogether';
+import { ProductReviewsSection } from '@/components/product/ProductReviewsSection';
+import { RelatedProductsSection } from '@/components/product/RelatedProductsSection';
 import { usePromotedProduct } from '@/hooks/usePromotedProduct';
 import { PromotedProductCard } from '@/components/marketplace/PromotedProductCard';
 import { PriceAlertButton } from '@/components/product/PriceAlertButton';
