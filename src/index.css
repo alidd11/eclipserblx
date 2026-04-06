@@ -9,6 +9,13 @@
   }
 }
 
+/* ── iOS zoom prevention: 16px minimum on form inputs ── */
+@supports (-webkit-touch-callout: none) {
+  input, select, textarea {
+    font-size: max(1rem, 16px);
+  }
+}
+
 /* Orientation lock is now handled by React component OrientationLockOverlay */
 
 /* Fonts loaded via <link> in index.html for faster FCP */

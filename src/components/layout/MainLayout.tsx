@@ -4,6 +4,7 @@ import { PageTransition } from './PageTransition';
 import { CustomerSidebar } from './CustomerSidebar';
 import { useDeferredScheduledReleaseCheck } from '@/hooks/useScheduledReleaseCheck';
 import { safeStorage } from '@/lib/safeStorage';
+import { useAutoPageMeta } from '@/hooks/useAutoPageMeta';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -15,6 +16,7 @@ const COLLAPSE_KEY = 'sidebar-collapsed';
 
 function MainLayoutContent({ children, showFooter = true }: MainLayoutProps) {
   useDeferredScheduledReleaseCheck();
+  useAutoPageMeta();
 
   const [collapsed, setCollapsed] = useState(() => safeStorage.getItem(COLLAPSE_KEY) === 'true');
 
