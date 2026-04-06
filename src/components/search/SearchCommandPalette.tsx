@@ -236,6 +236,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
               <button
                 onClick={() => { setSearchQuery(''); inputRef.current?.focus(); }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full bg-muted/80 hover:bg-muted transition-colors active:scale-[0.95]"
+                aria-label="Clear search"
               >
                 <X className="h-3 w-3 text-muted-foreground" />
               </button>
