@@ -31,12 +31,5 @@ Disallow: /bot-dashboard
 Disallow: /order-success
 Disallow: /complete-profile
 Disallow: /search?*
-Disallow: /forum/
-Disallow: /blog/
-Disallow: /wp-admin/
-Disallow: /wp-content/
-Disallow: /wp-includes/
-Disallow: /wp-login.php
-Disallow: /xmlrpc.php
 
-Sitemap: https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/dynamic-sitemap
+Sitemap: https://eclipserblx.com/sitemap.xml
