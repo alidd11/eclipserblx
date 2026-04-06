@@ -49,7 +49,7 @@ const faqSections: FAQSection[] = [
     questions: [
       {
         q: "How much do I earn per sale?",
-        a: "Base sellers keep 85% of net earnings (after Stripe fees). Eclipse+ member sellers keep 90%. Commission is calculated AFTER payment processing fees, not on the gross amount.",
+        a: "Sellers keep 85% of net earnings (after Stripe fees). Pro+ member sellers keep 90%. Commission is calculated AFTER payment processing fees, not on the gross amount.",
       },
       {
         q: "When can I request a payout?",
