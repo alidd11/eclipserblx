@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { sanitizeSearch } from '@/lib/searchUtils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, Trash2, Pencil, Percent, DollarSign, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
