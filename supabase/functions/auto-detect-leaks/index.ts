@@ -15,7 +15,113 @@ const LEAK_SITES = [
   "github.com",
 ];
 
+const SCRAPABLE_DOMAINS = [
+  "pastebin.com",
+  "scriptblox.com",
+  "rscripts.net",
+  "github.com",
+];
+
 const MAX_PRODUCTS_PER_STORE = 10;
+
+// --- Fingerprint extraction (ported from report-leak) ---
+
+function extractFingerprint(text: string): string | null {
+  // Binary fingerprint format
+  const binMatch = text.match(/ECL_FP:(ECL-[A-Z0-9]{8})/);
+  if (binMatch) return binMatch[1];
+
+  // Lua watermark format
+  const luaMatch = text.match(/local _=string\.char\(([0-9,]+)\)/);
+  if (luaMatch) {
+    try {
+      const chars = luaMatch[1].split(",").map(Number);
+      return String.fromCharCode(...chars);
+    } catch { /* ignore */ }
+  }
+
+  return null;
+}
+
+function generateWatermarkHash(userId: string, orderId: string, productId: string): string {
+  const raw = `${userId}:${orderId}:${productId}`;
+  let hash = 0;
+  for (let i = 0; i < raw.length; i++) {
+    const char = raw.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  const hex = Math.abs(hash).toString(36).toUpperCase();
+  return `ECL-${hex.padStart(8, "0").slice(0, 8)}`;
+}
+
+async function identifyBuyer(
+  supabase: any,
+  fingerprint: string,
+  productId: string
+): Promise<{ userId: string | null; displayName: string | null }> {
+  const { data: logs } = await supabase
+    .from("download_logs")
+    .select("user_id, profiles!inner(display_name)")
+    .eq("product_id", productId)
+    .order("downloaded_at", { ascending: false })
+    .limit(100);
+
+  if (!logs) return { userId: null, displayName: null };
+
+  for (const log of logs) {
+    const { data: orderItems } = await supabase
+      .from("order_items")
+      .select("id, order_id")
+      .eq("product_id", productId);
+
+    if (orderItems) {
+      for (const oi of orderItems) {
+        const candidate = generateWatermarkHash(log.user_id, oi.order_id, productId);
+        if (candidate === fingerprint) {
+          return {
+            userId: log.user_id,
+            displayName: (log as any).profiles?.display_name || null,
+          };
+        }
+      }
+    }
+  }
+
+  return { userId: null, displayName: null };
+}
+
+async function scrapeAndExtractFingerprint(
+  firecrawlKey: string,
+  url: string
+): Promise<string | null> {
+  try {
+    const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${firecrawlKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        url,
+        formats: ["markdown"],
+        onlyMainContent: true,
+      }),
+    });
+
+    if (!res.ok) {
+      console.error(`Firecrawl scrape failed for ${url}: ${res.status}`);
+      return null;
+    }
+
+    const data = await res.json();
+    const content = data.data?.markdown || data.markdown || "";
+    return extractFingerprint(content);
+  } catch (err) {
+    console.error(`Scrape error for ${url}:`, err);
+    return null;
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -37,7 +143,7 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Get stores with leak_scan_enabled and active Pro subscription
+    // Get stores with leak_scan_enabled
     const { data: stores, error: storesErr } = await supabase
       .from("stores")
       .select("id, owner_id, store_name")
@@ -45,7 +151,6 @@ Deno.serve(async (req) => {
 
     if (storesErr) throw storesErr;
     if (!stores?.length) {
-      console.log("No stores with leak scanning enabled");
       return new Response(
         JSON.stringify({ message: "No stores to scan", scanned: 0 }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -66,7 +171,6 @@ Deno.serve(async (req) => {
     }
 
     if (!proStores.length) {
-      console.log("No Pro stores with leak scanning enabled");
       return new Response(
         JSON.stringify({ message: "No Pro stores to scan", scanned: 0 }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -76,7 +180,6 @@ Deno.serve(async (req) => {
     let totalNewResults = 0;
 
     for (const store of proStores) {
-      // Get active products for this store
       const { data: products } = await supabase
         .from("products")
         .select("id, name")
@@ -98,10 +201,7 @@ Deno.serve(async (req) => {
               Authorization: `Bearer ${firecrawlKey}`,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              query,
-              limit: 5,
-            }),
+            body: JSON.stringify({ query, limit: 5 }),
           });
 
           if (!searchRes.ok) {
@@ -119,7 +219,32 @@ Deno.serve(async (req) => {
             const domain = new URL(result.url).hostname.replace(/^www\./, "");
             const snippet = result.description || result.title || "";
 
-            // Deduplicate — insert only if not already exists
+            // Determine if we should scrape for fingerprints
+            let confidence = "medium";
+            let extractedFingerprint: string | null = null;
+            let matchedUserId: string | null = null;
+            let matchedDisplayName: string | null = null;
+
+            const isScrapable = SCRAPABLE_DOMAINS.some((d) => domain.includes(d));
+
+            if (isScrapable) {
+              // Scrape page content and look for fingerprints
+              extractedFingerprint = await scrapeAndExtractFingerprint(firecrawlKey, result.url);
+
+              if (extractedFingerprint) {
+                // Cross-reference against download logs to identify buyer
+                const buyer = await identifyBuyer(supabase, extractedFingerprint, product.id);
+                matchedUserId = buyer.userId;
+                matchedDisplayName = buyer.displayName;
+
+                confidence = matchedUserId ? "confirmed" : "high";
+              }
+
+              // Rate limit between scrapes
+              await new Promise((r) => setTimeout(r, 2000));
+            }
+
+            // Insert result (deduplicate by unique constraint on source_url)
             const { error: insertErr } = await supabase
               .from("leak_scan_results")
               .insert({
@@ -129,29 +254,37 @@ Deno.serve(async (req) => {
                 source_domain: domain,
                 matched_query: query,
                 snippet: snippet.substring(0, 500),
-                confidence: "medium",
+                confidence,
+                extracted_fingerprint: extractedFingerprint,
+                matched_user_id: matchedUserId,
+                matched_display_name: matchedDisplayName,
               });
 
             if (insertErr) {
-              // Unique constraint violation = duplicate, skip
-              if (insertErr.code === "23505") continue;
+              if (insertErr.code === "23505") continue; // duplicate
               console.error("Insert error:", insertErr.message);
               continue;
             }
 
             totalNewResults++;
 
-            // Create notification for seller
+            // Notification with confidence-appropriate message
+            const notifTitle = confidence === "confirmed"
+              ? `CONFIRMED leak: ${product.name} \u2014 buyer identified`
+              : confidence === "high"
+                ? `Likely leak detected: ${product.name} (fingerprint found)`
+                : `Potential leak detected: ${product.name}`;
+
             await supabase.from("seller_notifications").insert({
               user_id: store.owner_id,
               type: "leak_detected",
-              title: `Potential leak detected: ${product.name}`,
+              title: notifTitle,
               message: `Found on ${domain}: ${snippet.substring(0, 100)}`,
               action_url: "/seller/security",
             });
           }
 
-          // Rate limit: small delay between products
+          // Rate limit between products
           await new Promise((r) => setTimeout(r, 1000));
         } catch (searchErr) {
           console.error(`Search error for "${product.name}":`, searchErr);

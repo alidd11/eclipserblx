@@ -210,43 +210,65 @@ export default function SellerLeakReports() {
               </h3>
             </div>
             <div className="p-4 pt-2 space-y-2">
-              {scanResults.map((result: any) => (
-                <div key={result.id} className="flex items-start justify-between gap-3 p-3 rounded-lg border bg-card">
-                  <div className="space-y-1 min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
-                      <span className="font-medium text-sm truncate">
-                        {result.products?.name || 'Unknown Product'}
-                      </span>
-                      <Badge variant="outline" className="text-xs shrink-0">
-                        {result.source_domain}
-                      </Badge>
+              {scanResults.map((result: any) => {
+                const confidenceBadge = result.confidence === 'confirmed'
+                  ? { label: 'Confirmed', className: 'bg-red-500/15 text-red-500 border-red-500/30' }
+                  : result.confidence === 'high'
+                    ? { label: 'High', className: 'bg-orange-500/15 text-orange-500 border-orange-500/30' }
+                    : { label: 'Medium', className: 'bg-yellow-500/15 text-yellow-500 border-yellow-500/30' };
+
+                return (
+                  <div key={result.id} className="flex items-start justify-between gap-3 p-3 rounded-lg border bg-card">
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+                        <span className="font-medium text-sm truncate">
+                          {result.products?.name || 'Unknown Product'}
+                        </span>
+                        <Badge variant="outline" className={`text-xs shrink-0 ${confidenceBadge.className}`}>
+                          {confidenceBadge.label}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs shrink-0">
+                          {result.source_domain}
+                        </Badge>
+                      </div>
+                      {result.matched_display_name && (
+                        <p className="text-xs flex items-center gap-1 text-red-500 font-medium">
+                          <Shield className="h-3 w-3" />
+                          Buyer Identified: <span className="text-foreground">{result.matched_display_name}</span>
+                        </p>
+                      )}
+                      {result.extracted_fingerprint && !result.matched_display_name && (
+                        <p className="text-xs font-mono text-orange-500">
+                          Fingerprint: {result.extracted_fingerprint}
+                        </p>
+                      )}
+                      {result.snippet && (
+                        <p className="text-xs text-muted-foreground line-clamp-2">{result.snippet}</p>
+                      )}
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span>{formatDistanceToNow(new Date(result.created_at), { addSuffix: true })}</span>
+                        <a
+                          href={result.source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline flex items-center gap-1"
+                        >
+                          View Source <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
                     </div>
-                    {result.snippet && (
-                      <p className="text-xs text-muted-foreground line-clamp-2">{result.snippet}</p>
-                    )}
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>{formatDistanceToNow(new Date(result.created_at), { addSuffix: true })}</span>
-                      <a
-                        href={result.source_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline flex items-center gap-1"
-                      >
-                        View Source <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 h-8 w-8"
+                      onClick={() => dismissResult.mutate(result.id)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0 h-8 w-8"
-                    onClick={() => dismissResult.mutate(result.id)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
