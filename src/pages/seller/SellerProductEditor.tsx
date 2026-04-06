@@ -20,10 +20,12 @@ import {
   Save, ArrowLeft, Upload, X, Plus, FileCheck, Loader2, ImagePlus,
   Calendar, Clock, Shield, Sparkles
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useProductEditorData } from './product-editor/useProductEditorData';
 import { MAX_IMAGES } from './product-editor/types';
 
 export default function SellerProductEditor() {
+  const navigate = useNavigate();
   const {
     formData, setFormData, isEditing, categories, store, isPro,
     uploading, uploadingAsset, fileInputRef, assetInputRef,
@@ -31,8 +33,6 @@ export default function SellerProductEditor() {
     handleSubmit, saveProduct,
     authLoading, flagLoading, sellerLoading, productLoading,
   } = useProductEditorData();
-
-  const navigate = (await import('react-router-dom')).useNavigate();
 
   if (authLoading || flagLoading || sellerLoading || (isEditing && productLoading)) {
     return (
