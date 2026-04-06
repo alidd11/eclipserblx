@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { RevolutBarChart } from '@/components/ui/revolut-chart';
 import { Receipt, Percent, DollarSign, TrendingDown } from 'lucide-react';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
