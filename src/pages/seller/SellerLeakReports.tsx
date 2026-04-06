@@ -347,6 +347,11 @@ export default function SellerLeakReports() {
                       {result.snippet && (
                         <p className="text-xs text-muted-foreground line-clamp-2">{result.snippet}</p>
                       )}
+                      {result.ai_verdict && (
+                        <p className="text-xs italic text-muted-foreground/70">
+                          AI: {result.ai_verdict}
+                        </p>
+                      )}
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span>{formatDistanceToNow(new Date(result.created_at), { addSuffix: true })}</span>
                         <a
