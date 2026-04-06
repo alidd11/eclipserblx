@@ -368,84 +368,6 @@ export type Database = {
         }
         Relationships: []
       }
-      affiliate_applications: {
-        Row: {
-          affiliate_id: string | null
-          audience_size: string | null
-          bank_account_holder: string | null
-          bank_account_number: string | null
-          bank_country: string | null
-          bank_name: string | null
-          bank_routing_number: string | null
-          bank_swift_bic: string | null
-          created_at: string
-          discord_username: string | null
-          display_name: string | null
-          email: string
-          id: string
-          notes: string | null
-          paypal_email: string | null
-          preferred_payout_method: string | null
-          promotion_method: string
-          rejection_reason: string | null
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          affiliate_id?: string | null
-          audience_size?: string | null
-          bank_account_holder?: string | null
-          bank_account_number?: string | null
-          bank_country?: string | null
-          bank_name?: string | null
-          bank_routing_number?: string | null
-          bank_swift_bic?: string | null
-          created_at?: string
-          discord_username?: string | null
-          display_name?: string | null
-          email: string
-          id?: string
-          notes?: string | null
-          paypal_email?: string | null
-          preferred_payout_method?: string | null
-          promotion_method: string
-          rejection_reason?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          affiliate_id?: string | null
-          audience_size?: string | null
-          bank_account_holder?: string | null
-          bank_account_number?: string | null
-          bank_country?: string | null
-          bank_name?: string | null
-          bank_routing_number?: string | null
-          bank_swift_bic?: string | null
-          created_at?: string
-          discord_username?: string | null
-          display_name?: string | null
-          email?: string
-          id?: string
-          notes?: string | null
-          paypal_email?: string | null
-          preferred_payout_method?: string | null
-          promotion_method?: string
-          rejection_reason?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       affiliate_balances: {
         Row: {
           available_balance: number
@@ -6117,6 +6039,12 @@ export type Database = {
           accounts_locked: boolean | null
           accounts_locked_at: string | null
           avatar_url: string | null
+          bank_account_holder: string | null
+          bank_account_number: string | null
+          bank_country: string | null
+          bank_name: string | null
+          bank_routing_number: string | null
+          bank_swift_bic: string | null
           created_at: string
           customer_id: string | null
           deleted_at: string | null
@@ -6129,6 +6057,7 @@ export type Database = {
           id: string
           last_seen: string | null
           paypal_email: string | null
+          preferred_payout_method: string | null
           referral_code: string | null
           roblox_user_id: string | null
           roblox_username: string | null
@@ -6144,6 +6073,12 @@ export type Database = {
           accounts_locked?: boolean | null
           accounts_locked_at?: string | null
           avatar_url?: string | null
+          bank_account_holder?: string | null
+          bank_account_number?: string | null
+          bank_country?: string | null
+          bank_name?: string | null
+          bank_routing_number?: string | null
+          bank_swift_bic?: string | null
           created_at?: string
           customer_id?: string | null
           deleted_at?: string | null
@@ -6156,6 +6091,7 @@ export type Database = {
           id?: string
           last_seen?: string | null
           paypal_email?: string | null
+          preferred_payout_method?: string | null
           referral_code?: string | null
           roblox_user_id?: string | null
           roblox_username?: string | null
@@ -6171,6 +6107,12 @@ export type Database = {
           accounts_locked?: boolean | null
           accounts_locked_at?: string | null
           avatar_url?: string | null
+          bank_account_holder?: string | null
+          bank_account_number?: string | null
+          bank_country?: string | null
+          bank_name?: string | null
+          bank_routing_number?: string | null
+          bank_swift_bic?: string | null
           created_at?: string
           customer_id?: string | null
           deleted_at?: string | null
@@ -6183,6 +6125,7 @@ export type Database = {
           id?: string
           last_seen?: string | null
           paypal_email?: string | null
+          preferred_payout_method?: string | null
           referral_code?: string | null
           roblox_user_id?: string | null
           roblox_username?: string | null
@@ -10608,84 +10551,6 @@ export type Database = {
       }
     }
     Views: {
-      affiliate_applications_masked: {
-        Row: {
-          affiliate_id: string | null
-          audience_size: string | null
-          bank_account_holder: string | null
-          bank_account_number: string | null
-          bank_country: string | null
-          bank_name: string | null
-          bank_routing_number: string | null
-          bank_swift_bic: string | null
-          created_at: string | null
-          discord_username: string | null
-          display_name: string | null
-          email: string | null
-          id: string | null
-          notes: string | null
-          paypal_email: string | null
-          preferred_payout_method: string | null
-          promotion_method: string | null
-          rejection_reason: string | null
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          affiliate_id?: string | null
-          audience_size?: string | null
-          bank_account_holder?: string | null
-          bank_account_number?: never
-          bank_country?: string | null
-          bank_name?: string | null
-          bank_routing_number?: never
-          bank_swift_bic?: never
-          created_at?: string | null
-          discord_username?: string | null
-          display_name?: string | null
-          email?: string | null
-          id?: string | null
-          notes?: string | null
-          paypal_email?: never
-          preferred_payout_method?: string | null
-          promotion_method?: string | null
-          rejection_reason?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          affiliate_id?: string | null
-          audience_size?: string | null
-          bank_account_holder?: string | null
-          bank_account_number?: never
-          bank_country?: string | null
-          bank_name?: string | null
-          bank_routing_number?: never
-          bank_swift_bic?: never
-          created_at?: string | null
-          discord_username?: string | null
-          display_name?: string | null
-          email?: string | null
-          id?: string | null
-          notes?: string | null
-          paypal_email?: never
-          preferred_payout_method?: string | null
-          promotion_method?: string | null
-          rejection_reason?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       affiliate_payouts_masked: {
         Row: {
           amount: number | null
@@ -11456,7 +11321,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      generate_affiliate_id: { Args: never; Returns: string }
       generate_customer_id: { Args: never; Returns: string }
       generate_customer_ticket_number: { Args: never; Returns: string }
       generate_discord_link_code: { Args: never; Returns: string }
