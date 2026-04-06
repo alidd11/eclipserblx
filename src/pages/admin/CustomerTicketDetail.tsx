@@ -587,11 +587,11 @@ export default function CustomerTicketDetail() {
                       <DropdownMenuContent align="start" className="w-64">
                         <DropdownMenuLabel>Canned Responses</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        {CANNED_RESPONSES.map((resp) => (
-                          <DropdownMenuItem key={resp.label} onClick={() => insertCannedResponse(resp.text)}>
+                        {cannedResponses.map((resp) => (
+                          <DropdownMenuItem key={resp.id} onClick={() => insertCannedResponse(resp.body)}>
                             <div>
-                              <div className="font-medium text-sm">{resp.label}</div>
-                              <div className="text-xs text-muted-foreground truncate max-w-[220px]">{resp.text}</div>
+                              <div className="font-medium text-sm">{resp.title}</div>
+                              <div className="text-xs text-muted-foreground truncate max-w-[220px]">{resp.body}</div>
                             </div>
                           </DropdownMenuItem>
                         ))}
