@@ -198,6 +198,23 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const u = new URL(req.url);
+
+  // --- oEmbed JSON endpoint ---
+  if (u.searchParams.get("format") === "oembed") {
+    const pageUrl = u.searchParams.get("url") || SITE_URL;
+    const oembed = {
+      version: "1.0",
+      type: "link",
+      provider_name: "Eclipse Marketplace",
+      provider_url: SITE_URL,
+      title: SITE_NAME,
+      url: pageUrl,
+    };
+    return new Response(JSON.stringify(oembed), {
+      headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=3600", ...corsHeaders },
+    });
+  }
+
   const path = u.searchParams.get("path") || "/";
   const hostname = u.searchParams.get("hostname");
 
