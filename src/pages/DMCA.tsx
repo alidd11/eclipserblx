@@ -145,10 +145,7 @@ export default function DMCA() {
  {/* Our Process */}
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2">
- <Clock className="h-5 w-5 text-primary" />
- Our Review Process
- </h3>
+ <h3 className="font-semibold text-sm">Our Review Process</h3>
  </div>
  <div className="p-4">
  <div className="space-y-4">
