@@ -358,6 +358,9 @@ export default function SellerLeakReports() {
                         </span>
                         <Badge variant="outline" className={`text-xs shrink-0 ${confidenceBadge.className}`}>
                           {confidenceBadge.label}
+                          {result.confidence_score != null && (
+                            <span className="ml-1 opacity-70">{result.confidence_score}/100</span>
+                          )}
                         </Badge>
                         {result.status && result.status !== 'active' && (
                           <Badge variant="outline" className="text-xs shrink-0 capitalize">
