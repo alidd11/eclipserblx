@@ -177,13 +177,15 @@ export interface RevolutLineSeries {
 }
 
 interface RevolutLineChartProps {
-  data: Record<string, unknown>[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any[];
   xKey: string;
   series: RevolutLineSeries[];
   height?: number;
   yFormatter?: (v: number) => string;
   tooltipFormatter?: (value: number, name: string) => [string, string];
-  tooltipContent?: ReactNode | ((props: Record<string, unknown>) => ReactNode);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tooltipContent?: ReactNode | ((props: any) => ReactNode);
   showYAxis?: boolean;
   className?: string;
 }
