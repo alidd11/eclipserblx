@@ -4,10 +4,8 @@ import { cn } from '@/lib/utils';
 import { GlobalCategoryBar } from '@/components/shop/GlobalCategoryBar';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Header } from '@/components/layout/Header';
-import { useScrollDirection } from '@/hooks/useScrollDirection';
 // Lazy-load below-fold Footer to reduce initial bundle
 const Footer = lazy(() => import('@/components/layout/Footer').then(m => ({ default: m.Footer })));
-import { ScrollProgressIndicator } from '@/components/ui/ScrollProgressIndicator';
 import { SearchCommandProvider, useSearchCommand } from '@/hooks/useSearchCommand';
 import { useEdgeSwipe } from '@/hooks/useEdgeSwipe';
 
