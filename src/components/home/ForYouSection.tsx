@@ -42,7 +42,7 @@ export function ForYouSection() {
         .in('category_id', categoryIds)
         .not('id', 'in', `(${recentIds.join(',')})`)
         .eq('is_active', true)
-        .order('total_sales', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(8);
 
       return recs || [];

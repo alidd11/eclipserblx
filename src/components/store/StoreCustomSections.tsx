@@ -79,12 +79,13 @@ export function StoreCustomSections({ storeId, accentColor }: StoreCustomSection
  </div>
  )}
 
- {section.section_type === 'featured_collection' && section.content?.description && (
- <p className="text-sm text-muted-foreground">{section.content.description}</p>
- )}
- </div>
- </div>
- ))}
- </div>
+          {section.section_type === 'featured_collection' && content?.description && (
+          <p className="text-sm text-muted-foreground">{content.description}</p>
+          )}
+        </div>
+        </div>
+        );
+      })}
+    </div>
  );
 }

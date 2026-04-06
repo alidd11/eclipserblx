@@ -189,7 +189,7 @@ export default function AdminLiveChat() {
 
       const { data: inserted, error: insertError } = await supabase.from('chat_messages').insert({ conversation_id: selectedConversation.id, message: file.name, sender_type: 'agent', sender_id: user.id, attachment_url: fileName }).select('*').single();
       if (insertError) throw insertError;
-      if (inserted) setMessages((prev) => (prev.some((m) => m.id === inserted.id) ? prev : [...prev, inserted]));
+      if (inserted) setMessages((prev) => (prev.some((m) => m.id === inserted.id) ? prev : [...prev, { ...inserted, secure_data: inserted.secure_data as any } as Message]));
       await supabase.from('chat_conversations').update({ updated_at: new Date().toISOString() }).eq('id', selectedConversation.id);
     } catch (error) {
       console.error('Error uploading file:', error);

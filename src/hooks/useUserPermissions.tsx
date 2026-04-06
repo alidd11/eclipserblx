@@ -9,9 +9,9 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
   ]);
 }
 
-function isJwtError(error: any): boolean {
-  const message = String(error?.message ?? '').toLowerCase();
-  const code = String(error?.code ?? '').toUpperCase();
+function isJwtError(error: unknown): boolean {
+  const message = String((error as any)?.message ?? '').toLowerCase();
+  const code = String((error as any)?.code ?? '').toUpperCase();
   return (
     message.includes('jwt') ||
     message.includes('bad_jwt') ||
