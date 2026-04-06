@@ -1,12 +1,34 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { format } from '@/lib/dateUtils';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Clock, Zap, FileText, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
-export function TwitterPostHistoryTab() {
+interface XTheme {
+  text: string;
+  textSecondary: string;
+  border: string;
+  hover: string;
+  accent: string;
+  [key: string]: string;
+}
+
+const statusConfig: Record<string, { label: string; color: string; icon: React.ElementType }> = {
+  sent: { label: 'Posted', color: 'text-[#00ba7c]', icon: CheckCircle2 },
+  queued: { label: 'Queued', color: 'text-[#1d9bf0]', icon: Clock },
+  draft: { label: 'Draft', color: 'text-[#ffd400]', icon: FileText },
+  failed: { label: 'Failed', color: 'text-[#f4212e]', icon: AlertTriangle },
+};
+
+const typeLabels: Record<string, string> = {
+  product_drop: 'Product Drop',
+  store_showcase: 'Store',
+  announcement: 'Announce',
+  scheduled: 'Scheduled',
+  automated: 'Auto',
+  news: 'News',
+};
+
+export function TwitterPostHistoryTab({ xTheme }: { xTheme: XTheme }) {
   const { data: posts, isLoading } = useQuery({
     queryKey: ['twitter-posts-history'],
     queryFn: async () => {
@@ -20,88 +42,101 @@ export function TwitterPostHistoryTab() {
     },
   });
 
-  const statusBadge = (status: string) => {
-    switch (status) {
-      case 'sent': return <Badge className="bg-green-500/10 text-green-500 border-green-500/20">Sent</Badge>;
-      case 'queued': return <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20">Queued</Badge>;
-      case 'draft': return <Badge variant="secondary">Draft</Badge>;
-      case 'failed': return <Badge variant="destructive">Failed</Badge>;
-      default: return <Badge variant="outline">{status}</Badge>;
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="divide-y divide-[#2f3336]">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="px-4 py-3 animate-pulse">
+            <div className="h-3 w-24 bg-[#2f3336] rounded mb-2" />
+            <div className="h-4 w-full bg-[#2f3336] rounded mb-1" />
+            <div className="h-3 w-48 bg-[#2f3336] rounded" />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
-  const typeBadge = (type: string) => {
-    const labels: Record<string, string> = {
-      product_drop: 'Product Drop',
-      store_showcase: 'Store Showcase',
-      announcement: 'Announcement',
-      scheduled: 'Scheduled',
-    };
-    return <Badge variant="outline">{labels[type] || type}</Badge>;
-  };
+  if (!posts?.length) {
+    return (
+      <div className="px-4 py-8 text-center">
+        <p className={`text-[15px] font-bold ${xTheme.text}`}>No post history</p>
+        <p className={`text-[13px] mt-1 ${xTheme.textSecondary}`}>Posts will appear here once created.</p>
+      </div>
+    );
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Post History</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Content</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Hashtags</TableHead>
-              <TableHead>Status</TableHead>
-                <TableHead>When</TableHead>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">Loading...</TableCell>
-              </TableRow>
-            ) : !posts?.length ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">No posts yet</TableCell>
-              </TableRow>
-            ) : posts.map((post) => (
-              <TableRow key={post.id}>
-                <TableCell className="max-w-[300px] truncate text-sm">{post.content}</TableCell>
-                <TableCell>{typeBadge(post.post_type)}</TableCell>
-                <TableCell>
-                  <div className="flex flex-wrap gap-1 max-w-[200px]">
-                    {(post.hashtags_used as string[])?.map((tag, i) => (
-                      <Badge key={i} variant="outline" className="text-xs font-mono">{tag}</Badge>
-                    ))}
-                  </div>
-                </TableCell>
-                <TableCell>{statusBadge(post.status)}</TableCell>
-                <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
-                  {post.posted_at
-                    ? format(new Date(post.posted_at), 'dd MMM yyyy HH:mm')
-                    : post.scheduled_for
-                      ? `Scheduled ${format(new Date(post.scheduled_for), 'dd MMM yyyy HH:mm')}`
-                      : format(new Date(post.created_at), 'dd MMM yyyy HH:mm')}
-                </TableCell>
-                <TableCell>
-                  {post.tweet_id && (
-                    <a
-                      href={`https://x.com/i/web/status/${post.tweet_id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+    <div className={`divide-y ${xTheme.border.replace('border-', 'divide-')}`}>
+      {/* Header */}
+      <div className={`flex items-center gap-2 px-4 py-3`}>
+        <Zap className={`h-4 w-4 ${xTheme.accent}`} />
+        <span className={`text-[15px] font-bold ${xTheme.text}`}>Post History</span>
+        <span className={`text-[13px] ${xTheme.textSecondary} ml-1`}>{posts.length} posts</span>
+      </div>
+
+      {posts.map((post) => {
+        const status = statusConfig[post.status] ?? statusConfig.draft;
+        const StatusIcon = status.icon;
+        const hashtags = (post.hashtags_used as string[]) ?? [];
+
+        return (
+          <div key={post.id} className={`px-4 py-3 ${xTheme.hover} transition-colors`}>
+            {/* Top row: status + type + time */}
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+              <div className={`flex items-center gap-1 ${status.color}`}>
+                <StatusIcon className="h-3 w-3" />
+                <span className="text-[12px] font-semibold uppercase">{status.label}</span>
+              </div>
+              {post.post_type && (
+                <>
+                  <span className={`text-[12px] ${xTheme.textSecondary}`}>·</span>
+                  <span className={`text-[12px] ${xTheme.textSecondary}`}>
+                    {typeLabels[post.post_type] || post.post_type}
+                  </span>
+                </>
+              )}
+              {post.ai_generated && (
+                <span className="text-[10px] text-[#1d9bf0] bg-[#1d9bf0]/10 rounded-full px-1.5 py-0.5 font-medium">AI</span>
+              )}
+              <span className={`text-[12px] ${xTheme.textSecondary} ml-auto`}>
+                {post.posted_at
+                  ? format(new Date(post.posted_at), 'dd MMM yyyy HH:mm')
+                  : post.scheduled_for
+                    ? `Sched. ${format(new Date(post.scheduled_for), 'dd MMM HH:mm')}`
+                    : format(new Date(post.created_at), 'dd MMM yyyy HH:mm')}
+              </span>
+            </div>
+
+            {/* Content */}
+            <p className={`text-[14px] ${xTheme.text} leading-[20px] line-clamp-2 mb-1.5`}>
+              {post.content?.replace(/\n*#\w+/g, '').trim() || 'Untitled post'}
+            </p>
+
+            {/* Hashtags + link */}
+            <div className="flex items-center justify-between gap-2">
+              {hashtags.length > 0 ? (
+                <div className="flex flex-wrap gap-1 min-w-0 flex-1">
+                  {hashtags.map((tag, i) => (
+                    <span key={i} className="text-[12px] text-[#1d9bf0]">{tag}</span>
+                  ))}
+                </div>
+              ) : (
+                <div />
+              )}
+              {post.tweet_id && (
+                <a
+                  href={`https://x.com/i/web/status/${post.tweet_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${xTheme.textSecondary} hover:text-[#1d9bf0] shrink-0 transition-colors`}
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }

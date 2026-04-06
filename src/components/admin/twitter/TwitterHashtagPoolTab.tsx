@@ -1,18 +1,27 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Hash, Plus, ToggleLeft, ToggleRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from '@/lib/dateUtils';
 
-export function TwitterHashtagPoolTab() {
+interface XTheme {
+  text: string;
+  textSecondary: string;
+  border: string;
+  hover: string;
+  accent: string;
+  inputBg: string;
+  [key: string]: string;
+}
+
+const categoryColors: Record<string, { bg: string; text: string }> = {
+  niche: { bg: 'bg-[#1d9bf0]/10', text: 'text-[#1d9bf0]' },
+  audience: { bg: 'bg-[#7856ff]/10', text: 'text-[#7856ff]' },
+  content: { bg: 'bg-[#00ba7c]/10', text: 'text-[#00ba7c]' },
+};
+
+export function TwitterHashtagPoolTab({ xTheme }: { xTheme: XTheme }) {
   const queryClient = useQueryClient();
   const [newTag, setNewTag] = useState('');
   const [newCategory, setNewCategory] = useState('niche');
@@ -66,103 +75,92 @@ export function TwitterHashtagPoolTab() {
     queryClient.invalidateQueries({ queryKey: ['twitter-hashtags-active'] });
   };
 
-  const categoryColor = (cat: string) => {
-    switch (cat) {
-      case 'niche': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-      case 'audience': return 'bg-purple-500/10 text-purple-500 border-purple-500/20';
-      case 'content': return 'bg-green-500/10 text-green-500 border-green-500/20';
-      default: return '';
-    }
-  };
-
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Add Hashtag</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2 items-end flex-wrap">
-            <div className="space-y-1 flex-1 min-w-[180px]">
-              <Label>Tag</Label>
-              <Input
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                placeholder="#RobloxDev"
-                onKeyDown={(e) => e.key === 'Enter' && addHashtag()}
-              />
-            </div>
-            <div className="space-y-1 w-[140px]">
-              <Label>Category</Label>
-              <Select value={newCategory} onValueChange={setNewCategory}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="niche">Niche</SelectItem>
-                  <SelectItem value="audience">Audience</SelectItem>
-                  <SelectItem value="content">Content</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button onClick={addHashtag}>
-              <Plus className="mr-1 h-4 w-4" /> Add
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+    <div>
+      {/* Header */}
+      <div className={`flex items-center gap-2 px-4 py-3 ${xTheme.border} border-b`}>
+        <Hash className={`h-4 w-4 ${xTheme.accent}`} />
+        <span className={`text-[15px] font-bold ${xTheme.text}`}>Hashtag Pool</span>
+        <span className={`text-[13px] ${xTheme.textSecondary} ml-1`}>{hashtags?.length ?? 0}</span>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Hashtag Pool ({hashtags?.length ?? 0})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Tag</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-right">Uses</TableHead>
-                <TableHead>Last Used</TableHead>
-                <TableHead className="text-right">Active</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">Loading...</TableCell>
-                </TableRow>
-              ) : hashtags?.map((h) => (
-                <TableRow key={h.id} className={!h.is_active ? 'opacity-50' : ''}>
-                  <TableCell className="font-mono text-sm">{h.tag}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={categoryColor(h.category)}>
-                      {h.category}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">{h.usage_count}</TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {h.last_used_at
-                      ? formatDistanceToNow(new Date(h.last_used_at), { addSuffix: true })
-                      : 'Never'}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => toggleActive(h.id, h.is_active)}
-                    >
-                      {h.is_active
-                        ? <ToggleRight className="h-5 w-5 text-green-500" />
-                        : <ToggleLeft className="h-5 w-5 text-muted-foreground" />}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      {/* Add form */}
+      <div className={`px-4 py-3 ${xTheme.border} border-b`}>
+        <div className="flex gap-2 items-center">
+          <input
+            value={newTag}
+            onChange={(e) => setNewTag(e.target.value)}
+            placeholder="#RobloxDev"
+            onKeyDown={(e) => e.key === 'Enter' && addHashtag()}
+            className={`flex-1 min-w-0 ${xTheme.inputBg} rounded-full px-3.5 py-2 text-[14px] ${xTheme.text} outline-none border border-transparent focus:border-[#1d9bf0] transition-colors placeholder:${xTheme.textSecondary} placeholder:opacity-60`}
+          />
+          <select
+            value={newCategory}
+            onChange={(e) => setNewCategory(e.target.value)}
+            className={`${xTheme.inputBg} rounded-full px-3 py-2 text-[13px] ${xTheme.text} outline-none border border-transparent focus:border-[#1d9bf0] transition-colors`}
+          >
+            <option value="niche">Niche</option>
+            <option value="audience">Audience</option>
+            <option value="content">Content</option>
+          </select>
+          <button
+            onClick={addHashtag}
+            disabled={!newTag.trim()}
+            className="bg-[#1d9bf0] hover:bg-[#1a8cd8] disabled:opacity-50 text-white rounded-full p-2 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* List */}
+      {isLoading ? (
+        <div className={`px-4 py-6 text-center text-[13px] ${xTheme.textSecondary}`}>Loading...</div>
+      ) : !hashtags?.length ? (
+        <div className={`px-4 py-6 text-center text-[13px] ${xTheme.textSecondary}`}>No hashtags added yet</div>
+      ) : (
+        <div className={`divide-y ${xTheme.border.replace('border-', 'divide-')}`}>
+          {hashtags.map((h) => {
+            const catStyle = categoryColors[h.category] ?? categoryColors.niche;
+            return (
+              <div
+                key={h.id}
+                className={`flex items-center gap-3 px-4 py-2.5 ${xTheme.hover} transition-colors ${!h.is_active ? 'opacity-40' : ''}`}
+              >
+                {/* Tag name */}
+                <span className={`text-[14px] font-mono ${xTheme.text} flex-1 min-w-0 truncate`}>{h.tag}</span>
+
+                {/* Category badge */}
+                <span className={`text-[11px] font-medium uppercase px-2 py-0.5 rounded-full ${catStyle.bg} ${catStyle.text}`}>
+                  {h.category}
+                </span>
+
+                {/* Usage count */}
+                <span className={`text-[12px] tabular-nums ${xTheme.textSecondary} w-8 text-right`}>{h.usage_count}</span>
+
+                {/* Last used */}
+                <span className={`text-[11px] ${xTheme.textSecondary} w-20 text-right truncate hidden sm:block`}>
+                  {h.last_used_at
+                    ? formatDistanceToNow(new Date(h.last_used_at), { addSuffix: false })
+                    : 'Never'}
+                </span>
+
+                {/* Toggle */}
+                <button
+                  onClick={() => toggleActive(h.id, h.is_active)}
+                  className={`shrink-0 p-1 rounded-full ${xTheme.hover} transition-colors`}
+                >
+                  {h.is_active ? (
+                    <ToggleRight className="h-5 w-5 text-[#00ba7c]" />
+                  ) : (
+                    <ToggleLeft className="h-5 w-5 text-[#71767b]" />
+                  )}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
