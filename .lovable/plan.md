@@ -1,57 +1,54 @@
 
-# Enterprise Polish Sweep — Full Plan
 
-## Phase 1: Quick Wins (Zero Risk)
-**1a. Add `alt` text to 18 images missing it**
-- Scan all `<img>` tags without `alt=`, add descriptive or empty-decorative alt text
-- ✅ Check: `grep -rn "<img " src/ --include="*.tsx" | grep -v "alt=" | wc -l` → 0
+# Permanent Fix: PWA Header Clipping on All Pages
 
-**1b. Strip 35 stray `console.log` from frontend**
-- Remove non-essential console.log statements (keep Auth/debug-prefixed ones)
-- ✅ Check: Count drops significantly
+## Problem
+Pages with `sticky top-0` headers inside containers that use `safe-area-page` (which adds `padding-top: env(safe-area-inset-top)`) work correctly — the sticky header sits below the safe-area padding. However, two patterns still cause the header to hide behind the device notch/status bar:
 
-**1c. Resolve 7 TODO/FIXME/HACK markers**
-- Review each, either implement the fix or remove the comment if stale
-- ✅ Check: `grep -rn "TODO\|FIXME\|HACK" src/ | wc -l` → 0
+1. **Immersive admin pages** — `AdminLayout` returns `null` for the header when `isImmersivePage` is true, leaving the page's own header without safe-area coverage. Currently only Twitter Posts is flagged, and it was patched individually. Any future immersive page would have the same bug.
 
-**🔒 Verification Gate 1:** `npx tsc --noEmit` passes, tests pass (90/90)
+2. **SellerSetup** — Uses `safe-area-page` on the root container with a `sticky top-0` header inside. The sticky header sticks to `top: 0`, which is *inside* the safe-area padding, so this actually works. ✅
 
----
+3. **GlobalGuardLayout mobile header** — Root has `paddingTop: env(safe-area-inset-top)` and header is `sticky top-0` inside, which sticks correctly. ✅
 
-## Phase 2: Accessibility Hardening
-**2a. Add `aria-label` to key interactive buttons (prioritise icon-only buttons)**
-- Focus on the most impactful: icon-only buttons, close buttons, toggle buttons
-- Target ~50 of the 110 flagged buttons (highest impact)
-- ✅ Check: Count drops by 40%+
+**The only systemic risk is the `isImmersivePage` pattern in AdminLayout** — when the standard header is nulled out, the child page must handle its own safe-area padding, which is fragile.
 
-**🔒 Verification Gate 2:** `npx tsc --noEmit` passes, tests pass
+## Fix: Make `isImmersivePage` safe by default
 
----
+Instead of returning `null` for the header on immersive pages (forcing each page to self-patch), inject a minimal transparent safe-area spacer so the content area always starts below the notch.
 
-## Phase 3: Database Hardening
-**3a. Move extension out of public schema** (DB linter warning)
-**3b. Audit security definer view** (DB linter error) — fix or document
+### Changes
 
-**🔒 Verification Gate 3:** DB linter re-run shows 0 errors
+**File: `src/components/admin/AdminLayout.tsx`**
 
----
+Replace the immersive branch of `customHeader`:
+```typescript
+// Before
+isImmersivePage ? null : ( ... )
 
-## Phase 4: God-File Refactors (Top 5)
-Split each into sub-components + hooks, one at a time with verification:
+// After  
+isImmersivePage ? (
+  // Minimal safe-area spacer — immersive pages handle their own header
+  // but the notch area must still be reserved
+  <div 
+    className="w-full bg-transparent" 
+    style={{ height: 'env(safe-area-inset-top, 0px)' }} 
+  />
+) : ( ... )
+```
 
-**4a. StaffProfile.tsx (893 lines)** → Extract tab panels into separate components
-**4b. Affiliate.tsx (890 lines)** → Extract dashboard sections
-**4c. LiveChat.tsx (878 lines)** → Extract message list, input, sidebar
-**4d. ProductDetail.tsx (873 lines)** → Extract info panel, reviews, gallery
-**4e. Disputes.tsx (854 lines)** → Extract table, filters, detail dialog
+Then **remove** the manual `paddingTop` patch from `src/pages/admin/TwitterPosts.tsx` since the layout now handles it globally.
 
-**🔒 Verification Gate 4 (after each file):** `npx tsc --noEmit` + tests pass
+**File: `src/pages/admin/TwitterPosts.tsx`**
 
----
+Remove the inline `style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}` from the sticky header div — no longer needed.
 
-## Phase 5: Final Verification
-- Full TypeScript check
-- Full test suite
-- DB linter clean
-- Security scan clean
-- Final `any` count audit
+### Why this is permanent
+- Any page added to the `isImmersivePage` list in the future automatically gets safe-area protection without needing a per-page patch.
+- Zero risk to existing pages — non-immersive pages are untouched, and the spacer is transparent with zero height on non-notched devices.
+
+### Verification steps
+1. TypeScript compilation check (`npx tsc --noEmit`)
+2. Confirm Twitter Posts header renders below the notch
+3. Confirm all other admin pages are unaffected
+
