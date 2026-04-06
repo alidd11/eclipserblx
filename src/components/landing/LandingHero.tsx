@@ -50,8 +50,8 @@ export function LandingHero() {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20 relative z-10">
         {/* Desktop: centered layout */}
         <div className="hidden lg:flex lg:flex-col lg:items-center lg:text-center">
-          <h1 id="hero-heading" className="font-display text-3xl lg:text-5xl xl:text-6xl font-bold leading-[1.05] tracking-tight mb-4 max-w-3xl drop-shadow-md">
-            The <span className="text-gradient-hero">Marketplace</span> for {wordRotator} Creators
+          <h1 id="hero-heading" className="font-display text-2xl sm:text-3xl lg:text-5xl xl:text-6xl font-bold leading-[1.05] tracking-tight mb-4 max-w-4xl drop-shadow-md uppercase whitespace-nowrap">
+            The <span className="text-gradient-hero">Marketplace</span> For {wordRotator} Creators
           </h1>
 
           <p className="text-sm sm:text-base lg:text-lg text-foreground/60 max-w-lg mb-6 leading-relaxed">
@@ -86,8 +86,8 @@ export function LandingHero() {
 
         {/* Mobile: compact layout */}
         <div className="lg:hidden w-full flex flex-col items-center px-2">
-          <h1 className="font-display text-xl sm:text-2xl font-bold leading-[1.15] tracking-tight mb-3 text-center">
-            The <span className="text-gradient-hero">Marketplace</span> for {wordRotator} Creators
+          <h1 className="font-display text-[4.2vw] sm:text-2xl font-bold leading-[1.15] tracking-tight mb-3 text-center uppercase whitespace-nowrap">
+            The <span className="text-gradient-hero">Marketplace</span> For {wordRotator} Creators
           </h1>
 
           <div className="flex items-center gap-2.5 w-full max-w-sm mt-1">
