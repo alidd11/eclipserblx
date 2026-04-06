@@ -84,7 +84,7 @@ export function ProductPerformanceComparison() {
 
  return ids.map(id => {
  const product = products?.find(p => p.id === id);
- const productSales = sales?.filter((s: any) => {
+ const productSales = sales?.filter((s) => {
  const productId = orderItemMap.get(s.order_item_id);
  return productId === id;
  }) || [];
