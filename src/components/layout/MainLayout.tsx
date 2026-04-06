@@ -4,6 +4,7 @@ import { PageTransition } from './PageTransition';
 import { CustomerSidebar } from './CustomerSidebar';
 import { useDeferredScheduledReleaseCheck } from '@/hooks/useScheduledReleaseCheck';
 import { safeStorage } from '@/lib/safeStorage';
+import { useAutoPageMeta } from '@/hooks/useAutoPageMeta';
 
 interface MainLayoutProps {
   children: ReactNode;
