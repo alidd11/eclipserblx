@@ -22,14 +22,15 @@ export default function Compare() {
  queryFn: async () => {
  if (ids.length === 0) return [];
  const { data } = await supabase
- .from('products')
- .select(`
- id, name, slug, product_number, price, images, description,
- is_active, category_id, is_resellable, total_sales,
- categories!inner(name)
- `)
- .in('id', ids);
- return data || [];
+  .from('products')
+  .select(`
+  id, name, slug, product_number, price, images, description,
+  is_active, category_id, is_resellable,
+  categories!inner(name)
+  `)
+  .in('id', ids);
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
+ return (data as any[]) || [];
  },
  enabled: ids.length >= 2,
  });
