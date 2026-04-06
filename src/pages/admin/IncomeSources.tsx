@@ -323,7 +323,7 @@ export default function AdminIncomeSources() {
 
     for (let i = 0; i < bucketCount; i++) {
       const bucketDate = new Date(periodStart.getTime() + bucketMs * (i + 0.5));
-      const entry: any = { date: format(bucketDate, bucketCount > 14 ? 'MMM d' : 'EEE d') };
+      const entry: Record<string, unknown> = { date: format(bucketDate, bucketCount > 14 ? 'MMM d' : 'EEE d') };
       sourceKeys.forEach(k => { entry[k] = 0; });
       buckets.push(entry);
     }

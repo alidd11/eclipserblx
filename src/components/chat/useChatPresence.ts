@@ -20,7 +20,7 @@ export function useChatPresence(channelName: string, currentUserProfile: UserPro
         const state = presenceChannel.presenceState();
         const typing: TypingUser[] = [];
 
-        Object.values(state).forEach((presences: any[]) => {
+        Object.values(state).forEach((presences: Array<{ user_id?: string; name?: string }>) => {
           presences.forEach((presence) => {
             if (presence.typing && presence.user_id !== user.id) {
               typing.push({ user_id: presence.user_id, name: presence.name });

@@ -9,7 +9,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
   ]);
 }
 
-function isJwtError(error: any): boolean {
+function isJwtError(error: unknown): boolean {
   const message = String(error?.message ?? '').toLowerCase();
   const code = String(error?.code ?? '').toUpperCase();
   return (

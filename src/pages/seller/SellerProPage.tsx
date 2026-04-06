@@ -24,7 +24,7 @@ interface FeatureRow {
   label: string;
   free: string | boolean;
   pro: string | boolean;
-  icon: any;
+  icon: React.ElementType;
 }
 
 const featureGroups: { section: string; rows: FeatureRow[] }[] = [

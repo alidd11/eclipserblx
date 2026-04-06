@@ -5,8 +5,8 @@ import { User, MessageCircle, Gamepad2, Lock, Unlock, Link2, ExternalLink } from
 import { format, parseISO } from '@/lib/dateUtils';
 
 interface StoreOwnerCardProps {
-  store: any;
-  ownerProfile: any;
+  store: { created_at: string; discord_invite?: string; [key: string]: unknown };
+  ownerProfile: { avatar_url?: string; display_name?: string; username?: string; email?: string; customer_id?: string; discord_username?: string; discord_id?: string; roblox_username?: string; roblox_user_id?: string; accounts_locked?: boolean } | null;
   onUnlockAccounts: () => void;
   onLockAccounts: () => void;
   isUnlocking: boolean;
@@ -132,14 +132,14 @@ export function StoreOwnerCard({ store, ownerProfile, onUnlockAccounts, onLockAc
           <Separator />
 
           {/* Discord Server Invite */}
-          {(store as any).discord_invite && (
+          {(store as Record<string, unknown>).discord_invite && (
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2 text-muted-foreground">
                 <Link2 className="h-4 w-4" />
                 Discord Server
               </span>
               <a
-                href={(store as any).discord_invite}
+                href={(store as Record<string, unknown>).discord_invite}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm text-primary hover:underline flex items-center gap-1"

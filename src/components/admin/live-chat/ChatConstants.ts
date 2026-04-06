@@ -98,7 +98,7 @@ export interface Message {
   attachment_url: string | null;
   message_type?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  secure_data?: any;
+  secure_data?: Record<string, unknown> | null;
   _status?: MessageStatus;
   _tempId?: string;
 }

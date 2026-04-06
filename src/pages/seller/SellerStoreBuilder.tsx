@@ -43,7 +43,7 @@ const DEFAULT_SECTIONS: StoreSection[] = [
   { id: 'recommendations', type: 'recommendations', label: 'Recommendations', visible: true },
 ];
 
-function parseSavedLayout(storeLayout: any): StoreSection[] | null {
+function parseSavedLayout(storeLayout: unknown): StoreSection[] | null {
   if (!storeLayout?.sections || !Array.isArray(storeLayout.sections)) return null;
   
   return storeLayout.sections.map((s) => ({

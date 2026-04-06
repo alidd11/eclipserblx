@@ -7,7 +7,7 @@ import { Percent } from 'lucide-react';
 import { format, parseISO } from '@/lib/dateUtils';
 
 interface StoreCommissionCardProps {
-  store: any;
+  store: { custom_commission_rate?: number | null; custom_rate_expires_at?: string | null; commission_rate?: number | null };
   defaultRate: number;
   isAdminManaged: boolean;
   onSaveRate: (rate: number | null, expiresAt: string | null) => void;

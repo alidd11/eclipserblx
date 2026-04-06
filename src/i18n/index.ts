@@ -47,7 +47,7 @@ i18n
   });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LocaleLoader = () => Promise<{ default: any }>;
+type LocaleLoader = () => Promise<{ default: Record<string, unknown> }>;
 
 // Lazy-load non-English locale if needed
 if (detectedLang && detectedLang !== 'en') {

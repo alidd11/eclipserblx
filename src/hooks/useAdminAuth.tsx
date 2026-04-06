@@ -9,7 +9,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
   ]);
 }
 
-function isJwtError(error: any): boolean {
+function isJwtError(error: unknown): boolean {
   const msg = String(error?.message ?? '').toLowerCase();
   const code = String(error?.code ?? '').toUpperCase();
   return (
@@ -66,7 +66,7 @@ export function useAdminAuth() {
     staleTime: 1000 * 60 * 5,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    retry: (failureCount, error: any) => {
+    retry: (failureCount, error: unknown) => {
       if (failureCount >= 3) return false;
       return isJwtError(error);
     },

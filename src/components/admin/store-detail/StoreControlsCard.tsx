@@ -10,8 +10,8 @@ import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescript
 import { Store, Lock, PowerOff, Trash2, ExternalLink, ChevronDown, CheckCircle2, XCircle, BadgeCheck } from 'lucide-react';
 
 interface StoreControlsCardProps {
-  store: any;
-  paymentDetails: any;
+  store: { name: string; is_active: boolean; is_verified: boolean };
+  paymentDetails: { stripe_account_id?: string; details_submitted?: boolean; payouts_enabled?: boolean } | null;
   isAdminManaged: boolean;
   userEmail: string;
   onToggleActive: (active: boolean) => void;
