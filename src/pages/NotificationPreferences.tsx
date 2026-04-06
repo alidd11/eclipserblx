@@ -200,15 +200,12 @@ export default function NotificationPreferences() {
  {/* Push Notifications Card */}
  {pushSupported && (
  <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2 text-lg">
- <Bell className="h-5 w-5 text-primary" />
- Push Notifications
- </h3>
- <p className="text-sm text-muted-foreground">
- Receive instant notifications on your device
- </p>
- </div>
+  <div className="px-4 py-3 border-b border-border bg-muted/30">
+  <h3 className="font-semibold text-lg">Push Notifications</h3>
+  <p className="text-sm text-muted-foreground">
+  Receive instant notifications on your device
+  </p>
+  </div>
  <div className="p-4 space-y-4">
  <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
  <div>
