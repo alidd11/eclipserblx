@@ -289,7 +289,7 @@ export default function AdminLiveChat() {
         }
       )
       .subscribe((status) => {
-        console.log('AdminLiveChat messagesChannel status:', status);
+        // messages channel subscribed
       });
 
     // Typing indicator channel
