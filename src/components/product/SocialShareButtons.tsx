@@ -15,17 +15,17 @@ export function SocialShareButtons({ url, title, description }: SocialShareButto
   const text = description ? `${title} — ${description}` : title;
 
   const handleCopyForDiscord = () => {
-    navigator.clipboard.writeText(`🎮 **${title}**\n${fullUrl}`);
+    navigator.clipboard.writeText(`\uD83C\uDFAE **${title}**\n${sharePath}`);
     toast.success('Copied for Discord!');
   };
 
   const handleNativeShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title, text: description, url: fullUrl });
+        await navigator.share({ title, text: description, url: sharePath });
       } catch {}
     } else {
-      navigator.clipboard.writeText(fullUrl);
+      navigator.clipboard.writeText(sharePath);
       toast.success('Link copied!');
     }
   };
