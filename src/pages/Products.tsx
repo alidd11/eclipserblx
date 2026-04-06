@@ -192,7 +192,7 @@ export default function Products() {
           itemCount={productsData?.totalCount ?? 0}
         />
         <CategoryBar />
-        <div className="container py-4">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="space-y-4">
               <div className="space-y-3">
                 <h1 className="text-xl font-display font-bold text-foreground uppercase tracking-wide">
