@@ -145,7 +145,7 @@ export function useAdminUsers() {
       setNewRole('');
       toast.success('Role added');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       if (error.message?.includes('hierarchy') || error.message?.includes('privilege')) {
         toast.error("You don't have permission to assign this role");
       } else {
@@ -165,7 +165,7 @@ export function useAdminUsers() {
       queryClient.invalidateQueries({ queryKey: ['admin-profiles'] });
       toast.success('Role removed');
     },
-    onError: (error: any) => toast.error(error.message),
+    onError: (error: Error) => toast.error(error.message),
   });
 
   const ipBanMutation = useMutation({
@@ -181,7 +181,7 @@ export function useAdminUsers() {
       setIpAddress('');
       setBanReason('');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       if (error.message.includes('duplicate')) toast.error('This IP address is already banned');
       else toast.error(error.message);
     },
@@ -200,7 +200,7 @@ export function useAdminUsers() {
       toast.success('Account deleted successfully');
       setDeleteConfirmUser(null);
     },
-    onError: (error: any) => toast.error(error.message || 'Failed to delete account'),
+    onError: (error: Error) => toast.error(error.message || 'Failed to delete account'),
   });
 
   const getUserRoles = (userId: string) => userRoles?.filter(r => r.user_id === userId) || [];
@@ -222,15 +222,15 @@ export function useAdminUsers() {
     return (currentUserHierarchy ?? 0) >= targetLevel;
   };
 
-  const canDeleteUser = (profile: any) => {
+  const canDeleteUser = (profile: Record<string, unknown>) => {
     if (!isPrimaryAdmin) return false;
     if (profile.user_id === user?.id) return false;
     return true;
   };
 
   const { customerProfiles, staffProfiles } = useMemo(() => {
-    const customers: any[] = [];
-    const staff: any[] = [];
+    const customers: Record<string, unknown>[] = [];
+    const staff: Record<string, unknown>[] = [];
     profiles?.forEach(profile => {
       const roles = getUserRoles(profile.user_id);
       const hasStaffRole = roles.some(r => !nonStaffRoles.includes(r.role));

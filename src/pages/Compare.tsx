@@ -52,10 +52,10 @@ export default function Compare() {
  }
 
  const compareFields = [
- { label: 'Price', render: (p: any) => <span className="font-bold text-primary">{formatPrice(p.price)}</span> },
- { label: 'Category', render: (p: any) => <Badge variant="secondary">{(p as any).categories?.name || 'N/A'}</Badge> },
- { label: 'Sales', render: (p: any) => <span>{p.total_sales?.toLocaleString() || '0'} sold</span> },
- { label: 'Resellable', render: (p: any) => p.is_resellable ? <Check className="h-4 w-4 text-primary" /> : <X className="h-4 w-4 text-muted-foreground" /> },
+ { label: 'Price', render: (p: Record<string, unknown>) => <span className="font-bold text-primary">{formatPrice(p.price)}</span> },
+ { label: 'Category', render: (p: Record<string, unknown>) => <Badge variant="secondary">{(p as any).categories?.name || 'N/A'}</Badge> },
+ { label: 'Sales', render: (p: Record<string, unknown>) => <span>{p.total_sales?.toLocaleString() || '0'} sold</span> },
+ { label: 'Resellable', render: (p: Record<string, unknown>) => p.is_resellable ? <Check className="h-4 w-4 text-primary" /> : <X className="h-4 w-4 text-muted-foreground" /> },
  ];
 
  return (
@@ -81,7 +81,7 @@ export default function Compare() {
  <thead>
  <tr>
  <th className="p-3 text-left text-sm font-medium text-muted-foreground w-32"></th>
- {products?.map((product: any) => (
+ {products?.map((product) => (
  <th key={product.id} className="p-3 text-center">
  <div className="space-y-2">
  <Link to={`/products/${product.product_number}`}>
@@ -123,7 +123,7 @@ export default function Compare() {
  {compareFields.map(field => (
  <tr key={field.label} className="border-t border-border">
  <td className="p-3 text-sm font-medium text-muted-foreground">{field.label}</td>
- {products?.map((product: any) => (
+ {products?.map((product) => (
  <td key={product.id} className="p-3 text-center text-sm">
  {field.render(product)}
  </td>
@@ -132,7 +132,7 @@ export default function Compare() {
  ))}
  <tr className="border-t border-border">
  <td className="p-3 text-sm font-medium text-muted-foreground">Description</td>
- {products?.map((product: any) => (
+ {products?.map((product) => (
  <td key={product.id} className="p-3 text-xs text-muted-foreground max-w-[200px]">
  <p className="line-clamp-4">{product.description || 'No description'}</p>
  </td>

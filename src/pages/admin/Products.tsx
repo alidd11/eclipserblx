@@ -141,7 +141,7 @@ export default function AdminProducts() {
       if (uploadError) throw uploadError;
       setForm({ ...form, asset_file_url: fileName });
       toast.success('File uploaded successfully');
-    } catch (error: any) { toast.error(`Upload failed: ${error.message}`); }
+    } catch (error: unknown) { toast.error(`Upload failed: ${error.message}`); }
     finally { setIsUploading(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
   };
 
@@ -170,7 +170,7 @@ export default function AdminProducts() {
       cm.push(watermarkedUrl);
       setForm({ ...form, images: cm.join(', ') });
       toast.success(`${type === 'image' ? 'Image' : 'Video'} uploaded successfully`);
-    } catch (error: any) { toast.error(`Upload failed: ${error.message}`); }
+    } catch (error: unknown) { toast.error(`Upload failed: ${error.message}`); }
     finally {
       if (type === 'image') { setIsUploadingImage(false); if (imageInputRef.current) imageInputRef.current.value = ''; }
       else { setIsUploadingVideo(false); if (videoInputRef.current) videoInputRef.current.value = ''; }
@@ -241,13 +241,13 @@ export default function AdminProducts() {
       setIsDialogOpen(false); setForm(emptyForm);
       toast.success(form.id ? 'Product updated' : 'Product created');
     },
-    onError: (error: any) => { toast.error(error.message); },
+    onError: (error: Error) => { toast.error(error.message); },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from('products').delete().eq('id', id); if (error) throw error; },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); setDeleteId(null); toast.success('Product deleted'); },
-    onError: (error: any) => { toast.error(error.message); },
+    onError: (error: Error) => { toast.error(error.message); },
   });
 
   const massEditMutation = useMutation({
@@ -267,13 +267,13 @@ export default function AdminProducts() {
       }
     },
     onSuccess: (_, variables) => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); setIsMassEditOpen(false); setMassEditForm(emptyMassEditForm); setSelectedProducts(new Set()); toast.success(`${variables.ids.length} products updated`); },
-    onError: (error: any) => { toast.error(error.message); },
+    onError: (error: Error) => { toast.error(error.message); },
   });
 
   const massDeleteMutation = useMutation({
     mutationFn: async (ids: string[]) => { const { error } = await supabase.from('products').delete().in('id', ids); if (error) throw error; },
     onSuccess: (_, ids) => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); setMassDeleteOpen(false); setSelectedProducts(new Set()); toast.success(`${ids.length} products deleted`); },
-    onError: (error: any) => { toast.error(error.message); },
+    onError: (error: Error) => { toast.error(error.message); },
   });
 
   const formatDateTimeForInput = (isoString: string | null) => {
@@ -284,7 +284,7 @@ export default function AdminProducts() {
 
   const isScheduledForFuture = (releaseAt: string | null) => releaseAt ? new Date(releaseAt) > new Date() : false;
 
-  const openEdit = (product: any) => {
+  const openEdit = (product: Record<string, unknown>) => {
     const hasSchedule = !!product.release_at && isScheduledForFuture(product.release_at);
     const hasEarlyAccess = product.early_access_hours !== null && product.early_access_hours !== undefined;
     setForm({
