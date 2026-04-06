@@ -83,7 +83,7 @@ export default function BotAutoMod() {
  setNewRule({ name: '', rule_type: 'word_filter', action: 'delete', heat_points: 1, enabled: true, config: { words: '', threshold: 5, whitelist: '' } });
  };
 
- const toggleRule = (rule: any) => {
+ const toggleRule = (rule: Record<string, unknown>) => {
  saveMutation.mutate({ ...rule, enabled: !rule.enabled });
  };
 
