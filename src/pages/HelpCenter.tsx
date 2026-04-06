@@ -20,7 +20,7 @@ export default function HelpCenter() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-12 max-w-4xl">
+      <div className="container mx-auto px-4 py-6 md:py-12 max-w-4xl">
         <header className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
             <HelpCircle className="h-4 w-4" />

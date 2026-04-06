@@ -84,7 +84,7 @@ export default function Support() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-6 md:py-12">
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-2xl font-display font-bold">Support Centre</h1>

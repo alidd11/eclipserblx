@@ -227,7 +227,7 @@ export default function BecomeSellerWizard() {
  if (!loading && isSeller) {
  return (
  <MainLayout>
- <ResponsiveContainer size="md" className="py-12 px-4">
+ <ResponsiveContainer size="md" className="py-6 md:py-12 px-4">
  <SuccessRedirect />
  </ResponsiveContainer>
  </MainLayout>
@@ -237,7 +237,7 @@ export default function BecomeSellerWizard() {
  if (!loading && hasPendingApplication && currentStep !== 4) {
  return (
  <MainLayout>
- <ResponsiveContainer size="md" className="py-12 px-4">
+ <ResponsiveContainer size="md" className="py-6 md:py-12 px-4">
  <PendingApplicationView application={application} />
  </ResponsiveContainer>
  </MainLayout>
@@ -247,7 +247,7 @@ export default function BecomeSellerWizard() {
  if (currentStep === 4) {
  return (
  <MainLayout>
- <ResponsiveContainer size="md" className="py-12 px-4">
+ <ResponsiveContainer size="md" className="py-6 md:py-12 px-4">
  {wasAutoApproved ? <AutoApprovedView /> : <ApplicationSubmittedView />}
  </ResponsiveContainer>
  </MainLayout>
@@ -257,7 +257,7 @@ export default function BecomeSellerWizard() {
  if (!user) {
  return (
  <MainLayout>
- <ResponsiveContainer size="md" className="py-12 px-4 text-center space-y-4">
+ <ResponsiveContainer size="md" className="py-6 md:py-12 px-4 text-center space-y-4">
  <Store className="h-12 w-12 text-primary mx-auto" />
  <h1 className="text-2xl font-bold">Sign in to Apply</h1>
  <p className="text-muted-foreground">You need an account to become a seller on Eclipse.</p>
