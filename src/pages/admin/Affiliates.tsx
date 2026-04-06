@@ -121,17 +121,24 @@ export default function AdminAffiliates() {
  // Get user profiles
  const userIds = [...new Set(data.map(p => p.user_id))];
 
- const { data: profiles } = await supabase
- .from('profiles')
- .select('user_id, display_name, email, stripe_account_id, customer_id')
- .in('user_id', userIds);
+  const { data: profiles } = await supabase
+  .from('profiles')
+  .select('user_id, display_name, email, customer_id')
+  .in('user_id', userIds);
 
- const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+  const { data: paymentDetailsList } = await supabase
+  .from('user_payment_details')
+  .select('user_id, stripe_account_id')
+  .in('user_id', userIds);
 
- return data.map(p => ({
- ...p,
- user: profileMap.get(p.user_id),
- }));
+  const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+  const paymentMap = new Map(paymentDetailsList?.map(pd => [pd.user_id, pd]) || []);
+
+  return data.map(p => ({
+  ...p,
+  user: profileMap.get(p.user_id),
+  paymentDetails: paymentMap.get(p.user_id),
+  }));
  },
  });
 
