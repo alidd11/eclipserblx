@@ -669,6 +669,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
         {/* ═══ Preferences ═══ */}
         <div className="border border-border rounded-xl overflow-hidden">
+          <AccordionGroup>
           <div className="p-1">
             <SectionHeader title="Preferences" />
             <ExpandableSection icon={Bell} label="Notifications">
@@ -681,6 +682,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               <SoundCustomizationCard />
             </ExpandableSection>
           </div>
+          </AccordionGroup>
         </div>
 
         {/* ═══ More ═══ */}
