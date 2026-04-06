@@ -1,11 +1,14 @@
 import { forwardRef, useCallback, useRef, useEffect } from 'react';
 import { Link, LinkProps } from 'react-router-dom';
+import { usePrefetchRoute } from '@/hooks/usePrefetchRoute';
 
 interface PrefetchLinkProps extends LinkProps {
   /** Query keys to prefetch on hover (optional — also warms the browser cache) */
   prefetchKeys?: string[][];
   /** Prefetch functions to call on hover */
   prefetchFn?: () => void;
+  /** Auto-prefetch route data based on the `to` path (default: true) */
+  autoRoutePrefetch?: boolean;
 }
 
 /**
