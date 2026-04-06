@@ -41,7 +41,7 @@ export function GlobalGuardLayout({ children }: GlobalGuardLayoutProps) {
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent 
           side="left" 
-          className="p-0 w-[280px] border-r-0 bg-card overflow-hidden pt-[env(safe-area-inset-top)]"
+          className="p-0 w-full sm:w-[320px] border-r-0 bg-card overflow-hidden pt-[env(safe-area-inset-top)]"
           hideCloseButton
         >
           <GlobalGuardSidebar 
