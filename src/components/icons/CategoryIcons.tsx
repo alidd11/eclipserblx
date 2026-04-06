@@ -154,19 +154,28 @@ PackageIcon.displayName = 'PackageIcon';
 
 // Map slug → icon component
 export const categoryIconMap: Record<string, React.ForwardRefExoticComponent<IconProps & React.RefAttributes<SVGSVGElement>>> = {
+  // Parent categories
+  'vehicles': CivilianCarIcon,
+  'models': PackageIcon,
+  'vfxs': PackageIcon,
+  'gear': UniformIcon,
+  'misc': BundleIcon,
+  'maps': MapIcon,
+  'scripts-systems': ScriptsIcon,
+  'buildings': BuildingIcon,
+  'aircraft': AircraftIcon,
+  // Subcategories (still used in product cards, filters, etc.)
   'civilian-vehicles': CivilianCarIcon,
   'marked-police-vehicles': PoliceIcon,
   'unmarked-police-vehicles': UnmarkedPoliceIcon,
   'fire-vehicles': FireIcon,
   'ambulance-vehicles': AmbulanceIcon,
-  'aircraft': AircraftIcon,
-  'uniforms': UniformIcon,
   'military-vehicles': MilitaryIcon,
-  'maps': MapIcon,
+  'uniforms': UniformIcon,
   'bundle-deals': BundleIcon,
   'bots': BotIcon,
-  'buildings': BuildingIcon,
-  'scripts-systems': ScriptsIcon,
+  'roblox-bots': BotIcon,
+  'roblox-ui': UIIcon,
   'ui-kits': UIIcon,
 };
 

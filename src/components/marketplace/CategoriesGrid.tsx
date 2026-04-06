@@ -21,6 +21,7 @@ const iconMap: Record<string, typeof Car> = {
   'Shirt': Shirt,
   'Plane': Plane,
   'Sparkles': Palette,
+  'Shield': Car,
 };
 
 // Eclipse & Vino store IDs for fallback imagery

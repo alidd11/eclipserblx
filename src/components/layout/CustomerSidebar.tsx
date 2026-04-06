@@ -108,7 +108,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     { title: t('sidebar.allProducts'), icon: Grid3X3, href: '/products' },
     { title: t('sidebar.allStores'), icon: Store, href: '/stores' },
     { title: t('sidebar.featured'), icon: Star, href: '/featured' },
-    ...(parentCategories?.filter(cat => cat.slug !== 'bots').map((cat) => {
+    ...(parentCategories?.map((cat) => {
       const CatIcon = categoryIconMap[cat.slug] || PackageIcon;
       return {
         title: cat.name,
@@ -116,7 +116,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         href: `/products?category=${cat.slug}`,
       };
     }) ?? []),
-    { title: 'Discord Bots', icon: BotIcon as unknown as LucideIcon, href: '/products?category=bots' },
   ];
 
   const navGroups: NavGroup[] = [

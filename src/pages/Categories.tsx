@@ -16,18 +16,15 @@ import { useCallback } from 'react';
 const CUSTOM_BANNER_CATEGORIES = new Set(['bots']);
 
 const CATEGORY_SORT_ORDER: Record<string, number> = {
-  'bundle-deals': 0,
-  'ambulance-vehicles': 1,
-  'marked-police-vehicles': 2,
-  'bots': 3,
-  'unmarked-police-vehicles': 4,
-  'civilian-vehicles': 5,
-  'buildings': 6,
-  'maps': 7,
-  'military-vehicles': 8,
-  'fire-vehicles': 9,
-  'aircraft': 10,
-  'uniforms': 11,
+  'vehicles': 0,
+  'models': 1,
+  'vfxs': 2,
+  'gear': 3,
+  'misc': 4,
+  'maps': 5,
+  'scripts-systems': 6,
+  'buildings': 7,
+  'aircraft': 8,
 };
 
 interface TopProduct {
