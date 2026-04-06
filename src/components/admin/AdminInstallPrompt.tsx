@@ -15,7 +15,7 @@ function isIOSDevice(): boolean {
 }
 
 export function AdminInstallPrompt() {
-  const isMobile = useIsMobile();
+  const { isMobile, isStandalone } = useDevice();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
