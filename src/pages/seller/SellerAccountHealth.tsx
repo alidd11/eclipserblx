@@ -50,7 +50,7 @@ const violationTypeLabels: Record<string, string> = {
 
 export default function SellerAccountHealth() {
   const { user } = useAuth();
-  const { activeStore } = useSellerStatus();
+  const { store: activeStore } = useSellerStatus();
   const [health, setHealth] = useState<HealthScore | null>(null);
   const [violations, setViolations] = useState<Violation[]>([]);
   const [loading, setLoading] = useState(true);
