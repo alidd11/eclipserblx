@@ -3,44 +3,43 @@ import { useParams, Navigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+ AlertDialog,
+ AlertDialogAction,
+ AlertDialogCancel,
+ AlertDialogContent,
+ AlertDialogDescription,
+ AlertDialogFooter,
+ AlertDialogHeader,
+ AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+ Select,
+ SelectContent,
+ SelectItem,
+ SelectTrigger,
+ SelectValue,
 } from '@/components/ui/select';
 import { 
-  ArrowLeft, 
-  Shield, 
-  Calendar, 
-  User, 
-  Clock, 
-  Briefcase,
-  Award,
-  IdCard,
-  StickyNote,
-  Plus,
-  Trash2,
-  Loader2,
-  FileText,
-  X
+ ArrowLeft, 
+ Shield, 
+ Calendar, 
+ User, 
+ Clock, 
+ Briefcase,
+ Award,
+ IdCard,
+ StickyNote,
+ Plus,
+ Trash2,
+ Loader2,
+ FileText,
+ X
 } from 'lucide-react';
 import { StaffDocuments } from '@/components/admin/StaffDocuments';
 import { EffectivePermissions } from '@/components/admin/EffectivePermissions';
@@ -53,842 +52,842 @@ import { toast } from 'sonner';
 // Primary admin identified by role, not email
 
 interface StaffNote {
-  id: string;
-  staff_user_id: string;
-  author_id: string;
-  content: string;
-  note_type: string;
-  created_at: string;
-  updated_at: string;
-  author_name?: string;
+ id: string;
+ staff_user_id: string;
+ author_id: string;
+ content: string;
+ note_type: string;
+ created_at: string;
+ updated_at: string;
+ author_name?: string;
 }
 
 const NOTE_TYPES = [
-  { value: 'general', label: 'General' },
-  { value: 'performance', label: 'Performance' },
-  { value: 'feedback', label: 'Feedback' },
-  { value: 'warning', label: 'Warning' },
-  { value: 'commendation', label: 'Commendation' },
+ { value: 'general', label: 'General' },
+ { value: 'performance', label: 'Performance' },
+ { value: 'feedback', label: 'Feedback' },
+ { value: 'warning', label: 'Warning' },
+ { value: 'commendation', label: 'Commendation' },
 ];
 
 const NOTE_TYPE_COLORS: Record<string, string> = {
-  general: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
-  performance: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  feedback: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  warning: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  commendation: 'bg-green-500/20 text-green-400 border-green-500/30',
+ general: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+ performance: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+ feedback: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+ warning: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+ commendation: 'bg-green-500/20 text-green-400 border-green-500/30',
 };
 
 // Note: Roles are now fetched dynamically from custom_roles table
 
 export default function StaffProfile() {
-  const { userId } = useParams<{ userId: string }>();
-  const { hasRole, loading: authLoading } = useAdminAuth();
-  const { user } = useAuth();
-  const isAdmin = hasRole('admin');
-  const queryClient = useQueryClient();
-  
-  const [newNoteContent, setNewNoteContent] = useState('');
-  const [newNoteType, setNewNoteType] = useState('general');
-  const [isAddingNote, setIsAddingNote] = useState(false);
-  const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
-  const [newRole, setNewRole] = useState<string>('');
-  const [roleToRemove, setRoleToRemove] = useState<{ role: string; displayName: string } | null>(null);
+ const { userId } = useParams<{ userId: string }>();
+ const { hasRole, loading: authLoading } = useAdminAuth();
+ const { user } = useAuth();
+ const isAdmin = hasRole('admin');
+ const queryClient = useQueryClient();
+ 
+ const [newNoteContent, setNewNoteContent] = useState('');
+ const [newNoteType, setNewNoteType] = useState('general');
+ const [isAddingNote, setIsAddingNote] = useState(false);
+ const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
+ const [newRole, setNewRole] = useState<string>('');
+ const [roleToRemove, setRoleToRemove] = useState<{ role: string; displayName: string } | null>(null);
 
-  // Fetch staff profile details
-  const { data: profile, isLoading: profileLoading } = useQuery({
-    queryKey: ['staff-profile', userId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+ // Fetch staff profile details
+ const { data: profile, isLoading: profileLoading } = useQuery({
+ queryKey: ['staff-profile', userId],
+ queryFn: async () => {
+ const { data, error } = await supabase
+ .from('profiles')
+ .select('*')
+ .eq('user_id', userId)
+ .single();
 
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!userId && isAdmin,
-  });
+ if (error) throw error;
+ return data;
+ },
+ enabled: !!userId && isAdmin,
+ });
 
-  // Fetch staff roles
-  const { data: roles = [] } = useQuery({
-    queryKey: ['staff-roles', userId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role, created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: true });
+ // Fetch staff roles
+ const { data: roles = [] } = useQuery({
+ queryKey: ['staff-roles', userId],
+ queryFn: async () => {
+ const { data, error } = await supabase
+ .from('user_roles')
+ .select('role, created_at')
+ .eq('user_id', userId)
+ .order('created_at', { ascending: true });
 
-      if (error) throw error;
-      return data as { role: string; created_at: string }[];
-    },
-    enabled: !!userId && isAdmin,
-  });
+ if (error) throw error;
+ return data as { role: string; created_at: string }[];
+ },
+ enabled: !!userId && isAdmin,
+ });
 
-  // Fetch staff ID assignment log
-  const { data: staffIdLog } = useQuery({
-    queryKey: ['staff-id-log', userId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('staff_id_logs')
-        .select('*')
-        .eq('user_id', userId)
-        .order('assigned_at', { ascending: true })
-        .limit(1)
-        .single();
+ // Fetch staff ID assignment log
+ const { data: staffIdLog } = useQuery({
+ queryKey: ['staff-id-log', userId],
+ queryFn: async () => {
+ const { data, error } = await supabase
+ .from('staff_id_logs')
+ .select('*')
+ .eq('user_id', userId)
+ .order('assigned_at', { ascending: true })
+ .limit(1)
+ .single();
 
-      if (error && error.code !== 'PGRST116') throw error;
-      return data;
-    },
-    enabled: !!userId && isAdmin,
-  });
+ if (error && error.code !== 'PGRST116') throw error;
+ return data;
+ },
+ enabled: !!userId && isAdmin,
+ });
 
-  // Fetch job application (hire date)
-  const { data: application } = useQuery({
-    queryKey: ['staff-application', profile?.email],
-    queryFn: async () => {
-      if (!profile?.email) return null;
-      
-      const { data, error } = await supabase
-        .from('job_applications')
-        .select('*')
-        .eq('applicant_email', profile.email)
-        .eq('status', 'accepted')
-        .order('reviewed_at', { ascending: false })
-        .limit(1)
-        .single();
+ // Fetch job application (hire date)
+ const { data: application } = useQuery({
+ queryKey: ['staff-application', profile?.email],
+ queryFn: async () => {
+ if (!profile?.email) return null;
+ 
+ const { data, error } = await supabase
+ .from('job_applications')
+ .select('*')
+ .eq('applicant_email', profile.email)
+ .eq('status', 'accepted')
+ .order('reviewed_at', { ascending: false })
+ .limit(1)
+ .single();
 
-      if (error && error.code !== 'PGRST116') throw error;
-      return data;
-    },
-    enabled: !!profile?.email && isAdmin,
-  });
+ if (error && error.code !== 'PGRST116') throw error;
+ return data;
+ },
+ enabled: !!profile?.email && isAdmin,
+ });
 
-  // Fetch staff activity count
-  const { data: activityCount = 0 } = useQuery({
-    queryKey: ['staff-activity-count', userId],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('staff_activity')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId);
+ // Fetch staff activity count
+ const { data: activityCount = 0 } = useQuery({
+ queryKey: ['staff-activity-count', userId],
+ queryFn: async () => {
+ const { count, error } = await supabase
+ .from('staff_activity')
+ .select('*', { count: 'exact', head: true })
+ .eq('user_id', userId);
 
-      if (error) throw error;
-      return count || 0;
-    },
-    enabled: !!userId && isAdmin,
-  });
+ if (error) throw error;
+ return count || 0;
+ },
+ enabled: !!userId && isAdmin,
+ });
 
-  // Fetch staff notes
-  const { data: staffNotes = [], isLoading: notesLoading } = useQuery<StaffNote[]>({
-    queryKey: ['staff-notes', userId],
-    queryFn: async (): Promise<StaffNote[]> => {
-      const { data, error } = await supabase
-        .from('staff_notes')
-        .select('*')
-        .eq('staff_user_id', userId)
-        .order('created_at', { ascending: false });
+ // Fetch staff notes
+ const { data: staffNotes = [], isLoading: notesLoading } = useQuery<StaffNote[]>({
+ queryKey: ['staff-notes', userId],
+ queryFn: async (): Promise<StaffNote[]> => {
+ const { data, error } = await supabase
+ .from('staff_notes')
+ .select('*')
+ .eq('staff_user_id', userId)
+ .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      if (!data || data.length === 0) return [];
+ if (error) throw error;
+ if (!data || data.length === 0) return [];
 
-      // Get author names
-      const authorIds = [...new Set(data.map(n => n.author_id))];
+ // Get author names
+ const authorIds = [...new Set(data.map(n => n.author_id))];
 
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, display_name')
-        .in('user_id', authorIds);
+ const { data: profiles } = await supabase
+ .from('profiles')
+ .select('user_id, display_name')
+ .in('user_id', authorIds);
 
-      const profileMap = new Map(profiles?.map(p => [p.user_id, p.display_name]));
+ const profileMap = new Map(profiles?.map(p => [p.user_id, p.display_name]));
 
-      return data.map(note => ({
-        id: note.id,
-        staff_user_id: note.staff_user_id,
-        author_id: note.author_id,
-        content: note.content,
-        note_type: note.note_type ?? 'general',
-        created_at: note.created_at,
-        updated_at: note.updated_at,
-        author_name: profileMap.get(note.author_id) || 'Unknown',
-      }));
-    },
-    enabled: !!userId && isAdmin,
-  });
+ return data.map(note => ({
+ id: note.id,
+ staff_user_id: note.staff_user_id,
+ author_id: note.author_id,
+ content: note.content,
+ note_type: note.note_type ?? 'general',
+ created_at: note.created_at,
+ updated_at: note.updated_at,
+ author_name: profileMap.get(note.author_id) || 'Unknown',
+ }));
+ },
+ enabled: !!userId && isAdmin,
+ });
 
-  // Check if current user is the primary admin
-  const { data: currentProfile } = useQuery({
-    queryKey: ['current-profile', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('user_id', user.id)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
+ // Check if current user is the primary admin
+ const { data: currentProfile } = useQuery({
+ queryKey: ['current-profile', user?.id],
+ queryFn: async () => {
+ if (!user?.id) return null;
+ const { data, error } = await supabase
+ .from('profiles')
+ .select('email')
+ .eq('user_id', user.id)
+ .single();
+ if (error) throw error;
+ return data;
+ },
+ enabled: !!user?.id,
+ });
 
-  const isPrimaryAdmin = isAdmin;
+ const isPrimaryAdmin = isAdmin;
 
-  // Fetch current user's scoped role management permissions
-  const { data: userPermissions = [] } = useQuery({
-    queryKey: ['user-manage-role-perms', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id);
-      if (error) throw error;
-      const roles = data.map(r => r.role);
-      if (!roles.length) return [];
-      
-      const { data: perms, error: permErr } = await supabase
-        .from('role_permissions')
-        .select('permission_id, permissions!inner(name)')
-        .in('role', roles);
-      if (permErr) throw permErr;
-      return (perms || []).map((rp: any) => rp.permissions?.name).filter(Boolean);
-    },
-    enabled: !!user?.id,
-  });
+ // Fetch current user's scoped role management permissions
+ const { data: userPermissions = [] } = useQuery({
+ queryKey: ['user-manage-role-perms', user?.id],
+ queryFn: async () => {
+ if (!user?.id) return [];
+ const { data, error } = await supabase
+ .from('user_roles')
+ .select('role')
+ .eq('user_id', user.id);
+ if (error) throw error;
+ const roles = data.map(r => r.role);
+ if (!roles.length) return [];
+ 
+ const { data: perms, error: permErr } = await supabase
+ .from('role_permissions')
+ .select('permission_id, permissions!inner(name)')
+ .in('role', roles);
+ if (permErr) throw permErr;
+ return (perms || []).map((rp: any) => rp.permissions?.name).filter(Boolean);
+ },
+ enabled: !!user?.id,
+ });
 
-  // Fetch current user's max hierarchy level (uses custom_roles table now)
-  const { data: currentUserHierarchy } = useQuery({
-    queryKey: ['current-user-hierarchy', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return 0;
-      const { data, error } = await supabase
-        .rpc('get_user_max_hierarchy', { _user_id: user.id });
-      if (error) throw error;
-      return data ?? 0;
-    },
-    enabled: !!user?.id,
-  });
-  
-  // Fetch custom roles from database
-  const { data: customRoles = [] } = useQuery({
-    queryKey: ['custom-roles'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('custom_roles')
-        .select('*')
-        .order('hierarchy_level', { ascending: false });
-      
-      if (error) throw error;
-      return data;
-    },
-  });
+ // Fetch current user's max hierarchy level (uses custom_roles table now)
+ const { data: currentUserHierarchy } = useQuery({
+ queryKey: ['current-user-hierarchy', user?.id],
+ queryFn: async () => {
+ if (!user?.id) return 0;
+ const { data, error } = await supabase
+ .rpc('get_user_max_hierarchy', { _user_id: user.id });
+ if (error) throw error;
+ return data ?? 0;
+ },
+ enabled: !!user?.id,
+ });
+ 
+ // Fetch custom roles from database
+ const { data: customRoles = [] } = useQuery({
+ queryKey: ['custom-roles'],
+ queryFn: async () => {
+ const { data, error } = await supabase
+ .from('custom_roles')
+ .select('*')
+ .order('hierarchy_level', { ascending: false });
+ 
+ if (error) throw error;
+ return data;
+ },
+ });
 
-  // Get available roles (ones not already assigned, within hierarchy, and user has manage_role permission)
-  const availableRoles = () => {
-    const existing = roles.map(r => r.role as string);
-    return customRoles.filter(r => {
-      if (existing.includes(r.name)) return false;
-      if ((currentUserHierarchy ?? 0) < r.hierarchy_level) return false;
-      
-      // Check scoped permission: admin can assign any, others need manage_role:X
-      if (isPrimaryAdmin) return true;
-      return userPermissions.includes(`manage_role:${r.name}`);
-    });
-  };
-  
-  // Helper to get role display info from custom_roles
-  const getRoleInfo = (roleName: string) => {
-    const customRole = customRoles.find(r => r.name === roleName);
-    if (customRole) {
-      return {
-        displayName: customRole.display_name,
-        color: customRole.color,
-        icon: customRole.icon
-      };
-    }
-    // Fallback for any roles not in custom_roles
-    return {
-      displayName: roleName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-      color: 'bg-gray-500',
-      icon: 'shield'
-    };
-  };
+ // Get available roles (ones not already assigned, within hierarchy, and user has manage_role permission)
+ const availableRoles = () => {
+ const existing = roles.map(r => r.role as string);
+ return customRoles.filter(r => {
+ if (existing.includes(r.name)) return false;
+ if ((currentUserHierarchy ?? 0) < r.hierarchy_level) return false;
+ 
+ // Check scoped permission: admin can assign any, others need manage_role:X
+ if (isPrimaryAdmin) return true;
+ return userPermissions.includes(`manage_role:${r.name}`);
+ });
+ };
+ 
+ // Helper to get role display info from custom_roles
+ const getRoleInfo = (roleName: string) => {
+ const customRole = customRoles.find(r => r.name === roleName);
+ if (customRole) {
+ return {
+ displayName: customRole.display_name,
+ color: customRole.color,
+ icon: customRole.icon
+ };
+ }
+ // Fallback for any roles not in custom_roles
+ return {
+ displayName: roleName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+ color: 'bg-gray-500',
+ icon: 'shield'
+ };
+ };
 
-  // Check if current user can remove a specific role (scoped permission check)
-  const canRemoveRole = (role: string) => {
-    if (isPrimaryAdmin) return true;
-    
-    const targetLevel = customRoles.find(r => r.name === role)?.hierarchy_level ?? 999;
-    if ((currentUserHierarchy ?? 0) < targetLevel) return false;
-    
-    // Must have manage_role:X permission
-    return userPermissions.includes(`manage_role:${role}`);
-  };
+ // Check if current user can remove a specific role (scoped permission check)
+ const canRemoveRole = (role: string) => {
+ if (isPrimaryAdmin) return true;
+ 
+ const targetLevel = customRoles.find(r => r.name === role)?.hierarchy_level ?? 999;
+ if ((currentUserHierarchy ?? 0) < targetLevel) return false;
+ 
+ // Must have manage_role:X permission
+ return userPermissions.includes(`manage_role:${role}`);
+ };
 
-  // Add role mutation
-  const addRoleMutation = useMutation({
-    mutationFn: async ({ role, targetUserId }: { role: string; targetUserId: string }) => {
-      const { error } = await supabase.from('user_roles').insert({ user_id: targetUserId, role });
-      if (error) throw error;
-      
-      // Log the action to audit_logs
-      await supabase.from('audit_logs').insert({
-        user_id: user?.id,
-        action: 'role_added',
-        resource: 'user_roles',
-        details: { target_user_id: targetUserId, target_email: profile?.email, role }
-      });
-      
-      return { targetUserId };
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['staff-roles', data.targetUserId] });
-      queryClient.invalidateQueries({ queryKey: ['staff-directory'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-user-roles'] });
-      setNewRole('');
-      toast.success('Role added');
-    },
-    onError: (error: any) => {
-      if (error.message?.includes('hierarchy') || error.message?.includes('privilege')) {
-        toast.error("You don't have permission to assign this role");
-      } else {
-        toast.error(error.message);
-      }
-    },
-  });
+ // Add role mutation
+ const addRoleMutation = useMutation({
+ mutationFn: async ({ role, targetUserId }: { role: string; targetUserId: string }) => {
+ const { error } = await supabase.from('user_roles').insert({ user_id: targetUserId, role });
+ if (error) throw error;
+ 
+ // Log the action to audit_logs
+ await supabase.from('audit_logs').insert({
+ user_id: user?.id,
+ action: 'role_added',
+ resource: 'user_roles',
+ details: { target_user_id: targetUserId, target_email: profile?.email, role }
+ });
+ 
+ return { targetUserId };
+ },
+ onSuccess: (data) => {
+ queryClient.invalidateQueries({ queryKey: ['staff-roles', data.targetUserId] });
+ queryClient.invalidateQueries({ queryKey: ['staff-directory'] });
+ queryClient.invalidateQueries({ queryKey: ['admin-user-roles'] });
+ setNewRole('');
+ toast.success('Role added');
+ },
+ onError: (error: any) => {
+ if (error.message?.includes('hierarchy') || error.message?.includes('privilege')) {
+ toast.error("You don't have permission to assign this role");
+ } else {
+ toast.error(error.message);
+ }
+ },
+ });
 
-  // Remove role mutation
-  const removeRoleMutation = useMutation({
-    mutationFn: async ({ role, targetUserId }: { role: string; targetUserId: string }) => {
-      const { error } = await supabase.from('user_roles').delete().eq('user_id', targetUserId).eq('role', role);
-      if (error) throw error;
-      
-      // Log the action to audit_logs
-      await supabase.from('audit_logs').insert({
-        user_id: user?.id,
-        action: 'role_removed',
-        resource: 'user_roles',
-        details: { target_user_id: targetUserId, target_email: profile?.email, role }
-      });
-      
-      return { targetUserId };
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['staff-roles', data.targetUserId] });
-      queryClient.invalidateQueries({ queryKey: ['staff-directory'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-user-roles'] });
-      setRoleToRemove(null);
-      toast.success('Role removed');
-    },
-    onError: (error: any) => {
-      toast.error(error.message);
-    },
-  });
+ // Remove role mutation
+ const removeRoleMutation = useMutation({
+ mutationFn: async ({ role, targetUserId }: { role: string; targetUserId: string }) => {
+ const { error } = await supabase.from('user_roles').delete().eq('user_id', targetUserId).eq('role', role);
+ if (error) throw error;
+ 
+ // Log the action to audit_logs
+ await supabase.from('audit_logs').insert({
+ user_id: user?.id,
+ action: 'role_removed',
+ resource: 'user_roles',
+ details: { target_user_id: targetUserId, target_email: profile?.email, role }
+ });
+ 
+ return { targetUserId };
+ },
+ onSuccess: (data) => {
+ queryClient.invalidateQueries({ queryKey: ['staff-roles', data.targetUserId] });
+ queryClient.invalidateQueries({ queryKey: ['staff-directory'] });
+ queryClient.invalidateQueries({ queryKey: ['admin-user-roles'] });
+ setRoleToRemove(null);
+ toast.success('Role removed');
+ },
+ onError: (error: any) => {
+ toast.error(error.message);
+ },
+ });
 
-  // Add note mutation
-  const addNoteMutation = useMutation({
-    mutationFn: async ({ content, noteType }: { content: string; noteType: string }) => {
-      const { error } = await supabase
-        .from('staff_notes')
-        .insert({
-          staff_user_id: userId,
-          author_id: user?.id,
-          content,
-          note_type: noteType,
-        });
+ // Add note mutation
+ const addNoteMutation = useMutation({
+ mutationFn: async ({ content, noteType }: { content: string; noteType: string }) => {
+ const { error } = await supabase
+ .from('staff_notes')
+ .insert({
+ staff_user_id: userId,
+ author_id: user?.id,
+ content,
+ note_type: noteType,
+ });
 
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['staff-notes', userId] });
-      setNewNoteContent('');
-      setNewNoteType('general');
-      setIsAddingNote(false);
-      toast.success('Note added successfully');
-    },
-    onError: (error) => {
-      toast.error('Failed to add note: ' + error.message);
-    },
-  });
+ if (error) throw error;
+ },
+ onSuccess: () => {
+ queryClient.invalidateQueries({ queryKey: ['staff-notes', userId] });
+ setNewNoteContent('');
+ setNewNoteType('general');
+ setIsAddingNote(false);
+ toast.success('Note added successfully');
+ },
+ onError: (error) => {
+ toast.error('Failed to add note: ' + error.message);
+ },
+ });
 
-  // Delete note mutation
-  const deleteNoteMutation = useMutation({
-    mutationFn: async (noteId: string) => {
-      const { error } = await supabase
-        .from('staff_notes')
-        .delete()
-        .eq('id', noteId);
+ // Delete note mutation
+ const deleteNoteMutation = useMutation({
+ mutationFn: async (noteId: string) => {
+ const { error } = await supabase
+ .from('staff_notes')
+ .delete()
+ .eq('id', noteId);
 
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['staff-notes', userId] });
-      toast.success('Note deleted');
-    },
-    onError: (error) => {
-      toast.error('Failed to delete note: ' + error.message);
-    },
-  });
+ if (error) throw error;
+ },
+ onSuccess: () => {
+ queryClient.invalidateQueries({ queryKey: ['staff-notes', userId] });
+ toast.success('Note deleted');
+ },
+ onError: (error) => {
+ toast.error('Failed to delete note: ' + error.message);
+ },
+ });
 
-  const handleAddNote = () => {
-    if (!newNoteContent.trim()) {
-      toast.error('Please enter note content');
-      return;
-    }
-    addNoteMutation.mutate({ content: newNoteContent.trim(), noteType: newNoteType });
-  };
+ const handleAddNote = () => {
+ if (!newNoteContent.trim()) {
+ toast.error('Please enter note content');
+ return;
+ }
+ addNoteMutation.mutate({ content: newNoteContent.trim(), noteType: newNoteType });
+ };
 
-  if (authLoading || profileLoading) {
-    return (
-      <AdminLayout requiredPermissions={['view_staff_directory']}>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        </div>
-      </AdminLayout>
-    );
-  }
+ if (authLoading || profileLoading) {
+ return (
+ <AdminLayout requiredPermissions={['view_staff_directory']}>
+ <div className="flex items-center justify-center h-64">
+ <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+ </div>
+ </AdminLayout>
+ );
+ }
 
-  if (!isAdmin) {
-    return <Navigate to="/admin" replace />;
-  }
+ if (!isAdmin) {
+ return <Navigate to="/admin" replace />;
+ }
 
-  if (!profile) {
-    return (
-      <AdminLayout requiredPermissions={['view_staff_directory']}>
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Staff member not found</p>
-          <Button asChild className="mt-4">
-            <Link to="/admin/staff-directory">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Directory
-            </Link>
-          </Button>
-        </div>
-      </AdminLayout>
-    );
-  }
+ if (!profile) {
+ return (
+ <AdminLayout requiredPermissions={['view_staff_directory']}>
+ <div className="text-center py-12">
+ <p className="text-muted-foreground">Staff member not found</p>
+ <Button asChild className="mt-4">
+ <Link to="/admin/staff-directory">
+ <ArrowLeft className="h-4 w-4 mr-2" />
+ Back to Directory
+ </Link>
+ </Button>
+ </div>
+ </AdminLayout>
+ );
+ }
 
-  const hireDate = application?.reviewed_at || staffIdLog?.assigned_at || roles[0]?.created_at;
+ const hireDate = application?.reviewed_at || staffIdLog?.assigned_at || roles[0]?.created_at;
 
-  return (
-    <AdminLayout requiredPermissions={['view_staff_directory']}>
-      <div className="space-y-6 max-w-4xl mx-auto pb-8">
-        {/* Back Button */}
-        <Button variant="ghost" size="sm" asChild>
-          <Link to="/admin/staff-directory">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Directory
-          </Link>
-        </Button>
+ return (
+ <AdminLayout requiredPermissions={['view_staff_directory']}>
+ <div className="space-y-6 max-w-4xl mx-auto pb-8">
+ {/* Back Button */}
+ <Button variant="ghost" size="sm" asChild>
+ <Link to="/admin/staff-directory">
+ <ArrowLeft className="h-4 w-4 mr-2" />
+ Back to Directory
+ </Link>
+ </Button>
 
-        {/* Profile Header */}
-        <div className="border border-border rounded-xl overflow-hidden">
-          <div className="p-4 pt-6">
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-              <Avatar className="h-24 w-24">
-                <AvatarImage src={profile.avatar_url || undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary text-2xl font-medium">
-                  {(profile.display_name || 'U').slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              
-              <div className="flex-1 text-center sm:text-left">
-                <h1 className="text-2xl font-bold">
-                  {profile.display_name || 'Unknown User'}
-                </h1>
-                
-                {/* Staff ID */}
-                {profile.staff_id && (
-                  <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
-                    <Shield className="h-4 w-4 text-primary" />
-                    <span className="font-mono font-medium text-primary">
-                      {profile.staff_id}
-                    </span>
-                  </div>
-                )}
+ {/* Profile Header */}
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="p-4 pt-6">
+ <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+ <Avatar className="h-24 w-24">
+ <AvatarImage src={profile.avatar_url || undefined} />
+ <AvatarFallback className="bg-primary/10 text-primary text-2xl font-medium">
+ {(profile.display_name || 'U').slice(0, 2).toUpperCase()}
+ </AvatarFallback>
+ </Avatar>
+ 
+ <div className="flex-1 text-center sm:text-left">
+ <h1 className="text-2xl font-bold">
+ {profile.display_name || 'Unknown User'}
+ </h1>
+ 
+ {/* Staff ID */}
+ {profile.staff_id && (
+ <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
+ <Shield className="h-4 w-4 text-primary" />
+ <span className="font-mono font-medium text-primary">
+ {profile.staff_id}
+ </span>
+ </div>
+ )}
 
-                {/* Roles */}
-                <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-3">
-                  {roles.map(({ role }) => {
-                    const roleInfo = getRoleInfo(role);
-                    return (
-                      <Badge
-                        key={role}
-                        variant="outline"
-                        className={`${roleInfo.color} text-white border-transparent`}
-                      >
-                        {roleInfo.displayName}
-                      </Badge>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+ {/* Roles */}
+ <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-3">
+ {roles.map(({ role }) => {
+ const roleInfo = getRoleInfo(role);
+ return (
+ <Badge
+ key={role}
+ variant="outline"
+ className={`${roleInfo.color} text-white border-transparent`}
+ >
+ {roleInfo.displayName}
+ </Badge>
+ );
+ })}
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
 
-        {/* Details Grid */}
-        <div className="grid gap-4 md:grid-cols-2">
-          {/* Account Information */}
-          <div className="border border-border rounded-xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-border bg-muted/30">
-              <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Account Information
-              </h3>
-            </div>
-            <div className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Customer ID</span>
-                <span className="font-mono text-sm">{profile.customer_id || 'N/A'}</span>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Staff ID</span>
-                <span className="font-mono text-sm">{profile.staff_id || 'N/A'}</span>
-              </div>
-              {/* Hide email for the viewed profile if they're an admin */}
-              {!isPrimaryAdmin && (
-                <>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Email</span>
-                    <span className="text-sm">{profile.email}</span>
-                  </div>
-                </>
-              )}
-              <Separator />
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Account Created</span>
-                <span className="text-sm">
-                  {format(new Date(profile.created_at), 'MMM d, yyyy')}
-                </span>
-              </div>
-            </div>
-          </div>
+ {/* Details Grid */}
+ <div className="grid gap-4 md:grid-cols-2">
+ {/* Account Information */}
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30">
+ <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
+ <User className="h-5 w-5" />
+ Account Information
+ </h3>
+ </div>
+ <div className="p-4 space-y-4">
+ <div className="flex items-center justify-between">
+ <span className="text-sm text-muted-foreground">Customer ID</span>
+ <span className="font-mono text-sm">{profile.customer_id || 'N/A'}</span>
+ </div>
+ <Separator />
+ <div className="flex items-center justify-between">
+ <span className="text-sm text-muted-foreground">Staff ID</span>
+ <span className="font-mono text-sm">{profile.staff_id || 'N/A'}</span>
+ </div>
+ {/* Hide email for the viewed profile if they're an admin */}
+ {!isPrimaryAdmin && (
+ <>
+ <Separator />
+ <div className="flex items-center justify-between">
+ <span className="text-sm text-muted-foreground">Email</span>
+ <span className="text-sm">{profile.email}</span>
+ </div>
+ </>
+ )}
+ <Separator />
+ <div className="flex items-center justify-between">
+ <span className="text-sm text-muted-foreground">Account Created</span>
+ <span className="text-sm">
+ {format(new Date(profile.created_at), 'MMM d, yyyy')}
+ </span>
+ </div>
+ </div>
+ </div>
 
-          {/* Employment Details */}
-          <div className="border border-border rounded-xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-border bg-muted/30">
-              <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
-                <Briefcase className="h-5 w-5" />
-                Employment Details
-              </h3>
-            </div>
-            <div className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground flex items-center gap-1.5">
-                  <Calendar className="h-4 w-4" />
-                  Hired On
-                </span>
-                <span className="text-sm font-medium">
-                  {hireDate ? format(new Date(hireDate), 'MMM d, yyyy') : 'N/A'}
-                </span>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground flex items-center gap-1.5">
-                  <Clock className="h-4 w-4" />
-                  Last Active
-                </span>
-                <span className="text-sm">
-                  {profile.last_seen 
-                    ? format(new Date(profile.last_seen), 'MMM d, yyyy h:mm a')
-                    : 'Never'
-                  }
-                </span>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground flex items-center gap-1.5">
-                  <Award className="h-4 w-4" />
-                  Activities Logged
-                </span>
-                <span className="text-sm font-medium">{activityCount}</span>
-              </div>
-              {application && (
-                <>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Position Applied</span>
-                    <span className="text-sm">{application.position}</span>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
+ {/* Employment Details */}
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30">
+ <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
+ <Briefcase className="h-5 w-5" />
+ Employment Details
+ </h3>
+ </div>
+ <div className="p-4 space-y-4">
+ <div className="flex items-center justify-between">
+ <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+ <Calendar className="h-4 w-4" />
+ Hired On
+ </span>
+ <span className="text-sm font-medium">
+ {hireDate ? format(new Date(hireDate), 'MMM d, yyyy') : 'N/A'}
+ </span>
+ </div>
+ <Separator />
+ <div className="flex items-center justify-between">
+ <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+ <Clock className="h-4 w-4" />
+ Last Active
+ </span>
+ <span className="text-sm">
+ {profile.last_seen 
+ ? format(new Date(profile.last_seen), 'MMM d, yyyy h:mm a')
+ : 'Never'
+ }
+ </span>
+ </div>
+ <Separator />
+ <div className="flex items-center justify-between">
+ <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+ <Award className="h-4 w-4" />
+ Activities Logged
+ </span>
+ <span className="text-sm font-medium">{activityCount}</span>
+ </div>
+ {application && (
+ <>
+ <Separator />
+ <div className="flex items-center justify-between">
+ <span className="text-sm text-muted-foreground">Position Applied</span>
+ <span className="text-sm">{application.position}</span>
+ </div>
+ </>
+ )}
+ </div>
+ </div>
+ </div>
 
-        {/* Role Management */}
-        <div className="border border-border rounded-xl overflow-hidden">
-          <div className="px-4 py-3 border-b border-border bg-muted/30">
-            <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
-              <IdCard className="h-5 w-5" />
-              Role Management
-            </h3>
-          </div>
-          <div className="p-4 space-y-4">
-            {/* Add Role */}
-            {availableRoles().length > 0 && (
-              <div className="flex gap-2">
-                <Select
-                  value={newRole}
-                  onValueChange={(value) => setNewRole(value)}
-                >
-                  <SelectTrigger className="flex-1 bg-muted/30">
-                    <SelectValue placeholder="Select role to add..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableRoles().map((r) => (
-                      <SelectItem key={r.name} value={r.name}>
-                        {r.display_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  size="icon"
-                  disabled={!newRole || addRoleMutation.isPending}
-                  onClick={() => newRole && userId && addRoleMutation.mutate({ role: newRole, targetUserId: userId })}
-                >
-                  {addRoleMutation.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Plus className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            )}
+ {/* Role Management */}
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30">
+ <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
+ <IdCard className="h-5 w-5" />
+ Role Management
+ </h3>
+ </div>
+ <div className="p-4 space-y-4">
+ {/* Add Role */}
+ {availableRoles().length > 0 && (
+ <div className="flex gap-2">
+ <Select
+ value={newRole}
+ onValueChange={(value) => setNewRole(value)}
+ >
+ <SelectTrigger className="flex-1 bg-muted/30">
+ <SelectValue placeholder="Select role to add..." />
+ </SelectTrigger>
+ <SelectContent>
+ {availableRoles().map((r) => (
+ <SelectItem key={r.name} value={r.name}>
+ {r.display_name}
+ </SelectItem>
+ ))}
+ </SelectContent>
+ </Select>
+ <Button
+ size="icon"
+ disabled={!newRole || addRoleMutation.isPending}
+ onClick={() => newRole && userId && addRoleMutation.mutate({ role: newRole, targetUserId: userId })}
+ >
+ {addRoleMutation.isPending ? (
+ <Loader2 className="h-4 w-4 animate-spin" />
+ ) : (
+ <Plus className="h-4 w-4" />
+ )}
+ </Button>
+ </div>
+ )}
 
-            {/* Current Roles */}
-            {roles.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No roles assigned
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {roles.map(({ role, created_at }, index) => {
-                  const roleInfo = getRoleInfo(role);
-                  return (
-                    <div
-                      key={`${role}-${index}`}
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Badge variant="outline" className={`${roleInfo.color} text-white border-transparent`}>
-                          {roleInfo.displayName}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          Assigned {format(new Date(created_at), 'MMM d, yyyy')}
-                        </span>
-                      </div>
-                      {canRemoveRole(role) && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                          onClick={() => setRoleToRemove({ role: role, displayName: roleInfo.displayName })}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
+ {/* Current Roles */}
+ {roles.length === 0 ? (
+ <p className="text-sm text-muted-foreground text-center py-4">
+ No roles assigned
+ </p>
+ ) : (
+ <div className="space-y-2">
+ {roles.map(({ role, created_at }, index) => {
+ const roleInfo = getRoleInfo(role);
+ return (
+ <div
+ key={`${role}-${index}`}
+ className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50"
+ >
+ <div className="flex items-center gap-3">
+ <Badge variant="outline" className={`${roleInfo.color} text-white border-transparent`}>
+ {roleInfo.displayName}
+ </Badge>
+ <span className="text-xs text-muted-foreground">
+ Assigned {format(new Date(created_at), 'MMM d, yyyy')}
+ </span>
+ </div>
+ {canRemoveRole(role) && (
+ <Button
+ variant="ghost"
+ size="icon"
+ className="h-7 w-7 text-muted-foreground hover:text-destructive"
+ onClick={() => setRoleToRemove({ role: role, displayName: roleInfo.displayName })}
+ >
+ <X className="h-4 w-4" />
+ </Button>
+ )}
+ </div>
+ );
+ })}
+ </div>
+ )}
+ </div>
+ </div>
 
-        {/* Internal Notes Section */}
-        <div className="border border-border rounded-xl overflow-hidden">
-          <div className="px-4 py-3 border-b border-border bg-muted/30 flex flex-row items-center justify-between">
-            <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
-              <StickyNote className="h-5 w-5" />
-              Internal Notes
-            </h3>
-            {!isAddingNote && (
-              <Button size="sm" onClick={() => setIsAddingNote(true)}>
-                <Plus className="h-4 w-4 mr-1" />
-                Add Note
-              </Button>
-            )}
-          </div>
-          <div className="p-4 space-y-4">
-            {/* Add Note Form */}
-            {isAddingNote && (
-              <div className="space-y-3 p-4 rounded-lg border border-border bg-muted/20">
-                <div className="flex gap-2">
-                  <Select value={newNoteType} onValueChange={setNewNoteType}>
-                    <SelectTrigger className="w-auto min-w-[140px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {NOTE_TYPES.map(type => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Textarea
-                  placeholder="Enter your note..."
-                  value={newNoteContent}
-                  onChange={(e) => setNewNoteContent(e.target.value)}
-                  rows={3}
-                />
-                <div className="flex gap-2 justify-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setIsAddingNote(false);
-                      setNewNoteContent('');
-                      setNewNoteType('general');
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleAddNote}
-                    disabled={addNoteMutation.isPending}
-                  >
-                    {addNoteMutation.isPending && (
-                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                    )}
-                    Save Note
-                  </Button>
-                </div>
-              </div>
-            )}
+ {/* Internal Notes Section */}
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30 flex flex-row items-center justify-between">
+ <h3 className="font-semibold text-sm text-lg flex items-center gap-2">
+ <StickyNote className="h-5 w-5" />
+ Internal Notes
+ </h3>
+ {!isAddingNote && (
+ <Button size="sm" onClick={() => setIsAddingNote(true)}>
+ <Plus className="h-4 w-4 mr-1" />
+ Add Note
+ </Button>
+ )}
+ </div>
+ <div className="p-4 space-y-4">
+ {/* Add Note Form */}
+ {isAddingNote && (
+ <div className="space-y-3 p-4 rounded-lg border border-border bg-muted/20">
+ <div className="flex gap-2">
+ <Select value={newNoteType} onValueChange={setNewNoteType}>
+ <SelectTrigger className="w-auto min-w-[140px]">
+ <SelectValue />
+ </SelectTrigger>
+ <SelectContent>
+ {NOTE_TYPES.map(type => (
+ <SelectItem key={type.value} value={type.value}>
+ {type.label}
+ </SelectItem>
+ ))}
+ </SelectContent>
+ </Select>
+ </div>
+ <Textarea
+ placeholder="Enter your note..."
+ value={newNoteContent}
+ onChange={(e) => setNewNoteContent(e.target.value)}
+ rows={3}
+ />
+ <div className="flex gap-2 justify-end">
+ <Button
+ variant="outline"
+ size="sm"
+ onClick={() => {
+ setIsAddingNote(false);
+ setNewNoteContent('');
+ setNewNoteType('general');
+ }}
+ >
+ Cancel
+ </Button>
+ <Button
+ size="sm"
+ onClick={handleAddNote}
+ disabled={addNoteMutation.isPending}
+ >
+ {addNoteMutation.isPending && (
+ <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+ )}
+ Save Note
+ </Button>
+ </div>
+ </div>
+ )}
 
-            {/* Notes List */}
-            {notesLoading ? (
-              <div className="space-y-3">
-                {[1, 2].map(i => (
-                  <div key={i} className="animate-pulse p-4 rounded-lg bg-muted/30">
-                    <div className="h-4 w-24 bg-muted rounded mb-2" />
-                    <div className="h-3 w-full bg-muted rounded" />
-                  </div>
-                ))}
-              </div>
-            ) : staffNotes.length === 0 ? (
-              <div className="text-center py-8">
-                <StickyNote className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No notes yet</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Add internal notes for performance tracking
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {staffNotes.map(note => (
-                  <div
-                    key={note.id}
-                    className="p-4 rounded-lg border border-border/50 bg-muted/20"
-                  >
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className={`text-xs ${NOTE_TYPE_COLORS[note.note_type] || NOTE_TYPE_COLORS.general}`}
-                        >
-                          {NOTE_TYPES.find(t => t.value === note.note_type)?.label || 'General'}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          by {note.author_name}
-                        </span>
-                      </div>
-                      {note.author_id === user?.id && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                          onClick={() => setNoteToDelete(note.id)}
-                          disabled={deleteNoteMutation.isPending}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                    <p className="text-sm whitespace-pre-wrap">{note.content}</p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {format(new Date(note.created_at), 'MMM d, yyyy h:mm a')}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+ {/* Notes List */}
+ {notesLoading ? (
+ <div className="space-y-3">
+ {[1, 2].map(i => (
+ <div key={i} className="animate-pulse p-4 rounded-lg bg-muted/30">
+ <div className="h-4 w-24 bg-muted rounded mb-2" />
+ <div className="h-3 w-full bg-muted rounded" />
+ </div>
+ ))}
+ </div>
+ ) : staffNotes.length === 0 ? (
+ <div className="text-center py-8">
+ <StickyNote className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+ <p className="text-muted-foreground">No notes yet</p>
+ <p className="text-xs text-muted-foreground mt-1">
+ Add internal notes for performance tracking
+ </p>
+ </div>
+ ) : (
+ <div className="space-y-3">
+ {staffNotes.map(note => (
+ <div
+ key={note.id}
+ className="p-4 rounded-lg border border-border/50 bg-muted/20"
+ >
+ <div className="flex items-start justify-between gap-2 mb-2">
+ <div className="flex items-center gap-2">
+ <Badge
+ variant="outline"
+ className={`text-xs ${NOTE_TYPE_COLORS[note.note_type] || NOTE_TYPE_COLORS.general}`}
+ >
+ {NOTE_TYPES.find(t => t.value === note.note_type)?.label || 'General'}
+ </Badge>
+ <span className="text-xs text-muted-foreground">
+ by {note.author_name}
+ </span>
+ </div>
+ {note.author_id === user?.id && (
+ <Button
+ variant="ghost"
+ size="icon"
+ className="h-7 w-7 text-muted-foreground hover:text-destructive"
+ onClick={() => setNoteToDelete(note.id)}
+ disabled={deleteNoteMutation.isPending}
+ >
+ <Trash2 className="h-4 w-4" />
+ </Button>
+ )}
+ </div>
+ <p className="text-sm whitespace-pre-wrap">{note.content}</p>
+ <p className="text-xs text-muted-foreground mt-2">
+ {format(new Date(note.created_at), 'MMM d, yyyy h:mm a')}
+ </p>
+ </div>
+ ))}
+ </div>
+ )}
+ </div>
+ </div>
 
-        {/* Effective Permissions Viewer */}
-        <EffectivePermissions userId={userId!} />
+ {/* Effective Permissions Viewer */}
+ <EffectivePermissions userId={userId!} />
 
-        {/* Staff Documents Section */}
-        <StaffDocuments
-          staffUserId={userId!}
-          currentUserId={user?.id || ''}
-          isAdmin={isAdmin}
-        />
-      </div>
+ {/* Staff Documents Section */}
+ <StaffDocuments
+ staffUserId={userId!}
+ currentUserId={user?.id || ''}
+ isAdmin={isAdmin}
+ />
+ </div>
 
-      {/* Delete Note Confirmation Dialog */}
-      <AlertDialog open={!!noteToDelete} onOpenChange={(open) => !open && setNoteToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Note</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this note? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                if (noteToDelete) {
-                  deleteNoteMutation.mutate(noteToDelete);
-                  setNoteToDelete(null);
-                }
-              }}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+ {/* Delete Note Confirmation Dialog */}
+ <AlertDialog open={!!noteToDelete} onOpenChange={(open) => !open && setNoteToDelete(null)}>
+ <AlertDialogContent>
+ <AlertDialogHeader>
+ <AlertDialogTitle>Delete Note</AlertDialogTitle>
+ <AlertDialogDescription>
+ Are you sure you want to delete this note? This action cannot be undone.
+ </AlertDialogDescription>
+ </AlertDialogHeader>
+ <AlertDialogFooter>
+ <AlertDialogCancel>Cancel</AlertDialogCancel>
+ <AlertDialogAction
+ className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+ onClick={() => {
+ if (noteToDelete) {
+ deleteNoteMutation.mutate(noteToDelete);
+ setNoteToDelete(null);
+ }
+ }}
+ >
+ Delete
+ </AlertDialogAction>
+ </AlertDialogFooter>
+ </AlertDialogContent>
+ </AlertDialog>
 
-      {/* Remove Role Confirmation Dialog */}
-      <AlertDialog open={!!roleToRemove} onOpenChange={(open) => !open && setRoleToRemove(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove Role</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to remove the <strong>{roleToRemove?.displayName}</strong> role from {profile?.display_name || 'this staff member'}?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                if (roleToRemove) {
-                  removeRoleMutation.mutate({ role: roleToRemove.role, targetUserId: userId! });
-                }
-              }}
-              disabled={removeRoleMutation.isPending}
-            >
-              {removeRoleMutation.isPending ? 'Removing...' : 'Remove Role'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </AdminLayout>
-  );
+ {/* Remove Role Confirmation Dialog */}
+ <AlertDialog open={!!roleToRemove} onOpenChange={(open) => !open && setRoleToRemove(null)}>
+ <AlertDialogContent>
+ <AlertDialogHeader>
+ <AlertDialogTitle>Remove Role</AlertDialogTitle>
+ <AlertDialogDescription>
+ Are you sure you want to remove the <strong>{roleToRemove?.displayName}</strong> role from {profile?.display_name || 'this staff member'}?
+ </AlertDialogDescription>
+ </AlertDialogHeader>
+ <AlertDialogFooter>
+ <AlertDialogCancel>Cancel</AlertDialogCancel>
+ <AlertDialogAction
+ className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+ onClick={() => {
+ if (roleToRemove) {
+ removeRoleMutation.mutate({ role: roleToRemove.role, targetUserId: userId! });
+ }
+ }}
+ disabled={removeRoleMutation.isPending}
+ >
+ {removeRoleMutation.isPending ? 'Removing...' : 'Remove Role'}
+ </AlertDialogAction>
+ </AlertDialogFooter>
+ </AlertDialogContent>
+ </AlertDialog>
+ </AdminLayout>
+ );
 }
