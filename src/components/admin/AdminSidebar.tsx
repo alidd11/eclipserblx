@@ -454,7 +454,6 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
                 : "text-muted-foreground/70 hover:text-muted-foreground"
             )}
           >
-            <group.icon className="h-3.5 w-3.5 shrink-0" />
             <span className="flex-1 text-left truncate">{group.title}</span>
             <ChevronDown 
               className={cn(
