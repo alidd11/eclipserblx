@@ -214,7 +214,7 @@ export default function SellerProducts() {
     },
   });
 
-  const handleDeleteClick = (product: any) => {
+  const handleDeleteClick = (product: { id: string; images?: string[]; asset_file_url?: string }) => {
     setProductToDelete(product);
     setDeleteStep(1);
   };
