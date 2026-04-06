@@ -97,10 +97,7 @@ export default function SellerCampaigns() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-display font-bold flex items-center gap-2">
-              <Megaphone className="h-6 w-6" />
-              Discount Campaigns
-            </h1>
+            <h1 className="text-2xl font-display font-bold">Discount Campaigns</h1>
             <p className="text-muted-foreground text-sm">Schedule time-limited discounts across your store</p>
           </div>
           <Dialog open={showCreate} onOpenChange={setShowCreate}>
