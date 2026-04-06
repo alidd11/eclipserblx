@@ -148,6 +148,8 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
               <img
                 src={currentMedia!}
                 alt={name}
+                width={620}
+                height={620}
                 loading={priority ? 'eager' : 'lazy'}
                 decoding={priority ? 'sync' : 'async'}
                 fetchPriority={priority ? 'high' : undefined}
