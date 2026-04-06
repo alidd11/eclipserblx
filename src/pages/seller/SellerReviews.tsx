@@ -19,6 +19,22 @@ import {
 import { format } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 
+interface EnrichedReview {
+  id: string;
+  product_id: string;
+  product_name: string;
+  rating: number;
+  title: string | null;
+  content: string | null;
+  is_external: boolean;
+  external_reviewer_name: string | null;
+  external_source: string | null;
+  seller_reply: string | null;
+  seller_replied_at: string | null;
+  created_at: string;
+  profiles: { display_name: string | null } | null;
+}
+
 const REVIEWS_PER_PAGE = 15;
 
 export default function SellerReviews() {
