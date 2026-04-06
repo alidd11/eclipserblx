@@ -221,7 +221,7 @@ export default function SellerProductsAll() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Stores</SelectItem>
-              {stores?.map((s: any) => (
+              {stores?.map((s) => (
                 <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
               ))}
             </SelectContent>
