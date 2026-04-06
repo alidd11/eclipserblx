@@ -16,7 +16,7 @@ export interface CartItem {
   quantity?: number; // For bundle purchases (e.g., 3-pack of bot licenses)
   bundle_id?: string; // Reference to the bundle if applicable
   bundle_label?: string; // Human-readable bundle name (e.g., "3-Pack")
-  store_eclipse_enabled?: boolean; // Whether store has Eclipse+ discounts enabled
+  store_eclipse_enabled?: boolean; // Whether store has member discounts enabled
   store_name?: string; // Store name for transparency in cart/checkout
   is_pwyw?: boolean; // Pay What You Want product
   custom_price?: number; // Buyer-chosen price for PWYW products
