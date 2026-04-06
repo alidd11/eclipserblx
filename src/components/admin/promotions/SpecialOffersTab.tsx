@@ -94,8 +94,8 @@ export function SpecialOffersTab() {
   };
 
   const openCreate = () => { setForm(emptyForm); setDialogOpen(true); };
-  const openEdit = (p: any) => { setForm({ id: p.id, name: p.name, description: p.description || '', promotion_type: p.promotion_type, eclipse_plus_days: p.eclipse_plus_days, is_active: p.is_active, starts_at: p.starts_at?.split('T')[0] || null, ends_at: p.ends_at?.split('T')[0] || null, max_claims: p.max_claims, new_users_only: p.new_users_only ?? true }); setDialogOpen(true); };
-  const openDelete = (p: any) => { setSelected(p); setDeleteDialogOpen(true); };
+  const openEdit = (p: Record<string, unknown>) => { setForm({ id: p.id as string, name: p.name as string, description: (p.description as string) || '', promotion_type: p.promotion_type as string, eclipse_plus_days: p.eclipse_plus_days as number, is_active: p.is_active as boolean, starts_at: (p.starts_at as string)?.split('T')[0] || null, ends_at: (p.ends_at as string)?.split('T')[0] || null, max_claims: p.max_claims as number, new_users_only: (p.new_users_only as boolean) ?? true }); setDialogOpen(true); };
+  const openDelete = (p: Record<string, unknown>) => { setSelected(p); setDeleteDialogOpen(true); };
 
   return (
     <div className="space-y-4">

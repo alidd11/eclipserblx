@@ -327,7 +327,7 @@ export default function SellerProducts() {
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {products?.map((product: any) => (
+            {products?.map((product) => (
               <div key={product.id} className="overflow-hidden">
                 <div className="aspect-video relative bg-muted">
                   {product.images?.[0] ? (

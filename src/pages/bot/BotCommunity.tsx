@@ -373,7 +373,7 @@ export default function BotCommunity() {
  </div>
  {autoRoles.length > 0 && (
  <div className="space-y-1">
- {autoRoles.map((r: any) => (
+ {autoRoles.map((r) => (
  <div key={r.id} className="flex items-center justify-between bg-background/5 rounded px-3 py-2">
  <span className="text-sm text-foreground">{r.role_name || r.role_id}</span>
  <Switch checked={r.enabled} onCheckedChange={() => upsertMutation.mutate({ table: 'bot_auto_roles', data: { ...r, enabled: !r.enabled } })} />

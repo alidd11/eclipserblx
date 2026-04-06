@@ -296,7 +296,7 @@ export default function AdminReferrals() {
  <div className="p-4">
  {rewards && rewards.length > 0 ? (
  <div className="space-y-3">
- {rewards.map((reward: any) => (
+ {rewards.map((reward) => (
  <div 
  key={reward.id} 
  className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
