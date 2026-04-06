@@ -394,7 +394,7 @@ export default function PrivacyPolicy() {
                   <strong>Right to Erasure (Art. 17)</strong>
                   <p className="text-sm text-muted-foreground">
                     Request deletion of your data ("right to be forgotten"). Note: we may retain order 
-                    records for 7 years due to legal obligations.
+                    records for 6 years due to legal obligations.
                   </p>
                 </div>
               </div>
