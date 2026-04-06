@@ -611,58 +611,60 @@ export default function SellerProducts() {
 
   return (
     <SellerLayout>
-      <div>
+      <div className="space-y-4">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-          <div>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
             <h1 className="text-2xl font-display font-bold">Products</h1>
             <p className="text-sm text-muted-foreground">
               Manage your store's product catalog
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             {store?.slug && (
-              <Button variant="outline" asChild>
+              <Button variant="outline" size="sm" asChild>
                 <Link to={`/store/${store.slug}`}>
-                  <Eye className="h-4 w-4 mr-2" />
-                  View Store
+                  <Eye className="h-4 w-4 mr-1.5" />
+                  <span className="hidden sm:inline">View Store</span>
                 </Link>
               </Button>
             )}
-            <Button onClick={openCreate}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Product
+            <Button size="sm" onClick={openCreate}>
+              <Plus className="h-4 w-4 mr-1.5" />
+              <span className="hidden sm:inline">Add Product</span>
+              <span className="sm:hidden">Add</span>
             </Button>
           </div>
         </div>
 
-        {/* Inline stats */}
-        {!productsLoading && (
-          <div className="flex items-center gap-4 text-sm mb-4 flex-wrap">
-            <span className="text-muted-foreground">
-              <span className="font-semibold text-foreground">{totalCount}</span> total
-            </span>
-            <span className="text-muted-foreground">
-              <span className="font-semibold text-green-500">{products.filter((p: any) => p.moderation_status === 'approved' && p.is_active).length}</span> live
-            </span>
-            <span className="text-muted-foreground">
-              <span className="font-semibold text-yellow-500">{products.filter((p: any) => p.moderation_status === 'pending').length}</span> pending
-            </span>
-            <span className="text-muted-foreground">
-              <span className="font-semibold text-muted-foreground">{products.filter((p: any) => !p.is_active).length}</span> inactive
-            </span>
-          </div>
-        )}
+        {/* Stats + Search row */}
+        <div className="space-y-3">
+          {!productsLoading && (
+            <div className="flex items-center gap-4 text-sm">
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{totalCount}</span> total
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-green-500">{products.filter((p: any) => p.moderation_status === 'approved' && p.is_active).length}</span> live
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-yellow-500">{products.filter((p: any) => p.moderation_status === 'pending').length}</span> pending
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-muted-foreground">{products.filter((p: any) => !p.is_active).length}</span> inactive
+              </span>
+            </div>
+          )}
 
-        {/* Search */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-10"
-          />
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-10 h-10"
+            />
+          </div>
         </div>
 
         {/* Bulk Actions */}
