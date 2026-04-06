@@ -11,17 +11,13 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-function isIOS(): boolean {
+function isIOSDevice(): boolean {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-}
-
-function isStandalone(): boolean {
-  return window.matchMedia('(display-mode: standalone)').matches || 
-         (navigator as any).standalone === true;
 }
 
 export function InstallPrompt() {
   const location = useLocation();
+  const { isStandalone } = useDevice();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
