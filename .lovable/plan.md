@@ -1,68 +1,76 @@
 
 
-# Applicant Portal — Dedicated Login & Dashboard
+# Sidebar Overhaul — Hamburger-Triggered Drawer (ClearlyDev Pattern)
 
-## Overview
-Replace the email-input status checker on `/jobs` with a proper applicant portal. Applicants get a unique access token when they apply, which they use to log into a dedicated portal page to view their application status and messages.
+## Current State
+The platform has a **persistent desktop sidebar** (w-56, sticky left) that takes up permanent screen real estate, plus a mobile drawer. This is a traditional dashboard pattern but not how modern enterprise marketplaces (ClearlyDev, Stripe, Linear) work — they maximize content area and use the header as the primary navigation anchor.
 
-This avoids requiring applicants to create a full platform account (they're external candidates, not customers) while still being secure and enterprise-grade.
+## New Pattern
+Remove the always-visible desktop sidebar entirely. On **all devices**, the sidebar is hidden by default and opens as a **drawer overlay** when the user clicks a hamburger menu icon in the header. This matches ClearlyDev's approach and gives 100% of the viewport to content.
 
-## Approach: Token-Based Access (No Separate Auth)
+```text
+BEFORE (desktop):
+┌──────────┬────────────────────────────────┐
+│ Sidebar  │  Header                        │
+│ (w-56)   │  ─────────────────────────────  │
+│          │  Content                        │
+│          │                                 │
+└──────────┴────────────────────────────────┘
 
-Applicants receive a unique, random access token (UUID) when they submit an application. This token is stored on the `job_applications` row. They use this token to "log in" to a portal page. This is the standard pattern used by enterprise career platforms (Greenhouse, Lever, Workday) — candidates get a unique link/code, not a full account.
-
-## Database Changes
-
-**Migration 1 — Add access token to job_applications:**
-```sql
-ALTER TABLE job_applications
-ADD COLUMN access_token uuid DEFAULT gen_random_uuid() NOT NULL;
-
-CREATE UNIQUE INDEX idx_job_applications_access_token ON job_applications(access_token);
+AFTER (all devices):
+┌──────────────────────────────────────────┐
+│  ☰  Logo  Search          Cart  User     │
+│  ────────────────────────────────────────│
+│  Content (full width)                    │
+│                                          │
+└──────────────────────────────────────────┘
+  ↓ Click ☰
+┌─────────┬────────────────────────────────┐
+│ Drawer  │  (dimmed content)              │
+│ overlay │                                │
+│         │                                │
+└─────────┴────────────────────────────────┘
 ```
 
-**RLS:** The existing insert policy stays. Add a SELECT policy allowing anon users to read their own application by access token (scoped to only return that single row).
+## Changes
 
-## New Files
+### 1. `src/components/layout/MainLayout.tsx`
+- Remove `collapsed` state and `COLLAPSE_KEY` localStorage logic entirely
+- Remove `desktopSidebar` prop — pass `null` or empty fragment
+- The sidebar is now **only** rendered via `mobileSidebar` (the Sheet drawer), which LayoutShell already supports on all breakpoints
+- Pass `CustomerSidebar` in the `mobileSidebar` prop only (always expanded, never collapsed)
 
-### 1. `src/pages/ApplicantPortal.tsx`
-- Route: `/careers/portal`
-- Two states: **login** and **dashboard**
-- **Login state**: Single input field for the access token (or a "Check your email" prompt). Clean, centered layout matching `AuthLayout` styling
-- **Dashboard state**: Shows application status, position applied for, timeline, and a message inbox with all `applicant_messages` for that application
-- Messages auto-marked as read when viewed
-- Session persisted in `sessionStorage` (token stored temporarily during browser session)
+### 2. `src/components/layout/LayoutShell.tsx`
+- Change the desktop sidebar wrapper from `hidden lg:block` to fully hidden (or remove it)
+- The `Sheet` drawer now works on **all** breakpoints (remove `md:hidden` / `lg:hidden` constraints if any)
+- The hamburger button in the Header triggers `setMobileOpen(true)` on all devices
 
-### 2. Route registration
-- Add `/careers/portal` route in `AppRoutes.tsx`
+### 3. `src/components/layout/Header.tsx`
+- **Desktop row**: Add a hamburger `Menu` icon button on the left (before the logo), matching the mobile pattern. This calls `onMenuClick` to open the drawer
+- Remove the `hidden md:hidden` constraint — hamburger is always visible
+- The desktop header already has Logo, Search, Cart, User — just add the hamburger
 
-## Modified Files
+### 4. `src/components/layout/CustomerSidebar.tsx`
+- Remove all `collapsed` state logic — the sidebar is always shown fully expanded (it's only ever inside a drawer now)
+- Remove `ChevronLeft`/`ChevronRight` toggle button
+- Remove collapsed icon-only rendering paths and tooltip menus
+- Simplify props: remove `collapsed` and `onToggle`, keep `onNavigate` and `isMobileDrawer` (which is now always true)
+- Keep all navigation groups, profile section, sign-out footer as-is
 
-### 1. `src/pages/Jobs.tsx`
-- Remove the entire `ApplicationStatusCheck` component (lines 230-359)
-- Remove the status check section at the bottom (lines 512-515)
-- Remove `emailCheckSchema` import
-- After successful application submission, show the access token to the applicant with a "Save this — you'll need it to check your status" message
-- Add a small "Check application status" link at the top that navigates to `/careers/portal`
+### 5. `src/components/layout/sidebar/sidebarConstants.ts`
+- Remove `SIDEBAR_STORAGE_KEY` if it only served collapse state
 
-### 2. `src/components/admin/applications/ApplicationDetailDialog.tsx`
-- Display the `access_token` field in the details tab so admins can share it with applicants if needed
+### 6. Global Guard Layout (`src/components/global-guard/GlobalGuardLayout.tsx`)
+- Already uses a drawer pattern on mobile — apply the same hamburger-only pattern on desktop (remove the persistent `md:flex` sidebar, add hamburger to desktop header)
 
-### 3. `src/components/admin/applications/types.tsx`
-- Add `access_token: string` to the `JobApplication` interface
+## What stays unchanged
+- All sidebar navigation content (groups, links, profile, seller CTA)
+- Mobile bottom tab bar
+- Edge swipe gesture to open drawer
+- Footer, FABs, search palette
+- Admin layout (separate concern, already has its own sidebar)
+- Store layout / StoreSidebar
 
-### 4. Application confirmation email (`send-application-confirmation` edge function)
-- Include the access token in the confirmation email so applicants can bookmark their portal link
-
-## Security
-- Access tokens are UUIDs — unguessable (122 bits of entropy)
-- RLS policy scopes reads to exact token match
-- No platform auth required — applicants stay external
-- Tokens stored in `sessionStorage` only (cleared on tab close)
-- Admin can see tokens to re-share if applicant loses access
-
-## User Flow
-1. Candidate applies on `/jobs` → receives access token on-screen + in confirmation email
-2. Candidate visits `/careers/portal` → enters token → sees status + messages
-3. Admin sends message via dashboard → appears in applicant's portal on next visit
+## Summary
+5 files modified, 0 new files. The sidebar becomes a drawer-only overlay triggered by a hamburger in the header on all devices. Content gets full viewport width. The collapsed sidebar state and localStorage persistence are removed entirely.
 
