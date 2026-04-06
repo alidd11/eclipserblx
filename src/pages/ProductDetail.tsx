@@ -81,7 +81,7 @@ export default function ProductDetail() {
     const timer = setTimeout(() => setShowSwipeHint(false), 3000);
     return () => clearTimeout(timer);
   }, [showSwipeHint]);
-import { Card, CardContent } from '@/components/ui/card';
+
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['product', productNumber] });
     await queryClient.invalidateQueries({ queryKey: ['related-products'] });
