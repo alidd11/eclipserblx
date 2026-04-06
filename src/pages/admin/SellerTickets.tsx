@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, Clock, CheckCircle, Send, Link as LinkIcon, User, Store, AlertCircle, XCircle, AlertTriangle, Paperclip, X, ChevronDown, Zap, Loader2, ShoppingBag, History, UserCheck, Mail, Headphones } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, Send, Link as LinkIcon, User, Store, AlertCircle, XCircle, AlertTriangle, Paperclip, X, ChevronDown, Zap, Loader2, ShoppingBag, History, UserCheck, Mail, Headphones, Users } from 'lucide-react';
 import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { AdminStatCard } from '@/components/admin/AdminStatCard';
@@ -29,6 +29,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
+import { useCannedResponses } from '@/components/tickets/useCannedResponses';
+import { useAgentCollision } from '@/components/tickets/useAgentCollision';
 
 interface TicketMessage {
  id: string;
