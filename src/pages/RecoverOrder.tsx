@@ -8,7 +8,7 @@ import { GuestSupportForm } from '@/components/support/GuestSupportForm';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, CheckCircle, Package, ArrowLeft, Mail, Copy, ClipboardPaste, AlertCircle } from 'lucide-react';
+import { Loader2, CheckCircle, ArrowLeft, Mail, Copy, ClipboardPaste, AlertCircle } from 'lucide-react';
 import { usePageMeta } from '@/hooks/usePageMeta';
 
 export default function RecoverOrder() {
