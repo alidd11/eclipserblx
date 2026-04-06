@@ -105,17 +105,17 @@ export function Footer() {
 
         {/* Bottom bar — copyright + trust signals */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <p className="text-[12px] text-foreground/40">
+          <p className="text-[12px] text-foreground/50">
             © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
           </p>
 
           <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5 text-[11px] text-foreground/35">
+            <span className="flex items-center gap-1.5 text-[11px] text-foreground/50">
               <Lock className="h-3 w-3" />
               256-bit SSL
             </span>
-            <span className="h-3 w-px bg-border/30" />
-            <span className="flex items-center gap-1.5 text-[11px] text-foreground/35">
+            <span className="h-3 w-px bg-border/40" />
+            <span className="flex items-center gap-1.5 text-[11px] text-foreground/50">
               <Shield className="h-3 w-3" />
               Payments by Stripe
             </span>
