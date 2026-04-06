@@ -88,8 +88,13 @@ interface RefundRequest {
   admin_resolved_at: string | null;
   admin_resolved_by: string | null;
   amount: number | null;
-  evidence: unknown[] | null;
   updated_at: string;
+  dispute_number?: string;
+  details?: string;
+  seller_response?: string;
+  escalation_reason?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  evidence?: any[] | null;
 }
 
 interface EnrichedDispute extends RefundRequest {
