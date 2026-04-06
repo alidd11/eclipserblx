@@ -39,7 +39,7 @@ export function useLoyalty() {
 
     const { data } = await supabase
       .from('loyalty_points')
-      .select('*')
+      .select('points, lifetime_points, tier')
       .eq('user_id', user.id)
       .maybeSingle();
 

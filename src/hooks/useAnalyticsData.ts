@@ -349,7 +349,7 @@ export function useAnalyticsData(range: '7d' | '14d' | '30d') {
   const { data: countryStats } = useQuery({
     queryKey: ['admin-country-stats'],
     queryFn: async () => {
-      const { data } = await supabase.from('page_visits').select('*').limit(1000);
+      const { data } = await supabase.from('page_visits').select('country').limit(1000);
       const countryCount: Record<string, number> = {};
       (data as any[])?.forEach(v => { const country = v.country || 'Unknown'; countryCount[country] = (countryCount[country] || 0) + 1; });
       return Object.entries(countryCount).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 10);
