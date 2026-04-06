@@ -1070,6 +1070,6 @@ img[data-fade-in="true"][data-loaded="true"] {
 }
 
 /* ── Overscroll containment for native feel ── */
-main, [role="main"] {
-  overscroll-behavior-y: contain;
-}
+/* Note: overscroll on <main> is removed — it traps scroll when overflow-x-clip
+   creates a scroll container. The html/body-level overscroll-behavior: none
+   already prevents bounce. */

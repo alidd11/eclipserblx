@@ -508,7 +508,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
       </div>
 
       {/* Navigation */}
-      <nav ref={navRef} className={cn("flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0", isMobileDrawer && "pb-[env(safe-area-inset-bottom)]")}>
+      <nav ref={navRef} className={cn("flex-1 p-2 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0 touch-pan-y", isMobileDrawer && "pb-[env(safe-area-inset-bottom)]")}>
         {/* Top-level links */}
         <div className="space-y-0.5 mb-1.5">
           {topLevelItems.filter(canAccessItem).map((item, index) => renderNavItem(item, index))}

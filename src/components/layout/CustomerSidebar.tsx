@@ -486,7 +486,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-2 pb-[env(safe-area-inset-bottom)] overflow-y-auto overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
+      <nav className="flex-1 px-2 py-2 pb-[env(safe-area-inset-bottom)] overflow-y-auto overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0 touch-pan-y">
         <div className="space-y-0.5">
           {navGroups.map(group => (
             <div key={group.id}>{renderGroup(group)}</div>
