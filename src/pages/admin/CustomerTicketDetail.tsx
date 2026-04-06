@@ -437,6 +437,14 @@ export default function CustomerTicketDetail() {
             {categoryLabel && <Badge variant="secondary" className="text-[10px] sm:text-xs h-5">{categoryLabel}</Badge>}
           </div>
 
+          {/* Agent collision banner */}
+          {viewingAgents.length > 0 && (
+            <div className="flex items-center gap-2 text-xs bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-1.5">
+              <Users className="h-3.5 w-3.5 text-yellow-500 shrink-0" />
+              <span className="text-yellow-600">{viewingAgents.map(a => a.name).join(', ')} {viewingAgents.length === 1 ? 'is' : 'are'} also viewing this ticket</span>
+            </div>
+          )}
+
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             {!ticket.assigned_to && (
               <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => claimTicket.mutate()} disabled={claimTicket.isPending}>
@@ -444,6 +452,23 @@ export default function CustomerTicketDetail() {
                 Claim
               </Button>
             )}
+            {/* Snooze dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="outline" className="h-7 text-xs">
+                  <AlarmClock className="h-3.5 w-3.5 sm:mr-1" />
+                  <span className="hidden sm:inline">Snooze</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuLabel>Snooze ticket for</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => snoozeTicket.mutate(1)}>1 hour</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => snoozeTicket.mutate(4)}>4 hours</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => snoozeTicket.mutate(24)}>24 hours</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => snoozeTicket.mutate(72)}>3 days</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Select value={ticket.priority || 'medium'} onValueChange={(v) => updatePriority.mutate(v)}>
               <SelectTrigger className="w-auto min-w-[90px] sm:min-w-[120px] h-7 sm:h-8 text-xs">
                 <SelectValue />
