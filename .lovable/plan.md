@@ -1,42 +1,82 @@
 
-## Admin Dashboard Enterprise Cleanup
 
-### What I Found
+## Roblox-Style Category Restructure
 
-**Dead/Orphan files:**
-1. `src/pages/admin/ContactMessages.tsx` (739 lines) — Not in routes, not in sidebar, zero references. Fully orphaned.
-2. `src/components/admin/BulkActionBar.tsx` — Zero imports anywhere. Dead component.
-3. `src/components/admin/ChatQuickActions.tsx` — Zero imports anywhere. Dead component.
+### The Problem
 
-**Remaining god-files (1,000+ lines):**
-4. `src/pages/admin/Users.tsx` (1,056 lines) — User management table. Extract user table/filters into sub-components.
-5. `src/pages/admin/Promotions.tsx` (1,034 lines) — Promotions manager. Extract promotion form and list.
-6. `src/pages/admin/SellerStoreDetail.tsx` (1,023 lines) — Store detail view. Extract store info sections.
+Your community member is right — 15 flat categories with 6 vehicle subtypes as top-level entries is not how Roblox marketplaces work. The reference screenshot (BBBB/similar) shows ~10 clean parent categories with subcategories nested under them.
 
-**Sidebar bloat:**
-7. `src/components/admin/AdminSidebar.tsx` (595 lines) — Navigation config + render logic mixed together. Extract nav config data to `src/data/adminNavConfig.ts`.
+### Current State (15 flat categories)
 
----
+```text
+Bundle Deals, Maps, Scripts & Systems, Civilian Vehicles,
+Marked Police Vehicles, Unmarked Police Vehicles, Ambulance Vehicles,
+Fire Vehicles, Military Vehicles, Aircraft, Buildings, Uniforms,
+Roblox UI, Roblox Bots, Bots
+```
 
-### Phase 1: Delete Dead Files (Zero Risk)
-- Delete `src/pages/admin/ContactMessages.tsx`
-- Delete `src/components/admin/BulkActionBar.tsx`
-- Delete `src/components/admin/ChatQuickActions.tsx`
-- Type-check
+### Target State (10 parent categories + subcategories)
 
-### Phase 2: Split God-Files
-- **Users.tsx** → Extract `UserTable.tsx` and `UserFilters.tsx` into `src/components/admin/users/`
-- **Promotions.tsx** → Extract `PromotionForm.tsx` and `PromotionList.tsx` into `src/components/admin/promotions/`
-- **SellerStoreDetail.tsx** → Extract store sections into `src/components/admin/store-detail/`
-- Type-check after each
+Based on the Discord screenshots and Roblox marketplace conventions:
 
-### Phase 3: Sidebar Extraction
-- Extract nav config arrays to `src/data/adminNavConfig.ts` (~200 lines of pure data)
-- `AdminSidebar.tsx` drops from 595 → ~400 lines (render-only)
-- Type-check
+```text
+Parent Category          Subcategories (via parent_id)
+─────────────────────    ───────────────────────────────
+Maps                     (none — flat)
+UIs                      (none — flat)
+Scripts & Systems        (none — flat)
+Models                   (none — flat, new)
+VFXs                     (none — flat, new)
+Buildings                (none — flat)
+Vehicles                 Civilian, Marked Police, Unmarked Police,
+                         Ambulance, Fire, Military
+Aircraft                 (none — flat)
+Gear                     Uniforms (existing), other gear
+Misc                     Bundle Deals, Bots, Roblox Bots, Roblox UI
+```
 
-### Impact
-- 3 dead files deleted (~900 lines removed)
-- 3 god-files split into focused components
-- Sidebar data/logic separated
-- Zero functional changes — purely structural
+### What Changes
+
+**Phase 1: Database Migration**
+
+One migration that:
+1. Creates new parent categories: `Vehicles`, `Models`, `VFXs`, `Gear`, `Misc`
+2. Renames `Roblox UI` → re-parents under `Misc` (or merges into `UIs`)
+3. Re-parents the 6 vehicle types under the new `Vehicles` parent
+4. Re-parents `Uniforms` under `Gear`
+5. Re-parents `Bundle Deals`, `Bots`, `Roblox Bots` under `Misc`
+6. Updates `display_order` to match the list above
+7. All existing `product.category_id` references remain valid — subcategory IDs don't change, only their `parent_id`
+
+**Phase 2: Update CategoryIcons**
+
+- Add new icons: `VehiclesIcon`, `ModelsIcon`, `VFXIcon`, `GearIcon`, `MiscIcon`
+- Update `categoryIconMap` with new parent slugs
+- Remove orphaned slug entries for promoted-to-child categories
+
+**Phase 3: Update Customer-Facing UI**
+
+- `CustomerSidebar.tsx` — sidebar already renders parent categories from DB; will now show ~10 clean parents instead of 15. Add expandable subcategory support (click parent → shows children inline).
+- `CategoriesGrid.tsx` — already queries `parent_id IS NULL`; will automatically show the new 10 parents. Product counts already aggregate children.
+- `SearchCategoryChips.tsx` — already filters by `parent_id IS NULL`; auto-fixes.
+- `Categories.tsx` — update `CATEGORY_SORT_ORDER` to match new parent slugs.
+
+**Phase 4: Update Seller/Admin Dashboard**
+
+- `SellerProducts.tsx` — already has parent/child grouping in the category Select (lines 960-970). Will automatically show `Vehicles > Civilian`, etc. No code change needed.
+- `Products.tsx` (admin) — same pattern, should already work.
+- `CategoriesGrid.tsx` in marketplace — update `iconMap` references.
+
+### Files Changed
+
+- **Migration**: Restructure categories table (parent_id + display_order updates)
+- **Edit**: `src/components/icons/CategoryIcons.tsx` — add 4 new parent icons + update maps
+- **Edit**: `src/pages/Categories.tsx` — update `CATEGORY_SORT_ORDER` for new slugs
+- **Edit**: `src/components/layout/CustomerSidebar.tsx` — add expandable subcategory children
+- **Edit**: `src/components/marketplace/CategoriesGrid.tsx` — update `iconMap`
+- **Edit**: `src/components/marketplace/CategoriesGridCard.tsx` — minor icon map update
+
+### Risk
+
+Low — subcategory IDs stay the same, only `parent_id` changes. All queries already use `category_id` directly. The `Categories.tsx` page already aggregates child counts. Seller product form already renders parent/child hierarchy.
+
