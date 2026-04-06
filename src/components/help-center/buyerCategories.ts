@@ -23,7 +23,7 @@ export const buyerCategories: HelpCategory[] = [
       },
       {
         question: 'How do I link my Discord account?',
-        answer: 'Go to Account → Settings and click "Link Discord". This unlocks community features, bot licenses, and Discord-exclusive perks like Eclipse+ booster trials.',
+        answer: 'Go to Account → Settings and click "Link Discord". This unlocks community features, bot licenses, and Discord-exclusive perks.',
       },
       {
         question: 'How do I link my Roblox account?',
