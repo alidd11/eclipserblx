@@ -96,10 +96,9 @@ export default function SellerReviews() {
       const { data, count, error } = await query.range(from, to);
       if (error) throw error;
 
-      const reviews = (data || []).map((r) => ({
-        ...(r as Record<string, unknown>),
-        product_name: productMap[(r as Record<string, unknown>).product_id as string] || 'Unknown Product',
-        rating: (r as Record<string, unknown>).rating as number,
+      const reviews: EnrichedReview[] = (data || []).map((r) => ({
+        ...(r as unknown as EnrichedReview),
+        product_name: productMap[(r as unknown as EnrichedReview).product_id] || 'Unknown Product',
       }));
 
       return { reviews, totalCount: count || 0 };
