@@ -127,7 +127,7 @@ export default function PrivacyPolicy() {
                 <h4 className="font-semibold mb-1">Legal Obligation (Art. 6(1)(c))</h4>
                 <p className="text-sm text-muted-foreground">
                   Retaining financial records (orders, transactions, seller earnings, commission data) 
-                  for 7 years as required by UK tax legislation (HMRC requirements). This includes 
+                  for 6 years as required by UK tax legislation (HMRC requirements). This includes 
                   seller transaction records and payout histories needed for tax compliance.
                 </p>
               </div>
