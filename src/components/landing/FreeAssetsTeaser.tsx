@@ -47,16 +47,17 @@ export function FreeAssetsTeaser() {
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="p-0">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold tracking-tight uppercase">Free Assets</h2>
-              <span className="text-[10px] uppercase tracking-wider text-primary/70 font-semibold bg-primary/10 px-1.5 py-0.5 rounded">
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 rounded-lg bg-emerald-500/10">
+                <Gift className="h-4 w-4 text-emerald-400" />
+              </div>
+              <h2 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight uppercase">Free Assets</h2>
+              <span className="text-[10px] uppercase tracking-wider text-emerald-400/80 font-semibold bg-emerald-500/10 px-1.5 py-0.5 rounded">
                 No fees
               </span>
             </div>
-            <Link to="/free">
-              <Button variant="ghost" size="sm" className="text-xs text-primary">
-                View All <ArrowRight className="ml-1 h-3 w-3" />
-              </Button>
+            <Link to="/free" className="text-xs text-primary hover:underline flex items-center gap-1">
+              View All <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
 
