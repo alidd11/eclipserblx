@@ -58,7 +58,7 @@ export function ExportReportsCard() {
  if (error) throw error;
 
  headers = ['Date', 'Order ID', 'Description', 'Amount', 'Platform Fee', 'Net Amount', 'Status'];
- data = (transactions || []).map((tx: any) => [
+ data = (transactions || []).map((tx) => [
  format(new Date(tx.created_at), 'yyyy-MM-dd HH:mm'),
  tx.order_id || '',
  tx.description || '',
