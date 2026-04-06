@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { sanitizeSearch } from '@/lib/searchUtils';
 import { useNavigate } from 'react-router-dom';
 import {
   Package, Search, Loader2,
