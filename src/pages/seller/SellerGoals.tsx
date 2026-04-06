@@ -135,7 +135,7 @@ export default function SellerGoals() {
           </div>
           <Dialog open={showCreate} onOpenChange={setShowCreate}>
             <DialogTrigger asChild>
-              <Button className="gradient-button border-0">
+              <Button>
                 <Plus className="mr-2 h-4 w-4" />
                 New Goal
               </Button>
