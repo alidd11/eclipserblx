@@ -248,7 +248,7 @@ export default function SellerTickets() {
  const updateStatus = useMutation({
  mutationFn: async (newStatus: string) => {
  if (!selectedTicket?.id) throw new Error('No ticket selected');
- const updateData: any = { status: newStatus };
+ const updateData: Record<string, unknown> = { status: newStatus };
  if (newStatus === 'in_progress' && !selectedTicket.assigned_to) updateData.assigned_to = user?.id;
  const { error } = await supabase.from('seller_support_tickets').update(updateData).eq('id', selectedTicket.id);
  if (error) throw error;
@@ -298,7 +298,7 @@ export default function SellerTickets() {
  const applyLinkChange = useMutation({
  mutationFn: async () => {
  if (!selectedTicket?.user_id) throw new Error('No user ID');
- const updates: any = {};
+ const updates: Record<string, unknown> = {};
  if (selectedTicket.new_discord_username) updates.discord_username = selectedTicket.new_discord_username;
  if (selectedTicket.new_roblox_username) updates.roblox_username = selectedTicket.new_roblox_username;
  if (Object.keys(updates).length === 0) throw new Error('No changes to apply');
