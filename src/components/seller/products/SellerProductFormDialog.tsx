@@ -140,8 +140,8 @@ export function SellerProductFormDialog({
       } else {
         toast.warning('No images were uploaded — check the errors above');
       }
-    } catch (error: any) {
-      toast.error('Failed to upload images: ' + error.message);
+    } catch (error) {
+      toast.error('Failed to upload images: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setIsUploadingImage(false);
       if (imageInputRef.current) imageInputRef.current.value = '';
