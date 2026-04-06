@@ -52,12 +52,12 @@ export default function Compare() {
  );
  }
 
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const compareFields = [
- { label: 'Price', render: (p: any) => <span className="font-bold text-primary">{formatPrice(p.price)}</span> },
- { label: 'Category', render: (p: any) => <Badge variant="secondary">{p.categories?.name || 'N/A'}</Badge> },
- { label: 'Resellable', render: (p: any) => p.is_resellable ? <Check className="h-4 w-4 text-primary" /> : <X className="h-4 w-4 text-muted-foreground" /> },
- ];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const compareFields: { label: string; render: (p: Record<string, any>) => React.ReactNode }[] = [
+  { label: 'Price', render: (p) => <span className="font-bold text-primary">{formatPrice(p.price)}</span> },
+  { label: 'Category', render: (p) => <Badge variant="secondary">{p.categories?.name || 'N/A'}</Badge> },
+  { label: 'Resellable', render: (p) => p.is_resellable ? <Check className="h-4 w-4 text-primary" /> : <X className="h-4 w-4 text-muted-foreground" /> },
+  ];
 
  return (
  <MainLayout>
