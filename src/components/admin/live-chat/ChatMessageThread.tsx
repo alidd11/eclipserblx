@@ -230,7 +230,7 @@ export function ChatMessageThread({
                 </div>
                 {msg.message_type === 'code_verification' && msg.secure_data ? (
                   <div className="max-w-[85%] lg:max-w-[70%]">
-                    <CodeVerificationMessage secureData={msg.secure_data as SecureData} isStaffView={true} />
+                    <CodeVerificationMessage secureData={msg.secure_data as unknown as SecureData} isStaffView={true} />
                   </div>
                 ) : (
                   <div

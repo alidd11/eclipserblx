@@ -39,6 +39,7 @@ export default function GlobalGuardServers() {
     toast.info('Server removal coming soon');
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSettingsChange = async (guildId: string, settings: any) => {
     toast.success('Settings saved');
   };

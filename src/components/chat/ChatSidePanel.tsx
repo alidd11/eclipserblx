@@ -158,7 +158,7 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
     const typingChannel = supabase.channel(`typing-${conversation.id}`)
       .on('presence', { event: 'sync' }, () => {
         const state = typingChannel.presenceState();
-        setIsAgentTyping(Object.values(state).some((presences) => presences.some((p) => p.typing && p.role === 'agent')));
+        setIsAgentTyping(Object.values(state).some((presences) => presences.some((p) => (p as any).typing && (p as any).role === 'agent')));
       }).subscribe();
     typingChannelRef.current = typingChannel;
     return () => {

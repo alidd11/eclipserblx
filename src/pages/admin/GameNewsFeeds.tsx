@@ -145,7 +145,7 @@ export default function GameNewsFeeds() {
  },
  onError: (err: Error) => {
  console.error('[GameNewsFeeds] Add feed error:', err);
- toast.error(err?.message || err?.details || 'Failed to add feed');
+ toast.error(err?.message || 'Failed to add feed');
  },
  });
 

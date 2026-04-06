@@ -24,21 +24,25 @@ export function StoreCustomSections({ storeId, accentColor }: StoreCustomSection
  staleTime: 5 * 60 * 1000, // 5 minutes - custom sections rarely change
  });
 
- if (!sections || sections.length === 0) return null;
+  if (!sections || sections.length === 0) return null;
 
- return (
- <div className="space-y-6">
- {sections.map((section) => (
- <div className="border border-border rounded-xl overflow-hidden" key={section.id}>
- <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
- <h3 className="font-semibold text-sm text-lg" style={{ color: accentColor }}>
- {section.title}
- </h3>
- </div>
- <div className="p-4">
- {section.section_type === 'faq' && section.content?.items && (
+  const getContent = (section: typeof sections[number]) => section.content as Record<string, any> | null;
+
+  return (
+    <div className="space-y-6">
+      {sections.map((section) => {
+        const content = getContent(section);
+        return (
+        <div className="border border-border rounded-xl overflow-hidden" key={section.id}>
+          <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
+            <h3 className="font-semibold text-sm text-lg" style={{ color: accentColor }}>
+              {section.title}
+            </h3>
+          </div>
+          <div className="p-4">
+            {section.section_type === 'faq' && content?.items && (
  <div className="space-y-3">
- {section.content.items.filter((i) => i.question).map((item: any, idx: number) => (
+ {content.items.filter((i: any) => i.question).map((item: any, idx: number) => (
  <div key={idx} className="border-b border-border pb-3 last:border-0">
  <p className="font-medium text-sm mb-1">{item.question}</p>
  <p className="text-sm text-muted-foreground">{item.answer}</p>
@@ -47,9 +51,9 @@ export function StoreCustomSections({ storeId, accentColor }: StoreCustomSection
  </div>
  )}
 
- {section.section_type === 'testimonials' && section.content?.items && (
- <div className="grid gap-4 sm:grid-cols-2">
- {section.content.items.filter((i) => i.text).map((item: any, idx: number) => (
+          {section.section_type === 'testimonials' && content?.items && (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {content.items.filter((i: any) => i.text).map((item: any, idx: number) => (
  <div key={idx} className="p-3 rounded-lg bg-muted/50">
  <div className="flex items-center gap-1 mb-2">
  {[...Array(5)].map((_, i) => (
@@ -63,24 +67,25 @@ export function StoreCustomSections({ storeId, accentColor }: StoreCustomSection
  </div>
  )}
 
- {section.section_type === 'text_block' && section.content?.body && (
- <p className="text-sm text-muted-foreground whitespace-pre-wrap">{section.content.body}</p>
- )}
+          {section.section_type === 'text_block' && content?.body && (
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{content.body}</p>
+          )}
 
- {section.section_type === 'gallery' && section.content?.images && (
- <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
- {section.content.images.map((url: string, idx: number) => (
+          {section.section_type === 'gallery' && content?.images && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {content.images.map((url: string, idx: number) => (
  <img key={idx} src={url} alt="" className="rounded-lg object-cover w-full h-32" loading="lazy" />
  ))}
  </div>
  )}
 
- {section.section_type === 'featured_collection' && section.content?.description && (
- <p className="text-sm text-muted-foreground">{section.content.description}</p>
- )}
- </div>
- </div>
- ))}
- </div>
+          {section.section_type === 'featured_collection' && content?.description && (
+          <p className="text-sm text-muted-foreground">{content.description}</p>
+          )}
+        </div>
+        </div>
+        );
+      })}
+    </div>
  );
 }

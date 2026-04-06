@@ -33,7 +33,8 @@ export function CustomerDemographics() {
 
  const countryMap = new Map<string, number>();
  transactions?.forEach((t) => {
- const country = t.metadata?.country || t.metadata?.buyer_country || 'Unknown';
+  const md = t.metadata as Record<string, any> | null;
+  const country = md?.country || md?.buyer_country || 'Unknown';
  countryMap.set(country, (countryMap.get(country) || 0) + 1);
  });
 
