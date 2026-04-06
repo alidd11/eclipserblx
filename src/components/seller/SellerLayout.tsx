@@ -122,9 +122,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   return (
     <TooltipProvider delayDuration={0}>
       <LayoutShell
-        desktopSidebar={
-          <SellerSidebar collapsed={false} onToggle={() => {}} className="hidden md:flex" />
-        }
+        desktopSidebar={null}
         mobileSidebar={(onClose) => (
           <SellerSidebar
             collapsed={false}
