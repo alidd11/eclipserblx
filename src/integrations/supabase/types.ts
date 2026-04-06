@@ -11331,18 +11331,21 @@ export type Database = {
         Row: {
           domain: string | null
           domain_type: string | null
+          is_primary: boolean | null
           status: string | null
           store_id: string | null
         }
         Insert: {
           domain?: string | null
           domain_type?: string | null
+          is_primary?: boolean | null
           status?: string | null
           store_id?: string | null
         }
         Update: {
           domain?: string | null
           domain_type?: string | null
+          is_primary?: boolean | null
           status?: string | null
           store_id?: string | null
         }
