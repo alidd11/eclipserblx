@@ -137,7 +137,7 @@ export function AffiliateCard() {
  // Request payout
  const requestPayoutMutation = useMutation({
   mutationFn: async (amount: number) => {
-   const method = profile?.preferred_payout_method === 'stripe' && connectStatus?.canReceivePayments
+   const method = paymentDetails?.preferred_payout_method === 'stripe' && connectStatus?.canReceivePayments
     ? 'stripe'
     : 'paypal';
    
