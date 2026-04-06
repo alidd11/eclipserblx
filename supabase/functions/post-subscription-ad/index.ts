@@ -382,13 +382,13 @@ serve(async (req) => {
           try {
             const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
             const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-            await fetch(`${supabaseUrl}/functions/v1/send-ads-channel-sticky`, {
+            await fetch(`${supabaseUrl}/functions/v1/send-discord-embed`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${supabaseAnonKey}`,
               },
-              body: JSON.stringify({}),
+              body: JSON.stringify({ template: "ads_sticky" }),
             });
           } catch (e) {
             console.error("[POST-SUB-AD] Failed to trigger sticky resend:", e);
