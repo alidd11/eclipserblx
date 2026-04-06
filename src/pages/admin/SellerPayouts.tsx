@@ -173,7 +173,7 @@ export default function SellerPayouts() {
  setSelectedPayout(null);
  setNotes("");
  },
- onError: (error: any) => {
+ onError: (error: Error) => {
  console.error("[SellerPayouts] Process error:", error);
  toast.error(error?.message || "Failed to process payout");
  },
@@ -202,7 +202,7 @@ export default function SellerPayouts() {
  setSelectedPayout(null);
  setNotes("");
  },
- onError: (error: any) => {
+ onError: (error: Error) => {
  toast.error(error.message || "Failed to process Wise payout");
  },
  });
@@ -267,8 +267,8 @@ export default function SellerPayouts() {
  return "1-2 business days";
  };
 
- const pendingTotal = payouts?.filter((p: any) => p.status === "pending")
- .reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 0;
+ const pendingTotal = payouts?.filter((p) => p.status === "pending")
+ .reduce((sum: number, p) => sum + (p.amount || 0), 0) || 0;
 
  return (
  <AdminLayout requiredPermissions={['view_seller_payouts']}>
