@@ -261,7 +261,7 @@ export default function SellerProducts() {
   };
 
   // Render moderation flags if present
-  const renderModerationFlags = (flags: any) => {
+  const renderModerationFlags = (flags: Record<string, unknown> | null) => {
     if (!flags) return null;
     
     const hasNsfw = flags.nsfw_flags?.length > 0;
