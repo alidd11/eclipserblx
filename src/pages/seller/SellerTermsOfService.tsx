@@ -252,7 +252,7 @@ export default function SellerTermsOfService() {
                   <li>Reporting your earnings to HMRC via Self Assessment or Corporation Tax</li>
                   <li>Paying any applicable income tax and National Insurance contributions</li>
                   <li>Registering for and collecting VAT if your taxable turnover exceeds the UK threshold (currently £90,000)</li>
-                  <li>Maintaining accurate financial records for at least 7 years</li>
+                  <li>Maintaining accurate financial records for at least 6 years</li>
                 </ul>
                 <p className="text-muted-foreground mt-4">
                   <strong>{SITE_NAME} does NOT</strong> withhold any tax from your payouts, act as your 

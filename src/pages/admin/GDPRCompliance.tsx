@@ -35,7 +35,7 @@ const PROCESSING_ACTIVITIES = [
     dataCategories: 'Name, email, billing address, payment method (via Stripe)',
     dataSubjects: 'Customers',
     recipients: 'Stripe (payment processor)',
-    retention: '7 years (HMRC legal obligation)',
+    retention: '6 years (HMRC legal obligation)',
     transfers: 'US (Stripe – SCCs)',
   },
   {
@@ -95,7 +95,7 @@ const PROCESSING_ACTIVITIES = [
     dataCategories: 'Store info, product data, sales records, commission data',
     dataSubjects: 'Sellers',
     recipients: 'Stripe (payouts), Internal staff',
-    retention: '7 years (financial records – HMRC)',
+    retention: '6 years (financial records – HMRC)',
     transfers: 'US (Stripe – SCCs)',
   },
   {
@@ -193,7 +193,7 @@ const RETENTION_SCHEDULE = [
   { dataType: 'Page visits / analytics', retention: '90 days', method: 'Auto-deleted by cleanup_expired_tracking_data', legal: 'PECR / Consent' },
   { dataType: 'Search logs', retention: '60 days', method: 'Auto-deleted by cleanup_expired_tracking_data', legal: 'Legitimate interest' },
   { dataType: 'IP address hashes', retention: '30–90 days', method: 'Anonymised then purged', legal: 'Legitimate interest' },
-  { dataType: 'Orders & transactions', retention: '7 years', method: 'Retained (HMRC requirement)', legal: 'Art. 6(1)(c) – Legal obligation' },
+  { dataType: 'Orders & transactions', retention: '6 years', method: 'Retained (HMRC requirement)', legal: 'Art. 6(1)(c) – Legal obligation' },
   { dataType: 'Consent records', retention: '3 years after last interaction', method: 'Manual review', legal: 'Art. 6(1)(c) – Legal obligation' },
   { dataType: 'Audit logs', retention: '2 years', method: 'Auto-purged', legal: 'Legitimate interest' },
   { dataType: 'Support tickets (customer)', retention: '2 years after closure', method: 'Soft delete', legal: 'Contract / Legitimate interest' },
@@ -234,10 +234,10 @@ const TAX_OBLIGATIONS = [
   },
   {
     obligation: 'Financial Records Retention',
-    description: 'Retain all financial records (orders, transactions, payouts, commissions) for 7 years',
+    description: 'Retain all financial records (orders, transactions, payouts, commissions) for 6 years',
     status: 'Implemented',
     hmrcRef: 'HMRC Record Keeping',
-    notes: 'Enforced via database retention policy. Orders, seller_transactions, seller_payouts tables retained for 7 years.',
+    notes: 'Enforced via database retention policy. Orders, seller_transactions, seller_payouts tables retained for 6 years.',
   },
   {
     obligation: 'Seller Tax Responsibility',
@@ -269,7 +269,7 @@ const PLATFORM_TAX_POSITION = {
   jurisdiction: 'England & Wales',
   paymentProcessor: 'Stripe Connect (Destination Charges)',
   sellerTaxModel: 'Independent — sellers self-report income',
-  recordsRetention: '7 years (HMRC requirement)',
+  recordsRetention: '6 years (HMRC requirement)',
 };
 
 export default function GDPRCompliance() {
