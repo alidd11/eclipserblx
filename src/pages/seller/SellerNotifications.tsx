@@ -160,7 +160,7 @@ export default function SellerNotifications() {
             {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-20" />)}
           </div>
         ) : notifications && notifications.length > 0 ? (
-          <div className="space-y-2">
+          <div className="border border-border rounded-xl overflow-hidden divide-y divide-border">
             {notifications.map((n: any) => {
               const Icon = NOTIFICATION_ICONS[n.type] || Bell;
               const colorClass = NOTIFICATION_COLORS[n.type] || 'text-muted-foreground';
