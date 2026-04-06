@@ -1,48 +1,80 @@
 
-## Enterprise SEO Hardening for Roblox Marketplace
 
-### What You Already Have (Strong)
-✅ Dynamic sitemap with products/stores/categories
-✅ IndexNow (Bing/Yandex instant indexing)
-✅ JSON-LD structured data (Product, Organization, Store, FAQ, Breadcrumbs)
-✅ OG proxy for social crawlers
-✅ Static HTML shell for bot rendering
-✅ Per-page `usePageMeta` with canonical tags
-✅ noindex on non-production domains
+## Enterprise Security Audit — Full Results
+
+### Current Security Posture: Strong (85/100)
+
+224 tables, 87+ edge functions, comprehensive RLS — this is already well above average. The scan found **2 active vulnerabilities** that need fixing and **2 warnings** worth addressing.
 
 ---
 
-### What's Missing (7 Changes)
+### Critical Findings (Must Fix)
 
-**1. Stale Static Sitemap — Remove It**
-`public/sitemap.xml` has hardcoded dates from March 2026 and conflicts with the dynamic sitemap. Google may crawl the static one instead. Remove it — `robots.txt` already points to the dynamic one.
+**1. Discount Codes Exposed to All Authenticated Users**
+- **Risk**: Any logged-in user can query `seller_discount_codes` and read all active codes (including private/influencer codes) from every store
+- **Policy**: `is_active = true` with no store or user scoping
+- **Fix**: Replace the broad SELECT policy with one scoped to store owners/team members, and move code validation to a server-side RPC that checks without exposing all codes
 
-**2. Google Ping is Deprecated**
-`submit-indexnow` pings `google.com/ping?sitemap=...` — Google deprecated this in 2023. Replace with Google Search Console API ping or just remove the dead call.
+**2. Realtime Channel Authorization Missing**
+- **Risk**: Any authenticated user can subscribe to any Realtime channel topic — including `notifications`, `seller_notifications`, `push_subscriptions` (contains push endpoint URLs and crypto keys), and `bot_installation_codes` (plaintext codes)
+- **Fix**: Add RLS policies on `realtime.messages` that scope channel access by topic prefix and `auth.uid()`
 
-**3. Missing IndexNow Key File**
-IndexNow requires a verification key file at `https://eclipserblx.com/{key}.txt`. The key is `eclipse-indexnow-key-2026` but there's no matching file in `public/`. Without it, Bing/Yandex silently reject all submissions.
+---
 
-**4. Category Pages Need Unique SEO Titles**
-Currently `/products?category=police-vehicles` has a generic title. Each category filter should generate a keyword-rich title like "Buy Roblox Police Vehicles | Eclipse Marketplace" and a targeted meta description. This is the highest-impact change — these are the pages Google will rank for long-tail queries.
+### Warnings (Should Fix)
 
-**5. Sitemap: Add `<lastmod>` to Static Pages**
-The dynamic sitemap has no `<lastmod>` on static pages (home, categories, etc.). Google uses this to prioritise crawl frequency. Add auto-generated dates.
+**3. Domain Verification Tokens Readable by Anonymous Users**
+- **Risk**: The `store_domains` policy exposes `verification_token` and `cloudflare_hostname_id` to unauthenticated visitors
+- **Fix**: Restrict anonymous SELECT to only `domain`, `store_id`, `is_primary` columns — use a security-definer view or restrict the policy
 
-**6. SEO Landing Page Content for `/sell`**
-The "Start Selling" page should have crawlable keyword-rich content targeting "sell roblox assets", "roblox asset marketplace for sellers", etc. Currently it's likely just a form/wizard with minimal text.
+**4. Extension in Public Schema**
+- **Risk**: Low — `pg_net` is in the public schema
+- **Status**: Already ignored with valid justification (required for edge function webhooks, only callable by service_role)
 
-**7. Internal Linking: Add Footer SEO Links**
-Enterprise marketplaces (Amazon, Etsy, Shopify) include a rich footer with links to top categories, popular stores, and help pages. This distributes PageRank and helps Google discover deep pages.
+---
+
+### Informational (Already Mitigated)
+
+| Finding | Status |
+|---|---|
+| Edge function logging | ✅ Acceptable — no secrets logged, server-side only |
+| Public forms PII collection | ✅ Acceptable — rate-limited, staff-only read access |
+| Service role RLS bypass | ✅ Acceptable — edge functions validate auth properly |
+| Profiles PII access | ✅ Acceptable — sealed envelope model, staff-gated |
+| Client-side admin checks | ✅ Acceptable — UI-only, server enforces real auth |
+| ILIKE search patterns | ✅ Low risk — parameterized queries, debounced, limited |
+| Store credentials exposure | ✅ Fixed — restricted to admin/lead_administrator |
+
+---
+
+### Implementation Plan
+
+**Step 1: Migration — Fix discount codes RLS**
+- Drop the overly broad `Authenticated users can validate discount codes` policy
+- Create two replacement policies:
+  - Store owners/team can SELECT their own store's codes
+  - A new `validate_discount_code` RPC (SECURITY DEFINER) for customers to check a code without seeing all codes
+
+**Step 2: Migration — Fix Realtime channel authorization**
+- Add RLS policy on `realtime.messages` scoping subscription by `auth.uid()` and topic pattern
+
+**Step 3: Migration — Restrict store_domains anonymous access**
+- Create a security-definer view exposing only safe columns (`domain`, `store_id`, `is_primary`)
+- Or replace the anonymous policy to use column-level restrictions
+
+**Step 4: Update frontend**
+- Replace direct `seller_discount_codes` queries in checkout with `supabase.rpc('validate_discount_code', { code, store_id })` call
+
+---
 
 ### Files Changed
 
-- **Delete**: `public/sitemap.xml` (stale duplicate)
-- **Create**: `public/eclipse-indexnow-key-2026.txt` (verification file)
-- **Edit**: `supabase/functions/submit-indexnow/index.ts` — remove deprecated Google ping
-- **Edit**: `supabase/functions/dynamic-sitemap/index.ts` — add lastmod to static pages
-- **Edit**: `src/pages/Products.tsx` — category-aware SEO titles via `usePageMeta`
-- **Edit**: `src/components/layout/Footer.tsx` — add SEO category/store links section
+- **Migration**: Fix `seller_discount_codes` RLS + add `validate_discount_code` RPC
+- **Migration**: Add `realtime.messages` RLS policies
+- **Migration**: Restrict `store_domains` anonymous SELECT
+- **Edit**: Checkout/discount components — use RPC instead of direct table query
 
 ### Risk
-None — all changes are additive SEO improvements. No user-facing functionality changes.
+
+Low — all changes are additive policy restrictions. Existing admin/owner access patterns remain intact. The discount code RPC maintains the same UX (user enters code, gets validation result) while eliminating the exposure vector.
+
