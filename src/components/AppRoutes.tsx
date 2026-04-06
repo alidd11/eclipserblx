@@ -338,6 +338,7 @@ export function AppRoutes() {
         <Route path="/chat-history" element={<ChatHistory />} />
         <Route path="/support/tickets" element={<SupportTickets />} />
         <Route path="/support/tickets/:ticketId" element={<SupportTicketDetail />} />
+        <Route path="/unsubscribe" element={<Unsubscribe />} />
          <Route path="/jobs" element={<Jobs />} />
          <Route path="/careers/portal" element={<ApplicantPortal />} />
         <Route path="/refunds" element={<RefundPolicy />} />
