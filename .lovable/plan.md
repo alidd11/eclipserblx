@@ -1,44 +1,51 @@
 
 
-# Admin Sidebar — Enterprise Polish
+# Hero Section — Enterprise Compaction
 
-## Current State
-The admin sidebar is functional but has visual inconsistencies compared to the seller sidebar's more polished patterns:
-- Active state uses a filled `bg-primary` block (heavy, draws too much attention)
-- Group headers include an icon (adds visual noise unlike the seller sidebar which omits them)
-- No left-border active indicator (seller sidebar uses `border-l-2 border-primary` which is cleaner)
-- Collapsible content uses `border-l` indent — good, but styling differs from seller
-- Header lacks subtitle branding treatment (seller uses uppercase tracking-wider label)
-- Sign out button placement inconsistent between mobile/desktop
+## Problem
+The hero currently occupies ~380px on desktop with centered, multi-line text and generous padding. This pushes products below the fold, wasting prime real estate. The heading wraps across two lines on most screens.
 
-## Plan
+## Approach
+Compress the hero into a single compact strip — heading on one line, CTA inline, stats inline. Reduce vertical padding dramatically so trending products are visible immediately without scrolling (similar to Amazon/Shopify marketplace patterns).
 
-### 1. Unify active state to left-border indicator
-Replace the heavy `bg-primary text-primary-foreground` active style with the seller pattern: `border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none` — subtler, more professional.
+## Changes
 
-### 2. Clean up group headers
-Remove group icons from collapsible triggers (seller sidebar omits them). Keep just the uppercase label + chevron for a cleaner typographic hierarchy.
+### `src/components/landing/LandingHero.tsx`
 
-### 3. Refine header branding
-Update the "Admin Dashboard" subtitle to match seller's uppercase tracking-wider style (`text-[10px] text-primary/70 font-semibold uppercase tracking-wider`).
+**Desktop layout (lg+):**
+- Put everything in a single horizontal row: heading left, CTA + stats right
+- Remove `max-w-4xl` constraint and reduce font size to `text-4xl xl:text-5xl` so the full "THE MARKETPLACE FOR ROBLOX CREATORS" fits on one line
+- Remove the separate description paragraph — the stats strip already communicates value
+- Reduce section padding from `lg:py-20` → `lg:py-10`
+- Reduce `lg:min-h-[380px]` → `lg:min-h-[200px]`
+- Layout: `flex items-center justify-between` instead of `flex-col items-center text-center`
 
-### 4. Standardise nav item sizing
-Align padding and font sizing with seller sidebar (`py-1.5`, `stroke-[2.25]` for active icons, `stroke-[1.75]` for inactive).
+**Mobile layout:**
+- Keep existing compact layout (already good)
+- Reduce `py-8` → `py-6` for slightly tighter spacing
 
-### 5. Consolidate sign out placement
-Move sign out into the header row (next to logo) matching seller pattern, remove the separate footer sign-out section on desktop.
+**Result:** Hero shrinks from ~380px to ~200px on desktop, trending products move above the fold.
 
-### 6. Remove collapse toggle
-Per the drawer-navigation architecture memory, persistent desktop sidebars are removed — the collapse/expand button in the footer is legacy. Remove it.
+### `src/components/landing/HeroBanner.tsx`
+- No structural changes — background image still fills the section naturally
 
 ### Technical Details
 
-**File:** `src/components/admin/AdminSidebar.tsx`
-- `renderNavItem`: Change active class from `bg-primary text-primary-foreground shadow-sm` → `border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none pl-[calc(0.625rem-2px)]`
-- `renderNavItem`: Add `stroke-[2.25]`/`stroke-[1.75]` to icon styling
-- `renderGroup`: Remove `<group.icon>` from CollapsibleTrigger, remove icon className
-- Header: Add `text-[10px] text-primary/70 font-semibold uppercase tracking-wider` to subtitle
-- Header: Add sign-out icon button inline with logo (matching seller)
-- Footer: Remove collapse toggle button and desktop sign-out section entirely
-- Collapsible content: Change from `ml-[13px] border-l border-border/40 pl-2` → `ml-3 space-y-px pt-px pb-0.5` (matching seller)
+```
+Before:  [    HEADING (2 lines, centered)    ]
+         [       description paragraph        ]
+         [     CTA button    |   Start selling ]
+         [        stats strip                  ]
+         ~380px tall
+
+After:   [ HEADING (1 line)    |  CTA  stats  ]
+         ~200px tall
+```
+
+Desktop heading becomes left-aligned with `whitespace-nowrap`, CTA and stats group on the right. The "Start selling" link and stat pills sit below the CTA button in a compact vertical stack on the right side.
+
+### Files Modified
+| File | Change |
+|------|--------|
+| `src/components/landing/LandingHero.tsx` | Horizontal layout, single-line heading, reduced padding |
 
