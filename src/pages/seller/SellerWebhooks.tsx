@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from 'sonner';
 import { Plus, Trash2, Loader2, Eye, EyeOff, Copy, Clock } from 'lucide-react';
 import { useActiveStore } from '@/contexts/ActiveStoreContext';
+import { useSellerStore } from '@/hooks/useSellerStore';
 import { format, formatDistanceToNow } from 'date-fns';
 
 const AVAILABLE_EVENTS = [
