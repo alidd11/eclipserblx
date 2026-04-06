@@ -274,7 +274,7 @@ export default function BotCommunity() {
  <div className="p-6 text-center text-foreground/40 text-sm">No suggestions yet. Members use <code>/suggest</code>.</div>
  ) : (
  <div className="divide-y divide-white/5">
- {suggestions.map((s: any) => (
+ {suggestions.map((s) => (
  <div key={s.id} className="px-4 py-3">
  <div className="flex items-center gap-2">
  <span className="text-sm text-foreground">{s.content}</span>
