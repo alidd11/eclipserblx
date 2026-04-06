@@ -28,7 +28,7 @@ import { useTranslation } from 'react-i18next';
 import { useNotifications } from '@/hooks/useNotifications';
 
 import { DiscordIcon } from './sidebar/SidebarBrandIcons';
-import { ICON_SIZE, ICON_SIZE_SMALL, ICON_STROKE_ACTIVE, ICON_STROKE_DEFAULT, SIDEBAR_STORAGE_KEY } from './sidebar/sidebarConstants';
+import { ICON_SIZE, ICON_SIZE_SMALL, ICON_STROKE_ACTIVE, ICON_STROKE_DEFAULT, SIDEBAR_GROUPS_KEY } from './sidebar/sidebarConstants';
 import { SidebarFooter } from './sidebar/SidebarFooter';
 
 interface NavItem {
