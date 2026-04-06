@@ -35,7 +35,7 @@ export function BotDashboardLayout({ children }: BotDashboardLayoutProps) {
 
   if (loading) {
     return (
-      <div className="min-h-[100dvh] bg-[hsl(228,15%,10%)] flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-[hsl(228,15%,10%)] flex items-center justify-center" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="space-y-4 w-full max-w-md px-4">
           <Skeleton className="h-8 w-3/4 mx-auto bg-background/10" />
           <Skeleton className="h-4 w-1/2 mx-auto bg-background/10" />
