@@ -78,7 +78,7 @@ export function ProductPerformanceComparison() {
 
  // Build metrics
  const orderItemMap = new Map<string, string>();
- orderItems?.forEach((oi: any) => {
+ orderItems?.forEach((oi) => {
  orderItemMap.set(oi.id, oi.product_id);
  });
 
