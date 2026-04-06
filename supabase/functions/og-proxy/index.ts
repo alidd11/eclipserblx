@@ -64,7 +64,12 @@ const NAV_HTML = `<nav aria-label="Main navigation"><ul>
 <li><a href="${SITE_URL}/contact">Contact</a></li>
 </ul></nav>`;
 
-function buildHtml(t: string, d: string, img: string, url: string, type = "website", extra = "", bodyContent = ""): string {
+function buildOembedUrl(pageUrl: string): string {
+  const base = Deno.env.get("SUPABASE_URL") || "";
+  return `${base}/functions/v1/og-proxy?format=oembed&url=${encodeURIComponent(pageUrl)}`;
+}
+
+function buildHtml(t: string, d: string, img: string, url: string, type = "website", extra = "", bodyContent = "", authorName?: string): string {
   const jsonLd = type === "product" ? "" : `<script type="application/ld+json">${JSON.stringify({
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -74,19 +79,24 @@ function buildHtml(t: string, d: string, img: string, url: string, type = "websi
     "potentialAction": { "@type": "SearchAction", "target": `${SITE_URL}/products?q={search_term_string}`, "query-input": "required name=search_term_string" }
   })}</script>`;
 
+  const oembedUrl = buildOembedUrl(url);
+
   return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"/><title>${esc(t)}</title>
 <meta name="description" content="${esc(d)}"/>
 <link rel="canonical" href="${esc(url)}"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="${BRAND_COLOR}"/>
 <meta property="og:type" content="${type}"/>
 <meta property="og:site_name" content="${SITE_NAME}"/>
 <meta property="og:title" content="${esc(t)}"/>
 <meta property="og:description" content="${esc(d)}"/>
 <meta property="og:image" content="${esc(img)}"/>
+<meta property="og:image:alt" content="${esc(t)} preview"/>
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
 <meta property="og:url" content="${esc(url)}"/>
+<link rel="alternate" type="application/json+oembed" href="${esc(oembedUrl)}" title="${esc(t)}"/>
 ${extra}
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:site" content="@EclipseRblx"/>
