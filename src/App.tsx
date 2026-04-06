@@ -97,7 +97,8 @@ function App() {
             <DeviceProvider>
             <AuthProvider>
               <ActiveStoreProvider>
-                <CartProvider>
+              <CartProvider>
+                <PredictivePreloader />
                   <ChatPanelProvider>
                     <StoreDomainProvider>
                       <TooltipProvider>
