@@ -57,6 +57,7 @@ export function useSupportTicketNotifications() {
               .rpc('list_push_subscribed_staff_user_ids');
             
             const staffUserIds = (staffRows ?? []).map((r: any) => r.user_id as string);
+            if (staffUserIds.length > 0) {
               await notifyNewSupportTicket(staffUserIds, {
                 id: newTicket.id,
                 subject: newTicket.subject,
