@@ -17,11 +17,24 @@ import { toast } from 'sonner';
 import { format } from '@/lib/dateUtils';
 import { Zap, Plus, Trash2, Edit, Clock, Timer, Info } from 'lucide-react';
 
+interface FlashSale {
+  id: string;
+  name: string;
+  discount_type: string;
+  discount_value: number;
+  apply_to_all: boolean;
+  starts_at: string;
+  ends_at: string;
+  is_active: boolean;
+  store_id: string;
+  created_at: string;
+}
+
 export default function SellerFlashSales() {
   const queryClient = useQueryClient();
   const { store } = useSellerStatus();
   const [showDialog, setShowDialog] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<FlashSale | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '', discount_type: 'percentage', discount_value: 20,
