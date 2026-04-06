@@ -6,6 +6,7 @@ const corsHeaders = {
 
 const SITE_URL = "https://eclipserblx.com";
 const SITE_NAME = "Eclipse";
+const BRAND_COLOR = "#7c3aed";
 const DEFAULT_IMAGE = "https://storage.googleapis.com/gpt-engineer-file-uploads/6XoLGVy9Aseup6dIxodIWS9uGsS2/social-images/social-1772684689417-IMG_0084.webp";
 const DEFAULT_DESCRIPTION = "Eclipse is the best Roblox asset marketplace. Buy premium roleplay scripts, vehicles, maps and game assets. Lower fees, instant delivery.";
 
