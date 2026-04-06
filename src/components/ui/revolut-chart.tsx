@@ -174,13 +174,13 @@ export interface RevolutLineSeries {
 }
 
 interface RevolutLineChartProps {
-  data: any[];
+  data: Record<string, unknown>[];
   xKey: string;
   series: RevolutLineSeries[];
   height?: number;
   yFormatter?: (v: number) => string;
   tooltipFormatter?: (value: number, name: string) => [string, string];
-  tooltipContent?: ReactNode | ((props: any) => ReactNode);
+  tooltipContent?: ReactNode | ((props: Record<string, unknown>) => ReactNode);
   showYAxis?: boolean;
   className?: string;
 }
