@@ -81,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (refreshPromise.current) return refreshPromise.current;
 
       refreshPromise.current = (async () => {
-        console.log('[Auth] Attempting token refresh');
+        console.debug('[Auth] Attempting token refresh');
         const result = await withTimeout(supabase.auth.refreshSession(), 5000);
         if (!result || result.error || !result.data.session) {
           console.warn('[Auth] Refresh failed:', result?.error?.message ?? 'timeout');
