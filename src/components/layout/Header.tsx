@@ -13,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSystemStatus } from '@/hooks/useSystemStatus';
 import { SignOutConfirmDialog } from '@/components/auth/SignOutConfirmDialog';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { useDiscordUrl } from '@/hooks/useDiscordUrl';
+
 import { HeaderSearchBar } from './HeaderSearchBar';
 import { CurrencySelector } from './CurrencySelector';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
