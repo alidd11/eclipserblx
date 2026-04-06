@@ -71,7 +71,7 @@ export function PaymentMethodDisplay({
   onProcessing,
   onCardCheckout,
 }: PaymentMethodDisplayProps) {
-  const platform = usePlatform();
+  const platform = useDevice();
   const { paymentMethods, isLoading: isLoadingMethods } = useSavedPaymentMethods();
   const [walletAvailable, setWalletAvailable] = useState<boolean | null>(null);
   const [showAllCards, setShowAllCards] = useState(false);
