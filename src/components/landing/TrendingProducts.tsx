@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TrendingUp, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductCardSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
@@ -10,18 +10,6 @@ import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { usePreloadImages } from '@/hooks/usePreloadImages';
 import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
-
-// Masonry height classes — alternate between tall and short cards
-const MASONRY_HEIGHTS = [
-  'row-span-2', // tall
-  'row-span-1', // short
-  'row-span-1', // short
-  'row-span-2', // tall
-  'row-span-1', // short
-  'row-span-2', // tall
-  'row-span-1', // short
-  'row-span-1', // short
-];
 
 export function TrendingProducts() {
   const { data: products, isLoading } = useQuery({
@@ -76,10 +64,9 @@ export function TrendingProducts() {
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-primary/10">
-              <TrendingUp className="h-4 w-4 text-primary" />
+            <div className="border-l-2 border-primary pl-3">
+              <h2 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight uppercase">Trending Now</h2>
             </div>
-            <h2 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight uppercase">Trending Now</h2>
             <span className="text-[10px] text-muted-foreground font-medium bg-muted/60 px-1.5 py-0.5 rounded">{products.length} items</span>
           </div>
           <Link to="/products?sort=popular" className="text-xs text-primary hover:underline flex items-center gap-1">
@@ -92,14 +79,12 @@ export function TrendingProducts() {
           {products.map((product, idx) => {
             const store = product.stores as any;
             const category = product.categories as any;
-            // Alternate between tall (aspect-[3/4]) and standard (aspect-square) cards
             const isTall = idx % 3 === 0;
             return (
               <div 
                 key={product.id} 
                 className={cn(
                   "break-inside-avoid mb-3",
-                  // Stagger entry animation
                   "animate-fade-in",
                 )}
                 style={{ animationDelay: `${idx * 60}ms` }}

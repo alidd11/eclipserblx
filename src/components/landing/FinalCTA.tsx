@@ -7,7 +7,18 @@ export function FinalCTA() {
   return (
     <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
-        <div className="p-8 sm:p-12 text-center rounded-2xl border border-border bg-card">
+        <div className="relative p-8 sm:p-12 text-center rounded-2xl overflow-hidden bg-card">
+          {/* Gradient border effect */}
+          <div
+            className="absolute inset-0 rounded-2xl pointer-events-none"
+            style={{
+              padding: '1px',
+              background: 'linear-gradient(135deg, hsl(235 86% 65% / 0.4), hsl(215 85% 55% / 0.2), hsl(220 5% 15% / 0.6))',
+              WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+              WebkitMaskComposite: 'xor',
+              maskComposite: 'exclude',
+            }}
+          />
           <h2 className="text-2xl sm:text-3xl font-display font-bold tracking-tight mb-3">
             Turn your creations into revenue
           </h2>
@@ -22,6 +33,9 @@ export function FinalCTA() {
               </Button>
             </Link>
           </div>
+          <p className="text-[11px] text-muted-foreground/60 mt-5">
+            No listing fees · Lower commission · Instant payouts
+          </p>
         </div>
       </ScrollReveal>
     </section>
