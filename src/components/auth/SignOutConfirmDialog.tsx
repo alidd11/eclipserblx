@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,12 +18,12 @@ interface SignOutConfirmDialogProps {
   isLoading?: boolean;
 }
 
-export function SignOutConfirmDialog({
+export const SignOutConfirmDialog = forwardRef<HTMLDivElement, SignOutConfirmDialogProps>(function SignOutConfirmDialog({
   open,
   onOpenChange,
   onConfirm,
   isLoading = false,
-}: SignOutConfirmDialogProps) {
+}, ref) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -51,4 +52,4 @@ export function SignOutConfirmDialog({
       </AlertDialogContent>
     </AlertDialog>
   );
-}
+});

@@ -11352,6 +11352,16 @@ export type Database = {
       generate_store_id: { Args: never; Returns: string }
       generate_takedown_case_number: { Args: never; Returns: string }
       generate_ticket_number: { Args: never; Returns: string }
+      get_applicant_messages: {
+        Args: { p_token: string }
+        Returns: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          subject: string
+        }[]
+      }
       get_global_guard_limits: {
         Args: { _user_id: string }
         Returns: {
@@ -11464,6 +11474,10 @@ export type Database = {
           p_table_name: string
           p_user_id: string
         }
+        Returns: undefined
+      }
+      mark_applicant_messages_read: {
+        Args: { p_message_ids: string[]; p_token: string }
         Returns: undefined
       }
       mask_account: { Args: { acct: string }; Returns: string }
@@ -11648,6 +11662,17 @@ export type Database = {
       user_owns_order: {
         Args: { _order_id: string; _user_id: string }
         Returns: boolean
+      }
+      validate_applicant_token: {
+        Args: { p_token: string }
+        Returns: {
+          applicant_name: string
+          created_at: string
+          id: string
+          position: string
+          reviewed_at: string
+          status: string
+        }[]
       }
       validate_discount_code_for_checkout: {
         Args: { p_code: string; p_product_ids?: string[]; p_subtotal?: number }

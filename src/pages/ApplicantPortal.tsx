@@ -56,9 +56,7 @@ function TokenLogin({ onLogin }: { onLogin: (token: string) => void }) {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('job_applications')
-        .select('id')
-        .eq('access_token', trimmed)
+        .rpc('validate_applicant_token', { p_token: trimmed })
         .maybeSingle();
 
       if (error) throw error;
@@ -120,9 +118,7 @@ function Dashboard({ token, onLogout }: { token: string; onLogout: () => void })
     const load = async () => {
       try {
         const { data: app, error: appErr } = await supabase
-          .from('job_applications')
-          .select('id, position, applicant_name, status, created_at, reviewed_at')
-          .eq('access_token', token)
+          .rpc('validate_applicant_token', { p_token: token })
           .single();
 
         if (appErr || !app) {
@@ -133,20 +129,17 @@ function Dashboard({ token, onLogout }: { token: string; onLogout: () => void })
         setApplication(app);
 
         const { data: msgs } = await supabase
-          .from('applicant_messages')
-          .select('id, subject, message, created_at, is_read')
-          .eq('application_id', app.id)
-          .order('created_at', { ascending: false });
+          .rpc('get_applicant_messages', { p_token: token });
 
         setMessages(msgs || []);
 
         // Mark unread messages as read
         const unread = (msgs || []).filter(m => !m.is_read).map(m => m.id);
         if (unread.length > 0) {
-          await supabase
-            .from('applicant_messages')
-            .update({ is_read: true })
-            .in('id', unread);
+          await supabase.rpc('mark_applicant_messages_read', { 
+            p_token: token, 
+            p_message_ids: unread 
+          });
         }
       } catch {
         onLogout();
