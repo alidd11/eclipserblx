@@ -86,6 +86,7 @@ const AdminOrders = lazyWithRetry(() => import("@/pages/admin/Orders"));
 const AdminUsers = lazyWithRetry(() => import("@/pages/admin/Users"));
 const AdminModerationQueue = lazyWithRetry(() => import("@/pages/admin/ModerationQueue"));
 const AdminSettings = lazyWithRetry(() => import("@/pages/admin/Settings"));
+const AdminCannedResponses = lazyWithRetry(() => import("@/pages/admin/CannedResponses"));
 const AdminDiscordSettings = lazyWithRetry(() => import("@/pages/admin/DiscordSettings"));
 const AdminGameNewsFeeds = lazyWithRetry(() => import("@/pages/admin/GameNewsFeeds"));
 const AdminRobloxSettings = lazyWithRetry(() => import("@/pages/admin/RobloxSettings"));
