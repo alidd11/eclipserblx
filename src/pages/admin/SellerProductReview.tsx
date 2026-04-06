@@ -261,8 +261,9 @@ export default function SellerProducts() {
   };
 
   // Render moderation flags if present
-  const renderModerationFlags = (flags: Record<string, unknown> | null) => {
+  const renderModerationFlags = (flags: Record<string, unknown> | null | undefined) => {
     if (!flags) return null;
+    const f = flags as { nsfw_flags?: string[]; lua_concerns?: string[]; lua_risk_level?: string; has_roblox_files?: boolean; file_names_sample?: string[]; total_files?: number; scan_timestamp?: string };
     
     const hasNsfw = flags.nsfw_flags?.length > 0;
     const hasLuaConcerns = flags.lua_concerns?.length > 0;
