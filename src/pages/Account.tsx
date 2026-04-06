@@ -640,6 +640,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
         {/* ═══ Account ═══ */}
         <div className="border border-border rounded-xl overflow-hidden">
+          <AccordionGroup>
           <div className="p-1">
             <SectionHeader title="Account" />
             <ExpandableSection icon={Link2} label="Linked Accounts">
@@ -663,6 +664,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             </ExpandableSection>
             <DataExportButton />
           </div>
+          </AccordionGroup>
         </div>
 
         {/* ═══ Preferences ═══ */}
