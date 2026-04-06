@@ -389,8 +389,14 @@ Deno.serve(async (req) => {
             // Suspicious results get recorded with low confidence, no notification
             const isSuspicious = aiVerdict.verdict === "suspicious";
 
+            // --- Multi-factor confidence scoring ---
+            const scoring = calculateConfidenceScore(product.name, snippet, title, domain);
+            let confidenceScore = isSuspicious ? Math.min(scoring.score, 39) : scoring.score;
+            let confidence = isSuspicious ? "low" : scoreToConfidence(confidenceScore);
+
+            console.log(`Score for ${result.url}: ${confidenceScore}/100 (U:${scoring.factors.uniqueness} R:${scoring.factors.relevance} S:${scoring.factors.reputation})`);
+
             // --- Fingerprint check (only for leak verdict) ---
-            let confidence = isSuspicious ? "low" : "medium";
             let extractedFingerprint: string | null = null;
             let matchedUserId: string | null = null;
             let matchedDisplayName: string | null = null;
@@ -406,6 +412,7 @@ Deno.serve(async (req) => {
                   matchedUserId = buyer.userId;
                   matchedDisplayName = buyer.displayName;
                   confidence = matchedUserId ? "confirmed" : "high";
+                  confidenceScore = matchedUserId ? 100 : Math.max(confidenceScore, 85);
                 }
 
                 await new Promise((r) => setTimeout(r, 2000));
@@ -423,6 +430,7 @@ Deno.serve(async (req) => {
                 matched_query: query,
                 snippet: snippet.substring(0, 500),
                 confidence,
+                confidence_score: confidenceScore,
                 extracted_fingerprint: extractedFingerprint,
                 matched_user_id: matchedUserId,
                 matched_display_name: matchedDisplayName,
