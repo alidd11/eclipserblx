@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { applyProductWatermark } from '@/lib/watermark';
 import { QUANTIS_STORE_ID } from '@/lib/constants';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import {} from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
