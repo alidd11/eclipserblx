@@ -5,7 +5,7 @@ import {
   LayoutGrid, Store, ExternalLink, Palette, CreditCard, Bell, Users,
   Tag, BarChart3, FileText, HelpCircle, MessageCircle, Star, Bot, Import,
   Gamepad2, Layers, TrendingUp, Receipt, LineChart, Megaphone,
-  RotateCcw, PackagePlus, Globe, Inbox, Sparkles, Calculator, Crown, Shield
+  RotateCcw, PackagePlus, Globe, Inbox, Sparkles, Calculator, Crown, Shield, Webhook
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
