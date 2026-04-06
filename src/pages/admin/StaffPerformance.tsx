@@ -116,11 +116,24 @@ export default function AdminStaffPerformance() {
                       <td className="p-3 text-center">
                         <Badge variant="outline" className="tabular-nums">{m.chats_completed}</Badge>
                       </td>
-                      <td className="p-3 text-center tabular-nums text-foreground">
-                        {m.duty_hours_30d.toFixed(1)}h
+                      <td className="p-3 text-center tabular-nums">
+                        {m.avg_csat > 0 ? (
+                          <span className={m.avg_csat >= 4 ? 'text-green-500' : m.avg_csat >= 3 ? 'text-yellow-500' : 'text-destructive'}>
+                            {m.avg_csat.toFixed(1)} ★
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-center tabular-nums text-foreground text-xs">
+                        {m.avg_first_response_minutes > 0 ? (
+                          m.avg_first_response_minutes < 60
+                            ? `${m.avg_first_response_minutes}m`
+                            : `${(m.avg_first_response_minutes / 60).toFixed(1)}h`
+                        ) : '—'}
                       </td>
                       <td className="p-3 text-center tabular-nums text-foreground">
-                        {m.total_actions}
+                        {m.duty_hours_30d.toFixed(1)}h
                       </td>
                       <td className="p-3 text-right text-muted-foreground text-xs">
                         {formatDistanceToNow(new Date(m.last_active_at), { addSuffix: true })}

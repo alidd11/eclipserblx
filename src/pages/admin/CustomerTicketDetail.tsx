@@ -867,6 +867,23 @@ export default function CustomerTicketDetail() {
                     <span>{categoryLabel}</span>
                   </div>
                 )}
+                <div className="h-px bg-border my-1" />
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">First Response</span>
+                  <span className={ticket.first_response_at ? 'text-green-500' : 'text-yellow-500'}>
+                    {ticket.first_response_at
+                      ? formatDistanceToNow(new Date(ticket.first_response_at), { addSuffix: false })
+                      : 'Awaiting'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Resolution Time</span>
+                  <span className={ticket.resolved_at ? 'text-green-500' : 'text-muted-foreground'}>
+                    {ticket.resolved_at
+                      ? formatDistanceToNow(new Date(ticket.resolved_at), { addSuffix: false })
+                      : '—'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
