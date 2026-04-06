@@ -245,7 +245,7 @@ export default function AdminPromotions() {
         try {
           // Build a custom announcement for signup promotions
           const rewardText = data.eclipse_plus_days 
-            ? `${data.eclipse_plus_days} days of Eclipse+ membership FREE!` 
+            ? `${data.eclipse_plus_days} bonus days FREE!` 
             : 'Special reward!';
           
           await supabase.functions.invoke('send-promotion-discord-webhook', {
@@ -392,7 +392,7 @@ export default function AdminPromotions() {
       return;
     }
     if (promoForm.eclipse_plus_days < 1 || promoForm.eclipse_plus_days > 365) {
-      toast.error('Eclipse+ days must be between 1 and 365');
+      toast.error('Reward days must be between 1 and 365');
       return;
     }
     if (promoForm.max_claims !== null && promoForm.max_claims > 100000) {
@@ -439,9 +439,9 @@ export default function AdminPromotions() {
   const getPromoTypeLabel = (type: string) => {
     switch (type) {
       case 'signup_eclipse_plus':
-        return 'Free Eclipse+ on Signup';
+        return 'Signup Reward';
       case 'first_purchase_eclipse_plus':
-        return 'Free Eclipse+ on First Purchase';
+        return 'First Purchase Reward';
       default:
         return type;
     }
@@ -644,7 +644,7 @@ export default function AdminPromotions() {
           <TabsContent value="offers" className="space-y-4 mt-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <p className="text-sm text-muted-foreground">
-                Create special promotions like free Eclipse+ for new signups
+                Create special promotions and rewards for new signups
               </p>
               <Button onClick={openCreatePromo}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -685,7 +685,7 @@ export default function AdminPromotions() {
                         <TableCell>
                           <div className="flex items-center gap-1.5">
                             <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-                            {promo.eclipse_plus_days} days Eclipse+
+                            {promo.eclipse_plus_days} reward days
                           </div>
                         </TableCell>
                         <TableCell>{promo.current_claims || 0}{promo.max_claims && ` / ${promo.max_claims}`}</TableCell>
@@ -738,7 +738,7 @@ export default function AdminPromotions() {
                         <span className="text-muted-foreground">Reward:</span>
                         <div className="flex items-center gap-1 font-medium">
                           <Sparkles className="h-3 w-3 text-amber-500" />
-                          {promo.eclipse_plus_days}d Eclipse+
+                          {promo.eclipse_plus_days}d reward
                         </div>
                       </div>
                     </div>
@@ -921,20 +921,20 @@ export default function AdminPromotions() {
                   <SelectItem value="signup_eclipse_plus">
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4" />
-                      Free Eclipse+ on Signup
+                      Signup Reward
                     </div>
                   </SelectItem>
                   <SelectItem value="first_purchase_eclipse_plus">
                     <div className="flex items-center gap-2">
                       <Gift className="h-4 w-4" />
-                      Free Eclipse+ on First Purchase
+                      First Purchase Reward
                     </div>
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Eclipse+ Days</Label>
+              <Label>Reward Days</Label>
               <Select
                 value={String(promoForm.eclipse_plus_days)}
                 onValueChange={(value) => setPromoForm({ ...promoForm, eclipse_plus_days: parseInt(value) })}

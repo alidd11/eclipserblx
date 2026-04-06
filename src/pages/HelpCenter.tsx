@@ -44,7 +44,7 @@ export default function HelpCenter() {
               Buyer Help Center
             </h2>
             <p className="text-muted-foreground text-sm mb-4">
-              Purchasing, downloads, payments, refunds, bot setup, Eclipse+, and account help.
+              Purchasing, downloads, payments, refunds, bot setup, and account help.
             </p>
             <span className="inline-flex items-center gap-1 text-sm font-medium text-primary">
               Browse articles <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />

@@ -350,7 +350,7 @@ function HeroProductCard({ product }: { product: any }) {
                   {isEligible ? formatPrice(memberPrice) : formatPrice(Number(product.price))}
                 </p>
                 {isEligible && (
-                  <p className="text-[10px] text-primary font-medium">Save {discount}% with Eclipse+</p>
+                  <p className="text-[10px] text-primary font-medium">Save {discount}%</p>
                 )}
               </div>
               <Button

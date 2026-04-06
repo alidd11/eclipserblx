@@ -13,7 +13,6 @@ const ROUTE_NAMES: Record<string, string> = {
   '/wishlist': 'Wishlist',
   '/account': 'Account',
   
-  '/eclipse-plus': 'Eclipse+',
   '/jobs': 'Jobs',
 };
 

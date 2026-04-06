@@ -50,7 +50,7 @@ export function EarlyAccessCard({
           <div>
             <CardTitle className="text-base">Early Product Drops</CardTitle>
             <CardDescription className="text-xs">
-              Give Eclipse+ members early access
+              Give customers early access
             </CardDescription>
           </div>
         </div>
@@ -60,7 +60,7 @@ export function EarlyAccessCard({
           <div className="space-y-0.5">
             <Label>Enable Early Access</Label>
             <p className="text-xs text-muted-foreground">
-              Eclipse+ members can access this product before the public release
+              Eligible customers can access this product before the public release
             </p>
           </div>
           <Switch

@@ -43,7 +43,7 @@
     "featured": "En Vedette",
     "products": "Produits",
     "categories": "Catégories",
-    "eclipsePlus": "Eclipse+",
+    "eclipsePlus": "Abonnement",
     "jobs": "Emplois",
     "joinDiscord": "Rejoindre Discord",
     "systemStatus": "État du Système",
@@ -141,8 +141,8 @@
     "total": "Total",
     "proceedToCheckout": "Passer à la Caisse",
     "items": "articles",
-    "savingWith": "Vous économisez {{amount}} avec Eclipse+ !",
-    "eclipseDiscount": "Réduction Eclipse+"
+    "savingWith": "Vous économisez {{amount}} !",
+    "eclipseDiscount": "Réduction"
   },
   "checkout": {
     "checkout": "Paiement",
@@ -158,8 +158,8 @@
     "signInRequired": "Connexion Requise",
     "signInToCheckout": "Connectez-vous pour payer",
     "addProducts": "Ajoutez des produits avant de payer.",
-    "couldSave": "Vous pourriez économiser {{amount}} avec Eclipse+",
-    "getUpTo": "Jusqu'à 35% de réduction + 1 article gratuit/mois pour seulement £3.99/mois",
+    "couldSave": "Vous pourriez économiser {{amount}}",
+    "getUpTo": "Débloquez des prix exclusifs sur les produits éligibles",
     "paymentSuccess": "Paiement Réussi !",
     "orderProcessing": "Votre commande est en cours de traitement",
     "paymentFailed": "Échec du Paiement",
@@ -278,7 +278,7 @@
   "offers": {
     "activeOffers": "Offres Actives",
     "newMemberExclusive": "🎁 Exclusivité Nouveau Membre",
-    "daysEclipsePlusFree": "{{days}} jours d'Eclipse+ GRATUITS",
+    "daysEclipsePlusFree": "{{days}} jours bonus GRATUITS",
     "offerClaimed": "Offre Réclamée !",
     "claimed": "Réclamé",
     "signUpToClaim": "Inscrivez-vous pour Réclamer",

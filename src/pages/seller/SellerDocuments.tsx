@@ -52,7 +52,7 @@ const staticDocuments: StaticDocument[] = [
   {
     id: "payouts-finance",
     title: "Payouts & Finance Guide",
-    description: "Understand your earnings, commission structure, payout methods, and how Eclipse+ discounts work.",
+    description: "Understand your earnings, commission structure, payout methods, and how discount handling works.",
     icon: Wallet,
     href: "/seller/documents/payouts-finance",
     category: "guide",

@@ -43,7 +43,7 @@
     "featured": "Featured",
     "products": "Products",
     "categories": "Categories",
-    "eclipsePlus": "Eclipse+",
+    "eclipsePlus": "Membership",
     "jobs": "Jobs",
     "joinDiscord": "Join Discord",
     "systemStatus": "System Status",
@@ -141,8 +141,8 @@
     "total": "Total",
     "proceedToCheckout": "Proceed to Checkout",
     "items": "items",
-    "savingWith": "You're saving {{amount}} with Eclipse+!",
-    "eclipseDiscount": "Eclipse+ Discount"
+    "savingWith": "You're saving {{amount}}!",
+    "eclipseDiscount": "Discount"
   },
   "checkout": {
     "checkout": "Checkout",
@@ -158,8 +158,8 @@
     "signInRequired": "Sign In Required",
     "signInToCheckout": "Please sign in to checkout",
     "addProducts": "Add some products before checking out.",
-    "couldSave": "You could save {{amount}} with Eclipse+",
-    "getUpTo": "Get up to 35% off all products + 1 free item monthly for just £3.99/mo",
+    "couldSave": "You could save {{amount}}",
+    "getUpTo": "Unlock exclusive pricing on eligible products",
     "paymentSuccess": "Payment Successful!",
     "orderProcessing": "Your order is being processed",
     "paymentFailed": "Payment Failed",
@@ -278,7 +278,7 @@
   "offers": {
     "activeOffers": "Active Offers",
     "newMemberExclusive": "🎁 New Member Exclusive",
-    "daysEclipsePlusFree": "{{days}} days of Eclipse+ FREE",
+    "daysEclipsePlusFree": "{{days}} bonus days FREE",
     "offerClaimed": "Offer Claimed!",
     "claimed": "Claimed",
     "signUpToClaim": "Sign Up to Claim",

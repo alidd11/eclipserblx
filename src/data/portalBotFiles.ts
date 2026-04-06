@@ -854,7 +854,7 @@ export async function handleProfile(interaction, serverContext) {
     { name: '🆔 Customer ID', value: profile.customer_id || 'N/A', inline: true },
   ];
   if (!serverContext.store) {
-    fields.push({ name: '⭐ Membership', value: subscription ? 'Eclipse+ (Active)' : 'Free', inline: true });
+    fields.push({ name: '⭐ Membership', value: subscription ? 'Subscription Active' : 'Free', inline: true });
     fields.push({ name: '💷 Total Spent', value: \`£\${totalSpent.toFixed(2)}\`, inline: true });
   }
   fields.push({
@@ -1164,7 +1164,7 @@ export async function handleGetRole(interaction, serverContext) {
     } else if (purchaseCount >= 1 && config.customerRoleId) {
       rolesToAssign.push({ id: config.customerRoleId, name: 'Customer' });
     }
-    if (subscriptionResult.data && config.eclipsePlusRoleId) rolesToAssign.push({ id: config.eclipsePlusRoleId, name: 'Eclipse+' });
+    if (subscriptionResult.data && config.eclipsePlusRoleId) rolesToAssign.push({ id: config.eclipsePlusRoleId, name: 'Subscriber' });
     if (storeResult.data && config.storeCreatorRoleId) rolesToAssign.push({ id: config.storeCreatorRoleId, name: 'Store Creator' });
   } else if (serverContext.store) {
     const [roleConfigsResult, ordersResult] = await Promise.all([
@@ -1253,7 +1253,7 @@ export async function handleGetRole(interaction, serverContext) {
     const count = ordersRes.count || 0;
     if (count === 0) eligibility.push('\\u2022 Make a purchase → **Customer**');
     if (count > 0 && count < 5) eligibility.push(\`\\u2022 \${5 - count} more purchases → **Loyal Customer**\`);
-    if (!subRes.data) eligibility.push('\\u2022 Subscribe to Eclipse+ → **Eclipse+**');
+    if (!subRes.data) eligibility.push('\\u2022 Subscribe → **Subscriber**');
     if (!storeRes.data) eligibility.push('\\u2022 Create a store → **Store Creator**');
     if (eligibility.length > 0) fields.push({ name: '📋 How to Earn Roles', value: eligibility.join('\\n') });
   }
@@ -1706,8 +1706,8 @@ export async function handleUpdate(interaction, serverContext) {
         if (config.customerRoleId) rolesToRemove.push({ id: config.customerRoleId, name: 'Customer' });
         if (config.loyalCustomerRoleId) rolesToRemove.push({ id: config.loyalCustomerRoleId, name: 'Loyal Customer' });
       }
-      if (hasSubscription && config.eclipsePlusRoleId) rolesToAssign.push({ id: config.eclipsePlusRoleId, name: 'Eclipse+' });
-      else if (config.eclipsePlusRoleId) rolesToRemove.push({ id: config.eclipsePlusRoleId, name: 'Eclipse+' });
+      if (hasSubscription && config.eclipsePlusRoleId) rolesToAssign.push({ id: config.eclipsePlusRoleId, name: 'Subscriber' });
+      else if (config.eclipsePlusRoleId) rolesToRemove.push({ id: config.eclipsePlusRoleId, name: 'Subscriber' });
       if (hasStore && config.storeCreatorRoleId) rolesToAssign.push({ id: config.storeCreatorRoleId, name: 'Store Creator' });
       else if (config.storeCreatorRoleId) rolesToRemove.push({ id: config.storeCreatorRoleId, name: 'Store Creator' });
       if (isVerified && config.verifiedSellerRoleId) rolesToAssign.push({ id: config.verifiedSellerRoleId, name: 'Verified Seller' });

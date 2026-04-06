@@ -234,7 +234,7 @@ export function useDiscordSettings() {
       body: JSON.stringify({
         content: formData.early_product_drops_discord_role_id ? `<@&${formData.early_product_drops_discord_role_id}>` : undefined,
         embeds: [
-          { title: '👑 Early Access Drop!', description: '**Test Product**\nThis is a test notification for the early product drops webhook.\n\n*Eclipse+ members get early access!*', color: 0x8B5CF6, fields: [{ name: '🏪 Store', value: 'Quantis', inline: true }, { name: '💰 Price', value: '£9.99', inline: true }, { name: '⏰ Early Access', value: '24 hours', inline: true }, { name: '🔗 Link', value: `[${productLink}](https://${productLink})`, inline: false }], thumbnail: { url: 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-B2C64A0E72EE2F26F0FCEC7D4FAD9E00-Png/150/150/AvatarHeadshot/Webp/noFilter' }, footer: { text: 'Quantis • Eclipse+ Early Access' }, timestamp: new Date().toISOString() },
+          { title: '👑 Early Access Drop!', description: '**Test Product**\nThis is a test notification for the early product drops webhook.\n\n*Subscribers get early access!*', color: 0x8B5CF6, fields: [{ name: '🏪 Store', value: 'Quantis', inline: true }, { name: '💰 Price', value: '£9.99', inline: true }, { name: '⏰ Early Access', value: '24 hours', inline: true }, { name: '🔗 Link', value: `[${productLink}](https://${productLink})`, inline: false }], thumbnail: { url: 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-B2C64A0E72EE2F26F0FCEC7D4FAD9E00-Png/150/150/AvatarHeadshot/Webp/noFilter' }, footer: { text: 'Quantis • Early Access' }, timestamp: new Date().toISOString() },
           { color: 0x8B5CF6, image: { url: 'https://tr.rbxcdn.com/180DAY-5d89c926bd1c2d32e8d7ca56d9fdc91e/420/420/Hat/Webp/noFilter' } },
           { color: 0x8B5CF6, image: { url: 'https://tr.rbxcdn.com/180DAY-d1f62c87adc09c73edbe15b0e6a9f5a1/420/420/Hat/Webp/noFilter' } },
         ],
@@ -265,7 +265,7 @@ export function useDiscordSettings() {
     if (!user?.id) { toast.error('You must be logged in'); return; }
     const config = {
       affiliate: { fn: 'send-affiliate-announcement', key: 'affiliate_discord_webhook_url' as const, label: 'Affiliate' },
-      eclipse_plus: { fn: 'send-eclipse-plus-announcement', key: 'eclipse_plus_discord_webhook_url' as const, label: 'Eclipse+' },
+      eclipse_plus: { fn: 'send-eclipse-plus-announcement', key: 'eclipse_plus_discord_webhook_url' as const, label: 'Subscription' },
       marketplace: { fn: 'send-marketplace-announcement', key: 'marketplace_discord_webhook_url' as const, label: 'Marketplace' },
     }[type];
     if (!formData[config.key]) { toast.error(`Configure ${config.label} webhook first`); return; }

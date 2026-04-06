@@ -91,7 +91,7 @@ export function EarlyAccessSettingsCard() {
           <div>
             <CardTitle className="text-lg">Early Product Drops</CardTitle>
             <CardDescription>
-              Configure early access for Eclipse+ members
+              Configure early access settings
             </CardDescription>
           </div>
         </div>
@@ -101,7 +101,7 @@ export function EarlyAccessSettingsCard() {
           <div className="flex items-start gap-2">
             <Info className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
             <p className="text-sm text-muted-foreground">
-              Eclipse+ members get early access to new product drops before they're available to regular users. 
+              Eligible customers get early access to new product drops before public release. 
               This setting defines the default early access window for all scheduled products.
             </p>
           </div>

@@ -736,18 +736,9 @@ export default function ProductDetail() {
                               {formatPrice(memberPrice)}
                             </span>
                             <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20">
-                              {discountPercent}% off with Eclipse+
+                              {discountPercent}% off
                             </Badge>
                           </div>
-                          {!isSubscribed && (
-                            <Link 
-                              to="/eclipse-plus" 
-                              className="inline-flex items-center gap-1.5 text-sm text-amber-400 hover:text-amber-300 transition-colors"
-                            >
-                              <Sparkles className="h-3.5 w-3.5" />
-                              Join Eclipse+ to unlock this price
-                            </Link>
-                          )}
                         </>
                       )}
                     </>

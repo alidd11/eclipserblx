@@ -447,7 +447,7 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
                 <div className="p-4 rounded-lg bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-amber-600 dark:text-amber-400">Eclipse+ Active</p>
+                      <p className="font-medium text-amber-600 dark:text-amber-400">Subscription Active</p>
                       <p className="text-xs text-muted-foreground mt-1">
                         Since {format(new Date(subscription.created_at), 'MMM d, yyyy')}
                       </p>

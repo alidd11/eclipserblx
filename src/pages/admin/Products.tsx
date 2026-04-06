@@ -453,7 +453,7 @@ export default function AdminProducts() {
             </div>
             <div className="flex items-center gap-6 flex-wrap">
               <div className="flex items-center gap-2"><Switch id="active" checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} /><Label htmlFor="active">Active</Label></div>
-              <div className="flex items-center gap-2"><Switch id="resellable" checked={form.is_resellable} onCheckedChange={(v) => setForm({ ...form, is_resellable: v })} /><Label htmlFor="resellable" title="Excludes from Eclipse+ discounts and free claims">Resell</Label></div>
+              <div className="flex items-center gap-2"><Switch id="resellable" checked={form.is_resellable} onCheckedChange={(v) => setForm({ ...form, is_resellable: v })} /><Label htmlFor="resellable" title="Excluded from promotional discounts and special offers">Resell</Label></div>
               <div className="flex items-center gap-2"><Switch id="schedule" checked={form.schedule_enabled} onCheckedChange={(v) => setForm({ ...form, schedule_enabled: v, release_at: v ? form.release_at : '' })} /><Label htmlFor="schedule" className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />Schedule</Label></div>
             </div>
             {form.schedule_enabled && (
@@ -466,10 +466,10 @@ export default function AdminProducts() {
                 <div className="p-3 rounded-lg border border-warning/30 bg-warning/5 space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="p-1.5 rounded-md bg-warning/20"><Crown className="h-4 w-4 text-warning" /></div>
-                    <div><Label className="text-sm font-medium">Early Product Drops</Label><p className="text-xs text-muted-foreground">Give Eclipse+ members early access</p></div>
+                    <div><Label className="text-sm font-medium">Early Product Drops</Label><p className="text-xs text-muted-foreground">Give customers early access</p></div>
                   </div>
                   <div className="flex items-center justify-between pt-1">
-                    <div className="space-y-0.5"><Label htmlFor="early_access_enabled" className="text-sm">Enable Early Access</Label><p className="text-xs text-muted-foreground">Eclipse+ members can access before public release</p></div>
+                    <div className="space-y-0.5"><Label htmlFor="early_access_enabled" className="text-sm">Enable Early Access</Label><p className="text-xs text-muted-foreground">Customers can access before public release</p></div>
                     <Switch id="early_access_enabled" checked={form.early_access_enabled} onCheckedChange={(checked) => setForm({ ...form, early_access_enabled: checked, early_access_hours: checked ? form.early_access_hours : '' })} />
                   </div>
                   {form.early_access_enabled && (
