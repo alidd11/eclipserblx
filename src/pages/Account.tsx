@@ -687,6 +687,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
         {/* ═══ More ═══ */}
         <div className="border border-border rounded-xl overflow-hidden">
+          <AccordionGroup>
           <div className="p-1">
             <SectionHeader title="More" />
             {hasMarketplaceAccess && (
@@ -705,6 +706,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             </ExpandableSection>
             <UserIdsCollapsible userId={user.id} customerId={profile?.customer_id || null} />
           </div>
+          </AccordionGroup>
         </div>
 
         {/* ═══ Danger Zone ═══ */}
