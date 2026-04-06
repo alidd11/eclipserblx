@@ -157,7 +157,7 @@ export default function AdminLiveChat() {
     try {
       const { data, error } = await supabase.from('chat_messages').insert({ conversation_id: selectedConversation!.id, message: messageText, sender_type: 'agent', sender_id: user!.id }).select('*').single();
       if (error) throw error;
-      if (data) { hapticTap(); setMessages((prev) => prev.map((m) => (m._tempId === tempId ? { ...data, _status: 'sent' as const } : m))); }
+      if (data) { hapticTap(); setMessages((prev) => prev.map((m) => (m._tempId === tempId ? { ...data, secure_data: data.secure_data as any, _status: 'sent' as const } as Message : m))); }
       await supabase.from('chat_conversations').update({ updated_at: new Date().toISOString() }).eq('id', selectedConversation!.id);
     } catch (error) {
       console.error('Error sending message:', error);
