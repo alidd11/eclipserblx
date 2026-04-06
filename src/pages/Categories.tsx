@@ -13,7 +13,7 @@ import { usePageMeta } from '@/hooks/usePageMeta';
 import { BreadcrumbSchema } from '@/components/seo/StructuredData';
 import { useCallback } from 'react';
 
-const CUSTOM_BANNER_CATEGORIES = new Set(['bots']);
+const CUSTOM_BANNER_CATEGORIES = new Set<string>();
 
 const CATEGORY_SORT_ORDER: Record<string, number> = {
   'vehicles': 0,

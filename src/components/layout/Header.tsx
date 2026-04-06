@@ -298,7 +298,7 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
               </button>
               {resourcesOpen && parentCategories && (
               <div className="flex flex-col">
-                  {parentCategories.filter(cat => cat.slug !== 'bots').map((cat) => (
+                  {parentCategories.map((cat) => (
                     <NavLink
                       key={cat.id}
                       to={`/products?category=${cat.slug}`}
