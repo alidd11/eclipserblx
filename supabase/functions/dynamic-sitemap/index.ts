@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
     // Fetch all active, approved products
     const { data: products } = await supabase
       .from('products')
-      .select('product_number, created_at')
+      .select('product_number, created_at, updated_at')
       .eq('is_active', true)
       .eq('moderation_status', 'approved')
       .order('created_at', { ascending: false })
@@ -37,53 +37,56 @@ Deno.serve(async (req) => {
     // Fetch categories
     const { data: categories } = await supabase
       .from('categories')
-      .select('slug')
+      .select('slug, name')
       .order('display_order');
+
+    const today = new Date().toISOString().split('T')[0];
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Static pages -->
-  <url><loc>${SITE_URL}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
-  <url><loc>${SITE_URL}/products</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>${SITE_URL}/categories</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>${SITE_URL}/featured</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
-  <url><loc>${SITE_URL}/stores</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>${SITE_URL}/changelog</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
-  <url><loc>${SITE_URL}/faq</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>${SITE_URL}/help-center</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>${SITE_URL}/help-center/buyers</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>${SITE_URL}/help-center/sellers</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>${SITE_URL}/contact</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>${SITE_URL}/support</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>${SITE_URL}/jobs</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
-  <url><loc>${SITE_URL}/advertise</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>${SITE_URL}/affiliate</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>${SITE_URL}/sell</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>${SITE_URL}/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
-  <url><loc>${SITE_URL}/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
-  <url><loc>${SITE_URL}/refunds</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
-  <url><loc>${SITE_URL}/dmca</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>`;
+  <url><loc>${SITE_URL}/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>${SITE_URL}/products</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>${SITE_URL}/categories</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>${SITE_URL}/featured</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>${SITE_URL}/stores</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>${SITE_URL}/eclipse-plus</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>${SITE_URL}/sell</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>${SITE_URL}/changelog</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>${SITE_URL}/help-center</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>${SITE_URL}/help-center/buyers</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>${SITE_URL}/help-center/sellers</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>${SITE_URL}/faq</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>${SITE_URL}/contact</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>${SITE_URL}/support</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>${SITE_URL}/jobs</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>${SITE_URL}/advertise</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>${SITE_URL}/affiliate</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>${SITE_URL}/terms</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>${SITE_URL}/privacy</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>${SITE_URL}/refunds</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>${SITE_URL}/dmca</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>`;
 
-    // Category filter pages
+    // Category filter pages — high SEO value for long-tail keywords
     if (categories) {
       for (const cat of categories) {
-        xml += `\n  <url><loc>${SITE_URL}/products?category=${cat.slug}</loc><changefreq>daily</changefreq><priority>0.7</priority></url>`;
+        xml += `\n  <url><loc>${SITE_URL}/products?category=${cat.slug}</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>`;
       }
     }
 
-    // Individual product pages (now using product_number)
+    // Individual product pages
     if (products) {
       for (const p of products) {
-        const lastmod = p.created_at ? p.created_at.split('T')[0] : '';
-        xml += `\n  <url><loc>${SITE_URL}/products/${(p as any).product_number}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}<changefreq>weekly</changefreq><priority>0.8</priority></url>`;
+        const lastmod = (p.updated_at || p.created_at)?.split('T')[0] || today;
+        xml += `\n  <url><loc>${SITE_URL}/products/${(p as any).product_number}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>`;
       }
     }
 
     // Individual store pages
     if (stores) {
       for (const s of stores) {
-        const lastmod = s.updated_at ? s.updated_at.split('T')[0] : '';
-        xml += `\n  <url><loc>${SITE_URL}/store/${s.slug}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}<changefreq>weekly</changefreq><priority>0.6</priority></url>`;
+        const lastmod = s.updated_at?.split('T')[0] || today;
+        xml += `\n  <url><loc>${SITE_URL}/store/${s.slug}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>`;
       }
     }
 
