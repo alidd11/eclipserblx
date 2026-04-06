@@ -3,6 +3,8 @@ import { createContext, useContext, useEffect, useState, ReactNode, useMemo } fr
 const MOBILE_BREAKPOINT = 768;
 const TABLET_BREAKPOINT = 1024;
 
+type ConnectionQuality = '4g' | '3g' | '2g' | 'slow-2g' | 'unknown';
+
 interface DeviceState {
   // Breakpoints
   isMobile: boolean;
@@ -23,6 +25,11 @@ interface DeviceState {
   isKeyboardVisible: boolean;
   // Accessibility
   prefersReducedMotion: boolean;
+  // Network
+  connectionQuality: ConnectionQuality;
+  isSlowConnection: boolean;
+  // Orientation
+  isLandscape: boolean;
 }
 
 const defaults: DeviceState = {
