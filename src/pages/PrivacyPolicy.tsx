@@ -127,7 +127,7 @@ export default function PrivacyPolicy() {
                 <h4 className="font-semibold mb-1">Legal Obligation (Art. 6(1)(c))</h4>
                 <p className="text-sm text-muted-foreground">
                   Retaining financial records (orders, transactions, seller earnings, commission data) 
-                  for 7 years as required by UK tax legislation (HMRC requirements). This includes 
+                  for 6 years as required by UK tax legislation (HMRC requirements). This includes 
                   seller transaction records and payout histories needed for tax compliance.
                 </p>
               </div>
@@ -312,12 +312,12 @@ export default function PrivacyPolicy() {
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 px-4">Order &amp; transaction records</td>
-                    <td className="py-3 px-4">7 years</td>
+                    <td className="py-3 px-4">6 years</td>
                     <td className="py-3 px-4">Legal obligation (HMRC)</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 px-4">Seller earnings &amp; payout records</td>
-                    <td className="py-3 px-4">7 years</td>
+                    <td className="py-3 px-4">6 years</td>
                     <td className="py-3 px-4">Legal obligation (HMRC)</td>
                   </tr>
                   <tr className="border-b border-border/50">
@@ -394,7 +394,7 @@ export default function PrivacyPolicy() {
                   <strong>Right to Erasure (Art. 17)</strong>
                   <p className="text-sm text-muted-foreground">
                     Request deletion of your data ("right to be forgotten"). Note: we may retain order 
-                    records for 7 years due to legal obligations.
+                    records for 6 years due to legal obligations.
                   </p>
                 </div>
               </div>

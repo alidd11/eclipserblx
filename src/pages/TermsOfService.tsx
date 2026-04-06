@@ -77,7 +77,7 @@ export default function TermsOfService() {
               <li>Provide accurate and complete registration information</li>
               <li>Maintain the security of your account credentials</li>
               <li>Accept responsibility for all activities under your account</li>
-              <li>Be at least 13 years old (or 16 in the EU/UK for GDPR purposes)</li>
+              <li>Be at least 13 years old (or 16 in the EU where applicable under GDPR)</li>
               <li>Have parental/guardian consent if under 18</li>
             </ul>
             <p className="text-muted-foreground mt-4">
@@ -297,17 +297,17 @@ export default function TermsOfService() {
             <p className="text-muted-foreground">
               If you have a dispute with us, please contact us first to try to resolve it. 
               If we cannot resolve the matter informally, disputes will be subject to the 
-              exclusive jurisdiction of the courts of England and Wales. If you are a consumer, 
-              you may also be able to submit disputes to the Online Dispute Resolution platform 
-              at{' '}
+              exclusive jurisdiction of the courts of England and Wales. If you are a consumer 
+              in the UK, you may also contact{' '}
               <a 
-                href="https://ec.europa.eu/consumers/odr" 
+                href="https://www.citizensadvice.org.uk/consumer/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >
-                ec.europa.eu/consumers/odr
-              </a>.
+                Citizens Advice
+              </a>{' '}
+              for guidance on alternative dispute resolution options.
             </p>
           </section>
 
