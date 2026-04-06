@@ -22,7 +22,7 @@ export function PayoutTimeline() {
  .eq('store_id', store.id)
  .order('created_at', { ascending: false })
  .limit(6);
- return data || [];
+ return (data as any[]) || [];
  },
  enabled: !!store?.id,
  staleTime: 5 * 60 * 1000,

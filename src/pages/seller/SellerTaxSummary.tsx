@@ -118,6 +118,8 @@ export default function SellerTaxSummary() {
         .gte('created_at', selectedTaxYear.startDate + 'T00:00:00Z')
         .lte('created_at', selectedTaxYear.endDate + 'T23:59:59Z')
         .order('created_at', { ascending: true });
+      if (error) throw error;
+      return (data as any[]) || [];
 
       if (error) throw error;
       return data || [];

@@ -82,7 +82,7 @@ export function useAffiliateData() {
       if (!user?.id) return [];
       const { data, error } = await supabase.from('affiliate_payouts_safe' as any).select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10);
       if (error) throw error;
-      return data || [];
+      return (data as any[]) || [];
     },
     enabled: !!user?.id,
   });

@@ -68,6 +68,7 @@ export default function SellerBalance() {
         .limit(50);
 
       if (error) throw error;
+      return (data as any[]) || [];
       return data || [];
     },
     enabled: !!store?.id,
