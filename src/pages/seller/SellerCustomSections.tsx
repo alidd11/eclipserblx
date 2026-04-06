@@ -158,7 +158,7 @@ export default function SellerCustomSections() {
   const renderContentEditor = (sectionType: SectionType, content: SectionContent, onChange: (c: SectionContent) => void) => {
     switch (sectionType) {
       case 'faq': {
-        const items = (content as FaqContent)?.items || [];
+        const items = content?.items || [];
         return (
           <div className="space-y-3">
             {items.map((item: FaqItem, i: number) => (
