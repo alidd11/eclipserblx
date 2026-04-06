@@ -17,7 +17,7 @@ import { TosBanner, NonCompliantBanner, PendingReviewBanner } from '@/components
 import { DashboardCardSkeleton } from '@/components/seller/DashboardSkeletons';
 import { Gift, Clock, Plus, Sparkles } from 'lucide-react';
 import { 
-  Package, ShoppingCart, BarChart3, Tag, DollarSign, LayoutGrid, Megaphone
+  Package, ShoppingCart, BarChart3, Tag, DollarSign, Megaphone
 } from 'lucide-react';
 
 
