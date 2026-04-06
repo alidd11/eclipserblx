@@ -250,9 +250,9 @@ export function useAdminUsers() {
     if (!search.trim()) return filteredProfiles;
     const query = search.toLowerCase();
     return filteredProfiles.filter(profile =>
-      profile.customer_id?.toLowerCase().includes(query) ||
-      profile.display_name?.toLowerCase().includes(query) ||
-      profile.username?.toLowerCase().includes(query)
+      (profile.customer_id as string)?.toLowerCase().includes(query) ||
+      (profile.display_name as string)?.toLowerCase().includes(query) ||
+      (profile.username as string)?.toLowerCase().includes(query)
     );
   }, [filteredProfiles, search]);
 
