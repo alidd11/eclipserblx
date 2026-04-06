@@ -129,10 +129,7 @@ function Dashboard({ token, onLogout }: { token: string; onLogout: () => void })
         setApplication(app);
 
         const { data: msgs } = await supabase
-          .from('applicant_messages')
-          .select('id, subject, message, created_at, is_read')
-          .eq('application_id', app.id)
-          .order('created_at', { ascending: false });
+          .rpc('get_applicant_messages', { p_token: token });
 
         setMessages(msgs || []);
 
