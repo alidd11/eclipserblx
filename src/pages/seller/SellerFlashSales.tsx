@@ -130,9 +130,9 @@ export default function SellerFlashSales() {
     editing ? updateMutation.mutate() : createMutation.mutate();
   };
 
-  const isActive = (sale: any) => sale.is_active && new Date(sale.starts_at) <= new Date() && new Date(sale.ends_at) > new Date();
-  const isUpcoming = (sale: any) => sale.is_active && new Date(sale.starts_at) > new Date();
-  const isExpired = (sale: any) => new Date(sale.ends_at) <= new Date();
+  const isActive = (sale: Record<string, unknown>) => sale.is_active && new Date(sale.starts_at as string) <= new Date() && new Date(sale.ends_at as string) > new Date();
+  const isUpcoming = (sale: Record<string, unknown>) => sale.is_active && new Date(sale.starts_at as string) > new Date();
+  const isExpired = (sale: Record<string, unknown>) => new Date(sale.ends_at as string) <= new Date();
 
   return (
     <SellerLayout>
