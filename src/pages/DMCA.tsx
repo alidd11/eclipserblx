@@ -1,6 +1,6 @@
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { Shield, Mail, AlertTriangle, FileText, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const SITE_NAME = 'Eclipse';
@@ -12,12 +12,9 @@ export default function DMCA() {
  <div className="container py-8 max-w-4xl">
  <div className="space-y-8">
  {/* Header */}
- <div className="text-center space-y-4">
- <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-4">
- <Shield className="h-8 w-8 text-primary" />
- </div>
- <h1 className="text-4xl font-display font-bold">DMCA & IP Policy</h1>
- <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+ <div className="space-y-2">
+ <h1 className="text-2xl font-display font-bold">DMCA & IP Policy</h1>
+ <p className="text-muted-foreground">
  {SITE_NAME} respects the intellectual property rights of others and expects our users to do the same.
  </p>
  </div>
