@@ -40,7 +40,7 @@ const topLevelItems: NavItem[] = [
   { title: 'Analytics', icon: BarChart3, href: '/seller/analytics' },
   { title: 'Store Builder', icon: Sparkles, href: '/seller/store-builder' },
   { title: 'Asset Protection', icon: Shield, href: '/seller/security' },
-  { title: 'Eclipse Pro', icon: Crown, href: '/seller/pro' },
+  { title: 'Account Health', icon: Activity, href: '/seller/account-health' },
 ];
 
 const navGroups: NavGroup[] = [

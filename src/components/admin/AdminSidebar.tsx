@@ -100,6 +100,7 @@ const navGroups: NavGroup[] = [
     icon: Store,
     items: [
       { title: 'Seller Stores', icon: Store, href: '/admin/seller-commissions', permissions: ['view_seller_stores'] },
+      { title: 'Compliance', icon: ShieldCheck, href: '/admin/compliance', permissions: ['view_seller_stores'] },
       { title: 'Store Applications', icon: FileText, href: '/admin/store-applications', permissions: ['view_store_applications'] },
       { title: 'Product Review', icon: Package, href: '/admin/seller-product-review', permissions: ['view_seller_stores'] },
       { title: 'All Seller Products', icon: Package, href: '/admin/seller-products', permissions: ['view_seller_stores'] },
