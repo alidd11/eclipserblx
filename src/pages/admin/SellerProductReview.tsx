@@ -9,6 +9,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { Check, X, Eye, Package, Trash2, AlertTriangle, ShieldAlert, Clock, Lock, ImageMinus, FileCheck, FileX, ChevronDown, ScanSearch, ChevronLeft, ChevronRight } from "lucide-react";
+
+interface ModerationFlags {
+  nsfw_flags?: string[];
+  lua_concerns?: string[];
+  lua_risk_level?: string;
+  has_roblox_files?: boolean;
+  file_names_sample?: string[];
+  total_files?: number;
+  scan_timestamp?: string;
+}
 import {
   AlertDialog,
   AlertDialogAction,
