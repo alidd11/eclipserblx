@@ -17,6 +17,9 @@ interface StaffPerf {
   total_actions: number;
   duty_hours_30d: number;
   last_active_at: string;
+  avg_csat: number;
+  avg_first_response_minutes: number;
+  avg_resolution_minutes: number;
 }
 
 export default function AdminStaffPerformance() {
