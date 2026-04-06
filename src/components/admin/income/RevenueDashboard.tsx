@@ -458,7 +458,7 @@ export function RevenueDashboard() {
  ]}
  height={200}
  yFormatter={(v) => `£${v}`}
- tooltipContent={({ active, payload }: any) => {
+ tooltipContent={({ active, payload }: { active?: boolean; payload?: { payload: Record<string, number | string> }[] }) => {
  if (!active || !payload?.length) return null;
  const d = payload[0].payload;
  return (

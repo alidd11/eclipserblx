@@ -419,7 +419,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     if (!orders) return 0;
     return orders
       .filter((o) => o.status === 'paid' || o.status === 'completed')
-      .reduce((sum: number, o: any) => sum + Number(o.total || 0), 0);
+      .reduce((sum: number, o) => sum + Number((o as Record<string, unknown>).total || 0), 0);
   }, [orders]);
 
   const completedOrders = orders?.filter((o) => o.status === 'paid' || o.status === 'completed').length ?? 0;

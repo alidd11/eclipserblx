@@ -169,7 +169,7 @@ export function StripeBalanceTab() {
  ]}
  height={300}
  yFormatter={(v) => `£${v}`}
- tooltipContent={({ active, payload }: any) => {
+ tooltipContent={({ active, payload }: { active?: boolean; payload?: { payload: Record<string, number | string> }[] }) => {
  if (!active || !payload?.length) return null;
  const data = payload[0].payload;
  return (

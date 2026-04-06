@@ -122,7 +122,7 @@ export default function SellerNotifications() {
     },
   });
 
-  const handleClick = (notification: any) => {
+  const handleClick = (notification: { id: string; read_at: string | null; action_url: string | null }) => {
     if (!notification.read_at) {
       markAsRead.mutate(notification.id);
     }
