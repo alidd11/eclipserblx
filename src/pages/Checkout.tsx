@@ -135,34 +135,8 @@ export default function Checkout() {
         return;
       }
 
-      if (discount.store_id) {
-        const productIds = items.map(i => i.id);
-        const { data: products } = await supabase
-          .from('products')
-          .select('id, store_id')
-          .in('id', productIds);
-        
-        const hasMatchingProduct = products?.some(p => p.store_id === discount.store_id);
-        if (!hasMatchingProduct) {
-          showErrorNotification('Invalid Code', 'This discount code is only valid for a specific store\'s products.');
-          return;
-        }
-      }
-
-      if (discount.expires_at && new Date(discount.expires_at) < new Date()) {
-        showErrorNotification(t('checkout.codeExpired'), t('checkout.codeExpired'));
-        return;
-      }
-
-      if (discount.max_uses && (discount.current_uses || 0) >= discount.max_uses) {
-        showErrorNotification(t('checkout.limitReached'), t('checkout.limitReached'));
-        return;
-      }
-
-      if (discount.min_order_amount && memberSubtotal < discount.min_order_amount) {
-        showErrorNotification('Minimum Not Met', t('checkout.minimumNotMet', { amount: formatPrice(Number(discount.min_order_amount)) }));
-        return;
-      }
+      // All validation (store match, expiry, usage limits, min order, user restriction)
+      // is handled server-side by validate_discount_code_for_checkout RPC.
 
       let amount = 0;
       if (discount.discount_type === 'percentage') {
