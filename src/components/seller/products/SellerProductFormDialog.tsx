@@ -218,8 +218,8 @@ export function SellerProductFormDialog({
         additional_asset_files: [...prev.additional_asset_files, fileName],
       }));
       toast.success('Additional file uploaded successfully');
-    } catch (error: any) {
-      toast.error('Failed to upload file: ' + error.message);
+    } catch (error) {
+      toast.error('Failed to upload file: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setIsUploading(false);
       if (additionalFileInputRef.current) additionalFileInputRef.current.value = '';
