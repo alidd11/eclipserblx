@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
     const mainGuildId = Deno.env.get("DISCORD_GUILD_ID");
-    const eclipsePlusRoleId = Deno.env.get("DISCORD_ROLE_ID");
+    const eclipsePlusRoleId = Deno.env.get("DISCORD_ROLE_ID"); // Legacy — kept for removal sync
     const storeCreatorRoleId = Deno.env.get("DISCORD_STORE_CREATOR_ROLE_ID");
     const customerRoleId = Deno.env.get("DISCORD_CUSTOMER_ROLE_ID");
     const loyalCustomerRoleId = Deno.env.get("DISCORD_LOYAL_CUSTOMER_ROLE_ID");
@@ -131,12 +131,8 @@ Deno.serve(async (req) => {
           }
         };
 
-        // Eclipse+ — assign or remove
-        if (activeSubscribers.has(user_id)) {
-          await assign(eclipsePlusRoleId, "eclipsePlus", "Eclipse+");
-        } else {
-          await remove(eclipsePlusRoleId, "Eclipse+");
-        }
+        // Eclipse+ role removed — ensure it's stripped from all users
+        await remove(eclipsePlusRoleId, "Eclipse+");
 
         // Store Creator — assign or remove
         if (storeOwners.has(user_id)) {

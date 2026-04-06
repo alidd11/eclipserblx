@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle, ShieldAlert, Filter, Sparkles, Eye, ChevronLeft, ChevronRight, Users, IdCard } from 'lucide-react';
+import { Search, Shield, Plus, X, Ban, Trash2, AlertTriangle, ShieldAlert, Filter, Eye, ChevronLeft, ChevronRight, Users, IdCard } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
@@ -48,7 +48,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { GrantEclipsePlusDialog } from '@/components/admin/GrantEclipsePlusDialog';
+
 import { CustomerProfileDialog } from '@/components/admin/CustomerProfileDialog';
 
 // Note: Roles are now text-based, fetched from custom_roles table
@@ -77,7 +77,7 @@ export default function AdminUsers() {
   const IP_REGEX = /^(\d{1,3}\.){3}\d{1,3}$/;
   const [deleteConfirmUser, setDeleteConfirmUser] = useState<any>(null);
   const [selfBanConfirmOpen, setSelfBanConfirmOpen] = useState(false);
-  const [grantEclipsePlusUser, setGrantEclipsePlusUser] = useState<any>(null);
+  
   const [selfBanCooldown, setSelfBanCooldown] = useState(0);
   const [viewProfileUser, setViewProfileUser] = useState<any>(null);
   const queryClient = useQueryClient();
@@ -617,16 +617,7 @@ export default function AdminUsers() {
                                 Roles
                               </Button>
                               {isAdmin && (
-                                <>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={() => setGrantEclipsePlusUser(profile)}
-                                    className="text-amber-500 hover:text-amber-600 hover:bg-amber-500/10"
-                                    title="Grant Eclipse+"
-                                  >
-                                    <Sparkles className="h-4 w-4" />
-                                  </Button>
+                                 <>
                                   <Button 
                                     variant="ghost" 
                                     size="sm" 
@@ -735,15 +726,6 @@ export default function AdminUsers() {
                         </Button>
                         {isAdmin && (
                           <>
-                            <Button 
-                              variant="outline" 
-                              size="icon"
-                              className="h-9 w-9 text-amber-500 border-amber-500/50 hover:bg-amber-500/10"
-                              onClick={() => setGrantEclipsePlusUser(profile)}
-                              title="Grant Eclipse+"
-                            >
-                              <Sparkles className="h-4 w-4" />
-                            </Button>
                             <Button 
                               variant="outline" 
                               size="icon"
@@ -1062,15 +1044,6 @@ export default function AdminUsers() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Grant Eclipse+ Dialog */}
-      <GrantEclipsePlusDialog
-        open={!!grantEclipsePlusUser}
-        onOpenChange={() => setGrantEclipsePlusUser(null)}
-        targetUser={grantEclipsePlusUser}
-        onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ['admin-profiles'] });
-        }}
-      />
 
       {/* Customer Profile Dialog - Primary Admin Only */}
       <CustomerProfileDialog

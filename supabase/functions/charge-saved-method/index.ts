@@ -8,12 +8,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Eclipse+ discount constants - must match other payment functions
-const BOT_CATEGORY_ID = "852838dc-adb6-4154-93fe-d1814fe46263";
-const ECLIPSE_SAVERS_CATEGORY_ID = "26463de5-38f4-4203-a379-78f6f92be3c7";
-const ECLIPSE_PLUS_DISCOUNT = 30;
-const ECLIPSE_PLUS_BOT_DISCOUNT = 35;
-
 interface CartItem {
   id: string;
   name: string;
@@ -34,32 +28,12 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[CHARGE-SAVED-METHOD] ${step}${detailsStr}`);
 };
 
-// Server-side Eclipse+ discount eligibility check
-function isEligibleForDiscount(categoryId: string | null | undefined, isResellable: boolean | null | undefined, storeEclipseEnabled?: boolean): boolean {
-  if (storeEclipseEnabled === false) return false;
-  if (isResellable) return false;
-  return categoryId !== ECLIPSE_SAVERS_CATEGORY_ID;
-}
-
-function calculateMemberPrice(originalPrice: number, categoryId: string | null | undefined, isResellable: boolean | null | undefined, storeEclipseEnabled?: boolean): number {
-  if (!isEligibleForDiscount(categoryId, isResellable, storeEclipseEnabled)) {
-    return originalPrice;
-  }
-  
-  if (categoryId === BOT_CATEGORY_ID) {
-    return originalPrice * (1 - ECLIPSE_PLUS_BOT_DISCOUNT / 100);
-  }
-  
-  return originalPrice * (1 - ECLIPSE_PLUS_DISCOUNT / 100);
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Rate limit check - prevent abuse
     const clientIp = getClientIp(req);
     const rateLimitResult = checkRateLimit({
       ...RATE_LIMITS.WRITE,
@@ -77,11 +51,8 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
-    const stripe = new Stripe(stripeKey, {
-      apiVersion: "2023-10-16",
-    });
+    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
-    // CRITICAL: Use SERVICE_ROLE_KEY for server-side validation
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -90,21 +61,12 @@ serve(async (req) => {
     const { items, paymentMethodId, discountCodeId }: ChargeRequest = await req.json();
     logStep("Request received", { itemCount: items?.length, paymentMethodId });
 
-    if (!items || items.length === 0) {
-      throw new Error("No items provided");
-    }
+    if (!items || items.length === 0) throw new Error("No items provided");
+    if (!paymentMethodId) throw new Error("No payment method provided");
 
-    if (!paymentMethodId) {
-      throw new Error("No payment method provided");
-    }
-
-    // Get authenticated user using their token but verify with service client
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      throw new Error("No authorization header provided");
-    }
+    if (!authHeader) throw new Error("No authorization header provided");
 
-    // Create a user client to verify the token
     const userClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
@@ -112,35 +74,17 @@ serve(async (req) => {
     );
 
     const { data: userData, error: userError } = await userClient.auth.getUser();
-    
-    if (userError || !userData.user?.email) {
-      throw new Error("User not authenticated");
-    }
+    if (userError || !userData.user?.email) throw new Error("User not authenticated");
 
     const userEmail = userData.user.email;
     const userId = userData.user.id;
     logStep("User authenticated", { userId, email: userEmail });
 
-    // SERVER-SIDE: Verify Eclipse+ subscription status
-    let isEclipseMember = false;
-    const { data: subscription } = await supabaseClient
-      .from('subscriptions')
-      .select('status, current_period_end')
-      .eq('user_id', userId)
-      .in('status', ['active', 'trialing'])
-      .single();
-    
-    if (subscription && new Date(subscription.current_period_end) > new Date()) {
-      isEclipseMember = true;
-      logStep("User has active Eclipse+ subscription");
-    }
-
     // SERVER-SIDE: Fetch actual product data and calculate correct prices
-    // NEVER trust frontend prices!
     const productIds = items.map(item => item.id);
     const { data: products, error: productsError } = await supabaseClient
       .from('products')
-      .select('id, name, price, category_id, is_resellable, slug, store_id, stores(eclipse_plus_discount_enabled)')
+      .select('id, name, price, category_id, is_resellable, slug, store_id')
       .in('id', productIds);
 
     if (productsError) {
@@ -150,7 +94,6 @@ serve(async (req) => {
 
     const productMap = new Map(products?.map(p => [p.id, p]) || []);
 
-    // Validate and calculate server-side prices
     const validatedItems: Array<{
       id: string;
       name: string;
@@ -161,7 +104,6 @@ serve(async (req) => {
     }> = [];
 
     let serverSubtotal = 0;
-    let serverEclipseDiscount = 0;
 
     for (const item of items) {
       const product = productMap.get(item.id);
@@ -171,16 +113,7 @@ serve(async (req) => {
       }
 
       const originalPrice = product.price;
-      let finalPrice = originalPrice;
-
-      // Apply Eclipse+ discount server-side if user is a member
-      if (isEclipseMember) {
-        const storeEclipse = product.stores?.eclipse_plus_discount_enabled;
-        finalPrice = calculateMemberPrice(originalPrice, product.category_id, product.is_resellable, storeEclipse);
-        if (finalPrice < originalPrice) {
-          serverEclipseDiscount += (originalPrice - finalPrice);
-        }
-      }
+      const finalPrice = originalPrice;
 
       validatedItems.push({
         id: product.id,
@@ -194,15 +127,11 @@ serve(async (req) => {
       serverSubtotal += finalPrice;
     }
 
-    logStep("Server-side price validation complete", { 
-      serverSubtotal, 
-      serverEclipseDiscount,
-      isEclipseMember 
-    });
+    logStep("Server-side price validation complete", { serverSubtotal });
 
-    // Apply discount code (only if NOT an Eclipse+ member - no stacking)
+    // Apply discount code
     let discountAmount = 0;
-    if (discountCodeId && !isEclipseMember) {
+    if (discountCodeId) {
       const { data: discount } = await supabaseClient
         .from('discount_codes')
         .select('*')
@@ -211,9 +140,8 @@ serve(async (req) => {
         .single();
 
       if (discount) {
-        // Verify user restriction
         if (discount.restricted_to_user_id && discount.restricted_to_user_id !== userId) {
-          logStep("Discount code rejected - user restriction", { discountCodeId, restrictedTo: discount.restricted_to_user_id });
+          logStep("Discount code rejected - user restriction", { discountCodeId });
         } else if (discount.expires_at && new Date(discount.expires_at) < new Date()) {
           logStep("Discount code expired", { discountCodeId });
         } else if (discount.max_uses && (discount.current_uses || 0) >= discount.max_uses) {
@@ -221,7 +149,6 @@ serve(async (req) => {
         } else if (discount.min_order_amount && serverSubtotal < discount.min_order_amount) {
           logStep("Minimum order amount not met for discount", { discountCodeId, serverSubtotal, min: discount.min_order_amount });
         } else {
-          // Check if this is a BOOST code - restrict to Eclipse & Vino stores only
           const isBoostCode = discount.code?.startsWith('BOOST-');
           const ADMIN_STORE_IDS = ['83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a', '9b842052-e1fd-4dfe-99bf-c7625df3e17d'];
           
@@ -260,40 +187,28 @@ serve(async (req) => {
           }
         }
       }
-    } else if (discountCodeId && isEclipseMember) {
-      logStep("Discount code ignored - Eclipse+ member (no stacking)");
     }
 
-    // Calculate final amount in pence using SERVER-VALIDATED prices
     const total = Math.max(0, serverSubtotal - discountAmount);
     const amountInPence = Math.round(total * 100);
     logStep("Calculated amount", { serverSubtotal, discountAmount, total, amountInPence });
 
-    // Minimum order requirement: £1.00 (100 pence)
     const MINIMUM_ORDER_PENCE = 100;
     if (amountInPence < MINIMUM_ORDER_PENCE) {
       logStep("Order below minimum", { amountInPence, minimum: MINIMUM_ORDER_PENCE });
-      throw new Error("Minimum order amount is £1.00");
+      throw new Error("Minimum order amount is \u00A31.00");
     }
 
-    // Find Stripe customer
     const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
-    
-    if (customers.data.length === 0) {
-      throw new Error("No Stripe customer found for this user");
-    }
+    if (customers.data.length === 0) throw new Error("No Stripe customer found for this user");
 
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    // Verify the payment method belongs to this customer
     const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
-    if (paymentMethod.customer !== customerId) {
-      throw new Error("Payment method does not belong to this customer");
-    }
+    if (paymentMethod.customer !== customerId) throw new Error("Payment method does not belong to this customer");
     logStep("Payment method verified");
 
-    // Create and confirm PaymentIntent with saved method using SERVER-VALIDATED prices
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountInPence,
       currency: "gbp",
@@ -313,10 +228,8 @@ serve(async (req) => {
           category_id: i.category_id,
           category_slug: i.category_slug 
         }))),
-        discount_code_id: (!isEclipseMember && discountCodeId) ? discountCodeId : "",
+        discount_code_id: discountCodeId || "",
         discount_amount: discountAmount.toString(),
-        eclipse_discount: serverEclipseDiscount.toString(),
-        is_eclipse_member: isEclipseMember ? "true" : "false",
       },
     });
 
@@ -330,7 +243,6 @@ serve(async (req) => {
       throw new Error(`Payment failed with status: ${paymentIntent.status}`);
     }
 
-    // Call verify-payment to create the order
     logStep("Calling verify-payment to create order");
     const verifyResponse = await fetch(
       `${Deno.env.get("SUPABASE_URL")}/functions/v1/verify-payment`,
@@ -347,7 +259,6 @@ serve(async (req) => {
     if (!verifyResponse.ok) {
       const errorText = await verifyResponse.text();
       logStep("Order creation failed", errorText);
-      // Payment succeeded but order creation failed - this is a critical issue
       throw new Error("Payment succeeded but order creation failed. Please contact support.");
     }
 
@@ -367,7 +278,6 @@ serve(async (req) => {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
     
-    // Handle Stripe-specific errors
     const stripeError = error as { type?: string; message?: string; code?: string };
     if (stripeError.type === 'StripeCardError') {
       return new Response(
@@ -375,7 +285,6 @@ serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
       );
     }
-    // Mask internal errors from the client
     const safeMessage = errorMessage.toLowerCase().includes("stripe") && stripeError.type !== 'StripeCardError'
       ? "Payment service error. Please try again."
       : errorMessage;

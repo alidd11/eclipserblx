@@ -1,4 +1,4 @@
-// Eclipse+ has been removed. Stub exports to prevent import errors.
+// Eclipse+ has been fully removed. Stub exports to prevent import errors.
 
 export type SubscriptionTier = 'basic' | 'pro' | 'premium';
 export type BillingPeriod = 'monthly' | 'annual';

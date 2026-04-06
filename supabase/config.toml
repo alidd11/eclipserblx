@@ -35,47 +35,25 @@ project_id = "qlnbergwjfrmgkjhrbkj"
     verify_jwt = false
   [functions.check-nsfw]
     verify_jwt = false
-  [functions.check-offender-activity]
-    verify_jwt = false
-  [functions.check-paypal-funding]
-    verify_jwt = false
-  [functions.check-product-purchase]
-    verify_jwt = false
   [functions.check-subscription]
     verify_jwt = false
   [functions.check-vpn]
-    verify_jwt = false
-  [functions.check-wise-funding]
-    verify_jwt = false
-  [functions.claim-free-product]
     verify_jwt = false
   [functions.claim-signup-promotion]
     verify_jwt = false
   [functions.cleanup-tracking-data]
     verify_jwt = false
-  [functions.create-ad-subscription-checkout]
-    verify_jwt = false
   [functions.create-advertisement-checkout]
     verify_jwt = false
   [functions.create-affiliate-connect-account]
     verify_jwt = false
-  [functions.create-checkout]
-    verify_jwt = false
   [functions.create-connect-account]
-    verify_jwt = false
-  [functions.create-credit-checkout]
-    verify_jwt = false
-  [functions.create-global-guard-checkout]
-    verify_jwt = false
-  [functions.create-identity-verification]
     verify_jwt = false
   [functions.create-payment-intent]
     verify_jwt = false
   [functions.create-robux-ad-pending]
     verify_jwt = false
   [functions.create-subscription]
-    verify_jwt = false
-  [functions.create-subscription-checkout]
     verify_jwt = false
   [functions.custom-password-reset]
     verify_jwt = false
@@ -101,23 +79,13 @@ project_id = "qlnbergwjfrmgkjhrbkj"
     verify_jwt = false
   [functions.generate-store-branding]
     verify_jwt = false
-  [functions.generate-vapid-keys]
-    verify_jwt = false
   [functions.get-credit-balance]
     verify_jwt = false
   [functions.get-discord-avatar]
     verify_jwt = false
-  [functions.get-vapid-public-key]
-    verify_jwt = false
   [functions.gift-credits]
     verify_jwt = false
-  [functions.grant-eclipse-credits-to-members]
-    verify_jwt = false
-  [functions.ionos-dns-manager]
-    verify_jwt = false
   [functions.list-payment-methods]
-    verify_jwt = false
-  [functions.list-staff]
     verify_jwt = false
   [functions.modmail-response-reminder]
     verify_jwt = false
@@ -195,11 +163,7 @@ project_id = "qlnbergwjfrmgkjhrbkj"
     verify_jwt = false
   [functions.send-discord-webhook]
     verify_jwt = false
-  [functions.send-eclipse-plus-announcement]
-    verify_jwt = false
   [functions.send-marketplace-announcement]
-    verify_jwt = false
-  [functions.send-mass-email]
     verify_jwt = false
   [functions.send-modmail-claim-notification]
     verify_jwt = false
@@ -216,10 +180,6 @@ project_id = "qlnbergwjfrmgkjhrbkj"
   [functions.send-push-notification]
     verify_jwt = false
   [functions.send-review-discord-notification]
-    verify_jwt = false
-  [functions.send-store-deactivation-email]
-    verify_jwt = false
-  [functions.send-store-reactivation-email]
     verify_jwt = false
   [functions.send-team-invite]
     verify_jwt = false
@@ -250,14 +210,6 @@ project_id = "qlnbergwjfrmgkjhrbkj"
   [functions.verify-chat-code]
     verify_jwt = false
   [functions.verify-payment]
-    verify_jwt = false
-  [functions.verify-roblox-badge]
-    verify_jwt = false
-  [functions.verify-roblox-gamepass]
-    verify_jwt = false
-  [functions.verify-roblox-group]
-    verify_jwt = false
-  [functions.verify-roblox-premium]
     verify_jwt = false
   [functions.verify-roblox-user]
     verify_jwt = false

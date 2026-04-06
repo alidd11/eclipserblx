@@ -1,8 +1,9 @@
-// Eclipse+ has been removed. This stub preserves the API surface
-// so consumer components don't break — all values indicate "not subscribed".
+// Eclipse+ has been fully removed.
+// This stub exists only to prevent import errors from any remaining references.
+// All values indicate "not subscribed / no discount".
 
-export const BOT_CATEGORY_ID = "852838dc-adb6-4154-93fe-d1814fe46263";
-export const ECLIPSE_SAVERS_CATEGORY_ID = "26463de5-38f4-4203-a379-78f6f92be3c7";
+export const BOT_CATEGORY_ID = "";
+export const ECLIPSE_SAVERS_CATEGORY_ID = "";
 export const ECLIPSE_PLUS_DISCOUNT = 0;
 export const ECLIPSE_PLUS_BOT_DISCOUNT = 0;
 
