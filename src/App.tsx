@@ -35,6 +35,16 @@ const CookieConsentBanner = lazy(() => import("@/components/cookies/CookieConsen
 const ConnectivityBanner = lazy(() => import("@/components/ConnectivityBanner").then(m => ({ default: m.ConnectivityBanner })));
 const BackgroundRefreshIndicator = lazy(() => import("@/components/BackgroundRefreshIndicator").then(m => ({ default: m.BackgroundRefreshIndicator })));
 
+// ── Pause all refetch intervals when tab is hidden ──
+// React Query's focusManager drives refetchOnWindowFocus.
+// We also use it to pause refetchInterval when the tab is backgrounded,
+// saving DB queries when the user isn't looking.
+focusManager.setEventListener((handleFocus) => {
+  const onVisibilityChange = () => handleFocus(document.visibilityState === 'visible');
+  document.addEventListener('visibilitychange', onVisibilityChange, false);
+  return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+});
+
 // Optimized QueryClient with better caching
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,6 +53,7 @@ const queryClient = new QueryClient({
       gcTime: 1000 * 60 * 30, // 30 minutes (formerly cacheTime)
       refetchOnWindowFocus: false,
       retry: 1,
+      // refetchInterval queries automatically pause when focusManager reports unfocused
     },
   },
 });
