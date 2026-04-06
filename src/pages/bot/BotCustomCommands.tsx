@@ -44,8 +44,8 @@ export default function BotCustomCommands() {
  });
 
  const toggleMutation = useMutation({
- mutationFn: async (cmd: any) => {
- const { error } = await (supabase as any).from('bot_custom_commands').update({ enabled: !cmd.enabled }).eq('id', cmd.id);
+  mutationFn: async (cmd: { id: string; enabled: boolean }) => {
+  const { error } = await (supabase as any).from('bot_custom_commands').update({ enabled: !cmd.enabled }).eq('id', cmd.id);
  if (error) throw error;
  },
  onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bot-custom-commands'] }),

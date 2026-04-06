@@ -113,7 +113,7 @@ export function WelcomeEmbedBuilder() {
  setFields(fields.filter((_, i) => i !== index));
  };
 
- const updateField = (index: number, key: keyof EmbedField, value: any) => {
+ const updateField = (index: number, key: keyof EmbedField, value: string | boolean) => {
  setFields(fields.map((f, i) => i === index ? { ...f, [key]: value } : f));
  };
 
