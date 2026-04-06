@@ -1044,15 +1044,6 @@ export default function AdminUsers() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Grant Eclipse+ Dialog */}
-      <GrantEclipsePlusDialog
-        open={!!grantEclipsePlusUser}
-        onOpenChange={() => setGrantEclipsePlusUser(null)}
-        targetUser={grantEclipsePlusUser}
-        onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ['admin-profiles'] });
-        }}
-      />
 
       {/* Customer Profile Dialog - Primary Admin Only */}
       <CustomerProfileDialog
