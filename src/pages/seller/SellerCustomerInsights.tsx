@@ -37,7 +37,7 @@ export default function SellerCustomerInsights() {
       };
 
       const buyerMap = new Map<string, { orders: number; total: number; lastOrder: string }>();
-      transactions.forEach((tx: any) => {
+      transactions.forEach((tx) => {
         const id = tx.orders?.user_id || 'anonymous';
         const existing = buyerMap.get(id);
         if (existing) {
